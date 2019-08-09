@@ -701,7 +701,7 @@ class Creator extends Base\Core
 
         if (empty($this->additionalParameters) === false)
         {
-            $fileDetails['additionalParameters'] = $this->additionalParameters;
+            $fileDetails['additional_parameters'] = $this->additionalParameters;
         }
 
         $location = $this->storageHandler->save($bucketConfig, $fileDetails);

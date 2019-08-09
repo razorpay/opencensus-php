@@ -281,7 +281,7 @@ class Reconciliate extends Base\Core
 
         $extension = FileStore\Format::CSV;
 
-        $filePath = $this->createCsvFile($data, $fileName, null,self::DIRECTORY_PATH);
+        $filePath = $this->createCsvFile($data, $fileName, null, self::DIRECTORY_PATH);
 
         $file = new UploadedFile($filePath, $fileName);
 
@@ -295,9 +295,30 @@ class Reconciliate extends Base\Core
                 ->entity($batch)
                 ->save();
 
+        $fileStoreEntity = $creator->get();
+
+        $traceData = [
+            'trace_code'   => TraceCode::RECON_BATCH_OUTPUT_FILE,
+            'file_id'      => $fileStoreEntity['id'],
+            'file_name'    => $fileStoreEntity['name'],
+            'batch_id'     => $batchId,
+            'gateway'      => $this->gateway,
+        ];
+
+        $this->messenger->raiseReconInfo($traceData);
+
+        $this->generateReconAnalyticsData($data, $batch, $sheetName);
+    }
+
+    protected function generateReconAnalyticsData($data, $batch, $sheetName)
+    {
         if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
         {
             $creator = new FileStore\Creator;
+
+            $extension = FileStore\Format::CSV;
+
+            $batchId = $batch->getId();
 
             $analyticsOutputFileName = $batchId . $sheetName .'_analytics'. self::OUTPUT_FILE_SUFFIX;
 
@@ -306,13 +327,13 @@ class Reconciliate extends Base\Core
             $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
 
             $creator->localFilePath($analyticsOutputFilePath)
-                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                    ->name($dirPath . '/' . $analyticsOutputFileName)
-                    ->extension($extension)
-                    ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
-                    ->entity($batch)
-                    ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
-                    ->save();
+                ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                ->name($dirPath . '/' . $analyticsOutputFileName)
+                ->extension($extension)
+                ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
+                ->entity($batch)
+                ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
+                ->save();
 
             $fileStoreEntity = $creator->get();
 
@@ -325,18 +346,6 @@ class Reconciliate extends Base\Core
 
             $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
         }
-
-        $fileStoreEntity = $creator->get();
-
-        $traceData = [
-            'trace_code'   => TraceCode::RECON_BATCH_OUTPUT_FILE,
-            'file_id'      => $fileStoreEntity['id'],
-            'file_name'    => $fileStoreEntity['name'],
-            'batch_id'     => $batchId,
-            'gateway'      => $this->gateway,
-        ];
-
-        $this->messenger->raiseReconInfo($traceData);
     }
 
     protected function getOutputWithRemovedBlackListedColumns($reconOutputData)

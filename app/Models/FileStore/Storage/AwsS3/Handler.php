@@ -239,9 +239,9 @@ class Handler extends BaseHandler
             'Metadata'    => $fileDetails['metadata'],
         ];
 
-        if (isset($fileDetails['additionalParameters']) === true)
+        if (isset($fileDetails['additional_parameters']) === true)
         {
-            foreach ($fileDetails['additionalParameters'] as $key => $value)
+            foreach ($fileDetails['additional_parameters'] as $key => $value)
             {
                 $s3ContentObj[$key] = $value;
             }
