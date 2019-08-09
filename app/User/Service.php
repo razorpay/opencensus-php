@@ -175,22 +175,19 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $genericUser) = $this->getUserFromApi($user->id);
+        list($error, $data) = $this->checkAccessOfUserOnMerchant($user->id, $merchantId);
 
         if (empty($error) === true)
         {
-            $currentMerchant = $genericUser->merchants
-                                           ->where('id', $merchantId)
-                                           ->first();
 
-            if ($currentMerchant !== null)
+            if ($data['access'] === true)
             {
-                Session::put('current_merchant_id', $currentMerchant->id);
+                Session::put('current_merchant_id', $merchantId);
 
                 $traceData = [
-                    'id'          => $genericUser->id,
-                    'email'       => $genericUser->email,
-                    'merchant_id' => $currentMerchant->id,
+                    'id'          => $user->id,
+                    'email'       => $user->email,
+                    'merchant_id' => $merchantId,
                 ];
 
                 $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
@@ -621,6 +618,19 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUser];
+    }
+
+    protected function checkAccessOfUserOnMerchant($userId, $merchantId)
+    {
+        $request = new \App\Admin\ApiRequestAny();
+
+        $queryParams = [
+            'merchant_id'   => $merchantId,
+        ];
+
+        $path = 'users/'.$userId.'/access';
+
+        return $request->send($path.'?'.http_build_query($queryParams), 'GET');
     }
 
     /**
