@@ -275,7 +275,7 @@ class Core extends Base\Core
         {
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FTS_MAPPING_ALREADY_PRESENT,
-                ['fts_id' => $fundAccountId, 'id'=> $bankingAccount->getId()]
+                ['fts_id' => $fundAccountId, 'id' => $bankingAccount->getId()]
             );
 
             return $fundAccountId;
@@ -386,32 +386,39 @@ class Core extends Base\Core
                 'channel' => $bankingAccount->getChannel(),
             ]);
 
-        $channel = $bankingAccount->getChannel();
+        //
+        // This is in a transaction because, BankingAccount updation
+        // and Balance entity creation, both should succeed or fail
+        //
+        $this->repo->transaction(function () use ($bankingAccount, $input)
+        {
+            $channel = $bankingAccount->getChannel();
 
-        $processor = $this->getProcessor($channel);
+            $processor = $this->getProcessor($channel);
 
-        $processor->storeCredentials($bankingAccount, $input);
+            $processor->storeCredentials($bankingAccount, $input);
 
-        // merchant credentials are verified and saved. Now storing balance for the account and
-        // activating the account.
+            // merchant credentials are verified and saved. Now storing balance for the account and
+            // activating the account.
 
-        $merchant = $bankingAccount->merchant;
+            $merchant = $bankingAccount->merchant;
 
-        $mode = $this->app['rzp.mode'];
+            $mode = $this->app['rzp.mode'];
 
-        $balanceInfo = $processor->getBalanceAttributesToSave();
+            $balanceInfo = $processor->getBalanceAttributesToSave($bankingAccount);
 
-        $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
+            $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
 
-        $input[Entity::STATUS] = Status::ACTIVATED;
+            $input[Entity::STATUS] = Status::ACTIVATED;
 
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+            $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
-        $bankingAccount->fill($input);
+            $bankingAccount->fill($input);
 
-        $bankingAccount->balance()->associate($balance);
+            $bankingAccount->balance()->associate($balance);
 
-        $this->repo->saveOrFail($bankingAccount);
+            $this->repo->saveOrFail($bankingAccount);
+        });
     }
 
     public function createAccountMappingForFts(Entity $bankingAccount)

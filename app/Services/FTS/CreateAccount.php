@@ -3,9 +3,12 @@
 namespace RZP\Services\FTS;
 
 use RZP\Models\Vpa;
+use RZP\Constants\Country;
 use RZP\Models\BankAccount;
 use RZP\Models\BankingAccount;
+use RZP\Constants\IndianStates;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
 
 class CreateAccount extends Base
 {
@@ -108,6 +111,9 @@ class CreateAccount extends Base
 
                 $request[Constants::BANK_ACCOUNT] = $this->getBankingAccountDetails($this->account);
 
+                // TODO: this should be generic, hardcoding for now
+                $request[Constants::DEFAULT_CHANNEL] = Channel::RBL;
+
                 break;
 
             default:
@@ -152,11 +158,11 @@ class CreateAccount extends Base
             Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
             Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
             Constants::BENEFICIARY_CITY           => $ba->getBeneficiaryCity(),
-            Constants::BENEFICIARY_EMAIL          => $ba->getBeneficiaryEMail(),
-            Constants::BENEFICIARY_STATE          => $ba->getBeneficiaryState(),
+            Constants::BENEFICIARY_EMAIL          => $ba->getBeneficiaryEmail(),
+            Constants::BENEFICIARY_STATE          => IndianStates::getStateCode($ba->getBeneficiaryState()),
             Constants::BENEFICIARY_MOBILE         => $ba->getBeneficiaryMobile(),
             Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
-            Constants::BENEFICIARY_COUNTRY        => $ba->getBeneficiaryCountry(),
+            Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode($ba->getBeneficiaryCountry()),
             Constants::BENEFICIARY_BANK_NAME      => $ba->getChannel(),
         ];
     }
