@@ -249,13 +249,6 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        // for cybersource recurring payment, terminal must be hdfc acquired
-        if (($terminal->getGateway() === Gateway::CYBERSOURCE) and
-            ($terminal->getGatewayAcquirer() !== 'hdfc'))
-        {
-            return false;
-        }
-
         if ($payment->isCard() === true)
         {
             switch (true)
