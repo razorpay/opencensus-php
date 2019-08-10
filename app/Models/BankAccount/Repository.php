@@ -326,11 +326,20 @@ class Repository extends Base\Repository
      */
     public function fetchAccountsNotPresentInBankingAccountsForYesbank(string $limit)
     {
-         // select `bank_accounts`.* from `bank_accounts` inner join `virtual_accounts` on
-         // `virtual_accounts`.`bank_account_id` = `bank_accounts`.`id` inner join `balance`
-         // on `balance`.`id` = `virtual_accounts`.`balance_id` where `balance`.`type` = 'banking'
-         // and `balance`.`id` not in (select `banking_accounts`.`balance_id` from `banking_accounts`
-         // where `banking_accounts`.`balance_id` is not null) and `bank_accounts`.`deleted_at` is null
+        //
+        // SELECT `bank_accounts`.*
+        //   FROM `bank_accounts`
+        // INNER JOIN `virtual_accounts` ON `virtual_accounts`.`bank_account_id` = `bank_accounts`.`id`
+        // INNER JOIN `balance` ON `balance`.`id` = `virtual_accounts`.`balance_id`
+        // WHERE `balance`.`type` = 'banking'
+        //   AND `balance`.`id` NOT IN
+        //       (
+        //           SELECT `banking_accounts`.`balance_id`
+        //             FROM `banking_accounts`
+        //            WHERE `banking_accounts`.`balance_id` IS NOT NULL
+        //       )
+        //   AND `bank_accounts`.`deleted_at` IS NULL
+        //
 
         $bankAccountColumns = $this->dbColumn('*');
 
@@ -370,6 +379,7 @@ class Repository extends Base\Repository
                                   ->whereNotNull($bankingAccountBalanceId);
                         })
                     ->limit($limit)
+                    ->orderByCreatedAt()
                     ->get();
     }
 }

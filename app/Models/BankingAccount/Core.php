@@ -463,6 +463,13 @@ class Core extends Base\Core
 
         $bankAccounts = $this->repo->bank_account->fetchAccountsNotPresentInBankingAccountsForYesbank($limit);
 
+        $this->trace->info(
+            TraceCode::BULK_CREATE_BANKING_ACCOUNTS_REQUEST,
+            [
+                'input' => $input,
+                'bank_account_ids' => $bankAccounts->pluck(Entity::ID)
+            ]);
+
         $successCount = $failedCount = 0;
 
         $failedIds = [];
@@ -473,6 +480,7 @@ class Core extends Base\Core
             {
                 try
                 {
+                    /** @var Merchant\Entity $merchant */
                     $merchant = $bankAccount->virtualAccount->merchant;
 
                     $balance = $bankAccount->virtualAccount->balance;
@@ -483,12 +491,15 @@ class Core extends Base\Core
 
                     $successCount++;
                 }
-                catch (\Exception $e)
+                catch (\Throwable $e)
                 {
                     $this->trace->traceException(
                         $e,
                         Trace::INFO,
-                        TraceCode::BANKING_ACCOUNT_YESBANK_CREATE_FAILED);
+                        TraceCode::BANKING_ACCOUNT_YESBANK_CREATE_FAILED,
+                        [
+                            'bank_account_id' => $bankAccount->getId()
+                        ]);
 
                     $failedIds[] = $bankAccount->getId();
 

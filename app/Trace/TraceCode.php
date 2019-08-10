@@ -257,6 +257,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
 
+    const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
+
     const GATEWAY_INTERNAL_FORMATTED_RESPONSE                   = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
 
     const AUTO_CAPTURE_REFUND_DELAY                             = 'AUTO_CAPTURE_REFUND_DELAY';
