@@ -39,7 +39,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::CHANNEL                         => 'required|string|custom',
-        Entity::STATUS                          => 'required|in:created',
+        Entity::STATUS                          => 'sometimes|in:created',
         Entity::BANK_REFERENCE_NUMBER           => 'required_if:channel,rbl',
         Entity::PINCODE                         => 'required_if:channel,rbl',
         Entity::ACCOUNT_IFSC                    => 'sometimes|nullable|string|size:11',
