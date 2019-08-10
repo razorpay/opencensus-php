@@ -40,6 +40,6 @@ class BeamTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 }

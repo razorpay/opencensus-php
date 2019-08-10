@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Constants\Product;
+use RZP\Constants\Procurer;
 use RZP\Models\Pricing\Entity as Pricing;
 use RZP\Models\Pricing\Type as PricingType;
 
@@ -37,6 +38,9 @@ class CreatePricing extends Migration
                   ->default(PricingType::PRICING);
 
             $table->string(Pricing::GATEWAY)
+                  ->nullable();
+
+            $table->string(Pricing::PROCURER)
                   ->nullable();
 
             $table->string(Pricing::PAYMENT_METHOD);

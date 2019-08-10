@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
@@ -107,6 +108,11 @@ class Validator extends Base\Validator
 
     protected static $actionRules = [
         Entity::ACTION                      => 'required|custom'
+    ];
+
+    protected static $change2faSettingRules = [
+        User\Entity::PASSWORD         => 'required|between:6,50',
+        Entity::SECOND_FACTOR_AUTH    => 'required|boolean',
     ];
 
     protected static $bulkTagRules = [
@@ -227,6 +233,12 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+    ];
+
+    protected static $partnerSubmerchantMapRules = [
+        'partner_type'              => 'required|string',
+        'submerchant_id'            => 'required|string',
+        'partner_merchant_id'       => 'required|string',
     ];
 
     protected static $merchantPartnerStatusRules = [
@@ -434,6 +446,27 @@ class Validator extends Base\Validator
                     Entity::ID           => $merchant->getId(),
                     Entity::PARTNER_TYPE => $merchant->getPartnerType(),
                 ]);
+        }
+    }
+
+    /**
+     * @param $email
+     * @param $orgId
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateMerchantEmailUnique($email, $orgId)
+    {
+        $merchants = app('repo')->merchant->fetchByEmailAndOrgId(mb_strtolower($email), $orgId);
+
+        if ($merchants->count() > 0)
+        {
+            // throw exception if merchant by that email already exists
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
+                Entity::EMAIL,
+                $merchants->pluck(Entity::ID)->toArray()
+            );
         }
     }
 
@@ -717,7 +750,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAction($attribute, $action)
+    public function validateAction($attribute, $action)
     {
         if (Action::exists($action) === false)
         {
@@ -833,6 +866,14 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED);
         }
+
+        $plan = app('repo')->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
+
+        if ($plan->hasInternationalPricing() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Pricing not present for international.');
+        }
     }
 
     protected function validateDisableInternational()
@@ -899,6 +940,29 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]
+            );
+        }
+    }
+
+    /**
+     * Validates that the merchant is a partner and an aggregator
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsAggregatorPartner(Entity $merchant)
+    {
+        $this->validateIsPartner($merchant);
+
+        if ($merchant->isAggregatorPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
                 Entity::PARTNER_TYPE,
                 [
                     Entity::PARTNER_TYPE => $merchant->getPartnerType(),

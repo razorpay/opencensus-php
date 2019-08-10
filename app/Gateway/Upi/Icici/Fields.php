@@ -28,7 +28,7 @@ class Fields
     const PAYER_IFSC                = 'payerIFSC';
     const PAYER_NAME                = 'PayerName';
     const PAYER_VA                  = 'PayerVA';
-    const VALIDATE_PAYER_ACCOUNT    = 'validatePayerAccFlg';
+    const VALIDATE_PAYER_ACCOUNT    = 'ValidatePayerAccFlag';
     const VERIFY_PAYER_VA           = 'payerVA';
     const PAYER_VA_REQ              = 'payerVa';
     const REFUND_ID                 = 'refund_id';

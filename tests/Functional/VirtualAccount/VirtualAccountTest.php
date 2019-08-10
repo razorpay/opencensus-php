@@ -410,6 +410,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->disableMethod('10000000000000', 'credit_card');
         $this->fixtures->merchant->disableMethod('10000000000000', 'debit_card');
+        $this->fixtures->merchant->disableMethod('10000000000000', 'prepaid_card');
         $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
 
         $this->expectException(\RZP\Exception\LogicException::class);
@@ -1307,6 +1308,34 @@ class VirtualAccountTest extends TestCase
         });
 
         $this->testFetchPaymentsForVirtualAccountForQrCode();
+    }
+
+    public function testWebhookVirtualAccountClosed()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->createWebhook(
+            [
+                'events' => [
+                    'virtual_account.closed' => '1',
+                ]
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertEquals('virtual_account.closed', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $this->closeVirtualAccount($virtualAccount['id']);
     }
 
     public function testVirtualAccountMarkedClosed()

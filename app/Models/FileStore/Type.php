@@ -52,6 +52,8 @@ class Type
 
     const AXIS_EMANDATE_DEBIT               = 'axis_emandate_debit';
 
+    const SBI_EMANDATE_DEBIT                = 'sbi_emandate_debit';
+
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
     const CSB_NETBANKING_REFUND             = 'csb_netbanking_refund';
@@ -59,6 +61,8 @@ class Type
     const RBL_NETBANKING_REFUND             = 'rbl_netbanking_refund';
 
     const RBL_NETBANKING_CLAIM              = 'rbl_netbanking_claim';
+
+    const CBI_NETBANKING_REFUND             = 'cbi_netbanking_refund';
 
     const CUB_NETBANKING_REFUND             = 'cub_netbanking_refund';
 
@@ -115,6 +119,7 @@ class Type
     const BATCH_VALIDATED                   = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
     const BATCH_SERVICE                     = 'batch_service';
+    const RECONCILIATION_BATCH_OUTPUT       = 'reconciliation_batch_output';
 
     const BLANK                             = 'blank';
 
@@ -139,6 +144,7 @@ class Type
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
     const SBI_EMI_FILE                      = 'sbi_emi_file';
+    const SBI_EMI_OUTPUT_FILE               = 'sbi_emi_output_file';
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
 
@@ -182,6 +188,7 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -194,6 +201,7 @@ class Type
             self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
             self::EQUITAS_NETBANKING_REFUND,
+            self::CBI_NETBANKING_REFUND,
             self::CUB_NETBANKING_REFUND,
             self::CUB_NETBANKING_CLAIM,
             self::INDUSIND_NETBANKING_REFUND,
@@ -222,6 +230,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SBI_EMI_FILE,
+            self::SBI_EMI_OUTPUT_FILE,
             self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::BOB_EMI_FILE,
@@ -250,6 +259,7 @@ class Type
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
+            self::RECONCILIATION_BATCH_OUTPUT,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
@@ -287,6 +297,7 @@ class Type
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::RECONCILIATION_BATCH_INPUT,
+        self::RECONCILIATION_BATCH_OUTPUT,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
         self::AXIS_EMI_FILE,
@@ -294,6 +305,7 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SBI_EMI_FILE,
+        self::SBI_EMI_OUTPUT_FILE,
         self::BOB_EMI_FILE,
         self::CITI_EMI_FILE,
         self::SCBL_EMI_FILE,
@@ -311,6 +323,7 @@ class Type
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
+        self::SBI_EMANDATE_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
         self::CANARA_NETBANKING_REFUND,
@@ -325,6 +338,7 @@ class Type
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
+        self::CBI_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
@@ -393,6 +407,7 @@ class Type
             self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_MAIL,
+            self::SBI_EMI_OUTPUT_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
@@ -440,6 +455,7 @@ class Type
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
+            self::RECONCILIATION_BATCH_OUTPUT,
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [

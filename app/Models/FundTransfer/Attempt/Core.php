@@ -51,14 +51,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if ($instantDispatch === true)
-        {
-            $this->dispatchForTransfer($fundTransferAttempt);
-        }
-        else if ($fundTransferAttempt->getIsFTS() === true)
+        if ($fundTransferAttempt->getIsFTS() === true)
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
+        else if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
+        }
+
 
         return $fundTransferAttempt;
     }
@@ -134,8 +135,8 @@ class Core extends Base\Core
 
     /**
      * @param array $input
-     *
      * @return array
+     * @throws LogicException
      */
     public function nodalFileUploadThroughBeam(array $input): array
     {
@@ -153,10 +154,10 @@ class Core extends Base\Core
 
         $jobName  = $this->getJobNameForBeamPush($channel, $fileType);
 
-        $this->sendFile($filePath, $jobName, $fileType, $channel);
+        $response = $this->sendFile($filePath, $jobName, $fileType, $channel);
 
         return [
-            'status' => 'Nodal file upload request sent to beam'
+            'response' => $response
         ];
     }
 
@@ -204,21 +205,43 @@ class Core extends Base\Core
      * @param CardEntity|null   $card
      * @return array
      *
-     * TODO: refactor this section so that we dont have to use `shouldUseGateway` and `getChannelForTransfer`
+     * TODO: refactor this section so that we don't have to use `shouldUseGateway` and `getChannelForTransfer`
      * for different reasons. A single method should give us which path should be chosen
+     * use RazorX here for easy config
      */
     protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, CardEntity $card = null): array
     {
+        $redis = $this->app['redis']->connection();
+
         if (in_array($sourceType, AttemptConstants::ALLOWED_PRODUCTS_ON_FTS, true) === true)
         {
+            if (($sourceType === Type::PAYOUT) and
+                (in_array($source->getChannel(), Settlement\Channel::getFtsSupportedPayoutChannels(), true) === true))
+            {
+                return [true, $source->getChannel()];
+            }
+
             $srcMerchantId = $source->getMerchantId();
 
-            $merchantId = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
+            $merchantList = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
 
-            if ((empty($merchantId) === false) and
-                ($srcMerchantId !== $merchantId))
+            $merchantIds = (empty($merchantList) === false) ? explode(',', $merchantList) : [];
+
+            if (in_array($srcMerchantId, $merchantIds, true) === false)
             {
                 return [false, Settlement\Channel::YESBANK];
+            }
+
+            if ($sourceType === EntityConstant::FUND_ACCOUNT_VALIDATION)
+            {
+                if ($this->isTestMode() === true)
+                {
+                    return [false, Settlement\Channel::YESBANK];
+                }
+                else
+                {
+                    return [true, Settlement\Channel::ICICI];
+                }
             }
 
             $amount = $source->getAmount();
@@ -232,8 +255,6 @@ class Core extends Base\Core
             {
                 return [false, Settlement\Channel::YESBANK];
             }
-
-            $redis = $this->app['redis']->connection();
 
             $validCardRefund = $this->isFTSSupportedCardRefund($card);
 
@@ -348,6 +369,9 @@ class Core extends Base\Core
                     case Settlement\Channel::ICICI:
                         return BeamConstants::ICICI_SETTLEMENT_JOB_NAME;
 
+                    case Settlement\Channel::AXIS2:
+                        return BeamConstants::AXIS2_SETTLEMENT_JOB_NAME;
+
                     default:
                         throw new LogicException('Invalid settlement channel', null, $channel);
                 }
@@ -357,6 +381,9 @@ class Core extends Base\Core
                 {
                     case Settlement\Channel::ICICI:
                         return BeamConstants::ICICI_BENEFICIARY_JOB_NAME;
+
+                    case Settlement\Channel::AXIS2:
+                        return BeamConstants::AXIS2_BENEFICIARY_JOB_NAME;
 
                     default:
                         throw new LogicException('Invalid Beneficiary channel', null, $channel);
@@ -374,6 +401,7 @@ class Core extends Base\Core
      * @param string $jobName
      * @param string $fileType
      * @param string $channel
+     * @return mixed
      */
     protected function sendFile(string $filename, string $jobName, string $fileType, string $channel)
     {
@@ -395,12 +423,11 @@ class Core extends Base\Core
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
     }
 
     /**
      * @param Entity $fta
-     * @param string $accountType
      * @param bool   $isRegistered
      */
     public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false)
@@ -494,8 +521,6 @@ class Core extends Base\Core
 
             $fta = $this->updateFtaWithInput($input, $fta);
 
-            list($beneficiaryName, $internalError) = $this->getDataToUpdateFromInput($input);
-
             $fta->fill($input);
 
             if (method_exists($fta->source, 'setFTSTransferId') === true)
@@ -505,12 +530,12 @@ class Core extends Base\Core
 
             $this->repo->fund_transfer_attempt->saveOrFail($fta);
 
-            $this->updateSourceEntityByFta($fta, $beneficiaryName, $internalError);
+            $this->updateSourceEntityByFta($fta, $input);
 
             $this->updateMerchantEntity($fta);
 
             return [
-              'message' => 'FTA and source updated succesfully',
+                'message' => 'FTA and source updated successfully',
             ];
         }
         catch (\Throwable $e)
@@ -634,26 +659,32 @@ class Core extends Base\Core
         }
     }
 
-    public function updateSourceEntityByFta(Entity $fta, $beneficiaryName, bool $internalError)
+    public function updateSourceEntityByFta(Entity $fta, array $input)
     {
+        $extraInfo = $input['extra_info'] ?? [];
+
         $ftaData = [
             'bank_account_id'   => $fta->getBankAccountId(),
             'vpa_id'            => $fta->getVpaId(),
             'merchant_id'       => $fta->getMerchantId(),
             'fta_id'            => $fta->getId(),
             'source_id'         => $fta->source->getId(),
-            'beneficiary_name'  => $beneficiaryName,
             'utr'               => $fta->getUtr(),
             'mode'              => $fta->getMode(),
             'remarks'           => $fta->getRemarks(),
             'fta_status'        => $fta->getStatus(),
             'is_fts'            => $fta->getIsFTS(),
             'bank_status_code'  => $fta->getBankStatusCode(),
-            'internal_error'    => $internalError,
             'failure_reason'    => $fta->getFailureReason(),
-        ];
+        ] + $extraInfo;
 
         $this->sourceReconByFta($fta->source, $ftaData);
+
+        if (($fta->getSourceType() == Type::PAYOUT) and
+            (in_array($fta->getChannel(), Settlement\Channel::getNonTransactionChannels(), true) === true))
+        {
+            return;
+        }
 
         $this->updateTransactionEntity($fta->source);
     }
@@ -718,23 +749,24 @@ class Core extends Base\Core
 
     /**
      * @param array $input
-     * @param Entity $fta
      * @return array
      */
     public function getDataToUpdateFromInput(array $input)
     {
         $beneficiaryName = null;
 
-        if (empty($input[BankAccountEntity::BENEFICIARY_NAME]) === false)
+        $extraInfo = $input['extra_info'] ?? [];
+
+        if (empty($extraInfo[BankAccountEntity::BENEFICIARY_NAME]) === false)
         {
-            $beneficiaryName = $input[BankAccountEntity::BENEFICIARY_NAME];
+            $beneficiaryName = $extraInfo[BankAccountEntity::BENEFICIARY_NAME];
         }
 
         $internalError = false;
 
-        if (empty($input[AttemptConstants::INTERNAL_ERROR]) === false)
+        if (empty($extraInfo[AttemptConstants::INTERNAL_ERROR]) === false)
         {
-            $internalError = $input[AttemptConstants::INTERNAL_ERROR];
+            $internalError = $extraInfo[AttemptConstants::INTERNAL_ERROR];
         }
 
         return array($beneficiaryName, $internalError);

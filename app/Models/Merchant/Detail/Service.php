@@ -621,6 +621,8 @@ class Service extends Base\Service
 
         $this->saveMerchantDetails($input);
 
+        $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
+
         if (empty($input[Entity::BUSINESS_NAME]) === false)
         {
             (new Merchant\Core)->editPreSignupFields($this->merchant, $input);

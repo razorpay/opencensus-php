@@ -98,7 +98,12 @@ class Gateway extends Base\Gateway
 
         if ($this->isSecondRecurringPayment($input) === true)
         {
-            return $this->secondRecurring($input);
+            return $this->secondRecurringOrMoto($input);
+        }
+
+        if ($this->isMotoTransactionRequest($input) === true)
+        {
+            return $this->secondRecurringOrMoto($input);
         }
 
         // this is a check to decide which flow to go from, once new s2s flow will be merged and tested
@@ -174,7 +179,7 @@ class Gateway extends Base\Gateway
         return $authenticationGateway;
     }
 
-    protected function secondRecurring(array $input)
+    protected function secondRecurringOrMoto(array $input)
     {
         parent::action($input, Action::PURCHASE);
 
@@ -1159,7 +1164,11 @@ class Gateway extends Base\Gateway
                                                                            ->TransactionState,
                 Entity::AUTH_CODE           => (string) $verifyAuthResponse->children('ipgapi', true)
                                                                            ->IPGApiOrderResponse
-                                                                           ->ProcessorApprovalCode
+                                                                           ->ProcessorApprovalCode,
+
+                Entity::APPROVAL_CODE       => (string) $verifyAuthResponse->children('ipgapi', true)
+                                                                           ->IPGApiOrderResponse
+                                                                           ->ApprovalCode,
             ];
 
             if ($this->shouldUpdatePaymentInternalErrorCode($input['payment']) === true)
@@ -2545,7 +2554,7 @@ class Gateway extends Base\Gateway
     {
         $cvv = $input['card']['cvv'];
 
-        $key = $this->getCacheKey($input['payment']['id']);
+        $key = $this->getCacheKey($input);
 
         $data = [
             'cvv' => $this->app['encrypter']->encrypt($cvv),

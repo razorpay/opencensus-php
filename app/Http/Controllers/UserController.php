@@ -90,6 +90,24 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function setup2faMobileOnLogin()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setup2faMobileOnLogin($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function setup2faVerifyMobileOnLogin()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setup2faVerifyMobileOnLogin($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getUser(string $id)
     {
         $data = $this->service()->get($id);
@@ -150,6 +168,15 @@ class UserController extends Controller
         $input = Request::all();
 
         $response = $this->service()->resetUserPassword($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function change2faSetting()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->change2faSetting($input);
 
         return ApiResponse::json($response);
     }

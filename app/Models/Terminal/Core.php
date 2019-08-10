@@ -30,6 +30,8 @@ class Core extends Base\Core
 
         $terminal->merchant()->associate($merchant);
 
+        $terminal->org()->associate($merchant->org);
+
         $this->validateExistingTerminal($terminal);
 
         $this->validateDirectSettlementMapping($terminal);
@@ -48,9 +50,8 @@ class Core extends Base\Core
 
         $gateway = $terminal->getGateway();
 
-        if (isset(Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway]) === false)
+        if (array_key_exists($gateway, Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS) === false)
         {
-
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT);
         }

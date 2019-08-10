@@ -26,11 +26,13 @@ use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -68,6 +70,8 @@ class MerchantTest extends TestCase
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
         $this->setupMockDns();
+
+        $this->fixtures->create('org:hdfc_org');
 
         $this->app->make(Factory::class)->load($factoryPath);
     }
@@ -346,6 +350,357 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth('live');
 
         $this->startTest();
+    }
+
+    public function testMerchantRestricted2faEnable()
+    {
+        $ownerUser = $this->fixtures->create('user', [
+            'second_factor_auth'      => 0,
+            'contact_mobile'          => '9012345678',
+            'contact_mobile_verified' => 1,
+            UserEntity::PASSWORD      => 'hello123',
+        ]);
+
+        $merchantIds = $ownerUser->merchants()->distinct()->get()->pluck('id')->toArray();
+        $merchant    = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $this->fixtures->merchant->edit($merchant['id'], [
+            MerchantEntity::RESTRICTED          => true,
+            MerchantEntity::SECOND_FACTOR_AUTH  => 0,
+        ]);
+
+        $user = $this->fixtures->create('user',[
+            UserEntity::SECOND_FACTOR_AUTH      =>  1,
+            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
+            UserEntity::CONTACT_MOBILE          =>  '9801234567',
+        ]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'ops',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            MerchantEntity::SECOND_FACTOR_AUTH => 1,
+            UserEntity::PASSWORD               => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $res = $this->startTest();
+
+        $ownerUserEntity = $this->getDbEntityById('user', $ownerUser['id']);
+        $userEntity = $this->getDbEntityById('user', $user['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertTrue($merchantEntity->isSecondFactorAuth());
+        $this->assertFalse($ownerUserEntity->isSecondFactorAuth());
+        $this->assertTrue($ownerUserEntity->isSecondFactorAuthEnforced());
+        $this->assertTrue($userEntity->isSecondFactorAuth());
+        $this->assertTrue($userEntity->isSecondFactorAuthEnforced());
+    }
+
+    public function testMerchant2faEnable()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+                MerchantEntity::SECOND_FACTOR_AUTH      =>  0,
+            ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
+                UserEntity::SECOND_FACTOR_AUTH      =>  0,
+                UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
+                UserEntity::CONTACT_MOBILE          =>  '9999999999',
+                UserEntity::PASSWORD                => 'hello123',
+            ], 'owner');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            MerchantEntity::SECOND_FACTOR_AUTH => 1,
+            UserEntity::PASSWORD               => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+
+        $userEntity = $this->getDbEntityById('user', $user['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertTrue($merchantEntity->isSecondFactorAuth());
+        $this->assertTrue($userEntity->isSecondFactorAuthEnforced());
+    }
+
+    public function testFailedMerchant2faEnableInvalidPass()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+                MerchantEntity::SECOND_FACTOR_AUTH      =>  0,
+            ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
+                UserEntity::SECOND_FACTOR_AUTH      =>  0,
+                UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
+                UserEntity::CONTACT_MOBILE          =>  '9999999999',
+                UserEntity::PASSWORD                => 'hello123',
+            ], 'owner');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            MerchantEntity::SECOND_FACTOR_AUTH => 1,
+            UserEntity::PASSWORD               => 'hello1234',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+
+        $userEntity = $this->getDbEntityById('user', $user['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertFalse($merchantEntity->isSecondFactorAuth());
+        $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
+    }
+
+    public function testMerchant2faDisable()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::SECOND_FACTOR_AUTH      =>  1,
+              ]);
+
+         $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
+            UserEntity::SECOND_FACTOR_AUTH      =>  1,
+            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
+            UserEntity::CONTACT_MOBILE          =>  '9999999999',
+            UserEntity::PASSWORD                => 'hello123',
+        ], 'owner');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            MerchantEntity::SECOND_FACTOR_AUTH => 0,
+            UserEntity::PASSWORD               => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+
+        $userEntity = $this->getDbEntityById('user', $user['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertTrue($userEntity->isSecondFactorAuth());
+        $this->assertFalse($merchantEntity->isSecondFactorAuth());
+        $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
+    }
+
+    public function testFailedMerchantEnable2faMobNotPresent()
+    {
+        $ownerUser = $this->fixtures->create('user',[
+            UserEntity::SECOND_FACTOR_AUTH      =>  1,
+            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
+            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::PASSWORD                => 'hello123',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::SECOND_FACTOR_AUTH => 0,
+        ]);
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            MerchantEntity::SECOND_FACTOR_AUTH => 1,
+            UserEntity::PASSWORD               => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $res = $this->startTest();
+
+        $ownerUserEntity = $this->getDbEntityById('user', $ownerUser['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertTrue($ownerUserEntity->isSecondFactorAuth());
+        $this->assertFalse($merchantEntity->isSecondFactorAuth());
+        $this->assertFalse($ownerUserEntity->isSecondFactorAuthEnforced());
+    }
+
+    public function testFailedMerchantEnable2faMobNotVerified()
+    {
+        $ownerUser = $this->fixtures->create('user',[
+            UserEntity::SECOND_FACTOR_AUTH      =>  1,
+            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
+            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::PASSWORD                => 'hello123',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::SECOND_FACTOR_AUTH => 0,
+        ]);
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            MerchantEntity::SECOND_FACTOR_AUTH => 1,
+            UserEntity::PASSWORD               => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $res = $this->startTest();
+
+        $ownerUserEntity = $this->getDbEntityById('user', $ownerUser['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertTrue($ownerUserEntity->isSecondFactorAuth());
+        $this->assertFalse($merchantEntity->isSecondFactorAuth());
+        $this->assertFalse($ownerUserEntity->isSecondFactorAuthEnforced());
+    }
+
+    public function testFailedMerchantEnable2faNotOwner()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::SECOND_FACTOR_AUTH => 0,
+        ]);
+
+        $ownerUser = $this->fixtures->create('user',[
+            UserEntity::SECOND_FACTOR_AUTH      =>  1,
+            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
+            UserEntity::CONTACT_MOBILE          =>  null,
+        ]);
+
+        $user = $this->fixtures->create('user',[
+            UserEntity::SECOND_FACTOR_AUTH      =>  1,
+            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
+            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::PASSWORD                => 'hello123',
+        ]);
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'admin',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            MerchantEntity::SECOND_FACTOR_AUTH => 1,
+            UserEntity::PASSWORD               => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $res = $this->startTest();
+
+        $userEntity = $this->getDbEntityById('user', $user['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertTrue($userEntity->isSecondFactorAuth());
+        $this->assertFalse($merchantEntity->isSecondFactorAuth());
+        $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
+    }
+
+    // owner mob present but one of the user of the merchant doesn't have a verifiedd mobile
+    public function testFailedMerchantRestricted2faEnableUserMobNotVerified()
+    {
+        $ownerUser = $this->fixtures->create('user', [
+            'second_factor_auth'      => 0,
+            'contact_mobile'          => '9012345678',
+            'contact_mobile_verified' => 1,
+            UserEntity::PASSWORD      => 'hello123',
+        ]);
+
+        $merchantIds = $ownerUser->merchants()->distinct()->get()->pluck('id')->toArray();
+        $merchant    = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $this->fixtures->merchant->edit($merchant['id'], [
+            MerchantEntity::RESTRICTED          => true,
+            MerchantEntity::SECOND_FACTOR_AUTH  => 0,
+        ]);
+
+        $user = $this->fixtures->create('user',[
+            UserEntity::SECOND_FACTOR_AUTH      =>  1,
+            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
+            UserEntity::CONTACT_MOBILE          =>  '9801234567',
+        ]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'ops',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            MerchantEntity::SECOND_FACTOR_AUTH => 1,
+            UserEntity::PASSWORD               => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $res = $this->startTest();
+
+        $ownerUserEntity = $this->getDbEntityById('user', $ownerUser['id']);
+        $userEntity = $this->getDbEntityById('user', $user['id']);
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertFalse($merchantEntity->isSecondFactorAuth());
+        $this->assertFalse($ownerUserEntity->isSecondFactorAuth());
+        $this->assertFalse($ownerUserEntity->isSecondFactorAuthEnforced());
+        $this->assertTrue($userEntity->isSecondFactorAuth());
+        $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
     }
 
     public function testEditMerchantEditGroups()
@@ -1333,7 +1688,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(35, $banks);
+        $this->assertCount(36, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -1644,6 +1999,7 @@ class MerchantTest extends TestCase
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'ALL',]);
+
 
         $this->startTest();
     }
@@ -4266,6 +4622,40 @@ class MerchantTest extends TestCase
     public function testGetOrgDetails()
     {
         $this->ba->authServiceAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * When international activation flow is already set then use same
+     * instead of recalculating international activation flow from business category and subcategory again
+     */
+    public function testInternationalEnableWhenInternationalActivationFlowIsAlreadySet()
+    {
+
+        $merchantData = [
+            'international'    => 0,
+            'activated'        => 1,
+            'convert_currency' => null,
+            'website'          => 'abc@gmail.com'
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        //
+        // If international activation flow is recalculated from business category and subcategory
+        // then it points to blacklist category
+        //
+        $merchantDetailData = [
+            'business_category'             => 'healthcare',
+            'business_subcategory'          => 'pharmacy',
+            'international_activation_flow' => 'whitelist',
+            'merchant_id'                   => $merchant['id']
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
     }

@@ -5,17 +5,12 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
-use RZP\Models\Risk;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Models\Card\IIN;
 use RZP\Services\OtpElf;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Constants\Entity as E;
-use RZP\Models\Payment\Analytics\Metadata;
 
 trait HeadlessOtp
 {
@@ -197,13 +192,27 @@ trait HeadlessOtp
                 true);
         }
 
-        /*
-         * If elf fail for unknow reason we are setting original termurl for fallback
-        */
-        if ($originalTermUrl !== null)
+        if ((isset($response['error']['reason']) === true) and
+            (array_key_exists($response['error']['reason'], self::$elfErrorCodeMapping) === true))
         {
-            $request['content']['TermUrl'] = $originalTermUrl;
+            $errorCode = self::$elfErrorCodeMapping[$response['error']['reason']];
+
+            throw new Exception\GatewayErrorException(
+                $errorCode
+            );
         }
+
+        if ($this->isRupayNetwork($payment) === true)
+        {
+            throw new Exception\IntegrationException("Unknown error for Rupay transaction",
+                ErrorCode::SERVER_ERROR_OTP_ELF_FAILED_FOR_RUPAY);
+        }
+
+        /*
+         * If elf fail for unknown reason for Non Rupay Transaction we are setting original termurl for fallback
+        */
+
+        $request['content']['TermUrl'] = $originalTermUrl;
 
         return $request;
     }
@@ -341,6 +350,11 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
+        if ($payment->hasCard() === false)
+        {
+            return;
+        }
+
         if (empty(self::$errorCodeToFlow[$code]) === true)
         {
             return;
@@ -350,10 +364,12 @@ trait HeadlessOtp
 
         $iin = $payment->card->getIin();
 
-        $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
-            'iin' => $iin,
-            'flow'  => $flow,
-        ]);
+        $this->trace->info(
+            TraceCode::IIN_FLOW_DISABLE,
+            [
+                'iin' => $iin,
+                'flow'  => $flow,
+            ]);
 
         (new IIN\Service)->disableIinFlow($iin, $flow);
     }

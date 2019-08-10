@@ -222,6 +222,7 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED,
         self::SUBMITTED_AT,
         self::INTERNATIONAL_ACTIVATION_FLOW,
+        self::CUSTOM_FIELDS,
     ];
 
     protected $public = [
@@ -421,6 +422,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ARCHIVED_AT, $archived_at);
     }
 
+    public function hasBankAccountDetails(): bool
+    {
+        $ifscCode      = $this->getAttribute(self::BANK_BRANCH_IFSC);
+        $accountNumber = $this->getAttribute(self::BANK_ACCOUNT_NUMBER);
+
+        return ((empty($accountNumber) === false) and (empty($ifscCode) === false));
+    }
+
     protected function setPublicArchivedAtAttribute(array & $array)
     {
         $array[self::ARCHIVED] = (isset($array[self::ARCHIVED_AT]) === true) ? 1 : 0;
@@ -498,6 +507,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
 
+    public function getBusinessRegisteredAddressLine2()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS_L2);
+    }
+
     public function getBusinessRegisteredAddressAsText(string $delimiter = PHP_EOL)
     {
         return Address\Utility::formatAddressAsText(
@@ -511,6 +525,22 @@ class Entity extends Base\PublicEntity
             $delimiter);
     }
 
+    public function hasBusinessRegisteredAddress(): bool
+    {
+        $city = $this->getBusinessRegisteredCity();
+        $state = $this->getBusinessRegisteredStateName();
+
+        return ((empty($city) === false) and (empty($state) === false));
+    }
+
+    public function hasBusinessOperationAddress(): bool
+    {
+        $city = $this->getBusinessOperationCity();
+        $state = $this->getBusinessOperationStateName();
+
+        return ((empty($city) === false) and (empty($state) === false));
+    }
+
     public function getBusinessRegisteredCity()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_CITY);
@@ -521,9 +551,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
     }
 
+    public function getBusinessRegisteredCountry()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_COUNTRY);
+    }
+
     public function getBusinessRegisteredStateName()
     {
         $state     = $this->getBusinessRegisteredState();
+        $stateName = $state !== null ? IndianStates::getStateNameByCode($state) : null;
+
+        return $stateName !== null ? ucwords(strtolower($stateName)) : null;
+    }
+
+    public function getBusinessOperationStateName()
+    {
+        $state     = $this->getBusinessOperationState();
         $stateName = $state !== null ? IndianStates::getStateNameByCode($state) : null;
 
         return $stateName !== null ? ucwords(strtolower($stateName)) : null;
@@ -539,6 +582,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_OPERATION_ADDRESS);
     }
 
+    public function getBusinessOperationAddressLine2()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_ADDRESS_L2);
+    }
+
     public function getBusinessOperationCity()
     {
         return $this->getAttribute(self::BUSINESS_OPERATION_CITY);
@@ -547,6 +595,11 @@ class Entity extends Base\PublicEntity
     public function getBusinessOperationState()
     {
         return $this->getAttribute(self::BUSINESS_OPERATION_STATE);
+    }
+
+    public function getBusinessOperationCountry()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_COUNTRY);
     }
 
     public function getBusinessOperationPin()
@@ -570,7 +623,7 @@ class Entity extends Base\PublicEntity
 
         return substr($gstin, 0, 2);
     }
-    
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
@@ -696,6 +749,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_VOLUME);
     }
 
+    public function getBusinessDescription()
+    {
+        return $this->getAttribute(self::BUSINESS_DESCRIPTION);
+    }
+
     public function getTransactionValue()
     {
         return $this->getAttribute(self::TRANSACTION_VALUE);
@@ -764,5 +822,32 @@ class Entity extends Base\PublicEntity
         $adminId = $this->getAttribute(Entity::REVIEWER_ID);
 
         $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
+    }
+
+    protected function getCustomFieldsAttribute($customFields): array
+    {
+        $customFields = json_decode($customFields, true);
+
+        if (empty($customFields) === true)
+        {
+            return [];
+        }
+
+        return $customFields;
+    }
+
+    public function getCustomFields(): array
+    {
+        return $this->getAttribute(self::CUSTOM_FIELDS);
+    }
+
+    protected function setCustomFieldsAttribute(array $customFields)
+    {
+        $this->attributes[self::CUSTOM_FIELDS] = json_encode($customFields);
+    }
+
+    public function setCustomFields(array $customFields)
+    {
+        $this->setAttribute(self::CUSTOM_FIELDS, $customFields);
     }
 }

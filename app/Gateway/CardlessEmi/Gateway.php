@@ -362,6 +362,23 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($responseArray);
 
         $this->checkRefundSuccess($responseArray);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => $response,
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($responseArray)
+        ];
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                Refund\Entity::RRN => $response[ResponseFields::PROVIDER_REFUND_ID] ?? null
+            ];
+        }
+
+        return [];
     }
 
     public function reverse(array $input)
@@ -721,11 +738,9 @@ class Gateway extends Base\Gateway
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
-        if ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false) or
-            ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true) and
-                ($this->action !== Action::AUTHORIZE)))
+        if ($this->shouldJsonEncode($content) === true)
         {
-            $content = json_encode($content);
+                $content = json_encode($content);
         }
 
         $request = parent::getStandardRequestArray($content, $method, $type);
@@ -739,6 +754,36 @@ class Gateway extends Base\Gateway
         $request['url'] = strtr($request['url'], $replacePairs);
 
         return $request;
+    }
+
+    protected function shouldJsonEncode($content)
+    {
+        if (($this->isGetByIdRequest() === false) and
+            (((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false) or
+            ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true) and
+                ($this->action !== Action::AUTHORIZE)))))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected function isGetByIdRequest()
+    {
+        if (($this->action === Action::VERIFY) or ($this->action === Action::VERIFY_REFUND))
+        {
+            switch ($this->gateway)
+            {
+                case Payment\Gateway::PAYLATER:
+                    switch ($this->terminal[Terminal\Entity::GATEWAY_ACQUIRER])
+                    {
+                        case PayLater::EPAYLATER:
+                            return true;
+                    }
+            }
+        }
+
+        return false;
     }
 
     protected function getRequestHeaders()

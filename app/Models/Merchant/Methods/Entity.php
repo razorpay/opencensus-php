@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
+    const PREPAID_CARD      = 'prepaid_card';
     const UPI               = 'upi';
     const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
@@ -75,6 +76,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
+        self::PREPAID_CARD,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
@@ -106,6 +108,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
+        self::PREPAID_CARD,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
@@ -137,6 +140,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
+        self::PREPAID_CARD,
         self::ENTITY,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
@@ -169,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING     => true,
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
+        self::PREPAID_CARD   => true,
         self::BANK_TRANSFER  => true,
         self::AMAZONPAY      => false,
         self::CARDLESS_EMI   => false,
@@ -221,6 +226,7 @@ class Entity extends Base\PublicEntity
         self::PAYTM         => 'bool',
         self::CREDIT_CARD   => 'bool',
         self::DEBIT_CARD    => 'bool',
+        self::PREPAID_CARD  => 'bool',
         self::NETBANKING    => 'bool',
         self::MOBIKWIK      => 'bool',
         self::OLAMONEY      => 'bool',
@@ -251,12 +257,18 @@ class Entity extends Base\PublicEntity
     public function isCardEnabled()
     {
         return (($this->isDebitCardEnabled()) or
-                ($this->isCreditCardEnabled()));
+                ($this->isCreditCardEnabled()) or
+                ($this->isPrepaidCardEnabled()));
     }
 
     public function isDebitCardEnabled()
     {
         return $this->getAttribute(self::DEBIT_CARD);
+    }
+
+    public function isPrepaidCardEnabled()
+    {
+        return $this->getAttribute(self::PREPAID_CARD);
     }
 
     public function isCreditCardEnabled()
@@ -682,6 +694,11 @@ class Entity extends Base\PublicEntity
     public function setDebitCard($card)
     {
         $this->setAttribute(self::DEBIT_CARD, $card);
+    }
+
+    public function setPrepaidCard($card)
+    {
+        $this->setAttribute(self::PREPAID_CARD, $card);
     }
 
     public function setNetbanking($netbanking)

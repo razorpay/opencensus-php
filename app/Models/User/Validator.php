@@ -63,6 +63,24 @@ class Validator extends Base\Validator
     protected static $loginRules = [
         Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:6,50',
+        Entity::OTP                   => 'sometimes|filled',
+    ];
+
+    protected static $setup2faMobileRules = [
+        Entity::EMAIL                 => 'required|email',
+        Entity::PASSWORD              => 'required|between:6,50',
+        Entity::CONTACT_MOBILE        => 'required|max:15',
+    ];
+
+    protected static $setup2faVerifyMobileRules = [
+        Entity::EMAIL                 => 'required|email',
+        Entity::PASSWORD              => 'required|between:6,50',
+        Entity::OTP                   => 'required|filled|min:4'
+    ];
+
+    protected static $change2faSettingRules = [
+        Entity::PASSWORD              => 'required|between:6,50',
+        Entity::SECOND_FACTOR_AUTH    => 'required|boolean',
     ];
 
     protected static $confirmRules = [

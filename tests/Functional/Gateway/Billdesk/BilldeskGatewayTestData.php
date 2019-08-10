@@ -252,8 +252,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'success_count' => 1,
-                'failure_count' => 0,
+                'success_count' => [
+                    "payment" => 1,
+                    "refund"  => 1,
+                    ],
+                'failure_count' => [
+                    "payment" => 0,
+                    "refund"  => 0,
+                ],
             ],
         ],
     ],

@@ -216,11 +216,25 @@ class Processor extends Base\Core
         return $response;
     }
 
+    protected function fetchMerchantIdsFromSettlement($settlements)
+    {
+        $mids = [];
+
+        foreach ($settlements as $settlement) {
+            array_push($mids, $settlement->merchant->getId());
+        }
+
+        return $mids;
+    }
+
     protected function retrySettlements(array $setlIds)
     {
         $setlAttempts = new Base\PublicCollection;
 
         $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds);
+
+        $mids = $this->fetchMerchantIdsFromSettlement($settlements);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($mids);
 
         $settlementsRetried = [];
 
@@ -231,14 +245,14 @@ class Processor extends Base\Core
             $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
 
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
-                function() use ($merchantSettler, $setl)
+                function() use ($merchantSettler, $setl, $merchantSettleToPartner)
             {
                 if ($setl->hasTransaction() === false)
                 {
                     $merchantSettler->createTransaction($setl);
                 }
 
-                return $merchantSettler->retryFailedSettlement($setl);
+                return $merchantSettler->retryFailedSettlement($setl, $merchantSettleToPartner);
             });
 
             $setlAttempts->push($bankTransferAtpt);
@@ -283,6 +297,7 @@ class Processor extends Base\Core
         try
         {
             $mids = $this->getMerchantsOnDailySettlement();
+            $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($mids);
 
             $merchants = $this->repo->merchant->findMany(
                             $mids,
@@ -319,7 +334,7 @@ class Processor extends Base\Core
 
                 $groupedTxns = $this->groupTransactionsByDay($filteredTxns[$mid]);
 
-                $setlResponse = $this->createSettlementEntities($groupedTxns, $channel);
+                $setlResponse = $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];
@@ -398,10 +413,13 @@ class Processor extends Base\Core
      * Creates a settlement entity for every group
      *
      * @param string $channel
+     * @param array $merchantSettleToPartner
+     * merchants settling to partner bank account, key will be merchantId and value will be partner bank account id
+     *
      * @return array
      * Returns array with keys settlement_count, attempt_count, txn_count
      */
-    protected function createSettlementEntities($groupedTxns, string $channel): array
+    protected function createSettlementEntities($groupedTxns, string $channel, array $merchantSettleToPartner): array
     {
         $settlements        = new Base\PublicCollection;
         $setlAttempts       = new Base\PublicCollection;
@@ -411,7 +429,7 @@ class Processor extends Base\Core
         {
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START);
 
-            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel);
+            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner);
 
             if ($setl !== null)
             {
@@ -535,7 +553,10 @@ class Processor extends Base\Core
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns);
 
-        return $this->createSettlementEntities($groupedTxns, $channel);
+        $merchantIds = array_keys($groupedTxns);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
 
     protected function createSettlementsForTestMode($channel): array
@@ -546,7 +567,10 @@ class Processor extends Base\Core
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns);
 
-        return $this->createSettlementEntities($groupedTxns, $channel);
+        $merchantIds = array_keys($groupedTxns);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
 
     protected function preSettlementProcessing(array $input)
@@ -714,7 +738,8 @@ class Processor extends Base\Core
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns);
 
-        return $this->createSettlementEntities($groupedTxns, $channel);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchantId]);
+        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
 
     protected function shouldUseQueue(array $input)
@@ -755,6 +780,7 @@ class Processor extends Base\Core
         {
             $mids = $this->getMerchantOnAdhocSettlement();
 
+            $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($mids);
             $merchants = $this->repo->merchant->findMany(
                 $mids,
                 [
@@ -789,7 +815,7 @@ class Processor extends Base\Core
                     continue;
                 }
 
-                $setlResponse = $this->createSettlementEntities($filteredTxns, $channel);
+                $setlResponse = $this->createSettlementEntities($filteredTxns, $channel, $merchantSettleToPartner);
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];

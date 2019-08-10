@@ -30,6 +30,8 @@ use RZP\Constants\MailTags;
 use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
+use RZP\Models\Transfer\Metric as TransferMetric;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Service extends Base\Service
 {
@@ -245,6 +247,13 @@ class Service extends Base\Service
 
     public function cancel($id, $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_CANCELLED,
+            [
+                'payment_id' => $id,
+                'input'      => $input
+            ]);
+
         $data = $this->getNewProcessor()->cancel($id, $input);
 
         return $data;
@@ -541,7 +550,14 @@ class Service extends Base\Service
 
         $refunds = $this->repo->refund->findForPaymentAndMerchant($payment, $this->merchant);
 
-        return $refunds->toArrayPublic();
+        $refundsArray = $refunds->toArrayPublic();
+
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray, $refunds);
+        }
+
+        return $refundsArray;
     }
 
     public function fetchTransactionByPaymentId($id)
@@ -659,9 +675,18 @@ class Service extends Base\Service
      */
     public function transfer(string $id, array $input) : array
     {
-        $transfers = $this->getNewProcessor()->transfer($id, $input);
+        try
+        {
+            $transfers = $this->getNewProcessor()->transfer($id, $input);
 
-        return $transfers->toArrayPublic();
+            return $transfers->toArrayPublic();
+        }
+        catch (\Exception $e)
+        {
+            (new TransferMetric)->pushCreateFailedMetrics($e);
+
+            throw $e;
+        }
     }
 
     /**
@@ -731,6 +756,8 @@ class Service extends Base\Service
             $input
         );
 
+        $limit = $input['limit'] ?? 100;
+
         if (isset($input['payment_ids']) === true)
         {
             (new Payment\Validator)->validateInput('bulk_capture', $input);
@@ -743,10 +770,10 @@ class Service extends Base\Service
         }
         else
         {
-            $from = Carbon::today(Timezone::IST)->subDays(8);
-            $to = Carbon::today(Timezone::IST)->subDays(3);
+            $from = Carbon::today(Timezone::IST)->subDays(8)->getTimestamp();
+            $to = Carbon::today(Timezone::IST)->subDays(3)->getTimestamp();
 
-            $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to);
+            $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit);
         }
 
         $total = $payments->count();
@@ -848,7 +875,37 @@ class Service extends Base\Service
                         ->payment
                         ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        return $payment->toArrayPublic();
+        $entity = $payment->toArrayPublic();
+
+        // Adding support to add additional params to payment entity for frontend
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            $this->addDashboardFlags($entity, $payment, $input);
+        }
+
+        return $entity;
+    }
+
+    protected function addDashboardFlags(array &$entity, $payment, array $input = [])
+    {
+        if (isset($input['dashboard_flag']) === true)
+        {
+            foreach ($input['dashboard_flag'] as $key)
+            {
+                $func = 'addDashboardFlag' . studly_case($key);
+
+                if (method_exists($this, $func))
+                {
+                    $this->$func($entity, $payment);
+                }
+            }
+        }
+    }
+
+    protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
+    {
+        $entity[RefundConstants::INSTANT_REFUND_SUPPORT] = $this->getNewProcessor($this->merchant)
+                                                                ->isCapturedPaymentAndFeatureEnabled($payment);
     }
 
     public function getPaymentFlows(array $input)

@@ -27,7 +27,6 @@ class BeamJob extends Job
     /**
      * @var string
      */
-    protected $queueConfigKey = 'beam_request';
 
     /**
      * @var array

@@ -12,6 +12,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Mail\Reconciliation\DailyReconStatusSummary as ReconSummaryMail;
+use RZP\Trace\TraceCode;
 
 class DailyReconStatusSummary extends Base\Core
 {
@@ -39,6 +40,8 @@ class DailyReconStatusSummary extends Base\Core
     const LAST_PREVIOUS_UNRECON_DAY = 2;
 
     const UNRECONCILED_TRANSACTIONS_SUMMARY = 'Unreconciled Transactions Summary';
+
+    const UNRECON_CACHE_TTL = 4320; // cache ttl in mins.(3 days)
 
     const RECON_ALLOWED_GATEWAYS = [
         Gateway::UPI_MINDGATE,
@@ -150,7 +153,8 @@ class DailyReconStatusSummary extends Base\Core
 
             Constants::RECON_SUMMARY_FILE => boolval($input[Constants::RECON_SUMMARY_FILE] ?? true),
 
-            Constants::ADDITIONAL_GATEWAYS => $input[Constants::ADDITIONAL_GATEWAYS] ?? [],
+            Constants::ADDITIONAL_GATEWAYS => (empty($input[Constants::ADDITIONAL_GATEWAYS]) === false) ?
+                                    explode(',', $input[Constants::ADDITIONAL_GATEWAYS]) : [],
 
             Constants::MAX_ALLOWED_UNRECON_COUNT => $input[Constants::MAX_ALLOWED_UNRECON_COUNT] ?? 0,
         ];
@@ -177,7 +181,7 @@ class DailyReconStatusSummary extends Base\Core
 
     private function setUnreconciledGatewayCache(array $value)
     {
-        Cache::put(self::UNRECON_DATA_CACHE_KEY, json_encode($value));
+        Cache::put(self::UNRECON_DATA_CACHE_KEY, json_encode($value), self::UNRECON_CACHE_TTL);
     }
 
     private function setPreviousUnreconciledGateways(array $additionalGateways) : array
@@ -191,8 +195,6 @@ class DailyReconStatusSummary extends Base\Core
             $gatewayUnreconCache = [];
         }
 
-        $unreconciledGatewaysData = [];
-
         $day = Carbon::today(Timezone::IST)->subDays(self::LAST_PREVIOUS_UNRECON_DAY)->getTimestamp();
 
         foreach($allGateways as $gateway)
@@ -203,31 +205,51 @@ class DailyReconStatusSummary extends Base\Core
             {
                 array_push($dates, $day);
 
-                $unreconciledGatewaysData[$gateway] = $dates;
+                $gatewayUnreconCache[$gateway] = $dates;
             }
         }
 
-        return $unreconciledGatewaysData;
+        return $this->trimUnusedKeysFromCache($gatewayUnreconCache);
     }
 
 
     private function removeDateFromGateway(array $gatewayCache, string $gateway, int $date): array
     {
-        $gatewayData = $gatewayCache[$gateway];
-
-        $index = array_search($date, $gatewayData);
-
-        unset($gatewayData[$index]);
-
-        if (empty($gatewayData) === true)
+        if (array_key_exists($gateway, $gatewayCache) === true)
         {
-            unset($gatewayCache[$gateway]);
-        }
-        else
-        {
-            $gatewayCache[$gateway] = $gatewayData;
+            $gatewayData = $gatewayCache[$gateway];
+
+            $index = array_search($date, $gatewayData);
+
+            if ($index !== false)
+            {
+                unset($gatewayData[$index]);
+            }
+
+            if (empty($gatewayData) === true)
+            {
+                unset($gatewayCache[$gateway]);
+            }
+            else
+            {
+                $gatewayCache[$gateway] = $gatewayData;
+            }
         }
 
+        return $gatewayCache;
+    }
+
+    private function trimUnusedKeysFromCache($gatewayCache)
+    {
+        $availableGateways = config('gateway.available');
+
+        foreach($gatewayCache as $gateway => $dates)
+        {
+            if (in_array($gateway, $availableGateways) === false)
+            {
+                unset($gatewayCache[$gateway]);
+            }
+        }
         return $gatewayCache;
     }
 
@@ -244,10 +266,10 @@ class DailyReconStatusSummary extends Base\Core
             foreach ($summary as $row)
             {
                 $count = $row['count'];
+                $date = $row['date'];
 
                 if ($count > $maxAllowedUnreconCount)
                 {
-                    $date = $row['date'];
                     if (array_key_exists($date, $formattedSummary) === false)
                     {
                         $formattedSummary[$date] = '';
@@ -264,7 +286,7 @@ class DailyReconStatusSummary extends Base\Core
                 }
                 else
                 {
-                    $timeStamp = Carbon::parse($row['date'])->setTimezone(Timezone::IST)
+                    $timeStamp = Carbon::parse($date)->setTimezone(Timezone::IST)
                                ->startOfDay()->subDay(1)->getTimestamp();
 
                     $unreconciledGatewaysData = $this->removeDateFromGateway($unreconciledGatewaysData,
@@ -273,9 +295,12 @@ class DailyReconStatusSummary extends Base\Core
             }
         }
 
-        $formattedSummary['headLine'] = self::UNRECONCILED_TRANSACTIONS_SUMMARY;
+        if (empty($formattedSummary) === false)
+        {
+            $formattedSummary['headLine'] = self::UNRECONCILED_TRANSACTIONS_SUMMARY;
 
-        $this->messenger->raiseReconWarn($formattedSummary);
+            $this->messenger->raiseReconWarn($formattedSummary);
+        }
 
         $this->setUnreconciledGatewayCache($unreconciledGatewaysData);
     }

@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Payment\Processor\Netbanking;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -147,6 +148,12 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_EMAIL,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ACCOUNT_NUMBER,
+    ];
+
     protected $appends = [
         self::NAME,
         self::IFSC,
@@ -265,19 +272,26 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::BENEFICIARY_NAME];
     }
 
-    protected function getAccountNumberAttribute()
+    protected function setPublicAccountNumberAttribute(array & $attributes)
     {
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        $accountNumber = $this->attributes[self::ACCOUNT_NUMBER];
+        $accountNumber = $this->getAccountNumber();
 
-        if ($basicAuth->isPublicAuth() === true)
+        if (($basicAuth->isPublicAuth() === true) and
+            ($this->getType() !== Type::VIRTUAL_ACCOUNT))
         {
-            $accountNumber = mask_except_last4($accountNumber);
+            //
+            // Since we should not be exposing account_number in public auth ever.
+            // (Except virtual account numbers, of course)
+            //
+            // Note that we should not use toArrayPublic internally to fetch
+            // account_number via bank_account details. We should either directly
+            // fetch the account_number via `getAccountNumber()`, or use `toArray`.
+            //
+            $attributes[self::ACCOUNT_NUMBER] = mask_except_last4($accountNumber);
         }
-
-        return $accountNumber;
     }
 
     public function settlements()
@@ -566,6 +580,11 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
+        if (isset(Netbanking::$defaultInconsistentBankCodesMapping[$code]) === true)
+        {
+            $code = Netbanking::$defaultInconsistentBankCodesMapping[$code];
+        }
+
         return $code;
     }
 
@@ -587,6 +606,17 @@ class Entity extends Base\PublicEntity
         $data[self::BENEFICIARY_EMAIL] = $this->getBeneficiaryEmail();
 
         $data[self::BENEFICIARY_MOBILE] = $this->getBeneficiaryMobile();
+
+        return $data;
+    }
+
+    public function getDataForCheckout()
+    {
+        $data = $this->toArrayHosted();
+
+        unset($data[self::ID]);
+
+        unset($data[self::ENTITY]);
 
         return $data;
     }

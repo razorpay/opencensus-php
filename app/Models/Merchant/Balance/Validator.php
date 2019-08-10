@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\BankingAccount\Channel;
 
 class Validator extends Base\Validator
 {
@@ -12,14 +13,14 @@ class Validator extends Base\Validator
         Entity::TYPE             => 'required|string|custom',
         Entity::ACCOUNT_TYPE     => 'filled|string|custom',
         Entity::CHANNEL          => 'sometimes|string|nullable|custom',
+        Entity::ACCOUNT_NUMBER   => 'sometimes|string|nullable',
     ];
 
     protected function validateType($attribute, $type)
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid channel name: ' . $type);
+            throw new Exception\BadRequestValidationFailureException('Invalid type name: ' . $type);
         }
     }
 
@@ -27,17 +28,15 @@ class Validator extends Base\Validator
     {
         if (AccountType::exists($accType) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid account type:' . $accType);
+            throw new Exception\BadRequestValidationFailureException('Invalid account type:' . $accType);
         }
     }
 
     protected function validateChannel($attribute, $channel)
     {
-        if (Channel::exists($channel) === false)
+        if (Channel::validateChannel($channel) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid account provider:' . $channel);
+            throw new Exception\BadRequestValidationFailureException('Invalid channel:' . $channel);
         }
     }
 }

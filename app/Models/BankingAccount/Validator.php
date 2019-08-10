@@ -8,15 +8,19 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const PRE_PROCESS    = 'pre_process';
-    const YESBANK_CREATE = 'yesbank_create';
+    const PRE_PROCESS           = 'pre_process';
+    const INTERNAL_EDIT         = 'internal_edit';
+    const PROCESSED_STATUS      = 'processed_status';
+    const SERVICEABLE_PINCODE   = 'serviceable_pincode';
+    const YESBANK_CREATE        = 'yesbank_create';
+    const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
 
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
     ];
 
     protected static $yesbankCreateRules = [
-        Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,22',
+        Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,40',
         Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
         Entity::FTS_FUND_ACCOUNT_ID             => 'sometimes|nullable|string|size:14',
         Entity::ACCOUNT_TYPE                    => 'sometimes|string|in:nodal',
@@ -55,14 +59,20 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME                => 'sometimes|nullable|string',
     ];
 
+    protected static $rblCreateRules = [
+        Entity::CHANNEL               => 'required|string|custom',
+        Entity::BANK_REFERENCE_NUMBER => 'required|integer|digits:5',
+        Entity::PINCODE               => 'required|string',
+    ];
+
     protected static $editRules = [
-        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
+        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|between:5,40',
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
         Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
         Entity::STATUS                          => 'filled|string|custom',
         Entity::BANK_REFERENCE_NUMBER           => 'filled|string',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
-        Entity::BENEFICIARY_PIN                 => 'filled|integer|digits:6',
+        Entity::BENEFICIARY_PIN                 => 'filled|string',
         Entity::BENEFICIARY_CITY                => 'filled|string',
         Entity::BENEFICIARY_COUNTRY             => 'filled|string',
         Entity::BENEFICIARY_STATE               => 'filled|string',
@@ -78,17 +88,49 @@ class Validator extends Base\Validator
         Entity::REFERENCE1                      => 'filled|string',
     ];
 
+    protected static $internalEditRules = [
+        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|between:5,40',
+        Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
+        Entity::STATUS                          => 'filled|string',
+        Entity::BENEFICIARY_PIN                 => 'filled|string',
+        Entity::BENEFICIARY_CITY                => 'filled|string',
+        Entity::BENEFICIARY_COUNTRY             => 'filled|string',
+        Entity::BENEFICIARY_STATE               => 'filled|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|integer',
+        Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
+        Entity::BENEFICIARY_MOBILE              => 'filled|string',
+        Entity::BENEFICIARY_EMAIL               => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|string',
+    ];
+
+    protected static $internalEditValidators = [
+        self::INTERNAL_EDIT_STATUS,
+    ];
+
+    // TODO: handle cases when some fields are already present in the model when the status is processed.
+    protected static $processedStatusRules = [
+        Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,40',
+        Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
+        Entity::STATUS                          => 'required|string|custom',
+        Entity::BENEFICIARY_PIN                 => 'required|string',
+        Entity::BENEFICIARY_CITY                => 'required|string',
+        Entity::BENEFICIARY_COUNTRY             => 'required|string',
+        Entity::BENEFICIARY_STATE               => 'required|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'required|integer',
+        Entity::BENEFICIARY_ADDRESS1            => 'required|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'required|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'required|string',
+        Entity::BENEFICIARY_MOBILE              => 'required|string',
+        Entity::BENEFICIARY_EMAIL               => 'required|string',
+        Entity::BENEFICIARY_NAME                => 'required|string',
+    ];
+
     protected static $serviceablePincodeRules = [
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',
         Entity::PINCODES        => 'required|array|filled',
-    ];
-
-    // ToDo Need to make the rules stricter
-    protected static $rblCreateMerchantTokenRules = [
-        RblFields::SUBCORP_ID               => 'required|string',
-        RblFields::SUBCORP_USER_ID          => 'required|string',
-        RblFields::SUBCORP_USER_PASSWORD    => 'required|string',
     ];
 
     protected static $serviceablePincodeValidators = [
@@ -138,6 +180,24 @@ class Validator extends Base\Validator
                 'Banking account type is invalid',
                 Entity::ACCOUNT_TYPE,
                 [Entity::ACCOUNT_TYPE => $accountType]);
+        }
+    }
+
+    protected function validateInternalEditStatus(array $input)
+    {
+        if (isset($input[Entity::STATUS]) === true)
+        {
+            $status = $input[Entity::STATUS];
+
+            if (in_array($status, Status::$internallyEditStatuses, true) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Given status is not an allowed status',
+                    Entity::STATUS,
+                    [
+                        Entity::STATUS => $status,
+                    ]);
+            }
         }
     }
 }

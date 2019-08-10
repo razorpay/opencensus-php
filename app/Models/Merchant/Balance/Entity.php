@@ -5,8 +5,14 @@ namespace RZP\Models\Merchant\Balance;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
 
+/**
+ * Class Entity
+ *
+ * @property BankingAccount\Entity $bankingAccount
+ */
 class Entity extends Base\PublicEntity
 {
     const ID             = 'id';
@@ -63,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
         self::CHANNEL,
+        self::UPDATED_AT,
     ];
 
     protected $entity = 'balance';
@@ -162,9 +169,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function bankingAccount()
+    {
+        return $this->hasOne(BankingAccount\Entity::class);
     }
 
     public static function buildFromMerchant($merchant)
@@ -273,6 +295,16 @@ class Entity extends Base\PublicEntity
     public function setAccountNumber(string $accountNumber)
     {
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
+    public function setAccountType(string $type)
+    {
+        $this->setAttribute(self::ACCOUNT_TYPE, $type);
+    }
+
+    public function setChannel(string $channel = null)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
     }
 
     public function save(array $options = array())

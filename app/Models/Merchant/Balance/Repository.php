@@ -200,7 +200,7 @@ class Repository extends Base\Repository
      */
     public function getMerchantsIdsForEsSync(int $minUpdatedAtTimeStamp): array
     {
-        $merchantIds = $this->newQuery()
+        $merchantIds = $this->newQueryWithConnection($this->getSlaveConnection())
                             ->where(Entity::TYPE, '=', Type::PRIMARY)
                             ->where(Entity::UPDATED_AT, '>=', $minUpdatedAtTimeStamp)
                             ->groupBy(Entity::MERCHANT_ID)
@@ -272,7 +272,7 @@ class Repository extends Base\Repository
     public function getBalanceByMerchantIdAccountNumberAndChannelOrFail(
         string $merchantId,
         string $accountNumber,
-        string $channel)
+        string $channel): Entity
     {
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)

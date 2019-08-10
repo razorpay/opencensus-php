@@ -28,6 +28,11 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::PAY_INIT);
 
+        if (($this->getGateway($input) === 'wallet_phonepe') and ($input['wallet']['flow'] == 'intent'))
+        {
+            parent::action($input, Action::INTENT);
+        }
+
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -48,6 +53,15 @@ class Gateway extends Base\Gateway
         $attributes = $this->getMappedAttributes($response);
 
         $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
+
+        if ($this->action === Action::INTENT)
+        {
+            $data = [
+                'intent_url' => $response['next']['redirect']['url'],
+            ];
+
+            return ['data' => $data];
+        }
 
         if ($input['payment']['method'] === 'upi')
         {
@@ -139,6 +153,7 @@ class Gateway extends Base\Gateway
 
         $this->authorize($input);
     }
+
     public function immediateVerifyApplicable($gatewayName)
     {
         $immediateVerificationGateways = [
@@ -146,6 +161,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::BAJAJFINSERV,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB
         ];
 
@@ -160,6 +176,8 @@ class Gateway extends Base\Gateway
                 return json_decode($input[0], true);
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
+            case Payment\Gateway::WALLET_PHONEPE:
+                return json_decode(base64_decode($input['response'], true), true);
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for prcessing S2S callback');
@@ -174,6 +192,8 @@ class Gateway extends Base\Gateway
                 return $response[UpiAirtelResponseFields::PAYMENT_ID];
             case Payment\Gateway::NETBANKING_YESB:
                 return $response['data']['paymentId'];
+            case Payment\Gateway::WALLET_PHONEPE:
+                return $response['data']['transactionId'];
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for getting payment id from S2S callback');
@@ -359,6 +379,8 @@ class Gateway extends Base\Gateway
             $input['terminal'] = $input['terminal']->toArrayWithPassword();
         }
 
+        $input['terminal'] = $this->updateTerminalFromConfig($input);
+
         $gateway = $this->getGateway($input);
 
         $prevStepName = $this->getPreviousStepName($gateway);
@@ -404,6 +426,21 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function updateTerminalFromConfig($input)
+    {
+        switch ($input['payment']['gateway'])
+        {
+            case Payment\Gateway::NETBANKING_CUB:
+                $input['terminal']['gateway_secure_secret']      = $this->config['netbanking_cub']['gateway_secure_secret'];
+                $input['terminal']['gateway_secure_secret2']     = $this->config['netbanking_cub']['gateway_secure_secret2'];
+                $input['terminal']['gateway_terminal_password']  = $this->config['netbanking_cub']['gateway_terminal_password'];
+                $input['terminal']['gateway_terminal_password2'] = $this->config['netbanking_cub']['gateway_terminal_password2'];
+                break;
+        }
+
+        return $input['terminal'];
+    }
+
     protected function getPreviousStepName($gateway)
     {
         $previousActionForStep = [
@@ -425,8 +462,9 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => Action::PAY_VERIFY,
             ],
             Payment\Gateway::WALLET_PHONEPE => [
+                Action::INTENT => null,
                 Action::PAY_INIT => null,
-                Action::PAY_VERIFY => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => null,
                 Action::REFUND => null,
                 Action::VERIFY_REFUND => null,
@@ -442,6 +480,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => Action::PAY_VERIFY,
+            ],
+            Payment\Gateway::NETBANKING_CBI => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
             ],
             Payment\Gateway::GOOGLE_PAY => [
                 Action::PAY_INIT => null,
@@ -469,8 +512,9 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::WALLET_PHONEPE => [
+                Action::INTENT => null,
                 Action::PAY_INIT => null,
-                Action::PAY_VERIFY => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY => null,
                 Action::REFUND => null,
                 Action::VERIFY_REFUND => null,
@@ -485,6 +529,12 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
+
+            Payment\Gateway::NETBANKING_CBI => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
@@ -626,6 +676,28 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    public function syncGatewayTransaction(array $gatewayTransaction, array $input)
+    {
+        $paymentId = $gatewayTransaction[Entity::PAYMENT_ID];
+
+        $action = $input[Entity::ACTION];
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($paymentId, $action);
+
+        $mappedAttributes = $this->getMappedAttributes([
+            'data' => $gatewayTransaction
+        ]);
+
+        if ($gatewayEntity === null)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($mappedAttributes, $input, $action);
+        }
+        else
+        {
+            $this->updateGatewayPaymentEntityWithAction($gatewayEntity, $mappedAttributes, false, $action);
+        }
+    }
+
     protected function getPaymentToVerify(Verify $verify)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
@@ -707,6 +779,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
         ];
 
@@ -727,6 +800,7 @@ class Gateway extends Base\Gateway
         $formattedAmountGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::UPI_AIRTEL,
         ];
@@ -785,6 +859,7 @@ class Gateway extends Base\Gateway
         $fileBasedGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
         ];
 

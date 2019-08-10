@@ -63,6 +63,13 @@ class SubMerchant extends Base
     protected $autoActivate = false;
 
     /**
+     * Used to check if the sub-merchants need to be instantly activated.
+     *
+     * @var bool
+     */
+    protected $instantlyActivate = false;
+
+    /**
      * Used to check if sub-merchant email needs to be treated as dummy
      * when provided in which case the submerchant email is same as the
      * partner email and the dummy is stored in the merchant_emails table
@@ -101,6 +108,8 @@ class SubMerchant extends Base
 
         $this->autoActivate = (empty($this->params[ME::AUTO_ACTIVATE]) === false);
 
+        $this->instantlyActivate = (empty($this->params[ME::INSTANTLY_ACTIVATE]) === false);
+
         //
         // This is true by default and needs to be overridden only when an input
         // is set to False explicitly, it should not be overridden by null. Hence
@@ -111,11 +120,34 @@ class SubMerchant extends Base
             $this->useMerchantEmailAsDummy = (bool) $this->params[ME::USE_EMAIL_AS_DUMMY];
         }
 
+        //
+        // set default values for  AUTO_ENABLE_INTERNATIONAL and SKIP_BA_REGISTRATION as false as of now
+        // once dashboard changes are done for supporting these two fields we can remove default values of these fields
+        //
+
+        $this->params[ME::AUTO_ENABLE_INTERNATIONAL] = (bool) ($this->params[ME::AUTO_ENABLE_INTERNATIONAL] ?? false);
+        $this->params[ME::SKIP_BA_REGISTRATION]      = (bool) ($this->params[ME::SKIP_BA_REGISTRATION] ?? true);
+
         $this->partner = $this->repo->merchant->findOrFailPublic($this->params[ME::PARTNER_ID]);
+
+        $this->updateAuthDetails($this->partner);
 
         $this->userId = $this->partner->primaryOwner()->getId();
 
         return parent::performPreProcessingActions();
+    }
+
+    /**
+     * updates merchant information into auth,
+     * this is being used to set org id and merchant info
+     *
+     * @param Merchant $merchant
+     */
+    private function updateAuthDetails(ME $merchant)
+    {
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->app['basicauth']->setBatchContext($this->getBatchContext());
     }
 
     /**
@@ -139,7 +171,20 @@ class SubMerchant extends Base
         {
             // Fill in merchant details (activation form)
             $detailInput = Helper::getSubMerchantDetailInput($entry, $this->partner, $this->useMerchantEmailAsDummy);
+
+            if ($this->merchantDetailCore->shouldSkipBankAccountRegistration() == true)
+            {
+                $detailInput = Helper::sanitizeMerchantDetailInput($detailInput);
+            }
+
             $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
+        }
+
+        if ($this->instantlyActivate === true)
+        {
+            $instantActivationInput = Helper::getInstantActivationInput($entry);
+
+            $this->merchantDetailCore->saveInstantActivationDetails($instantActivationInput, $subMerchant);
         }
 
         if ($this->autoSubmit === true)
@@ -170,7 +215,14 @@ class SubMerchant extends Base
 
                 $this->merchantCore->edit($subMerchant, $websiteUpdateData);
 
-                $response = (new Merchant\Activate)->activate($subMerchant, $subMerchant->merchantDetail);
+
+                $activationStatusData = [
+                    MerchantDetail::ACTIVATION_STATUS => Merchant\Detail\Status::ACTIVATED
+                ];
+
+                $subMerchant->load('merchantDetail');
+
+                $response = $this->merchantDetailCore->updateActivationStatus($subMerchant->merchantDetail, $activationStatusData, $subMerchant);
 
                 if ($response[ME::ACTIVATED] === false)
                 {
@@ -188,7 +240,7 @@ class SubMerchant extends Base
                 Email\Entity::TYPE  => Email\Type::PARTNER_DUMMY,
             ];
 
-            (new Email\Core)->create($subMerchant, $emailInput);
+            (new Email\Core)->upsert($subMerchant, $emailInput);
         }
 
         $entry[Header::STATUS]      = $status;

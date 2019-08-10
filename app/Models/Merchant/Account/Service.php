@@ -3,11 +3,14 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Notify;
 
 class Service extends Merchant\Service
 {
+    protected $response;
+
     use Notify;
 
     /**
@@ -41,9 +44,9 @@ class Service extends Merchant\Service
      *
      * @return array
      */
-    public function create(array $input): array
+    public function createLinkedAccount(array $input): array
     {
-        $account = $this->core()->createAccount($input, $this->merchant);
+        $account = $this->core()->createLinkedAccount($input, $this->merchant);
 
         return $account->toArrayPublic();
     }
@@ -103,5 +106,81 @@ class Service extends Merchant\Service
         $accounts = $this->repo->account->fetch($input);
 
         return $accounts->toArrayPublic();
+    }
+
+    public function fetchAccount(string $accountId): array
+    {
+        $this->core()->validatePartnerAccess($this->merchant);
+
+        Entity::verifyIdAndStripSign($accountId);
+
+        $account = $this->core()->fetchAccount($accountId);
+
+        return $this->getResponseObject()->generateResponse($account);
+    }
+
+    public function createAccount(array $input): array
+    {
+        $account = $this->core()->createAccount($this->merchant, $input);
+
+        return $this->getResponseObject()->generateResponse($account);
+    }
+
+    public function editAccount(string $accountId, array $input): array
+    {
+        $this->core()->validatePartnerAccess($this->merchant, $accountId);
+
+        Entity::verifyIdAndStripSign($accountId);
+
+        $account = $this->core()->editAccount($this->merchant, $accountId, $input);
+
+        return $this->getResponseObject()->generateResponse($account);
+    }
+
+    public function listAccounts(array $input): array
+    {
+        $input[Merchant\Constants::COUNT] = $input[Merchant\Constants::COUNT] ?? Constants::DEFAULT_ACCOUNT_COUNT;
+
+        $accounts = $this->core()->listAccounts($this->merchant, $input);
+
+        return $accounts->map(function($account) {
+            return $this->getResponseObject()->generateResponse($account);
+        })->all();
+    }
+
+    public function performAction(string $accountId, string $action): array
+    {
+        $this->merchant->getValidator()->validateIsAggregatorPartner($this->merchant);
+
+        $input = [
+            Merchant\Entity::ACTION => Action::validateInputAndGetAccountAction($action),
+        ];
+
+        $this->trace->info(
+            TraceCode::ACCOUNT_EDIT_ACTION,
+            [
+                'account_id' => $accountId,
+                'input'      => $input,
+            ]);
+
+        Entity::verifyIdAndStripSign($accountId);
+
+        $account = $this->repo->merchant->findOrFail($accountId);
+
+        $this->core()->isMerchantMappedToNonPurePlatformPartner($account->getId(), $this->merchant->getId());
+
+        $account = $this->core()->action($account, $input, false);
+
+        return $this->getResponseObject()->generateResponse($account);
+    }
+
+    protected function getResponseObject()
+    {
+        if ($this->response === null)
+        {
+            return new Response;
+        }
+
+        return $this->response;
     }
 }

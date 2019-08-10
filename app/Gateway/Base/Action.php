@@ -32,6 +32,5 @@ class Action
         self::CALLBACK,
         self::CAPTURE,
         self::VERIFY,
-        self::OMNI_PAY,
     ];
 }

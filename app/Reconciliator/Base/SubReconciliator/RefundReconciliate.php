@@ -38,8 +38,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::UPI_AXIS
     ];
 
-    protected $messenger;
-
     /**
      * @var Payment\Entity
      */
@@ -53,8 +51,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
     public function __construct(string $gateway = null, Entity $batch = null)
     {
         parent::__construct($gateway, $batch);
-
-        $this->messenger = new Messenger;
 
         $this->messenger->batch = $batch;
     }
@@ -73,6 +69,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         // for each row.
         //
         $this->resetRowProcessingAttributes();
+
+        $this->insertRowInOutputFile($row, Base\Reconciliate::REFUND);
 
         $rowDetails = $this->getRowDetailsStructured($row);
 
@@ -137,6 +135,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
             $this->trace->traceException($ex);
 
+            if (empty(static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS]) === true)
+            {
+                // if the status is not set, then set it to failure
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage());
+            }
+
             throw $ex;
 
             //return;
@@ -171,6 +175,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             // further overwrite the API reconciledAt, which would be wrong.
             //
             static::$scroogeReconciliate[$entityId]->setReconciledAt($this->refund->transaction->getReconciledAt());
+
+            $this->setRowReconStatusAndError(Base\InfoCode::ALREADY_RECONCILED);
 
             return;
         }
@@ -251,7 +257,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'expected_column'   => $amountColumn,
                     'currency'          => $this->payment->getCurrency(),
                     'payment_id'        => $this->payment->getId(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 
@@ -311,6 +316,11 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                                ($validRefundAmount === true) and
                                ($validCurrencyCode === true));
 
+        if ($validRefundDetails === false)
+        {
+            $this->setFailureReason($validPaymentStatus, $validRefundReconStatus, $validRefundAmount, $validCurrencyCode);
+        }
+
         return $validRefundDetails;
     }
 
@@ -323,7 +333,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Payment status is failed.',
+                    'info_code'  => Base\InfoCode::REFUND_PAYMENT_FAILED,
                     'payment_id' => $this->payment->getId(),
                     'amount'     => $this->payment->getAmount(),
                     'gateway'    => $this->gateway
@@ -342,7 +352,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         if ($refundReconStatus === Payment\Refund\Status::FAILED)
         {
             $this->trace->info(TraceCode::RECON_INFO, [
-                'message'           => 'Refund status not successful',
                 'info_code'         => Base\InfoCode::MIS_FILE_REFUND_FAILED,
                 'refund_id'         => $this->refund->getId(),
                 'refund_status'     => $this->refund->getStatus(),
@@ -353,6 +362,29 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
 
         return true;
+    }
+
+    // Sets appropriate error message
+    protected function setFailureReason($validPaymentStatus, $validRefundReconStatus, $validRefundAmount, $validCurrencyCode)
+    {
+        switch (true)
+        {
+            case ($validPaymentStatus === false):
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_PAYMENT_FAILED);
+                break;
+
+            case ($validRefundReconStatus === false):
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::MIS_FILE_REFUND_FAILED);
+                break;
+
+            case ($validRefundAmount ===  false):
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::AMOUNT_MISMATCH);
+                break;
+
+            case ($validCurrencyCode ===  false):
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::CURRENCY_MISMATCH);
+                break;
+        }
     }
 
     protected function persistReconciliationData(array $rowDetails)
@@ -368,11 +400,13 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'    => TraceCode::RECON_MISMATCH,
-                        'message'       => 'Refund transaction not found in DB',
+                        'info_code'     => Base\InfoCode::REFUND_TRANSACTION_ABSENT,
                         'refund_id'     => $this->refund->getId(),
                         'amount'        => $this->refund->getAmount(),
                         'gateway'       => $this->gateway
                     ]);
+
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_TRANSACTION_ABSENT);
 
                 return false;
             }
@@ -448,11 +482,13 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Corresponding payment for the refund not found in DB.',
+                    'info_code'  => Base\InfoCode::REFUND_PAYMENT_ABSENT,
                     'refund_id'  => $refundId,
                     'amount'     => $refund->getAmount(),
                     'gateway'    => $this->gateway
                 ]);
+
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_PAYMENT_ABSENT);
 
             throw new ReconciliationException(
                 'Corresponding payment for the refund not found in the DB.',
@@ -489,6 +525,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         // If refund id is not present, return. No point of evaluating the row.
         if (empty($refundId) === true)
         {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_ID_NOT_FOUND);
+
             return null;
         }
 
@@ -497,10 +535,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'message'    => 'Refund ID being sent in the file is not as expected.',
+                    'info_code'  => Base\InfoCode::REFUND_ID_NOT_AS_EXPECTED,
                     'refund_id'  => $refundId,
                     'gateway'    => $this->gateway
                 ]);
+
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_ID_NOT_AS_EXPECTED);
 
             return null;
         }
@@ -519,14 +559,34 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'gateway'       => $this->gateway,
                 ]);
 
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED,  Base\InfoCode::REFUND_ABSENT);
+
             return null;
         }
 
         if ($this->refund->isScrooge() === true)
         {
-            // This will be unset if `validateRefundDetails` fails later in the flow.
-            // However, cannot remove it here as this variable is being used in between the flow
-            static::$scroogeReconciliate[$this->refund->getId()] = new Base\Foundation\ScroogeReconciliate;
+            //
+            // Check if this refund ID is already present in
+            // $scroogeReconciliate and avoid replacing it.
+            //
+            if (isset(static::$scroogeReconciliate[$this->refund->getId()]) === true)
+            {
+                //
+                // This refund is already being sent to scrooge and will be reconciled
+                // (as per API). This is a duplicate refund row, So we should increment
+                // the success count to account for this row.
+                // If we do not increment success count here, then processed_count will never be
+                // equal to success_count + failure_count, and batch will remain in `created` state.
+                //
+                $this->setSummaryCount(self::SUCCESSES_SUMMARY, $this->refund->getId());
+            }
+            else
+            {
+                // This will be unset if `validateRefundDetails` fails later in the flow.
+                // However, cannot remove it here as this variable is being used in between the flow
+                static::$scroogeReconciliate[$this->refund->getId()] = new Base\Foundation\ScroogeReconciliate;
+            }
         }
 
         return $this->refund;

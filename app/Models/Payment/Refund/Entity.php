@@ -97,6 +97,8 @@ class Entity extends Base\PublicEntity
     const MODE                   = 'mode';
     const SPEED                  = 'speed';
 
+    const PUBLIC_STATUS = 'public_status';
+
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';
@@ -533,6 +535,18 @@ class Entity extends Base\PublicEntity
                     self::UTR   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
+
+            case Payment\Method::CARDLESS_EMI:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::PAYLATER:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         return (new Dictionary($acquirerData));
@@ -602,6 +616,17 @@ class Entity extends Base\PublicEntity
     {
         if (($this->payment->hasTerminal() === true) and
             ($this->payment->terminal->isDirectSettlementWithRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isDirectSettlementWithoutRefund(): bool
+    {
+        if (($this->payment->hasTerminal() === true) and
+            ($this->payment->terminal->isDirectSettlementWithoutRefund() === true))
         {
             return true;
         }
@@ -953,16 +978,22 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
-        $callScroogeForSpeed = true;
+        $callScroogeForSpeed = false;
 
         if ($cardTransferFeatureEnabled === true)
         {
+            // Adding speed and other related params only for Card Transfer Feature enabled merchants
+            $callScroogeForSpeed = true;
+
+            // If speed_processed is already populated in the refund entity - we need not call scrooge
             if (empty($this->getSpeedProcessed()) === false)
             {
                 $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
+
                 $callScroogeForSpeed = false;
             }
-            else  if ($this->isRefundSpeedInstant() === true)
+            // Populating default values in case scrooge does not return proper response
+            else if ($this->isRefundSpeedInstant() === true)
             {
                 $response[self::SPEED_PROCESSED] = Speed::INSTANT;
             }
@@ -976,12 +1007,12 @@ class Entity extends Base\PublicEntity
 
         $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
 
-        $eligbleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
+        $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
 
         $callScroogeForStatus = ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
                                  ($publicStatusFeatureEnabled === true));
 
-        if (($eligbleForScroogeCall === true) and
+        if (($eligibleForScroogeCall === true) and
             (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
         {
             $app   = App::getFacadeRoot();
@@ -1000,8 +1031,13 @@ class Entity extends Base\PublicEntity
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
-                    $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
-                    $scroogeSpeed = $scroogeResponse[self::RESPONSE_BODY]->speed;
+                    $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
+
+                    $scroogeStatus =
+                        (empty($scroogeResponseBody[self::STATUS]) === false) ? $scroogeResponseBody[self::STATUS] : '';
+
+                    $scroogeSpeed =
+                        (empty($scroogeResponseBody[self::SPEED]) === false) ? $scroogeResponseBody[self::SPEED] : '';
 
                     if (empty($scroogeStatus) === false)
                     {

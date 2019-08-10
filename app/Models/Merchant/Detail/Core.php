@@ -15,6 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\Batch\Type;
 use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -136,9 +137,9 @@ class Core extends Base\Core
             Metric::MERCHANT_ACTIVATION,
             $activation_metric_dimensions);
 
-        $isExperimentEnabled = (new Merchant\Core)->isInternationalActivationsExperimentEnabled($this->merchant);
+        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($this->merchant);
 
-        if ($isExperimentEnabled === true)
+        if ($autoEnableInternational === true)
         {
             $merchantDetails->setInternationalActivationFlow(
                 $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
@@ -543,7 +544,7 @@ class Core extends Base\Core
      *
      * @param Entity $merchantDetails
      */
-    protected function markSubmittedAndLock(Entity $merchantDetails)
+    public function markSubmittedAndLock(Entity $merchantDetails)
     {
         $submittedAt = Carbon::now()->getTimestamp();
 
@@ -838,6 +839,11 @@ class Core extends Base\Core
             $validationFields = ValidationFields::DASHBOARD_FIELDS_LIMITED;
         }
 
+        if (self::shouldSkipBankAccountRegistration() === true)
+        {
+            $validationFields = array_diff($validationFields, ValidationFields::BANK_ACCOUNT_FIELDS);
+        }
+
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
@@ -951,7 +957,10 @@ class Core extends Base\Core
 
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
     {
-        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Product::BANKING);
+        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+            $merchant->getId(),
+            Product::BANKING,
+            Merchant\Balance\AccountType::SHARED);
 
         if (empty($balance) === false)
         {
@@ -1060,4 +1069,24 @@ class Core extends Base\Core
             ];
     }
 
+    /**
+     * SubMerchant batch upload flow allows skipping bank account registration as the partner
+     * is there liable for the risk and the submerchants must be activated directly.
+     *
+     * @return bool
+     */
+    public static function shouldSkipBankAccountRegistration(): bool
+    {
+        if (app('basicauth')->isBatchFlow() === false)
+        {
+            return false;
+        }
+
+        $batchContext = app('basicauth')->getBatchContext();
+
+        $batchName                   = $batchContext['type'] ?? null;
+        $skipBankAccountRegistration = $batchContext['data'][Merchant\Entity::SKIP_BA_REGISTRATION] ?? false;
+
+        return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
+    }
 }
