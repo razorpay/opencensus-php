@@ -205,15 +205,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $subMerchantCreateRules = [
-        Entity::TYPE           => 'required|in:sub_merchant',
-        Entity::NAME           => 'filled|string|max:255',
-        Entity::FILE           => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
-        ME::AUTO_SUBMIT        => 'filled|boolean',
-        ME::INSTANTLY_ACTIVATE => 'filled|boolean',
-        ME::AUTOFILL_DETAILS   => 'filled|boolean',
-        ME::AUTO_ACTIVATE      => 'filled|boolean',
-        ME::USE_EMAIL_AS_DUMMY => 'filled|boolean',
-        ME::PARTNER_ID         => 'required|string|size:14',
+        Entity::TYPE                  => 'required|in:sub_merchant',
+        Entity::NAME                  => 'filled|string|max:255',
+        Entity::FILE                  => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        ME::AUTO_SUBMIT               => 'filled|boolean',
+        ME::INSTANTLY_ACTIVATE        => 'filled|boolean',
+        ME::AUTOFILL_DETAILS          => 'filled|boolean',
+        ME::AUTO_ACTIVATE             => 'filled|boolean',
+        ME::USE_EMAIL_AS_DUMMY        => 'filled|boolean',
+        ME::PARTNER_ID                => 'required|string|size:14',
+        ME::AUTO_ENABLE_INTERNATIONAL => 'filled|boolean',
+        ME::SKIP_BA_REGISTRATION      => 'filled|boolean',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [

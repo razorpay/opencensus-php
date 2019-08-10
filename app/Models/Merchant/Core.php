@@ -2161,8 +2161,32 @@ class Core extends Base\Core
      */
     public function autoEnableInternational(Entity $merchant): bool
     {
+        $isRazorpayOrg = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
 
-        return ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
+        if ($isRazorpayOrg === false)
+        {
+            return false;
+        }
+
+        //
+        // SubMerchant batch upload flow defines a way to disable the auto-enabling international feature
+        // If the submerchant is getting activated using a submerchant batch and if the submerchant
+        // batch parameters define to not auto-enable international attribute, false will be returned.
+        //
+        $isBatchFlow = (app('basicauth')->isBatchFlow() === true);
+
+        if ($isBatchFlow === true)
+        {
+            $batchContext = app('basicauth')->getBatchContext();
+
+            $batchName               = $batchContext['type'] ?? null;
+            $autoEnableInternational = $batchContext['data'][Merchant\Entity::AUTO_ENABLE_INTERNATIONAL] ?? false;
+
+            return ($batchName === Batch\Type::SUB_MERCHANT)
+                   and ($autoEnableInternational === true);
+        }
+
+        return true;
     }
 
     /*

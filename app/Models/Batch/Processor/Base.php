@@ -128,6 +128,10 @@ class Base extends BaseModel\Core
         $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
 
         $this->app['basicauth']->setMerchant($this->merchant);
+
+        // Indicates that the request is being executed by a batch upload flow
+        $this->app['basicauth']->setBatch($batch);
+
     }
 
     public function setParams(array $params = null)
@@ -141,6 +145,15 @@ class Base extends BaseModel\Core
         $this->params = $params ?: [];
 
         return $this;
+    }
+
+    public function getBatchContext(): array
+    {
+        $batchContext                        = [];
+        $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
+        $batchContext[Batch\Constants::DATA] = $this->params;
+
+        return $batchContext;
     }
 
     /**
