@@ -17,7 +17,7 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
-    
+
     public function postServiceablePincodes(string $channel)
     {
         $input = Request::all();
@@ -36,11 +36,11 @@ class BankingAccountController extends Controller
         return $response;
     }
 
-    public function bulkCreateBankingAccountsForYesbank(string $limit)
+    public function bulkCreateBankingAccountsForYesbank()
     {
         $input = Request::all();
 
-        $response = $this->service()->bulkCreateBankingAccountsForYesbank($input, $limit);
+        $response = $this->service()->bulkCreateBankingAccountsForYesbank($input);
 
         return ApiResponse::json($response);
     }

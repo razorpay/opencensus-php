@@ -455,8 +455,12 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    public function bulkCreateBankingAccountsForYesbank(array $input, string $limit)
+    public function bulkCreateBankingAccountsForYesbank(array $input)
     {
+        $limit = $input['limit'];
+
+        unset($input['limit']);
+
         $bankAccounts = $this->repo->bank_account->fetchAccountsNotPresentInBankingAccountsForYesbank($limit);
 
         $successCount = $failedCount = 0;

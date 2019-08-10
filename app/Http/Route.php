@@ -1155,7 +1155,7 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
-        'banking_account_yesb_bulk_create'        => ['post',     'banking_accounts/bulk/create/yesbank/{limit}',              'BankingAccountController@bulkCreateBankingAccountsForYesbank' ],
+        'banking_account_yesb_bulk_create'        => ['post',     'banking_accounts/bulk/create/yesbank',                      'BankingAccountController@bulkCreateBankingAccountsForYesbank' ],
     ];
 
     public static $public = [
