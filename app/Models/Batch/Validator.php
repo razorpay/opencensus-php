@@ -728,10 +728,14 @@ class Validator extends Base\Validator
 
         if ($totalPayoutAmount > $bankingBalance)
         {
-            throw new BadRequestValidationFailureException(
-                'Total payout amount in uploaded file exceeds available account balance',
-                Entity::FILE,
-                compact('totalPayoutAmount', 'bankingBalance'));
+            // For now, we are not handling balance validations for rbl merchants.
+            if ($merchant->isFeatureEnabled(Feature::X_PRO_INVITE) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Total payout amount in uploaded file exceeds available account balance',
+                    Entity::FILE,
+                    compact('totalPayoutAmount', 'bankingBalance'));
+            }
         }
     }
 
