@@ -78,9 +78,15 @@ class Core extends Base\Core
 
         foreach ($bankTransactions as $bankTransaction)
         {
-            $bankTxnId = $bankTransaction[Entity::BANK_TRANSACTION_ID];
+            $bankTxnId      = $bankTransaction[Entity::BANK_TRANSACTION_ID];
+            $bankTxnDate    = $bankTransaction[Entity::TRANSACTION_DATE];
+            $bankTxnChannel = $bankTransaction[Entity::CHANNEL];
 
-            $txnExists = $this->repo->banking_account_statement->bankTransactionExists($bankTxnId, $accountNumber);
+            $txnExists = $this->repo->banking_account_statement->bankTransactionExists(
+                $bankTxnId,
+                $accountNumber,
+                $bankTxnDate,
+                $bankTxnChannel);
 
             if ($txnExists === true)
             {

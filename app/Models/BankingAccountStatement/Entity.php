@@ -16,11 +16,6 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const MERCHANT_ID           = 'merchant_id';
     const ACCOUNT_NUMBER        = 'account_number';
-    /**
-     * This must be unique in the account statement for a given channel.
-     * It's being used in the core function to figure out whether we
-     * should skip the entity creation or not.
-     */
     const BANK_TRANSACTION_ID   = 'bank_transaction_id';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';

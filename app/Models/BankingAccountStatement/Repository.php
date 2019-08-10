@@ -9,11 +9,14 @@ class Repository extends Base\Repository
 {
     protected $entity = 'banking_account_statement';
 
-    public function bankTransactionExists($accountNumber, $bankTxnId)
+    public function bankTransactionExists($bankTxnId, $accountNumber, $bankTxnDate, $channel)
     {
         return $this->newQuery()
-                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->where(Entity::BANK_TRANSACTION_ID, '=', $bankTxnId)
+                    ->where(Entity::BANK_TRANSACTION_ID, $bankTxnId)
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::TRANSACTION_DATE, $bankTxnDate)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->orderBy(Entity::ID, 'desc')
                     ->exists();
     }
 
