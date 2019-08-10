@@ -73,14 +73,9 @@ class Gateway extends BaseProcessor
                 throw $ex;
             }
 
-            $isValid = $this->validateMozartResponse($bankResponse);
+            $bankResponse = $this->validateMozartResponse($bankResponse);
 
-            if ($isValid === false)
-            {
-                return [];
-            }
-
-            $formattedResponse = $this->getFormattedResponse($bankResponse['data']);
+            $formattedResponse = $this->getFormattedResponse($bankResponse);
 
             $finalFormattedResponse = array_merge($finalFormattedResponse, $formattedResponse);
 
@@ -94,7 +89,21 @@ class Gateway extends BaseProcessor
 
     protected function validateMozartResponse(array $response)
     {
-        (new Validator)->validateInput('rbl_response', $response['data']);
+        $data = $response[Fields::DATA];
+
+        $txnDetails = $data[Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY][Fields::TRANSACTION_DETAILS];
+
+        // If only one transaction exists then instead of an array, RBL is sending an object,
+        // here we are explicitly converting the object into an array
+        //
+        if (array_key_exists('0', $txnDetails) === false)
+        {
+            $data[Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY][Fields::TRANSACTION_DETAILS] = [$txnDetails];
+        }
+
+        (new Validator)->validateInput('rbl_response', $data);
+
+        return $data;
     }
 
     protected function getRequestDataForMozart(array $input, array $lastTransaction)
@@ -374,7 +383,7 @@ class Gateway extends BaseProcessor
 
     public function hasMoreData($bankResponse)
     {
-        $responseBody = $bankResponse[Fields::DATA][Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY];
+        $responseBody = $bankResponse[Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY];
 
         $hasMoreData = $responseBody[Fields::HAS_MORE_DATA];
 
