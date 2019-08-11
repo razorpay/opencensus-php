@@ -226,11 +226,11 @@ class FundTransfer extends Base
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
                         Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity() ?? 'Bangalore',
                         Constants::BENEFICIARY_EMAIL          => $this->fta->bankAccount->getBeneficiaryEmail() ?? 'no-reply@razorpay.com',
-                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState() ?? 'Karnataka',
+                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState() ?? 'KA',
                         Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile() ?? '9999999999',
                         Constants::IS_VIRTUAL_ACCOUNT         => $this->fta->bankAccount->isVirtual(),
                         Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1() ?? 'Razorpay',
-                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry() ?? 'India',
+                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry() ?? 'IN',
                 ],
         ];
 
