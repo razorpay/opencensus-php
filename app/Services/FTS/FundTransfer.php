@@ -213,7 +213,7 @@ class FundTransfer extends Base
     {
         $accountType = $this->fta->bankAccount->getAccountType();
 
-        if(empty($accountType) === true)
+        if (empty($accountType) === true)
         {
             $accountType = Constants::SAVING;
         }
@@ -224,13 +224,13 @@ class FundTransfer extends Base
                         Constants::ACCOUNT_TYPE               => $accountType,
                         Constants::ACCOUNT_NUMBER             => $this->fta->bankAccount->getAccountNumber(),
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
-                        Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity(),
-                        Constants::BENEFICIARY_EMAIL          => $this->fta->bankAccount->getBeneficiaryEmail(),
-                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState(),
-                        Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile(),
+                        Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity() ?? 'Bangalore',
+                        Constants::BENEFICIARY_EMAIL          => $this->fta->bankAccount->getBeneficiaryEmail() ?? 'no-reply@razorpay.com',
+                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState() ?? 'Karnataka',
+                        Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile() ?? '9999999999',
                         Constants::IS_VIRTUAL_ACCOUNT         => $this->fta->bankAccount->isVirtual(),
-                        Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1(),
-                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry(),
+                        Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1() ?? 'Razorpay',
+                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry() ?? 'India',
                 ],
         ];
 
