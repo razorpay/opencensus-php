@@ -1,0 +1,19 @@
+.DataList
+  display: flex
+  align-items: center
+
+  .DataList-Item
+    border-left: 1px  solid #cfdadd
+    padding: 0px 8px
+    @media(max-width: 768px)
+      border: none
+
+    &:first-child
+      padding-right: 0
+
+  @media(max-width: 768px)
+    display: block
+    .DataList-Item
+      padding: 0
+      &:not(:last-child)
+        margin-bottom: 8px
