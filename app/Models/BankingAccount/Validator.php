@@ -34,7 +34,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS3            => 'sometimes|nullable|max:60',
         Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|numeric|digits_between:10,12',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|email',
-        Entity::BENEFICIARY_NAME                => 'sometimes|nullable|between:4,120|string',
+        Entity::BENEFICIARY_NAME                => 'sometimes|nullable|between:1,120|string',
     ];
 
     protected static $createRules = [
