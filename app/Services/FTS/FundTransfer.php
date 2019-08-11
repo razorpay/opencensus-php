@@ -39,6 +39,8 @@ class FundTransfer extends Base
 
     const PENNY_TESTING = 'penny_testing';
 
+    const PAYOUT        = 'payout';
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -119,6 +121,12 @@ class FundTransfer extends Base
             $product = self::PENNY_TESTING;
         }
 
+        if (($sourceType === Constants::PAYOUT) and
+            ($this->fta->getChannel() === Channel::RBL))
+        {
+            $product = self::PAYOUT;
+        }
+
         $request = [
             Constants::PRODUCT           => $product,
             Constants::MERCHANT_ID       => $this->fta->merchant->getId(),
@@ -184,7 +192,7 @@ class FundTransfer extends Base
             if (method_exists($source, 'getSourceFtsFundAccountId'))
             {
                 $request[Constants::TRANSFER] += [
-                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => $this->fta->source->getSourceFtsFundAccountId(),
+                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $this->fta->source->getSourceFtsFundAccountId(),
                 ];
             }
         }
