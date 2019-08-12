@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Base\QueryCache\Cacheable;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class Entity extends Base\PublicEntity
 {
@@ -53,6 +54,16 @@ class Entity extends Base\PublicEntity
     const MIN_FEE              = 'min_fee';
     const MAX_FEE              = 'max_fee';
 
+    //
+    // account_type can be shared (for Virtual Accounts) or direct (for Current Accounts)
+    //
+    const ACCOUNT_TYPE         = 'account_type';
+    //
+    // channel which provides the account, eg: rbl, yesbank
+    // would be null for account_type=shared and null(primary)
+    //
+    const CHANNEL              = 'channel';
+
     const EXPIRED_AT           = 'expired_at';
     const DELETED_AT           = 'deleted_at';
 
@@ -90,6 +101,8 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::ORG_ID,
         self::TYPE,
+        self::CHANNEL,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $entity = 'pricing';
@@ -370,6 +383,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
     public function isPrimaryProduct(): bool
     {
         return ($this->getProduct() === Product::PRIMARY);
@@ -378,6 +396,16 @@ class Entity extends Base\PublicEntity
     public function isBankingProduct(): bool
     {
         return ($this->getProduct() === Product::BANKING);
+    }
+
+    public function isAccountTypeDirect()
+    {
+        return ($this->getAccountType() === AccountType::DIRECT);
+    }
+
+    public function isAccountTypeShared()
+    {
+        return (($this->getAccountType() === AccountType::SHARED));
     }
 
     /**

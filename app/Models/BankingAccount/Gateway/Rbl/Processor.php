@@ -22,7 +22,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     const CREDENTIALS_VAULT_NAMESPACE   = 'banking_account_creds';
 
-    const DATE_FORMAT = 'd-M-Y';
+    const DATE_FORMAT = 'd-m-Y';
 
     const MAX_MOZART_RETRIES            = 1;
 
@@ -51,7 +51,14 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
-        (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $input);
+        // RBL sends Phone Number and Account Number fields in the below format
+        // Phone no. and Account No. This dot is replaced by Laravel to =>
+        // following array notation as a result of which the validations
+        // start failing. So we are modifying the input to convert above
+        // field to Account No and Phone no
+        $content = $this->modifyWebhookInput($input);
+
+        (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $content);
     }
 
     public function processAccountInfoNotification(array $input): array
@@ -158,7 +165,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $this->repo->banking_account->saveOrFail($bankingAccount);
     }
-    
+
     public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
     {
         $rbl = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
@@ -183,11 +190,12 @@ class Processor extends BankingAccount\Gateway\Processor
         return $body;
     }
 
-    public function getBalanceAttributesToSave()
+    public function getBalanceAttributesToSave(BankingAccount\Entity $bankingAccount)
     {
         $attributes = [
             Balance\Entity::ACCOUNT_TYPE        => Balance\AccountType::DIRECT,
-            Balance\Entity::CHANNEL             => Balance\Channel::RBL
+            Balance\Entity::CHANNEL             => Balance\Channel::RBL,
+            Balance\Entity::ACCOUNT_NUMBER      => $bankingAccount->getAccountNumber(),
         ];
 
         return $attributes;
@@ -274,7 +282,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
                     ($retryCount < self::MAX_MOZART_RETRIES))
                 {
-                    $this->trace-info(
+                    $this->trace->info(
                         TraceCode::MOZART_SERVICE_RETRY,
                         [
                             'message' => $exception->getMessage(),
@@ -301,7 +309,7 @@ class Processor extends BankingAccount\Gateway\Processor
     protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount, array $input)
     {
         $credentials = $this->getAccountCredentials();
-        
+
         $merchantCredentials = [
             Fields::SUBCORP_ID                => $input[Fields::SUBCORP_ID],
             Fields::SUBCORP_USER_ID           => $input[Fields::SUBCORP_USER_NAME],
@@ -474,5 +482,18 @@ class Processor extends BankingAccount\Gateway\Processor
                    [Fields::BODY][Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
 
         return $this->getFormattedAmount($balance);
+    }
+
+    protected function modifyWebhookInput(array $input)
+    {
+        $input[Fields::ACCOUNT_NO] = $input[Fields::ACCOUNT_NUMBER];
+
+        $input[Fields::PHONE_NO] = $input[Fields::PHONE_NUM];
+
+        unset($input[Fields::ACCOUNT_NUMBER]);
+
+        unset($input[Fields::PHONE_NUM]);
+
+        return $input;
     }
 }

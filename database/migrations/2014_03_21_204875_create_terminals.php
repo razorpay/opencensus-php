@@ -8,6 +8,9 @@ use RZP\Models\Merchant;
 use RZP\Constants\Procurer;
 use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Terminal\Mode;
+use RZP\Models\Terminal\Status;
+use RZP\Models\Admin\Org\Entity as Org;
+
 
 class CreateTerminals extends Migration
 {
@@ -26,6 +29,9 @@ class CreateTerminals extends Migration
                   ->primary();
 
             $table->char(Terminal::MERCHANT_ID, Terminal::ID_LENGTH);
+
+            $table->char(Terminal::ORG_ID, Terminal::ID_LENGTH)
+                  ->default(ORG::RAZORPAY_ORG_ID);
 
             $table->string(Terminal::PROCURER)
                   ->default(Procurer::RAZORPAY);
@@ -147,6 +153,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::MODE)
                   ->default(Mode::DUAL);
 
+            $table->string(Terminal::STATUS, 255)
+                  ->default(Status::ACTIVATED);
+
             $table->tinyInteger(Terminal::CORPORATE)
                   ->default(0);
 
@@ -168,6 +177,9 @@ class CreateTerminals extends Migration
             $table->string(Terminal::IFSC_CODE, 11)
                   ->nullable();
 
+            $table->text(Terminal::NOTES)
+                  ->nullable();    
+                    
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);
@@ -200,6 +212,8 @@ class CreateTerminals extends Migration
             $table->index(Terminal::RUPAY_MPAN);
             $table->index(Terminal::VPA);
             $table->index(Terminal::CARDLESS_EMI);
+            $table->index(Terminal::STATUS);
+            $table->index(Terminal::ORG_ID);
         });
     }
 

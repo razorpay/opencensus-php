@@ -14,6 +14,7 @@ class ErrorCodes extends Base\ErrorCodes\Cards\ErrorCodes
     const EC_400 = '400';
     const EC_401 = '401';
     const EC_402 = '402';
+    const EC_404 = '404';
     const EC_406 = '406';
     const EC_407 = '407';
     const EC_408 = '408';
@@ -37,6 +38,8 @@ class ErrorCodes extends Base\ErrorCodes\Cards\ErrorCodes
 
     const EC_ED = 'ED';
     const EC_CA = 'CA';
+    const EC_CI = 'CI';
+    const EC_M6 = 'M6';
 
     const FAILURE    = 'failure';
 
@@ -47,6 +50,7 @@ class ErrorCodes extends Base\ErrorCodes\Cards\ErrorCodes
         self::EC_400  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_401  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_402  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        self::EC_404  => ErrorCode::GATEWAY_ERROR_SQL_ERROR,
         self::EC_406  => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
         self::EC_407  => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
         self::EC_408  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
@@ -66,6 +70,8 @@ class ErrorCodes extends Base\ErrorCodes\Cards\ErrorCodes
         self::EC_399  => ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
         self::EC_ED   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
         self::EC_CA   => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        self::EC_CI   => ErrorCode::GATEWAY_ERROR_REMITTER_COMPLIANCE_VIOLATION,
+        self::EC_M6   => ErrorCode::GATEWAY_ERROR_COMPLIANCE_ERROR,
     ];
 
     public static $fallBackMapping = [

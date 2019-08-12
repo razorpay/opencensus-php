@@ -10,6 +10,9 @@ final class RazorxTreatment
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 
+    // Decide if recon batch to use k8s batch upload job instead of queue worker processing
+    const K8S_RECON_BATCH_TREATMENT = 'k8s_recon_batch_upload';
+
     // Decide whom to send new design mailers
     const MJML_BASED_MAILERS = 'mjml_based_mailers';
 
@@ -29,4 +32,7 @@ final class RazorxTreatment
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 
     const CHANGE_QUEUE_BATCH_INVOICE = 'change_queue_batch_invoice';
+
+    const SECOND_FACTOR_AUTH_PROJECT_EXP   = 'second_factor_auth_project';
+    const SECOND_FACTOR_AUTH_LOGIN_EXP     = 'second_factor_auth_login';
 }

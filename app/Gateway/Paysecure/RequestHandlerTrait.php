@@ -286,6 +286,8 @@ trait RequestHandlerTrait
      */
     protected function sendRequest($command, $params)
     {
+        $this->wasGatewayHit = true;
+
         $this->traceGatewayPaymentRequest(
             [
                 'command'    => $command,

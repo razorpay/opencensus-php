@@ -598,6 +598,20 @@ class PublicErrorDescription
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
 
+    const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
+    const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Login failed because of incorrect OTP';
+    const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                   = 'Second factor authentication setup failed because of incorrect OTP';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                          = 'User is restricted by its associated merchant to perform the action';
+    const BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED                               = 'Second factor authentication is enabled for user. OTP field is required';
+    const BAD_REQUEST_USER_2FA_SETUP_REQUIRED                                   = 'User 2FA setup is required';
+    const BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED                             = 'User 2FA setup is required before user logins.';
+    const BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED                            = 'Second factor authentication is not enabled for the user.';
+    const BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED                                  = 'User account is locked.';
+    const BAD_REQUEST_USER_2FA_ENFORCED                                         = 'Second factor authentication is mandated by one (or more) merchants';
+    const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                           = 'Operation is only allowed by the owner of the merchant.';
+    const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                 = 'Owner 2FA setup should already be done to perform this action';
+
     const BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS                             = 'User with given role already exists';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';
     const BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT                          = 'User doesn\'t belong to the current merchant';

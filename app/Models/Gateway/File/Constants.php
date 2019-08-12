@@ -39,6 +39,7 @@ class Constants
     const YESB             = 'yesb';
     const CUB              = 'cub';
     const CITI             = 'citi';
+    const CBI              = 'cbi';
     const SIB              = 'sib';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
@@ -51,6 +52,7 @@ class Constants
             self::HDFC,
             self::ICICI,
             self::CSB,
+            self::CBI,
             self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
@@ -95,6 +97,7 @@ class Constants
             self::HDFC,
             self::AXIS,
             self::ENACH_RBL,
+            self::SBI,
             self::ENACH_NPCI_NETBANKING,
         ],
         Type::REFUND_FAILED => [
@@ -128,6 +131,7 @@ class Constants
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
             self::UPI_SBI       => ['refunds@razorpay.com'],
+            self::CBI           => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [
@@ -162,6 +166,7 @@ class Constants
             self::ENACH_RBL             => ['rbl.emandate@razorpay.com'],
             //TODO
             self::ENACH_NPCI_NETBANKING => [''],
+            self::SBI                   => [''],
         ],
 
         Type::EMI => [

@@ -44,6 +44,7 @@ class Gateway
     const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_SIB         = 'netbanking_sib';
+    const NETBANKING_CBI         = 'netbanking_cbi';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
@@ -324,6 +325,7 @@ class Gateway
         IFSC::ICIC,
         IFSC::UTIB,
         IFSC::HDFC,
+        IFSC::SBIN
     ];
 
     // The 2 commented banks are mentioned at the bottom
@@ -637,6 +639,7 @@ class Gateway
             self::EBS,
             self::ATOM,
             self::NETBANKING_SIB,
+            self::NETBANKING_CBI,
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
             self::NETBANKING_CUB,
@@ -1076,6 +1079,7 @@ class Gateway
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_SBI,
         Gateway::ESIGNER_DIGIO,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
@@ -1115,6 +1119,7 @@ class Gateway
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
+            Gateway::NETBANKING_SBI,
             Gateway::ENACH_NPCI_NETBANKING,
         ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
@@ -1172,6 +1177,7 @@ class Gateway
         IFSC::SIBL,
         IFSC::ESFB,
         IFSC::ACUX,
+        IFSC::SBIN,
     ];
 
     /**
@@ -1186,6 +1192,7 @@ class Gateway
         Gateway::NETBANKING_ICICI      => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS       => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC       => [IFSC::HDFC],
+        Gateway::NETBANKING_SBI        => [IFSC::SBIN],
         Gateway::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING_BANKS,
         Gateway::ENACH_RBL             => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
@@ -1208,6 +1215,7 @@ class Gateway
         Gateway::NETBANKING_AXIS,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1219,6 +1227,7 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1307,6 +1316,7 @@ class Gateway
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
         IFSC::SIBL         => Gateway::NETBANKING_SIB,
+        IFSC::CBIN         => Gateway::NETBANKING_CBI,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB         => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
@@ -1334,6 +1344,7 @@ class Gateway
     public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::CBIN => Gateway::NETBANKING_CBI,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
@@ -1369,6 +1380,7 @@ class Gateway
         IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
         IFSC::ORBC => Gateway::NETBANKING_OBC,
         IFSC::CSBK => Gateway::NETBANKING_CSB,
+        IFSC::CBIN => Gateway::NETBANKING_CBI,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];

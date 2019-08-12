@@ -18,4 +18,16 @@ class Repository extends Base\Repository
     {
         $query->orderBy(Entity::CREATED_AT, 'desc');
     }
+
+    //Returns an array of distinct merchant ids a user id is associated with
+    public function returnMerchantIdsForUserId(string $userId): array
+    {
+        return $this->newQuery()
+                    ->select(Entity::MERCHANT_ID)
+                    ->where(Entity::USER_ID, $userId)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
 }

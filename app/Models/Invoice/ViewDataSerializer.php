@@ -72,13 +72,14 @@ class ViewDataSerializer extends Base\Core
     public function serializeForHosted(): array
     {
         return [
-            'environment'   => $this->app->environment(),
-            'is_test_mode'  => ($this->mode === Mode::TEST),
-            'invoicejs_url' => Config::get('app.cdn_v1_url') . '/invoice.js',
-            'key_id'        => $this->getMerchantKeyId(),
-            'merchant'      => $this->serializeMerchantForHosted(),
-            'invoice'       => $this->serializeInvoiceForHosted(),
-            'custom_labels' => $this->getCustomLabelValues(),
+            'environment'       => $this->app->environment(),
+            'is_test_mode'      => ($this->mode === Mode::TEST),
+            'invoicejs_url'     => Config::get('app.cdn_v1_url') . '/invoice.js',
+            'key_id'            => $this->getMerchantKeyId(),
+            'merchant'          => $this->serializeMerchantForHosted(),
+            'invoice'           => $this->serializeInvoiceForHosted(),
+            'custom_labels'     => $this->getCustomLabelValues(),
+            'checkout_options'  => $this->getCheckoutOptions(),
         ];
     }
 
@@ -99,7 +100,10 @@ class ViewDataSerializer extends Base\Core
     {
         $merchantId = $this->merchant->getId();
 
-        $customLabels = ['hide_issued_to' => false];
+        $customLabels = [
+            'hide_issued_to' => false,
+            'expire_by'      => 'EXPIRES ON',
+        ];
 
         switch ($merchantId)
         {
@@ -143,9 +147,53 @@ class ViewDataSerializer extends Base\Core
                 ];
 
                 break;
+
+            case Preferences::MID_SURYODAY_BANK:
+                $customLabels = [
+                    'receipt_number' => 'ACCOUNT NO',
+                ];
+
+                break;
+
+            case Preferences::MID_BFL_BANK:
+            case Preferences::MID_BFL_CARD:
+            case Preferences::MID_RBL_PDD_CREDIT:
+            case Preferences::MID_RBL_PDD_BANK:
+                $customLabels = [
+                    'receipt_number'            => 'CREDIT CARD NUMBER',
+                    'amount'                    => 'TOTAL AMOUNT DUE',
+                    'first_payment_min_amount'  => 'MAD', //I.e. Minimum Amount Due
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_LAPOD:
+                $customLabels = [
+                    'receipt_number'  =>  'LOAN ACCOUNT NUMBER',
+                    'amount'          =>  'DROP AMOUNT',
+                    'expire_by'       =>  'NEW LIMIT DATE',
+                    'hide_issued_to'  =>  true,
+                ];
+
+                break;
+
         }
 
         return $customLabels;
+    }
+
+    protected function getCheckoutOptions(): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $checkoutOptions = ['description' => '#inv_'.$this->invoice->getId()];
+
+        switch ($merchantId)
+        {
+            case Preferences::MID_SURYODAY_BANK:
+                unset($checkoutOptions['description']);
+        }
+        return $checkoutOptions;
     }
 
     /**

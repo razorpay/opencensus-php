@@ -16,11 +16,6 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const MERCHANT_ID           = 'merchant_id';
     const ACCOUNT_NUMBER        = 'account_number';
-    /**
-     * This must be unique in the account statement for a given channel.
-     * It's being used in the core function to figure out whether we
-     * should skip the entity creation or not.
-     */
     const BANK_TRANSACTION_ID   = 'bank_transaction_id';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
@@ -46,6 +41,10 @@ class Entity extends Base\PublicEntity
 
     // Relation names/attributes
     const SOURCE                = 'source';
+
+    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
+
+    const DEBIT_REGEX = '/^(.*?)-IMPS/';
 
     protected static $sign = 'bas';
 
@@ -116,7 +115,7 @@ class Entity extends Base\PublicEntity
         self::ID,
     ];
 
-    // Relations
+    // --------------------------- Relations ---------------------------------- //
 
     public function merchant()
     {
@@ -138,7 +137,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(BankingAccount\Entity::class);
     }
 
-    // Setters and Getters
+    // ---------------------------- Setters ----------------------------------- //
 
     public function setAccountNumber(string $accountNumber)
     {
@@ -216,6 +215,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRANSACTION_DATE, $date);
     }
 
+    // -------------------------- Getters ------------------------------------ //
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -269,5 +270,41 @@ class Entity extends Base\PublicEntity
     public function getAccountNumber()
     {
         return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function isTypeCredit()
+    {
+        return ($this->getType() === Type::CREDIT);
+    }
+
+    public function isTypeDebit()
+    {
+        return ($this->getType() === Type::DEBIT);
+    }
+
+    public function getUtrFromDescription()
+    {
+        $description = $this->getDescription();
+
+        $regex = self::DEBIT_REGEX;
+
+        if ($this->isTypeCredit() === true)
+        {
+            $regex = self::CREDIT_REGEX;
+        }
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

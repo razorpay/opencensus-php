@@ -121,7 +121,8 @@ class DailyFiles extends Base\DailyFiles
                                                                          $to,
                                                                          $this->gateway,
                                                                          $status,
-                                                                         $tpvEnabled);
+                                                                         $tpvEnabled,
+                                                                         ['terminal']);
 
         if ($claims->count() === 0)
         {

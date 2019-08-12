@@ -62,6 +62,7 @@ class Validator extends Base\Validator
         Entity::PAYLATER                    => 'sometimes|boolean',
         Entity::ENABLED                     => 'sometimes|in:0,1',
         Entity::CAPABILITY                  => 'sometimes|in:0,1,2',
+        Entity::NOTES                       => 'sometimes',
     ];
 
     protected static $editTerminalGateways = [
@@ -376,6 +377,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY                    => 'sometimes|in:cybersource',
         Entity::CARD                       => 'sometimes|boolean|in:1',
@@ -524,6 +526,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
+    ];
+    protected static $netbankingCbiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_cbi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
     ];
 
     protected static $netbankingCubEditTerminalRules = [

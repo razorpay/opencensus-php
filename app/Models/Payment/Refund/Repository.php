@@ -138,16 +138,12 @@ class Repository extends Base\Repository
         switch($params[Entity::PUBLIC_STATUS])
         {
             case 'processed':
-                $query->where(function($subQuery) {
-                    $subQuery->where(Entity::SPEED_DECISIONED, Speed::NORMAL)
-                             ->orWhereNotNull(Entity::SPEED_PROCESSED);
-                });
+                $query->whereNotNull(Entity::SPEED_PROCESSED);
 
                 break;
 
             case 'processing':
-                $query->where(Entity::SPEED_DECISIONED, '!=', Speed::NORMAL)
-                      ->WhereNull(Entity::SPEED_PROCESSED);
+                $query->whereNull(Entity::SPEED_PROCESSED);
 
                 break;
         }

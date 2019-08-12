@@ -340,14 +340,20 @@ class Core extends Base\Core
         return $diff;
     }
 
-    public function updateStateInEs(string $actionId, string $state)
+    public function getDocumentsFromEs(string $actionId)
     {
         $searchTerms = [
             'action_id' => $actionId
         ];
 
-        $documents = $this->esDao->getDocumentByFields(
+        return $this->esDao->getDocumentByFields(
             strtolower($this->baseIndex), self::ES_TYPE, $searchTerms);
+    }
+
+    public function updateStateInEs(string $actionId, string $state)
+    {
+
+        $documents = $this->getDocumentsFromEs($actionId);
 
         if (empty($documents) === true)
         {

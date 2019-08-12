@@ -107,6 +107,8 @@ class Metric
 
         $isBharatQr = $this->isBharatQrPayment($input);
 
+        $gateway_acquirer = $input[Entity::TERMINAL][\RZP\Models\Terminal\Entity::GATEWAY_ACQUIRER];
+
         return [
             Metric::DIMENSION_GATEWAY              => $gateway,
             Metric::DIMENSION_PAYMENT_METHOD       => $method,
@@ -122,7 +124,7 @@ class Metric
             Metric::DIMENSION_CARD_INTERNATIONAL   => $isInternationalPayment,
             Metric::DIMENSION_BHARAT_QR            => $isBharatQr,
             Metric::DIMENSION_AUTH_TYPE            => $authType,
-            Metric::DIMENSION_TERMINAL_ID          => 'none',
+            Metric::DIMENSION_TERMINAL_ID          => $gateway_acquirer,
             Metric::DIMENSION_MERCHANT_CATEGORY    => 'none',
         ];
     }
