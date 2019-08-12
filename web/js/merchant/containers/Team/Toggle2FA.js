@@ -107,6 +107,9 @@ export default class Toggle2FA extends Component {
           onChangeMobileNumber={verifyMobile}
           verified={verificationStatus}
           otp={otp}
+          onResend={() => {
+            return this.props.updateSelfContact({ contact_mobile: mobile });
+          }}
           onConfirm={otp => {
             return this.props
               .updateSelfContact({ contact_mobile: mobile, otp: otp.trim() })

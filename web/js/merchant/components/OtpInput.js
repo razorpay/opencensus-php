@@ -80,6 +80,7 @@ export class OtpInput extends Component {
         if (otp.length === OTP_LENGTH) {
           this.props.onComplete(otp);
         }
+        this.props.onChange(otp);
       }
     );
   };

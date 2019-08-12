@@ -14,6 +14,7 @@ const VerifyOtp = ({
   verified,
   onOtpEnter,
   onChangeMobileNumber,
+  onResend,
 }) => {
   let otpValue = '';
   const inCorrectOtp = undefined === verified ? false : !verified;
@@ -33,9 +34,20 @@ const VerifyOtp = ({
             otpValue = otp;
             onOtpEnter && onOtpEnter(otpValue);
           }}
+          onChange={otp => {
+            otpValue = otp;
+          }}
           wrong={inCorrectOtp}
         />
-        <p>Didn’t receive an SMS? Sending.</p>
+        <p>
+          Didn’t receive an SMS?
+          <AsyncButton
+            class="btn btn-link"
+            text="Send OTP"
+            pendingText="Sending OTP..."
+            onClick={onResend}
+          />
+        </p>
         <div class="Modal__actions">
           <button
             class="btn btn-primary btn-block"
