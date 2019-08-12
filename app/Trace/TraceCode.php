@@ -1985,7 +1985,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_SUCCESSFULL                   = 'MERCHANT_BALANCE_UPDATE_SUCCESSFULL';
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
-  
+
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                               = 'TERMINAL_ENABLE_REQUEST';
     const TERMINAL_DISABLE_REQUEST                              = 'TERMINAL_DISABLE_REQUEST';
@@ -2002,6 +2002,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SET_CHANNEL_STATE_FAILED                              = 'SET_CHANNEL_STATE_FAILED';
     const GET_CHANNEL_STATE_FAILED                              = 'GET_CHANNEL_STATE_FAILED';
+
+    const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
