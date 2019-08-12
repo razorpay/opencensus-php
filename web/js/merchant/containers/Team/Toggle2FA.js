@@ -2,13 +2,14 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
-import { toggle2FaEnforcement } from 'merchant/modules/team';
-
+import { toggle2FaEnforcement, updateSelfContact } from 'merchant/modules/team';
+import { updateSession } from 'merchant/modules/session';
+import User from 'merchant/models/User';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import {
   VerifyOtp,
-  MissingNumbers,
+  MissingNumbers, //This component is supposed to be rendered,when not all team-members have mobile number. Having only a frontend check is not sufficient.
   AskMobileNumber,
   EnableAgreement,
   DisableAgreement,
@@ -18,7 +19,7 @@ import {
 @connect(
   state => {
     return {
-      user: state.session.user,
+      session: state.session,
     };
   },
   {
@@ -27,35 +28,11 @@ import {
     openModal,
     closeModal,
     toggle2FaEnforcement,
+    updateSelfContact,
+    updateSession,
   }
 )
 export default class Toggle2FA extends Component {
-  // constructor(props) {
-  //   super(props);
-  //   this.state = this.props.state
-
-  // }
-
-  componentWillReceiveProps(nextProps) {
-    // if (!this.props.features.length && nextProps.features.length) {
-    //   const twoFAEnabled = this.getToggle2FAFlag(nextProps.features);
-    //   this.setState({ twoFAEnabled });
-    // }
-  }
-
-  getToggle2FAFlag(features) {
-    // let noToggle2FA =
-    //   features.find(feature => feature.feature === 'noToggle2FA') || {};
-    // const twoFAEnabled = !noToggle2FA.value;
-    // return twoFAEnabled;
-  }
-
-  analytics = action => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settings',
-      eventAction: `${action} - Flash Checkout`,
-    });
-  };
   showModal = component => {
     //Close anyother open modal
     this.props.closeModal();
@@ -64,32 +41,83 @@ export default class Toggle2FA extends Component {
       component: component,
     });
   };
+  //Set the sate in redux store to reflect the new changes
+  update2FAState = flag => {
+    const {
+      user: { user: currentUser },
+      mode,
+    } = this.props.session;
+    const user = new User({
+      ...this.props.session.user,
+      user: { ...currentUser, second_factor_auth_enforced: flag },
+    });
+    this.props.updateSession({
+      user,
+      mode,
+    });
+  };
   toggle2FA = flag => {
-    //Step
+    //promise that should be resolved to true when all the steps are completed
+    let actionCompleted;
+    //Any intermediate modal closure or cancel will abort the process
+    const abort = () => {
+      this.props.closeModal();
+      actionCompleted(false);
+    };
+
     const verifyPassword = () => {
-      const title = (flag ? 'Enable' : 'Disable') + ' 2-step verification';
+      const title = `${flag ? 'Enable' : 'Disable'}   2-step verification`;
       this.showModal(
         <PasswordVerification
           title={title}
-          {...this.props}
-          email={this.props.user.email}
+          closeModal={abort}
+          email={this.props.session.user.user.email}
           onConfirm={password =>
-            this.props.toggle2FaEnforcement(flag, password)
+            this.props.toggle2FaEnforcement(flag ? 1 : 0, password).then(
+              res => {
+                this.props.closeModal();
+                let message = `2-step verification successfully turned-${
+                  res.data.second_factor_auth ? 'on' : 'off'
+                } to all your team members`;
+                this.props.showNotification({
+                  type: 'success',
+                  message: message,
+                });
+                //Resolve with true if user has completed the action
+                actionCompleted(true);
+              },
+              err => {
+                this.props.closeModal();
+                this.props.showNotification({
+                  type: 'error',
+                  message: err.errors.shift(),
+                });
+                actionCompleted(false);
+              }
+            )
           }
         />
       );
     };
-    const otpVerification = mobile => {
+    const otpVerification = (mobile, verificationStatus, otp) => {
       this.showModal(
         <VerifyOtp
-          {...this.props}
+          closeModal={abort}
           mobile={mobile}
+          onChangeMobileNumber={verifyMobile}
+          verified={verificationStatus}
+          otp={otp}
           onConfirm={otp => {
-            //Verify Otp here
-            //On Success
-            verifyPassword();
-            //On failure
-            // otpVerification(false)
+            return this.props
+              .updateSelfContact({ contact_mobile: mobile, otp: otp.trim() })
+              .then(
+                res => {
+                  verifyPassword();
+                },
+                err => {
+                  otpVerification(mobile, false, otp);
+                }
+              );
           }}
         />
       );
@@ -97,51 +125,52 @@ export default class Toggle2FA extends Component {
     const verifyMobile = () => {
       this.showModal(
         <AskMobileNumber
-          {...this.props}
-          onComplete={mobile => otpVerification(mobile)}
+          closeModal={abort}
+          onComplete={mobile => {
+            return this.props
+              .updateSelfContact({ contact_mobile: mobile })
+              .then(
+                res => {
+                  //With the current design API will always fail if, attempted without OTP
+                  //Hence,this will never be called, it's a design constraint as of now.
+                },
+                err => {
+                  otpVerification(mobile);
+                }
+              );
+          }}
         />
       );
     };
-    if (flag) {
-      //Step 1: check of user has mobile number verified for setup to continue, if yes ask for password after agreement
-      let {
-        user: { second_factor_auth },
-      } = this.props.user;
-      if (undefined !== second_factor_auth && second_factor_auth) {
+    //Hold the toggle state until a final API call is made & resolved
+    return new Promise(resolve => {
+      actionCompleted = resolve;
+      if (flag) {
+        let {
+          user: {
+            user: { second_factor_auth_setup },
+          },
+        } = this.props.session;
+        const afterAgreement =
+          //Check if user has mobile number verified for setup to continue, if yes skip mobile number verification & move to password verification
+          second_factor_auth_setup === true ? verifyPassword : verifyMobile;
         this.showModal(
-          <EnableAgreement {...this.props} onAgree={verifyPassword} />
+          <EnableAgreement closeModal={abort} onAgree={afterAgreement} />
         );
       } else {
         this.showModal(
-          <EnableAgreement {...this.props} onAgree={verifyMobile} />
+          <DisableAgreement closeModal={abort} onAgree={verifyPassword} />
         );
       }
-      // //Step 2: Make initial check if everyone in team has mobile number, if not show missing mobile number
-      // if (false)
-      //   this.showModal(
-      //     <MissingNumbers {...this.props} onAgree={verifyPassword} />
-      //   );
-      //Step 2: Show an agreement to enable the 2FA & verify Password after agreement
-      // this.showModal(
-      //   <EnableAgreement {...this.props} onAgree={verifyPassword} />
-      // );
-      //Step 3:Once Password is confimred, check if second_factor_auth_setup is true
-      if (false)
-        this.showModal(
-          <AskMobileNumber {...this.props} onComplete={() => VerifyOtp} />
-        );
-    } else {
-      //Step 1: Show an agreement to enable the 2FA & verify Password after agreement
-      this.showModal(
-        <DisableAgreement {...this.props} onAgree={verifyPassword} />
-      );
-    }
+    });
   };
 
   render() {
     let {
-      user: { second_factor_auth: twoFAEnabled },
-    } = this.props.user;
+      user: {
+        user: { second_factor_auth_enforced },
+      },
+    } = this.props.session;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -151,11 +180,16 @@ export default class Toggle2FA extends Component {
           </span>
           <span class="toggler-btn">
             <SwitchField
-              defaultChecked={!!twoFAEnabled}
-              onChange={flag => this.toggle2FA(flag)}
+              defaultChecked={!!second_factor_auth_enforced}
+              onChange={(flag, cb) =>
+                this.toggle2FA(flag).then(completed => {
+                  completed && this.update2FAState(flag);
+                  cb(completed);
+                })
+              }
               type="prime"
             />
-            {true ? (
+            {!!second_factor_auth_enforced ? (
               <b class="text-primary">Enabled</b>
             ) : (
               <b className="text-faded">Disabled</b>

@@ -8,6 +8,7 @@ export const INVITATION_UPDATE = 'INVITATION_UPDATE';
 export const INVITATION_REMOVE = 'INVITATION_REMOVE';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_REMOVE = 'USER_REMOVE';
+export const UPDATE_SESSION = 'UPDATE_SESSION';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -92,6 +93,18 @@ export const updateUser = (userId, data) => {
   };
 };
 
+export const updateSelfContact = data => {
+  return {
+    type: UPDATE_SESSION,
+    payload: merchantFetch({
+      url: `users/contact/update`,
+      method: 'patch',
+      data,
+      mode: 'live',
+    }),
+  };
+};
+
 export const removeUser = userId => {
   return {
     type: USER_REMOVE,
@@ -101,15 +114,17 @@ export const removeUser = userId => {
   };
 };
 
-export const toggle2FaEnforcement = flag => {
+export const toggle2FaEnforcement = (flag, password) => {
   return {
-    type: USER_UPDATE,
-    payload: defaultAjax(`/merchants/2fa`, {
+    type: UPDATE_SESSION,
+    payload: merchantFetch({
+      url: `merchants/2fa`,
       method: 'patch',
-      appendModeInURL: false,
       data: {
         second_factor_auth: flag,
+        password: password,
       },
+      should_sync: 1,
     }),
   };
 };
