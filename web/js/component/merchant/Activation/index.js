@@ -676,6 +676,8 @@ export default class ActivationWizard extends React.Component {
             type: true,
             activationFlow: data.data && data.data.activation_flow,
           });
+
+        window.hj && window.hj('trigger', 'test_nps_kyc');
       }
     });
   };
