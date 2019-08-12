@@ -1,6 +1,11 @@
 import { Component } from 'react';
 import AsyncButton from 'react-async-button';
 
+import ModalHeader from 'rzp/ui/ModalHeader';
+import { pickProps } from 'rzp/utils/rzp-utils';
+
+import NewInvitation from './NewInvitation';
+
 export default class MerchantUserActions extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -30,14 +35,71 @@ export default class MerchantUserActions extends Component {
   };
 
   updateUser = () => {
-    console.log(this.props.item.id);
+    const item = this.props.item;
+    const defaults = pickProps(item, ['contact_mobile', 'role']);
+
+    return this.props.openModal({
+      size: 'small',
+      component: (
+        <div>
+          <ModalHeader
+            title="Update Member Details"
+            onCloseClick={this.props.closeModal}
+          />
+          <div class="modal-body">
+            <NewInvitation
+              modalType="update_member"
+              extraFields={{ id: item.id }}
+              onFormSubmit={this.props.updateMember}
+              onSuccess={this.props.closeModal}
+              successMsg={() => 'User has been successfully updated'}
+              defaults={{ ...defaults }}
+            />
+          </div>
+        </div>
+      ),
+    });
+  };
+
+  updateInvitation = () => {
+    const item = this.props.item;
+    const defaults = pickProps(item, ['role']);
+
+    return this.props.openModal({
+      size: 'small',
+      component: (
+        <div>
+          <ModalHeader
+            title="Update Invitation Details"
+            onCloseClick={this.props.closeModal}
+          />
+          <div class="modal-body">
+            <NewInvitation
+              modalType="update_invitation"
+              onFormSubmit={this.props.updateInvitation}
+              onSuccess={this.props.closeModal}
+              successMsg={() => 'Invitation update successfully'}
+              extraFields={{ id: item.id }}
+              defaults={{ ...defaults }}
+            />
+          </div>
+        </div>
+      ),
+    });
   };
 
   render() {
     const item = this.props.item;
     return (
       <>
-        <button class="btn btn-primary m-r" onClick={this.updateUser}>
+        <button
+          class="btn btn-primary m-r"
+          onClick={
+            item.hasOwnProperty('user_id')
+              ? this.updateInvitation
+              : this.updateUser
+          }
+        >
           Update
         </button>
 
