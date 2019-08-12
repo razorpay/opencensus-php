@@ -1,13 +1,13 @@
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
-import EditLayer from '../../EditLayer';
+import EditLayer from '../../../EditLayer';
 import { classList, getValueOfKeyAtLevel } from 'common/util';
 import {
   getFieldTypes,
   mapFieldToIndex,
   getFieldFromIndices,
-} from '../Fields/V3';
+} from '../../Fields/V3';
 
 const CustomTypeOption = ({ option }) => (
   <React.Fragment>

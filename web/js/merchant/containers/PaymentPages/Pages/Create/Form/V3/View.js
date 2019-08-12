@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import Button from 'component/Button';
-import { AmountCreator, AmountField, FormFooter } from './Amount';
-import { GenericCreator, GenericField } from './Generic';
+import { AmountCreator, AmountField, FormFooter } from './Amount/AdvancedForm';
+import { GenericCreator, GenericField } from './Generic/BaseForm';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { constructFieldSchema } from '../Fields/V3';
 
