@@ -6,8 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { required, email, phone } from 'rzp/utils/validators';
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
-import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import { showNotification } from 'rzp/modules/notifications';
 
 const selector = formValueSelector('newInvitation');
 @connect(
@@ -18,9 +17,7 @@ const selector = formValueSelector('newInvitation');
     };
   },
   {
-    sendInvitation,
-    fetchTeamDetails,
-    ...NotificationsActions,
+    showNotification,
   }
 )
 @reduxForm({
@@ -31,18 +28,25 @@ const selector = formValueSelector('newInvitation');
   },
 })
 export default class NewInvitation extends Component {
-  save = props => {
+  // need to rename this component to something more appropriate
+  constructor(props) {
+    super(props);
+
+    this.props.initialize({
+      ...this.props.defaults,
+    });
+  }
+  save = body => {
     let user = this.props.user.user;
 
     return this.props
-      .sendInvitation({ ...props, sender_name: user.name })
+      .onFormSubmit({ ...body, ...this.props.extraFields })
       .then(() => {
-        this.props.fetchTeamDetails({ merchant_id: this.props.user.current });
-        this.props.initialize(this.props.initialValues);
         this.props.showNotification({
           type: 'success',
-          message: `Invitation has been successfully sent to ${props.email}`,
+          message: this.props.successMsg(body),
         });
+        this.props.onSuccess();
       })
       .catch(err => {
         this.props.showNotification({
@@ -63,7 +67,7 @@ export default class NewInvitation extends Component {
   };
 
   render() {
-    const { handleSubmit, selectedRole, user } = this.props;
+    const { handleSubmit, selectedRole, user, modalType } = this.props;
 
     let ROLES = this.filterRoles();
 
@@ -78,10 +82,11 @@ export default class NewInvitation extends Component {
     }
 
     return (
-      <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
-        <div>
-          <div class="form-group Form--vertical">
-            <label>Member Details</label>
+      <div>
+        <div class="form-group Form--vertical">
+          <label>Member Details</label>
+          {/* this should be configurable from props */}
+          {modalType === 'invite' && (
             <div class="input-container top-rounded">
               <i class="i i-email" />
               <Field
@@ -101,6 +106,9 @@ export default class NewInvitation extends Component {
                 ]}
               />
             </div>
+          )}
+          {/* this also should be configurable using props */}
+          {this.props.modalType === 'update_member' && (
             <div class="input-container no-top-border bottom-rounded">
               <i class="i i-phone" />
               <Field
@@ -119,37 +127,38 @@ export default class NewInvitation extends Component {
                 ]}
               />
             </div>
-          </div>
+          )}
+        </div>
 
-          <div class="form-group Form--vertical">
-            <label>Role</label>
-            <div class="input-container">
-              <Field name="role" component="select" class="form-control">
-                {Object.keys(ROLES).map(role => (
-                  <option key={role} value={role}>
-                    {ROLES[role].label}
-                  </option>
-                ))}
-              </Field>
-            </div>
-          </div>
-          <div class="form-group">
-            {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
-              <div class="alert alert-info text-center">
-                {ROLES[selectedRole].desc}
-              </div>
-            ) : null}
-          </div>
-          <div class="form-group">
-            <AsyncButton
-              class="btn btn-primary btn-block"
-              text="Send Invitation"
-              pendingText="Sending Invitation..."
-              onClick={handleSubmit(this.save)}
-            />
+        <div class="form-group Form--vertical">
+          <label>Role</label>
+          <div class="input-container">
+            <Field name="role" component="select" class="form-control">
+              {Object.keys(ROLES).map(role => (
+                <option key={role} value={role}>
+                  {ROLES[role].label}
+                </option>
+              ))}
+            </Field>
           </div>
         </div>
-      </form>
+        <div class="form-group">
+          {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
+            <div class="alert alert-info text-center">
+              {ROLES[selectedRole].desc}
+            </div>
+          ) : null}
+        </div>
+        <div class="form-group">
+          <AsyncButton
+            class="btn btn-primary btn-block"
+            text="Send Invitation"
+            type="submit"
+            pendingText="Sending Invitation..."
+            onClick={handleSubmit(this.save)}
+          />
+        </div>
+      </div>
     );
   }
 }
