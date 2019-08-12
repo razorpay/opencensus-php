@@ -548,7 +548,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     return (
       <div
         id="paymentpage-container"
-        class="payment-pages-v2"
+        class="payment-pages-v2 payment-pages-v3"
         style={{ backgroundColor: themeColor }}
       >
         {this.state.isTemplatesViewOpened && (

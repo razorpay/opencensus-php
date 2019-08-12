@@ -183,13 +183,35 @@ export default class View extends React.PureComponent {
               />
             );
           })}
-          <Button.Transparent
-            class="btn-link"
-            onClick={e => this.openCreator(e, CreatorType.GENERIC)}
-            style={{ marginTop: 32, display: 'inline-block' }}
-          >
-            + Add new field
-          </Button.Transparent>
+          <div class="Field">
+            <div class="Field-label" style={{ opacity: 0.6 }}>
+              Add new
+            </div>
+
+            <div class="Field-content">
+              <Button.Transparent
+                class="btn-dotted"
+                onClick={e => this.openCreator(e, CreatorType.GENERIC)}
+              >
+                <span class="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}
+                <span>
+                  <b>Input field</b>
+                </span>
+              </Button.Transparent>
+
+              <Button.Transparent
+                class="btn-dotted"
+                onClick={e => this.openCreator(e, CreatorType.GENERIC)}
+              >
+                <span class="enclose-circle">
+                  <b>₹</b>
+                </span>{' '}
+                <span>
+                  <b>Price field</b>
+                </span>
+              </Button.Transparent>
+            </div>
+          </div>
 
           <FormFooter amountToPay={paymentPageEntity.amount} />
         </div>
