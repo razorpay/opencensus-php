@@ -13,6 +13,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Models\Terminal\Shared;
 use RZP\Exception;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal as TerminalFixture;
 
 class TerminalTest extends TestCase
 {
@@ -1163,5 +1164,66 @@ class TerminalTest extends TestCase
 
         // Adding below assert to check if the org is being associated to terminal (via merchant) properly
         $this->assertEquals('100000razorpay', $terminal['org_id']);
+    }
+
+    public function testEnableTerminal()
+    {
+        $this->ba->privateAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled' => false,
+            'merchant_id' => '10000000000000',
+            'mc_mpan' => '1234567890123456',
+            'visa_mpan' => '9876543210123456',
+            'rupay_mpan' => '1234123412341234'
+        ]);
+        
+        $url = '/terminals/'.$terminal['id'].'/enable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testDisableTerminal()
+    {
+        $this->ba->privateAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled' => true,
+            'merchant_id' => '10000000000000',
+            'mc_mpan' => '1234567890123456',
+            'visa_mpan' => '9876543210123456',
+            'rupay_mpan' => '1234123412341234'
+        ]);
+
+        $url = '/terminals/'.$terminal['id'].'/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testFetchTerminals()
+    {
+        $this->ba->privateAuth();
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $terminal1 = (new TerminalFixture)->createBharatQrTerminal();
+
+        $terminal1['merchant_id'] = '10000000000000';
+        
+        $terminal1->save();
+
+        $terminal2 = (new TerminalFixture)->createBharatQrIsgTerminal();
+        
+        $terminal2['merchant_id'] = '10000000000000';
+        
+        $terminal2->save();
+ 
+        $this->startTest();
     }
 }

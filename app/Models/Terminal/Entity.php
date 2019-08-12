@@ -19,7 +19,6 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
-use RZP\Models\Admin\Org\Entity as Org;
 
 class Entity extends Base\PublicEntity
 {
@@ -76,6 +75,7 @@ class Entity extends Base\PublicEntity
     const DIRECT                        = 'direct';
     const STATUS                        = 'status';
     const NOTES                         = 'notes';
+    const MPAN                          = 'mpan';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -174,6 +174,15 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::STATUS,
+        self::ENABLED,
+        self::MPAN,
+        self::CREATED_AT
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::ENTITY,
         self::MERCHANT_ID,
         self::ORG_ID,
         self::PROCURER,
@@ -197,6 +206,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACQUIRER,
+        self::GATEWAY_ACCESS_CODE,
         self::MC_MPAN,
         self::VISA_MPAN,
         self::RUPAY_MPAN,
@@ -219,6 +229,8 @@ class Entity extends Base\PublicEntity
         self::IFSC_CODE,
         self::CARDLESS_EMI,
         self::PAYLATER,
+        self::MPAN,
+        self::CREATED_AT
     ];
 
     protected $hidden = [
@@ -315,6 +327,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::MPAN,
     ];
 
     protected static function boot()
@@ -638,6 +651,17 @@ class Entity extends Base\PublicEntity
             });
 
         $array[self::SUB_MERCHANTS] = $subMerchants;
+    }
+
+    protected function setPublicMpanAttribute(array & $array)
+    {
+        $array[self::MPAN] = [
+            self::MC_MPAN    => $this->getMCMpan(),
+            self::RUPAY_MPAN => $this->getRupayMpan(),
+            self::VISA_MPAN  => $this->getVisaMpan(),
+        ];
+
+        return $array;
     }
 
     //----------------------END PUBLIC SETTERS----------------
