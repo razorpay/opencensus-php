@@ -189,7 +189,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
-    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 864000;   // 10 Days -- TODO: Reduce later
+    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
