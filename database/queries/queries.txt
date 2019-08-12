@@ -5213,3 +5213,9 @@ ALTER TABLE external
 ALTER TABLE `banking_account_statement`
   DROP INDEX `banking_account_statement_bank_transaction_id_unique`,
   ADD UNIQUE INDEX `banking_account_statement_bank_txn_id_srl_no_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`, `bank_serial_number`);
+
+ALTER TABLE `pricing`
+    ADD COLUMN `account_type` VARCHAR(255) DEFAULT NULL AFTER `receiver_type`,
+    ADD COLUMN `channel` VARCHAR(255) DEFAULT NULL AFTER `account_type`,
+    ADD INDEX `pricing_account_type_index` (`account_type`),
+    ADD INDEX `pricing_channel_index` (`channel`);

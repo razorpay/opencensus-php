@@ -236,6 +236,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::NODAL_ACCOUNT,
                     'merchant_id'   => Account::NODAL_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -272,6 +273,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::ATOM_ACCOUNT,
                     'merchant_id'   => Account::ATOM_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -309,6 +311,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::API_FEE_ACCOUNT,
                     'merchant_id'   => Account::API_FEE_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -387,6 +390,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::TEST_ACCOUNT,
                     'merchant_id'   => Account::TEST_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'balance'       => 100000,
@@ -428,6 +432,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::SHARED_ACCOUNT,
                     'merchant_id'   => Account::SHARED_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     )
@@ -466,6 +471,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::DEMO_ACCOUNT,
                     'merchant_id'   => Account::DEMO_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     )
