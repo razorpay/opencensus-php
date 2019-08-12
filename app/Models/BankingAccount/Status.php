@@ -32,7 +32,7 @@ class Status
         self::UNSERVICEABLE,
         // when the user's application to open CA
         //is rejected by RBL for some reason
-        self::REJECTED
+        self::REJECTED,
     ];
 
     /**
@@ -45,7 +45,7 @@ class Status
         self::CREATED => [
             self::INITIATED,
             self::UNSERVICEABLE,
-            self::CANCELLED
+            self::CANCELLED,
         ],
         self::INITIATED => [
             self::PROCESSING,
