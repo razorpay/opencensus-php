@@ -79,6 +79,7 @@ class Core extends Base\Core
         foreach ($bankTransactions as $bankTransaction)
         {
             $bankTxnId      = $bankTransaction[Entity::BANK_TRANSACTION_ID];
+            $bankTxnSrlNo   = $bankTransaction[Entity::BANK_SERIAL_NUMBER];
             $bankTxnDate    = $bankTransaction[Entity::TRANSACTION_DATE];
             $bankTxnChannel = $bankTransaction[Entity::CHANNEL];
 
@@ -86,7 +87,8 @@ class Core extends Base\Core
                 $bankTxnId,
                 $accountNumber,
                 $bankTxnDate,
-                $bankTxnChannel);
+                $bankTxnChannel,
+                $bankTxnSrlNo);
 
             if ($txnExists === true)
             {

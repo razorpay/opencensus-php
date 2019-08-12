@@ -5209,3 +5209,7 @@ ALTER TABLE reversals
 ALTER TABLE external
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
     ADD INDEX external_utr_index (utr);
+
+ALTER TABLE `banking_account_statement`
+  DROP INDEX `banking_account_statement_bank_transaction_id_unique`,
+  ADD UNIQUE INDEX `banking_account_statement_bank_txn_id_srl_no_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`, `bank_serial_number`);
