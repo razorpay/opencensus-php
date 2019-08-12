@@ -132,7 +132,6 @@ class Entity extends Transaction\Entity
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
             [
-                External\Entity::ID,
                 External\Entity::ENTITY,
                 External\Entity::AMOUNT,
                 External\Entity::UTR,
