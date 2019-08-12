@@ -94,6 +94,16 @@ class Core extends Base\Core
             {
                 $skippedCount++;
 
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_INSERT_SKIP,
+                    [
+                        'bank_transaction_id'               => $bankTxnId,
+                        'bank_transaction_serial_number'    => $bankTxnSrlNo,
+                        'bank_transaction_date'             => $bankTxnDate,
+                        'bank_transaction_channel'          => $bankTxnChannel,
+                        'bank_account_number'               => $accountNumber,
+                    ]);
+
                 continue;
             }
 
