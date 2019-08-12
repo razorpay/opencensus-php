@@ -623,6 +623,17 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isDirectSettlementWithoutRefund(): bool
+    {
+        if (($this->payment->hasTerminal() === true) and
+            ($this->payment->terminal->isDirectSettlementWithoutRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function setFTSTransferId($ftsTransferId)
     {
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
@@ -967,16 +978,22 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
-        $callScroogeForSpeed = true;
+        $callScroogeForSpeed = false;
 
         if ($cardTransferFeatureEnabled === true)
         {
+            // Adding speed and other related params only for Card Transfer Feature enabled merchants
+            $callScroogeForSpeed = true;
+
+            // If speed_processed is already populated in the refund entity - we need not call scrooge
             if (empty($this->getSpeedProcessed()) === false)
             {
                 $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
+
                 $callScroogeForSpeed = false;
             }
-            else  if ($this->isRefundSpeedInstant() === true)
+            // Populating default values in case scrooge does not return proper response
+            else if ($this->isRefundSpeedInstant() === true)
             {
                 $response[self::SPEED_PROCESSED] = Speed::INSTANT;
             }
@@ -990,12 +1007,12 @@ class Entity extends Base\PublicEntity
 
         $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
 
-        $eligbleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
+        $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
 
         $callScroogeForStatus = ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
                                  ($publicStatusFeatureEnabled === true));
 
-        if (($eligbleForScroogeCall === true) and
+        if (($eligibleForScroogeCall === true) and
             (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
         {
             $app   = App::getFacadeRoot();

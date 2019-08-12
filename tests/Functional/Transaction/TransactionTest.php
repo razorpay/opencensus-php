@@ -294,6 +294,49 @@ class TransactionTest extends TestCase
         $this->assertEquals($oldBalance['balance'] - $payment['fee'], $balance['balance']);
     }
 
+    public function testDirectSettlementMerchnatBalanceAuthorizedPayment()
+    {
+         $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 0,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment = $this->createDirectSettlementPayment();
+
+        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->fixtures->base->editEntity('payment', $payment['id'], ['status' => 'authorized']);
+
+        $authPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($authPayment['id'], $payment['id']);
+
+        $this->assertEquals('authorized', $authPayment['status']);
+
+        $this->refundAuthorizedPayment($authPayment['id']);
+
+        $refundPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($refundPayment['id'], $authPayment['id']);
+
+        $this->assertEquals('refunded', $refundPayment['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refundPayment['amount'], $refund['amount']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($transaction['debit'], $refund['amount']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals($oldBalance['balance'] - $refund['amount'], $balance['balance']);
+    }
+
+
     public function testDirectSettlementNoMerchnatBalance()
     {
          $this->fixtures->create('credits', [

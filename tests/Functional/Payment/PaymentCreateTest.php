@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
-use RZP\Exception\BadRequestException;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
@@ -1510,6 +1509,65 @@ class PaymentCreateTest extends TestCase
                     'success' => false,
                     'data' => [
 
+                    ]
+                ];
+            });
+
+        $this->app->instance('card.otpelf', $otpelf);
+    }
+
+    public function testRupayPaymentFallbackTo3dsForCardBlockError()
+    {
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $this->mockOtpElfForBlockCardResponse();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '6075007194490126';
+
+        $this->fixtures->edit('iin', 607500, ['flows' => ['headless_otp' => '1']]);
+
+        $payment['preferred_auth'] = ['otp'];
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'card'                       => 1,
+            'gateway_merchant_id'       => 'HDFC000012340818',
+            'gateway_merchant_id2'      => '38R10000',
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\GatewayErrorException::class);
+    }
+
+    protected function mockOtpElfForBlockCardResponse()
+    {
+        $otpelf = Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+        $this->app->instance('card.otpelf', $otpelf);
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function (array $input)
+            {
+                return [
+                    'success' => false,
+                    'error' => [
+                        'reason' => 'CARD_BLOCKED'
                     ]
                 ];
             });

@@ -50,6 +50,8 @@ class ConfigKey
     const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
     const DOWNTIME_DETECTION                    = self::PREFIX . 'downtime:detection';
     const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
+    const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
+    const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
 
     // Gateway level configs
     const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';

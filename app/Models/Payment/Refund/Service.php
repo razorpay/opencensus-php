@@ -23,26 +23,10 @@ use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Service extends Base\Service
 {
-    /**
-     * We get the last 10 days refunds created of a gateway.
-     * We run the cron for this once a day.
-     */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 864000;
-
-    const MAX_REFUND_RETRY_ATTEMPTS = 3;
-
-    const ENTITIES          = 'entities';
-    const REFUND_IDS        = 'refund_ids';
-    const DB_FETCH_LIMIT    = 'limit';
-    const GATEWAY_ENTITY    = 'gateway_entity';
-    const REFUND_REFERENCE1 = 'refund_reference1';
-
-    const MAX_REFUND_VERIFY_REQUESTS     = 20;
-    const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
-
     protected $mutex;
     protected $core;
 
@@ -318,7 +302,15 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        return $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
+        $refundArray = $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
+
+        // Adding `processed_at` and `speed_change_time` params only for feature enabled dashboard merchants
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            $this->addParamsForDashboard($refundArray);
+        }
+
+        return $refundArray;
     }
 
     public function fetchEntity($id)
@@ -382,9 +374,9 @@ class Service extends Base\Service
 
         $skippedRefunds = [];
 
-        if (isset($input[self::REFUND_IDS]) === true)
+        if (isset($input[RefundConstants::REFUND_IDS]) === true)
         {
-            foreach ($input[self::REFUND_IDS] as $id)
+            foreach ($input[RefundConstants::REFUND_IDS] as $id)
             {
                 try
                 {
@@ -407,7 +399,7 @@ class Service extends Base\Service
                             $map[$value] = $refundEntity[$value];
                         }
 
-                        $response[self::ENTITIES][Constants\Entity::REFUND] = $map;
+                        $response[RefundConstants::ENTITIES][Constants\Entity::REFUND] = $map;
                     }
 
                     if (isset($input[Constants\Entity::PAYMENT]) === true)
@@ -419,12 +411,12 @@ class Service extends Base\Service
                             $map[$value] = $paymentEntity[$value];
                         }
 
-                        $response[self::ENTITIES][Constants\Entity::PAYMENT] = $map;
+                        $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT] = $map;
                     }
 
-                    if (isset($input[self::ENTITIES]) === true)
+                    if (isset($input[RefundConstants::ENTITIES]) === true)
                     {
-                        foreach ($input[self::ENTITIES] as $key => $values)
+                        foreach ($input[RefundConstants::ENTITIES] as $key => $values)
                         {
                             /*
                              * This is the structure of gateway_entity
@@ -435,7 +427,7 @@ class Service extends Base\Service
                              *           }
                              *       },
                              */
-                            if ($key === self::GATEWAY_ENTITY)
+                            if ($key === RefundConstants::GATEWAY_ENTITY)
                             {
                                 foreach ($values as $gatewayEntity => $action)
                                 {
@@ -455,7 +447,7 @@ class Service extends Base\Service
                                                 $map[$column] = $entity[$column];
                                             }
 
-                                            $response[self::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
+                                            $response[RefundConstants::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
                                         }
                                     }
                                 }
@@ -471,7 +463,7 @@ class Service extends Base\Service
                                     $map[$value] = $entity[$value];
                                 }
 
-                                $response[self::ENTITIES][$key] = $map;
+                                $response[RefundConstants::ENTITIES][$key] = $map;
                             }
                         }
                     }
@@ -493,9 +485,9 @@ class Service extends Base\Service
 
         $traceData = [
             'skipped_refunds'   => $skippedRefunds,
-            'request_count'     => count($input[self::REFUND_IDS] ?? []),
             'success_count'     => count($responseArray),
             'failure_count'     => count($skippedRefunds),
+            'request_count'     => count($input[RefundConstants::REFUND_IDS] ?? []),
         ];
 
         $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES, $traceData);
@@ -557,6 +549,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    protected function getModeForRefunds($refunds)
+    {
+        $refundModes = [];
+
+        $refundsArray = $refunds->toArrayWithItems();
+
+        foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
+        {
+            $speed = ($refundArray->getSpeedProcessed() === Speed::NORMAL)? Speed::NORMAL : Speed::INSTANT;
+
+            $refundId = $refundArray[Entity::ID];
+
+            $refundModes[$refundId] = $speed;
+        }
+
+        return $refundModes;
+    }
+
     protected function getPublicStatusForRefunds($refunds)
     {
         $refundStatus = [];
@@ -591,14 +601,35 @@ class Service extends Base\Service
             {
                 $refundStatus = $this->getPublicStatusForRefunds($refunds);
 
-                foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
+                foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
                 {
                     $refundId = $refundArray[Entity::ID];
 
-                    Entity::verifyIdAndSilentlyStripSign($refundId);
+                    Entity::verifyIdAndStripSign($refundId);
 
-                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+                    $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
                 }
+            }
+        }
+    }
+
+    public function addModeAndPublicStatus(&$refundsArray, $refunds)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        {
+            $refundModes = $this->getModeForRefunds($refunds);
+
+            $refundStatus = $this->getPublicStatusForRefunds($refunds);
+
+            foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
+            {
+                $refundId = $refundArray[Entity::ID];
+
+                Entity::verifyIdAndStripSign($refundId);
+
+                $refundArray[Entity::MODE] = $refundModes[$refundId];
+
+                $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
             }
         }
     }
@@ -799,7 +830,7 @@ class Service extends Base\Service
                 ]);
         }
 
-        $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
+        $createdAfter = time() - RefundConstants::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
         $refunds = $this->repo->refund->fetchMissingRefundsOfGateway($gateway, $createdAfter);
 
@@ -1075,7 +1106,7 @@ class Service extends Base\Service
                 //
                 $refunds = $this->repo
                                 ->refund
-                                ->fetchRefundsByGatewayAndAttempts($gateways, self::MAX_REFUND_RETRY_ATTEMPTS);
+                                ->fetchRefundsByGatewayAndAttempts($gateways, RefundConstants::MAX_REFUND_RETRY_ATTEMPTS);
 
                 $status = [];
 
@@ -1624,9 +1655,9 @@ class Service extends Base\Service
 
     public function updateProcessedAt(array $input)
     {
-        if (isset($input[self::DB_FETCH_LIMIT]) === true)
+        if (isset($input[RefundConstants::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input[self::DB_FETCH_LIMIT]);
+            $limit = intval($input[RefundConstants::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1647,9 +1678,9 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_PROCESSED_AT_INITIATED,
             [
-                'start_time'         => $start,
-                'created_at'         => $createdAt,
-                self::DB_FETCH_LIMIT => $limit
+                'start_time'                    => $start,
+                Entity::CREATED_AT              => $createdAt,
+                RefundConstants::DB_FETCH_LIMIT => $limit
             ]);
 
         $successCount  = $this->repo->refund->updateProcessedAt($limit, $createdAt);
@@ -1677,7 +1708,7 @@ class Service extends Base\Service
     {
         $updateFailures = [];
 
-        if (empty($input[self::REFUND_REFERENCE1]) === true)
+        if (empty($input[RefundConstants::REFUND_REFERENCE1]) === true)
         {
             return [
                 'success_count'       => 0,
@@ -1689,7 +1720,7 @@ class Service extends Base\Service
 
         $start = microtime(true);
 
-        foreach ($input[self::REFUND_REFERENCE1] as $refund)
+        foreach ($input[RefundConstants::REFUND_REFERENCE1] as $refund)
         {
             if ((empty($refund[Refund\Entity::ID]) === true) or (empty($refund[Refund\Entity::REFERENCE1]) === true))
             {
@@ -1739,7 +1770,7 @@ class Service extends Base\Service
         $failedCount = count($updateFailures);
 
         // Should be modified here if any new entities are created in future.
-        $successCount = count($input[self::REFUND_REFERENCE1]) - $failedCount;
+        $successCount = count($input[RefundConstants::REFUND_REFERENCE1]) - $failedCount;
 
         $response = [
             'success_count'    => $successCount,
@@ -1758,9 +1789,9 @@ class Service extends Base\Service
 
     public function backfillUpiMindgateReference1(array $input)
     {
-        if (isset($input[self::DB_FETCH_LIMIT]) === true)
+        if (isset($input[RefundConstants::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input[self::DB_FETCH_LIMIT]);
+            $limit = intval($input[RefundConstants::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1802,11 +1833,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_RRN_INITIATED,
             [
-                'start_time'         => $start,
-                'from'               => $from,
-                'to'                 => $to,
-                'delay'              => $delay,
-                self::DB_FETCH_LIMIT => $limit
+                'start_time'                    => $start,
+                'from'                          => $from,
+                'to'                            => $to,
+                'delay'                         => $delay,
+                RefundConstants::DB_FETCH_LIMIT => $limit
             ]);
 
         $successCount  = 0;
@@ -1843,7 +1874,7 @@ class Service extends Base\Service
     {
         $gateways = [Payment\Gateway::UPI_MINDGATE, Payment\Gateway::UPI_ICICI];
 
-        $limit = (isset($input[self::DB_FETCH_LIMIT]) === true) ? intval($input[self::DB_FETCH_LIMIT]) : 500;
+        $limit = (isset($input[RefundConstants::DB_FETCH_LIMIT]) === true) ? intval($input[RefundConstants::DB_FETCH_LIMIT]) : 500;
 
         $offset = (isset($input['offset']) === true) ? intval($input['offset']) : 0;
 
@@ -1862,11 +1893,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_SCROOGE_VERIFY_INITIATED,
             [
-                'from'               => $from,
-                'to'                 => $to,
-                'gateways'           => $gateways,
-                'refunds'            => $scroogeRefunds,
-                self::DB_FETCH_LIMIT => $limit,
+                'from'                          => $from,
+                'to'                            => $to,
+                'gateways'                      => $gateways,
+                'refunds'                       => $scroogeRefunds,
+                RefundConstants::DB_FETCH_LIMIT => $limit,
             ]);
 
         if (empty($scroogeRefunds) === true)
@@ -2002,9 +2033,9 @@ class Service extends Base\Service
             'result'     => []
         ];
 
-        if ($data['refund_count'] > self::MAX_REFUND_VERIFY_REQUESTS)
+        if ($data['refund_count'] > RefundConstants::MAX_REFUND_VERIFY_REQUESTS)
         {
-            $response['message'] = 'Maximum refunds that can be verified at once is ' . self::MAX_REFUND_VERIFY_REQUESTS;
+            $response['message'] = 'Maximum refunds that can be verified at once is ' . RefundConstants::MAX_REFUND_VERIFY_REQUESTS;
 
             return $response;
         }
@@ -2052,7 +2083,7 @@ class Service extends Base\Service
 
         $this->auth->setModeAndDbConnection($mode);
 
-        $limit = (isset($input[self::DB_FETCH_LIMIT]) === true)? intval($input[self::DB_FETCH_LIMIT]) : 5000;
+        $limit = (isset($input[RefundConstants::DB_FETCH_LIMIT]) === true)? intval($input[RefundConstants::DB_FETCH_LIMIT]) : 5000;
 
         $isScrooge = (empty($input[RefundEntity::IS_SCROOGE]) === false) ?
                      ($input[RefundEntity::IS_SCROOGE] === 'true') : true;
@@ -2060,18 +2091,18 @@ class Service extends Base\Service
         $updatedCount = 0;
 
         $requestData = [
-            self::DB_FETCH_LIMIT => $limit,
+            RefundConstants::DB_FETCH_LIMIT => $limit,
 
             RefundEntity::IS_SCROOGE => $isScrooge,
 
-            self::ENTITIES => []
+            RefundConstants::ENTITIES => []
         ];
 
         $responseData = [];
 
-        if (empty($input[self::ENTITIES]) === false)
+        if (empty($input[RefundConstants::ENTITIES]) === false)
         {
-            foreach ($input[self::ENTITIES] as $gateways)
+            foreach ($input[RefundConstants::ENTITIES] as $gateways)
             {
                 if ($limit <= 0)
                 {
@@ -2081,16 +2112,16 @@ class Service extends Base\Service
                 $fromTime = (empty($gateways['from']) === false) ? intval($gateways['from']) : time();
 
                 $toTime = (empty($gateways['to']) === false) ?
-                          intval($gateways['to']) : self::SCROOGE_TAGGING_LIVE_TIMESTAMP;
+                          intval($gateways['to']) : RefundConstants::SCROOGE_TAGGING_LIVE_TIMESTAMP;
 
                 $data = [
-                    RefundEntity::GATEWAY    => $gateways[RefundEntity::GATEWAY],
-                    self::DB_FETCH_LIMIT     => $limit,
-                    'from'                   => $fromTime,
-                    'to'                     => $toTime
+                    'to'                            => $toTime,
+                    'from'                          => $fromTime,
+                    RefundEntity::GATEWAY           => $gateways[RefundEntity::GATEWAY],
+                    RefundConstants::DB_FETCH_LIMIT => $limit,
                 ];
 
-                $requestData[self::ENTITIES][] = $data;
+                $requestData[RefundConstants::ENTITIES][] = $data;
 
                 if ($fromTime > $toTime)
                 {
@@ -2105,11 +2136,11 @@ class Service extends Base\Service
             }
         }
 
-        if (empty($input[self::REFUND_IDS]) === false)
+        if (empty($input[RefundConstants::REFUND_IDS]) === false)
         {
-            $count = $this->repo->refund->backfillIsScrooge($input[self::REFUND_IDS], $isScrooge, false);
+            $count = $this->repo->refund->backfillIsScrooge($input[RefundConstants::REFUND_IDS], $isScrooge, false);
 
-            $requestData[self::REFUND_IDS] = $input[self::REFUND_IDS];
+            $requestData[RefundConstants::REFUND_IDS] = $input[RefundConstants::REFUND_IDS];
 
             $updatedCount += $count;
         }
@@ -2121,5 +2152,70 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::REFUND_IS_SCROOGE_UPDATED_COUNT, $responseData);
 
         return $responseData;
+    }
+
+    protected function addParamsForDashboard(array &$refundArray)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        {
+            try
+            {
+                $refundId = $refundArray[Entity::ID];
+
+                Entity::verifyIdAndStripSign($refundId);
+
+                $refund = $this->repo->refund->find($refundId);
+
+                $this->addProcessedAtTime($refundArray, $refund);
+
+                $this->addSpeedChangeTime($refundArray, $refund);
+            }
+            catch(\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::WARNING,
+                    TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
+                    [
+                        'refund_id' => $refundId,
+                    ]);
+            }
+        }
+    }
+
+    protected function addProcessedAtTime(array &$refundArray, Entity $refund)
+    {
+        if ($refund->getSpeedProcessed() === RefundSpeed::INSTANT)
+        {
+            $refundArray[Entity::PROCESSED_AT] = $refund->getProcessedAt();
+        }
+    }
+
+    protected function addSpeedChangeTime(array &$refundArray, Entity $refund)
+    {
+        if (($refund->getSpeedDecisioned() === RefundSpeed::OPTIMUM) and
+            ($refund->getSpeedProcessed() !== RefundSpeed::INSTANT))
+        {
+            $queryParams = [
+                RefundConstants::SPEED_CHANGE_TIME => 1,
+            ];
+
+            $scroogeResponse = $this->app['scrooge']->getPublicRefund($refundArray[Entity::ID], $queryParams);
+
+            $scroogeResponseCode = $scroogeResponse[RefundEntity::RESPONSE_CODE];
+
+            if ((in_array($scroogeResponseCode, [200, 201, 204], true) === false) or
+                (isset($scroogeResponse[RefundEntity::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME]) === false))
+            {
+                throw new Exception\RuntimeException('Unexpected response received from scrooge service');
+            }
+
+            $speedChangeTime = $scroogeResponse[RefundEntity::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME];
+
+            if ($speedChangeTime !== null)
+            {
+                $refundArray[RefundConstants::SPEED_CHANGE_TIME] = $speedChangeTime;
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
@@ -107,6 +108,11 @@ class Validator extends Base\Validator
 
     protected static $actionRules = [
         Entity::ACTION                      => 'required|custom'
+    ];
+
+    protected static $change2faSettingRules = [
+        User\Entity::PASSWORD         => 'required|between:6,50',
+        Entity::SECOND_FACTOR_AUTH    => 'required|boolean',
     ];
 
     protected static $bulkTagRules = [

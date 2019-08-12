@@ -270,6 +270,9 @@ final class Route
         'terminal_check_encrypted_value'           => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
         'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
+        'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
+        'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
+        'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
@@ -818,7 +821,12 @@ final class Route
         'user_verify_contact'                      => ['post',     'users/verify_contact',                           'UserController@verifyContactWithOtp'                               ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
-
+        // 2fa route for user
+        'user_login_2fa_setup_mobile'              => ['post',     'users/login/2fa_setup/mobile',                   'UserController@setup2faMobileOnLogin'                              ],
+        'user_login_2fa_setup_verify_mobile'       => ['post',     'users/login/2fa_setup/verify-mobile',            'UserController@setup2faVerifyMobileOnLogin'                        ],
+        //user change his/her 2fa setting
+        'user_2fa_change_setting'                  => ['patch',    'users/2fa',                                      'UserController@change2faSetting'                                   ],
+        'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
         'tax_get_meta_states'                      => ['get',      'taxes/meta/states',                              'TaxController@getMetaStates'                                       ],
@@ -1150,6 +1158,7 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+        'banking_account_yesb_bulk_create'        => ['post',     'banking_accounts/bulk/create/yesbank',                      'BankingAccountController@bulkCreateBankingAccountsForYesbank' ],
     ];
 
     public static $public = [
@@ -1424,6 +1433,10 @@ final class Route
         'credit_note_list',
         'credit_note_get',
         'credit_note_apply',
+        'terminal_enable',
+        'terminal_disable',
+        'terminal_fetch',
+
         'account_create',
         'account_list',
         'account_fetch',
@@ -1520,9 +1533,12 @@ final class Route
         'subscriptions_expire',
         'subscriptions_retry',
         'user_change_password',
+        'user_2fa_change_setting',
         'user_confirm_by_data',
         'user_fetch',
         'user_login',
+        'user_login_2fa_setup_mobile',
+        'user_login_2fa_setup_verify_mobile',
         'user_merchant_upgrade',
         'user_register',
         'user_resend_verification',
@@ -1581,6 +1597,7 @@ final class Route
         'user_merchant_upgrade',
         'user_edit_self',
         'user_otp_create',
+        'user_2fa_change_setting',
         'user_verify_contact',
         'payout_create_with_otp',
         // payouts approve reject routes
@@ -1796,6 +1813,7 @@ final class Route
         'banking_account_credentials',
         'banking_accounts_list',
         'workflow_payout_amount_rules',
+        'merchant_2fa_change_setting',
     ];
 
     //
@@ -2185,6 +2203,7 @@ final class Route
         'fetch_throttle_settings',
         'edit_throttle_settings',
         'offer_create_bulk',
+        'banking_account_yesb_bulk_create',
 
         // action on dashboard
         'set_channel_action',
@@ -2625,7 +2644,7 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
-
+        'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
     ];
@@ -2751,12 +2770,15 @@ final class Route
         // won't have any merchant or admin in context.
         'dashboard_guest' => [
             'user_login',
+            'user_login_2fa_setup_mobile',
+            'user_login_2fa_setup_verify_mobile',
             'user_register',
             'razorx_guest',
             'org_get_by_hostname',
             'user_reset_password_create',
             'user_merchant_upgrade',
             'user_change_password',
+            'user_2fa_change_setting',
             'user_fetch',
             'invitation_action',
             'invitation_fetch_by_token',

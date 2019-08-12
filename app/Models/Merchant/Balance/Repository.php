@@ -272,7 +272,7 @@ class Repository extends Base\Repository
     public function getBalanceByMerchantIdAccountNumberAndChannelOrFail(
         string $merchantId,
         string $accountNumber,
-        string $channel)
+        string $channel): Entity
     {
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)

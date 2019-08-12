@@ -28,7 +28,7 @@ class SubMerchantBatchTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->proxyAuth();
+        $this->ba->adminAuth();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
@@ -91,6 +91,31 @@ class SubMerchantBatchTest extends TestCase
         $emails = $this->getEntities('merchant_email', [], true)['items'];
 
         $this->assertEmpty($emails);
+
+        $merchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertTrue($merchantDetail['submitted']);
+
+        $this->assertNotNull($merchantDetail['submitted_at']);
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertTrue($merchant['activated']);
+
+        $this->assertNotNull($merchant['activated_at']);
+    }
+
+    public function testSkipBankAccountRegistration()
+    {
+        $this->setUpForProcessing(__FUNCTION__, 'skipBankAccountRegistrationEntries');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(1, 1, 0);
 
         $merchantDetail = $this->getLastEntity('merchant_detail', true);
 
@@ -337,9 +362,53 @@ class SubMerchantBatchTest extends TestCase
 
         $this->assertNotNull($merchant->getActivatedAt());
 
+        $this->assertTrue($merchant->getInternationalAttribute());
+
         $merchantDetail = $merchant->merchantDetail;
 
         $this->assertEquals('instantly_activated', $merchantDetail->getActivationStatus());
+    }
+
+    public function testProcessSubMerchantBatchForNotEnablingInternational()
+    {
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        $merchant = $this->getDbEntity('merchant', ['email' => 'merch3@razorpay.com'], 'test');
+
+        $this->assertNotNull($merchant);
+
+        $this->assertFalse($merchant->getInternationalAttribute());
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals('activated', $merchantDetail->getActivationStatus());
+    }
+
+    public function testProcessSubMerchantBatchForEnablingInternational()
+    {
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        $merchant = $this->getDbEntity('merchant', ['email' => 'merch3@razorpay.com'], 'test');
+
+        $this->assertNotNull($merchant);
+
+        $this->assertTrue($merchant->getInternationalAttribute());
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals('activated', $merchantDetail->getActivationStatus());
     }
 
     protected function getDefaultFileEntries(): array
@@ -347,13 +416,13 @@ class SubMerchantBatchTest extends TestCase
         return $this->testData['defaultEntries'];
     }
 
-    protected function setUpForProcessing($callee): array
+    protected function setUpForProcessing($callee, $testData = 'defaultEntries'): array
     {
         $this->fixtures->merchant->markPartner();
 
         $this->createPartnerApplicationAndGetClientByEnv('dev');
 
-        $entries = $this->getDefaultFileEntries();
+        $entries = $this->testData[$testData];
 
         $this->createAndPutExcelFileInRequest($entries, $callee);
 

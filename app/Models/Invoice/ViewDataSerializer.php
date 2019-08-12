@@ -100,7 +100,10 @@ class ViewDataSerializer extends Base\Core
     {
         $merchantId = $this->merchant->getId();
 
-        $customLabels = ['hide_issued_to' => false];
+        $customLabels = [
+            'hide_issued_to' => false,
+            'expire_by'      => 'EXPIRES ON',
+        ];
 
         switch ($merchantId)
         {
@@ -149,6 +152,30 @@ class ViewDataSerializer extends Base\Core
                 $customLabels = [
                     'receipt_number' => 'ACCOUNT NO',
                 ];
+
+                break;
+
+            case Preferences::MID_BFL_BANK:
+            case Preferences::MID_BFL_CARD:
+            case Preferences::MID_RBL_PDD_CREDIT:
+            case Preferences::MID_RBL_PDD_BANK:
+                $customLabels = [
+                    'receipt_number'            => 'CREDIT CARD NUMBER',
+                    'amount'                    => 'TOTAL AMOUNT DUE',
+                    'first_payment_min_amount'  => 'MAD', //I.e. Minimum Amount Due
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_LAPOD:
+                $customLabels = [
+                    'receipt_number'  =>  'LOAN ACCOUNT NUMBER',
+                    'amount'          =>  'DROP AMOUNT',
+                    'expire_by'       =>  'NEW LIMIT DATE',
+                    'hide_issued_to'  =>  true,
+                ];
+
+                break;
 
         }
 

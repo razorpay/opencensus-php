@@ -8,6 +8,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Mozart\WalletPhonepe;
 use RZP\Gateway\Mozart\NetbankingSib;
+use RZP\Gateway\Mozart\NetbankingCbi;
 use RZP\Gateway\Mozart\NetbankingYesb;
 use RZP\Gateway\Mozart\NetbankingCub;
 use RZP\Models\Payment\Gateway as PaymentGateway;
@@ -103,6 +104,44 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
 
         $formattedData = $this->generateText($data, '|');
+
+        return $formattedData;
+    }
+
+    protected function netbanking_cbi($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+
+        $this->fileToWriteName = 'DailyRecon-' . Carbon::now(Timezone::IST)->format('dmY');
+
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('Ymd');
+
+            $col = [
+                NetbankingCbi\ReconFields::PAYMENT_ID            => $row['payment']['id'],
+                NetbankingCbi\ReconFields::BANK_REFERENCE_NUMBER =>
+                    $this->fetchFieldFromJsonData(
+                        $row['mozart']['raw'],
+                        'bank_payment_id'),
+                NetbankingCbi\ReconFields::AMOUNT                => $row['payment']['amount'] / 100,
+                NetbankingCbi\ReconFields::STATUS                => 'Y',
+                NetbankingCbi\ReconFields::DATE                  => $date,
+                NetbankingCbi\ReconFields::ACCOUNT_NUMBER        => '123456789',
+                NetbankingCbi\ReconFields::ACCOUNT_TYPE          => '01',
+            ];
+
+            $this->content($col, 'col_payment_cbi_nb_recon');
+
+            $data[] = $col;
+        }
+
+        $formattedData = $this->generateText($data, '^');
 
         return $formattedData;
     }

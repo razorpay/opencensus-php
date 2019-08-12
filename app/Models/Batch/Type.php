@@ -90,6 +90,7 @@ class Type
         self::TERMINAL,
         self::TERMINAL_CREATION,
         self::MERCHANT_ONBOARDING,
+        self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
     ];
 
@@ -188,6 +189,18 @@ class Type
     ];
 
     /**
+     * Following batch types get processed via Kubernetes Job, this is used for long
+     * running batches. These batches first get pushed into SQS queue, then worker picks up
+     * from the queue and initiate K8s job.
+     *
+     * @var array
+     */
+    public static $kubernetesJobQueueGroup = [
+        // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
+        self::RECONCILIATION,
+    ];
+
+    /**
      * Following batch types are not yet completely migrated to new batch service.
      * @var array
      */
@@ -249,6 +262,11 @@ class Type
     public static function isKubernetesJobGroup(string $type): bool
     {
         return in_array($type, self::$kubernetesJobGroup, true);
+    }
+
+    public static function isKubernetesJobQueueGroup(string $type): bool
+    {
+        return in_array($type, self::$kubernetesJobQueueGroup, true);
     }
 
     public static function isAppType(string $type): bool

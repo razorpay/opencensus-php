@@ -71,9 +71,12 @@ class Activate extends Base\Core
 
         $this->validateMethodsAndPricing($merchant);
 
-        (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
+        if (Detail\Core::shouldSkipBankAccountRegistration() === false)
+        {
+            (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
 
-        $merchant->getValidator()->validateHasBankAccount();
+            $merchant->getValidator()->validateHasBankAccount();
+        }
 
         $merchant->enableReceiptEmails();
 

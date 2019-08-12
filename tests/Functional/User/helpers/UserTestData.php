@@ -153,6 +153,417 @@ return [
         ],
     ],
 
+    'testUserEnable2fa' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => true,
+            ],
+        ],
+    ],
+
+    'testFailedUserEnable2faIncorrectPass' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PASSWORD,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PASSWORD,
+        ],
+    ],
+
+    'testUserDisable2fa' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => false,
+            ],
+        ],
+    ],
+
+    'testFailedUserEnable2faMerchant2faEnforced' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_ENFORCED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_ENFORCED,
+        ],
+    ],
+
+    'testFailedUserDisable2faMerchant2faEnforced' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_ENFORCED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_ENFORCED,
+        ],
+    ],
+
+    'testFailedUserEnable2faMobNotVerified' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testFailedUserEnable2faMobNotPresent' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testFailedLogin2faNoOtp' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testFailedLogin2faEnforcedNoOtp' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testLogin2faCorrectOtp' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'             => '9999999999',
+                'contact_mobile_verified'    => true,
+                'confirmed'                  => true,
+                'second_factor_auth'         => true,
+                'second_factor_auth_setup'   => true,
+                'restricted'                 => false,
+                'merchants'                  => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ]
+    ],
+
+    'testFailedLogin2faIncorrectOtp' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+        ],
+    ],
+
+    'testFailedLoginAccountLocked' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LOCKED_USER_LOGIN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
+        ],
+    ],
+
+    'testFailedLogin2faNotSetup' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testMaxWrongOtpLocksAccount' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+        ],
+    ],
+
+    'testFailed2faSetupUser2faNotEnabled' => [
+        'request' => [
+            'url'     => '/users/login/2fa_setup/mobile',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
+        ],
+    ],
+
+    'testFailed2faSetupUserLocked' => [
+        'request' => [
+            'url'     => '/users/login/2fa_setup/mobile',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED,
+        ],
+    ],
+
+    'testFailed2faSetupUserRestricted' => [
+        'request' => [
+            'url'     => '/users/login/2fa_setup/mobile',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
+        ],
+    ],
+
+    'testFailed2faSetupUserAlreadySetup' => [
+        'request' => [
+            'url'     => '/users/login/2fa_setup/mobile',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
+        ],
+    ],
+
+    'test2faSetupMobile' => [
+        'request' => [
+            'url'     => '/users/login/2fa_setup/mobile',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testFailed2faSetupVerifyMobileWrongOtp' => [
+        'request' => [
+            'url'     => '/users/login/2fa_setup/verify-mobile',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_SETUP_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_SETUP_INCORRECT_OTP,
+        ],
+    ],
+
+    'test2faSetupVerifyMobile' => [
+        'request' => [
+            'url'     => '/users/login/2fa_setup/verify-mobile',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testConfirmByToken' => [
         'request' => [
             'url'     => '/users/confirm_user_by_data',

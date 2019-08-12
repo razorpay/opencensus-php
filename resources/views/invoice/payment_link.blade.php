@@ -288,7 +288,11 @@ $custom_labels                  = $data['custom_labels'];
 
                                 @if($invoice_expire_by and in_array($invoice_status, array('paid', 'partially_paid')) === false)
                                     <div class="info">
-                                        {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
+                                        @if($invoice_status === 'expired')
+                                            EXPIRED ON
+                                        @else
+                                            {{isset($custom_labels['expire_by']) ? $custom_labels['expire_by'] : 'EXPIRES ON'}}
+                                        @endif
                                         <div class="val">
                                             {{epoch_format($invoice_expire_by)}}
                                         </div>
@@ -490,7 +494,11 @@ $custom_labels                  = $data['custom_labels'];
 
                         @if($invoice_expire_by and in_array($invoice_status, array('paid', 'partially_paid')) === false)
                             <div class="info">
-                                {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
+                                @if($invoice_status === 'expired')
+                                    EXPIRED ON
+                                @else
+                                    {{isset($custom_labels['expire_by']) ? $custom_labels['expire_by'] : 'EXPIRES ON'}}
+                                @endif
                                 <div class="val">{{epoch_format($invoice_expire_by)}} </div>
                             </div>
                         @endif

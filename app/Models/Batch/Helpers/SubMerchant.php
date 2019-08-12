@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Helpers;
 
+use Illuminate\Support\Arr;
 use RZP\Models\Batch\Header;
 use RZP\Models\User\Entity as User;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -85,6 +86,27 @@ class SubMerchant
             MDEntity::COMPANY_PAN                 => $e[Header::COMPANY_PAN],
             MDEntity::COMPANY_PAN_NAME            => $e[Header::COMPANY_PAN_NAME],
         ];
+    }
+
+    /**
+     * SubMerchant batch upload flow allows skipping bank account registration as the partner
+     * is there liable for the risk and the submerchants must be activated directly.
+     *
+     *  so removing bank account details from input
+     *
+     * @param array $detailInput
+     *
+     * @return array
+     */
+    public static function sanitizeMerchantDetailInput(array $detailInput) {
+
+        $keysToSanitize = [
+            Header::BANK_ACCOUNT_NUMBER,
+            Header::BANK_BRANCH_IFSC,
+            Header::BANK_ACCOUNT_NAME,
+        ];
+
+        return Arr::except($detailInput, $keysToSanitize);
     }
 
     public static function getInstantActivationInput(array $e): array

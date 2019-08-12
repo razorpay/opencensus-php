@@ -853,6 +853,7 @@ class ErrorCode
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
 
+    const SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND                                       = 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND';
     const SERVER_ERROR_MOZART_PARALLELIZER_ERROR                                    = 'SERVER_ERROR_MOZART_PARALLELIZER_ERROR';
     const SERVER_ERROR_GATEWAY_NOT_SET                                              = 'SERVER_ERROR_GATEWAY_NOT_SET';
     const SERVER_ERROR_GATEWAY_FIELD_MISMATCH                                       = 'SERVER_ERROR_GATEWAY_FIELD_MISMATCH';
@@ -898,6 +899,7 @@ class ErrorCode
     const SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT                               = 'SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT';
     const SERVER_ERROR_FTA_MODE_SENT_FOR_VPA                                        = 'SERVER_ERROR_FTA_MODE_SENT_FOR_VPA';
     const SERVER_ERROR_FTA_PREFERRED_MODE_UNSUPPORTED                               = 'SERVER_ERROR_FTA_PREFERRED_MODE_UNSUPPORTED';
+    const SERVER_ERROR_CARD_TYPE_NOT_SUPPORTED                                      = 'SERVER_ERROR_CARD_TYPE_NOT_SUPPORTED';
 
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                                   = 'SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA                           = 'SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA';
@@ -1027,6 +1029,20 @@ class ErrorCode
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                       = 'BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID';
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
+
+    const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                        = 'BAD_REQUEST_USER_2FA_ALREADY_SETUP';
+    const BAD_REQUEST_LOCKED_USER_LOGIN                                             = 'BAD_REQUEST_LOCKED_USER_LOGIN';
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                       = 'BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP';
+    const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                       = 'BAD_REQUEST_2FA_SETUP_INCORRECT_OTP';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                              = 'BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA';
+    const BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED                                   = 'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED';
+    const BAD_REQUEST_USER_2FA_SETUP_REQUIRED                                       = 'BAD_REQUEST_USER_2FA_SETUP_REQUIRED';
+    const BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED                                 = 'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED';
+    const BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED                                = 'BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED';
+    const BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED                                      = 'BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED';
+    const BAD_REQUEST_USER_2FA_ENFORCED                                             = 'BAD_REQUEST_USER_2FA_ENFORCED';
+    const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                               = 'BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER';
+    const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                     = 'BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY';
 
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
@@ -1237,6 +1253,10 @@ class ErrorCode
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED';
     const SERVER_ERROR_VAULT_TOKENIZE_FAILED                                        = 'SERVER_ERROR_VAULT_TOKENIZE_FAILED';
     const SERVER_ERROR_BANKING_ACCOUNT_NUMBER_LIMIT_REACHED                         = 'SERVER_ERROR_BANKING_ACCOUNT_NUMBER_LIMIT_REACHED';
+
+    const SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR                                   = 'SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR';
+
+    const SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED                                 = 'SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED';
 
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                      = 'GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                           = 'GATEWAY_ERROR_UNEXPECTED_STATUS';

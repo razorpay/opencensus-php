@@ -4,7 +4,7 @@ namespace RZP\Services;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Jobs\RequestJob;
+use RZP\Jobs\HubspotRequestJob;
 
 class HubspotClient
 {
@@ -18,10 +18,9 @@ class HubspotClient
 
     protected $eventData = [];
 
-    protected $relativeUrls =
-        [
-            'update_contact_properties_by_email' => 'contacts/v1/contact/createOrUpdate/email/',
-        ];
+    protected $relativeUrls = [
+        'update_contact_properties_by_email' => 'contacts/v1/contact/createOrUpdate/email/',
+    ];
 
     public function __construct($app)
     {
@@ -77,7 +76,7 @@ class HubspotClient
                 'content' => $request['content'],
             ]);
 
-        RequestJob::dispatch($request);
+        HubspotRequestJob::dispatch($request);
     }
 
     protected function getAbsoluteUrl(array $payloadData)

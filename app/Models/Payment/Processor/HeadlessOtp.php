@@ -192,6 +192,16 @@ trait HeadlessOtp
                 true);
         }
 
+        if ((isset($response['error']['reason']) === true) and
+            (array_key_exists($response['error']['reason'], self::$elfErrorCodeMapping) === true))
+        {
+            $errorCode = self::$elfErrorCodeMapping[$response['error']['reason']];
+
+            throw new Exception\GatewayErrorException(
+                $errorCode
+            );
+        }
+
         if ($this->isRupayNetwork($payment) === true)
         {
             throw new Exception\IntegrationException("Unknown error for Rupay transaction",

@@ -795,6 +795,146 @@ return [
         ],
     ],
 
+    'testMerchantRestricted2faEnable' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => true,
+            ],
+        ],
+    ],
+
+    'testMerchant2faEnable' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => true,
+            ],
+        ],
+    ],
+
+    'testFailedMerchant2faEnableInvalidPass' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PASSWORD,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PASSWORD,
+        ],
+    ],
+
+    'testMerchant2faDisable' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => false,
+            ],
+        ],
+    ],
+
+    'testFailedMerchantEnable2faMobNotPresent' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY,
+        ],
+    ],
+
+    'testFailedMerchantEnable2faMobNotVerified' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY,
+        ],
+    ],
+
+    'testFailedMerchantEnable2faNotOwner' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testFailedMerchantRestricted2faEnableUserMobNotVerified' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
     'testEditMerchantConfig' => [
         'request'  => [
             'content' => [
