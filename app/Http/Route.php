@@ -1158,6 +1158,7 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+        'banking_account_yesb_bulk_create'        => ['post',     'banking_accounts/bulk/create/yesbank',                      'BankingAccountController@bulkCreateBankingAccountsForYesbank' ],
     ];
 
     public static $public = [
@@ -2202,6 +2203,7 @@ final class Route
         'fetch_throttle_settings',
         'edit_throttle_settings',
         'offer_create_bulk',
+        'banking_account_yesb_bulk_create',
 
         // action on dashboard
         'set_channel_action',
@@ -2642,7 +2644,7 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
-
+        'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
     ];
