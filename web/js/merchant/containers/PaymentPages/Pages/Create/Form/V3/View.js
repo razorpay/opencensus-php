@@ -5,6 +5,8 @@ import { GenericCreator, GenericField } from './Generic/BaseForm';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { constructFieldSchema } from '../Fields/V3';
 
+import AddUDFButton from './AddUDFButton';
+
 import {
   updateData,
   deleteInSchema,
@@ -189,15 +191,7 @@ export default class View extends React.PureComponent {
             </div>
 
             <div class="Field-content">
-              <Button.Transparent
-                class="btn-dotted"
-                onClick={e => this.openCreator(e, CreatorType.GENERIC)}
-              >
-                <span class="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}
-                <span>
-                  <b>Input field</b>
-                </span>
-              </Button.Transparent>
+              <AddUDFButton />
 
               <Button.Transparent
                 class="btn-dotted"
