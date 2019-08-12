@@ -90,11 +90,11 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function checkUserAccess(string $userId)
+    public function checkUserAccess()
     {
         $input = Request::all();
 
-        $data = $this->service()->checkUserAccess($userId, $input);
+        $data = $this->service()->checkUserAccess($input);
 
         return ApiResponse::json($data);
     }

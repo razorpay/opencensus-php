@@ -302,9 +302,13 @@ class Service extends Base\Service
         return (new Core)->login($input);
     }
 
-    public function checkUserAccess(string $userId, array $input)
+    public function checkUserAccess(array $input)
     {
         $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($input['merchant_id']);
+
+        $user = $this->auth->getUser();
+
+        $userId = $user->getId();
 
         return $this->core()->checkUserAccess($userId, $merchantId);
     }

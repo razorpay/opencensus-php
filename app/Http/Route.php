@@ -807,11 +807,11 @@ final class Route
         'user_reset_password_token'                => ['post',     'users/reset-password-token',                     'UserController@postChangePasswordByToken'                          ],
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
-        'user_access'                              => ['get',      'users/{id}/access',                              'UserController@checkUserAccess'                                    ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
         'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
+        'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
         // Same as user_fetch but for admin
         'user_fetch_admin'                         => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
@@ -1528,11 +1528,11 @@ final class Route
         'user_change_password',
         'user_2fa_change_setting',
         'user_confirm_by_data',
+        'user_access',
         'user_fetch',
         'user_login',
         'user_login_2fa_setup_mobile',
         'user_login_2fa_setup_verify_mobile',
-        'user_access',
         'user_merchant_upgrade',
         'user_register',
         'user_resend_verification',
@@ -1586,6 +1586,7 @@ final class Route
     // Below routes deal only with user entity without context of merchant.
     public static $userWhitelist = [
         'user_resend_verification',
+        'user_access',
         'user_fetch',
         'user_change_password',
         'user_merchant_upgrade',
@@ -2765,7 +2766,6 @@ final class Route
             'user_login',
             'user_login_2fa_setup_mobile',
             'user_login_2fa_setup_verify_mobile',
-            'user_access',
             'user_register',
             'razorx_guest',
             'org_get_by_hostname',
@@ -2788,6 +2788,7 @@ final class Route
 
         'dashboard_internal' => [
             'admin_oauth_authenticate',
+            'user_access',
         ],
 
         'cron' => [
