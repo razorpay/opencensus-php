@@ -44,11 +44,48 @@ export default class MerchantUser extends GenericEntity {
     });
   }
 
+  updateMember({ id, ...data }) {
+    return this.makeGenericAjaxCall({
+      url: `users/${id}/update`,
+      method: 'put',
+      data: {
+        ...data,
+        mode: 'live',
+      },
+    });
+  }
+
   cancelInvitation(id) {
     return this.makeGenericAjaxCall({
       url: 'invitations/' + id,
       method: 'delete',
       data: { mode: 'live' },
     });
+  }
+
+  sendInvitation(data) {
+    return this.makeGenericAjaxCall({
+      url: 'invitations',
+      method: 'post',
+      data: {
+        ...data,
+        mode: 'live',
+      },
+    }).then(response => ({
+      ...response.data,
+    }));
+  }
+
+  updateInvitation({ id, ...data }) {
+    return this.makeGenericAjaxCall({
+      url: `invitations/${id}`,
+      method: 'patch',
+      data: {
+        ...data,
+        mode: 'live',
+      },
+    }).then(response => ({
+      ...response.data,
+    }));
   }
 }

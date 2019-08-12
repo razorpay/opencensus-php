@@ -2,18 +2,25 @@ import { connect } from 'react-redux';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ShowWhen from 'merchant/components/ShowWhen';
-import Toggle2FA from './Toggle2FA';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTeam as fetchAll } from 'merchant/modules/collection';
-import { removeUser, cancelInvitation } from 'merchant/modules/team';
+import {
+  removeUser,
+  cancelInvitation,
+  updateMember,
+  updateInvitation,
+  sendInvitation,
+} from 'merchant/modules/team';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 
 import Actions from './Actions';
+import Toggle2FA from './Toggle2FA';
+import NewInvitation from './NewInvitation';
 
 const allRoles = {
   ...roles,
@@ -41,11 +48,14 @@ const userRole = {
   value: user => <p>{(allRoles[user.role] || {}).label}</p>,
 };
 
-@connect(state => ({ ...state.team }), {
+@connect(state => ({ ...state.team, user: state.session.user.user }), {
   fetchAll,
   removeUser,
+  updateMember,
   cancelInvitation,
+  updateInvitation,
   showNotification,
+  sendInvitation,
   openModal,
   closeModal,
 })
@@ -58,6 +68,10 @@ export default class ManageTeamContainer extends ListContainer {
         item={item}
         removeUser={this.props.removeUser}
         cancelInvitation={this.props.cancelInvitation}
+        updateMember={this.props.updateMember}
+        updateInvitation={this.props.updateInvitation}
+        openModal={this.props.openModal}
+        closeModal={this.props.closeModal}
         onRemove={() => {
           this.props.showNotification({
             type: 'success',
@@ -74,11 +88,20 @@ export default class ManageTeamContainer extends ListContainer {
       component: (
         <div>
           <ModalHeader
-            title="Add Team Member"
+            title="Invite New Member"
             onCloseClick={this.props.closeModal}
+            onSuccess={this.props.closeModal}
           />
           <div class="modal-body">
-            <NewInvitation />
+            <NewInvitation
+              extraFields={{ sender_name: this.props.user.name }}
+              modalType="invite"
+              onSuccess={this.props.closeModal}
+              onFormSubmit={this.props.sendInvitation}
+              successMsg={data =>
+                'Invitation has been successfully sent to ' + data.email
+              }
+            />
           </div>
         </div>
       ),
@@ -105,6 +128,12 @@ export default class ManageTeamContainer extends ListContainer {
                 <i class="icon icon-external-link" />
               </a>
             </ShowWhen>
+            <button
+              class="btn btn-primary pull-right"
+              onClick={this.addNewMember}
+            >
+              Invite New User
+            </button>
           </div>
         </HeaderAction>
         <div class="ManageTeam--list">

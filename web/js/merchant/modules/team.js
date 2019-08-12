@@ -12,6 +12,8 @@ export const USER_UPDATE = 'USER_UPDATE';
 export const USER_REMOVE = 'USER_REMOVE';
 
 const TEAM_MEMBER_DELETE = 'TEAM_MEMBER_DELETE';
+const TEAM_MEMBER_EDIT = 'TEAM_MEMBER_EDIT';
+const TEAM_MEMBER_CREATE = 'TEAM_MEMBER_CREATE';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -37,18 +39,6 @@ export const fetchTeamDetails = params => {
   };
 };
 
-export const sendInvitation = data => {
-  return {
-    type: INVITATION_SEND,
-    payload: merchantFetch({
-      url: 'invitations',
-      method: 'post',
-      mode: 'live',
-      data,
-    }),
-  };
-};
-
 export const resendInvitation = (inviteId, data) => {
   return {
     type: INVITATION_RESEND,
@@ -57,18 +47,6 @@ export const resendInvitation = (inviteId, data) => {
       method: 'put',
       mode: 'live',
       data,
-    }),
-  };
-};
-
-export const updateInvitation = (inviteId, data) => {
-  return {
-    type: INVITATION_UPDATE,
-    payload: merchantFetch({
-      url: `invitations/${inviteId}`,
-      method: 'patch',
-      data,
-      mode: 'live',
     }),
   };
 };
@@ -90,6 +68,27 @@ export const cancelInvitation = inviteId => {
   return {
     type: TEAM_MEMBER_DELETE,
     payload: team.cancelInvitation(inviteId),
+  };
+};
+
+export const sendInvitation = data => {
+  const team = new Team();
+  return {
+    type: TEAM_MEMBER_CREATE,
+    payload: team.sendInvitation(data),
+  };
+};
+
+export const updateInvitation = data => ({
+  type: TEAM_MEMBER_EDIT,
+  payload: new Team().updateInvitation(data),
+});
+
+export const updateMember = data => {
+  const team = new Team();
+  return {
+    type: TEAM_MEMBER_EDIT,
+    payload: team.updateMember(data),
   };
 };
 
