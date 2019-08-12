@@ -1,37 +1,39 @@
 import React, { Component } from 'react';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { OtpInput } from 'merchant/components/OtpInput';
-import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required, phone } from 'rzp/utils/validators';
 import AsyncButton from 'react-async-button';
 
 const VerifyOtp = ({
+  otp,
   mobile,
   closeModal,
   onConfirm,
   verified,
   onOtpEnter,
-  changeMobile,
+  onChangeMobileNumber,
 }) => {
   let otpValue = '';
+  const inCorrectOtp = undefined === verified ? false : !verified;
   return (
     <div>
       <ModalHeader title="Verify Mobile Number" onCloseClick={closeModal} />
       <div class="modal-body">
         <p>
           An SMS with 6-digit OTP has been sent to {mobile}
-          <a onClick={changeMobile}>[Change]</a>
+          <a onClick={onChangeMobileNumber}>[Change]</a>
         </p>
         <p>OTP will expire in 5mins. </p>
 
         <OtpInput
+          otp={otp}
           onComplete={otp => {
             otpValue = otp;
-            onOtpEnter && onOtpEnter(otp);
+            onOtpEnter && onOtpEnter(otpValue);
           }}
-          wrong={!verified}
+          wrong={inCorrectOtp}
         />
         <p>Didn’t receive an SMS? Sending.</p>
         <div class="Modal__actions">
@@ -144,7 +146,10 @@ const DisableAgreement = ({ closeModal, onAgree }) => {
 })
 class AskMobileNumber extends Component {
   render() {
-    const { closeModal, onComplete, handleSubmit } = this.props;
+    const sendOtp = ({ contact_mobile }) => {
+      return onComplete(contact_mobile);
+    };
+    const { closeModal, onComplete, handleSubmit, mobile } = this.props;
     return (
       <div class="2fa-modal">
         <ModalHeader
@@ -157,7 +162,7 @@ class AskMobileNumber extends Component {
             everytime you log in.
           </p>
           <form
-            onSubmit={handleSubmit(values => onComplete(values.contact_mobile))}
+            onSubmit={handleSubmit(sendOtp)}
             style={{ marginBottom: '35px' }}
           >
             <div class="form-group">
@@ -167,15 +172,7 @@ class AskMobileNumber extends Component {
                 component={InputField}
                 class="form-control"
                 placeholder="Phone Number"
-                validate={[
-                  required(),
-                  phone('Invalid Mobile'),
-                  value => {
-                    if (value === this.props.user.user.contact_mobile) {
-                      return "You can't invite yourself";
-                    }
-                  },
-                ]}
+                validate={[required(), phone('Invalid Mobile')]}
               />
             </div>
             <div class="form-group">
@@ -183,9 +180,7 @@ class AskMobileNumber extends Component {
                 class="btn btn-primary btn-block"
                 text="Send OTP"
                 pendingText="Sending OTP..."
-                onClick={handleSubmit(values =>
-                  onComplete(values.contact_mobile)
-                )}
+                onClick={handleSubmit(sendOtp)}
               />
             </div>
           </form>
@@ -201,23 +196,28 @@ class AskMobileNumber extends Component {
   },
 })
 class PasswordVerification extends Component {
+  state = {
+    disableAbort: false, //If form-submit is in progress
+  };
   render() {
     const { closeModal, title, email, handleSubmit, onConfirm } = this.props;
-    const confimrPassword = values => onConfirm(values.password);
-
+    const confimrPassword = handleSubmit(({ password }) => onConfirm(password));
     return (
       <div class="2fa-modal">
-        <ModalHeader title={title} onCloseClick={closeModal} />
+        <ModalHeader
+          title={title}
+          onCloseClick={() => {
+            !this.state.disableAbort && closeModal();
+          }}
+        />
         <div class="modal-body">
           <p>
             To confirm please enter the password for <strong>{email}</strong>
           </p>
-          <form
-            onSubmit={handleSubmit(confimrPassword)}
-            style={{ marginBottom: '35px' }}
-          >
+          <form onSubmit={confimrPassword} style={{ marginBottom: '35px' }}>
             <div class="form-group">
               <Field
+                type="password"
                 name="password"
                 component={InputField}
                 class="form-control"
@@ -231,6 +231,7 @@ class PasswordVerification extends Component {
               style={{ display: 'flex', justifyContent: 'space-between' }}
             >
               <button
+                disabled={this.state.disableAbort}
                 class="btn btn-default"
                 onClick={closeModal}
                 style={{ width: '131px' }}
@@ -242,7 +243,12 @@ class PasswordVerification extends Component {
                 class="btn btn-primary btn-block"
                 text="Confirm"
                 pendingText="Please Wait..."
-                onClick={handleSubmit(confimrPassword)}
+                onClick={() => {
+                  this.setState(() => {
+                    return { disableAbort: true };
+                  });
+                  return confimrPassword();
+                }}
               />
             </div>
           </form>
