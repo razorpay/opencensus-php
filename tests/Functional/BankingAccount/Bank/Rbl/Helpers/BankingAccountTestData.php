@@ -578,32 +578,6 @@ return [
         ],
     ],
 
-    'testFetchBankingAccountRequests' => [
-        'request'  => [
-            'url'     => '/admin/banking_account',
-            'method'  => 'GET',
-            'content' => [
-                'expand' => ['merchant','merchant.merchantDetail'],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'status'        => 'created',
-                        'merchant'      => [
-                            'merchant_detail' => [
-                                'contact_email' => 'test@razorpay.com'
-                            ]
-                        ]
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testFetchBankingAccountsOfCreatedStatus'  => [
         'request'  => [
             'url'     => '/admin/banking_account',
@@ -619,32 +593,6 @@ return [
                 'count'  => 0,
                 'admin'  => true,
                 'items'  => [],
-            ],
-        ],
-    ],
-
-    'testBankingAccountFetchForCurrentAccount' => [
-        'request'  => [
-            'url'     => '/admin/banking_account',
-            'method'  => 'GET',
-            'content' => [
-                'expand' => ['merchant','merchant.merchantDetail'],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'account_type'  => 'current',
-                        'merchant'      => [
-                            'merchant_detail' => [
-                                'contact_email' => 'test@razorpay.com'
-                            ]
-                        ]
-                    ],
-                ],
             ],
         ],
     ],

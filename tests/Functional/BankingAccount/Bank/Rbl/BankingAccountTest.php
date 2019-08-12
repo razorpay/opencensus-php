@@ -473,24 +473,6 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
-    public function testBankingAccountFetchForCurrentAccount()
-    {
-        $this->createBankingAccount();
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
-
-    public function testFetchBankingAccountRequests()
-    {
-        $this->createBankingAccount();
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
-
     public function testBankingAccountFetchForCurrentAccountFailure()
     {
         $response = $this->createBankingAccount();
