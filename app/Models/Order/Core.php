@@ -75,6 +75,21 @@ class Core extends Base\Core
         return $order;
     }
 
+    public function getInputWithoutExtraParams(array $input)
+    {
+        $newInput = $input;
+
+        foreach (ExtraParams::allExtraParams as $extraParam)
+        {
+            if (array_key_exists($extraParam, $newInput) === true)
+            {
+                unset($newInput[$extraParam]);
+            }
+        }
+
+        return $newInput;
+    }
+
     protected function createAndAssociateBankAccount(Entity $order, array $input)
     {
         if (isset($input[Entity::BANK_ACCOUNT]) === false)
@@ -174,6 +189,22 @@ class Core extends Base\Core
             $data += [
                 Entity::BANK           => $order->getBank(),
             ];
+        }
+
+        $tokenRegistration = $order->getTokenRegistration();
+
+        if ($tokenRegistration !== null)
+        {
+            if ( ($tokenRegistration->getEntityType() === Entity::BANK_ACCOUNT) === true )
+            {
+                $bankAccount = $tokenRegistration->bankAccount;
+
+                $bankCode = $bankAccount->getBankCode();
+
+                $data[Entity::BANK] = $bankCode;
+
+                $data[Entity::BANK_ACCOUNT] = $bankAccount->getDataForCheckout();
+            }
         }
 
         return $data;

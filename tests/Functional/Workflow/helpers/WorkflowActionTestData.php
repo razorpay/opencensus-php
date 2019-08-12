@@ -235,6 +235,20 @@ return [
             ]
         ]
     ],
+
+    'testWorkflowCloseActionWhenEsSyncFails' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/w-actions/close/%s',
+        ],
+        'response' => [
+            'content' => [
+                "state"         => "closed",
+                "approved"      => false,
+            ]
+        ]
+    ],
+
     'testWorkflowCanOnlyBeClosedByMaker' => [
         'request' => [
             'method'    => 'PUT',

@@ -161,6 +161,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::BAJAJFINSERV,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB
         ];
 
@@ -378,6 +379,8 @@ class Gateway extends Base\Gateway
             $input['terminal'] = $input['terminal']->toArrayWithPassword();
         }
 
+        $input['terminal'] = $this->updateTerminalFromConfig($input);
+
         $gateway = $this->getGateway($input);
 
         $prevStepName = $this->getPreviousStepName($gateway);
@@ -423,6 +426,21 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function updateTerminalFromConfig($input)
+    {
+        switch ($input['payment']['gateway'])
+        {
+            case Payment\Gateway::NETBANKING_CUB:
+                $input['terminal']['gateway_secure_secret']      = $this->config['netbanking_cub']['gateway_secure_secret'];
+                $input['terminal']['gateway_secure_secret2']     = $this->config['netbanking_cub']['gateway_secure_secret2'];
+                $input['terminal']['gateway_terminal_password']  = $this->config['netbanking_cub']['gateway_terminal_password'];
+                $input['terminal']['gateway_terminal_password2'] = $this->config['netbanking_cub']['gateway_terminal_password2'];
+                break;
+        }
+
+        return $input['terminal'];
+    }
+
     protected function getPreviousStepName($gateway)
     {
         $previousActionForStep = [
@@ -462,6 +480,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => Action::PAY_VERIFY,
+            ],
+            Payment\Gateway::NETBANKING_CBI => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
             ],
             Payment\Gateway::GOOGLE_PAY => [
                 Action::PAY_INIT => null,
@@ -506,6 +529,12 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
+
+            Payment\Gateway::NETBANKING_CBI => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
@@ -750,6 +779,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
         ];
 
@@ -770,6 +800,7 @@ class Gateway extends Base\Gateway
         $formattedAmountGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::UPI_AIRTEL,
         ];
@@ -828,6 +859,7 @@ class Gateway extends Base\Gateway
         $fileBasedGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
         ];
 

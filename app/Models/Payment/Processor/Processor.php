@@ -7,6 +7,7 @@ use Route;
 use Config;
 use Carbon\Carbon;
 
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Risk;
@@ -804,6 +805,8 @@ class Processor
             $missing[] = 'contact';
         }
 
+        $host = $this->route->getHost();
+        
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -816,6 +819,7 @@ class Processor
             'method'    => 'upi',
             'version'   => '1',
             'missing'   => $missing,
+            'base'      => $host,
         ];
 
         return $coproto;
@@ -1748,6 +1752,8 @@ class Processor
             $error = $ex->getError();
 
             $this->disableTerminalIfApplicable($terminal, $error);
+
+            $this->changeTerminalCapabilityIfApplicable($terminal, $error);
 
             /*
              * Because error indicates gateway downtime, we might act on it later
@@ -2732,6 +2738,41 @@ class Processor
         }
 
         return true;
+    }
+
+    protected function changeTerminalCapabilityIfApplicable(Terminal\Entity $terminal, Error $error)
+    {
+        if (($error->getInternalErrorCode() === ErrorCode::GATEWAY_ERROR_PERMISSION_DENIED_FOR_ACTION) and
+            ($terminal->getGateway() === Payment\Gateway::AXIS_MIGS) and
+            ($terminal->getCapability() === Terminal\Capability::AUTHORIZE))
+        {
+            $terminal->setCapability(Terminal\Capability::ALL);
+
+            $this->repo->saveOrFail($terminal);
+
+            $this->app['slack']->queue(
+                TraceCode::TERMINAL_EDIT,
+                [
+                    'merchant_id'           => $terminal->getMerchantId(),
+                    'merchant_name'         => $terminal->merchant->getName(),
+                    'terminal_id'           => $terminal->getId(),
+                    'payment_id'            => $this->payment->getId(),
+                    'channel'               => Config::get('slack.channels.tech_alerts'),
+                    'username'              => 'alerts',
+                    'icon'                  => ':x:',
+                    'message'               => 'terminal capability auto changed to ALL',
+                ]
+            );
+
+            $this->trace->error(
+                TraceCode::TERMINAL_EDIT,
+                [
+                    'merchant_id'           => $terminal->getMerchantId(),
+                    'terminal_id'           => $terminal->getId(),
+                    'message'               => 'terminal capability auto changed to ALL'
+                ]
+            );
+        }
     }
 
     protected function disableTerminalIfApplicable($terminal, $error)

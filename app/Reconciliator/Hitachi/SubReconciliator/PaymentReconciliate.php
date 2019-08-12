@@ -2,10 +2,13 @@
 
 namespace RZP\Reconciliator\Hitachi\SubReconciliator;
 
+use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Hitachi;
 use RZP\Reconciliator\Base;
+use RZP\Models\Card\Network;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -31,6 +34,34 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const BHARAT_QR_TERMINAL            = '38R00450';
 
     const DEFAULT_CURRENCY_CODE         = '356';
+
+    const COLUMN_CARD_NUMBER            = 'pan';
+    const COLUMN_STAN                   = 'stan';
+    const COLUMN_RESPONSE_CODE          = 'response_code';
+    const COLUMN_MERCHANT_ID            = 'merchant_id';
+    const COLUMN_MERCHANT_NAME          = 'merchant_name';
+    const COLUMN_PURCHASE_ID            = 'purchaseid';
+
+    // This column indicates if we should create unexpected payment
+    const UNEXPECTED_PAYMENT_RRN        = 'unexpected_payment_rrn';
+
+    const CALL_BACK_FIELD_MAPPING = [
+        ResponseFields::MASKED_CARD_NUMBER  => self::COLUMN_CARD_NUMBER,
+        ResponseFields::AMOUNT              => self::COLUMN_PAYMENT_AMOUNT,
+        ResponseFields::AUDIT_TRACE_NUMBER  => self::COLUMN_STAN,
+        ResponseFields::RRN                 => self::COLUMN_RRN,
+        ResponseFields::AUTHORIZATION_ID    => self::COLUMN_AUTH_CODE,
+        ResponseFields::STATUS_CODE         => self::COLUMN_RESPONSE_CODE,
+        ResponseFields::TERMINAL_ID         => self::COLUMN_TERMINAL_NUMBER,
+        ResponseFields::MID                 => self::COLUMN_MERCHANT_ID,
+        ResponseFields::MERCHANT_NAME       => self::COLUMN_MERCHANT_NAME,
+        ResponseFields::PURCHASE_ID         => self::COLUMN_PURCHASE_ID,
+    ];
+
+    const CARD_NETWORK_MAPPING = [
+        Network::VISA   => '260000',
+        Network::MC     => '280000',
+    ];
 
     protected function getPaymentId(array $row)
     {
@@ -65,7 +96,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         if ($row[self::COLUMN_TERMINAL_NUMBER] === self::BHARAT_QR_TERMINAL)
         {
-            $paymentId =  $this->getPaymentIdFromBharatQr($row[self::COLUMN_RRN], $row);
+            $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($row[self::COLUMN_RRN]);
+
+            if ($bharatQr === null)
+            {
+                // create payment using recon row details
+                $paymentId = $this->createUnexpectedPayment($row);
+            }
+            else
+            {
+                return $bharatQr->payment->getId();
+            }
         }
         else
         {
@@ -73,6 +114,141 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $paymentId;
+    }
+
+    protected function createUnexpectedPayment(array $row)
+    {
+        if (empty($row[self::UNEXPECTED_PAYMENT_RRN]) === true)
+        {
+            //
+            // We create unexpected payment only when this extra column is explicitly
+            // set by FinOps team. This is to avoid un-intentional payment creation
+            // in case someone upload an old MIS file.
+            //
+
+            $this->alertUnexpectedBharatQrPayment($row[self::COLUMN_RRN], $row);
+
+            $this->setFailUnprocessedRow(false);
+
+            return null;
+        }
+
+        // Generate callback data from recon row if possible
+        $callbackData = $this->generateCallbackData($row);
+
+        if ($callbackData === null)
+        {
+            return null;
+        }
+
+        $paymentId = null;
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                'rrn'       => $row[self::COLUMN_RRN],
+                'gateway'   => $this->gateway
+            ]
+        );
+
+        $input = [
+            'content'   => [],
+            'raw'       => $callbackData,
+        ];
+
+        $response = (new BharatQr\Service)->processPayment($input, 'hitachi');
+
+        // Fetch and raise alert if payment still not created
+        $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($row[self::COLUMN_RRN]);
+
+        if ($bharatQr === null)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                    'rrn'           => $row[self::COLUMN_RRN],
+                    'response'      => $response,
+                    'gateway'       => $this->gateway,
+                ]);
+        }
+        else
+        {
+            $paymentId = $bharatQr->payment->getId();
+
+            $this->trace->info(
+                TraceCode::RECON_INFO,
+                [
+                    'infoCode'              => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                    'payment_id'            => $paymentId,
+                    'rrn'                   => $row[self::COLUMN_RRN],
+                    'gateway'               => $this->gateway,
+                ]);
+        }
+
+        return $paymentId;
+    }
+
+    protected function generateCallbackData(array $row)
+    {
+        $callbackData = '';
+
+        foreach (self::CALL_BACK_FIELD_MAPPING as $callbackField => $reconColumn)
+        {
+            if (empty($row[$reconColumn]) === true)
+            {
+                // Required data missing
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'info_code' => Base\InfoCode::RECON_INSUFFICIENT_DATA_FOR_ENTITY_CREATION,
+                        'message'   => 'Data missing to create Payment via Recon',
+                        'rrn'       => $row[self::COLUMN_RRN],
+                        'gateway'   => $this->gateway
+                    ]
+                );
+
+                return null;
+            }
+
+            if ($reconColumn === self::COLUMN_PAYMENT_AMOUNT)
+            {
+                // convert to paisa and then append.
+
+                $amountInPaisa = $this->getReconPaymentAmount($row);
+
+                $callbackData .= $callbackField . '=' . $amountInPaisa . '&';
+
+            }
+            else
+            {
+                $callbackData .= $callbackField . '=' . $row[$reconColumn] . '&';
+            }
+        }
+
+        //
+        // We do not get card network and sender name in recon file row.
+        // Need to add blank string values, else we get index not found error.
+        //
+        $cardNetwork = $this->getCardNetwork($row);
+
+        $callbackData .= ResponseFields::CARD_NETWORK . '=' . $cardNetwork . '&';
+        $callbackData .= ResponseFields::SENDER_NAME . '=' . '';
+
+        return $callbackData;
+    }
+
+    // Derive card network from 6 digit bin.
+    protected function getCardNetwork(array $row)
+    {
+        $maskedPan = $row[self::COLUMN_CARD_NUMBER];
+
+        $cardBin = substr($maskedPan, 0, 6);
+
+        $cardNetwork = Network::detectNetwork($cardBin);
+
+        return self::CARD_NETWORK_MAPPING[$cardNetwork] ?? '';
     }
 
     protected function getGatewayFee($row)

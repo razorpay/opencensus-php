@@ -106,6 +106,7 @@ class Metadata
     const WHMCS         = 'whmcs';
     const ARASTTA       = 'arastta';
     const PRESTASHOP    = 'prestashop';
+    const WIX           = 'wix';
 
     const INTEGRATION_VALUES = [
         self::WOOCOMMERCE   => 1,
@@ -116,6 +117,7 @@ class Metadata
         self::WHMCS         => 6,
         self::ARASTTA       => 7,
         self::PRESTASHOP    => 8,
+        self::WIX           => 9,
     ];
 
     // fraud detection keys

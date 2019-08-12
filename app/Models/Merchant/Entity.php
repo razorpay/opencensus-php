@@ -100,7 +100,10 @@ class Entity extends Base\PublicEntity
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
     const PRODUCT                  = 'product';
+    const SECOND_FACTOR_AUTH       = 'second_factor_auth';
+    const RESTRICTED               = 'restricted';
     const DEFAULT_REFUND_SPEED     = 'default_refund_speed';
+
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -186,10 +189,13 @@ class Entity extends Base\PublicEntity
     const AUTO_SUBMIT               = 'auto_submit';
     const AUTOFILL_DETAILS          = 'autofill_details';
     const AUTO_ACTIVATE             = 'auto_activate';
+    const INSTANTLY_ACTIVATE        = 'instantly_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
     const PARTNER_ID                = 'partner_id';
     const BANKING_ACCOUNT           = 'banking_account';
     const ACCOUNTS                  = 'accounts';
+    const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
+    const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
 
     protected $entity = 'merchant';
 
@@ -326,6 +332,8 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_NAME,
         self::ACTIVATION_SOURCE,
         self::BUSINESS_BANKING,
+        self::SECOND_FACTOR_AUTH,
+        self::RESTRICTED,
         self::DEFAULT_REFUND_SPEED,
      ];
 
@@ -388,6 +396,8 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST   => 'array',
         self::FEE_CREDITS_THRESHOLD  => 'int',
         self::BUSINESS_BANKING       => 'bool',
+        self::SECOND_FACTOR_AUTH     => 'bool',
+        self::RESTRICTED             => 'bool',
     ];
 
     protected $eventFields = [
@@ -480,6 +490,26 @@ class Entity extends Base\PublicEntity
     public function getActivatedAt()
     {
         return $this->getAttribute(self::ACTIVATED_AT);
+    }
+
+    public function isSecondFactorAuth(): bool
+    {
+        return ($this->getAttribute(self::SECOND_FACTOR_AUTH) === true);
+    }
+
+    public function setSecondFactorAuth(bool $enabled)
+    {
+        $this->setAttribute(self::SECOND_FACTOR_AUTH, $enabled);
+    }
+
+    public function getRestricted(): bool
+    {
+        return ($this->getAttribute(self::RESTRICTED) === true);
+    }
+
+    public function setRestricted(bool $restricted)
+    {
+        $this->setAttribute(self::RESTRICTED, $restricted);
     }
 
     /**
@@ -1044,7 +1074,7 @@ class Entity extends Base\PublicEntity
         return RefundSource::getRefundSourceStringForValue($this->attributes[self::REFUND_SOURCE]);
     }
 
-    protected function getInternationalAttribute()
+    public function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
     }

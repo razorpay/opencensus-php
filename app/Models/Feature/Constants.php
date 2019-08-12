@@ -111,7 +111,6 @@ class Constants
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
     const ALLOW_REVERSALS_FROM_LA         = 'allow_reversals_from_la';
-    const QUEUED_PAYOUTS                  = 'queued_payouts';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
     const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
@@ -358,7 +357,6 @@ class Constants
         self::DISPUTE_MAILS_DISABLED          => true,
         self::ALLOW_REVERSALS_FROM_LA         => true,
         self::BLOCK_PL_PAY_POST_EXPIRY        => true,
-        self::QUEUED_PAYOUTS                  => true,
         self::ADHOC_SETTLEMENT                => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
@@ -479,11 +477,6 @@ class Constants
         self::ALLOW_REVERSALS_FROM_LA    => [
             'feature'       => self::ALLOW_REVERSALS_FROM_LA,
             'display_name'  => 'Allow Refunds From Linked Accounts',
-            'documentation' => '',
-        ],
-        self::QUEUED_PAYOUTS            => [
-            'feature'       => self::QUEUED_PAYOUTS,
-            'display_name'  => 'Queued payouts',
             'documentation' => '',
         ],
         self::PAYOUT_TO_CARDS           => [

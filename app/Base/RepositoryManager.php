@@ -35,6 +35,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\FundAccount\Repository                $customer_balance
  * @property Models\FundAccount\Validation\Repository     $fund_account_validation
  * @property Models\FundTransfer\Attempt\Repository       $fund_transfer_attempt
+ * @property Models\Reversal\Repository                   $reversal
  * @property Models\Payout\Repository                     $payout
  * @property Models\Merchant\Detail\Repository            $merchant_detail
  * @property Models\BankingAccount\Repository             $banking_account
@@ -44,6 +45,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Workflow\Action\Repository            $workflow_action
  * @property Models\Workflow\Step\Repository              $workflow_step
  * @property Models\Workflow\Repository                   $workflow
+ * @property Models\Workflow\Action\Checker\Repository    $action_checker
  * @property Models\Workflow\PayoutAmountRules\Repository $workflow_payout_amount_rules
  */
 class RepositoryManager extends Illuminate\Support\Manager

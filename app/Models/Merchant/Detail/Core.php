@@ -15,6 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\Batch\Type;
 use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -838,6 +839,11 @@ class Core extends Base\Core
             $validationFields = ValidationFields::DASHBOARD_FIELDS_LIMITED;
         }
 
+        if (self::shouldSkipBankAccountRegistration() === true)
+        {
+            $validationFields = array_diff($validationFields, ValidationFields::BANK_ACCOUNT_FIELDS);
+        }
+
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
@@ -1063,4 +1069,24 @@ class Core extends Base\Core
             ];
     }
 
+    /**
+     * SubMerchant batch upload flow allows skipping bank account registration as the partner
+     * is there liable for the risk and the submerchants must be activated directly.
+     *
+     * @return bool
+     */
+    public static function shouldSkipBankAccountRegistration(): bool
+    {
+        if (app('basicauth')->isBatchFlow() === false)
+        {
+            return false;
+        }
+
+        $batchContext = app('basicauth')->getBatchContext();
+
+        $batchName                   = $batchContext['type'] ?? null;
+        $skipBankAccountRegistration = $batchContext['data'][Merchant\Entity::SKIP_BA_REGISTRATION] ?? false;
+
+        return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
+    }
 }

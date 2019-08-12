@@ -19,6 +19,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class Entity extends Base\PublicEntity
 {
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
+    const ORG_ID                        = 'org_id';
     const PROCURER                      = 'procurer';
     const USED_COUNT                    = 'used_count';
     const USED                          = 'used';
@@ -72,6 +74,8 @@ class Entity extends Base\PublicEntity
     const TYPE                          = 'type';
     const MODE                          = 'mode';
     const DIRECT                        = 'direct';
+    const STATUS                        = 'status';
+    const NOTES                         = 'notes';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -139,6 +143,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::CAPABILITY,
         self::MODE,
+        self::STATUS,
+        self::NOTES,
         self::CORPORATE,
         self::EXPECTED,
         self::CURRENCY,
@@ -169,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::MERCHANT_ID,
+        self::ORG_ID,
         self::PROCURER,
         self::GATEWAY,
         self::CARD,
@@ -197,6 +204,8 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT,
         self::TYPE,
         self::MODE,
+        self::STATUS,
+        self::NOTES,
         self::CORPORATE,
         self::CAPABILITY,
         self::EXPECTED,
@@ -268,6 +277,8 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION             => null,
         self::CARDLESS_EMI               => 0,
         self::PAYLATER                   => 0,
+        self::STATUS                     => Status::ACTIVATED,
+        self::NOTES                      => null,
         self::OMNICHANNEL                => 0,
         self::VPA                        => null,
     ];
@@ -317,6 +328,11 @@ class Entity extends Base\PublicEntity
     }
 
     // ---------------------- GETTERS ----------------------
+
+    public function getOrgId() : string
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
 
     public function getGatewayMerchantId()
     {
@@ -388,6 +404,16 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getNotes()
+    {
+        return $this->getAttribute(self::NOTES);
     }
 
     public function getEmiDuration()
@@ -585,6 +611,11 @@ class Entity extends Base\PublicEntity
     public function setCapability($capability)
     {
         $this->setAttribute(self::CAPABILITY, $capability);
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -1000,6 +1031,12 @@ class Entity extends Base\PublicEntity
     public function merchants()
     {
         return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_TERMINAL);
+    }
+
+    public function org()
+    {
+        return $this->belongsTo(
+            'RZP\Models\Admin\Org\Entity');
     }
 
     public function toArrayWithPassword()

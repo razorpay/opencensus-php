@@ -26,7 +26,7 @@ class ScroogeRefundRecon extends Job
 
     protected $traceData;
 
-    protected $queueConfigKey = 'batch';
+    protected $queueConfigKey = 'recon_batch';
 
     public function __construct(array $data)
     {

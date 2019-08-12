@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Payment\Processor\Netbanking;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -559,6 +560,11 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
+        if (isset(Netbanking::$defaultInconsistentBankCodesMapping[$code]) === true)
+        {
+            $code = Netbanking::$defaultInconsistentBankCodesMapping[$code];
+        }
+
         return $code;
     }
 
@@ -580,6 +586,17 @@ class Entity extends Base\PublicEntity
         $data[self::BENEFICIARY_EMAIL] = $this->getBeneficiaryEmail();
 
         $data[self::BENEFICIARY_MOBILE] = $this->getBeneficiaryMobile();
+
+        return $data;
+    }
+
+    public function getDataForCheckout()
+    {
+        $data = $this->toArrayHosted();
+
+        unset($data[self::ID]);
+
+        unset($data[self::ENTITY]);
 
         return $data;
     }

@@ -41,6 +41,15 @@ class CreateUsersTable extends Migration
             $table->tinyInteger(User::CONTACT_MOBILE_VERIFIED)
                   ->default(0);
 
+            $table->tinyInteger(User::SECOND_FACTOR_AUTH)
+                  ->default(0);
+
+            $table->integer(User::WRONG_2FA_ATTEMPTS)
+                  ->default(0);
+
+            $table->tinyInteger(User::ACCOUNT_LOCKED)
+                  ->default(0);
+
             $table->integer(User::CREATED_AT);
 
             $table->integer(User::UPDATED_AT);

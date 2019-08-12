@@ -160,6 +160,17 @@ class Beneficiary extends ApiProcessor
             return Status::VERIFIED;
         }
 
+        if ((array_key_exists(Constants::REQUEST_STATUS, $response) === true) and
+            ($response[Constants::REQUEST_STATUS] === Constants::FAILURE))
+        {
+            $errorMessage = $response[Constants::ERROR];
+
+            if ($errorMessage === BeneficiaryRequest::RECORD_EXIST)
+            {
+                return Status::VERIFIED;
+            }
+        }
+
         return Status::FAILED;
     }
 

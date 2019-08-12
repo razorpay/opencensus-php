@@ -32,6 +32,7 @@ return [
         'kotak',
         'mobikwik',
         'netbanking_sib',
+        'netbanking_cbi',
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
@@ -102,6 +103,7 @@ return [
     'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
     'mock_paytm'                  => env('PAYTM_MOCK'),
     'mock_netbanking_sib'         => env('NETBANKING_SIB_MOCK'),
+    'mock_netbanking_cbi'         => env('NETBANKING_CBI_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
@@ -759,6 +761,12 @@ return [
         ],
         'netbanking_yesb' => [
             'gateway_secure_secret' => env('NETBANKING_YESB_GATEWAY_SECURE_SECRET')
+        ],
+        'netbanking_cub' => [
+            'gateway_secure_secret'      => env('NETBANKING_CUB_GATEWAY_SECURE_SECRET'),
+            'gateway_secure_secret2'     => env('NETBANKING_CUB_GATEWAY_SECURE_SECRET2'),
+            'gateway_terminal_password'  => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD'),
+            'gateway_terminal_password2' => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD2'),
         ],
         'razorpayx' => [
             'direct' => [

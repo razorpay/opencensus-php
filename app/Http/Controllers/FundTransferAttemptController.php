@@ -4,8 +4,9 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+
 use RZP\Constants\Entity;
-use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Attempt\Constants;
 
 class FundTransferAttemptController extends Controller
 {
@@ -70,6 +71,20 @@ class FundTransferAttemptController extends Controller
         $input = Request::all();
 
         $response =  $this->service()->healthCheck($channel, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function setChannelState(string $channel,string $action)
+    {
+        $response = $this->service()->setChannelState($channel, $action);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getChannelState()
+    {
+        $response = $this->service()->getChannelState();
 
         return ApiResponse::json($response);
     }

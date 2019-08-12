@@ -185,6 +185,17 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function netbanking_cbi($input)
+    {
+        $request = [
+            'url'          => $input['callbackUrl'] . '?encdata=encrypted_data_here',
+            'content'      => [],
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function netbanking_yesb($input)
     {
         $url = $this->route->getUrlWithPublicAuth(

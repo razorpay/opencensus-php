@@ -17,6 +17,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -1336,6 +1337,80 @@ class Core extends Base\Core
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
     }
 
+    /**
+     * Changes the 2fa setting of the merchant.
+     *
+     * Only an owner can enable/disable 2fa
+     * for the merchant id.
+     *
+     * In all cases, the owner's mobile should be setup
+     *
+     * In case of restricted merchant, all the users
+     * associated with the merchant should have their mobile setup.
+     *
+     *
+     * @param Entity $user
+     * @param Entity $merchant
+     * @param array $input
+     *
+     * @return array
+     */
+    public function change2faSetting(User\Entity $user, Entity $merchant, array $input): array
+    {
+        $action = $input[Entity::SECOND_FACTOR_AUTH];
+
+        if ($input === false)
+        {
+            $merchant->setSecondFactorAuth($action);
+            $this->repo->saveOrFail($merchant);
+
+            return [
+                Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
+            ];
+        }
+
+        //owner should have their own 2fa setup done
+        if ($user->isSecondFactorAuthSetup() === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY);
+        }
+
+        if ($merchant->getRestricted() === true)
+        {
+            $query = $merchant->users()
+                        ->where(function ($q)
+                        {
+                            $q->where(User\Entity::CONTACT_MOBILE_VERIFIED, 0)
+                            ->orWhereNull(User\Entity::CONTACT_MOBILE);
+                        });
+
+            $totalUsersWithNo2faSetup = $query->get()->count();
+
+            if ($totalUsersWithNo2faSetup !== 0)
+            {
+                $maxUserDetailsInError = 20;
+
+                $usersWithNo2faSetup = $query->get()->take($maxUserDetailsInError);
+
+                $usersWithNo2faSetupToArrayMerchant = $usersWithNo2faSetup->callOnEveryItem('toArrayMerchant');
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                    null,
+                    [
+                        'total_users'   => $totalUsersWithNo2faSetup,
+                        'users'         => $usersWithNo2faSetupToArrayMerchant,
+                    ]);
+            }
+        }
+
+        $merchant->setSecondFactorAuth($action);
+        $this->repo->saveOrFail($merchant);
+
+        return [
+            Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
+        ];
+    }
+
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
         $tag = 'ref-' . $partnerId;
@@ -2086,8 +2161,32 @@ class Core extends Base\Core
      */
     public function autoEnableInternational(Entity $merchant): bool
     {
+        $isRazorpayOrg = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
 
-        return ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
+        if ($isRazorpayOrg === false)
+        {
+            return false;
+        }
+
+        //
+        // SubMerchant batch upload flow defines a way to disable the auto-enabling international feature
+        // If the submerchant is getting activated using a submerchant batch and if the submerchant
+        // batch parameters define to not auto-enable international attribute, false will be returned.
+        //
+        $isBatchFlow = (app('basicauth')->isBatchFlow() === true);
+
+        if ($isBatchFlow === true)
+        {
+            $batchContext = app('basicauth')->getBatchContext();
+
+            $batchName               = $batchContext['type'] ?? null;
+            $autoEnableInternational = $batchContext['data'][Merchant\Entity::AUTO_ENABLE_INTERNATIONAL] ?? false;
+
+            return ($batchName === Batch\Type::SUB_MERCHANT)
+                   and ($autoEnableInternational === true);
+        }
+
+        return true;
     }
 
     /*
@@ -2126,6 +2225,56 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    public function getPartnerBankAccountIdsForSubmerchants(array $merchantIds): array
+    {
+        $merchants = $this->repo->merchant->getAllPartnerBankAccountsForSubmerchants($merchantIds);
+
+        $submerchants = [];
+
+        // Attributes
+        $partnerBankAccountId         = 'partner_bank_account_id';
+        $partnerConfigOriginId        = 'partner_config_origin_id';
+        $partnerConfigSettleToPartner = 'partner_config_settle_to_partner';
+
+        foreach ($merchants as $merchant)
+        {
+            $merchantId = $merchant->getId();
+
+            if (array_key_exists($merchantId, $submerchants) === true)
+            {
+                if (empty($merchant->getAttribute($partnerConfigOriginId)) === false)
+                {
+                    // App config was applied to the map but now we have a submerchant config, so unset the app config
+                    unset($submerchants[$merchantId]);
+                }
+                else
+                {
+                    // Submerchant config has been applied to the map. Do nothing for the app config
+                    continue;
+                }
+            }
+
+            $submerchants[$merchantId] = [
+                $partnerBankAccountId         => $merchant->getAttribute($partnerBankAccountId),
+                $partnerConfigSettleToPartner => (bool) $merchant->getAttribute($partnerConfigSettleToPartner),
+            ];
+        }
+
+        $merchantIdToPartnerBankAccountMap = [];
+
+        foreach ($submerchants as $merchantId => $merchantObj)
+        {
+            if ($merchantObj[$partnerConfigSettleToPartner] === true)
+            {
+                $merchantIdToPartnerBankAccountMap[$merchantId] = $merchantObj[$partnerBankAccountId];
+            }
+        }
+
+        $this->trace->info(TraceCode::PARTNER_BANK_ACCOUNT_MAP, $merchantIdToPartnerBankAccountMap);
+
+        return $merchantIdToPartnerBankAccountMap;
     }
 
     protected function internationalEnable(Entity $merchant)
