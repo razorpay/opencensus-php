@@ -440,7 +440,14 @@ class Core extends Base\Core
 
             $content = $processor->generateRequestForSourceAccount($bankingAccount);
 
-            $this->makeSourceAccountRequest($bankingAccount->getId(), $fundAccountId, $content);
+            $product = 'PAYOUT';
+
+            $this->makeSourceAccountRequest(
+                $bankingAccount->getId(),
+                $fundAccountId,
+                $content,
+                $product,
+                $channel);
         }
         catch (\Throwable $e)
         {
