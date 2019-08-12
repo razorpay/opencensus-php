@@ -144,6 +144,7 @@ class Entity extends Transaction\Entity
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
             [
+                BankTransfer\Entity::ENTITY,
                 BankTransfer\Entity::MODE,
                 BankTransfer\Entity::BANK_REFERENCE,
                 BankTransfer\Entity::AMOUNT,
