@@ -1959,6 +1959,8 @@ trait Authorize
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
+        $fallbacktoV1Flow = false;
+
         try
         {
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
@@ -1968,14 +1970,34 @@ trait Authorize
             // for now use api only for bin based blocking until shield is not live 100%
             $this->validateBlockedCard($payment);
 
-            if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
-                ($payment->shouldRunShieldChecks() === true))
+            $shouldRunFraudDetectionV2 = (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
+                                          ($payment->shouldRunShieldChecks() === true));
+
+            if ($shouldRunFraudDetectionV2 === true)
             {
                 $riskSource = Risk\Source::SHIELD;
 
-                $this->validateFraudDetectionV2($payment);
+                try
+                {
+                    $this->validateFraudDetectionV2($payment);
+                }
+                catch (Exception\IntegrationException $exception)
+                {
+                    $fallbacktoV1Flow = true;
+                }
             }
-            else if ($payment->shouldRunFraudChecks() === true)
+
+            /*
+             * Firstly, $payment->shouldRunFraudChecks tells us whether maxmind can handle the request in the first
+             * place.
+             *
+             * Now, provided maxmind can handle the request, we check:
+             * If a fraud check ran on shield, then we do not fallback to maxmind.
+             * If a fraud check was not run on shield, or it ran and failed, we fallback to maxmind.
+             */
+            if (($payment->shouldRunFraudChecks() === true) and
+                (($shouldRunFraudDetectionV2 === false) or
+                 ($fallbacktoV1Flow === true)))
             {
                 $this->validateEmailTld($payment);
 
