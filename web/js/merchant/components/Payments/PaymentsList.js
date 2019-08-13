@@ -57,14 +57,13 @@ export default class PaymentsListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
+          <div class="btn-toolbar pull-right">
+            {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
 
-          {docUrl && (
-            <div class="btn-toolbar pull-right">
-              <DocsLink url={docUrl} />
-            </div>
-          )}
+            {docUrl && <DocsLink url={docUrl} />}
+          </div>
         </HeaderAction>
+
         <PaymentsListFilter
           form="paymentListFilter"
           count={this.state.count}
