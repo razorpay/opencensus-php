@@ -3,7 +3,7 @@ import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList, getFormattedAmount } from 'common/util';
 import Amount, { AmountTooltip } from 'rzp/ui/Amount';
-import EditLayer from '../../EditLayer';
+import EditLayer from '../../../EditLayer';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
   // console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
