@@ -1,7 +1,12 @@
 import { connect } from 'react-redux';
 import { handleProductQuickGuide } from 'merchant/modules/onboarding';
 
-@connect(null, { handleProductQuickGuide })
+@connect(
+  state => ({
+    onboarding: state.onboarding.products,
+  }),
+  { handleProductQuickGuide }
+)
 export default class TakeATourButton extends React.Component {
   onClick = () => {
     this.props.handleProductQuickGuide({
@@ -18,6 +23,10 @@ export default class TakeATourButton extends React.Component {
   };
 
   render() {
+    const currentOnboarding = this.props.onboarding[this.props.feature];
+
+    if (currentOnboarding.isTour) return null;
+
     return (
       <span class="btn btn-link" onClick={this.onClick}>
         <i class="i i-lightbulb" />
