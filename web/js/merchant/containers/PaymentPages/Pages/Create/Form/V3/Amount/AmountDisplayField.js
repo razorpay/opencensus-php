@@ -49,3 +49,101 @@ const AmountDisplayField = ({
 };
 
 export default CreatorManager(AmountDisplayField);
+
+/*TODO: Merge this and above component */
+export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
+  // console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
+  let cls = 'Field Field--disabled Field--required';
+
+  const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
+
+  if (isAmountEntitySet) {
+    if (!paymentPageEntity.amount) {
+      cls += ' Field--small';
+    }
+  }
+
+  const content = (
+    <React.Fragment>
+      <div class="Field-label">
+        Amount
+        <span class="symbol--red">*</span>
+      </div>
+      <div class="Field-content">
+        <div class="Field-wrapper">
+          {do {
+            if (isAmountEntitySet) {
+              if (paymentPageEntity.amount) {
+                <React.Fragment>
+                  <span>
+                    <Amount
+                      currency={paymentPageEntity.currency}
+                      value={Number(paymentPageEntity.amount || 0) * 100}
+                    />
+                  </span>
+                  {paymentPageEntity.settings &&
+                    paymentPageEntity.settings.allow_multiple_units && (
+                      <React.Fragment>
+                        <span style={{ margin: '0 12px' }}>×</span>
+                        <div class="Field Field--counter Field--small">
+                          <div class="Field-content">
+                            <div
+                              class="Field-wrapper Field-wrapper--counter"
+                              style={{
+                                display: 'inline-block',
+                                pointerEvents: 'none',
+                              }}
+                            >
+                              <button type="button" disabled>
+                                -
+                              </button>
+                              <input
+                                class="Field-el counter-value"
+                                name="field_1"
+                                defaultValue="1"
+                                disabled
+                              />
+                              <button type="button" disabled>
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    )}
+                </React.Fragment>;
+              } else {
+                <React.Fragment>
+                  <span class="Field-addon--before">
+                    <AmountTooltip currency={paymentPageEntity.currency} />
+                  </span>
+                  <input
+                    className="Field-el"
+                    placeholder="Enter Amount"
+                    disabled
+                  />
+                </React.Fragment>;
+              }
+            } else {
+              <Button.Transparent
+                onClick={onAddAmount}
+                style={{ display: 'inline-block' }}
+              >
+                <span class="btn-link">+ Add Amount</span>
+              </Button.Transparent>;
+            }
+          }}
+        </div>
+      </div>
+    </React.Fragment>
+  );
+
+  return isAmountEntitySet ? (
+    <EditLayer class={cls} onClick={onAddAmount}>
+      {content}
+      <i class="i i-edit" />
+    </EditLayer>
+  ) : (
+    <div class={cls}>{content}</div>
+  );
+};
