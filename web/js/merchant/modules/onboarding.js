@@ -21,6 +21,7 @@ export const getCurrentProductOnBoardingDetails = (state, feature) => {
   return (
     state.onboarding.products[feature] || {
       feature,
+      showOnboarding: false,
       isQuickGuideOpen: false,
       isTour: false,
     }

@@ -25,7 +25,7 @@ export default class TakeATourButton extends React.Component {
   render() {
     const currentOnboarding = this.props.onboarding[this.props.feature];
 
-    if (currentOnboarding.isTour) return null;
+    if (currentOnboarding.isQuickGuideOpen) return null;
 
     return (
       <span class="btn btn-link" onClick={this.onClick}>
