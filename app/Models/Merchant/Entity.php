@@ -196,6 +196,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNTS                  = 'accounts';
     const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
     const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
+    const CREATE_SUBMERCHANT        = 'create_submerchant';
 
     protected $entity = 'merchant';
 
