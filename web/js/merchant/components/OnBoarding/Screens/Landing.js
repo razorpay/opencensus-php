@@ -21,7 +21,7 @@ export default class OnBoardingLanding extends React.PureComponent {
 
           <div class="Details-desc">{desc}</div>
 
-          <DataList horizontalDivider>{pros}</DataList>
+          {pros && <DataList horizontalDivider>{pros}</DataList>}
 
           <div class="Button-Container">
             <Button

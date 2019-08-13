@@ -1,51 +1,27 @@
-import { Field } from 'redux-form';
-import InputField from 'rzp/ui/Forms/InputField';
-import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
-import { required } from 'rzp/utils/validators';
+import Input from 'component/Input';
 
-export default ({ handleChange }) => {
+export default ({ handleChange, handleFileUpload }) => {
   return (
     <div class="form-body">
-      <div class="form-group">
-        <label for="use_case" class="label-required">
-          Use Case
-        </label>
-        <Field
-          name="use_case"
-          component="textarea"
-          rows="3"
-          class="form-control"
-          placeholder="Your use case for the product and business model"
-          validate={[required()]}
-        />
-      </div>
+      <Input.Textarea
+        required
+        name="use_case"
+        className="Input--vTop"
+        label="Use Case"
+        placeholder="Your use case for the product and business model"
+        onChange={handleChange}
+      />
 
-      <div class="form-group">
-        <label for="email_notify" class="label-required">
-          Transferring To
-        </label>
-        <Field
-          name="settling_to"
-          component={InputField}
-          tagName="select"
-          class="form-control"
-          placeholder="Transferring Payments to?"
-          validate={[required()]}
-        >
-          <option value="" key="none" disabled>
-            --Select--
-          </option>
-          <option value="Businesses" key="vendors">
-            Third-party businesses
-          </option>
-          <option value="Own Accounts" key="own_accounts">
-            Own bank accounts
-          </option>
-          <option value="Individuals" key="individuals">
-            Individuals
-          </option>
-        </Field>
-      </div>
+      <Input.Select
+        required
+        label="Transferring To"
+        options={OPTIONS}
+        name="settling_to"
+        className="Input--vTop"
+        searchEnabled={false}
+        onChange={handleChange}
+        placeholder="Transferring Payments to?"
+      />
 
       <Input.File
         required
@@ -74,3 +50,22 @@ export default ({ handleChange }) => {
     </div>
   );
 };
+
+const OPTIONS = [
+  {
+    label: '--Select--',
+    name: '',
+  },
+  {
+    label: 'Third-party businesses',
+    name: 'Businesses',
+  },
+  {
+    label: 'Own bank accounts',
+    name: 'Own Accounts',
+  },
+  {
+    label: 'Individuals',
+    label: 'Individuals',
+  },
+];

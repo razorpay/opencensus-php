@@ -48,15 +48,7 @@ import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
 )
 export default class MarketplaceContainer extends React.Component {
   componentDidMount() {
-    const isQuickGuideClosed = getRouteQuickGuideIsClosed(this.props);
-
-    if (!isQuickGuideClosed) {
-      this.props.handleProductQuickGuide({
-        feature: RZPFeatures.ROUTE,
-        isQuickGuide: true,
-        isTour: false,
-      });
-    }
+    this.initMarketPlace();
 
     if (this.props.transfers.items.length > 0) {
       return;
@@ -69,17 +61,9 @@ export default class MarketplaceContainer extends React.Component {
     }
   }
 
-  componentWillReceiveProps() {
-    if (!this.props.routeProductOnBoarding.isQuickGuide) {
-      const isQuickGuideClosed = getRouteQuickGuideIsClosed(this.props);
-
-      if (!isQuickGuideClosed) {
-        this.props.handleProductQuickGuide({
-          feature: FEATURE,
-          isQuickGuide: true,
-          isTour: false,
-        });
-      }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.transfers.loading !== this.props.transfers.loading) {
+      this.initMarketPlace(nextProps);
     }
   }
 
@@ -89,26 +73,51 @@ export default class MarketplaceContainer extends React.Component {
     if (routeProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...routeProductOnBoarding,
-        isQuickGuide: false,
         isTour: false,
       });
     }
   }
 
+  initMarketPlace = (props = this.props) => {
+    // const merchant = merchants[props.user.current];
+
+    let showOnboarding = !props.user.isMarketplaceEnabled;
+
+    // if (!showOnboarding) {
+    //   showOnboarding = isAllowedResetSubscriptionBoarding({
+    //     merchantId: merchant.id,
+    //     mode: props.mode,
+    //     plans: props.plans,
+    //     subscriptions: props.subscriptions,
+    //   });
+    // }
+
+    let isQuickGuideClosed = getRouteQuickGuideIsClosed(props);
+
+    let routeProductOnBoarding = {
+      ...props.routeProductOnBoarding,
+      isTour: false,
+      showOnboarding,
+      isQuickGuideOpen: !isQuickGuideClosed,
+    };
+
+    this.props.handleProductQuickGuide(routeProductOnBoarding);
+  };
+
   render() {
-    if (!this.props.user.isMarketplaceEnabled) {
+    if (this.props.routeProductOnBoarding.showOnboarding) {
       return <OnBoarding />;
     }
 
-    const { isQuickGuide, isTour } = this.props.routeProductOnBoarding;
+    const { isQuickGuideOpen, isTour } = this.props.routeProductOnBoarding;
 
-    const isQuickGuideOpen = isQuickGuide || isTour;
+    const showQuickGuide = isQuickGuideOpen || isTour;
 
     return (
-      <div>
-        {isQuickGuideOpen && <QuickGuide />}
-
+      <div class="Marketplace-Container">
         <tabbed-container>
+          {showQuickGuide && <QuickGuide />}
+
           <header id="marketplace-header">
             <NavLink to="/route/payments">Payments</NavLink>
             <NavLink to="/route/transfers">Transfers</NavLink>

@@ -6,6 +6,7 @@ import Slider, { SliderDots } from 'component/Slider';
 
 import Landing from 'merchant/components/OnBoarding/Screens/Landing';
 import Features from 'merchant/components/OnBoarding/Screens/Features';
+import FeatureRequest from 'merchant/components/OnBoarding/Screens/FeatureRequest';
 import OnBoarding, {
   NextButton,
   OnBoardingWrapper,
