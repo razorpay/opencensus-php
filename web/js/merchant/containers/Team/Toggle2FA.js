@@ -14,7 +14,7 @@ import {
   EnableAgreement,
   DisableAgreement,
   PasswordVerification,
-} from 'merchant/containers/Team/TwoFAModals';
+} from 'merchant/containers/Team/TwoFaModals';
 
 @connect(
   state => {
