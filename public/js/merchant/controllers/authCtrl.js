@@ -903,72 +903,78 @@ app
         request.success(function(data) {
           if (data.success) {
             // check questions have been answered or not
-            user.identity(true).then(function(userDetails) {
-              var signinSuccessCb = authCallbacks.getSigninCallback();
+            user
+              .identity(true)
+              .then(function(userDetails) {
+                var signinSuccessCb = authCallbacks.getSigninCallback();
 
-              if (signinSuccessCb) {
-                signinSuccessCb(userDetails);
-              }
+                if (signinSuccessCb) {
+                  signinSuccessCb(userDetails);
+                }
 
-              if (user.isVerified() && user.isPreSignupDone()) {
-                // parse query parameters to object
-                // ?next=foo&q=bar → { next: 'foo', q: 'bar' }
-                var queryParams = location.search
-                  .slice(1)
-                  .split(/=|&/)
-                  .reduce(function(map, param, index, array) {
-                    if (index % 2) {
-                      map[array[index - 1]] = param;
+                if (user.isVerified() && user.isPreSignupDone()) {
+                  // parse query parameters to object
+                  // ?next=foo&q=bar → { next: 'foo', q: 'bar' }
+                  var queryParams = location.search
+                    .slice(1)
+                    .split(/=|&/)
+                    .reduce(function(map, param, index, array) {
+                      if (index % 2) {
+                        map[array[index - 1]] = param;
+                      }
+                      return map;
+                    }, {});
+
+                  if (queryParams.next) {
+                    var parser = document.createElement('a');
+                    parser.href = decodeURIComponent(queryParams.next);
+
+                    var hostname = parser.hostname || location.hostname;
+
+                    if (/razorpay\.(com|dev|in)$/.test(hostname)) {
+                      location.href = parser.href;
+                      if (parser.origin === location.origin && parser.hash) {
+                        parser.search = '';
+                        history.pushState(null, null, parser.href);
+                        location.reload();
+                      }
+                      return false;
                     }
-                    return map;
-                  }, {});
+                  }
 
-                if (queryParams.next) {
-                  var parser = document.createElement('a');
-                  parser.href = decodeURIComponent(queryParams.next);
-
-                  var hostname = parser.hostname || location.hostname;
-
-                  if (/razorpay\.(com|dev|in)$/.test(hostname)) {
-                    location.href = parser.href;
-                    if (parser.origin === location.origin && parser.hash) {
-                      parser.search = '';
-                      history.pushState(null, null, parser.href);
-                      location.reload();
-                    }
-                    return false;
+                  if (!signinSuccessCb) {
+                    $scope.goToDashboard();
+                  }
+                } else {
+                  $scope.isLoggedIn = true;
+                  hideSpinner();
+                  if (userDetails) {
+                    $scope.login.data.email = userDetails.email;
+                    Object.assign(
+                      $scope.signup.merchantData,
+                      userDetails.pre_signup
+                    );
+                  }
+                  if (!user.isPreSignupDone()) {
+                    $scope.email_not_verified = false;
+                    goToRelevantQuestion();
+                    $scope.login.currentStep = 2;
+                    $state.transitionTo(
+                      'access.pre_signup',
+                      {},
+                      {
+                        notify: false,
+                      }
+                    );
+                  } else if (!user.isVerified()) {
+                    goToVerification();
                   }
                 }
-
-                if (!signinSuccessCb) {
-                  $scope.goToDashboard();
-                }
-              } else {
-                $scope.isLoggedIn = true;
+              })
+              .catch(errors => {
                 hideSpinner();
-                if (userDetails) {
-                  $scope.login.data.email = userDetails.email;
-                  Object.assign(
-                    $scope.signup.merchantData,
-                    userDetails.pre_signup
-                  );
-                }
-                if (!user.isPreSignupDone()) {
-                  $scope.email_not_verified = false;
-                  goToRelevantQuestion();
-                  $scope.login.currentStep = 2;
-                  $state.transitionTo(
-                    'access.pre_signup',
-                    {},
-                    {
-                      notify: false,
-                    }
-                  );
-                } else if (!user.isVerified()) {
-                  goToVerification();
-                }
-              }
-            });
+                $scope.alerts.addAlert('danger', errors[0]);
+              });
           } else {
             hideSpinner();
             const firstError = data.errors[0];

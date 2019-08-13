@@ -347,6 +347,10 @@ export default class User {
   get toShowExtraFieldsInPP() {
     return this.getExpStatus('show_extra_fields_in_pp');
   }
+
+  get isEnhancedEPOSEnabled() {
+    return this.getExpStatus('sellerapp_plus');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
