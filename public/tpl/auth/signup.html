@@ -1,8 +1,7 @@
 <div class="auth-overflow-container">
   <div class="signup-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*signup.currentStep) + 'px)'}">
-    <div class="auth-step">
-      <div class="signup-form-step"
-        ng-if="(isOrgCheckDone && organization && organization.allow_sign_up) || merchant_invitation">
+    <div class="auth-step" >
+      <div class="signup-form-step" ng-if="(isOrgCheckDone && organization && organization.allow_sign_up) || merchant_invitation">
         <div class="auth-heading">
           Signing Up...
         </div>
@@ -10,43 +9,37 @@
           Create a password to continue
         </div>
 
-        <form class="auth-form" name="forms.signupForm" xng-submit="goToSignupStep(1)"
-          ng-submit="createAccount(forms.signupForm.$valid)">
+        <form class="auth-form" name="forms.signupForm" xng-submit="goToSignupStep(1)" ng-submit="createAccount(forms.signupForm.$valid)">
 
           <label class="form-label auth-subheading" for="email">Your Work Email</label>
-          <input tabindex=1 type="email" placeholder="yourname@company.com" name="email" id="email"
-            ng-model="signup.data.email" class="form-control auth-form-input" required ng-readonly="lock_email">
+          <input tabindex=1 type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="signup.data.email" class="form-control auth-form-input" required ng-readonly="lock_email">
           <label class="form-label auth-subheading" for="password">Create a Password</label>
-          <input tabindex=2 type="password" placeholder="Min 8 char, 1 letter & 1 number" name="password" id="password"
-            ng-model="signup.data.password" class="form-control auth-form-input" required>
-          <div class="google-captcha" no-captcha g-recaptcha-response="signup.data.captcha" theme="light"
-            control="noCaptchaControl" site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
+          <input tabindex=2 type="password" placeholder="Min 8 char, 1 letter & 1 number" name="password" id="password" ng-model="signup.data.password" class="form-control auth-form-input" required>
+          <div class="google-captcha"
+            no-captcha
+            g-recaptcha-response="signup.data.captcha"
+            theme="light"
+            control="noCaptchaControl"
+            site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
           </div>
           <div class="auth-subtext">
-            By signing up you agree to our <a ng-if="isOrgRZP" class="highlight" target="_blank"
-              href="https://razorpay.com/privacy/">privacy policy</a> <span ng-if="!isOrgRZP">privacy policy</span> and
+            By signing up you agree to our <a ng-if="isOrgRZP" class="highlight" target="_blank" href="https://razorpay.com/privacy/">privacy policy</a> <span ng-if="!isOrgRZP">privacy policy</span> and
             <a ng-if="isOrgRZP" class="highlight" target="_blank" href="https://razorpay.com/terms/">terms of use</a>
             <span ng-if="!isOrgRZP">terms of use</span>.
           </div>
-          <button tabindex=3 override-tab class="btn btn-primary form-control " type="submit"
-            ng-disabled="signup.submissionDisabled">
+          <button tabindex=3 override-tab class="btn btn-primary form-control " type="submit" ng-disabled="signup.submissionDisabled">
             Create Account
           </button>
-          <div class="loading-animation">
-            <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
-          </div>
+          <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
         </form>
 
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">
-          {{alert.msg}}</alert>
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="" ng-if="isOrgCheckDone && !(organization && organization.allow_sign_up || invite)">
         <span>You are not authorized to access this page</span>
       </div>
       <div class="signup-org-loading" ng-if="!isOrgCheckDone">
-        <div class="loading-animation active">
-          <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
-        </div>
+        <div class="loading-animation active"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
       </div>
     </div>
     <!-- <div class="auth-step">
