@@ -26,8 +26,7 @@ export const AmountDropdown = ({
     beforeOptionsTxt={beforeOptionsTxt}
     type="price"
     options={[]}
+    trigger={children}
     selectedOption={selectedOption && selectedOption.label}
-  >
-    {children}
-  </FieldsDropdown>
+  />
 );

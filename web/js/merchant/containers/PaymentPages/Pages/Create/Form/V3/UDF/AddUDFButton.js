@@ -18,8 +18,7 @@ export const UDFDropdown = ({ children, selectedOption, beforeOptionsTxt }) => (
     beforeOptionsTxt={beforeOptionsTxt}
     type="udf"
     options={getFieldTypes()}
+    trigger={children}
     selectedOption={selectedOption && selectedOption.label}
-  >
-    {children}
-  </FieldsDropdown>
+  />
 );

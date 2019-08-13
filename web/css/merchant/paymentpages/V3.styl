@@ -17,15 +17,14 @@
       line-height: 20px
       background-color: rgba(82,143,240,0.17)
 
-  .FieldDropdown
+  .OptionsDropdown
     display: inline-block
 
-    &:not(:last-child)
-      margin-right: 13px
+    &:not(:first-child)
+      margin-left: 13px
 
-    .FieldDropdown-list
+    .OptionsDropdown-list
       width: 214px
-      margin-top: 8px
       border-radius: 4px
       border: 1px solid rgba(82,143,240,0.16)
       list-style: none
@@ -33,12 +32,13 @@
       background-color: #fff
       box-shadow: 0 5px 9px 0 rgba(69,75,85,0.22)
 
-    .FieldDropdown-title
+    .OptionsDropdown-title
       margin: 4px 8px
       font-size: 12px
       font-weight: bold
+      margin-right: 20px
 
-    .FieldDropdown-item
+    .OptionsDropdown-item
       position: relative
       width: 100%
       margin: 0
@@ -74,15 +74,19 @@
         right: 8px
         color: $primary-color
 
-    .FieldDropdown-item--selected
+    .OptionsDropdown-item--selected
       background: #f5f7f9
       .i-check
         display: block
 
-  .FieldDropdown--udf
-    .FieldDropdown-list
-      border-left: 2px solid rgba(13,186,147,0.78)
+  .FieldsDropdown
+    .OptionsDropdown-list
+      margin-top: 8px
 
-  .FieldDropdown--amount
-    .FieldDropdown-list
-      border-left: 2px solid #FFCA73
+    &--udf
+      .OptionsDropdown-list
+        border-left: 2px solid rgba(13,186,147,0.78)
+
+    &--amount
+      .OptionsDropdown-list
+        border-left: 2px solid #FFCA73
