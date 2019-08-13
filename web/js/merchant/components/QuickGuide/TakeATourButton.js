@@ -12,7 +12,7 @@ export default class TakeATourButton extends React.Component {
     this.props.handleProductQuickGuide({
       feature: this.props.feature,
       showOnboarding: false,
-      isQuickGuideOpen: false,
+      isQuickGuideOpen: true,
       isTour: true,
     });
 
