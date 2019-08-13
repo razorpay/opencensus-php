@@ -20,7 +20,7 @@ function findBaseCreatorPosition() {
 }
 
 /* Position-awared Modal which opens over the field being edited */
-const PositionAwaredCreator = ({ children, overWhatElement }) => {
+const PositionAwaredCreator = ({ children, overWhatElement, className }) => {
   let style = null;
 
   // If not available, then opens modal in center of screen
@@ -39,7 +39,7 @@ const PositionAwaredCreator = ({ children, overWhatElement }) => {
   return (
     <ModalMask maskClosable={false} class="payment-pages-v3-creator">
       <Modal
-        class={classList(style && 'animate-appear')}
+        class={classList(style && 'animate-appear', className)}
         showCloseBtn={false}
         style={style}
       >

@@ -47,14 +47,17 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             setRef={this.sefRef}
           />
           {this.state.isBaseFormOpened && (
-            <CreatorModal overWhatElement={this.displayFieldEl}>
+            <CreatorModal
+              class="CreatorModal-BaseForm"
+              overWhatElement={this.displayFieldEl}
+            >
               <BaseForm
                 field={field}
                 selfIndex={index}
                 validateSameTitleExists={validateSameTitleExists}
-                onClose={this.toggleBaseForm}
-                onSubmit={this.onSubmitUDFField}
-                onFieldDelete={
+                onCloseForm={_ => this.toggleBaseForm()}
+                onSaveField={this.onSubmitUDFField}
+                onDeleteField={
                   isFieldRemovable ? this.onDeleteUDFField : undefined
                 }
               />
