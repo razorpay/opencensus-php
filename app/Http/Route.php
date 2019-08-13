@@ -36,6 +36,7 @@ final class Route
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_private_json'              => ['post',     'payments/create/json',                           'PaymentCreateController@postCreateS2SJsonPayment'                  ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_subscriptions'             => ['post',     'payments/create/subscriptions',                  'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -67,6 +68,7 @@ final class Route
         'payment_topup_post'                       => ['post',     'payments/{x_entity_id}/topup',                   'PaymentCreateController@postTopup'                                 ],
         'payment_redirect_callback'                => ['post',     'payments/{x_entity_id}/redirect_callback',       'PaymentCreateController@postRedirectCallback'                      ],
         'payment_redirect_3ds'                     => ['post',     'payments/{x_entity_id}/authentication/redirect', 'PaymentCreateController@postRedirect3ds'                           ],
+        'payment_redirect_3ds_get'                 => ['get',      'payments/{x_entity_id}/authentication/redirect', 'PaymentCreateController@postRedirect3ds'                           ],
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
@@ -1229,6 +1231,7 @@ final class Route
         'merchant_methods_downtime',
         'virtual_account_order_create',
         'payment_redirect_3ds',
+        'payment_redirect_3ds_get',
         'currency_fetch_all',
         'payment_validate_account',
         'fund_account_create_public',
@@ -1272,6 +1275,7 @@ final class Route
     public static $private = [
         'payment_create_private',
         'payment_create_private_old',
+        'payment_create_private_json',
         'payment_fees',
         'payment_create_recurring',
         'payment_create_wallet',
@@ -3024,7 +3028,11 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
-        'payment_get_flows'
+        'payment_get_flows',
+    ];
+
+    protected static $s2sJsonRoutes = [
+        'payment_create_private_json'
     ];
 
     /**
@@ -3040,6 +3048,7 @@ final class Route
         'payment_create_openwallet'            => [Feature::OPENWALLET],
         'payment_create_recurring'             => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'           => [Feature::S2S],
+        'payment_create_private_json'          => [Feature::S2S],
         'reports_transaction_broking'          => [Feature::BROKING_REPORT],
         'reports_transaction_dsp'              => [Feature::DSP_REPORT],
         'reports_order_rpp'                    => [Feature::RPP_REPORT],
@@ -3141,6 +3150,7 @@ final class Route
         'payment_create_private',
         'payment_create_recurring',
         'payment_create_private_old',
+        'payment_create_private_json',
         'payment_create_checkout',
         'payment_create_aeps',
         'payment_create_jsonp',
@@ -3172,6 +3182,7 @@ final class Route
     const S2S_PAYMENT_ROUTES = [
         'payment_create_private',
         'payment_create_private_old',
+        'payment_create_private_json',
         'payment_create_recurring',
         'payment_create_aeps',
         'payment_create_openwallet',
@@ -3446,6 +3457,13 @@ final class Route
         $jsonpRoutes = self::$jsonpRoutes;
 
         return in_array($route, $jsonpRoutes);
+    }
+
+    public static function isS2SJsonRoute($route)
+    {
+        $jsonpRoutes = self::$s2sJsonRoutes;
+
+        return (in_array($route, $jsonpRoutes, true) === true);
     }
 
     public function addRouteGroups($groups)
