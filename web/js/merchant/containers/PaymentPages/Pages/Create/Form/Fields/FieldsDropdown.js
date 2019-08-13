@@ -11,7 +11,7 @@ export default class UDFFieldsDropdown extends React.PureComponent {
 
   render() {
     const { selectedLabel } = this.state;
-    const { options, type, children } = this.props;
+    const { options, type, beforeOptionsTxt, children } = this.props;
 
     return (
       <div class={classList('FieldDropdown', 'FieldDropdown--' + type)}>
@@ -20,7 +20,9 @@ export default class UDFFieldsDropdown extends React.PureComponent {
 
           <DropdownContent>
             <ul class="dropdown-menu nav nav-stacked FieldDropdown-list">
-              <div class="FieldDropdown-title">New Input Field</div>
+              {!!beforeOptionsTxt && (
+                <div className="FieldDropdown-title">{beforeOptionsTxt}</div>
+              )}
               {options.map((option, ix) => {
                 return (
                   <li
