@@ -9,7 +9,7 @@ import {
 import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/model';
 
 // TODO: Remove dependency from here
-import { FIXED_FIELDS } from 'merchant/containers/PaymentPages/Pages/Create/Form/Fields/fields';
+import { FIXED_FIELDS } from 'merchant/containers/PaymentPages/Pages/Create/Form/Fields/preAddedFields';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 
