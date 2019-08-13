@@ -200,12 +200,6 @@ class Core extends Base\Core
     {
         $params = $this->getDowntimeFetchParams($terminals, $input);
 
-        // for testing
-        $this->trace->info(
-            TraceCode::NON_BLOCKING_HTTP_DATA,
-            ['parmas' => $params]
-        );
-
         $downtimes = $this->repo
                           ->gateway_downtime
                           ->fetchApplicableDowntimesForPayment($params);
