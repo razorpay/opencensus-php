@@ -83,6 +83,7 @@ const FeatureCard = ({ icon, title, desc }) => (
 
 const FeatureLink = ({ ga, url, page, label, feature }) => (
   <a
+    class="external-link"
     onClick={() => {
       window.rzpAnalytics({
         eventCategory: `Onboarding Card (${feature})`,
