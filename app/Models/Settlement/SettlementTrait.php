@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -805,6 +806,13 @@ trait SettlementTrait
                 'timestamp' => $this->setlTime,
                 'time'      => $time,
             ]);
+
+        $customProperties = ['channel' => $channel, 'timestamp' => $this->setlTime, 'time' => $time];
+
+        $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_CREATION_INITIATED,
+            null,
+            null,
+            $customProperties);
     }
 
     protected function successNotification($data, $settlements, $traceCode)
@@ -817,6 +825,13 @@ trait SettlementTrait
     protected function settlementFailure($channel, $e, $traceCode)
     {
         $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
+
+        $customProperties = ['channel' => $channel];
+
+        $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_CREATION_INITIATED,
+            null,
+            $e,
+            $customProperties);
 
         $this->failureNotification($e);
 

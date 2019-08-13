@@ -232,4 +232,9 @@ class EventCode
         'name'  => 'payment.authentication.omnichannel.request.processed'
     ];
 
+    const SETTLEMENT_CREATION_INITIATED = [
+        'group' => 'initiation',
+        'name'  => 'settlement.creation.initiated'
+    ];
+
 }
