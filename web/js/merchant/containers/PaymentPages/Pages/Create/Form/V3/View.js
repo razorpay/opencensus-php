@@ -1,11 +1,8 @@
 import { connect } from 'react-redux';
-import Button from 'component/Button';
-import { AmountCreator, AmountField, FormFooter } from './Amount/AdvancedForm';
-import { GenericCreator, GenericField } from './Generic/BaseForm';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import { constructFieldSchema } from '../Fields/V3';
-
-import AddUDFButton from './AddUDFButton';
+import AmountDisplayField from './Amount/AmountDisplayField';
+import UDFDisplayField from './UDF/UDFDisplayField';
+import AddUDFButton from './UDF/AddUDFButton';
+import AddAmountButton from './Amount/AddAmountButton';
 
 import {
   updateData,
@@ -13,13 +10,7 @@ import {
   updateInSchema,
   addInSchema,
 } from 'merchant/modules/wysiwyg';
-
-function offset(el) {
-  var rect = el.getBoundingClientRect(),
-    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
-    scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  return { top: rect.top + scrollTop, left: rect.left + scrollLeft };
-}
+import { constructFieldSchema } from '../Fields/V3';
 
 const CreatorType = {
   AMOUNT: 'AMOUNT',
@@ -33,34 +24,34 @@ const CreatorType = {
   addInSchema,
 })
 export default class View extends React.PureComponent {
-  state = { activeCreatorType: null };
-
   componentWillReceiveProps(nextProps) {
     if (this.props.payment_page_id !== nextProps.payment_page_id) {
-      this.onCreatorClose();
+      // this.onCreatorClose(); // TODO: Important controller point to close all the modals
     }
   }
 
-  openCreator = (e, activeCreatorType, activeSchemaIndex) => {
-    const parent = document.getElementById('form-section');
-    const width = parent.clientWidth + 44 * 2;
+  onSubmitAmountField = (formData, udfFieldIndex) => {
+    /*
+    const { currency, amount, quantity, allow_multiple_units } = formData;
 
-    this.creatorStructure = {
-      width,
-      left: offset(parent).left - 44,
-    };
-
-    this.setState({ activeCreatorType, activeSchemaIndex });
+    this.props.updateData({
+      currency,
+      amount: amount || null,
+      quantity: quantity || null,
+      settings: {
+        allow_multiple_units: !!allow_multiple_units,
+      },
+    });
+*/
   };
 
-  onCreatorClose = _ => {
-    this.setState({ activeCreatorType: false, activeSchemaIndex: null });
-  };
+  onDeleteAmountField = amountFieldIndex => {};
 
-  onGenericCreatorSubmit = formData => {
+  onSubmitUDFField = (formData, udfFieldIndex) => {
     // console.log('FORM DATA.....', formData);
     const fieldSchema = constructFieldSchema(formData);
     // console.log('FIELD SCHEMA...', fieldSchema);
+
     if (
       !fieldSchema ||
       (fieldSchema.enum && (!formData.enum || !formData.enum.length))
@@ -74,36 +65,25 @@ export default class View extends React.PureComponent {
 
     this.props.updateInSchema({
       field: fieldSchema,
-      index: this.state.activeSchemaIndex,
+      index: udfFieldIndex,
     });
-
-    this.setState({ activeCreatorType: false });
   };
 
-  onGenericFieldDelete = idx => {
-    this.onCreatorClose();
-    this.props.deleteInSchema(idx);
+  onDeleteUDFField = udfFieldIndex => {
+    this.props.deleteInSchema(udfFieldIndex);
   };
 
-  onAmountCreatorSubmit = formData => {
-    const { currency, amount, quantity, allow_multiple_units } = formData;
+  validateSameTitleExists = (title, fieldSelfIndex) => {
+    const allFieldsTitles = this.props.FORM_SCHEMA.map(f => f.title), // TODO: Currently checking for UDF Field. To add for Amount field labels
+      sameTitleIndex = allFieldsTitles.indexOf(title);
 
-    this.props.updateData({
-      currency,
-      amount: amount || null,
-      quantity: quantity || null,
-      settings: {
-        allow_multiple_units: !!allow_multiple_units,
-      },
-    });
-
-    this.setState({ activeCreatorType: false });
+    if (sameTitleIndex > -1 && sameTitleIndex !== fieldSelfIndex) {
+      return true;
+    }
   };
 
   render() {
-    const FORM_SCHEMA = this.props.FORM_SCHEMA;
-    const activeCreatorType = this.state.activeCreatorType;
-    const { paymentPageEntity } = this.props;
+    const { paymentPageEntity, FORM_SCHEMA } = this.props;
 
     if (!paymentPageEntity) {
       return null;
@@ -120,90 +100,40 @@ export default class View extends React.PureComponent {
       );
     }
 
-    let editorContent;
-
-    if (activeCreatorType) {
-      if (activeCreatorType === CreatorType.AMOUNT) {
-        editorContent = (
-          <AmountCreator
-            field={paymentPageEntity}
-            onClose={this.onCreatorClose}
-            onSubmit={this.onAmountCreatorSubmit}
-          />
-        );
-      } else if (activeCreatorType === CreatorType.GENERIC) {
-        const field = FORM_SCHEMA[this.state.activeSchemaIndex] || {};
-        let isRemovable = true;
-        if (['email', 'phone'].indexOf(field.name) > -1) {
-          isRemovable = false;
-        }
-
-        editorContent = (
-          <GenericCreator
-            field={field}
-            selfIndex={this.state.activeSchemaIndex}
-            allFieldsLabelList={FORM_SCHEMA.map(f => f.title)}
-            onClose={this.onCreatorClose}
-            onSubmit={this.onGenericCreatorSubmit}
-            onFieldDelete={isRemovable ? this.onGenericFieldDelete : undefined}
-          />
-        );
-      }
-    }
-
     return (
       <React.Fragment>
-        {activeCreatorType && (
-          <Creator creatorStructure={this.creatorStructure}>
-            {editorContent}
-          </Creator>
-        )}
         <div class="UI-form">
-          <AmountField
-            paymentPageEntity={paymentPageEntity}
-            onAddAmount={e => this.openCreator(e, CreatorType.AMOUNT)}
+          {/*
+          <AmountDisplayField
+            key={field.name}
+            index={field.idx}
+            field={field}
+            onDeleteAmountField={this.onDeleteAmountField}
+            onSubmitAmountField={this.onSubmitAmountField}
+            validateSameTitleExists={this.validateSameTitleExists}
           />
-
+        */}
           {FORM_SCHEMA.map((field, idx) => {
-            let infoTxt = '';
-            let isDisabled;
-            if (['email', 'phone'].indexOf(field.name) > -1) {
-              infoTxt = 'This field cannot be removed';
-              isDisabled = true;
-            }
-
             return (
-              <GenericField
+              <UDFDisplayField
                 key={field.name}
+                index={idx}
                 field={field}
-                infoTxt={infoTxt}
-                onEditField={
-                  !isDisabled
-                    ? e => this.openCreator(e, CreatorType.GENERIC, idx)
-                    : undefined
-                }
+                onDeleteUDFField={this.onDeleteUDFField}
+                onSubmitUDFField={this.onSubmitUDFField}
+                validateSameTitleExists={this.validateSameTitleExists}
               />
             );
           })}
+
           <div class="Field">
             <div class="Field-label" style={{ opacity: 0.6 }}>
               Add new
             </div>
 
             <div class="Field-content">
-              <AddUDFButton />
-
-              <Button.Transparent
-                class="btn-dotted"
-                onClick={e => this.openCreator(e, CreatorType.GENERIC)}
-              >
-                <span class="enclose-circle">
-                  <b>₹</b>
-                </span>{' '}
-                <span>
-                  <b>Price field</b>
-                </span>
-              </Button.Transparent>
+              <AddUDFButton onSelectField={_ => _} />
+              <AddAmountButton onSelectField={_ => _} />
             </div>
           </div>
 
@@ -213,23 +143,3 @@ export default class View extends React.PureComponent {
     );
   }
 }
-
-const Creator = ({ children, creatorStructure }) => {
-  return (
-    <ModalMask maskClosable={false} class="payment-pages-v2-creator">
-      <Modal
-        class="animate-appear"
-        showCloseBtn={false}
-        style={{
-          width: creatorStructure.width,
-          top: '50%',
-          left: creatorStructure.left,
-          margin: '12px 0 0',
-          transform: 'translateY(-50%)',
-        }}
-      >
-        <ModalContent class="paymentlinks-creator">{children}</ModalContent>
-      </Modal>
-    </ModalMask>
-  );
-};
