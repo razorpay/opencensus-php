@@ -1,6 +1,19 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
+import { RZPFeatures } from 'rzp/utils/constants';
+
+import DataTable from 'rzp/ui/Table/DataTable';
+import HeaderAction from 'rzp/ui/HeaderAction';
+
+import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
+
+import DocsLink from 'merchant/components/DocsLink';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilter';
+
+import ListContainer from 'merchant/containers/ListContainer';
+
 import {
   subscriptionId,
   planId,
@@ -11,17 +24,12 @@ import {
 } from 'rzp/ui/item/pair';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
-import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
-
-import DocsLink from 'merchant/components/DocsLink';
-import EmptyList from 'merchant/components/EmptyList';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
-import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilter';
-
-import ListContainer from 'merchant/containers/ListContainer';
+const link = {
+  title: 'Subscription Link',
+  value: item => <CopyLink url={item.short_url} />,
+};
 
 @connect(state => state.subscriptions, { fetchAll })
 export default class SubscriptionsListContainer extends ListContainer {
@@ -51,19 +59,21 @@ export default class SubscriptionsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, error } = this.props;
-
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <TakeATourButton feature={RZPFeatures.SUBSCRIPTIONS} />
+
             <DocsLink url="https://razorpay.com/docs/subscriptions/" />
+
             <NavLink class="btn btn-primary" to="/subscriptions/new">
               <i class="i i-plus" />
               <span>Create New Subscription</span>
             </NavLink>
           </div>
         </HeaderAction>
+
         <SubscriptionsListFilter
           form="subscriptionsListFilter"
           count={this.state.count}
