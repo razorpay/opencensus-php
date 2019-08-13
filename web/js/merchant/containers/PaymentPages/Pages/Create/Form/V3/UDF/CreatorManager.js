@@ -42,7 +42,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         <div>
           <_WrappedDisplayFieldComponent
             field={field}
-            openEditBaseForm={this.toggleBaseForm}
+            openBaseForm={this.toggleBaseForm}
             tooltipTxt={tooltipTxt}
             setRef={this.sefRef}
           />

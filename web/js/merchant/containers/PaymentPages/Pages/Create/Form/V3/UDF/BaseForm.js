@@ -1,59 +1,14 @@
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
-import EditLayer from '../../../EditLayer';
-import { classList, getValueOfKeyAtLevel } from 'common/util';
 import {
   getFieldTypes,
   mapFieldToIndex,
   getFieldFromIndices,
 } from '../../Fields/V3';
 
-const CustomTypeOption = ({ option }) => (
-  <React.Fragment>
-    <i class={classList('i', option.icon && 'i-' + option.icon)} />
-    <span class="display-label">{option.label}</span>
-  </React.Fragment>
-);
-
-export const GenericField = ({ field, onEditField, infoTxt }) => {
-  return (
-    <EditLayer
-      class={classList(
-        'Field Field--disabled',
-        field.hasOwnProperty('enum') && 'Field--select',
-        field.required && 'Field--required',
-        !onEditField && 'disable-hover'
-      )}
-      onClick={onEditField}
-      infoTxt={infoTxt}
-    >
-      <div class="Field-label">
-        {field.title}
-        {field.required && <span class="symbol--red">*</span>}
-      </div>
-      <div class="Field-content">
-        <div
-          class={classList(
-            'Field-wrapper',
-            field._type && 'Field-wrapper--' + field_type
-          )}
-        >
-          <input class="Field-el" disabled />
-        </div>
-        {field.description && (
-          <div class="Field-description">{field.description}</div>
-        )}
-      </div>
-      {onEditField && <i class="i i-edit" />}
-    </EditLayer>
-  );
-};
-
-export class GenericCreator extends React.PureComponent {
+export default class BaseForm extends React.PureComponent {
   state = {
-    isDynamicAmount: false,
-    hasQuantity: false,
     disableSubmit: !this.props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
     hasDescription: !!this.props.field.description,
     isFieldEnum: !!this.props.field.enum,
@@ -61,41 +16,6 @@ export class GenericCreator extends React.PureComponent {
       ? this.props.field.enum
       : undefined,
   };
-
-  defaultEnumVal = (() => {
-    if (this.props.field.title) {
-      let indexTree = mapFieldToIndex(this.props.field);
-
-      indexTree = [Number(indexTree[0]) + 1].concat(indexTree.splice(1));
-
-      return indexTree.join(' ');
-    } else {
-      return '';
-    }
-  })();
-
-  typeOptions = (() => {
-    const FIELD_TYPES = getFieldTypes();
-
-    return [{ label: '--Select--', value: '' }].concat(
-      FIELD_TYPES.map((FIELD_OPTION, idx) => {
-        return {
-          value: String(idx + 1), // +1 is to adjust --select--
-          options: !FIELD_OPTION.options
-            ? undefined
-            : FIELD_OPTION.options.map((SUB_OPTION, jdx) => {
-                return {
-                  value: Number(idx + 1) + ' ' + jdx, // Space separate tree.
-                  label: SUB_OPTION.label,
-                  icon: SUB_OPTION.icon,
-                };
-              }),
-          label: FIELD_OPTION.label,
-          icon: FIELD_OPTION.icon,
-        };
-      })
-    );
-  })();
 
   onChange = ({ target }) => {
     const { name, value } = target;
@@ -126,7 +46,7 @@ export class GenericCreator extends React.PureComponent {
     this.setState({ disableSubmit });
   };
 
-  onSelection = field => {
+  onFieldTypeSelection = field => {
     let indexString = field.option.value;
     let selectedFieldSchema;
 
@@ -177,7 +97,7 @@ export class GenericCreator extends React.PureComponent {
     const {
       onClose,
       field,
-      allFieldsLabelList,
+      validateSameTitleExists,
       selfIndex,
       onFieldDelete,
     } = this.props;
@@ -205,34 +125,13 @@ export class GenericCreator extends React.PureComponent {
                 return 'Field title must have atleast 1 character';
               }
 
-              const sameTitleFieldIndex = allFieldsLabelList.indexOf(val);
-
-              if (
-                sameTitleFieldIndex > -1 &&
-                sameTitleFieldIndex !== selfIndex
-              ) {
+              if (validateSameTitleExists(val, selfIndex)) {
                 return 'Field title cannot be same as other field';
               }
             }}
             autoFocus
           />
-          {/*<input name="name" hidden value={} />*/}
 
-          <Input.PowerDropdown
-            name="field_type"
-            label="What type of field is this?"
-            placeholder="Select Type"
-            defaultValue={this.defaultEnumVal}
-            options={this.typeOptions}
-            onChange={this.onSelection}
-            customOptionComponent={CustomTypeOption}
-            customSelectedOptionComponent={CustomTypeOption}
-            validator={val => {
-              if (!val) {
-                return 'Please select a field type';
-              }
-            }}
-          />
           {this.state.isFieldEnum && (
             <Input.EnumList
               class="dropdown-options"
