@@ -1405,9 +1405,9 @@ class SubmitForm extends React.Component {
             <p>
               I have read and understood the{' '}
               <ShowWhen
-                additionalCondition={user => {
-                  return user.isOrgAllowedFunctionality('external_links');
-                }}
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
               >
                 <a
                   href="https://razorpay.com/terms/"
@@ -1421,9 +1421,9 @@ class SubmitForm extends React.Component {
                 </a>
               </ShowWhen>
               <ShowWhen
-                additionalCondition={user => {
-                  return !user.isOrgAllowedFunctionality('external_links');
-                }}
+                additionalCondition={user =>
+                  !user.isOrgAllowedFunctionality('external_links')
+                }
               >
                 <span class="highlight">Terms & Conditions</span>
               </ShowWhen>
