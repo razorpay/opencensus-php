@@ -262,7 +262,7 @@ class TerminalRotatorTest extends TestCase
         {
             $this->runRequestResponseFlow( $data, function() use ($payment1)
             {
-                $this->doAuthPayment($payment1);
+                    $this->doAuthPayment($payment1);
             });
 
             $payment = $this->getLastPayment(true);
@@ -302,10 +302,10 @@ class TerminalRotatorTest extends TestCase
     protected function createTestOrder($amount = 50000)
     {
         $input = array(
-            'amount'        => $amount,
-            'currency'      => 'INR',
-            'receipt'       => 'rcptid42',
-        );
+                'amount'        => $amount,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            );
 
         return $this->createOrder($input);
     }
