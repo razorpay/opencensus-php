@@ -1,11 +1,13 @@
-import React, { Component } from 'react';
-import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
-import ListContainer from 'merchant/containers/ListContainer';
-import PaymentsListFilter from 'merchant/components/Payments/PaymentsListFilter';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import DocsLink from 'merchant/components/DocsLink';
-
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
+import HeaderAction from 'rzp/ui/HeaderAction';
+
+import DocsLink from 'merchant/components/DocsLink';
+import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
+import PaymentsListFilter from 'merchant/components/Payments/PaymentsListFilter';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+
+import ListContainer from 'merchant/containers/ListContainer';
 
 export default class PaymentsListContainer extends ListContainer {
   constructor(props) {
@@ -50,11 +52,13 @@ export default class PaymentsListContainer extends ListContainer {
   };
 
   render() {
-    const { docUrl } = this.props;
+    const { docUrl, quickTourFeature } = this.props;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
+          {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
+
           {docUrl && (
             <div class="btn-toolbar pull-right">
               <DocsLink url={docUrl} />
