@@ -299,12 +299,6 @@ class Selector extends Base\Core
             ]
         );
 
-        // for testing
-        $this->trace->info(
-            TraceCode::TERMINALS_RECEIVED_FROM_SMART_ROUTING,
-            ['terminalIds' => $terminalIds]
-        );
-
         return $sortedTerminals;
     }
 
