@@ -544,6 +544,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
     ];
 
+    protected static $netbankingIdbiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_idbi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+    ];
+
     protected static $netbankingVijayaTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',

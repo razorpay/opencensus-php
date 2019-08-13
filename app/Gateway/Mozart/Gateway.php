@@ -95,6 +95,8 @@ class Gateway extends Base\Gateway
         {
             $gateway = $input['gateway'];
 
+            $gateway = $this->parsegatewayresponse($input, $gateway);
+
             $traceRes = $this->getRedactedData($gateway);
 
             $this->traceGatewayPaymentRequest($traceRes, $input, TraceCode::PAYMENT_CALLBACK_REQUEST );
@@ -161,8 +163,9 @@ class Gateway extends Base\Gateway
             Payment\Gateway::BAJAJFINSERV,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::NETBANKING_CBI,
-            Payment\Gateway::NETBANKING_CUB
         ];
 
         return in_array($gatewayName, $immediateVerificationGateways);
@@ -456,6 +459,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => Action::PAY_VERIFY,
             ],
+            Payment\Gateway::NETBANKING_IDBI => [
+                Action::PAY_INIT    =>  null,
+                Action::PAY_VERIFY  =>  Action::PAY_INIT,
+                Action::VERIFY      =>  Action::PAY_VERIFY,
+            ],
             Payment\Gateway::NETBANKING_YESB => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -541,6 +549,12 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::NETBANKING_CUB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
+
+            Payment\Gateway::NETBANKING_IDBI => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
@@ -781,6 +795,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::NETBANKING_IDBI,
         ];
 
         return in_array($gateway, $validationGateways, true);
@@ -802,6 +817,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::UPI_AIRTEL,
         ];
 
@@ -861,6 +877,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::NETBANKING_IDBI,
         ];
 
         return in_array($gateway, $fileBasedGateways, true);
@@ -884,5 +901,25 @@ class Gateway extends Base\Gateway
         }
 
         return false;
+    }
+
+    // This function is used when the callback does not come as key-value pairs
+    // the encrypted value comes as key so as default "encdata" is added as key and the encrypted string as
+    // its value. This is a temporary solution.
+    protected function parsegatewayresponse($input, $gatewayInput)
+    {
+        if ($input['payment']['gateway'] == Payment\Gateway::NETBANKING_IDBI)
+        {
+            $key = array_keys($gatewayInput)[0];
+
+            if($gatewayInput[$key] === "")
+            {
+                $gatewayInput['encdata'] = $key;
+
+                unset($gatewayInput[$key]);
+            }
+        }
+
+        return $gatewayInput;
     }
 }
