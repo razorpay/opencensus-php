@@ -68,6 +68,12 @@ class Selector extends Base\Core
         // Boosts specific auth type terminals over 3ds terminals
         Sorters\AuthTypeSorter::class,
 
+        // Sorting based on older failed attempts
+        Sorters\FailedTerminalsSorter::class,
+
+        // Sorting based on gateway downtimes
+        Sorters\GatewayDowntimeSorter::class,
+
         // Boosts terminals with gateway tokens over fallback terminal (without gateway tokens)
         // No fallback sorting. We are not giving priority
         // to the actual terminals as such. We will let the

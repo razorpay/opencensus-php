@@ -991,7 +991,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $corporate = $input[self::CORPORATE] ?? BankingTsetEnabledBanksype::RETAIL_ONLY;
+        $corporate = $input[self::CORPORATE] ?? BankingType::RETAIL_ONLY;
 
         $tpv = $input[self::TPV] ?? TpvType::NON_TPV_ONLY;
 
