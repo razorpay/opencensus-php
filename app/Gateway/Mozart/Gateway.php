@@ -455,7 +455,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => null,
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
-                Action::VERIFY => Action::REFUND,
+                Action::VERIFY => Action::PAY_INIT,
             ],
             Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT => null,
@@ -526,7 +526,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => null,
                 Action::REFUND => Action::AUTHORIZE,
                 Action::VERIFY_REFUND => Action::REFUND,
-                Action::VERIFY => Action::REFUND,
+                Action::VERIFY => Action::AUTHORIZE,
             ],
 
             Payment\Gateway::UPI_AIRTEL => [
