@@ -368,8 +368,9 @@ export default class RequestEarlyAccessForm extends Component {
         <p>
           Based on your risk profile which includes refunds, chargebacks,
           vintage with Razorpay, etc. you will be charged{' '}
-          <strong>{this.state.pricing}%</strong> for every settlement that is
-          being done early.
+          <strong>{this.state.pricing}%</strong> more for domestic payments
+          settling early. For international payments, it will be{' '}
+          <strong>1%</strong> more.
         </p>
         <div class="form-action">
           <Button onClick={this.handleBack} disabled={this.state.saving}>
