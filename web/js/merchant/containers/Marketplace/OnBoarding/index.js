@@ -107,3 +107,25 @@ export default class MarketPlaceOnBoarding extends React.Component {
     );
   }
 }
+
+export function isAllowedResetRouteBoarding({
+  merchantId,
+  mode,
+  transfers,
+  accounts,
+}) {
+  if (
+    accounts.loading ||
+    transfers.loading ||
+    transfers.items.length ||
+    accounts.accounts.length
+  ) {
+    return false;
+  }
+
+  return isAllowedResetBoarding({
+    merchantId,
+    mode,
+    feature: RZPFeatures.ROUTE,
+  });
+}

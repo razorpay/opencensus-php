@@ -21,7 +21,7 @@ import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 
-import OnBoarding from './OnBoarding';
+import OnBoarding, { isAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
 
 @connect(
@@ -79,44 +79,46 @@ export default class MarketplaceContainer extends React.Component {
   }
 
   initMarketPlace = (props = this.props) => {
-    // const merchant = merchants[props.user.current];
-
     let showOnboarding = !props.user.isMarketplaceEnabled;
 
-    // if (!showOnboarding) {
-    //   showOnboarding = isAllowedResetSubscriptionBoarding({
-    //     merchantId: merchant.id,
-    //     mode: props.mode,
-    //     plans: props.plans,
-    //     subscriptions: props.subscriptions,
-    //   });
-    // }
+    if (!showOnboarding) {
+      const merchant = props.user.merchants[props.user.current];
+
+      showOnboarding = isAllowedResetRouteBoarding({
+        merchantId: merchant.id,
+        mode: props.mode,
+        transfers: props.transfers,
+        accounts: props.accounts,
+      });
+    }
 
     let isQuickGuideClosed = getRouteQuickGuideIsClosed(props);
 
     let routeProductOnBoarding = {
       ...props.routeProductOnBoarding,
-      isTour: false,
       showOnboarding,
-      isQuickGuideOpen: !isQuickGuideClosed,
+      isQuickGuideOpen: props.routeProductOnBoarding.isTour
+        ? true
+        : !isQuickGuideClosed,
     };
 
     this.props.handleProductQuickGuide(routeProductOnBoarding);
   };
 
   render() {
-    if (this.props.routeProductOnBoarding.showOnboarding) {
+    const {
+      isQuickGuideOpen,
+      showOnboarding,
+    } = this.props.routeProductOnBoarding;
+
+    if (showOnboarding) {
       return <OnBoarding />;
     }
-
-    const { isQuickGuideOpen, isTour } = this.props.routeProductOnBoarding;
-
-    const showQuickGuide = isQuickGuideOpen || isTour;
 
     return (
       <div class="Marketplace-Container">
         <tabbed-container>
-          {showQuickGuide && <QuickGuide />}
+          {isQuickGuideOpen && <QuickGuide />}
 
           <header id="marketplace-header">
             <NavLink to="/route/payments">Payments</NavLink>
