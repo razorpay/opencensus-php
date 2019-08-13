@@ -1175,7 +1175,8 @@ class TerminalTest extends TestCase
             'merchant_id' => '10000000000000',
             'mc_mpan' => '1234567890123456',
             'visa_mpan' => '9876543210123456',
-            'rupay_mpan' => '1234123412341234'
+            'rupay_mpan' => '1234123412341234',
+            'notes'     => 'some notes'
         ]);
         
         $url = '/terminals/'.$terminal['id'].'/enable';
@@ -1194,7 +1195,8 @@ class TerminalTest extends TestCase
             'merchant_id' => '10000000000000',
             'mc_mpan' => '1234567890123456',
             'visa_mpan' => '9876543210123456',
-            'rupay_mpan' => '1234123412341234'
+            'rupay_mpan' => '1234123412341234',
+            'notes'     => 'some notes'
         ]);
 
         $url = '/terminals/'.$terminal['id'].'/disable';

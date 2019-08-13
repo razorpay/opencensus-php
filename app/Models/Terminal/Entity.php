@@ -177,6 +177,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::ENABLED,
         self::MPAN,
+        self::NOTES,
         self::CREATED_AT
     ];
 
