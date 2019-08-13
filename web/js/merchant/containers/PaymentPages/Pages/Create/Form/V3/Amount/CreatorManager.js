@@ -1,4 +1,4 @@
-import { PositionAwaredCreator } from '../CreatorModal';
+import CreatorModal from '../CreatorModal';
 import BaseForm from './BaseForm';
 import AdvancedForm from './AdvancedForm';
 
@@ -42,7 +42,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             setRef={this.sefRef}
           />
           {this.state.isBaseFormOpened && (
-            <PositionAwaredCreator overWhatElement={this.displayFieldEl}>
+            <CreatorModal overWhatElement={this.displayFieldEl}>
               <BaseForm
                 field={field}
                 selfIndex={index}
@@ -53,16 +53,16 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
                   isFieldRemovable ? this.onDeleteAmountField : undefined
                 }
               />
-            </PositionAwaredCreator>
+            </CreatorModal>
           )}
           {this.state.isAdvancedFormOpened && (
-            <PositionAwaredCreator>
+            <CreatorModal>
               <AdvancedForm
                 field={field}
                 onClose={this.toggleBaseForm}
                 onSubmit={this.onSubmitAmountField}
               />
-            </PositionAwaredCreator>
+            </CreatorModal>
           )}
         </div>
       );

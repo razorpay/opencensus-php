@@ -1,4 +1,4 @@
-import { PositionAwaredCreator } from '../CreatorModal';
+import CreatorModal from '../CreatorModal';
 import BaseForm from './BaseForm';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
@@ -47,7 +47,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             setRef={this.sefRef}
           />
           {this.state.isBaseFormOpened && (
-            <PositionAwaredCreator overWhatElement={this.displayFieldEl}>
+            <CreatorModal overWhatElement={this.displayFieldEl}>
               <BaseForm
                 field={field}
                 selfIndex={index}
@@ -58,7 +58,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
                   isFieldRemovable ? this.onDeleteUDFField : undefined
                 }
               />
-            </PositionAwaredCreator>
+            </CreatorModal>
           )}
         </div>
       );
