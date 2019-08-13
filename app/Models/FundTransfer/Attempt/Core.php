@@ -29,6 +29,8 @@ use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 
 class Core extends Base\Core
 {
+    const FTS_DISPATCH_DELAY = 5;
+
     public function createWithBankAccount(
         Base\PublicEntity $source,
         BankAccountEntity $bankAccount,
@@ -454,7 +456,7 @@ class Core extends Base\Core
                 return;
             }
 
-            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered);
+            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered)->delay(self::FTS_DISPATCH_DELAY);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,

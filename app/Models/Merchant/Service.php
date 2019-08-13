@@ -3142,6 +3142,6 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         return (new TerminalService)->onboardMerchant($merchant, $input, false)
-                                    ->toArrayPublic();
+                                    ->toArrayAdmin();
     }
 }

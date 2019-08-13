@@ -8,11 +8,32 @@ use RZP\Models\External;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Entity as C;
+use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
 {
+    /**
+     * Temporary hack. Should not set balance at a class level.
+     * This restricts us from processing transactions from
+     * multiple account statements at once.
+     *
+     * @var Merchant\Balance\Entity
+     */
+    protected $balance;
+
+    /**
+     * NOTE: This function should be used for a specific account number only. We cannot
+     * call this function for processing transactions of multiple account numbers.
+     * This is because we are setting the balance entity at a class level.
+     * If you want to process transactions of multiple account numbers
+     * in a single shot, the logic for fetching balance should be fixed.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
     public function processStatementForAccount(array $input)
     {
         $channel        = array_pull($input, Entity::CHANNEL);
@@ -57,13 +78,31 @@ class Core extends Base\Core
 
         foreach ($bankTransactions as $bankTransaction)
         {
-            $bankTxnId = $bankTransaction[Entity::BANK_TRANSACTION_ID];
+            $bankTxnId      = $bankTransaction[Entity::BANK_TRANSACTION_ID];
+            $bankTxnSrlNo   = $bankTransaction[Entity::BANK_SERIAL_NUMBER];
+            $bankTxnDate    = $bankTransaction[Entity::TRANSACTION_DATE];
+            $bankTxnChannel = $bankTransaction[Entity::CHANNEL];
 
-            $txnExists = $this->repo->banking_account_statement->bankTransactionExists($bankTxnId, $accountNumber);
+            $txnExists = $this->repo->banking_account_statement->bankTransactionExists(
+                $bankTxnId,
+                $accountNumber,
+                $bankTxnDate,
+                $bankTxnChannel,
+                $bankTxnSrlNo);
 
             if ($txnExists === true)
             {
                 $skippedCount++;
+
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_INSERT_SKIP,
+                    [
+                        'bank_transaction_id'               => $bankTxnId,
+                        'bank_transaction_serial_number'    => $bankTxnSrlNo,
+                        'bank_transaction_date'             => $bankTxnDate,
+                        'bank_transaction_channel'          => $bankTxnChannel,
+                        'bank_account_number'               => $accountNumber,
+                    ]);
 
                 continue;
             }
@@ -92,9 +131,7 @@ class Core extends Base\Core
 
             $basEntity->merchant()->associate($merchant);
 
-            $type = $this->getBankTransactionType($basEntity);
-
-            $sourceEntity = $this->createSourceEntity($basEntity, $type);
+            $sourceEntity = $this->processSourceEntity($basEntity);
 
             $basEntity->source()->associate($sourceEntity);
 
@@ -106,32 +143,160 @@ class Core extends Base\Core
         });
     }
 
-    protected function getBankTransactionType(Entity $basEntity)
+    protected function getBalance(Entity $basEntity)
     {
-        return C::EXTERNAL;
+        if (empty($this->balance) === true)
+        {
+            $this->balance = $this->repo
+                                  ->balance
+                                  ->getBalanceByMerchantIdAccountNumberAndChannelOrFail($basEntity->getMerchantId(),
+                                                                                        $basEntity->getAccountNumber(),
+                                                                                        $basEntity->getChannel());
+        }
+
+        return $this->balance;
     }
 
-    protected function createSourceEntity(Entity $basEntity, string $type)
+    protected function processSourceEntity(Entity $basEntity)
     {
-        switch ($type) {
-            case C::EXTERNAL:
-                $sourceEntity = (new External\Core)->create($basEntity);
-                break;
-            case C::PAYOUT:
-            case C::REVERSAL:
-            default:
-                throw new Exception\LogicException(
-                    "Invalid txn type found as $type",
-                    ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_INVALID_TYPE_FOUND,
-                    [
-                        'type'   => $type,
-                        'bas_id' => $basEntity->getId(),
-                    ]);
+        if ($basEntity->isTypeCredit() === true)
+        {
+            $sourceEntity = $this->processReversal($basEntity);
+        }
+        else
+        {
+            $sourceEntity = $this->processPayout($basEntity);
         }
 
         $this->validateBalance($basEntity, $sourceEntity);
 
         return $sourceEntity;
+    }
+
+    protected function processReversal(Entity $basEntity)
+    {
+        $reversal = $this->fetchExistingReversalIfPresent($basEntity);
+
+        if ($reversal === null)
+        {
+            return $this->processExternal($basEntity);
+        }
+
+        //
+        // TODO: Explore creating a reversal entity and its transaction here
+        // if we are able to map the reversal BAS to a payout entity in the system.
+        // Earlier, we had decided that we will not make any changes to any entity
+        // as part of transaction flow. Also, this should be an edge case where we
+        // haven't fetched the status yet, but we fetched the account statement.
+        // But, this can also happen: when we fetched the status, it wasn't
+        // reversed yet, but when we fetched the transaction, it was reversed.
+        // But, for this reason, we decided to run the status check for 7 days
+        // for processed payouts.
+        // We can probably optimize for this later.
+        //
+
+        // TODO: Add a test case for this.
+        $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
+
+        return $reversal;
+    }
+
+    protected function processPayout(Entity $basEntity)
+    {
+        $payout = $this->fetchExistingPayoutIfPresent($basEntity);
+
+        if (($payout === null) or
+            ($payout->isStatusFailed() === true))
+        {
+            return $this->processExternal($basEntity);
+        }
+
+        // TODO: Add a test case for this.
+        (new DownstreamProcessor('fund_account_payout', $payout))->processTransaction();
+
+        return $payout;
+    }
+
+    protected function processExternal(Entity $basEntity)
+    {
+        $external = (new External\Core)->create($basEntity);
+
+        return $external;
+    }
+
+    protected function fetchExistingReversalIfPresent(Entity $basEntity)
+    {
+        $utr = $basEntity->getUtrFromDescription();
+
+        $balance = $this->getBalance($basEntity);
+
+        // TODO: Start storing UTR in reversals
+        $reversal = $this->repo->reversal->fetchFromUtr($utr, $balance->getId())->first();
+
+        return $reversal;
+    }
+
+    /**
+     * TODO: The logic would be different based on the channel.
+     * Refactor this when adding more banks here.
+     *
+     * @param Entity $basEntity
+     *
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    protected function fetchExistingPayoutIfPresent(Entity $basEntity)
+    {
+        $payouts = new Base\Collection;
+
+        $balance = $this->getBalance($basEntity);
+
+        $utr = $basEntity->getUtrFromDescription();
+
+        //
+        // We first try to retrieve the payout from UTR, present in the description.
+        //
+        // In case of payouts
+        // - IMPS is the most common mode
+        // - UTR retrieval is supported only for IMPS.
+        // - We do not know the mode via BAS entity. If we did, we could
+        //   fetch using UTR or bank_transaction_id depending on the mode.
+        // Due to the above two reasons, we try to fetch a payout using UTR first.
+        //
+        if (empty($utr) === false)
+        {
+            $payouts = $this->repo->payout->fetchFromUtr($utr, $balance->getId());
+        }
+
+        //
+        // If either the UTR is not present in the description or if we were not able
+        // to retrieve any payouts using the UTR, we try with bank_transaction_id
+        //
+        if ($payouts->count() === 0)
+        {
+            $bankTxnId = $basEntity->getBankTransactionId();
+
+            $payouts = $this->repo->payout->fetchFromCmsRefNumber($bankTxnId, $balance->getId());
+        }
+
+        //
+        // Finally, if the search with either UTR or with bank_transaction_id gave more
+        // results than 1, it means our logic is wrong and needs to be re-looked at.
+        //
+        if ($payouts->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'Too many payouts found for the given criteria',
+                ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND,
+                [
+                    'bas_id'        => $basEntity->getId(),
+                    'balance_id'    => $balance->getId(),
+                    'utr'           => $utr,
+                    'count'         => $payouts->count()
+                ]);
+        }
+
+        return $payouts->first();
     }
 
     protected function validateBalance(Entity $basEntity, Base\PublicEntity $sourceEntity)

@@ -2097,4 +2097,91 @@ return [
             ]
         ]
     ],
+
+    'testEnableTerminal'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'terminal',
+                'status' => "activated",
+                'enabled'             =>  true,
+                'notes'               =>  'some notes',
+                'mpan'                =>  [
+                    'mc_mpan'             => '1234567890123456',
+                    'visa_mpan'           => '9876543210123456',
+                    'rupay_mpan'          => '1234123412341234'
+                ]
+            ]
+        ]
+    ],
+
+    'testDisableTerminal'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'terminal',
+                'status'              => "activated",
+                'enabled'             =>  false,
+                'notes'               =>  'some notes',
+                'mpan'                =>  [
+                    'mc_mpan'             => '1234567890123456',
+                    'visa_mpan'           => '9876543210123456',
+                    'rupay_mpan'          => '1234123412341234'
+                ]
+            ]
+        ]
+    ],
+
+    'testFetchTerminals'  => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'  => [
+                'count'   => 3,
+                'entity'  => 'collection',
+                'items'   => [  
+                    [
+                        'entity'  => "terminal",
+                        'status'  => "activated",
+                        'enabled' => true,
+                        'notes'   => null,
+                        'mpan' => [
+                            'mc_mpan' =>  "5220240401208405",
+                            'rupay_mpan' =>  "6100030401208403",
+                            'visa_mpan' =>  "4403844012084006"
+                        ]
+                    ],
+                    [
+                        'entity'  => "terminal",
+                        'status'  => "activated",
+                        'enabled' => true,
+                        'notes'   => null,
+                        'mpan' => [
+                            'mc_mpan' =>  "4287346823986423",
+                            'rupay_mpan' =>  "6287346823986423",
+                            'visa_mpan' =>  "5287346823986423"
+                        ]
+                    ],
+                    [
+                        'entity'  => "terminal",
+                        'status'  => "activated",
+                        'enabled' => true,
+                        'notes'   => null,
+                        'mpan' => [
+                            'mc_mpan' =>  NULL,
+                            'rupay_mpan' =>  NULL,
+                            'visa_mpan' =>  NULL
+                        ]
+                    ]
+
+                ]
+            ]
+        ]
+    ],
+
 ];

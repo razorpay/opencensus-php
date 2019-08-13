@@ -274,7 +274,7 @@ class Mozart
     {
         unset($request['options']['auth']);
 
-        $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, $request);
+        $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, $request);
     }
 
     protected function traceMozartServiceResponse($response)

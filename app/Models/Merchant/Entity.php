@@ -194,6 +194,8 @@ class Entity extends Base\PublicEntity
     const PARTNER_ID                = 'partner_id';
     const BANKING_ACCOUNT           = 'banking_account';
     const ACCOUNTS                  = 'accounts';
+    const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
+    const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
 
     protected $entity = 'merchant';
 
@@ -1072,7 +1074,7 @@ class Entity extends Base\PublicEntity
         return RefundSource::getRefundSourceStringForValue($this->attributes[self::REFUND_SOURCE]);
     }
 
-    protected function getInternationalAttribute()
+    public function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
     }

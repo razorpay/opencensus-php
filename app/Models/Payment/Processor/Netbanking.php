@@ -103,6 +103,7 @@ class Netbanking
         IFSC::CBIN,
         IFSC::VIJB,
         IFSC::YESB,
+        IFSC::IBKL,
         IFSC::SIBL,
         self::PUNB_R,
         self::BARB_R,
@@ -493,6 +494,11 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::CIUB
+            ],
+        ],
+        Gateway::NETBANKING_IDBI => [
+            'retail' => [
+                IFSC::IBKL,
             ],
         ],
         Gateway::NETBANKING_FEDERAL => [

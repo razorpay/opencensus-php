@@ -1915,6 +1915,7 @@ trait PaymentTrait
                     $bin = $payment->card->getIin();
 
                     $binRiskMapping = [
+                        '341111' => '22.0',
                         '510510' => '22.0',
                         '401201' => '15.3',
                         '555555' => '2.4',

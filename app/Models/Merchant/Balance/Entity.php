@@ -34,10 +34,14 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER = 'account_number';
 
     //
-    // These attributes are populated for all non-primary balance accounts
+    // account_type can be shared (for Virtual Accounts) or direct (for Current Accounts)
     //
-    const ACCOUNT_TYPE     = 'account_type';
-    const CHANNEL          = 'channel';
+    const ACCOUNT_TYPE         = 'account_type';
+    //
+    // channel which provides the account, eg: rbl, yesbank
+    // would be null for account_type=shared and for primary balance accounts
+    //
+    const CHANNEL              = 'channel';
 
     // Additional input keys
     const BALANCE_ID     = 'balance_id';

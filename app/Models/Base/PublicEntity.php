@@ -7,9 +7,15 @@ use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\Transaction;
 use RZP\Http\BasicAuth\BasicAuth;
 
+/**
+ * @property Transaction\Entity $transaction
+ * @property Merchant\Entity    $merchant
+ */
 class PublicEntity extends UniqueIdEntity
 {
     const ENTITY                = 'entity';
