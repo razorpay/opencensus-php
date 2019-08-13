@@ -1002,11 +1002,13 @@ class Gateway extends Base\Gateway
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
             RequestFields::AMOUNT       => (string) ceil($topupAmount),
-            RequestFields::CALLBACK_URL => $input['callbackUrl'],
+            RequestFields::SURL         => $input['callbackUrl'],
+            RequestFields::FURL         => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
             RequestFields::LOGIN_TOKEN  => '',
             RequestFields::MERCHANT_ID  => $this->getMerchantId1($input['terminal']),
             RequestFields::METADATA     => $input['payment']['public_id'],
+            RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
         );
 
         $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_TOPUP_REQUEST);
