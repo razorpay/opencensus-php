@@ -9,7 +9,6 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
 
 import DocsLink from 'merchant/components/DocsLink';
-import EmptyList from 'merchant/components/EmptyList';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilter';
 

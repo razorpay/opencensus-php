@@ -6,10 +6,7 @@ import {
 
 import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
-<<<<<<< HEAD
   setQuickGuideIsClosedInLocalStorage,
-=======
->>>>>>> Rebase with subscriptions-onboarding-final
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
@@ -78,7 +75,6 @@ export default class SubscriptionQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getSubscriptionQuickGuideIsClosed = props => {
-<<<<<<< HEAD
   if (
     props.subscriptionProductOnBoarding &&
     props.subscriptionProductOnBoarding.isQuickGuideOpen
@@ -86,8 +82,6 @@ export const getSubscriptionQuickGuideIsClosed = props => {
     return false;
   }
 
-=======
->>>>>>> Rebase with subscriptions-onboarding-final
   if (props.subscriptions.loading) return true;
 
   let isClosed = getQuickGuideIsClosedFromLocalStorage(
@@ -116,10 +110,7 @@ export const getSubscriptionQuickGuideIsClosed = props => {
     if (createCount >= 2) {
       isClosed = true;
 
-<<<<<<< HEAD
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, true);
-=======
->>>>>>> Rebase with subscriptions-onboarding-final
       return false;
     }
   });

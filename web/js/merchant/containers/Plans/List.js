@@ -11,27 +11,6 @@ import {
   planBillingCycle,
   createdAt,
 } from 'rzp/ui/item/pair';
-<<<<<<< HEAD
-=======
-import HeaderAction from 'rzp/ui/HeaderAction';
-import DataTable from 'rzp/ui/Table/DataTable';
-
-import { fetchSubscriptions } from 'merchant/modules/subscriptions';
-import { fetchPlans as fetchAll } from 'merchant/modules/plans';
-import * as ModalActions from 'rzp/modules/modals';
-
-import ShowWhen from 'merchant/components/ShowWhen';
-import DocsLink from 'merchant/components/DocsLink';
-import EmptyList from 'merchant/components/EmptyList';
-import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-
-import { getSubscriptionQuickGuideIsClosed } from 'merchant/containers/Subscriptions/QuickGuide';
-
-import PlansListFilter from 'merchant/components/Plans/ListFilter';
-import ListContainer from 'merchant/containers/ListContainer';
-
-import DataTable from 'rzp/ui/Table/DataTable';
->>>>>>> Rebase with subscriptions-onboarding-final
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 
