@@ -1050,6 +1050,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUEUE_JOB_FAILURE                                     = 'QUEUE_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';
 
+    const PAYMENT_SET_APPROVAL_CODE_NULL_EXCEPTION              = 'PAYMENT_SET_APPROVAL_CODE_NULL_EXCEPTION';
+    const PAYMENT_SET_APPROVAL_CODE_NULL_RESULT                 = 'PAYMENT_SET_APPROVAL_CODE_NULL_RESULT';
     const RECOVERABLE_EXCEPTION                                 = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                                       = 'ERROR_EXCEPTION';
     const ERROR_INVALID_ARGUMENT                                = 'ERROR_INVALID_ARGUMENT';
