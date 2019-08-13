@@ -56,7 +56,10 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
         });
       })
       .catch(err => {
-        // Handle errors
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
       });
   }
 
@@ -125,7 +128,6 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
         formType,
         user,
         heading,
-        isPreStepCompleted,
       } = this.props,
       { submitted, isLoading } = this.state;
 
@@ -145,9 +147,9 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
           <p class="desc">{desc}</p>
 
           <FeatureRequestForm
+            user={user}
             heading={heading}
             isLoading={isLoading}
-            user={user}
             submitted={submitted}
             formType={formType}
             handleChange={this.handleChange}
@@ -163,7 +165,6 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
             {!submitted &&
               !isLoading && (
                 <AsyncBtn.Primary
-                  feature="subscriptions"
                   class="Forward-Button"
                   onClick={this.onSubmitClick}
                   disabled={disabled}
