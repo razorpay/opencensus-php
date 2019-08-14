@@ -53,7 +53,7 @@ class TerminalCreationBulkTest extends TestCase
             $entries[0][Batch\Header::TERMINAL_CREATION_MERCHANT_ID]
         );
         $this->assertEquals(
-            $terminals['items'][0][Terminal\Entity::NETWORK_CATEGORY],
+            $terminals['items'][0][Terminal\Entity::CATEGORY],
             $entries[0][Batch\Header::TERMINAL_CREATION_CATEGORY]
         );
         $this->assertEquals(
@@ -79,16 +79,17 @@ class TerminalCreationBulkTest extends TestCase
                 Batch\Header::TERMINAL_CREATION_VISA_MPAN            => null,
                 Batch\Header::TERMINAL_CREATION_RUPAY_MPAN           => null,
                 Batch\Header::TERMINAL_CREATION_VPA                  => null,
-                Batch\Header::TERMINAL_CREATION_CATEGORY             => null,
+                Batch\Header::TERMINAL_CREATION_CATEGORY             => '8211',
                 Batch\Header::TERMINAL_CREATION_CARD                 => null,
                 Batch\Header::TERMINAL_CREATION_NETBANKING           => null,
                 Batch\Header::TERMINAL_CREATION_EMANDATE             => null,
                 Batch\Header::TERMINAL_CREATION_EMI                  => null,
-                Batch\Header::TERMINAL_CREATION_UPI                  => null,
+                Batch\Header::TERMINAL_CREATION_UPI                  => '1',
                 Batch\Header::TERMINAL_CREATION_BANK_TRANSFER        => null,
                 Batch\Header::TERMINAL_CREATION_AEPS                 => null,
                 Batch\Header::TERMINAL_CREATION_EMI_DURATION         => null,
                 'type[non_recurring]'                                => '1',
+                'type[pay]'                                          => '1',
                 Batch\Header::TERMINAL_CREATION_MODE                 => null,
                 Batch\Header::TERMINAL_CREATION_TPV                  => null,
                 Batch\Header::TERMINAL_CREATION_INTERNATIONAL        => null,
