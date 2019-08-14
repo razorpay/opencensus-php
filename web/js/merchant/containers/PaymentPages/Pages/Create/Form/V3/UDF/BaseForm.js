@@ -1,6 +1,7 @@
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
+import { classList } from 'common/util';
 import {
   getFieldTypes,
   mapFieldToIndex,
@@ -12,6 +13,7 @@ export default class BaseForm extends React.PureComponent {
   state = {
     disableSubmit: !this.props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
     hasDescription: !!this.props.field.description,
+    fakeDisplayTitle: this.props.field.title,
     isRequired: !!this.props.field.required,
     isFieldEnum: !!this.props.field.enum,
     enum: this.props.field.hasOwnProperty('enum')
@@ -104,6 +106,12 @@ export default class BaseForm extends React.PureComponent {
     this.props.onDeleteField();
   };
 
+  onInputTitle = ({ target }) => {
+    this.setState({
+      fakeDisplayTitle: target.value,
+    });
+  };
+
   render() {
     const {
       field,
@@ -112,7 +120,12 @@ export default class BaseForm extends React.PureComponent {
       onCloseForm,
     } = this.props;
 
-    const { hasDescription, disableSubmit } = this.state;
+    const {
+      isRequired,
+      hasDescription,
+      disableSubmit,
+      fakeDisplayTitle,
+    } = this.state;
 
     return (
       <Form
@@ -126,6 +139,7 @@ export default class BaseForm extends React.PureComponent {
           defaultValue={field.title}
           placeholder="Enter field title"
           pattern="^[0-9a-zA-Z ]+"
+          onInput={this.onInputTitle}
           validator={function(val) {
             if (!val) {
               return 'Field title is required';
@@ -140,9 +154,20 @@ export default class BaseForm extends React.PureComponent {
             }
           }}
           autoFocus
-        />
+        >
+          <div
+            class={classList(
+              'Field Field--fakeDisplay',
+              isRequired && 'Field--required'
+            )}
+          >
+            {fakeDisplayTitle}
+            <i class="fake-caret" />
+            <span className="symbol--red">*</span>
+          </div>
+        </Input.TextareaAutoResize>
 
-        <div class="Input--fake">
+        <div class="Input--representation">
           <Input
             class="placeholder-field"
             placeholder="To be filled by customer"

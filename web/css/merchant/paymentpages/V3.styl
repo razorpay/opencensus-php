@@ -60,32 +60,6 @@
 
     .Input
       margin: 0
-
-    .Input.placeholder-field.Input--disabled
-      opacity: 1
-      cursor: not-allowed
-
-    .Input--fake
-      display: inline-block
-      width: 262px
-      margin-right: 0
-      vertical-align: top
-
-    .Input.Input--description
-      margin-top: 4px
-
-      .Input-el--resizer
-        height: 24px
-
-      .Input-el
-        font-size: 13px
-        min-height: 24px
-        padding: 0 2px
-        border-top: none
-        border-left: none
-        border-right: none
-        border-radius: 0
-
       .Input-error
         font-size: 12px
 
@@ -106,9 +80,63 @@
         border-left: none
         border-right: none
         border-radius: 0
+        color: transparent // Field--fakeDisplay perfectly overlaps with this textarea element, however it's needed for any style mistmatch.
 
-      .Input-error
-        font-size: 12px
+      &.is-focused
+        .Field--fakeDisplay
+          padding-right: 0 // To accommodate caret
+
+          .fake-caret
+            display: inline-block
+
+      .Field--fakeDisplay
+        margin: 0
+        pointer-events: none
+        display: inline-block
+        position: absolute
+        left: 0
+        top: 0
+        z-index: 1
+        padding: 0 2px // To mimic padding of actual element
+        word-break: break-all
+
+        .fake-caret
+          display: none
+          vertical-align: middle
+          position: relative
+          width: 1px
+          height: 16px
+          margin: 3px 1px
+          animation: blink 1s infinite
+          background-color: currentColor
+
+        .symbol--red
+          position: absolute // Check if same can be done for hostedpage style, because sometimes, this star come in next line when text is full for previous line
+
+    .Input.placeholder-field.Input--disabled
+      opacity: 1
+      cursor: not-allowed
+
+    .Input--representation
+      display: inline-block
+      width: 262px
+      margin-right: 0
+      vertical-align: top
+
+    .Input.Input--description
+      margin-top: 4px
+
+      .Input-el--resizer
+        height: 24px
+
+      .Input-el
+        font-size: 13px
+        min-height: 24px
+        padding: 0 2px
+        border-top: none
+        border-left: none
+        border-right: none
+        border-radius: 0
 
     .OptionsDropdown
       position: absolute
@@ -210,3 +238,18 @@
     &--amount
       .OptionsDropdown-list
         border-left: 2px solid #FFCA73
+
+
+
+@keyframes blink
+  0%
+    opacity: .7
+
+  50%
+    opacity: .7
+
+  50.1%
+    opacity: 0
+
+  100%
+    opacity: 0

@@ -31,7 +31,7 @@ export default class TextareaAutoResize extends React.PureComponent {
   setElRef = el => (this.inputEl = el);
 
   render() {
-    const { className, ...restProps } = this.props;
+    const { className, children, ...restProps } = this.props;
 
     return (
       <Input.Textarea
@@ -51,6 +51,7 @@ export default class TextareaAutoResize extends React.PureComponent {
           ref={this.setResizerElRef}
           readOnly
         />
+        {children}
       </Input.Textarea>
     );
   }
