@@ -82,6 +82,19 @@ class Selector extends Base\Core
         // Sorters\RecurringSorter::class
     ];
 
+    /**
+     * Sorters running in smart routing service
+     * @var array
+     */
+    protected static $smartRoutingSorters = [
+        // Sorting based on older failed attempts
+        Sorters\FailedTerminalsSorter::class,
+
+        // Sorting based on gateway downtimes
+        Sorters\GatewayDowntimeSorter::class,
+    ];
+
+
     public function __construct(array $input, Terminal\Options $options)
     {
         parent::__construct();
@@ -161,7 +174,10 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose);
+        // checking razorX experiment here for smart routing
+        $shouldHitRoutingServiceFlag  = $this->shouldHitRoutingService($this->input['merchant']);
+
+        $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose, $shouldHitRoutingServiceFlag);
 
         if (empty($sortedTerminals) === true)
         {
@@ -257,47 +273,46 @@ class Selector extends Base\Core
             }
         }
 
-        $terminalSetSentToSmartRouting = array();
-
-        foreach ($sortedTerminals as $terminal)
+        if ($shouldHitRoutingServiceFlag === true)
         {
-            $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
+            $terminalSetSentToSmartRouting = array();
+
+            foreach ($sortedTerminals as $terminal) {
+                $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
+            }
+
+            // calling the smart routing service for sorted terminals set
+            $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
+                $this->input['merchant'], $allTerminals, $sortedTerminals, $filteredTerminals);
+
+            $terminalIds = [];
+
+            $newSortedTerminals = [];
+
+            if ($terminalSetReceivedFromSmartRouting !== null) {
+                foreach ($terminalSetReceivedFromSmartRouting as $terminal) {
+                    // populating terminalIds array for data link layer
+                    array_push($terminalIds, $terminal['id']);
+
+                    // populating newSortedTerminals array for the payment process
+                    array_push($newSortedTerminals, $terminalSetSentToSmartRouting[$terminal['id']]);
+
+                };
+
+            }
+
+            if (count($sortedTerminals) === count($newSortedTerminals)) {
+                $sortedTerminals = $newSortedTerminals;
+            }
+
+            // sending the event to data link layer
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
+                [
+                    'sorted_terminalIds' => $terminalIds,
+                ]
+            );
         }
-
-        // calling the smart routing service for sorted terminals set
-        $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
-            $this->input['merchant'], $allTerminals, $sortedTerminals, $filteredTerminals);
-
-        $terminalIds = [];
-
-        $newSortedTerminals = [];
-
-        if ($terminalSetReceivedFromSmartRouting !== null)
-        {
-            foreach ($terminalSetReceivedFromSmartRouting as $terminal)
-            {
-                // populating terminalIds array for data link layer
-                array_push($terminalIds, $terminal['id']);
-
-                // populating newSortedTerminals array for the payment process
-                array_push($newSortedTerminals,$terminalSetSentToSmartRouting[$terminal['id']]);
-
-            };
-
-        }
-
-        if (count($sortedTerminals) === count($newSortedTerminals))
-        {
-            $sortedTerminals = $newSortedTerminals;
-        }
-
-        // sending the event to data link layer
-        $this->app['diag']->trackPaymentEvent(
-            EventCode::PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
-            [
-                'sorted_terminalIds' => $terminalIds,
-            ]
-        );
 
         return $sortedTerminals;
     }
@@ -381,13 +396,19 @@ class Selector extends Base\Core
         return $filteredTerminals;
     }
 
-    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false): array
+    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false, bool $shouldHitRoutingService = false): array
     {
         //
         // Sorting is done on the final list of filtered terminals.
         // The sorting is run for each of the sorting classes.
         //
         $sortedTerminals = $terminals;
+
+        // removing smart routing sorters from the list of api sorters
+        if ($shouldHitRoutingService === true)
+        {
+            self::$sorters = array_diff(self::$sorters, self::$smartRoutingSorters);
+        }
 
         foreach (self::$sorters as $sorter)
         {
@@ -503,11 +524,6 @@ class Selector extends Base\Core
         {
             $response = null;
 
-            if ($this->shouldHitRoutingService($merchant->getId()) === false)
-            {
-                return $response;
-            }
-
             $paymentData = $payment->toArray();
 
             if ($payment->hasCard() === true)
@@ -568,7 +584,7 @@ class Selector extends Base\Core
 
         if ($isProduction === false)
         {
-            return false;
+            return true;
         }
 
         if ($this->isTestMode() === true)
