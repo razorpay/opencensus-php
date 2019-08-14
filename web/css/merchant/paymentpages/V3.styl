@@ -28,17 +28,29 @@
     width: 100%
     bottom: 0
     pointer-events: all
+    animation: 0.4s fadeIn cubic-bezier(0.08, 0.98, 1, 1)
 
   .Modal-container--CreatorModal-BaseForm
     position: absolute
     top: 50%
     left: -44px
-    right: -58px
+    right: -56px
     z-index: 4
     transform: translateY(-50%)
     overflow: unset
     padding: 20px 44px
-    animation: modalAppearIn 0.15s cubic-bezier(0.13, 1.04, 1, 1)
+    background: transparent
+
+    .mimic-expand
+      position: absolute
+      left: 0
+      top: 0
+      height: 100%
+      width: 100%
+      background: #fff
+      animation: modalAppearIn 0.3s cubic-bezier(0.53, 1.78, 1, 1) // modalAppearIn 0.4s cubic-bezier(0.29, 1.75, 1, 1)
+      transform-origin: center
+      border-radius: 2px
 
     form
       padding-right: 12px;
@@ -285,7 +297,14 @@
 
 @keyframes modalAppearIn
   0%
-    transform: translateY(-50%) scale(.9)
+    transform: scale(.97)
 
   100%
-    transform: translateY(-50%) scale(1)
+    transform: scale(1)
+
+@keyframes fadeIn
+  0%
+    opacity: .48
+
+  100%
+    opacity: 1

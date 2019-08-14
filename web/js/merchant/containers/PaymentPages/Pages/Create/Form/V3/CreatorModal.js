@@ -13,6 +13,7 @@ const PositionAwaredCreator = ({ children, overWhatElement, className }) => {
     <React.Fragment>
       <div class={className} />
       <Modal class={className} showCloseBtn={false}>
+        <div class="mimic-expand" />
         {modalContent}
       </Modal>
     </React.Fragment>

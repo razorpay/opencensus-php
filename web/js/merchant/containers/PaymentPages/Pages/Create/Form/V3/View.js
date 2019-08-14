@@ -121,7 +121,7 @@ export default class View extends React.PureComponent {
             );
           })}
 
-          <div class="Field">
+          <div class="Field" style={{ margin: '32px 0 -21px' }}>
             <div class="Field-label" style={{ opacity: 0.6 }}>
               Add new
             </div>
