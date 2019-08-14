@@ -6,7 +6,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     state = { isBaseFormOpened: false };
 
     onSubmitUDFField = formData => {
-      this.props.onDeleteUDFField(formData, this.props.index);
+      this.props.onSubmitUDFField(formData, this.props.index);
 
       this.toggleBaseForm();
     };

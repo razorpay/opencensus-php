@@ -8,7 +8,7 @@ export default class FieldOptionsDropdown extends React.PureComponent {
     return (
       <div
         class={classList(
-          'OptionsDropdown',
+          'OptionsDropdown FieldOptionsDropdown',
           type && 'FieldOptionsDropdown--' + type
         )}
       >

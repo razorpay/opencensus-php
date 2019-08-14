@@ -2,24 +2,24 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList } from 'common/util';
-import {
-  getFieldTypes,
-  mapFieldToIndex,
-  getFieldFromIndices,
-} from '../../Fields/V3';
+import { mapFieldToIndex } from '../../Fields/V3';
 import FieldOptionsDropdown, { OptionsItem } from './FieldOptionsDropdown';
 
 export default class BaseForm extends React.PureComponent {
-  state = {
-    disableSubmit: !this.props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
-    hasDescription: !!this.props.field.description,
-    fakeDisplayTitle: this.props.field.title,
-    isRequired: !!this.props.field.required,
-    isFieldEnum: !!this.props.field.enum,
-    enum: this.props.field.hasOwnProperty('enum')
-      ? this.props.field.enum
-      : undefined,
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      disableSubmit: !props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
+      hasDescription: !!props.field.description,
+      fakeDisplayTitle: props.field.title,
+      isRequired: !!props.field.required,
+      isFieldEnum: !!props.field.enum,
+      enum: props.field.hasOwnProperty('enum') ? props.field.enum : undefined,
+    };
+
+    this.field_index_in_options = mapFieldToIndex(props.field);
+  }
 
   onChange = ({ target }) => {
     setTimeout(this.toggleSubmit); // Validate form for input errors via class change in DOM, hence delayed.
@@ -100,7 +100,7 @@ export default class BaseForm extends React.PureComponent {
     });
   };
 
-  deletefield = _ => {
+  onDeleteField = _ => {
     this.props.onDeleteField();
   };
 
@@ -118,6 +118,7 @@ export default class BaseForm extends React.PureComponent {
       selfIndex,
       validateSameTitleExists,
       onCloseForm,
+      onDeleteField,
     } = this.props;
 
     const {
@@ -130,7 +131,6 @@ export default class BaseForm extends React.PureComponent {
     return (
       <Form
         setRef={this.setRefForm}
-        name="udf-base-form"
         onChange={this.onChange}
         onSubmit={this.onSaveField}
       >
@@ -166,6 +166,14 @@ export default class BaseForm extends React.PureComponent {
             {fakeDisplayTitle && <span className="symbol--red">*</span>}
           </div>
         </Input.TextareaAutoResize>
+
+        <input
+          name="field_type"
+          value={this.field_index_in_options}
+          hidden
+          readOnly
+        />
+        <input name="required" value={isRequired | 0} hidden readOnly />
 
         <div class="Input--representation">
           <div class="Field-wrapper placeholder-field">
@@ -223,14 +231,15 @@ export default class BaseForm extends React.PureComponent {
             </div>
           </OptionsItem>
 
-          {!!selfIndex && (
-            <OptionsItem>
-              <div onClick={this.deleteField}>
-                <i class="i i-delete" />
-                Delete Field
-              </div>
-            </OptionsItem>
-          )}
+          {!!selfIndex &&
+            onDeleteField && (
+              <OptionsItem>
+                <div onClick={this.onDeleteField}>
+                  <i class="i i-delete" />
+                  Delete Field
+                </div>
+              </OptionsItem>
+            )}
         </FieldOptionsDropdown>
 
         <Button.Transparent
@@ -245,7 +254,6 @@ export default class BaseForm extends React.PureComponent {
         <Button.Transparent
           class="base-form-side-btn base-form-save"
           type="submit"
-          onClick={this.onSaveField}
           disabled={disableSubmit}
         >
           <span class="icon i-check" />

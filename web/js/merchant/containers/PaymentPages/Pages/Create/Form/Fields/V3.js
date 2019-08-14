@@ -66,7 +66,6 @@ export function flattenFIELD_TYPES() {
   return flatten;
 }
 
-// TODO: To add support to return indicies tree
 // Note: If schema for a given field is changed, then this fn. will break.
 export function mapFieldToIndex(field) {
   let selectedIndexInOptions = null;
@@ -200,7 +199,7 @@ export function constructFieldSchema(fieldData) {
       .split(' ')
       .join('_'),
     title: prettyTitle,
-    required: typeof required !== 'undefined' ? required : undefined,
+    required: typeof required !== 'undefined' ? !!Number(required) : undefined,
     description: typeof description !== 'undefined' ? description : undefined,
     ...SCHEMA,
   };
