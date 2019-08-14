@@ -53,7 +53,7 @@ export const deleteInSchema = index => ({
 });
 
 export const updateInSchema = ({ field, index }) => {
-  if (!index) {
+  if (typeof index === 'undefined') {
     return addInSchema(field);
   }
 
