@@ -441,6 +441,8 @@ class Gateway extends Base\Gateway
                 $input['terminal']['gateway_terminal_password']  = $this->config['netbanking_cub']['gateway_terminal_password'];
                 $input['terminal']['gateway_terminal_password2'] = $this->config['netbanking_cub']['gateway_terminal_password2'];
                 break;
+            case Payment\Gateway::NETBANKING_YESB:
+                $input['terminal']['gateway_secure_secret']      = $this->config['netbanking_yesb']['gateway_secure_secret'];
         }
 
         return $input['terminal'];
