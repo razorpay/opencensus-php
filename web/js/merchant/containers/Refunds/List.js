@@ -6,14 +6,8 @@ import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'merchant/modules/collection';
-import {
-  refundId,
-  paymentId,
-  amount,
-  createdAt,
-  public_status,
-} from 'rzp/ui/item/pair';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { refundId, paymentId, amount, createdAt } from 'rzp/ui/item/pair';
+
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => state.refunds, { fetchAll })
@@ -44,11 +38,6 @@ export default class RefundsListContainer extends ListContainer {
   };
 
   render() {
-    const columns = [refundId, paymentId, amount, createdAt];
-    if (showWhenUtil({ featureEnabled: 'card_transfer_refund' })) {
-      columns.push(public_status);
-    }
-
     return (
       <div class="content-wrapper">
         <RefundsListFilter
@@ -61,7 +50,7 @@ export default class RefundsListContainer extends ListContainer {
 
         <EntityTable
           title="Refunds"
-          columns={columns}
+          columns={[refundId, paymentId, amount, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

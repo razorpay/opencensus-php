@@ -225,13 +225,10 @@ export default class PaymentDetailsContainer extends Component {
     });
   };
 
-  openRefundModal = (payment, refunds) => {
+  openRefundModal = payment => {
     this.props.openModal({
       component: (
         <RefundModal
-          refunds={refunds}
-          fetchMerchantBalance={this.props.fetchCurrentBalance}
-          fetchRefundFee={this.props.fetchRefundFee}
           payment={payment}
           onRefund={this.onPaymentRefund}
           onMount={this.onRefundModalMount}
@@ -275,12 +272,11 @@ export default class PaymentDetailsContainer extends Component {
     });
   };
 
-  onRefundDetailsToggleClick = (payment, speed_requested) => {
+  onRefundDetailsToggleClick = payment => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'See - Payment Refund Details',
       eventLabel: `payment_id=${payment.id}`,
-      speed_requested: speed_requested,
     });
   };
 
@@ -303,6 +299,7 @@ export default class PaymentDetailsContainer extends Component {
         message: this.props.error,
       };
     }
+
     return (
       <div className={`${this.state.secView ? 'multi-content' : ''}`}>
         <PaymentDetails
