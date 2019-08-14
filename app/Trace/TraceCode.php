@@ -2150,7 +2150,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORG_MAILER_BLOCKED                                    => 'Email blocked for given org',
         self::NO_MERCHANT_CONTEXT_MAIL                              => 'The mail flow does not have merchant in auth context',
         self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    => 'Fund Account Validation Failed due to critical reasons. We should retry.',
-        self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.'
+        self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.',
+
+        self::FRC_LNP_DEBUG                                         => 'FRC_LNP_DEBUG'
     ];
 
     /**

@@ -965,7 +965,7 @@ class Gateway
         // Also sets this gateway payment in the verify object's payment.
         $gatewayPayment = $this->getPaymentToVerify($verify);
 
-        $this->trace->info("Varify Payment : ", [$verify, $gatewayPayment]);
+        $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["Verify Payment", $verify, $gatewayPayment]);
 
         if (($gatewayPayment === null) and
             ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
