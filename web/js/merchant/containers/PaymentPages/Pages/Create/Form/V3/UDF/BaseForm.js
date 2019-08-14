@@ -120,7 +120,7 @@ export default class BaseForm extends React.PureComponent {
         onChange={this.onChange}
         onSubmit={this.onSaveField}
       >
-        <Input
+        <Input.TextareaAutoResize
           class="Input--title"
           name="title"
           defaultValue={field.title}
@@ -142,24 +142,28 @@ export default class BaseForm extends React.PureComponent {
           autoFocus
         />
 
-        <Input
-          class="placeholder-field"
-          placeholder="To be filled by customer"
-          disabled
-        />
-
-        {hasDescription && (
+        <div class="Input--fake">
           <Input
-            class="Input--description"
-            name="description"
-            defaultValue={field.description}
-            validator={val => {
-              if (val && val.length > 128) {
-                return 'Field description cannot be more than 128 characters';
-              }
-            }}
+            class="placeholder-field"
+            placeholder="To be filled by customer"
+            disabled
           />
-        )}
+
+          {hasDescription && (
+            <Input.TextareaAutoResize
+              class="Input--description"
+              name="description"
+              placeholder="Enter description"
+              defaultValue={field.description}
+              validator={val => {
+                if (val && val.length > 128) {
+                  return 'Field description cannot be more than 128 characters';
+                }
+              }}
+              autoFocus
+            />
+          )}
+        </div>
 
         {this.state.isFieldEnum && (
           <Input.EnumList

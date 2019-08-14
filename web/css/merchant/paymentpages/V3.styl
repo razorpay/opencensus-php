@@ -65,20 +65,21 @@
       opacity: 1
       cursor: not-allowed
 
-    .Input.placeholder-field
+    .Input--fake
       display: inline-block
       width: 262px
       margin-right: 0
       vertical-align: top
 
     .Input.Input--description
-      padding-left: 160px
-      padding-right: 50px
       margin-top: 4px
 
-      input
-        font-size: 13px
+      .Input-el--resizer
         height: 24px
+
+      .Input-el
+        font-size: 13px
+        min-height: 24px
         padding: 0 2px
         border-top: none
         border-left: none
@@ -95,8 +96,11 @@
       padding: 4px 0
       vertical-align: top
 
-      input
+      .Input-el--resizer
         height: 24px
+
+      .Input-el
+        min-height: 24px
         padding: 0 2px
         border-top: none
         border-left: none
@@ -124,6 +128,9 @@
       border: 1px solid #dadada
       border-radius: 2px
       background-color: rgba(216, 216, 216, 0.27)
+
+      &:active
+        border: 1px solid $primary-color
 
       button
         color: #949494
