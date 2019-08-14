@@ -132,14 +132,30 @@ export default class BaseForm extends React.PureComponent {
 
     console.log('FIELD...', field);
 
-    let _RepresentationEl = 'input',
+    let _RepresentationEl = (
+        <input
+          className="Field-el"
+          placeholder="To be filled by customer"
+          disabled
+        />
+      ),
       _RepresentationClass = '';
 
     if (field.options && field.options.cmp === 'textarea') {
-      _RepresentationEl = 'textarea';
+      _RepresentationEl = (
+        <textarea
+          class="Field-el"
+          placeholder="To be filled by customer"
+          disabled
+        />
+      );
       _RepresentationClass = 'Field--textarea';
     } else if (field.enum) {
-      _RepresentationEl = 'select';
+      _RepresentationEl = (
+        <select className="Field-el" disabled>
+          <option>To be filled by customer</option>
+        </select>
+      );
       _RepresentationClass = 'Field--select';
     }
 
@@ -191,13 +207,7 @@ export default class BaseForm extends React.PureComponent {
         <input name="required" value={isRequired | 0} hidden readOnly />
 
         <div class={classList('Field--representation', _RepresentationClass)}>
-          <div class="Field-wrapper placeholder-field">
-            <_RepresentationEl
-              class="Field-el"
-              placeholder="To be filled by customer"
-              disabled
-            />
-          </div>
+          <div class="Field-wrapper placeholder-field">{_RepresentationEl}</div>
 
           {hasDescription && (
             <Input.TextareaAutoResize
