@@ -1,13 +1,10 @@
-import { connect } from 'react-redux';
-
 import { classList } from 'common/util';
 
-@connect(state => ({
-  isMobileResolution: state.app.isMobileResolution,
-}))
 export default class Slider extends React.Component {
   constructor(props) {
-    super();
+    super(props);
+
+    this.TOTAL_SLIDES_LENGTH = props.children.length;
 
     this.state = {
       active: props.active || 0,
@@ -20,21 +17,22 @@ export default class Slider extends React.Component {
     }
   }
 
-  prev = () => {
-    this.goTo(this.state.active - 1);
-  };
+  prev = () => this.goTo(-1);
 
-  next = () => {
-    this.goTo(this.state.active + 1);
-  };
+  next = () => this.goTo(1);
 
   goTo = index => {
-    // TODO: Check if index if within range
+    const active = Number(this.state.active + index);
+
+    if (this.TOTAL_SLIDES_LENGTH <= active || active < 0) {
+      return;
+    }
+
     this.setState({
-      active: Number(index),
+      active,
     });
 
-    this.props.onSlideChange && this.props.onSlideChange(Number(index));
+    this.props.onSlideChange && this.props.onSlideChange(active);
   };
 
   getChildProp = totalSlidesNo => {
@@ -48,7 +46,7 @@ export default class Slider extends React.Component {
       next,
       prev,
       goTo: this.goTo,
-      totalSlidesNo: totalSlidesNo,
+      totalSlidesNo,
     };
   };
 
@@ -70,7 +68,9 @@ export default class Slider extends React.Component {
       }
     });
 
-    const data = this.getChildProp(SlideChildrenList.length);
+    this.TOTAL_SLIDES_LENGTH = SlideChildrenList.length;
+
+    const data = this.getChildProp(this.TOTAL_SLIDES_LENGTH);
 
     let isCurrentSlideShown = false;
 
@@ -78,7 +78,7 @@ export default class Slider extends React.Component {
       <div
         class={classList(
           'Slider',
-          this.props.isMobileResolution && 'Slider-mobile'
+          this.props.className && `Slider--${this.props.className}`
         )}
       >
         {children.map(child => {
@@ -116,7 +116,7 @@ export const SliderDots = props => {
           'SliderDots-dot',
           active === idx && 'SliderDots-dot--active'
         )}
-        onClick={goTo ? _ => goTo(idx) : undefined}
+        onClick={goTo ? () => goTo(idx) : undefined}
       />
     );
   }
