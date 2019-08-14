@@ -221,6 +221,17 @@ class Gateway extends Base\Gateway
 
     public function debit(array $input)
     {
+        if (isset($input['gateway'][ResponseFields::TXN_ID]) === true)
+        {
+            if(empty($input['gateway'][ResponseFields::TXN_ID]) === true)
+            {
+
+            }
+            $this->action($input, Action::VERIFY);
+            return $this->verify($input);
+        }
+
+
         $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
@@ -997,11 +1008,11 @@ class Gateway extends Base\Gateway
         // Wallet Balance is in paise
         $walletBalance = $this->app['cache']->get($key, 0);
 
-        $topupAmount = ($input['payment']['amount'] - $walletBalance) / 100;
+        $topupAmount = ($input['payment']['amount']) / 100;
 
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
-            RequestFields::AMOUNT       => (string) ceil($topupAmount),
+            RequestFields::AMOUNT       => (string) $topupAmount,
             RequestFields::SURL         => $input['callbackUrl'],
             RequestFields::FURL         => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,

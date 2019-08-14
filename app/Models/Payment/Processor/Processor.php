@@ -258,6 +258,7 @@ class Processor
     {
         try
         {
+            $this->trace->info("Processor Input : ", [$input, $gatewayInput]);
             $startTime = microtime(true);
 
             $this->setMethodForInput($input);
@@ -287,6 +288,7 @@ class Processor
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
+            $this->trace->info("Authorize Input : ", [$payment, $input, $gatewayInput]);
             $paymentData = $this->authorize($payment, $input, $gatewayInput);
 
             // Creates an origin entity for the payment based on the auth used to initiate the payment.

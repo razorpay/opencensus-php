@@ -94,6 +94,7 @@ trait Authorize
 
         $this->runPaymentInputValidations($payment, $input);
 
+        $this->trace->info("Gateway Input : ", [$payment, $input, $gatewayInput]);
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
     }
 
@@ -107,6 +108,8 @@ trait Authorize
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
         $this->validateAndSaveInputDetailsIfRequired($payment, $input, $gatewayInput, $ret);
+
+        $this->trace->info("Gatway output : ", [$payment, $input, $gatewayInput, $ret]);
 
         if ($ret !== null)
         {
@@ -306,6 +309,7 @@ trait Authorize
                     // If the appToken and walletToken is set then for a power wallet, run the
                     // power wallet flow. Run otp flow if appToken and walletToken are set
                     // but the wallet is not a power wallet.
+                    $this->trace->info("power wallet flow condition", [$payment, $payment->getAppTokenId(), $payment->getGlobalTokenId(), Payment\Gateway::isPowerWalletSupported($payment)]);
                     if (($payment->getAppTokenId() !== null) and
                         ($payment->getGlobalTokenId() !== null) and
                         (Payment\Gateway::isPowerWalletSupported($payment) === true))
