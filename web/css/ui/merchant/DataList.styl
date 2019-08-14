@@ -2,19 +2,20 @@
   display: flex
   align-items: center
 
-  .DataList-Item
-    border-left: 1px  solid #cfdadd
-    padding: 0px 8px
-    @media(max-width: 767px)
-      border: none
-
-    &:first-child
-      padding-left: 0
-      border-left: none 
-
-  @media(max-width: 767px)
-    display: block
+  &.horizontal-divider
     .DataList-Item
-      padding: 0
-      &:not(:last-child)
-        margin-bottom: 8px
+      border-left: 1px  solid #cfdadd
+      padding: 0px 8px
+      @media(max-width: 767px)
+        border: none
+
+      &:first-child
+        padding-left: 0
+        border-left: none 
+
+    @media(max-width: 767px)
+      display: block
+      .DataList-Item
+        padding: 0
+        &:not(:last-child)
+          margin-bottom: 8px
