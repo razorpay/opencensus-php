@@ -105,7 +105,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
-    const APPROVAL_CODE         = 'approval_code';
     const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -116,10 +115,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFERENCE9            = 'reference9';
     // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE12           = 'reference12';
+    const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
     const REFERENCE16           = 'reference16';
     const REFERENCE17           = 'reference17';
-
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -181,7 +180,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const OFFER_ID              = 'offer_id';
     const SETTLED_BY            = 'settled_by';
 
-    const AUTHENTICATION_GATEWAY    = 'reference13';
+    const AUTHENTICATION_GATEWAY = 'authentication_gateway';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -227,7 +226,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::SAVE,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
-        self::APPROVAL_CODE,
         self::REFERENCE1,
         self::REFERENCE2,
         self::REFERENCE16,
@@ -277,11 +275,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
-        self::AUTHENTICATION_GATEWAY,
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
-        self::APPROVAL_CODE,
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
@@ -321,6 +317,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REFUND_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::AUTHENTICATION_GATEWAY,
     ];
 
     protected $public = [
@@ -907,11 +904,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    public function setAuthenticationGateway($authenticationGateway)
-    {
-        $this->setAttribute(self::AUTHENTICATION_GATEWAY, $authenticationGateway);
-    }
-
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function
@@ -1089,6 +1081,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::EMI_PLAN_ID, $planId);
     }
 
+    public function setAuthenticationGateway($authenticationGateway)
+    {
+        $this->setAttribute(self::AUTHENTICATION_GATEWAY, $authenticationGateway);
+    }
+
     public function setOtpAttempts($attempts)
     {
         $this->setAttribute(self::OTP_ATTEMPTS, $attempts);
@@ -1156,6 +1153,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getRecurringType()
     {
         return $this->getAttribute(self::RECURRING_TYPE);
+    }
+
+    public function getAuthenticationGateway()
+    {
+        return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
     }
 
     public function setMetadata($input)
@@ -1311,16 +1313,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $trimmedReference16 = (blank($reference16) === true) ? null : trim($reference16);
 
         $this->attributes[self::REFERENCE16] =  $trimmedReference16;
-    }
-
-    protected function setReference13Attribute($authenticationGateway)
-    {
-        if (empty($authenticationGateway) === true)
-        {
-            return;
-        }
-
-        $this->attributes[self::AUTHENTICATION_GATEWAY] = substr($authenticationGateway, 0, self::ID_LENGTH);
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
@@ -1904,11 +1896,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
-    }
-
-    public function getAuthenticationGateway()
-    {
-        return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
     }
 
     public function getMethod()

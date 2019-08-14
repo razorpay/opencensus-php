@@ -9,8 +9,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Card;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
-use RZP\Models\Transfer;
-use RZP\Models\Order;
 
 class CreatePayments extends Migration
 {
@@ -174,7 +172,7 @@ class CreatePayments extends Migration
             $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Payment::APPROVAL_CODE, 10)
+            $table->string(Payment::AUTHENTICATION_GATEWAY)
                   ->nullable();
 
             $table->string(Payment::BATCH_ID)
@@ -276,7 +274,7 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->char(Payment::AUTHENTICATION_GATEWAY, Payment::ID_LENGTH)
+            $table->char(Payment::REFERENCE13, Payment::ID_LENGTH)
                   ->nullable();
 
             $table->char(Payment::REFERENCE14, Payment::ID_LENGTH)
