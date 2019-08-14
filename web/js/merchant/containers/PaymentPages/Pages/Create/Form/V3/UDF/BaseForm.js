@@ -9,7 +9,7 @@ export default class BaseForm extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    const fieldSchema = props.field || {};
+    const fieldSchema = props.field;
 
     this.state = {
       disableSubmit: !fieldSchema.title, // Any required field is valid to do init, like 'name', 'title', 'type'

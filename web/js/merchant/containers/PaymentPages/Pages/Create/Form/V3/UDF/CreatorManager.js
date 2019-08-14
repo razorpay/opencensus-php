@@ -44,7 +44,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           />
           {this.state.isBaseFormOpened && (
             <BaseFormModal
-              selfIndex={index}
+              index={index}
               field={field}
               validateSameTitleExists={validateSameTitleExists}
               onSubmitUDFField={onSubmitUDFField}
@@ -90,7 +90,7 @@ export class BaseFormModal extends React.PureComponent {
         overWhatElement={overWhatElement}
       >
         <BaseForm
-          field={field}
+          field={field || {}}
           field_type={field_type}
           selfIndex={selfIndex}
           validateSameTitleExists={validateSameTitleExists}
