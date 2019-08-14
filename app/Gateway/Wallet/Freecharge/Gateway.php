@@ -101,6 +101,8 @@ class Gateway extends Base\Gateway
             return $this->otpResend($input);
         }
 
+        $this->trace->info(TraceCode::FRC_LNP_DEBUG,["Secret", $this->getSecret()]);
+        
         $this->action($input, Action::OTP_GENERATE);
 
         $this->domainType = Url::LOGIN;
