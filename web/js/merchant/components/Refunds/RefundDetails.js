@@ -5,13 +5,8 @@ import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { Link } from 'react-router-dom';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
-import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
-import RefundStatusTimeline from 'merchant/components/Refunds/RefundTimeline';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import RefundUpdate from 'merchant/components/Refunds/RefundUpdate';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
 
-export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
+export default ({ refund, isLoading, statusMsg }) => {
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -37,41 +32,12 @@ export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
                   )}
                 />
 
-                {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
-                  <EntityDetailRow
-                    label="Status"
-                    value={() => (
-                      <ContentToggler onToggleClick={viewRefundHistory}>
-                        <span>View History</span>
-                        <RefundStatusTimeline refund={refund} />
-                      </ContentToggler>
-                    )}
-                  />
-                ) : null}
-
                 <EntityDetailRow
                   label="Amount"
                   value={() => (
                     <Amount value={refund.amount} currency={refund.currency} />
                   )}
                 />
-
-                {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
-                  <EntityDetailRow
-                    label="Refund Mode"
-                    value={() =>
-                      refund.speed_change_time ? (
-                        <RefundUpdate
-                          strikeThroughContent="Instant"
-                          updatedContent="Normal"
-                          description="Refund mode updated to normal as this refund was not able to be processed instantly."
-                        />
-                      ) : (
-                        <span>{refund.speed_processed}</span>
-                      )
-                    }
-                  />
-                ) : null}
 
                 <EntityDetailRow label="Currency" value={refund.currency} />
 

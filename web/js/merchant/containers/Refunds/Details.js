@@ -14,16 +14,17 @@ export default class RefundDetailsContainer extends Component {
     if (this.props.id !== nextProps.id) {
       this.props.fetchItem(nextProps.id);
     }
+  }
 
-    if (nextProps.refund) {
-      const { id } = nextProps;
+  componentDidMount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
       window.rzpAnalytics({
-        eventCategory: 'Dashboard - Refunds',
+        eventCategory: eventCategory,
         eventAction: 'Open Details - Refunds',
         eventLabel: `refund_id=${id}`,
-        speed_requested: nextProps.refund.speed_requested,
       });
-    }
   }
 
   componentWillUnmount() {
@@ -36,15 +37,6 @@ export default class RefundDetailsContainer extends Component {
         eventLabel: `refund_id=${id}`,
       });
   }
-
-  viewRefundHistory = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Refunds',
-      eventAction: 'Open History - Refunds',
-      eventLabel: `refund_id=${this.props.refund.id}`,
-      speed_requested: this.props.refund.speed_requested,
-    });
-  };
 
   render() {
     let { loading, error, refund, payments } = this.props;
@@ -62,7 +54,6 @@ export default class RefundDetailsContainer extends Component {
         refund={refund}
         isLoading={loading}
         statusMsg={statusMsg}
-        viewRefundHistory={this.viewRefundHistory}
       />
     );
   }
