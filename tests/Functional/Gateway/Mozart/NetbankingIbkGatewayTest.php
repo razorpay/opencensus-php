@@ -6,31 +6,31 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class NetbankingCubGatewayTest extends TestCase
+class NetbankingIbkGatewayTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/NetbankingCubGatewayTestData.php';
+        $this->testDataFilePath = __DIR__.'/NetbankingIbkGatewayTestData.php';
 
         parent::setUp();
 
         $this->gateway = 'mozart';
 
-        $this->bank = 'CIUB';
+        $this->bank = 'IDIB';
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_cub_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_ibk_terminal');
     }
 
     public function testPayment()
     {
-        $this->doNetbankingCubAuthAndCapturePayment();
+        $this->doNetbankingIbkAuthAndCapturePayment();
 
         $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
 
@@ -44,7 +44,7 @@ class NetbankingCubGatewayTest extends TestCase
 
     public function testTpvPayment()
     {
-        $terminal = $this->fixtures->create('terminal:shared_netbanking_cub_tpv_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_ibk_tpv_terminal');
 
         $this->ba->privateAuth();
 
@@ -129,12 +129,12 @@ class NetbankingCubGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($testData, function ()
         {
-            $this->doNetbankingCubAuthAndCapturePayment();
+            $this->doNetbankingIbkAuthAndCapturePayment();
         });
 
-        $payment = $this->getLastEntity('payment', true);
+        $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
 
-        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('failed', $paymentEntity['status']);
     }
 
     public function testAuthFailedVerifySuccess()
@@ -182,7 +182,7 @@ class NetbankingCubGatewayTest extends TestCase
         assert($verify['payment']['verified'] === 1);
     }
 
-    protected function doNetbankingCubAuthAndCapturePayment()
+    protected function doNetbankingIbkAuthAndCapturePayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 

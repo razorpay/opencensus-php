@@ -38,6 +38,7 @@ class Constants
     const CORPORATION      = 'corporation';
     const YESB             = 'yesb';
     const CUB              = 'cub';
+    const IBK              = 'ibk';
     const IDBI             = 'idbi';
     const CITI             = 'citi';
     const CBI              = 'cbi';

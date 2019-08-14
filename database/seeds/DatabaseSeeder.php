@@ -1177,6 +1177,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
         $this->createNetbankingCubTerminal();
+        $this->createNetbankingIbkTerminal();
         $this->createNetbankingIdbiTerminal();
         $this->createNetbankingSbiTerminal();
         $this->createNetbankingYesbTerminal();
@@ -1812,6 +1813,23 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingIbkTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                         => Terminal\Shared::NETBANKING_IBK_TERMINAL,
+                'merchant_id'                => Account::TEST_ACCOUNT,
+                'gateway'                    => Gateway::NETBANKING_IBK,
+                'card'                       => '0',
+                'netbanking'                 => '1',
+                'gateway_merchant_id'        => 'test_merchant_netbanking_IBK',
+                'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
+                'recurring'                  => 0,
+                'created_at'                 => time(),
+                'updated_at'                 => time(),
+                )
+        );
+    }
     protected function createNetbankingIdbiTerminal()
     {
         DB::table(Table::TERMINAL)->insert(

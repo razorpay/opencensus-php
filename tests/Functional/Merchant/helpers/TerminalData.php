@@ -2035,6 +2035,23 @@ return [
         ]
     ],
 
+    'testCreateNetbankingIbkTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_ibk',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingCanaraTerminal'  => [
         'request' => [
             'content' => [
