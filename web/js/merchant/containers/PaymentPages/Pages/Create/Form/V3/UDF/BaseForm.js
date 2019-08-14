@@ -14,7 +14,7 @@ export default class BaseForm extends React.PureComponent {
     this.state = {
       disableSubmit: !fieldSchema.title, // Any required field is valid to do init, like 'name', 'title', 'type'
       hasDescription: !!fieldSchema.description,
-      fakeDisplayTitle: fieldSchema.title,
+      mirrorDisplayTitle: fieldSchema.title,
       isRequired: !!fieldSchema.required,
       isFieldEnum: !!fieldSchema.enum,
       enum: fieldSchema.hasOwnProperty('enum') ? fieldSchema.enum : undefined,
@@ -86,7 +86,7 @@ export default class BaseForm extends React.PureComponent {
 
   onInputTitle = ({ target }) => {
     this.setState({
-      fakeDisplayTitle: target.value,
+      mirrorDisplayTitle: target.value,
     });
   };
 
@@ -105,7 +105,7 @@ export default class BaseForm extends React.PureComponent {
       isRequired,
       hasDescription,
       disableSubmit,
-      fakeDisplayTitle,
+      mirrorDisplayTitle,
     } = this.state;
 
     console.log('FIELD...', field);
@@ -167,12 +167,12 @@ export default class BaseForm extends React.PureComponent {
         >
           <div
             class={classList(
-              'Field Field--fakeDisplay',
+              'Field Field--mirrorDisplay',
               isRequired && 'Field--required'
             )}
           >
-            {fakeDisplayTitle}
-            {fakeDisplayTitle && <span className="symbol--red">*</span>}
+            <span class="mirror-title">{mirrorDisplayTitle}</span>
+            {mirrorDisplayTitle && <span className="symbol--red">*</span>}
           </div>
         </Input.TextareaAutoResize>
 

@@ -81,7 +81,7 @@
         border-right: none
         border-radius: 0
 
-      .Field--fakeDisplay
+      .Field--mirrorDisplay
         margin: 0
         pointer-events: none
         display: inline-block
@@ -91,6 +91,9 @@
         z-index: 1
         padding: 0 2px // To mimic padding of actual element
         word-break: break-word
+
+        .mirror-title
+          opacity: 0 // To avoid any 1px shifts
 
         .symbol--red
           position: absolute // Check if same can be done for hostedpage style, because sometimes, this star come in next line when text is full for previous line
