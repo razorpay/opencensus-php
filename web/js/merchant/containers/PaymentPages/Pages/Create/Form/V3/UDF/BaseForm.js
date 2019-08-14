@@ -168,11 +168,13 @@ export default class BaseForm extends React.PureComponent {
         </Input.TextareaAutoResize>
 
         <div class="Input--representation">
-          <Input
-            class="placeholder-field"
-            placeholder="To be filled by customer"
-            disabled
-          />
+          <div class="Field-wrapper placeholder-field">
+            <input
+              class="Field-el"
+              placeholder="To be filled by customer"
+              disabled
+            />
+          </div>
 
           {hasDescription && (
             <Input.TextareaAutoResize
