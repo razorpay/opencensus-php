@@ -4836,6 +4836,7 @@ trait Authorize
             // If the accessToken for the wallet is invalid, run the
             // otpGenerate flow for it.
             //
+            $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["PWFE", $gatewayInput, $payment]);
             if ($this->isGatewayTokenInvalid($error) === true)
             {
                 return $this->runOtpPaymentFlow($gatewayInput, $payment);
