@@ -12,11 +12,6 @@ import {
 } from 'merchant/modules/wysiwyg';
 import { constructFieldSchema } from '../Fields/V3';
 
-const CreatorType = {
-  AMOUNT: 'AMOUNT',
-  GENERIC: 'GENERIC',
-};
-
 @connect(state => ({ ...state.wysiwyg }), {
   updateData,
   deleteInSchema,
@@ -132,7 +127,11 @@ export default class View extends React.PureComponent {
             </div>
 
             <div class="Field-content">
-              <AddUDFButton onSelectField={_ => _} />
+              <AddUDFButton
+                onDeleteUDFField={this.onDeleteUDFField}
+                onSubmitUDFField={this.onSubmitUDFField}
+                validateSameTitleExists={this.validateSameTitleExists}
+              />
               <AddAmountButton onSelectField={_ => _} />
             </div>
           </div>

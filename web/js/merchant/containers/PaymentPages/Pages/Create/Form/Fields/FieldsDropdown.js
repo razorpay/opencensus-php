@@ -4,9 +4,9 @@ import { classList } from 'common/util';
 export default class FieldsDropdown extends React.PureComponent {
   state = { selectedLabel: this.props.selectedLabel };
 
-  onSelectField = option => {
+  onSelect = option => {
     console.log('SELECTED...', option);
-    this.props.onSelectField && this.props.onSelectField(option);
+    this.props.onSelect && this.props.onSelect(option);
   };
 
   render() {
@@ -37,7 +37,7 @@ export default class FieldsDropdown extends React.PureComponent {
                       selectedLabel === option.label &&
                         'OptionsDropdown-item--selected'
                     )}
-                    onClick={_ => this.onSelectField(option)}
+                    onClick={_ => this.onSelect(option)}
                   >
                     <i
                       class={classList('i', option.icon && 'i-' + option.icon)}

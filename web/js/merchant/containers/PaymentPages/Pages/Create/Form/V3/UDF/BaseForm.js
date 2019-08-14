@@ -9,16 +9,19 @@ export default class BaseForm extends React.PureComponent {
   constructor(props) {
     super(props);
 
+    const fieldSchema = props.field || {};
+
     this.state = {
-      disableSubmit: !props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
-      hasDescription: !!props.field.description,
-      fakeDisplayTitle: props.field.title,
-      isRequired: !!props.field.required,
-      isFieldEnum: !!props.field.enum,
-      enum: props.field.hasOwnProperty('enum') ? props.field.enum : undefined,
+      disableSubmit: !fieldSchema.title, // Any required field is valid to do init, like 'name', 'title', 'type'
+      hasDescription: !!fieldSchema.description,
+      fakeDisplayTitle: fieldSchema.title,
+      isRequired: !!fieldSchema.required,
+      isFieldEnum: !!fieldSchema.enum,
+      enum: fieldSchema.hasOwnProperty('enum') ? field.enum : undefined,
     };
 
-    this.field_index_in_options = mapFieldToIndex(props.field);
+    this.field_index_in_options =
+      props.field_type || mapFieldToIndex(fieldSchema);
   }
 
   onChange = ({ target }) => {
