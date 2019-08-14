@@ -200,8 +200,8 @@ export default ({
           {
             <RefundsList
               refunds={refunds}
-              onToggleClick={sr => {
-                onToggleClick(payment, sr);
+              onToggleClick={speedRequested => {
+                onToggleClick(payment, speedRequested);
               }}
             />
           }

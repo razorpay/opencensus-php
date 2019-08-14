@@ -208,7 +208,7 @@ export default class RefundModal extends Component {
         .confirm({
           header: 'Do you want to refund this payment?',
           message: () => (
-            <div>
+            <React.Fragment>
               <div class="text-semi-muted">
                 <p>
                   This payment will be instantly refunded to the customer. A fee
@@ -223,7 +223,7 @@ export default class RefundModal extends Component {
                   reversed. The payment will still be reversed in 5-7 days.
                 </p>
               </div>
-            </div>
+            </React.Fragment>
           ),
           affirmativeLabel: 'Yes, Refund',
           affirmativePendingLabel: 'Refunding...',
@@ -301,13 +301,10 @@ export default class RefundModal extends Component {
     }
   };
 
-  getInstantRefundClassNames = boolVal => {
-    if (boolVal) {
+  getInstantRefundClassNames = Val => {
+    if (Val) {
       return 'checkbox instant-refund-disable';
-    } else if (
-      this.props.current_balance.loading === true ||
-      boolVal === false
-    ) {
+    } else if (this.props.current_balance.loading === true || Val === false) {
       return 'checkbox';
     }
   };
@@ -329,7 +326,7 @@ export default class RefundModal extends Component {
                 disabled={isInstantDisabled}
                 onChange={this.onInstantRefundCheckboxClick}
               />
-              <b>Refund Instantly</b>
+              <strong>Refund Instantly</strong>
             </label>
             <span
               data-tooltip="You can refund this payment instantly for a small fee"

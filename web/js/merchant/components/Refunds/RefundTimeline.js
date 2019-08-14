@@ -1,6 +1,10 @@
 import Time from 'rzp/ui/Time';
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
 
+function ShowTime({ time }) {
+  return <Time value={time} format="DD MMM YYYY, hh:mm:ss a" />;
+}
+
 export default class RefundStatusTimeline extends React.Component {
   getMilestones = refund => {
     const mileStones = [];
@@ -24,7 +28,7 @@ export default class RefundStatusTimeline extends React.Component {
       );
     }
 
-    if (refund.status === 'processed') {
+    if (refund.public_status === 'processed') {
       mileStones.push({
         status: 'processed',
         mode: `(${refund.speed_processed} refund)`,
@@ -54,10 +58,7 @@ export default class RefundStatusTimeline extends React.Component {
                 </div>
                 <p class="refund-timeline-mode">{item.mode}</p>
                 <p class="refund-timeline-timestamp">
-                  <Time
-                    value={item.timeStamp}
-                    format="DD MMM YYYY, hh:mm:ss a"
-                  />
+                  <ShowTime time={item.timeStamp} />
                 </p>
               </li>
             );
@@ -66,10 +67,7 @@ export default class RefundStatusTimeline extends React.Component {
               <li>
                 <p class="refund-timeline-text">{item.text}</p>
                 <p class="refund-timeline-timestamp">
-                  <Time
-                    value={item.timeStamp}
-                    format="DD MMM YYYY, hh:mm:ss a"
-                  />
+                  <ShowTime time={item.timeStamp} />
                 </p>
               </li>
             );
