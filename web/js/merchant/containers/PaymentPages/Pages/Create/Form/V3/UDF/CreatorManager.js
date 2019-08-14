@@ -76,7 +76,7 @@ export class BaseFormModal extends React.PureComponent {
   render() {
     const {
       field,
-      field_type,
+      field_schema,
       selfIndex,
       validateSameTitleExists,
       overWhatElement,
@@ -90,8 +90,7 @@ export class BaseFormModal extends React.PureComponent {
         overWhatElement={overWhatElement}
       >
         <BaseForm
-          field={field || {}}
-          field_type={field_type}
+          field={field || field_schema}
           selfIndex={selfIndex}
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeBaseFormModal}

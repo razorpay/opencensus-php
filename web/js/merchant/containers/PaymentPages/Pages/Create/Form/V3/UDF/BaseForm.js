@@ -17,11 +17,10 @@ export default class BaseForm extends React.PureComponent {
       fakeDisplayTitle: fieldSchema.title,
       isRequired: !!fieldSchema.required,
       isFieldEnum: !!fieldSchema.enum,
-      enum: fieldSchema.hasOwnProperty('enum') ? field.enum : undefined,
+      enum: fieldSchema.hasOwnProperty('enum') ? fieldSchema.enum : undefined,
     };
 
-    this.field_index_in_options =
-      props.field_type || mapFieldToIndex(fieldSchema);
+    this.field_index_in_options = mapFieldToIndex(fieldSchema);
   }
 
   onChange = ({ target }) => {
@@ -131,6 +130,19 @@ export default class BaseForm extends React.PureComponent {
       fakeDisplayTitle,
     } = this.state;
 
+    console.log('FIELD...', field);
+
+    let _RepresentationEl = 'input',
+      _RepresentationClass = '';
+
+    if (field.options && field.options.cmp === 'textarea') {
+      _RepresentationEl = 'textarea';
+      _RepresentationClass = 'Field--textarea';
+    } else if (field.enum) {
+      _RepresentationEl = 'select';
+      _RepresentationClass = 'Field--select';
+    }
+
     return (
       <Form
         setRef={this.setRefForm}
@@ -178,9 +190,9 @@ export default class BaseForm extends React.PureComponent {
         />
         <input name="required" value={isRequired | 0} hidden readOnly />
 
-        <div class="Input--representation">
+        <div class={classList('Field--representation', _RepresentationClass)}>
           <div class="Field-wrapper placeholder-field">
-            <input
+            <_RepresentationEl
               class="Field-el"
               placeholder="To be filled by customer"
               disabled

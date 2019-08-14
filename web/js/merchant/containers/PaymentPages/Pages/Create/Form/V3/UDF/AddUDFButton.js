@@ -17,7 +17,7 @@ export default class AddUDFButton extends React.PureComponent {
     };
 
     if (!isBaseFormOpened) {
-      newState.field_type = null;
+      newState.field_schema = null;
     }
 
     this.setState(newState);
@@ -25,7 +25,7 @@ export default class AddUDFButton extends React.PureComponent {
 
   onSelectFieldType = field => {
     this.setState({
-      field_type: mapFieldToIndex(field.schema),
+      field_schema: field.schema,
     });
 
     this.toggleBaseForm(true);
@@ -40,7 +40,7 @@ export default class AddUDFButton extends React.PureComponent {
       onSubmitUDFField,
     } = this.props;
 
-    const { field_type, isBaseFormOpened } = this.state;
+    const { field_schema, isBaseFormOpened } = this.state;
 
     return (
       <React.Fragment>
@@ -58,7 +58,7 @@ export default class AddUDFButton extends React.PureComponent {
 
         {isBaseFormOpened && (
           <BaseFormModal
-            field_type={field_type}
+            field_schema={field_schema}
             validateSameTitleExists={validateSameTitleExists}
             onSubmitUDFField={onSubmitUDFField}
             onDeleteUDFField={onDeleteUDFField}
