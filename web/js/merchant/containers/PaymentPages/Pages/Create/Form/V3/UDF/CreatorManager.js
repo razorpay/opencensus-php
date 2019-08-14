@@ -5,17 +5,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
     state = { isBaseFormOpened: false };
 
-    onSubmitUDFField = formData => {
-      this.props.onSubmitUDFField(formData, this.props.index);
-
-      this.toggleBaseForm();
-    };
-
-    onDeleteUDFField = () => {
-      this.props.onDeleteUDFField(this.props.index);
-      this.toggleBaseForm();
-    };
-
     toggleBaseForm = forcedState => {
       this.setState({
         isBaseFormOpened:
@@ -28,7 +17,14 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     sefRef = el => (this.displayFieldEl = el);
 
     render() {
-      const { field, index, validateSameTitleExists } = this.props;
+      const {
+        field,
+        index,
+        validateSameTitleExists,
+        onDeleteUDFField,
+        onSubmitUDFField,
+      } = this.props;
+
       let tooltipTxt,
         isFieldRemovable = true;
 
@@ -47,21 +43,16 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             setRef={this.sefRef}
           />
           {this.state.isBaseFormOpened && (
-            <CreatorModal
-              class="CreatorModal-BaseForm"
+            <BaseFormModal
+              selfIndex={index}
+              field={field}
+              validateSameTitleExists={validateSameTitleExists}
+              onSubmitUDFField={onSubmitUDFField}
+              onDeleteUDFField={onDeleteUDFField}
               overWhatElement={this.displayFieldEl}
-            >
-              <BaseForm
-                field={field}
-                selfIndex={index}
-                validateSameTitleExists={validateSameTitleExists}
-                onCloseForm={_ => this.toggleBaseForm()}
-                onSaveField={this.onSubmitUDFField}
-                onDeleteField={
-                  isFieldRemovable ? this.onDeleteUDFField : undefined
-                }
-              />
-            </CreatorModal>
+              closeBaseFormModal={_ => this.toggleBaseForm(false)}
+              isFieldRemovable={isFieldRemovable}
+            />
           )}
         </div>
       );
@@ -69,4 +60,45 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
   }
 
   return HOC;
+}
+
+export class BaseFormModal extends React.PureComponent {
+  onSubmitUDFField = formData => {
+    this.props.onSubmitUDFField(formData, this.props.index);
+    this.props.closeBaseFormModal();
+  };
+
+  onDeleteUDFField = () => {
+    this.props.onDeleteUDFField(this.props.index);
+    this.props.closeBaseFormModal();
+  };
+
+  render() {
+    const {
+      field,
+      field_type,
+      selfIndex,
+      validateSameTitleExists,
+      overWhatElement,
+      closeBaseFormModal,
+      isFieldRemovable,
+    } = this.props;
+
+    return (
+      <CreatorModal
+        class="CreatorModal-BaseForm"
+        overWhatElement={overWhatElement}
+      >
+        <BaseForm
+          field={field}
+          field_type={field_type}
+          selfIndex={selfIndex}
+          validateSameTitleExists={validateSameTitleExists}
+          onCloseForm={closeBaseFormModal}
+          onSaveField={this.onSubmitUDFField}
+          onDeleteField={isFieldRemovable ? this.onDeleteUDFField : undefined}
+        />
+      </CreatorModal>
+    );
+  }
 }
