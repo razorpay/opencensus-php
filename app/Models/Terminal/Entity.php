@@ -190,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::CURRENCY,
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
