@@ -18,9 +18,32 @@
       background-color: rgba(82,143,240,0.17)
 
 
+  .CreatorModal-BaseForm
+    background: rgba(0,0,0,0.5)
+    z-index: 3
+    position: fixed
+    left: 0
+    right: 0
+    top: 0
+    width: 100%
+    bottom: 0
+    pointer-events: all
+
   .Modal-container--CreatorModal-BaseForm
+    position: absolute
+    top: 50%
+    left: -44px
+    right: -58px
+    z-index: 4
+    transform: translateY(-50%)
     overflow: unset
-    padding: 20px 16px
+    padding: 20px 44px
+    animation: modalAppearIn 0.15s cubic-bezier(0.13, 1.04, 1, 1)
+
+    form
+      padding-right: 12px;
+      display: table;
+      width: 100%;
 
     .base-form-side-btn
       position: absolute
@@ -64,10 +87,10 @@
         font-size: 12px
 
     .Input.Input--title
-      display: inline-block
+      display: table-cell
       width: 140px
       margin-right: 20px
-      padding: 4px 0
+      //padding: 4px 0
       vertical-align: top
 
       .Input-el--resizer
@@ -75,7 +98,7 @@
 
       .Input-el
         min-height: 24px
-        padding: 0 2px
+        padding: 0
         border-top: none
         border-left: none
         border-right: none
@@ -89,14 +112,14 @@
         left: 0
         top: 0
         z-index: 1
-        padding: 0 2px // To mimic padding of actual element
+        padding: 0 // To mimic padding of actual element
         word-break: break-word
 
         .mirror-title
           opacity: 0 // To avoid any 1px shifts
 
-        .symbol--red
-          position: absolute // Check if same can be done for hostedpage style, because sometimes, this star come in next line when text is full for previous line
+        //.symbol--red
+        //  position: absolute // Check if same can be done for hostedpage style, because sometimes, this star come in next line when text is full for previous line
 
     .placeholder-field
       cursor: not-allowed
@@ -104,10 +127,10 @@
         pointer-events: none
 
     .Field--representation
-      display: inline-block
-      width: 262px
+      display: table-cell
       margin-right: 0
       vertical-align: top
+      padding-left: 24px
 
       select
         color: rgba(13, 35, 102, .3)
@@ -138,12 +161,12 @@
     .OptionsDropdown
       position: absolute
       top: 20px
-      right: 16px
+      right: 12px
 
     .OptionsDropdown-list
       left: 50%
       transform: translateX(-50%)
-      animation-name: appearInCenter
+      animation-name: dropdownAppearInCenter
       animation-duration: .12s
 
     .dropdown__trigger
@@ -178,7 +201,7 @@
     padding: 0
     background-color: #fff
     box-shadow: 0 5px 9px 0 rgba(69,75,85,0.22)
-    animation: appearIn 0.1s cubic-bezier(0.13, 1.04, 1, 1)
+    animation: dropdownAppearIn 0.1s cubic-bezier(0.13, 1.04, 1, 1)
     transform-origin: center top
 
   .OptionsDropdown-title
@@ -242,7 +265,7 @@
         padding: 6px 12px
 
 
-@keyframes appearIn
+@keyframes dropdownAppearIn
   0%
     opacity: 0
     transform: scale(.8)
@@ -251,7 +274,7 @@
     opacity: 1
     transform: scale(1)
 
-@keyframes appearInCenter
+@keyframes dropdownAppearInCenter
   0%
     opacity: 0
     transform: translateX(-50%) scale(.8)
@@ -259,3 +282,10 @@
   100%
     opacity: 1
     transform: translateX(-50%) scale(1)
+
+@keyframes modalAppearIn
+  0%
+    transform: translateY(-50%) scale(.9)
+
+  100%
+    transform: translateY(-50%) scale(1)

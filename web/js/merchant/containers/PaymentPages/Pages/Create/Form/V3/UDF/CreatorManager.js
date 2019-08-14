@@ -35,7 +35,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       }
 
       return (
-        <div>
+        <div style={{ position: 'relative' }}>
           <_WrappedDisplayFieldComponent
             field={field}
             openBaseForm={this.toggleBaseForm}
