@@ -44,7 +44,7 @@ class Entity extends Base\PublicEntity
 
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
 
-    const DEBIT_REGEX = '/^(.*?)-IMPS/';
+    const DEBIT_REGEX = '/^(.*?)-/';
 
     protected static $sign = 'bas';
 
@@ -302,7 +302,13 @@ class Entity extends Base\PublicEntity
 
         if ($match === 1)
         {
-            return $matches[1];
+            $match = $matches[1];
+        }
+
+        // Could be an empty string match
+        if (empty($match) === false)
+        {
+            return $match;
         }
 
         return null;
