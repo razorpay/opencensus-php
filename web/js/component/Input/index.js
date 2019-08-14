@@ -8,6 +8,7 @@ import EditablePairsList from './EditablePairList';
 import PowerDropdown from './PowerDropdown';
 import EnumList from './EnumList';
 import CurrencySelect from './CurrencySelect';
+import TextareaAutoResize from './TextareaAutoResize';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -77,6 +78,8 @@ export function separateDomProps(props) {
     placement,
     mature,
     propagatedError,
+    setRef,
+    children,
     ...rest
   } = props;
 
@@ -102,6 +105,8 @@ export function separateDomProps(props) {
     placement,
     mature,
     propagatedError,
+    setRef,
+    children,
     props: rest,
   };
 }
@@ -274,6 +279,10 @@ export default class Field extends React.Component {
     if (el) {
       this.valid();
     }
+
+    if (this.props.setRef) {
+      this.props.setRef(el);
+    }
   };
 
   /* Updates the info based on onFocus and onInfo */
@@ -345,6 +354,7 @@ export default class Field extends React.Component {
       <div class={inputClass(this)}>
         <Label text={allProps.label} />
         <div class="Input-content">
+          {allProps.children}
           <div
             class={classList(
               'Input-elWrapper',
@@ -616,3 +626,5 @@ Field.CalendarPicker = CalendarPicker;
 Field.ToCalendar = ToCalendar;
 Field.TimePicker = TimePicker;
 Field.CurrencySelect = CurrencySelect;
+
+Field.TextareaAutoResize = TextareaAutoResize;
