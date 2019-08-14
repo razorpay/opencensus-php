@@ -147,6 +147,7 @@ final class Route
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         'refund_verify_bulk'                       => ['post',     'refunds/verify/bulk',                            'RefundController@postVerifyRefundsBulk'                            ],
         'scrooge_tagging_backfill'                 => ['post',     'refunds/scrooge_tagging_backfill',               'RefundController@scroogeTaggingBackfill'                           ],
+        'refund_speed_processed_backfill'          => ['post',     'refunds/speed_processed_backfill',               'RefundController@speedProcessedBackfill'                           ],
         // We will change this in the future when we want to update more things than just marking it as processed.
         'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
         'refund_fetch_status'                      => ['get',      'refunds/{id}/status',                            'RefundController@getRefundEntity'                                  ],
@@ -2889,6 +2890,7 @@ final class Route
             'virtual_account_close_cron',
             'gateway_downtime_detection_purge_keys',
             'subscription_registration_auto_charge',
+            'refund_speed_processed_backfill',
         ],
 
         'subscriptions' => [
