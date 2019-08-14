@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
-
+import { Link } from 'react-router-dom';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InputField from 'rzp/ui/Forms/InputField';
@@ -21,6 +21,7 @@ import {
   fetchTransfers,
 } from 'merchant/modules/payments/details';
 import { closeModal } from 'rzp/modules/modals';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 export const isPartialPayment = props => {
   const refundableAmount = props.payment.amount - props.payment.amount_refunded,
@@ -120,10 +121,56 @@ export default class RefundModal extends Component {
 
   componentDidMount() {
     this.props.onMount && this.props.onMount(this.props.payment);
+    this.props.fetchMerchantBalance();
   }
 
   componentWillUnmount() {
     this.props.onUnmount && this.props.onUnmount(this.props.payment);
+  }
+
+  refund(speedValue, props, partial) {
+    let payment = this.props.payment;
+    let data = {
+      amount: rupeesToPaise(props.amount),
+      comment: props.comment,
+      reverse_all: props.reverse_all ? '1' : '0',
+      speed: speedValue,
+    };
+
+    if (!partial) {
+      data.amount = payment.amount - payment.amount_refunded;
+    }
+
+    return this.props
+      .refundPayment(payment, data)
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Payment refunded',
+          closeTimeout: 5000,
+        });
+
+        if (typeof this.props.onRefund === 'function') {
+          this.props.onRefund();
+        }
+
+        this.props.afterRefund &&
+          this.props.afterRefund({
+            amount: data.amount,
+            partial: partial,
+            payment: this.props.payment,
+          });
+
+        this.props.closeModal();
+      })
+      .catch(({ errors }) => {
+        errors &&
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+            closeTimeout: 5000,
+          });
+      });
   }
 
   save = props => {
@@ -133,6 +180,7 @@ export default class RefundModal extends Component {
     if (hasAmountErrors) {
       return;
     }
+    this.props.fetchRefundFee(this.props.payment, props.amount);
 
     // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
     if (partial && props.reverse_all && this.props.transfers.items.length > 1) {
@@ -147,65 +195,184 @@ export default class RefundModal extends Component {
       return;
     }
 
-    this.context
-      .confirm({
-        header: 'Are you sure you want to refund this payment?',
-        message: props.reverse_all
-          ? 'Reversals will be automatically created for all transfers on this payment, before the refund'
-          : null,
-        affirmativeLabel: 'Yes, Refund',
-        affirmativePendingLabel: 'Refunding...',
-        abortLabel: "No, don't!",
-        action: () => {
-          let payment = this.props.payment;
-          let data = {
-            amount: rupeesToPaise(props.amount),
-            comment: props.comment,
-            reverse_all: props.reverse_all ? '1' : '0',
-          };
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: 'Click - Issue Refund',
+      eventLabel: `payment_id=${this.props.payment.id}`,
+      speed_requested: props.instant_refund ? 'optimum' : 'normal',
+    });
 
-          if (!partial) {
-            data.amount = payment.amount - payment.amount_refunded;
-          }
-
-          return this.props
-            .refundPayment(payment, data)
-            .then(() => {
-              this.props.showNotification({
-                type: 'success',
-                message: 'Payment refunded',
-                closeTimeout: 5000,
-              });
-
-              if (typeof this.props.onRefund === 'function') {
-                this.props.onRefund();
-              }
-
-              this.props.afterRefund &&
-                this.props.afterRefund({
-                  amount: data.amount,
-                  partial: partial,
-                  payment: this.props.payment,
-                });
-
-              this.props.closeModal();
-            })
-            .catch(({ errors }) => {
-              errors &&
-                this.props.showNotification({
-                  type: 'error',
-                  message: errors,
-                  closeTimeout: 5000,
-                });
+    // If instant_refund is checked
+    if (props.instant_refund) {
+      this.context
+        .confirm({
+          header: 'Do you want to refund this payment?',
+          message: () => (
+            <React.Fragment>
+              <div class="text-semi-muted">
+                <p>
+                  This payment will be instantly refunded to the customer. A fee
+                  of &#8377; {this.props.refundFee.data.fee} will be charged
+                  from your unsettled balance.
+                </p>
+              </div>
+              <div class="confirm-note">
+                <p>Note</p>
+                <p>
+                  If the instant refund is unsuccessful, the fee will be
+                  reversed. The payment will still be reversed in 5-7 days.
+                </p>
+              </div>
+            </React.Fragment>
+          ),
+          affirmativeLabel: 'Yes, Refund',
+          affirmativePendingLabel: 'Refunding...',
+          abortLabel: "No, don't!",
+          action: () => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payments',
+              eventAction: 'Refund - Payment',
+              eventLabel: `payment_id=${this.props.payment.id}`,
+              speed_requested: 'optimum',
             });
-        },
-      })
-      .catch(() => {});
+
+            this.refund('optimum', props, partial);
+          },
+        })
+        .catch(() => {
+          window.rzpAnalytics({
+            eventCategory: 'Dashboard - Payments',
+            eventAction: 'Click - Cancel Refund',
+            eventLabel: `payment_id=${this.props.payment.id}`,
+            speed_requested: 'optimum',
+          });
+        });
+    } else {
+      this.context
+        .confirm({
+          header: 'Are you sure you want to refund this payment?',
+          message: props.reverse_all
+            ? 'Reversals will be automatically created for all transfers on this payment, before the refund'
+            : null,
+          affirmativeLabel: 'Yes, Refund',
+          affirmativePendingLabel: 'Refunding...',
+          abortLabel: "No, don't!",
+          action: () => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payments',
+              eventAction: 'Refund - Payment',
+              eventLabel: `payment_id=${this.props.payment.id}`,
+              speed_requested: 'normal',
+            });
+
+            this.refund('normal', props, partial);
+          },
+        })
+        .catch(() => {
+          window.rzpAnalytics({
+            eventCategory: 'Dashboard - Payments',
+            eventAction: 'Click - Cancel Refund',
+            eventLabel: `payment_id=${this.props.payment.id}`,
+            speed_requested: 'normal',
+          });
+        });
+    }
+  };
+
+  hasEnoughFunds = () => {
+    const { payment } = this.props;
+    const { data } = this.props.current_balance;
+
+    let amount = payment.amount;
+    let balance = data.balance;
+
+    if (this.props.current_balance.loading === true) {
+      return true;
+    }
+
+    if (balance) {
+      if (amount > balance) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  };
+
+  getInstantRefundClassNames = Val => {
+    if (Val) {
+      return 'checkbox instant-refund-disable';
+    } else if (this.props.current_balance.loading === true || Val === false) {
+      return 'checkbox';
+    }
+  };
+
+  showInstantRefund = (payment, isInstantDisabled) => {
+    if (
+      showWhenUtil({ featureEnabled: 'card_transfer_refund' }) &&
+      payment.instant_refund_support &&
+      payment.instant_refund_support === true
+    ) {
+      return (
+        <div>
+          <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
+            <label>
+              <Field
+                name="instant_refund"
+                component="input"
+                type="checkbox"
+                disabled={isInstantDisabled}
+                onChange={this.onInstantRefundCheckboxClick}
+              />
+              <strong>Refund Instantly</strong>
+            </label>
+            <span
+              data-tooltip="You can refund this payment instantly for a small fee"
+              data-tooltip-position="top"
+              onMouseEnter={this.onInstantRefundTooltipHover}
+            >
+              <i class="i i-help" />
+            </span>
+          </div>
+          {this.props.current_balance.loading ? (
+            <div>Loading...</div>
+          ) : isInstantDisabled ? (
+            <div class="low-funds">
+              Your account does not have sufficient balance to instantly refund
+              this payment.
+              <Link to={'/addfunds'} target="_blank">
+                Add Funds
+                <i class="i i-external-link" />
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      );
+    } else return null;
+  };
+
+  onInstantRefundCheckboxClick = e => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: e.target.value
+        ? 'Unchecked - Instant Refund'
+        : 'Checked - Instant Refund',
+      eventLabel: `payment_id=${this.props.payment.id}`,
+    });
+  };
+
+  onInstantRefundTooltipHover = e => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: 'Hover - Instant Refund Tooltip',
+      eventLabel: `payment_id=${this.props.payment.id}`,
+    });
   };
 
   render() {
-    const { handleSubmit, payment, transfers } = this.props;
-
+    const { handleSubmit, payment, transfers, refunds } = this.props;
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
 
@@ -213,6 +380,8 @@ export default class RefundModal extends Component {
       payment.disputes &&
       payment.disputes.items.filter(dispute => dispute.phase !== 'fraud')
         .length;
+
+    let isInstantDisabled = !this.hasEnoughFunds();
     return (
       <div>
         <ModalHeader
@@ -228,7 +397,11 @@ export default class RefundModal extends Component {
               before initiating a refund.
             </div>
           ) : null}
-          <form onSubmit={handleSubmit(this.save)}>
+          <form
+            onSubmit={handleSubmit(props => {
+              this.save(props);
+            })}
+          >
             <div class="form-group">
               <label class="label-required">Refund Amount</label>
               <div class="input-group">
@@ -290,6 +463,7 @@ export default class RefundModal extends Component {
                 class="form-control"
               />
             </div>
+            {this.showInstantRefund(payment, isInstantDisabled)}
             <div class="Modal__actions">
               <button class="btn btn-primary btn-block">
                 Issue <RefundType partial={partial} isTitleCase={true} /> refund
