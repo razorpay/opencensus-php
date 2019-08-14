@@ -162,7 +162,6 @@ export default class BaseForm extends React.PureComponent {
             )}
           >
             {fakeDisplayTitle}
-            <i class="fake-caret" />
             <span className="symbol--red">*</span>
           </div>
         </Input.TextareaAutoResize>

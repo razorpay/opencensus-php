@@ -80,12 +80,6 @@
         border-left: none
         border-right: none
         border-radius: 0
-        color: transparent // Field--fakeDisplay perfectly overlaps with this textarea element, however it's needed for any style mistmatch.
-
-      &.is-focused
-        .Field--fakeDisplay
-          .fake-caret
-            display: inline-block
 
       .Field--fakeDisplay
         margin: 0
@@ -97,16 +91,6 @@
         z-index: 1
         padding: 0 2px // To mimic padding of actual element
         word-break: break-all
-
-        .fake-caret
-          display: none
-          vertical-align: middle
-          position: relative
-          width: 1px
-          height: 16px
-          margin: 3px 1px
-          animation: blink 1s infinite
-          background-color: currentColor
 
         .symbol--red
           position: absolute // Check if same can be done for hostedpage style, because sometimes, this star come in next line when text is full for previous line
