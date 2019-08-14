@@ -47,30 +47,36 @@ angular
           $http
             .get('/user', { ignoreErrors: true })
             .success(function(data) {
-              try {
-                dataLayer.push({
-                  merchant_id: data.data.merchants[0].id,
-                });
-              } catch (e) {}
-              _identity = data.data;
-              if (data.data.steps_finished) {
-                _identity.activation_progress = data.data.activation_progress;
-              }
-              if (
-                !_identity.user.merchants.length ||
-                _identity.pre_signup.length === 0
-              ) {
-                _isPreSignupDone = true;
+              if (data.success) {
+                try {
+                  dataLayer.push({
+                    merchant_id: data.data.merchants[0].id,
+                  });
+                } catch (e) {
+                  // no need of any action on error
+                }
+                _identity = data.data;
+                if (data.data.steps_finished) {
+                  _identity.activation_progress = data.data.activation_progress;
+                }
+                if (
+                  !_identity.user.merchants.length ||
+                  _identity.pre_signup.length === 0
+                ) {
+                  _isPreSignupDone = true;
+                } else {
+                  _isPreSignupDone = _identity.pre_signup_complete;
+                }
+
+                _isVerified = _identity.user.confirmed;
+
+                _authenticated = data.success === true;
+                if (_authenticated) $idle.watch();
+                else $idle.unwatch();
+                deferred.resolve(_identity);
               } else {
-                _isPreSignupDone = _identity.pre_signup_complete;
+                deferred.reject(data.errors);
               }
-
-              _isVerified = _identity.user.confirmed;
-
-              _authenticated = data.success === true;
-              if (_authenticated) $idle.watch();
-              else $idle.unwatch();
-              deferred.resolve(_identity);
             })
             .error(function() {
               _identity = null;

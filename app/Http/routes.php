@@ -14,14 +14,16 @@ Route::get('/status', 'AdminController@getStatus');
 
 Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
 
-Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtension')
-        ->where(['path' => '.*'])
-        ->name('extension_merchant')
-        ->middleware(['jwt']);
+Route::group(['middleware' => ['jwt_session']], function() {
+    Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtension')
+            ->where(['path' => '.*'])
+            ->name('extension_merchant')
+            ->middleware(['jwt']);
 
-Route::get('/extension/jwt/validate', 'UserController@validateJWT')
-        ->name('extension_validate_jwt')
-        ->middleware(['jwt']);
+    Route::get('/extension/jwt/validate', 'UserController@validateJWT')
+            ->name('extension_validate_jwt')
+            ->middleware(['jwt']);
+});
 
 // Everything in this group is a unauthenticated route
 // Please take care to not return any sensitive information
