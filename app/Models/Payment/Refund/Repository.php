@@ -1019,7 +1019,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(RefundEntity::SPEED_DECISIONED, Speed::NORMAL)
                     ->whereNull(RefundEntity::SPEED_PROCESSED)
-                    ->orderBy(RefundEntity::CREATED_AT)
+                    ->orderBy(RefundEntity::CREATED_AT, 'desc')
                     ->limit($limit)
                     ->update([
                         RefundEntity::SPEED_PROCESSED => Speed::NORMAL

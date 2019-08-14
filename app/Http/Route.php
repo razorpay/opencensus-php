@@ -1592,6 +1592,7 @@ final class Route
         'banking_account_statement_process',
         'subscription_registration_auto_charge',
         'partner_submerchant_map',
+        'refund_speed_processed_backfill',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
