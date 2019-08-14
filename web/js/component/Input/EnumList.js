@@ -76,7 +76,8 @@ export default class EnumList extends React.PureComponent {
             onClick={this.addNewOption}
             type="button"
           >
-            <i class="i i-return-key" /> Add Another Option
+            {!!options.length && <i className="i i-return-key" />}
+            {!!options.length ? 'Add Another Option' : 'Add an Option'}
           </Button.Transparent>
         )}
       </div>

@@ -24,10 +24,10 @@ export default class BaseForm extends React.PureComponent {
   }
 
   onChange = ({ target }) => {
-    setTimeout(this.toggleSubmit); // Validate form for input errors via class change in DOM, hence delayed.
+    setTimeout(this.toggleSubmitBtn); // Validate form for input errors via class change in DOM, hence delayed.
   };
 
-  toggleSubmit = () => {
+  toggleSubmitBtn = () => {
     const form = this.formEl;
     let disableSubmit = !!form.querySelectorAll('.is-invalid').length;
 
@@ -41,35 +41,13 @@ export default class BaseForm extends React.PureComponent {
     this.setState({ disableSubmit });
   };
 
-  onFieldTypeSelection = field => {
-    let indexString = field.option.value;
-    let selectedFieldSchema;
-
-    if (indexString) {
-      let indexTree = indexString.split(' ');
-      indexTree = [Number(indexTree[0]) - 1].concat(indexTree.splice(1));
-      selectedFieldSchema = getFieldFromIndices(indexTree.join(' '));
-    }
-
-    const isNewFieldEnum =
-      selectedFieldSchema && selectedFieldSchema.hasOwnProperty('enum');
-    if (this.state.isFieldEnum !== isNewFieldEnum) {
-      this.setState({ enum: [] });
-    }
-
-    this.setState({ isFieldEnum: isNewFieldEnum });
-  };
-
   onSaveField = formData => {
-    /*
-    let fieldType = formData.field_type.split(' ');
+    const fieldType = [Number(formData.field_type)];
 
-    fieldType = [Number(fieldType[0]) - 1].concat(fieldType.splice(1));
-    formData.field_type = fieldType.join(' ');
-
-    formData.enum =
-      this.state.enum && this.state.enum.length ? this.state.enum : undefined;
-*/
+    // Assuming this.state.enum.length > 1 always otherwise toggleSubmitBtn will handle
+    if (this.state.enum) {
+      formData.enum = this.state.enum;
+    }
 
     this.props.onSaveField(formData);
   };
@@ -87,7 +65,7 @@ export default class BaseForm extends React.PureComponent {
 
     this.setState({ enum: trimmedEnums });
 
-    setTimeout(this.toggleSubmit);
+    setTimeout(this.toggleSubmitBtn);
   };
 
   toggleDescriptionField = _ => {
@@ -153,7 +131,7 @@ export default class BaseForm extends React.PureComponent {
     } else if (field.enum) {
       _RepresentationEl = (
         <select className="Field-el" disabled>
-          <option>To be filled by customer</option>
+          <option>To be selected by customer</option>
         </select>
       );
       _RepresentationClass = 'Field--select';
@@ -209,6 +187,14 @@ export default class BaseForm extends React.PureComponent {
         <div class={classList('Field--representation', _RepresentationClass)}>
           <div class="Field-wrapper placeholder-field">{_RepresentationEl}</div>
 
+          {this.state.isFieldEnum && (
+            <Input.EnumList
+              class="dropdown-options"
+              onChange={this.onChangeEnumList}
+              defaultValue={field.enum.length ? field.enum : ['']}
+            />
+          )}
+
           {hasDescription && (
             <Input.TextareaAutoResize
               class="Input--description"
@@ -224,16 +210,6 @@ export default class BaseForm extends React.PureComponent {
             />
           )}
         </div>
-
-        {this.state.isFieldEnum && (
-          <Input.EnumList
-            class="dropdown-options"
-            onChange={this.onChangeEnumList}
-            defaultValue={
-              field.enum || ['']
-            } /* TODO: Init enum list for edit exising entries */
-          />
-        )}
 
         <FieldOptionsDropdown
           trigger={
