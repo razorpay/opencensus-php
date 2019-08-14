@@ -10,6 +10,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Axis\EMandateDebitReconFileHeadings as AxisEMDebitHeadings;
+use RZP\Gateway\Netbanking\Sbi\Emandate\RegisterFileHeadings as SbiEMRegisterHeadings;
+use RZP\Gateway\Netbanking\Sbi\Emandate\DebitFileHeadings as SbiEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 class Header
@@ -181,6 +183,71 @@ class Header
     const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
     const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
     const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
+
+    //
+    // SBI Emandate Register Response File Headers
+    //
+    const SBI_EM_REGISTER_SR_NO                   = SbiEMRegisterHeadings::SR_NO;
+    const SBI_EM_REGISTER_EMANDATE_TYPE           = SbiEMRegisterHeadings::EMANDATE_TYPE;
+    const SBI_EM_REGISTER_UMRN                    = SbiEMRegisterHeadings::UMRN;
+    const SBI_EM_REGISTER_MERCHANT_ID             = SbiEMRegisterHeadings::MERCHANT_ID;
+    const SBI_EM_REGISTER_CUSTOMER_REF_NO         = SbiEMRegisterHeadings::CUSTOMER_REF_NO;
+    const SBI_EM_REGISTER_SCHEME_NAME             = SbiEMRegisterHeadings::SCHEME_NAME;
+    const SBI_EM_REGISTER_SUB_SCHEME_NAME         = SbiEMRegisterHeadings::SUB_SCHEME;
+    const SBI_EM_REGISTER_DEBIT_CUSTOMER_NAME     = SbiEMRegisterHeadings::DEBIT_CUSTOMER_NAME;
+    const SBI_EM_REGISTER_DEBIT_ACCOUNT_NUMBER    = SbiEMRegisterHeadings::DEBIT_ACCOUNT_NUMBER;
+    const SBI_EM_REGISTER_DEBIT_ACCOUNT_TYPE      = SbiEMRegisterHeadings::DEBIT_ACCOUNT_TYPE;
+    const SBI_EM_REGISTER_DEBIT_IFSC              = SbiEMRegisterHeadings::DEBIT_IFSC;
+    const SBI_EM_REGISTER_DEBIT_BANK_NAME         = SbiEMRegisterHeadings::DEBIT_BANK_NAME;
+    const SBI_EM_REGISTER_AMOUNT                  = SbiEMRegisterHeadings::AMOUNT;
+    const SBI_EM_REGISTER_AMOUNT_TYPE             = SbiEMRegisterHeadings::AMOUNT_TYPE;
+    const SBI_EM_REGISTER_CUSTOMER_ID             = SbiEMRegisterHeadings::CUSTOMER_ID;
+    const SBI_EM_REGISTER_PERIOD                  = SbiEMRegisterHeadings::PERIOD;
+    const SBI_EM_REGISTER_PAYMENT_TYPE            = SbiEMRegisterHeadings::PAYMENT_TYPE;
+    const SBI_EM_REGISTER_FREQUENCY               = SbiEMRegisterHeadings::FREQUENCY;
+    const SBI_EM_REGISTER_START_DATE              = SbiEMRegisterHeadings::START_DATE;
+    const SBI_EM_REGISTER_END_DATE                = SbiEMRegisterHeadings::END_DATE;
+    const SBI_EM_REGISTER_MOBILE                  = SbiEMRegisterHeadings::MOBILE;
+    const SBI_EM_REGISTER_EMAIL                   = SbiEMRegisterHeadings::EMAIL;
+    const SBI_EM_REGISTER_OTHER_REF_NO            = SbiEMRegisterHeadings::OTHER_REF_NO;
+    const SBI_EM_REGISTER_PAN_NUMBER              = SbiEMRegisterHeadings::PAN_NUMBER;
+    const SBI_EM_REGISTER_AUTO_DEBIT_DATE         = SbiEMRegisterHeadings::AUTO_DEBIT_DATE;
+    const SBI_EM_REGISTER_AUTHENTICATION_MODE     = SbiEMRegisterHeadings::AUTHENTICATION_MODE;
+    const SBI_EM_REGISTER_DATE_PROCESSED          = SbiEMRegisterHeadings::DATE_PROCESSED;
+    const SBI_EM_REGISTER_STATUS                  = SbiEMRegisterHeadings::STATUS;
+    const SBI_EM_REGISTER_NO_OF_DAYS_PENDING      = SbiEMRegisterHeadings::NO_OF_DAYS_PENDING;
+    const SBI_EM_REGISTER_REJECT_REASON           = SbiEMRegisterHeadings::REJECT_REASON;
+    const SBI_EM_REGISTER_TRANSACTION_DATE        = SbiEMRegisterHeadings::TRANSACTION_DATE;
+    const SBI_EM_REGISTER_CUSTOMER_NAME           = SbiEMRegisterHeadings::CUSTOMER_NAME;
+    const SBI_EM_REGISTER_CUSTOMER_ACCOUNT_NUMBER = SbiEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
+    const SBI_EM_REGISTER_MAX_AMOUNT              = SbiEMRegisterHeadings::MAX_AMOUNT;
+    const SBI_EM_REGISTER_STATUS_DESCRIPTION      = SbiEMRegisterHeadings::STATUS_DESCRIPTION;
+    const SBI_EM_REGISTER_START_DATE_REJECT_FILE  = SbiEMRegisterHeadings::START_DATE_REJECT_FILE;
+    const SBI_EM_REGISTER_END_DATE_REJECT_FILE    = SbiEMRegisterHeadings::END_DATE_REJECT_FILE;
+    const SBI_EM_REGISTER_UMRN_REJECT_RILE        = SbiEMRegisterHeadings::UMRN_REJECT_RILE;
+    const SBI_EM_REGISTER_SBI_REFERENCE_NO        = SbiEMRegisterHeadings::SBI_REFERENCE_NO;
+    const SBI_EM_REGISTER_MODE_OF_VERIFICATION    = SbiEMRegisterHeadings::MODE_OF_VERIFICATION;
+    const SBI_EM_REGISTER_AMOUNT_TYPE_REJECT_FILE = SbiEMRegisterHeadings::AMOUNT_TYPE_REJECT_FILE;
+
+    //
+    // SBI Emandate Debit Response File Headers
+    //
+    const SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER   = SbiEMDebitHeadings::SERIAL_NUMBER;
+    const SBI_EM_DEBIT_EMANDATE_TYPE            = SbiEMDebitHeadings::EMANDATE_TYPE;
+    const SBI_EM_DEBIT_UMRN                     = SbiEMDebitHeadings::UMRN;
+    const SBI_EM_DEBIT_SCHEME_NAME              = SbiEMDebitHeadings::SCHEME_NAME;
+    const SBI_EM_DEBIT_SUB_SCHEME_NAME          = SbiEMDebitHeadings::SUB_SCHEME_NAME;
+    const SBI_EM_DEBIT_MANDATE_HOLDER_NAME      = SbiEMDebitHeadings::MANDATE_HOLDER_NAME_RESP;
+    const SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER     = SbiEMDebitHeadings::DEBIT_ACC_NO;
+    const SBI_EM_DEBIT_DEBIT_BANK_IFSC          = SbiEMDebitHeadings::DEBIT_BANK_IFSC;
+    const SBI_EM_DEBIT_DEBIT_DATE               = SbiEMDebitHeadings::DEBIT_DATE_RESP;
+    const SBI_EM_DEBIT_AMOUNT                   = SbiEMDebitHeadings::AMOUNT;
+    const SBI_EM_DEBIT_JOURNAL_NUMBER           = SbiEMDebitHeadings::JOURNAL_NUMBER;
+    const SBI_EM_DEBIT_PROCESSING_DATE          = SbiEMDebitHeadings::PROCESSING_DATE;
+    const SBI_EM_DEBIT_CUSTOMER_REF_NO          = SbiEMDebitHeadings::CUSTOMER_REF_NO;
+    const SBI_EM_DEBIT_DEBIT_STATUS             = SbiEMDebitHeadings::DEBIT_STATUS;
+    const SBI_EM_DEBIT_CREDIT_STATUS            = SbiEMDebitHeadings::CREDIT_STATUS;
+    const SBI_EM_DEBIT_REASON                   = SbiEMDebitHeadings::REASON;
 
     //
     // AXIS Emandate Debit Response File Headers
@@ -1186,6 +1253,158 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ]
+        ],
+
+        'emandate_register_sbi' => [
+            self::INPUT => [
+                'success' => [
+                    self::SBI_EM_REGISTER_SR_NO,
+                    self::SBI_EM_REGISTER_EMANDATE_TYPE,
+                    self::SBI_EM_REGISTER_UMRN,
+                    self::SBI_EM_REGISTER_MERCHANT_ID,
+                    self::SBI_EM_REGISTER_CUSTOMER_REF_NO,
+                    self::SBI_EM_REGISTER_SCHEME_NAME,
+                    self::SBI_EM_REGISTER_SUB_SCHEME_NAME,
+                    self::SBI_EM_REGISTER_DEBIT_CUSTOMER_NAME ,
+                    self::SBI_EM_REGISTER_DEBIT_ACCOUNT_NUMBER,
+                    self::SBI_EM_REGISTER_DEBIT_ACCOUNT_TYPE,
+                    self::SBI_EM_REGISTER_DEBIT_IFSC,
+                    self::SBI_EM_REGISTER_DEBIT_BANK_NAME,
+                    self::SBI_EM_REGISTER_AMOUNT,
+                    self::SBI_EM_REGISTER_AMOUNT_TYPE,
+                    self::SBI_EM_REGISTER_CUSTOMER_ID,
+                    self::SBI_EM_REGISTER_PERIOD,
+                    self::SBI_EM_REGISTER_PAYMENT_TYPE,
+                    self::SBI_EM_REGISTER_FREQUENCY,
+                    self::SBI_EM_REGISTER_START_DATE,
+                    self::SBI_EM_REGISTER_END_DATE,
+                    self::SBI_EM_REGISTER_MOBILE,
+                    self::SBI_EM_REGISTER_EMAIL,
+                    self::SBI_EM_REGISTER_OTHER_REF_NO,
+                    self::SBI_EM_REGISTER_PAN_NUMBER,
+                    self::SBI_EM_REGISTER_AUTO_DEBIT_DATE,
+                    self::SBI_EM_REGISTER_AUTHENTICATION_MODE,
+                    self::SBI_EM_REGISTER_DATE_PROCESSED,
+                    self::SBI_EM_REGISTER_STATUS,
+                    self::SBI_EM_REGISTER_NO_OF_DAYS_PENDING,
+                    self::SBI_EM_REGISTER_REJECT_REASON,
+                ],
+                'reject' => [
+                    self::SBI_EM_REGISTER_TRANSACTION_DATE,
+                    self::SBI_EM_REGISTER_CUSTOMER_NAME,
+                    self::SBI_EM_REGISTER_CUSTOMER_REF_NO,
+                    self::SBI_EM_REGISTER_CUSTOMER_ACCOUNT_NUMBER,
+                    self::SBI_EM_REGISTER_AMOUNT,
+                    self::SBI_EM_REGISTER_MAX_AMOUNT,
+                    self::SBI_EM_REGISTER_STATUS,
+                    self::SBI_EM_REGISTER_STATUS_DESCRIPTION,
+                    self::SBI_EM_REGISTER_START_DATE_REJECT_FILE,
+                    self::SBI_EM_REGISTER_END_DATE_REJECT_FILE,
+                    self::SBI_EM_REGISTER_FREQUENCY,
+                    self::SBI_EM_REGISTER_UMRN_REJECT_RILE,
+                    self::SBI_EM_REGISTER_SBI_REFERENCE_NO,
+                    self::SBI_EM_REGISTER_MODE_OF_VERIFICATION,
+                    self::SBI_EM_REGISTER_AMOUNT_TYPE_REJECT_FILE,
+                ]
+            ],
+            self::OUTPUT => [
+                'success' => [
+                    self::SBI_EM_REGISTER_SR_NO,
+                    self::SBI_EM_REGISTER_EMANDATE_TYPE,
+                    self::SBI_EM_REGISTER_UMRN,
+                    self::SBI_EM_REGISTER_MERCHANT_ID,
+                    self::SBI_EM_REGISTER_CUSTOMER_REF_NO,
+                    self::SBI_EM_REGISTER_SCHEME_NAME,
+                    self::SBI_EM_REGISTER_DEBIT_CUSTOMER_NAME ,
+                    self::SBI_EM_REGISTER_DEBIT_ACCOUNT_NUMBER,
+                    self::SBI_EM_REGISTER_DEBIT_ACCOUNT_TYPE,
+                    self::SBI_EM_REGISTER_DEBIT_IFSC,
+                    self::SBI_EM_REGISTER_DEBIT_BANK_NAME,
+                    self::SBI_EM_REGISTER_AMOUNT,
+                    self::SBI_EM_REGISTER_AMOUNT_TYPE,
+                    self::SBI_EM_REGISTER_CUSTOMER_ID,
+                    self::SBI_EM_REGISTER_PERIOD,
+                    self::SBI_EM_REGISTER_PAYMENT_TYPE,
+                    self::SBI_EM_REGISTER_FREQUENCY,
+                    self::SBI_EM_REGISTER_START_DATE,
+                    self::SBI_EM_REGISTER_END_DATE,
+                    self::SBI_EM_REGISTER_MOBILE,
+                    self::SBI_EM_REGISTER_EMAIL,
+                    self::SBI_EM_REGISTER_OTHER_REF_NO,
+                    self::SBI_EM_REGISTER_PAN_NUMBER,
+                    self::SBI_EM_REGISTER_AUTO_DEBIT_DATE,
+                    self::SBI_EM_REGISTER_AUTHENTICATION_MODE,
+                    self::SBI_EM_REGISTER_DATE_PROCESSED,
+                    self::SBI_EM_REGISTER_STATUS,
+                    self::SBI_EM_REGISTER_NO_OF_DAYS_PENDING,
+                    self::SBI_EM_REGISTER_REJECT_REASON,
+                    self::STATUS,
+                    self::ERROR_CODE,
+                    self::ERROR_DESCRIPTION,
+                ],
+                'reject' => [
+                    self::SBI_EM_REGISTER_TRANSACTION_DATE,
+                    self::SBI_EM_REGISTER_CUSTOMER_NAME,
+                    self::SBI_EM_REGISTER_CUSTOMER_REF_NO,
+                    self::SBI_EM_REGISTER_CUSTOMER_ACCOUNT_NUMBER,
+                    self::SBI_EM_REGISTER_AMOUNT,
+                    self::SBI_EM_REGISTER_MAX_AMOUNT,
+                    self::SBI_EM_REGISTER_STATUS,
+                    self::SBI_EM_REGISTER_STATUS_DESCRIPTION,
+                    self::SBI_EM_REGISTER_START_DATE_REJECT_FILE,
+                    self::SBI_EM_REGISTER_END_DATE_REJECT_FILE,
+                    self::SBI_EM_REGISTER_FREQUENCY,
+                    self::SBI_EM_REGISTER_UMRN_REJECT_RILE,
+                    self::SBI_EM_REGISTER_SBI_REFERENCE_NO,
+                    self::SBI_EM_REGISTER_MODE_OF_VERIFICATION,
+                    self::SBI_EM_REGISTER_AMOUNT_TYPE_REJECT_FILE,
+                    self::STATUS,
+                    self::ERROR_CODE,
+                    self::ERROR_DESCRIPTION,
+                ]
+            ]
+        ],
+
+        'emandate_debit_sbi' => [
+            self::INPUT => [
+                self::SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER,
+                self::SBI_EM_DEBIT_EMANDATE_TYPE,
+                self::SBI_EM_DEBIT_UMRN,
+                self::SBI_EM_DEBIT_SCHEME_NAME,
+                self::SBI_EM_DEBIT_SUB_SCHEME_NAME,
+                self::SBI_EM_DEBIT_MANDATE_HOLDER_NAME,
+                self::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER,
+                self::SBI_EM_DEBIT_DEBIT_BANK_IFSC,
+                self::SBI_EM_DEBIT_DEBIT_DATE,
+                self::SBI_EM_DEBIT_AMOUNT,
+                self::SBI_EM_DEBIT_JOURNAL_NUMBER,
+                self::SBI_EM_DEBIT_PROCESSING_DATE,
+                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
+                self::SBI_EM_DEBIT_DEBIT_STATUS,
+                self::SBI_EM_DEBIT_CREDIT_STATUS,
+                self::SBI_EM_DEBIT_REASON,
+            ],
+            self::OUTPUT => [
+                self::SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER,
+                self::SBI_EM_DEBIT_EMANDATE_TYPE,
+                self::SBI_EM_DEBIT_UMRN,
+                self::SBI_EM_DEBIT_SCHEME_NAME,
+                self::SBI_EM_DEBIT_SUB_SCHEME_NAME,
+                self::SBI_EM_DEBIT_MANDATE_HOLDER_NAME,
+                self::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER,
+                self::SBI_EM_DEBIT_DEBIT_BANK_IFSC,
+                self::SBI_EM_DEBIT_DEBIT_DATE,
+                self::SBI_EM_DEBIT_AMOUNT,
+                self::SBI_EM_DEBIT_JOURNAL_NUMBER,
+                self::SBI_EM_DEBIT_PROCESSING_DATE,
+                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
+                self::SBI_EM_DEBIT_DEBIT_STATUS,
+                self::SBI_EM_DEBIT_CREDIT_STATUS,
+                self::SBI_EM_DEBIT_REASON,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
         ],
 
         'emandate_acknowledge_enach_rbl' => [
