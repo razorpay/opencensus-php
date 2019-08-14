@@ -26,10 +26,8 @@ export default class BaseForm extends React.PureComponent {
   };
 
   toggleSubmit = () => {
-    const form = document.getElementsByName('udf-base-form')[0];
-    const title = document.getElementsByName('title')[0].value;
-
-    let disableSubmit = !!form.querySelectorAll('.is-invalid').length || !title;
+    const form = this.formEl;
+    let disableSubmit = !!form.querySelectorAll('.is-invalid').length;
 
     if (
       this.state.isFieldEnum &&
@@ -112,6 +110,8 @@ export default class BaseForm extends React.PureComponent {
     });
   };
 
+  setRefForm = el => (this.formEl = el);
+
   render() {
     const {
       field,
@@ -129,6 +129,7 @@ export default class BaseForm extends React.PureComponent {
 
     return (
       <Form
+        setRef={this.setRefForm}
         name="udf-base-form"
         onChange={this.onChange}
         onSubmit={this.onSaveField}
@@ -162,7 +163,7 @@ export default class BaseForm extends React.PureComponent {
             )}
           >
             {fakeDisplayTitle}
-            <span className="symbol--red">*</span>
+            {fakeDisplayTitle && <span className="symbol--red">*</span>}
           </div>
         </Input.TextareaAutoResize>
 
