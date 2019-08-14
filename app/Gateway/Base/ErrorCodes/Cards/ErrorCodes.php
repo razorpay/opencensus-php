@@ -19,7 +19,7 @@ class ErrorCodes extends Base\ErrorCodes\BaseCodes
         '09' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,
         '10' => ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED,
         '11' => ErrorCode::GATEWAY_ERROR_APPROVED_VIP,
-        '12' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        '12' => ErrorCode::GATEWAY_ERROR_INVALID_TRANSACTION,
         '13' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         '14' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
         '15' => ErrorCode::BAD_REQUEST_CARD_ISSUER_INVALID,
