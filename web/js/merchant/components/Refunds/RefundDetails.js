@@ -9,6 +9,7 @@ import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import RefundStatusTimeline from 'merchant/components/Refunds/RefundTimeline';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import RefundUpdate from 'merchant/components/Refunds/RefundUpdate';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
   return (
@@ -36,15 +37,17 @@ export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
                   )}
                 />
 
-                <EntityDetailRow
-                  label="Status"
-                  value={() => (
-                    <ContentToggler onToggleClick={viewRefundHistory}>
-                      <span>View History</span>
-                      <RefundStatusTimeline refund={refund} />
-                    </ContentToggler>
-                  )}
-                />
+                {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
+                  <EntityDetailRow
+                    label="Status"
+                    value={() => (
+                      <ContentToggler onToggleClick={viewRefundHistory}>
+                        <span>View History</span>
+                        <RefundStatusTimeline refund={refund} />
+                      </ContentToggler>
+                    )}
+                  />
+                ) : null}
 
                 <EntityDetailRow
                   label="Amount"
@@ -53,20 +56,22 @@ export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
                   )}
                 />
 
-                <EntityDetailRow
-                  label="Refund Mode"
-                  value={() =>
-                    refund.speed_change_time ? (
-                      <RefundUpdate
-                        strikeThroughContent="Instant"
-                        updatedContent="Normal"
-                        description="Refund mode updated to normal as this refund was not able to be processed instantly."
-                      />
-                    ) : (
-                      <span>{refund.speed_processed}</span>
-                    )
-                  }
-                />
+                {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
+                  <EntityDetailRow
+                    label="Refund Mode"
+                    value={() =>
+                      refund.speed_change_time ? (
+                        <RefundUpdate
+                          strikeThroughContent="Instant"
+                          updatedContent="Normal"
+                          description="Refund mode updated to normal as this refund was not able to be processed instantly."
+                        />
+                      ) : (
+                        <span>{refund.speed_processed}</span>
+                      )
+                    }
+                  />
+                ) : null}
 
                 <EntityDetailRow label="Currency" value={refund.currency} />
 
