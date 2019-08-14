@@ -25,7 +25,7 @@ import {
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
-import { validateUISchema } from 'merchant/containers/PaymentPages/Pages/Create/Form/Fields/V2';
+import { validateUISchema } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
 
 import {
   trackWYSIWYGCloseIntent,

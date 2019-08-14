@@ -7,7 +7,7 @@ import {
   getFieldTypes,
   mapFieldToIndex,
   getFieldFromIndices,
-} from '../Fields/V2';
+} from '../UDF_Fields/V2';
 
 const CustomTypeOption = ({ option }) => (
   <React.Fragment>

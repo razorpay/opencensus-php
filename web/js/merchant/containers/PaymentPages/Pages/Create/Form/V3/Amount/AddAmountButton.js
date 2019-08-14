@@ -1,5 +1,5 @@
 import Button from 'component/Button';
-import FieldsDropdown from '../../Fields/FieldsDropdown';
+import FieldsDropdown from '../../UDF_Fields/FieldsDropdown';
 
 export default ({ onSelectField }) => (
   <AmountDropdown

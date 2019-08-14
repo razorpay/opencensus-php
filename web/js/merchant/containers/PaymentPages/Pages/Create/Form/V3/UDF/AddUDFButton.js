@@ -1,6 +1,6 @@
 import Button from 'component/Button';
-import FieldsDropdown from '../../Fields/FieldsDropdown';
-import { getFieldTypes, mapFieldToIndex } from '../../Fields/V3';
+import FieldsDropdown from '../../UDF_Fields/FieldsDropdown';
+import { getFieldTypes, mapFieldToIndex } from '../../UDF_Fields/V3';
 import { BaseFormModal } from './CreatorManager';
 
 export default class AddUDFButton extends React.PureComponent {

@@ -2,7 +2,7 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList } from 'common/util';
-import { mapFieldToIndex } from '../../Fields/V3';
+import { mapFieldToIndex } from '../../UDF_Fields/V3';
 import FieldOptionsDropdown, { OptionsItem } from './FieldOptionsDropdown';
 
 export default class BaseForm extends React.PureComponent {

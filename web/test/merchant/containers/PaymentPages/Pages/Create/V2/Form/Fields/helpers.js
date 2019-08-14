@@ -68,7 +68,7 @@ function _isPatternSupportedAndNonRestrictive(pattern, isKeydownRestrictive) {
 
 // -------------------------
 
-describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base keys checker', function() {
+describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base keys checker', function() {
   const validBaseKeys = {
     name: 'test name',
     title: 'test title',
@@ -105,7 +105,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base keys
   });
 });
 
-describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base fields in constructed schema', function() {
+describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base fields in constructed schema', function() {
   const validFieldSchemas = [
     constructFieldSchema({ title: 'Test title', field_type: '0 1' }),
     constructFieldSchema({
@@ -186,7 +186,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base fiel
 
 // -------------------------
 
-describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported type in schema', function() {
+describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported type in schema', function() {
   const validTypeSet = ['string', 'number'];
 
   it.each(validTypeSet, 'all schemas must be invalid.', function(type, next) {
@@ -220,7 +220,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported type in sch
 
 // -------------------------
 
-describe('containers/PaymentPages/V2/../Fields/helpers Fn: Safe Pattern in schema', function() {
+describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Safe Pattern in schema', function() {
   it.each(
     flattenFIELD_TYPES(),
     'all fields units selectable by user must have safe patterns.',
@@ -278,7 +278,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Safe Pattern in schem
 
 // -------------------------
 
-describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported cmp in option keys', function() {
+describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported cmp in option keys', function() {
   it.each(
     flattenFIELD_TYPES(),
     'all field units must have supported cmp.',
@@ -317,7 +317,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported cmp in opti
 
 // -------------------------
 
-describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported keys in Schema', function() {
+describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported keys in Schema', function() {
   // All user selectable fields units must have valid supported keys
   it.each(flattenFIELD_TYPES(), 'all keys are supported.', function(
     field,
@@ -392,7 +392,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported keys in Sch
 
 // -------------------------
 
-describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of Schema', function() {
+describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of Schema', function() {
   // This schema contains exhaustive set of fields units
   const validSchemas = [[]]; // Empty schema is also supported
 

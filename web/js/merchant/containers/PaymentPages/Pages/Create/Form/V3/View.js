@@ -10,7 +10,7 @@ import {
   updateInSchema,
   addInSchema,
 } from 'merchant/modules/wysiwyg';
-import { constructFieldSchema } from '../Fields/V3';
+import { constructFieldSchema } from '../UDF_Fields/V3';
 
 @connect(state => ({ ...state.wysiwyg }), {
   updateData,
