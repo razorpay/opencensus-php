@@ -125,15 +125,10 @@ class PayInitData extends Base\Mock\Server
             'success'           => true,
             "next" => [
                 "redirect" => [
-                    "method" => "post",
+                    "method" => "get",
                     "url" => $url,
-                    "content"=> [
-                        'token'     => 'PayPal_Token',
-                        'PayId' => '8DS61651XA862144J',
-                        'status'    => 'callback_successful',
-                    ],
-                        ]
-                    ],
+                ]
+            ],
             'mozart_id'         => 'DUMMY_MOZART_ID',
             'external_trace_id' => 'DUMMY_REQUEST_ID',
         ];
