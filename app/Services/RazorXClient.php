@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Cache;
 use Request;
 use Requests;
 use RZP\Trace\TraceCode;
@@ -33,6 +34,9 @@ class RazorXClient
      * response from RazorX server is not return for some reason
      */
     const DEFAULT_CASE      = 'control';
+
+    const CACHED_TREATMENT_PREFIX = "razorx:";
+    const CACHED_TREATMENT_TTL = 15; // In minutes.
 
     protected $baseUrl;
 
@@ -73,12 +77,36 @@ class RazorXClient
         $this->env     = $app['env'];
     }
 
+    /**
+     * Caches response of getTreatment() for given arguments in redis.
+     * @param  array  $args
+     * @return string
+     */
+    public function getCachedTreatment(...$args): string
+    {
+        // Case- From withing same http request scope.
+        $this->localUniqueId = self::getLocalUniqueId(...$args);
+        if (($storedVariant = $this->getStoredVariant()) !== null)
+        {
+            return $storedVariant;
+        }
+
+        // Case- Between different http request scope.
+        return Cache::remember(
+            self::CACHED_TREATMENT_PREFIX.implode(':', $args),
+            self::CACHED_TREATMENT_TTL,
+            function () use ($args) {
+                return $this->getTreatment(...$args);
+            }
+        );
+    }
+
     public function getTreatment(string $id, string $featureFlag, string $mode): string
     {
         $this->localUniqueId = self::getLocalUniqueId($id, $featureFlag, $mode);
 
         $storedVariant = $this->getStoredVariant();
-        
+
         if ($storedVariant !== null)
         {
             return $storedVariant;
@@ -87,7 +115,7 @@ class RazorXClient
         $this->setVariantFromCookie($id, $featureFlag, $mode);
 
         $storedVariant = $this->getStoredVariant();
-        
+
         if ($storedVariant !== null)
         {
             return $storedVariant;
@@ -139,7 +167,7 @@ class RazorXClient
             self::ENVIRONMENT  => $this->env,
             self::MODE         => $mode
         ];
-        
+
         $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data);
 
         $this->storeVariant($variant);

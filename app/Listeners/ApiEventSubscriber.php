@@ -2,6 +2,9 @@
 
 namespace RZP\Listeners;
 
+use Throwable;
+use Razorpay\Trace\Logger;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
@@ -14,9 +17,12 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
+use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -99,6 +105,11 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::ORDER_PAID
     ];
 
+    /**
+     * @var boolean|null
+     */
+    protected $shouldDispatchEventToStork;
+
     public function __construct()
     {
         parent::__construct();
@@ -113,6 +124,8 @@ class ApiEventSubscriber extends Base\Core
 
     public function onEvent($event, $params)
     {
+        $startAt = millitime();
+
         $event = $this->getFiringEvent($event);
 
         $this->trace->count(WebhookMetric::WEBHOOK_EVENTS_TRIGGERED_TOTAL, compact('event'));
@@ -156,7 +169,21 @@ class ApiEventSubscriber extends Base\Core
         // updated_at and other things like that.
         //
 
-        $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($this->mainEntity);
+        //
+        // Call to isWebhookEnabledForEvent() first resolves webhooks for
+        // merchant and applications and sets these and few more class variables.
+        //
+        // Stork is called with raw event and rest is taken care by the service
+        // and hence we need to avoid former things. Because below is or logic
+        // later will not execute.
+        //
+        // Later(refer another call) if call to stork fails we do need to call
+        // isWebhookEnabledForEvent() again to actually set those variables
+        // before proceeding with fall back of existing flow.
+        //
+        $this->setShouldDispatchEventToStork();
+        $this->webhookEnabledForEvent = ($this->shouldDispatchEventToStork or
+            $this->isWebhookEnabledForEvent($this->mainEntity));
 
         //
         // Doesn't execute the event if
@@ -173,7 +200,12 @@ class ApiEventSubscriber extends Base\Core
 
         $func = 'on' . studly_case($event);
 
-        return $this->$func($this->mainEntity);
+        $this->$func($this->mainEntity);
+
+        $this->trace->histogram(
+            WebhookMetric::EVENT_PROCESS_DURATION_MILLISECONDS,
+            millitime() - $startAt,
+            ['event' => $event, 'via_stork' => $this->shouldDispatchEventToStork]);
     }
 
     /**
@@ -775,6 +807,22 @@ class ApiEventSubscriber extends Base\Core
 
     protected function prepareAndDispatchWebhook(array $payload)
     {
+        if ($this->shouldDispatchEventToStork === true)
+        {
+            $success = $this->dispatchEventToStork($payload);
+
+            if ($success === true)
+            {
+                return;
+            }
+
+            // Refer comment at other call of same function in onEvent() method.
+            if ($this->isWebhookEnabledForEvent($this->mainEntity) === false)
+            {
+                return;
+            }
+        }
+
         $merchantWebhook = $this->activeMerchantWebhook;
 
         // If merchant webhook is active and enabled, then dispatch.
@@ -804,6 +852,22 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function getWebhookData(array $payload, WebhookEntity $webhook): array
+    {
+        $event = $this->createEventEntity($payload);
+
+        $data = [
+            'mode'       => $this->getMode(),
+            'event'      => json_encode($event->toArrayPublic()),
+            'event_name' => $this->event,
+            'webhook_id' => $webhook->getId(),
+            // Refer Inferno's eventQueuedAt.
+            'queued_at'  => millitime(),
+        ];
+
+        return $data;
+    }
+
+    protected function createEventEntity(array $payload): Event\Entity
     {
         $eventFired = $this->event;
         $entity     = $this->mainEntity;
@@ -836,16 +900,7 @@ class ApiEventSubscriber extends Base\Core
 
         $event->merchant()->associate($merchant);
 
-        $data = [
-            'mode'       => $this->getMode(),
-            'event'      => json_encode($event->toArrayPublic()),
-            'event_name' => $eventFired,
-            'webhook_id' => $webhook->getId(),
-            // Refer Inferno's eventQueuedAt.
-            'queued_at'  => millitime(),
-        ];
-
-        return $data;
+        return $event;
     }
 
     protected function addExtraDataToPayload(array & $partialPayload)
@@ -1020,5 +1075,48 @@ class ApiEventSubscriber extends Base\Core
         }
 
         return $payload;
+    }
+
+    protected function setShouldDispatchEventToStork()
+    {
+        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
+
+        /** @var RazorXClient $razorxService */
+        $razorxService = app('razorx');
+
+        $variant = $razorxService->getCachedTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::WEBHOOK_EVENT_VIA_STORK,
+            $this->getMode());
+
+        $this->shouldDispatchEventToStork = (strtolower($variant) === 'on');
+    }
+
+    /**
+     * Dispatches event to stork where dispatch-able webhooks are resolved and
+     * events are fired to all of them. It returns true on success.
+     *
+     * @param  array   $payload
+     * @return boolean
+     */
+    protected function dispatchEventToStork(array $payload): bool
+    {
+        $event = $this->createEventEntity($payload);
+
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $event->toArrayPublic());
+
+        try
+        {
+            (new Stork)->processEvent($event, $this->getMode());
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException(
+                $e, Logger::WARNING, TraceCode::STORK_DISPATCH_EVENT_FAILED);
+
+            return false;
+        }
+
+        return true;
     }
 }
