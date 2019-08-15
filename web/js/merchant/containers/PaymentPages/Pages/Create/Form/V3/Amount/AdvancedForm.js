@@ -1,5 +1,5 @@
-export class AdvancedForm extends React.PureComponent {
+export default class AdvancedForm extends React.PureComponent {
   render() {
-    return null;
+    return <div />;
   }
 }

@@ -132,7 +132,11 @@ export default class View extends React.PureComponent {
                 onSubmitUDFField={this.onSubmitUDFField}
                 validateSameTitleExists={this.validateSameTitleExists}
               />
-              <AddAmountButton onSelectField={_ => _} />
+              <AddAmountButton
+                onDeleteAmountField={this.onDeleteAmountField}
+                onSubmitAmountField={this.onSubmitAmountField}
+                validateSameTitleExists={this.validateSameTitleExists}
+              />
             </div>
           </div>
 

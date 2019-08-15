@@ -6,17 +6,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
     state = { isBaseFormOpened: false };
 
-    onSubmitAmountField = formData => {
-      this.props.onDeleteAmountField(formData, this.props.index);
-
-      this.toggleBaseForm();
-    };
-
-    onDeleteAmountField = () => {
-      this.props.onDeleteAmountField(this.props.index);
-      this.toggleBaseForm();
-    };
-
     toggleBaseForm = forcedState => {
       this.setState({
         isBaseFormOpened:
@@ -26,41 +15,41 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       });
     };
 
-    sefRef = el => (this.displayFieldEl = el);
-
     render() {
-      const { field, index, validateSameTitleExists } = this.props;
-      let tooltipTxt,
-        isFieldRemovable = true; // // TODO: Handle condition to check atleast 1 price field is present.
+      const {
+        field,
+        index,
+        validateSameTitleExists,
+        onDeleteAmountField,
+        onSubmitAmountField,
+      } = this.props;
+
+      let isFieldRemovable = true; // TODO: Handle condition to check atleast 1 price field is present.
 
       return (
-        <div>
+        <div style={{ position: 'relative' }}>
           <_WrappedDisplayFieldComponent
             field={field}
             openBaseForm={this.toggleBaseForm}
-            tooltipTxt={tooltipTxt}
-            setRef={this.sefRef}
           />
           {this.state.isBaseFormOpened && (
-            <CreatorModal overWhatElement={this.displayFieldEl}>
-              <BaseForm
-                field={field}
-                selfIndex={index}
-                validateSameTitleExists={validateSameTitleExists}
-                onClose={this.toggleBaseForm}
-                onSubmit={this.onSubmitAmountField}
-                onFieldDelete={
-                  isFieldRemovable ? this.onDeleteAmountField : undefined
-                }
-              />
-            </CreatorModal>
+            <BaseFormModal
+              index={index}
+              field={field}
+              validateSameTitleExists={validateSameTitleExists}
+              onSubmitAmountField={onSubmitAmountField}
+              onDeleteAmountField={onDeleteAmountField}
+              closeFormModal={_ => this.toggleBaseForm(false)}
+              isFieldRemovable={isFieldRemovable}
+            />
           )}
+
           {this.state.isAdvancedFormOpened && (
             <CreatorModal>
               <AdvancedForm
                 field={field}
-                onClose={this.toggleBaseForm}
-                onSubmit={this.onSubmitAmountField}
+                closeFormModal={_ => this.toggleAdvancedForm(false)}
+                onSubmit={this.onSubmitAdvancedForm}
               />
             </CreatorModal>
           )}
@@ -70,4 +59,64 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
   }
 
   return HOC;
+}
+
+export class BaseFormModal extends React.PureComponent {
+  onSubmitAmountField = formData => {
+    this.props.onSubmitAmountField(formData, this.props.index);
+    this.props.closeFormModal();
+  };
+
+  onDeleteAmountField = () => {
+    this.props.onDeleteAmountField(this.props.index);
+    this.props.closeFormModal();
+  };
+
+  render() {
+    const {
+      field,
+      field_schema,
+      index,
+      validateSameTitleExists,
+      closeFormModal,
+      isFieldRemovable,
+    } = this.props;
+
+    return (
+      <CreatorModal class="CreatorModal-BaseForm" overElement>
+        <BaseForm
+          field={field || field_schema}
+          selfIndex={index}
+          validateSameTitleExists={validateSameTitleExists}
+          onCloseForm={closeFormModal}
+          onSaveField={this.onSubmitAmountField}
+          onDeleteField={
+            isFieldRemovable ? this.onDeleteAmountField : undefined
+          }
+        />
+      </CreatorModal>
+    );
+  }
+}
+
+export class AdvancedFormModal extends React.PureComponent {
+  onSubmitAmountField = formData => {
+    this.props.onSubmit(formData);
+    this.props.closeFormModal();
+  };
+
+  render() {
+    const { field, index, closeFormModal } = this.props;
+
+    return (
+      <CreatorModal class="CreatorModal-AdvancedForm">
+        <AdvancedForm
+          field={field}
+          selfIndex={index}
+          onCloseForm={closeFormModal}
+          onSaveField={this.onSubmitAmountField}
+        />
+      </CreatorModal>
+    );
+  }
 }
