@@ -13,7 +13,6 @@ export default class Button extends React.PureComponent {
       iconAfter,
       children,
       onClick,
-      setRef,
       className,
       ...restProps
     } = this.props;
@@ -23,7 +22,6 @@ export default class Button extends React.PureComponent {
         {...restProps}
         onClick={restProps.disabled ? undefined : onClick}
         class={classList(className, 'Button')}
-        ref={setRef}
       >
         {iconBefore && (
           <i class={'Button-icon Button-icon--before i-' + iconBefore} />

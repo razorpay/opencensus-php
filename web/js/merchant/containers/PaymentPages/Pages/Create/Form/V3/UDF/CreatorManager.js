@@ -14,8 +14,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       });
     };
 
-    sefRef = el => (this.displayFieldEl = el);
-
     render() {
       const {
         field,
@@ -40,7 +38,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             field={field}
             openBaseForm={this.toggleBaseForm}
             tooltipTxt={tooltipTxt}
-            setRef={this.sefRef}
           />
           {this.state.isBaseFormOpened && (
             <BaseFormModal
@@ -49,8 +46,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               validateSameTitleExists={validateSameTitleExists}
               onSubmitUDFField={onSubmitUDFField}
               onDeleteUDFField={onDeleteUDFField}
-              overWhatElement={this.displayFieldEl}
-              closeBaseFormModal={_ => this.toggleBaseForm(false)}
+              closeFormModal={_ => this.toggleBaseForm(false)}
               isFieldRemovable={isFieldRemovable}
             />
           )}
@@ -65,12 +61,12 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 export class BaseFormModal extends React.PureComponent {
   onSubmitUDFField = formData => {
     this.props.onSubmitUDFField(formData, this.props.index);
-    this.props.closeBaseFormModal();
+    this.props.closeFormModal();
   };
 
   onDeleteUDFField = () => {
     this.props.onDeleteUDFField(this.props.index);
-    this.props.closeBaseFormModal();
+    this.props.closeFormModal();
   };
 
   render() {
@@ -79,21 +75,17 @@ export class BaseFormModal extends React.PureComponent {
       field_schema,
       index,
       validateSameTitleExists,
-      overWhatElement,
-      closeBaseFormModal,
+      closeFormModal,
       isFieldRemovable,
     } = this.props;
 
     return (
-      <CreatorModal
-        class="CreatorModal-BaseForm"
-        overWhatElement={overWhatElement}
-      >
+      <CreatorModal class="CreatorModal-BaseForm" overElement>
         <BaseForm
           field={field || field_schema}
           selfIndex={index}
           validateSameTitleExists={validateSameTitleExists}
-          onCloseForm={closeBaseFormModal}
+          onCloseForm={closeFormModal}
           onSaveField={this.onSubmitUDFField}
           onDeleteField={isFieldRemovable ? this.onDeleteUDFField : undefined}
         />

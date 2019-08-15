@@ -1,6 +1,6 @@
 import Button from 'component/Button';
-import FieldsDropdown from '../../UDF_Fields/FieldsDropdown';
-import { getFieldTypes, mapFieldToIndex } from '../../UDF_Fields/V3';
+import FieldsDropdown from '../../FieldsDropdown';
+import { getFieldTypes } from '../../UDF_Fields/V3';
 import { BaseFormModal } from './CreatorManager';
 
 export default class AddUDFButton extends React.PureComponent {
@@ -31,8 +31,6 @@ export default class AddUDFButton extends React.PureComponent {
     this.toggleBaseForm(true);
   };
 
-  setRef = el => (this.addUDFButtonEl = el);
-
   render() {
     const {
       validateSameTitleExists,
@@ -48,7 +46,7 @@ export default class AddUDFButton extends React.PureComponent {
           onSelect={this.onSelectFieldType}
           beforeOptionsTxt="New Input Field"
         >
-          <Button.Transparent class="btn-dotted" setRef={this.setRef}>
+          <Button.Transparent class="btn-dotted">
             <span class="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}
             <span>
               <b>Input field</b>
@@ -62,9 +60,9 @@ export default class AddUDFButton extends React.PureComponent {
             validateSameTitleExists={validateSameTitleExists}
             onSubmitUDFField={onSubmitUDFField}
             onDeleteUDFField={onDeleteUDFField}
-            overWhatElement={this.addUDFButtonEl}
-            closeBaseFormModal={_ => this.toggleBaseForm(false)}
+            closeFormModal={_ => this.toggleBaseForm(false)}
             isFieldRemovable
+            overElement
           />
         )}
       </React.Fragment>

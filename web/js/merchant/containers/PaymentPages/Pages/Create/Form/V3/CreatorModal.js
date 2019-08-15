@@ -2,14 +2,14 @@ import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { classList } from 'common/util';
 
 /* Position-awared Modal which opens over the field being edited */
-const PositionAwaredCreator = ({ children, overWhatElement, className }) => {
+const PositionAwaredCreator = ({ children, overElement, className }) => {
   // If not available, then opens modal in center of screen
 
   const modalContent = (
     <ModalContent class="paymentlinks-creator">{children}</ModalContent>
   );
 
-  return overWhatElement ? (
+  return overElement ? (
     <React.Fragment>
       <div class={className} />
       <Modal class={className} showCloseBtn={false}>
