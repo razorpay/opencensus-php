@@ -1,4 +1,6 @@
 import { connect } from 'react-redux';
+import AsyncButton from 'react-async-button';
+import PropTypes from 'prop-types';
 
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
@@ -6,7 +8,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTeam as fetchAll } from 'merchant/modules/collection';
-import { removeUser, cancelInvitation } from 'merchant/modules/team';
+import { removeUser, cancelInvitation, unlock } from 'merchant/modules/team';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
@@ -17,16 +19,6 @@ const allRoles = {
   ...roles,
   ...agentRole,
   ...RBLRoles,
-};
-
-const name = {
-  title: 'Member',
-  value: user => (
-    <div>
-      <p>{user.name}</p>
-      <p className="text-muted">{user.email}</p>
-    </div>
-  ),
 };
 
 const contactPhone = {
@@ -44,8 +36,49 @@ const userRole = {
   removeUser,
   cancelInvitation,
   showNotification,
+  unlock,
 })
 export default class ManageTeamContainer extends ListContainer {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
+  unlock = member => () => {
+    return this.context.confirm({
+      header: 'Unblock the account?',
+      message: (
+        <>
+          <p>
+            Account of <strong>{member.name || member.email}</strong> has been
+            blocked due to multiple wrong OTP attempts.
+          </p>
+          <p>Are you sure you want to unblock this account?</p>
+        </>
+      ),
+      affirmativeLabel: 'Yes, Unblock',
+      affirmativePendingLabel: 'Unblocking...',
+      abortLabel: "No, Don't",
+      action: () => {
+        return this.props
+          .unlock(member.id)
+          .then(response => {
+            if (response) {
+              this.props.showNotification({
+                type: 'success',
+                message: 'User is successfully unblocked',
+              });
+            }
+          })
+          .catch(({ errors }) => {
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+            });
+          });
+      },
+    });
+  };
+
   actions = {
     title: '',
     columnClass: 'text-right',
@@ -61,6 +94,32 @@ export default class ManageTeamContainer extends ListContainer {
           });
         }}
       />
+    ),
+  };
+
+  nameColumn = {
+    title: 'Member',
+    value: user => (
+      <div>
+        <p>{user.name}</p>
+        <p className="text-muted">{user.email}</p>
+        {user.account_locked && (
+          <ShowWhen
+            myRole="owner admin"
+            additionalCondition={user => user.isMerchantRestricted}
+          >
+            <span class="status-label label-pale-warning">
+              <i class="i i-info-circle text-warning" /> Account blocked due to
+              multiple wrong login attempts{' '}
+              <AsyncButton
+                text="Unlock"
+                onClick={this.unlock(user)}
+                class="btn-link text-warning"
+              />
+            </span>
+          </ShowWhen>
+        )}
+      </div>
     ),
   };
 
@@ -88,7 +147,7 @@ export default class ManageTeamContainer extends ListContainer {
         <div class="ManageTeam--list">
           <DataTable
             title="Team Members"
-            columns={[name, contactPhone, userRole, this.actions]}
+            columns={[this.nameColumn, contactPhone, userRole, this.actions]}
             {...this.props}
           />
         </div>

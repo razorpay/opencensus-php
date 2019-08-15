@@ -12,6 +12,7 @@ export const USER_UPDATE = 'USER_UPDATE';
 export const USER_REMOVE = 'USER_REMOVE';
 
 const TEAM_MEMBER_DELETE = 'TEAM_MEMBER_DELETE';
+const TEAM_MEMBER_UNLOCK = 'TEAM_MEMBER_UNLOCK';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -100,6 +101,11 @@ export const removeUser = userId => {
     payload: team.deleteMember(userId),
   };
 };
+
+export const unlock = memberId => ({
+  type: TEAM_MEMBER_UNLOCK,
+  payload: new Team().unlock(memberId),
+});
 
 let initialState = {
   loading: true,

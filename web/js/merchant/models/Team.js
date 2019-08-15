@@ -37,6 +37,13 @@ export default class MerchantUser extends GenericEntity {
     );
   }
 
+  unlock(memberId) {
+    return this.makeGenericAjaxCall({
+      url: `users/account/${memberId}/unlock`,
+      method: 'put',
+    }).then(({ data }) => ({ ...data }));
+  }
+
   deleteMember(memberId) {
     return this.makeGenericAjaxCall({
       url: `users/${memberId}/detach`,
