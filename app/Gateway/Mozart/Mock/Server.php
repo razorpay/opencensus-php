@@ -173,15 +173,10 @@ class Server extends Base\Mock\Server
     {
         $content = $input;
 
-        $paymentId = $content['paymentId'];
-
         $this->content($content, 'authorize');
 
-        $publicId = $this->getSignedPaymentId($paymentId);
-
-        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
         $request = [
-            'url'          => $url,
+            'url'          => $input['callbackUrl'],
             'content'      => $content,
             'method'       => 'post',
         ];

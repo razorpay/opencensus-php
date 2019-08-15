@@ -217,27 +217,24 @@ class PayVerifyData extends Base\Mock\Server
     }
 
     public function wallet_paypal($entities)
-    {
-        try
-        {
-            $response = [
-                'data' => [
-                    '_raw' => '{\"body\":\"{\\\"id\\\":\\\"3A830293F71184842\\\",\\\"purchase_units\\\":[{\\\"reference_id\\\":\\\"default\\\",\\\"shipping\\\":{\\\"name\\\":{\\\"full_name\\\":\\\"Usd Rzp\\\"},\\\"address\\\":{\\\"address_line_1\\\":\\\"1 Main St\\\",\\\"admin_area_2\\\":\\\"San Jose\\\",\\\"admin_area_1\\\":\\\"CA\\\",\\\"postal_code\\\":\\\"95131\\\",\\\"country_code\\\":\\\"US\\\"}},\\\"payments\\\":{\\\"captures\\\":[{\\\"id\\\":\\\"6TH801614C6688932\\\",\\\"status\\\":\\\"COMPLETED\\\",\\\"amount\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"10.00\\\"},\\\"final_capture\\\":true,\\\"disbursement_mode\\\":\\\"INSTANT\\\",\\\"seller_protection\\\":{\\\"status\\\":\\\"ELIGIBLE\\\",\\\"dispute_categories\\\":[\\\"ITEM_NOT_RECEIVED\\\",\\\"UNAUTHORIZED_TRANSACTION\\\"]},\\\"seller_receivable_breakdown\\\":{\\\"gross_amount\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"10.00\\\"},\\\"paypal_fee\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"0.81\\\"},\\\"net_amount\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"9.19\\\"}},\\\"invoice_id\\\":\\\"67g7bb7u6\\\",\\\"custom_id\\\":\\\"67g7bb7u6\\\",\\\"links\\\":[{\\\"href\\\":\\\"https://api.sandbox.paypal.com/v2/payments/captures/6TH801614C6688932\\\",\\\"rel\\\":\\\"self\\\",\\\"method\\\":\\\"GET\\\"},{\\\"href\\\":\\\"https://api.sandbox.paypal.com/v2/payments/captures/6TH801614C6688932/refund\\\",\\\"rel\\\":\\\"refund\\\",\\\"method\\\":\\\"POST\\\"},{\\\"href\\\":\\\"https://api.sandbox.paypal.com/v2/checkout/orders/3A830293F71184842\\\",\\\"rel\\\":\\\"up\\\",\\\"method\\\":\\\"GET\\\"}],\\\"create_time\\\":\\\"2019-08-01T09:23:28Z\\\",\\\"update_time\\\":\\\"2019-08-01T09:23:28Z\\\"}]}}],\\\"payer\\\":{\\\"name\\\":{\\\"given_name\\\":\\\"Usd\\\",\\\"surname\\\":\\\"Rzp\\\"},\\\"email_address\\\":\\\"use@rzp.com\\\",\\\"payer_id\\\":\\\"JHJ57FCJR86LW\\\",\\\"address\\\":{\\\"country_code\\\":\\\"US\\\"}},\\\"links\\\":[{\\\"href\\\":\\\"https://api.sandbox.paypal.com/v2/checkout/orders/3A830293F71184842\\\",\\\"rel\\\":\\\"self\\\",\\\"method\\\":\\\"GET\\\"}],\\\"status\\\":\\\"COMPLETED\\\"}\",\"header\":{\"Date\":[\"Thu, 01 Aug 2019 09:23:26 GMT\"],\"Vary\":[\"Authorization\"],\"Content-Type\":[\"application/json\"],\"Set-Cookie\":[\"X-PP-SILOVER=name%3DSANDBOX3.API.1%26silo_version%3D1880%26app%3Dapiplatformproxyserv%26TIME%3D2393850461%26HTTP_X_PP_AZ_LOCATOR%3Dsandbox.slc; Expires=Thu, 01 Aug 2019 09:53:29 GMT; domain=.paypal.com; path=/; Secure; HttpOnly\",\"X-PP-SILOVER=; Expires=Thu, 01 Jan 1970 00:00:01 GMT\"],\"Server\":[\"Apache\"],\"Paypal-Debug-Id\":[\"2f5fb42cbc32a\",\"2f5fb42cbc32a\"],\"Http_x_pp_az_locator\":[\"sandbox.slc\"],\"Content-Length\":[\"1469\"]},\"status\":201}',
-                    'amount' => $entities['payment']['amount'],
-                    'createdAt' => "2019-08-01T09:25:08Z",
-                    "gateway_terminal_id"=> "AR2npSdWeXHqtuW2iGNL2_9q2TGsWl16ZnsTpNNoxrJ2Kv8vjGFPH_HjUVriDDh_-ZxDtA1IKLdJlLf4",
-                    'paymentId' => $entities['payment']['id'],
-                    'status' => 'callback_successful',
-                    "CaptureId" => "8DS61651XA862144J",
-                    'token' => $entities['gateway']['redirect']['token'],
-                ],
-                'error' => null,
-                'external_trace_id' => '',
-                'mozart_id' => '',
-                'next' => [],
-                'success' => true
-            ];
-        }
+    {   
+         try
+         {
+             $response = [
+                 'data' => [
+                     'amount'    => $entities['payment']['amount'],
+                     'paymentId' => $entities['payment']['id'],
+                     'PayId'     => $entities['gateway']['redirect']['PayId'],
+                     'status'    => $entities['gateway']['redirect']['status'],
+                     'token'     => $entities['gateway']['redirect']['token'],
+                 ],
+                 'error' => null,
+                 'external_trace_id' => '',
+                 'mozart_id' => '',
+                 'next' => [],
+                 'success' => true
+             ];
+         }
         catch (\Exception $e)
         {
             $response = [

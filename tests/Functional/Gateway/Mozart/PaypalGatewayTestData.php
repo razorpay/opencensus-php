@@ -8,10 +8,10 @@ use RZP\Exception\PaymentVerificationException;
 return [
     'testPayment' => [
         'merchant_id'       => '10000000000000',
-        'amount'            => 5000,
+        'amount'            => 50000,
         'method'            => 'wallet',
-        'status'            => 'captured',
-        'amount_authorized' => 5000,
+        'status'            => 'authorized',
+        'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
         'currency'          => 'USD',
@@ -25,14 +25,16 @@ return [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'wallet_paypal',
+        'terminal_id'       => '100000Razorpay',
         'signed'            => false,
         'verified'          => null,
+        'entity'            => 'payment',
     ],
 
     'testPaymentMozartEntity' => [
-        'action'            => 'captured',
+        'action'            => 'authorize',
         'gateway'           => 'wallet_paypal',
-        'amount'            => 5000,
+        'amount'            => 50000,
     ],
 
     'testPaymentIdMismatch' => [
@@ -43,11 +45,6 @@ return [
                     'description'       => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class'                     => 'RZP\Exception\LogicException',
-            'internal_error_code'       => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ],
     ],
 

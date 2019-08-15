@@ -2,15 +2,13 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
-use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class PaypalGatewayTest extends TestCase
 {
     use PaymentTrait;
-    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -20,18 +18,18 @@ class PaypalGatewayTest extends TestCase
 
         $this->gateway = 'mozart';
 
-        $this->setMockGatewayTrue();
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal');
 
         $this->fixtures->merchant->enableInternational();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal');
-
-        $this->payment = $this->getDefaultWalletPaymentArray('paypal');
-        $this->payment['currency'] = "USD";
+        $this->setMockGatewayTrue();
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'paypal');
 
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 0]);
+
+        $this->payment = $this->getDefaultWalletPaymentArray('paypal');
+        $this->payment['currency'] = "USD";
 
     }
 
@@ -39,7 +37,7 @@ class PaypalGatewayTest extends TestCase
     {
         $payment = $this->payment;
 
-        $this->doAuthAndCapturePayment($payment);
+        $response = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -68,7 +66,7 @@ class PaypalGatewayTest extends TestCase
         {
             if ($action === 'pay_verify')
             {
-                $content['data']['paymentId'] = 'ABCD1234567890'; //some random payment_id
+                $content['data']['PayId'] = 'Hacked'; //some random payment_id
             }
         });
 
@@ -106,16 +104,13 @@ class PaypalGatewayTest extends TestCase
     {
         $mock = $this->isGatewayMocked();
 
-        list ($url, $method) = $this->getDataForGatewayRequest($response, $callback);
-        $this->response = $response;
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response,$callback);
 
-        if ($mock)
-        {
-            return $this->submitPaymentCallbackData($url,$method ,null);
-        }
+        $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-        return null;
+        return $this->submitPaymentCallbackRequest($data);
     }
+
     protected function doPaypalAuthAndCapturePayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('paypal');

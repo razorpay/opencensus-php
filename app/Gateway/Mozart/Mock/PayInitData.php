@@ -89,6 +89,10 @@ class PayInitData extends Base\Mock\Server
 
     public function wallet_paypal($entities)
     {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            ['gateway' => 'wallet_paypal', 'callbackUrl' => $entities['callbackUrl']]);
+
         $response = [
             'data' => [
                     "id" => "5YG0152953511483M",
@@ -121,8 +125,13 @@ class PayInitData extends Base\Mock\Server
             'success'           => true,
             "next" => [
                 "redirect" => [
-                    "method" => "GET",
-                    "url" => "https://www.sandbox.paypal.com/checkoutnow?token=8WA29343W72537449",
+                    "method" => "post",
+                    "url" => $url,
+                    "content"=> [
+                        'token'     => 'PayPal_Token',
+                        'PayId' => '8DS61651XA862144J',
+                        'status'    => 'callback_successful',
+                    ],
                         ]
                     ],
             'mozart_id'         => 'DUMMY_MOZART_ID',
