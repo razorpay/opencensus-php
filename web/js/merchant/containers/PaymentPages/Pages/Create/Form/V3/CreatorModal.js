@@ -1,8 +1,8 @@
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { classList } from 'common/util';
 
-/* Position-awared Modal which opens over the field being edited */
-const PositionAwaredCreator = ({ children, overElement, className }) => {
+/* Position-awared Modal which opens over the field being edited / in the middle of screen */
+const CreatorModal = ({ children, overElement, className, onClose }) => {
   // If not available, then opens modal in center of screen
 
   const modalContent = (
@@ -19,11 +19,15 @@ const PositionAwaredCreator = ({ children, overElement, className }) => {
     </React.Fragment>
   ) : (
     <ModalMask maskClosable={false} class="payment-pages-v3-creator">
-      <Modal class={classList('animate-appear', className)} showCloseBtn>
+      <Modal
+        onClose={onClose}
+        class={classList('animate-appear', className)}
+        showCloseBtn
+      >
         {modalContent}
       </Modal>
     </ModalMask>
   );
 };
 
-export default PositionAwaredCreator;
+export default CreatorModal;

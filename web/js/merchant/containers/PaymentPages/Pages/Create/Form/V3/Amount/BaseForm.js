@@ -3,7 +3,9 @@ import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList } from 'common/util';
 import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
-import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
+import FIELD_TYPES, {
+  fieldTypesWithMandatory,
+} from '../../Amount_Fields/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 
 export default class BaseForm extends React.PureComponent {
@@ -11,11 +13,15 @@ export default class BaseForm extends React.PureComponent {
     super(props);
     const field = props.field;
 
-    const title = field && field.item.title,
+    const isEditMode = !!field.title; // If title exist in originally passed field => editing amount item.
+
+    const title = field.item.title,
       disableSubmit = !title,
-      hasDescription = field && !!field.item.description,
-      isMandatory = field && !!field.mandatory,
-      imageUrl = (field && field.image_url) || '';
+      hasDescription = !!field.item.description,
+      isMandatory = isEditMode
+        ? !!field.mandatory
+        : fieldTypesWithMandatory.indexOf(props.fieldType) > -1,
+      imageUrl = field.image_url || '';
 
     this.state = {
       disableSubmit,
@@ -102,7 +108,7 @@ export default class BaseForm extends React.PureComponent {
         <Input.TextareaAutoResize
           class="Input--title"
           name="title"
-          defaultValue={field ? field.item.title : ''}
+          defaultValue={field.item.title || ''}
           placeholder="Enter field title"
           pattern="^[0-9a-zA-Z ]+"
           onInput={this.onInputTitle}
@@ -149,7 +155,7 @@ export default class BaseForm extends React.PureComponent {
               class="Input--description"
               name="description"
               placeholder="Enter description"
-              defaultValue={field ? field.item.description : ''}
+              defaultValue={field.item.description || ''}
               validator={val => {
                 if (val && val.length > 128) {
                   return 'Field description cannot be more than 128 characters';

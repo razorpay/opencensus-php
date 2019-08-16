@@ -8,6 +8,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       isBaseFormOpened: false,
       isAdvancedFormOpened: false,
       fieldType: null,
+      field: this.props.field || { item: {} },
     };
 
     closeBaseForm = _ => {
@@ -41,21 +42,38 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     onSaveBaseForm = formData => {
       console.log('BASE FORM...', formData);
 
+      const combinedFormData = {
+        ...this.state.field,
+        ...formData,
+      };
+
       // Combine data from advanced form
       //this.props.onSubmitAmountField(formData, this.props.index);
     };
 
     onSaveAdvancedForm = formData => {
+      this.setState({
+        field: {
+          ...this.state.field,
+          ...formData,
+        },
+      });
       console.log('ADVANCED FORM...', formData);
     };
 
     render() {
       const {
-        field,
         index,
         validateSameTitleExists,
         onDeleteAmountField,
       } = this.props;
+
+      const {
+        field,
+        fieldType,
+        isBaseFormOpened,
+        isAdvancedFormOpened,
+      } = this.state;
 
       let isFieldRemovable = true; // TODO: Handle condition to check atleast 1 price field is present.
 
@@ -65,11 +83,11 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             field={field}
             openBaseForm={this.openBaseForm}
           />
-          {this.state.isBaseFormOpened && (
+          {isBaseFormOpened && (
             <BaseFormModal
               index={index}
               field={field}
-              fieldType={this.state.fieldType}
+              fieldType={fieldType}
               validateSameTitleExists={validateSameTitleExists}
               onSaveForm={this.onSaveBaseForm}
               onDeleteAmountField={onDeleteAmountField}
@@ -79,10 +97,10 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             />
           )}
 
-          {this.state.isAdvancedFormOpened && (
+          {isAdvancedFormOpened && (
             <AdvancedFormModal
               field={field}
-              fieldType={this.state.fieldType}
+              fieldType={fieldType}
               onSaveForm={this.onSaveAdvancedForm}
               closeFormModal={_ => this.toggleAdvancedForm(false)}
             />
@@ -146,7 +164,7 @@ export class AdvancedFormModal extends React.PureComponent {
     const { field, fieldType, onSave, closeFormModal } = this.props;
 
     return (
-      <CreatorModal class="CreatorModal-AdvancedForm">
+      <CreatorModal class="CreatorModal-AdvancedForm" onClose={closeFormModal}>
         <AdvancedForm
           field={field}
           fieldType={fieldType}

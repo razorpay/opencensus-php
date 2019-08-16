@@ -26,6 +26,11 @@ const FIELD_TYPES = {
 
 export default FIELD_TYPES;
 
+export const fieldTypesWithMandatory = [
+  FIELD_TYPES.fixed_price.key,
+  FIELD_TYPES.multiple_purchase.key,
+];
+
 //////////////////////////////////////////////
 /*
 * Below schemas are just blueprints and not having exact values for their keys.
