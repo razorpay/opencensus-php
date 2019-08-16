@@ -110,6 +110,7 @@ class Entity
     const CREDITNOTE_INVOICE        = 'creditnote_invoice';
     const NODAL_BENEFICIARY         = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS         = 'payment_analytics';
+    const SETTLEMENT_BUCKET         = 'settlement_bucket';
     const SETTLEMENT_DETAILS        = 'settlement_details';
     const MERCHANT_PROMOTION        = 'merchant_promotion';
     const CREDIT_TRANSACTION        = 'credit_transaction';
@@ -400,6 +401,7 @@ class Entity
         self::MERCHANT_EMI_PLANS        => \RZP\Models\Merchant\EmiPlans::class,
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
+        self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,
