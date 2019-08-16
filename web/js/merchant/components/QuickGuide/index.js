@@ -6,6 +6,8 @@ import {
   setQuickGuideIsClosedInLocalStorage,
 } from './utils';
 
+import { getQuickGuideLocalStorageKey, getQuickGuideIsClosed } from './utils';
+
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
@@ -80,6 +82,16 @@ export default params => {
         };
       }, {});
     };
+
+    componentWillUnMount() {
+      if (this.props.currentOnboarding.isTour) {
+        const newState = this.getInitState();
+
+        this.setState({
+          ...newState,
+        });
+      }
+    }
 
     componentWillReceiveProps(nextProps) {
       if (!this.props.currentOnboarding.isTour) return;
