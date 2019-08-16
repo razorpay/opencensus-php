@@ -221,6 +221,10 @@ export default class User {
     return this.findTag('Charge_at_will');
   }
 
+  get isMerchantRestricted() {
+    return this.restricted;
+  }
+
   get isAgentRole() {
     return this.findTag('enable_agent_role');
   }
