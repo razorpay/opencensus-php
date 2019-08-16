@@ -1,5 +1,7 @@
 import { PossibleStatuses } from 'rzp/utils/constants';
 
+import ShowTransferPreviewModal from '../Transfers/ShowTransferPreviewModal';
+
 const { done } = PossibleStatuses;
 
 export const getQuickGuideData = {
@@ -29,8 +31,13 @@ export const getQuickGuideData = {
 
     return {
       title: '2. Initiate transfers',
-      content:
-        'Initiate the payment to be transferred to a linked account from your transactions. Show me how',
+      content: (
+        <div>
+          Initiate the payment to be transferred to a linked account from your
+          transactions. <br />
+          <ShowTransferPreviewModal>Show me how</ShowTransferPreviewModal>
+        </div>
+      ),
     };
   },
 };
