@@ -3,9 +3,7 @@ import Button from 'component/Button';
 import StepGuide from 'merchant/components/StepGuide';
 
 export default function QuickStepGuide(props) {
-  return (
-    <StepGuide {...props} class={`StepGuide--${props.className} QuickGuide`} />
-  );
+  return <StepGuide {...props} class={`${props.className} QuickGuide`} />;
 }
 
 export const QuickGuideTitle = ({ title = 'QUICK GUIDE' }) => (

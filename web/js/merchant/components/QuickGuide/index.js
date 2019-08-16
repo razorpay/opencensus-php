@@ -4,7 +4,10 @@ import LocalStorageService from 'rzp/utils/localStorage';
 
 import { getQuickGuideLocalStorageKey, getQuickGuideIsClosed } from './utils';
 
-import { handleProductQuickGuide } from 'merchant/modules/onboarding';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
 
 export default params => {
   const { feature: FEATURE, data_points: DATA_POINTS } = params;
@@ -23,17 +26,25 @@ export default params => {
         ...newState,
         user: state.session.user,
         mode: state.session.mode,
-        currentOnboarding: state.onboarding.products[FEATURE],
+        currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
       };
     },
     { handleProductQuickGuide }
   )
   class QuickGuideHOC extends React.PureComponent {
-    getDataPointsList = data => {
-      return DATA_POINTS.map(type => {
-        return data[type];
-      });
-    };
+    constructor(props) {
+      super(props);
+
+      this.state = {};
+
+      if (props.currentOnboarding.isTour) {
+        const newState = this.getInitState();
+
+        this.state = {
+          ...newState,
+        };
+      }
+    }
 
     generateDataPointFromProps = type => {
       const latestEle = this.props[type].items[0] || {};
@@ -48,7 +59,7 @@ export default params => {
       };
     };
 
-    initDataPointsState = () => {
+    getInitState = () => {
       let newState = {};
 
       DATA_POINTS.forEach(type => {
@@ -58,62 +69,58 @@ export default params => {
         };
       });
 
-      this.setState(newState);
+      return newState;
     };
 
-    initDataPointState = type => {
-      this.setState(this.generateDataPointFromProps(type));
-    };
-
-    componentWillMount() {
+    componentWillUnMount() {
       if (this.props.currentOnboarding.isTour) {
-        this.initDataPointsState();
+        const newState = this.getInitState();
+
+        this.setState({
+          ...newState,
+        });
       }
     }
 
     componentWillReceiveProps(nextProps) {
-      if (this.props.currentOnboarding.isTour) {
-        const dataPointsFromStateList = this.getDataPointsList(this.state);
+      if (!this.props.currentOnboarding.isTour) return;
 
-        dataPointsFromStateList.forEach(ele => {
-          if (!ele.lastItemId) {
-            this.initDataPointState(ele.type);
+      let isLoading = false;
 
-            return;
-          }
-        });
+      const dataPointsFromPropsList = DATA_POINTS.map(type => {
+        return nextProps[type];
+      });
 
-        const dataPointsFromPropsList = this.getDataPointsList(nextProps);
+      dataPointsFromPropsList.forEach(dataPoint => {
+        if (dataPoint.loading) {
+          isLoading = true;
 
-        let isLoading = false;
+          return false;
+        }
+      });
 
-        dataPointsFromPropsList.forEach(dataPoint => {
-          if (dataPoint.loading) {
-            isLoading = true;
+      if (isLoading) return;
 
-            return false;
-          }
-        });
+      const newState = {};
 
-        if (isLoading) return;
+      DATA_POINTS.forEach(type => {
+        const stateDataPoint = this.state[type],
+          propDataPoint = nextProps[type].items[0] || {};
 
-        DATA_POINTS.forEach(type => {
-          const stateDataPoint = this.state[type],
-            propDataPoint = nextProps[type].items[0] || {};
+        if (
+          stateDataPoint.lastItemId &&
+          propDataPoint.id !== stateDataPoint.lastItemId
+        ) {
+          newState[type] = {
+            ...stateDataPoint,
+            items: [propDataPoint],
+          };
+        }
+      });
 
-          if (
-            stateDataPoint.lastItemId &&
-            propDataPoint.id !== stateDataPoint.lastItemId
-          ) {
-            this.setState({
-              [type]: {
-                ...stateDataPoint,
-                items: [propDataPoint],
-              },
-            });
-          }
-        });
-      }
+      this.setState({
+        ...newState,
+      });
     }
 
     onClickClose = () => {
