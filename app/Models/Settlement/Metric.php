@@ -40,9 +40,19 @@ final class Metric
     const MERCHANTS_SKIPPED_FOR_SETTLEMENT_TOTAL            = 'merchants_skipped_for_settlement_total';
 
     /**
-     * Method: Gage
+     * Method: Count
      */
     const NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT       = 'number_of_merchants_in_queue_for_settlement';
+
+    /**
+     * Method: Gauge
+     */
+    const TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT    = 'time_taken_t0_enqueue_merchants_for_settlement';
+
+    /**
+     * Method: Count
+     */
+    const PROCESSED_SETTLEMENT_COUNT                        = 'processed_settlement_count';
 
     // ------ Histograms ------
 

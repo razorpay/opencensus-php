@@ -15,6 +15,7 @@ use RZP\Models\Transaction;
 use RZP\Jobs\SettlementJob;
 use RZP\Models\BankAccount;
 use RZP\Constants\Environment;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant as MerchantModel;
 
 class Processor extends Base\Core
@@ -557,14 +558,10 @@ class Processor extends Base\Core
 
         if ($useQueue === true)
         {
-            // TODO: refactor this. add merchant filter to ensure only required merchants are been pushed to the queue
-            $activatedMerchants = $this->repo
-                                       ->transaction
-                                       ->fetchUnsettledTransactions($this->setlTime, $channel, $merchantIds, $skipMids, false);
+            // queue based implementation is indipendent of channels
+            list($bucketTimestamp, $bucketedMerchantIds) = (new Bucket\Core)->getMerchantIdsFromBucket();
 
-            $activatedMerchants = array_keys($activatedMerchants->getStringAttributesByKey(Transaction\Entity::MERCHANT_ID));
-
-            return $this->pushMerchantsToSettlementQueue($activatedMerchants, $channel);
+            return $this->pushMerchantsToSettlementQueue($bucketedMerchantIds, $bucketTimestamp);
         }
 
         $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);
@@ -698,53 +695,58 @@ class Processor extends Base\Core
      * @param string $channel
      * @return array
      */
-    protected function pushMerchantsToSettlementQueue(array $merchantIds, string $channel): array
+    protected function pushMerchantsToSettlementQueue(array $merchantIds, $bucketTimestamp = null): array
     {
-        $totalCount[$channel]['merchant_count']    = 0;
+        $totalCount = [
+            'total_merchants' => count($merchantIds),
+            'enqueued'        => 0,
+            'enqueue_failed'  => 0,
+        ];
 
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT,
             [
-                'channel'           => $channel,
                 'merchant_count'    => count($merchantIds)
             ]);
+
+        $startTime = time();
 
         foreach ($merchantIds as $merchantId)
         {
             try
             {
-                SettlementJob::dispatch($this->mode, $channel, $merchantId);
+                SettlementJob::dispatch($this->mode, $merchantId, $bucketTimestamp);
 
                 $this->trace->info(
                     TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT,
                     [
-                        'channel'     => $channel,
                         'merchant_id' => $merchantId
                     ]);
 
-                // todo: check the usage
-                $this->trace->gauge(
-                    Metric::NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT,
-                    1,
-                    [
-                        'channel' => $channel,
-                    ]);
+                $this->trace->count(Metric::NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT);
 
-                $totalCount[$channel]['merchant_count'] += 1;
+                $totalCount['enqueued'] += 1;
             }
             catch(\Throwable $e)
             {
+                $totalCount['enqueue_failed'] += 1;
+
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
                     TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_FAILED,
                     [
-                        'channel'     => $channel,
                         'merchant_id' => $merchantId
                     ]
                 );
             }
         }
+
+        // trace metric to get idea on time taken
+        $this->trace->gauge(
+            Metric::TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT,
+            get_diff_in_millisecond($startTime),
+            $totalCount);
 
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE,
@@ -753,7 +755,7 @@ class Processor extends Base\Core
         return $totalCount;
     }
 
-    public function fetchAndProcessTransactionsForSettlement(string $channel, string $merchantId)
+    public function fetchAndProcessTransactionsForSettlement(string $merchantId)
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -762,10 +764,19 @@ class Processor extends Base\Core
 
         if ($this->isMerchantSettlementAllowed($this->merchant) === false)
         {
-            // dont proceed with the settlement
+            return [
+                'settlement_count' => 0,
+                'txn_count'        => 0,
+                'attempt_count'    => 0,
+            ];
         }
 
-        $txns = $this->repo->transaction->fetchUnsettledTransactionsForProcessing($merchantId, $channel);
+        $channel = $this->merchant->getChannel();
+
+        // fetch all the valid transactions for a given merchant
+        $txns = $this->repo
+                     ->transaction
+                     ->fetchUnsettledTransactionsForProcessing($merchantId, $channel);
 
         $this->merchants = $this->repo
                                 ->merchant
@@ -778,10 +789,22 @@ class Processor extends Base\Core
                                     ])
                                 ->keyBy(MerchantModel\Entity::ID);
 
-        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+
+        $transactionsGroup = [
+            $merchantId => $this->filterMerchantTransactionsForSettlement($txns),
+        ];
 
         $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchantId]);
-        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
+
+        $result = $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner);
+
+        $this->trace->count(
+            Metric::PROCESSED_SETTLEMENT_COUNT,
+            [
+                'channel' => $this->channel,
+            ]);
+
+        return $result;
     }
 
     protected function shouldUseQueue(array $input)
