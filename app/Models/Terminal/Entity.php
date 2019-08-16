@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
+    const ORG_ID                        = 'org_id';
     const PROCURER                      = 'procurer';
     const USED_COUNT                    = 'used_count';
     const USED                          = 'used';
@@ -72,6 +73,9 @@ class Entity extends Base\PublicEntity
     const TYPE                          = 'type';
     const MODE                          = 'mode';
     const DIRECT                        = 'direct';
+    const STATUS                        = 'status';
+    const NOTES                         = 'notes';
+    const MPAN                          = 'mpan';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -139,6 +143,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::CAPABILITY,
         self::MODE,
+        self::STATUS,
+        self::NOTES,
         self::CORPORATE,
         self::EXPECTED,
         self::CURRENCY,
@@ -168,11 +174,23 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::STATUS,
+        self::ENABLED,
+        self::MPAN,
+        self::NOTES,
+        self::CREATED_AT
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::ENTITY,
         self::MERCHANT_ID,
+        self::ORG_ID,
         self::PROCURER,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::CURRENCY,
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
@@ -190,6 +208,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACQUIRER,
+        self::GATEWAY_ACCESS_CODE,
         self::MC_MPAN,
         self::VISA_MPAN,
         self::RUPAY_MPAN,
@@ -197,6 +216,8 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT,
         self::TYPE,
         self::MODE,
+        self::STATUS,
+        self::NOTES,
         self::CORPORATE,
         self::CAPABILITY,
         self::EXPECTED,
@@ -210,6 +231,8 @@ class Entity extends Base\PublicEntity
         self::IFSC_CODE,
         self::CARDLESS_EMI,
         self::PAYLATER,
+        self::MPAN,
+        self::CREATED_AT
     ];
 
     protected $hidden = [
@@ -268,6 +291,8 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION             => null,
         self::CARDLESS_EMI               => 0,
         self::PAYLATER                   => 0,
+        self::STATUS                     => Status::ACTIVATED,
+        self::NOTES                      => null,
         self::OMNICHANNEL                => 0,
         self::VPA                        => null,
     ];
@@ -304,6 +329,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::MPAN,
     ];
 
     protected static function boot()
@@ -317,6 +343,11 @@ class Entity extends Base\PublicEntity
     }
 
     // ---------------------- GETTERS ----------------------
+
+    public function getOrgId() : string
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
 
     public function getGatewayMerchantId()
     {
@@ -388,6 +419,16 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getNotes()
+    {
+        return $this->getAttribute(self::NOTES);
     }
 
     public function getEmiDuration()
@@ -587,6 +628,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPABILITY, $capability);
     }
 
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
     // ---------------------- END SETTERS ----------------------
 
     // -----------------------PUBLIC SETTERS -------------------
@@ -607,6 +653,17 @@ class Entity extends Base\PublicEntity
             });
 
         $array[self::SUB_MERCHANTS] = $subMerchants;
+    }
+
+    protected function setPublicMpanAttribute(array & $array)
+    {
+        $array[self::MPAN] = [
+            self::MC_MPAN    => $this->getMCMpan(),
+            self::RUPAY_MPAN => $this->getRupayMpan(),
+            self::VISA_MPAN  => $this->getVisaMpan(),
+        ];
+
+        return $array;
     }
 
     //----------------------END PUBLIC SETTERS----------------
@@ -1000,6 +1057,12 @@ class Entity extends Base\PublicEntity
     public function merchants()
     {
         return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_TERMINAL);
+    }
+
+    public function org()
+    {
+        return $this->belongsTo(
+            'RZP\Models\Admin\Org\Entity');
     }
 
     public function toArrayWithPassword()

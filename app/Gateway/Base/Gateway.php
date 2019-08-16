@@ -296,7 +296,12 @@ class Gateway
                 }
                 else
                 {
-                    $this->pushDimensions($action, $input, Metric::FAILED);
+                    $excData = 'UKNOWN';
+                    if($exc instanceof Exception\BaseException)
+                    {
+                        $excData = $exc->getError()->getClass();
+                    }
+                    $this->pushDimensions($action, $input, Metric::FAILED, $excData);
 
                     $exc->isPropagatedException = true;
                 }

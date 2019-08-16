@@ -30,6 +30,8 @@ class Core extends Base\Core
 
         $terminal->merchant()->associate($merchant);
 
+        $terminal->org()->associate($merchant->org);
+
         $this->validateExistingTerminal($terminal);
 
         $this->validateDirectSettlementMapping($terminal);
@@ -174,7 +176,7 @@ class Core extends Base\Core
                 TraceCode::TERMINAL_EDIT,
                 [
                     'terminal_id' => $terminal->getId(),
-                    'input' => $this->removeSecretFieldsForTrace($input),
+                    'input'       => $this->removeSecretFieldsForTrace($input),
                 ]);
 
             $terminal->edit($input);
@@ -197,7 +199,10 @@ class Core extends Base\Core
 
         $this->trace->info(
             $terminalStatusTrace,
-            ['terminal_id' => $terminal->getId(), 'isEnabled' => $isEnabled]);
+            [
+                'terminal_id' => $terminal->getId(),
+                'isEnabled'   => $isEnabled
+            ]);
 
         $terminal->setEnabled($toggle);
 

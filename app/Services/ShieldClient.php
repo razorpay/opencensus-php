@@ -5,6 +5,9 @@ namespace RZP\Services;
 use App;
 use Requests;
 
+use RZP\Constants\Shield as ShieldConstants;
+use RZP\Error\ErrorCode;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
@@ -327,6 +330,7 @@ class ShieldClient implements ExternalService
 
         $options = [
             'auth'    => $this->getAuthHeaders(),
+            'timeout' => 10.00, // 10 seconds
         ];
 
         $content = '';
@@ -369,9 +373,9 @@ class ShieldClient implements ExternalService
             ];
 
             $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, $data);
-        }
 
-        return [];
+            throw $e;
+        }
     }
 
     protected function parseAndReturnResponse($res, array $data)
@@ -387,6 +391,13 @@ class ShieldClient implements ExternalService
                         'response' => $responseArray,
                         'request'  => $data,
                     ]);
+
+            if ((isset($responseArray[ShieldConstants::ACTION_KEY]) === false) or
+                (in_array($responseArray[ShieldConstants::ACTION_KEY], ShieldConstants::ALLOWED_ACTIONS) === false))
+            {
+                throw new IntegrationException(ErrorCode::SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED,
+                    ErrorCode::SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED);
+            }
         }
 
         // In case json_decode fails, we $responseArray would be null.

@@ -21,13 +21,7 @@ trait PaymentHitachiTrait
 
             $url = $this->getPaymentRedirectTo3dsUrl($paymentId);
 
-            $response = $this->makeRedirectTo3ds($url);
-
-            list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
-
-            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
-
-            return $this->submitPaymentCallbackRequest($request);
+            return $this->makeRedirectTo3ds($url);
         }
 
         if ($this->isOtpCallbackUrl($url) === true)

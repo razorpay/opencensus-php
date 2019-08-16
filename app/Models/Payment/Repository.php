@@ -105,6 +105,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsWithIds($ids)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $ids)
+                    ->get();
+    }
+
     public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit = 100)
     {
         return $this->newQuery()
@@ -260,6 +267,21 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Fetches old payments which can be timed-out at method level with respective
+     * merchant relation.
+     */
+    public function fetchOldCreatedPaymentsForMethodForTimeout(int $timestamp, int $limit, string $method)
+    {
+        return $this->newQuery()
+                    ->status(Payment\Status::CREATED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->where(Payment\Entity::METHOD, '=', $method)
+                    ->with(['merchant', 'merchant.features'])
+                    ->limit($limit)
+                    ->get();
+    }
+
+    /**
      * This function is used to fetch the authorized payments where
      * Merchant auto refund delay is null.
      *
@@ -327,6 +349,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getPaymentsBetweenIdsWithLimit($lowerId, $upperId, $limit = 1000)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::ID, '<=', $upperId)
+                    ->where(Payment\Entity::ID, '>', $lowerId)
+                    ->orderBy(Payment\Entity::ID)
+                    ->limit($limit)
+                    ->get();
+    }
 
     /**
      * Fetch the payments that are authorized, refund_at time has not been crossed yet,

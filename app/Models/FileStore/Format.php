@@ -62,7 +62,7 @@ class Format
         // Adding all possible type of mime type as current library we are using to create xlsx file will not take
         // care of mime
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
-                        'application/octet-stream', 'text/plain', 'application/zlib', 'image/x-portable-pixmap'],
+                        'application/octet-stream', 'text/plain', 'application/zlib', 'image/x-portable-pixmap',],
         // `text/plain` is being added here because HDFC sends recon CSV files with XLS extension
         // `application/CDFV2-unknown` is being sent as mime_type for FirstData recon files
         self::XLS   => ['application/excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

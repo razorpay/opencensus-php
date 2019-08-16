@@ -802,6 +802,18 @@ class Entity extends Base\PublicEntity
         return $attributes;
     }
 
+    public function toArray()
+    {
+        $data = parent::toArray();
+
+        if (empty($data[Card\Entity::VAULT_TOKEN]) === true)
+        {
+            $data[Card\Entity::VAULT_TOKEN] = $this->getCardVaultToken();
+        }
+
+        return $data;
+    }
+
     public function toArrayFundAccount()
     {
         $attributes = $this->toArrayPublic();

@@ -278,7 +278,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_CITY);
     }
 
-    public function getBeneficiaryEMail()
+    public function getBeneficiaryEmail()
     {
         return $this->getAttribute(self::BENEFICIARY_EMAIL);
     }

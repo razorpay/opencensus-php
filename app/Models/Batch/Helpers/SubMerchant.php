@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Batch\Helpers;
 
+use Illuminate\Support\Arr;
 use RZP\Models\Batch\Header;
+use RZP\Models\Batch\Constants;
 use RZP\Models\User\Entity as User;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
@@ -84,6 +86,59 @@ class SubMerchant
             MDEntity::COMPANY_CIN                 => $e[Header::COMPANY_CIN],
             MDEntity::COMPANY_PAN                 => $e[Header::COMPANY_PAN],
             MDEntity::COMPANY_PAN_NAME            => $e[Header::COMPANY_PAN_NAME],
+        ];
+    }
+
+    /**
+     * Sanitizes merchant detail input
+     *
+     * @param array  $detailInput
+     *
+     * @param string $context
+     *
+     * @return array
+     */
+    public static function sanitizeMerchantDetailInput(array $detailInput, string $context = '')
+    {
+        $keysToSanitize = self::getKeysToSanitize()[$context] ?? [];
+
+        return Arr::except($detailInput, $keysToSanitize);
+    }
+
+    private static function getKeysToSanitize(): array
+    {
+        return [
+            Constants::BANK_DETAILS     => [
+                MDEntity::BANK_ACCOUNT_NUMBER,
+                MDEntity::BANK_BRANCH_IFSC,
+                MDEntity::BANK_ACCOUNT_NAME,
+            ],
+            Constants::CATEGORY_DETAILS => [
+                MDEntity::BUSINESS_CATEGORY,
+                MDEntity::BUSINESS_SUBCATEGORY,
+            ]
+        ];
+    }
+
+    public static function getInstantActivationInput(array $e): array
+    {
+        return [
+            MDEntity::BUSINESS_CATEGORY           => $e[Header::BUSINESS_CATEGORY]      ?? null,
+            MDEntity::BUSINESS_SUBCATEGORY        => $e[Header::BUSINESS_SUB_CATEGORY]  ?? null,
+            MDEntity::PROMOTER_PAN                => $e[Header::PROMOTER_PAN]           ?? null,
+            MDEntity::BUSINESS_NAME               => $e[Header::BUSINESS_NAME]          ?? null,
+            MDEntity::BUSINESS_MODEL              => $e[Header::BUSINESS_MODEL]         ?? null,
+            MDEntity::BUSINESS_WEBSITE            => $e[Header::WEBSITE_URL]            ?? null,
+            MDEntity::BUSINESS_DBA                => $e[Header::BILLING_LABEL]          ?? null,
+            MDEntity::BUSINESS_TYPE               => $e[Header::ORGANIZATION_TYPE]      ?? null,
+            MDEntity::BUSINESS_OPERATION_ADDRESS  => $e[Header::OPERATIONAL_ADDRESS]    ?? null,
+            MDEntity::BUSINESS_OPERATION_STATE    => $e[Header::OPERATIONAL_CITY]       ?? null,
+            MDEntity::BUSINESS_OPERATION_CITY     => $e[Header::OPERATIONAL_STATE]      ?? null,
+            MDEntity::BUSINESS_OPERATION_PIN      => $e[Header::OPERATIONAL_PINCODE]    ?? null,
+            MDEntity::BUSINESS_REGISTERED_ADDRESS => $e[Header::REGISTERED_ADDRESS]     ?? null,
+            MDEntity::BUSINESS_REGISTERED_STATE   => $e[Header::REGISTERED_CITY]        ?? null,
+            MDEntity::BUSINESS_REGISTERED_CITY    => $e[Header::REGISTERED_STATE]       ?? null,
+            MDEntity::BUSINESS_REGISTERED_PIN     => $e[Header::REGISTERED_PINCODE]     ?? null,
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use DB;
 use Mail;
+use Hash;
 use Cache;
 use Config;
 use Request;
@@ -132,6 +133,25 @@ class Service extends Base\Service
         }
 
         return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
+    }
+
+     /**
+     * Change 2fa setting of merchant (enable/disable)
+     *
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function change2faSetting(array $input)
+    {
+        $this->merchant->getValidator()->validateInput('change2faSetting', $input);
+
+        if (Hash::check($input[User\Entity::PASSWORD], $this->user->getPassword()))
+        {
+            return $this->core()->change2faSetting($this->user, $this->merchant, $input);
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
     }
 
     /**
@@ -3122,6 +3142,6 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         return (new TerminalService)->onboardMerchant($merchant, $input, false)
-                                    ->toArrayPublic();
+                                    ->toArrayAdmin();
     }
 }

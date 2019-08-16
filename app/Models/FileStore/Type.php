@@ -52,6 +52,8 @@ class Type
 
     const AXIS_EMANDATE_DEBIT               = 'axis_emandate_debit';
 
+    const SBI_EMANDATE_DEBIT                = 'sbi_emandate_debit';
+
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
     const CSB_NETBANKING_REFUND             = 'csb_netbanking_refund';
@@ -60,9 +62,13 @@ class Type
 
     const RBL_NETBANKING_CLAIM              = 'rbl_netbanking_claim';
 
+    const CBI_NETBANKING_REFUND             = 'cbi_netbanking_refund';
+
     const CUB_NETBANKING_REFUND             = 'cub_netbanking_refund';
 
     const CUB_NETBANKING_CLAIM              = 'cub_netbanking_claim';
+
+    const IBK_NETBANKING_REFUND             = 'ibk_netbanking_refund';
 
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
@@ -184,6 +190,7 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -196,8 +203,10 @@ class Type
             self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
             self::EQUITAS_NETBANKING_REFUND,
+            self::CBI_NETBANKING_REFUND,
             self::CUB_NETBANKING_REFUND,
             self::CUB_NETBANKING_CLAIM,
+            self::IBK_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
             self::SIB_NETBANKING_REFUND,
@@ -317,6 +326,7 @@ class Type
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
+        self::SBI_EMANDATE_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
         self::CANARA_NETBANKING_REFUND,
@@ -331,8 +341,10 @@ class Type
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
+        self::CBI_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
+        self::IBK_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
         self::SIB_NETBANKING_REFUND,
@@ -447,6 +459,7 @@ class Type
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
+            self::RECONCILIATION_BATCH_OUTPUT,
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [

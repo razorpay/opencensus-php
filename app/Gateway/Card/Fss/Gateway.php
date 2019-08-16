@@ -1037,7 +1037,18 @@ class Gateway extends Base\Gateway
     {
         $gatewayAcquirer = $this->getGatewayAcquirer($this->input);
 
-        return CardType::getCardTypesByAcquirer($gatewayAcquirer)[$cardType];
+        $acquirerCardTypeMap = CardType::getCardTypesByAcquirer($gatewayAcquirer);
+
+        if (isset($acquirerCardTypeMap[$cardType]) === false)
+        {
+            throw new Exception\ServerErrorException('card type not supported',
+                ErrorCode::SERVER_ERROR_CARD_TYPE_NOT_SUPPORTED, [
+                    'cardType' => $cardType,
+                    'gateway'  => $this->gateway,
+                ]);
+        }
+
+        return $acquirerCardTypeMap[$cardType];
     }
 
     /**

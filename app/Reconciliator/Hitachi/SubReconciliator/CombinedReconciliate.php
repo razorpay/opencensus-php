@@ -12,12 +12,14 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
      *******************/
     const COLUMN_TRANSACTION_TYPE = 'transaction_type';
 
-    const PURCHASE_TXN    = '00';
-    const REFUND_TXN      = '20';
+    const PURCHASE_TXN     = '00';
+    const PURCHASE_TXN_BQR = '26';
+    const REFUND_TXN       = '20';
 
     const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
-        self::PURCHASE_TXN => BaseReconciliate::PAYMENT,
-        self::REFUND_TXN   => BaseReconciliate::REFUND
+        self::PURCHASE_TXN      => BaseReconciliate::PAYMENT,
+        self::PURCHASE_TXN_BQR  => BaseReconciliate::PAYMENT,
+        self::REFUND_TXN        => BaseReconciliate::REFUND
     ];
 
     /**

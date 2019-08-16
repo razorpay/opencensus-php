@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
+use RZP\Jobs\Reconciliation;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Models\FileStore\Utility;
 use RZP\Exception\BadRequestException;
@@ -226,9 +227,19 @@ class Core extends Base\Core
     {
         if (Type::isKubernetesJobGroup($batch->getType()) === true)
         {
+            // admin batches will not have merchantId, so use random string instead
+            if ($this->merchant !== null)
+            {
+                $id = $this->merchant->getId();
+            }
+            else
+            {
+                $id = $this->app['request']->getId();
+            }
+
             // Get razorx treatment
             $variant = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
+                $id,
                 Merchant\RazorxTreatment::K8S_BATCH_TREATMENT,
                 $this->mode
             );
@@ -236,7 +247,25 @@ class Core extends Base\Core
             if (strtolower($variant) === 'on')
             {
                 unset($input[Entity::FILE]);
-                $this->app->k8s_client->createJob($this->mode, $batch->getId(), $input);
+                $this->app->k8s_client->createJob($this->mode, $batch->getId(), $input, $batch->getType());
+
+                return;
+            }
+        }
+
+        if (Type::isKubernetesJobQueueGroup($batch->getType()) === true)
+        {
+            // Get razorx treatment
+            $variant = $this->app->razorx->getTreatment(
+                $batch->getMerchantId(),
+                Merchant\RazorxTreatment::K8S_RECON_BATCH_TREATMENT,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                unset($input[Entity::FILE]);
+                Reconciliation::dispatch($this->mode, $batch->getId(), $input);
 
                 return;
             }
@@ -291,7 +320,7 @@ class Core extends Base\Core
             throw new Exception\ServerNotFoundException("File Not Found",
                                                         ErrorCode::SERVER_ERROR_FILE_NOT_FOUND);
         }
-        
+
         return $filePath;
     }
 

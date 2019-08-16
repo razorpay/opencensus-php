@@ -340,7 +340,7 @@ class Gateway extends Base\Gateway
 
     /**
      * Hdfc data storage repository instance
-     * @var Gateway\Hdfc\Repository
+     * @var Hdfc\Repository
      */
     protected $repo;
 

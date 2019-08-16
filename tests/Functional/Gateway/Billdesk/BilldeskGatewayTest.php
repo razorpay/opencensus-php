@@ -53,6 +53,7 @@ class BilldeskGatewayTest extends TestCase
     public function testPaymentAndVerifyOnDeleteTerminal()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment = $this->doAuthPayment($payment);
 
         $terminal = $this->getLastEntity('terminal', true);
@@ -71,6 +72,7 @@ class BilldeskGatewayTest extends TestCase
         $this->assertRequestSecurityId('random');
 
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);

@@ -19,6 +19,8 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Pricing;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\BankingAccountStatement\Channel as BASChannel;
 
 class Validator extends Base\Validator
 {
@@ -44,6 +46,8 @@ class Validator extends Base\Validator
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
         Entity::TYPE                => 'sometimes|string|custom',
+        Entity::ACCOUNT_TYPE        => 'required_only_if:product,banking|filled|custom',
+        Entity::CHANNEL             => 'required_if:account_type,direct|filled|custom',
     ];
 
     protected static $editPlanRuleRules = [
@@ -625,4 +629,15 @@ class Validator extends Base\Validator
         return (($min < $n) and ($n < $max));
     }
 
+    protected function validateChannel($attribute, $value)
+    {
+        // Only direct channels can have this set for now
+        BASChannel::validate($value);
+    }
+
+    protected function validateAccountType($attribute, $value)
+    {
+        // Only direct channels can have this set for now
+        AccountType::exists($value);
+    }
 }

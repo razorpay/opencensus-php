@@ -10,14 +10,15 @@ use RZP\Services\FTS;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Services\CardVault;
+use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
-use RZP\Models\BankingAccount\Gateway;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -69,10 +70,22 @@ class Core extends Base\Core
         }
 
         $bankingAccountInput = [
-            Entity::ACCOUNT_IFSC        => $bankAccount->getIfscCode(),
-            Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
-            Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
-            Entity::ACCOUNT_TYPE        => AccountType::NODAL,
+            Entity::ACCOUNT_IFSC              => $bankAccount->getIfscCode(),
+            Entity::ACCOUNT_NUMBER            => $bankAccount->getAccountNumber(),
+            Entity::FTS_FUND_ACCOUNT_ID       => $bankAccount->getFtsFundAccountId(),
+            Entity::ACCOUNT_TYPE              => AccountType::NODAL,
+            Entity::STATUS                    => Status::CREATED,
+            Entity::BENEFICIARY_EMAIL         => $bankAccount->getBeneficiaryEmail(),
+            Entity::BENEFICIARY_MOBILE        => $bankAccount->getBeneficiaryMobile(),
+            Entity::BENEFICIARY_CITY          => $bankAccount->getBeneficiaryCity(),
+            Entity::BENEFICIARY_STATE         => $bankAccount->getBeneficiaryState(),
+            Entity::BENEFICIARY_COUNTRY       => $bankAccount->getBeneficiaryCountry(),
+            Entity::BENEFICIARY_NAME          => $bankAccount->getBeneficiaryName(),
+            Entity::BENEFICIARY_ADDRESS1      => $bankAccount->getBeneficiaryAddress1(),
+            Entity::BENEFICIARY_ADDRESS2      => $bankAccount->getBeneficiaryAddress2(),
+            Entity::BENEFICIARY_PIN           => $bankAccount->getBeneficiaryPin(),
+            Entity::BENEFICIARY_ADDRESS3      => $bankAccount->getBeneficiaryAddress3() . ' ' .
+                                                 $bankAccount->getBeneficiaryAddress4(),
         ];
 
         return $this->createYesbankBankingAccount(
@@ -254,19 +267,6 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    public function createMerchantTokenForRbl(Entity $bankingAccount, array $input)
-    {
-        (new Validator)->validateInput('rbl_create_merchant_token', $input);
-
-        $attributesToSave = RblFields::getRblAttributesToSave($input);
-
-        $bankingAccount->edit($attributesToSave);
-
-        $this->repo->saveOrFail($bankingAccount);
-
-        return null;
-    }
-
     public function createOrFetchFtsFundAccountForMerchant(Entity $bankingAccount)
     {
         $fundAccountId = $bankingAccount->getFtsFundAccountId();
@@ -275,7 +275,7 @@ class Core extends Base\Core
         {
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FTS_MAPPING_ALREADY_PRESENT,
-                ['fts_id' => $fundAccountId, 'id'=> $bankingAccount->getId()]
+                ['fts_id' => $fundAccountId, 'id' => $bankingAccount->getId()]
             );
 
             return $fundAccountId;
@@ -386,32 +386,39 @@ class Core extends Base\Core
                 'channel' => $bankingAccount->getChannel(),
             ]);
 
-        $channel = $bankingAccount->getChannel();
+        //
+        // This is in a transaction because, BankingAccount updation
+        // and Balance entity creation, both should succeed or fail
+        //
+        $this->repo->transaction(function () use ($bankingAccount, $input)
+        {
+            $channel = $bankingAccount->getChannel();
 
-        $processor = $this->getProcessor($channel);
+            $processor = $this->getProcessor($channel);
 
-        $processor->storeCredentials($bankingAccount, $input);
+            $processor->storeCredentials($bankingAccount, $input);
 
-        // merchant credentials are verified and saved. Now storing balance for the account and
-        // activating the account.
+            // merchant credentials are verified and saved. Now storing balance for the account and
+            // activating the account.
 
-        $merchant = $bankingAccount->merchant;
+            $merchant = $bankingAccount->merchant;
 
-        $mode = $this->app['rzp.mode'];
+            $mode = $this->app['rzp.mode'];
 
-        $balanceInfo = $processor->getBalanceAttributesToSave();
+            $balanceInfo = $processor->getBalanceAttributesToSave($bankingAccount);
 
-        $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
+            $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
 
-        $input[Entity::STATUS] = Status::ACTIVATED;
+            $input[Entity::STATUS] = Status::ACTIVATED;
 
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+            $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
-        $bankingAccount->fill($input);
+            $bankingAccount->fill($input);
 
-        $bankingAccount->balance()->associate($balance);
+            $bankingAccount->balance()->associate($balance);
 
-        $this->repo->saveOrFail($bankingAccount);
+            $this->repo->saveOrFail($bankingAccount);
+        });
     }
 
     public function createAccountMappingForFts(Entity $bankingAccount)
@@ -433,7 +440,14 @@ class Core extends Base\Core
 
             $content = $processor->generateRequestForSourceAccount($bankingAccount);
 
-            $this->makeSourceAccountRequest($bankingAccount->getId(), $fundAccountId, $content);
+            $product = 'PAYOUT';
+
+            $this->makeSourceAccountRequest(
+                $bankingAccount->getId(),
+                $fundAccountId,
+                $content,
+                $product,
+                $channel);
         }
         catch (\Throwable $e)
         {
@@ -446,6 +460,78 @@ class Core extends Base\Core
         }
 
         return $bankingAccount;
+    }
+
+    public function bulkCreateBankingAccountsForYesbank(array $input)
+    {
+        $limit = $input['limit'];
+
+        unset($input['limit']);
+
+        $bankAccounts = $this->repo->bank_account->fetchAccountsNotPresentInBankingAccountsForYesbank($limit);
+
+        $this->trace->info(
+            TraceCode::BULK_CREATE_BANKING_ACCOUNTS_REQUEST,
+            [
+                'input' => $input,
+                'bank_account_ids' => $bankAccounts->pluck(Entity::ID)
+            ]);
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        if (count($bankAccounts) !== 0)
+        {
+            foreach ($bankAccounts as $bankAccount)
+            {
+                try
+                {
+                    /** @var Merchant\Entity $merchant */
+                    $merchant = $bankAccount->virtualAccount->merchant;
+
+                    $balance = $bankAccount->virtualAccount->balance;
+
+                    $attributes = $this->getYesbankAccountAttributes($bankAccount);
+
+                    $this->createYesbankBankingAccount($attributes, $merchant, $balance);
+
+                    $successCount++;
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::INFO,
+                        TraceCode::BANKING_ACCOUNT_YESBANK_CREATE_FAILED,
+                        [
+                            'bank_account_id' => $bankAccount->getId()
+                        ]);
+
+                    $failedIds[] = $bankAccount->getId();
+
+                    $failedCount++;
+                }
+            }
+        }
+
+        $response = [
+            'total_count'       => count($bankAccounts),
+            'success_count'     => $successCount,
+            'failed_count'      => $failedCount,
+            'failed_ids'        => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_YESBANK_BULK_CREATE_RESPONSE,
+            [
+                'response'  => $response,
+                'range'     => $limit,
+                'input'     => $input,
+                'channel'   => Channel::YESBANK,
+            ]);
+
+        return $response;
     }
 
     public function makeSourceAccountRequest(string $id, string $ftsAccountId, array $content,
@@ -578,19 +664,27 @@ class Core extends Base\Core
         return new $processor();
     }
 
-    protected function checkForVaultResponseErrors(array $response)
+    protected function getYesbankAccountAttributes(BankAccount\Entity $bankAccount)
     {
-        if ($response[CardVault::SUCCESS] === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_VAULT_TOKENIZE_FAILED,
-                null,
-                [
-                    'response' => $response
-                ],
-                'Merchant credentials could not be stored, Please try again!'
-            );
-        }
+        $attributes = [
+            Entity::ACCOUNT_NUMBER            => $bankAccount->getAccountNumber(),
+            Entity::ACCOUNT_IFSC              => $bankAccount->getIfscCode(),
+            Entity::BENEFICIARY_EMAIL         => $bankAccount->getBeneficiaryEmail(),
+            Entity::BENEFICIARY_MOBILE        => $bankAccount->getBeneficiaryMobile(),
+            Entity::BENEFICIARY_CITY          => $bankAccount->getBeneficiaryCity(),
+            Entity::BENEFICIARY_STATE         => $bankAccount->getBeneficiaryState(),
+            Entity::BENEFICIARY_COUNTRY       => $bankAccount->getBeneficiaryCountry(),
+            Entity::BENEFICIARY_NAME          => $bankAccount->getBeneficiaryName(),
+            Entity::BENEFICIARY_ADDRESS1      => $bankAccount->getBeneficiaryAddress1(),
+            Entity::BENEFICIARY_ADDRESS2      => $bankAccount->getBeneficiaryAddress2(),
+            Entity::BENEFICIARY_PIN           => $bankAccount->getBeneficiaryPin(),
+            Entity::ACCOUNT_TYPE              => AccountType::NODAL,
+            Entity::STATUS                    => Status::CREATED,
+            Entity::BENEFICIARY_ADDRESS3      => $bankAccount->getBeneficiaryAddress3() . ' ' .
+                                                 $bankAccount->getBeneficiaryAddress4(),
+        ];
+
+        return $attributes;
     }
 
     protected function redactSecrets(array $input)

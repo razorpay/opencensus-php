@@ -1321,4 +1321,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function change2faSetting()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->change2faSetting($input);
+
+        return ApiResponse::json($response);
+    }
 }

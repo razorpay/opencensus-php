@@ -19,6 +19,7 @@ use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Models\User\BankingRole;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
 
 class Repository extends Base\Repository
@@ -44,6 +45,36 @@ class Repository extends Base\Repository
                     ->with(['destination', 'fundAccount.account'])
                     ->whereIn(Entity::ID, $ids)
                     ->status(Status::REVERSED)
+                    ->get();
+    }
+
+    public function fetchFromUtr($utr, $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->where(Entity::UTR, $utr)
+                    ->get();
+    }
+
+    public function fetchFromCmsRefNumber($cmsRefNumber, $balanceId)
+    {
+        $ftaTable = $this->repo->fund_transfer_attempt->getTableName();
+
+        $ftaSourceIdColumn = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
+
+        $ftaCmsRefNumColumn = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::CMS_REF_NO);
+
+        $payoutsIdColumn = $this->repo->payout->dbColumn(Entity::ID);
+
+        $payoutsBalanceColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+
+        $payoutAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($payoutAttrs)
+                    ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
+                    ->where($payoutsBalanceColumn, $balanceId)
+                    ->where($ftaCmsRefNumColumn, $cmsRefNumber)
                     ->get();
     }
 

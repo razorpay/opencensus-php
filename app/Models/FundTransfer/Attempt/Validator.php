@@ -30,6 +30,11 @@ class Validator extends Base\Validator
         'failed_response'       => 'sometimes|int'
     ];
 
+    protected static $ftaControlRules = [
+        Entity::CHANNEL => 'required|string|custom',
+        'action'        => 'required|in:enable,disable',
+    ];
+
     protected static $bulkReconcileRules = [
         'from' => 'required_with:to|epoch|date_format:U',
         'to'   => 'required_with:from|epoch|date_format:U',
@@ -75,7 +80,7 @@ class Validator extends Base\Validator
      */
     public function validateChannel(string $attribute, string $value)
     {
-        $channels = [Channel::AXIS, Channel::ICICI, Channel::YESBANK];
+        $channels = [Channel::AXIS, Channel::ICICI, Channel::YESBANK, Channel::AXIS2, Channel::RBL, Channel::HDFC];
 
         if (in_array($value, $channels, true) !== true)
         {

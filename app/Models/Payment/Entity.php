@@ -189,7 +189,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
-    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 864000;   // 10 Days -- TODO: Reduce later
+    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -1074,6 +1074,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
+    public function setApprovalCodeNull()
+    {
+        $this->setAttribute(self::APPROVAL_CODE, null);
+    }
+
     public function setEmiPlanId($planId)
     {
         $this->setAttribute(self::EMI_PLAN_ID, $planId);
@@ -1141,6 +1146,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setMetadataKey($key, $value)
     {
         $this->metadata[$key] = $value;
+    }
+
+    public function getApprovalCode()
+    {
+        return $this->getAttribute(self::APPROVAL_CODE);
     }
 
     public function getRecurringType()
@@ -2533,6 +2543,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $this->setRelation('terminal', $terminal);
+    }
+
+
+    public function disassociateTerminal()
+    {
+        if ($this->terminal === null)
+        {
+            return;
+        }
+
+        $this->terminal()->dissociate();
+
+        $this->setGateway(null);
+
+        $this->setSettledBy(null);
     }
 
 // ----------------------- Getters Ends-----------------------------------------

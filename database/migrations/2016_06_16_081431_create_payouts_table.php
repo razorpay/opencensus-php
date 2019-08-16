@@ -107,8 +107,7 @@ class CreatePayoutsTable extends Migration
                   ->default(1);
 
             $table->string(Payout::UTR)
-                  ->nullable()
-                  ->unique();
+                  ->nullable();
 
             $table->string(Payout::FAILURE_REASON)
                   ->nullable();
@@ -127,6 +126,9 @@ class CreatePayoutsTable extends Migration
                   ->nullable();
 
             $table->integer(Payout::REVERSED_AT)
+                  ->nullable();
+
+            $table->integer(Payout::FAILED_AT)
                   ->nullable();
 
             $table->integer(Payout::REJECTED_AT)
@@ -159,6 +161,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::PENDING_AT);
 
             $table->index(Payout::REVERSED_AT);
+
+            $table->index(Payout::FAILED_AT);
 
             $table->index(Payout::REJECTED_AT);
 

@@ -68,7 +68,66 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_cbi($entities)
+    {
+        $response = [
+            'error' => null,
+            'next' => [],
+            'success' => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw' => ['Status' => 'Y'],
+                'bank_payment_id' => '2382382',
+                'paymentId' => 'abcd1234',
+                'status' => 'verification_successful',
+            ],
+        ];
+
+        return $response;
+    }
+
     public function netbanking_cub($entities)
+    {
+        $response = [
+            'error'             => null,
+            'next'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw'            => 'dummy_raw_value',
+                'bank_payment_id' => $entities['gateway']['pay_verify']['bank_payment_id'],
+                'status'          => 'verification_successful',
+                'paymentId'       => $entities['payment']['id'],
+                'amount'          => $entities['payment']['amount']
+            ],
+        ];
+
+        return $response;
+    }
+
+    public function netbanking_ibk($entities)
+    {
+        $response = [
+            'error'             => null,
+            'next'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw'            => 'dummy_raw_value',
+                'bank_payment_id' => $entities['gateway']['pay_verify']['bank_payment_id'],
+                'status'          => 'verification_successful',
+                'paymentId'       => $entities['payment']['id'],
+                'amount'          => $entities['payment']['amount']
+            ],
+        ];
+
+        return $response;
+    }
+    
+    public function netbanking_idbi($entities)
     {
         $response = [
             'error'             => null,

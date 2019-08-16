@@ -690,7 +690,12 @@ class MerchantDetailTest extends TestCase
      */
     public function testUpdateCriticalFieldsPostActivation()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $attributes = [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::MUTUAL_FUND,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
 
         $merchantId = $merchantDetail['merchant_id'];
 
