@@ -110,34 +110,28 @@ export default class SubscriptionsController extends React.Component {
 
     let subscriptionProductOnBoarding = {
       ...props.subscriptionProductOnBoarding,
-      isTour: false,
       showOnboarding,
-      isQuickGuideOpen: !isQuickGuideClosed,
+      isQuickGuideOpen: props.subscriptionProductOnBoarding.isTour
+        ? true
+        : !isQuickGuideClosed,
     };
 
     this.props.handleProductQuickGuide(subscriptionProductOnBoarding);
   };
 
   render() {
-    let showQuickGuide = false;
-
     if (!this.props.user.isChargeAtWillEnabled) {
       if (this.props.subscriptionProductOnBoarding.showOnboarding) {
         return <OnBoarding />;
       }
-
-      const {
-        isQuickGuideOpen,
-        isTour,
-      } = this.props.subscriptionProductOnBoarding;
-
-      showQuickGuide = isQuickGuideOpen || isTour;
     }
 
     return (
       <div class={classList('Subscriptions-Container')}>
         <tabbed-container>
-          {showQuickGuide && <QuickGuide />}
+          {this.props.subscriptionProductOnBoarding.isQuickGuideOpen && (
+            <QuickGuide />
+          )}
 
           <header id="subscriptions-header">
             <ShowWhen additionalCondition={user => !user.isChargeAtWillEnabled}>
