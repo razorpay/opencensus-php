@@ -1,74 +1,31 @@
 import Button from 'component/Button';
 import FieldsDropdown from '../../FieldsDropdown';
 import { getFieldTypes } from '../../UDF_Fields/V3';
-import { BaseFormModal } from './CreatorManager';
+import CreatorManager from './CreatorManager';
 
-export default class AddUDFButton extends React.PureComponent {
-  state = { isBaseFormOpened: false };
-
-  toggleBaseForm = forcedState => {
-    const isBaseFormOpened =
-      typeof forcedState !== 'undefined'
-        ? forcedState
-        : !this.state.isBaseFormOpened;
-
-    const newState = {
-      isBaseFormOpened,
-    };
-
-    if (!isBaseFormOpened) {
-      newState.field_schema = null;
-    }
-
-    this.setState(newState);
-  };
-
+class AddUDFButton extends React.PureComponent {
   onSelectFieldType = field => {
-    this.setState({
-      field_schema: field.schema,
-    });
-
-    this.toggleBaseForm(true);
+    this.props.openBaseForm(field.schema);
   };
 
   render() {
-    const {
-      validateSameTitleExists,
-      onDeleteUDFField,
-      onSubmitUDFField,
-    } = this.props;
-
-    const { field_schema, isBaseFormOpened } = this.state;
-
     return (
-      <React.Fragment>
-        <UDFDropdown
-          onSelect={this.onSelectFieldType}
-          beforeOptionsTxt="New Input Field"
-        >
-          <Button.Transparent class="btn-dotted">
-            <span class="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}
-            <span>
-              <b>Input field</b>
-            </span>
-          </Button.Transparent>
-        </UDFDropdown>
-
-        {isBaseFormOpened && (
-          <BaseFormModal
-            field_schema={field_schema}
-            validateSameTitleExists={validateSameTitleExists}
-            onSubmitUDFField={onSubmitUDFField}
-            onDeleteUDFField={onDeleteUDFField}
-            closeFormModal={_ => this.toggleBaseForm(false)}
-            isFieldRemovable
-            overElement
-          />
-        )}
-      </React.Fragment>
+      <UDFDropdown
+        onSelect={this.onSelectFieldType}
+        beforeOptionsTxt="New Input Field"
+      >
+        <Button.Transparent class="btn-dotted">
+          <span class="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}
+          <span>
+            <b>Input field</b>
+          </span>
+        </Button.Transparent>
+      </UDFDropdown>
     );
   }
 }
+
+export default CreatorManager(AddUDFButton);
 
 export const UDFDropdown = ({
   children,

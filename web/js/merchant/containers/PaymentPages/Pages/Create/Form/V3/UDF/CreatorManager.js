@@ -3,15 +3,25 @@ import BaseForm from './BaseForm';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
-    state = { isBaseFormOpened: false };
+    state = { isBaseFormOpened: false, fieldSchema: null };
 
-    toggleBaseForm = forcedState => {
+    closeBaseForm = _ => {
       this.setState({
-        isBaseFormOpened:
-          typeof forcedState !== 'undefined'
-            ? forcedState
-            : !this.state.isBaseFormOpened,
+        isBaseFormOpened: false,
+        fieldSchema: null,
       });
+    };
+
+    openBaseForm = intentSchema => {
+      const newState = {
+        isBaseFormOpened: true,
+      };
+
+      if (intentSchema) {
+        newState.fieldSchema = intentSchema;
+      }
+
+      this.setState(newState);
     };
 
     render() {
@@ -26,27 +36,30 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       let tooltipTxt,
         isFieldRemovable = true;
 
-      // TODO: In V3, title of Email and Phone field can be modified. But don't allow name to get modified for those 2 fields
-      if (field.name === 'email' || field.name === 'phone') {
-        tooltipTxt = 'This field cannot be removed';
-        isFieldRemovable = false;
+      if (field) {
+        // TODO: In V3, title of Email and Phone field can be modified. But don't allow name to get modified for those 2 fields
+        if (field.name === 'email' || field.name === 'phone') {
+          tooltipTxt = 'This field cannot be removed';
+          isFieldRemovable = false;
+        }
       }
 
       return (
-        <div style={{ position: 'relative' }}>
+        <div class="CreatorManager">
           <_WrappedDisplayFieldComponent
             field={field}
-            openBaseForm={this.toggleBaseForm}
+            openBaseForm={this.openBaseForm}
             tooltipTxt={tooltipTxt}
           />
           {this.state.isBaseFormOpened && (
             <BaseFormModal
               index={index}
               field={field}
+              fieldSchema={this.state.fieldSchema}
               validateSameTitleExists={validateSameTitleExists}
               onSubmitUDFField={onSubmitUDFField}
               onDeleteUDFField={onDeleteUDFField}
-              closeFormModal={_ => this.toggleBaseForm(false)}
+              closeFormModal={this.closeBaseForm}
               isFieldRemovable={isFieldRemovable}
             />
           )}
@@ -72,7 +85,7 @@ export class BaseFormModal extends React.PureComponent {
   render() {
     const {
       field,
-      field_schema,
+      fieldSchema,
       index,
       validateSameTitleExists,
       closeFormModal,
@@ -82,7 +95,7 @@ export class BaseFormModal extends React.PureComponent {
     return (
       <CreatorModal class="CreatorModal-BaseForm" overElement>
         <BaseForm
-          field={field || field_schema}
+          field={field || fieldSchema}
           selfIndex={index}
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeFormModal}

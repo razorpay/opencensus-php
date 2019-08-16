@@ -17,6 +17,15 @@
       line-height: 20px
       background-color: rgba(82,143,240,0.17)
 
+  // For handling Field as a CreatorManager (existing field)
+  .CreatorManager
+    position: relative
+
+   // For handling Button as a CreatorManager (new field)
+  .Field-content > .CreatorManager
+    display: inline-block
+    position: unset
+
 
   .CreatorModal-BaseForm
     background: rgba(32, 31, 45, 0.2)
@@ -29,7 +38,7 @@
     bottom: 0
     pointer-events: all
     box-shadow: 0 2px 8px 0 rgba(43,47,60,0.36)
-    animation: 0.4s fadeIn cubic-bezier(0.08, 0.98, 1, 1)
+    animation: 0.55s fadeIn cubic-bezier(0.08, 0.98, 1, 1)
 
   .Modal-container--CreatorModal-BaseForm
     position: absolute
@@ -49,7 +58,7 @@
       height: 100%
       width: 100%
       background: #fff
-      animation: modalAppearIn 0.3s cubic-bezier(0.53, 1.78, 1, 1) // modalAppearIn 0.4s cubic-bezier(0.29, 1.75, 1, 1)
+      animation: modalAppearIn 0.35s cubic-bezier(0.53, 1.78, 1, 1) // modalAppearIn 0.4s cubic-bezier(0.29, 1.75, 1, 1)
       transform-origin: center
       border-radius: 2px
 
@@ -208,10 +217,12 @@
   .OptionsDropdown-list
     margin-top: 8px
     width: 214px
+    max-height: 242px
     border-radius: 4px
     border: 1px solid rgba(82,143,240,0.16)
     list-style: none
     padding: 0
+    overflow: auto
     background-color: #fff
     box-shadow: 0 5px 9px 0 rgba(69,75,85,0.22)
     animation: dropdownAppearIn 0.1s cubic-bezier(0.13, 1.04, 1, 1)

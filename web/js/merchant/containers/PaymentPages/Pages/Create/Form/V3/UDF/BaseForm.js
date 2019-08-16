@@ -20,7 +20,8 @@ export default class BaseForm extends React.PureComponent {
       enum: fieldSchema.hasOwnProperty('enum') ? fieldSchema.enum : undefined,
     };
 
-    this.field_index_in_options = mapFieldToIndex(fieldSchema);
+    this.fieldIndexInOptions =
+      props.fieldIndexInOptions || mapFieldToIndex(fieldSchema);
   }
 
   onChange = ({ target }) => {
@@ -176,7 +177,7 @@ export default class BaseForm extends React.PureComponent {
 
         <input
           name="field_type"
-          value={this.field_index_in_options}
+          value={this.fieldIndexInOptions}
           hidden
           readOnly
         />
