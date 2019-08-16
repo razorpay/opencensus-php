@@ -23,12 +23,12 @@ const allRoles = {
 
 const contactPhone = {
   title: 'Phone Number',
-  value: user => <p>{user.contact_mobile || '--'}</p>,
+  value: user => user.contact_mobile || '--',
 };
 
 const userRole = {
   title: 'Role',
-  value: user => <p>{(allRoles[user.role] || {}).label}</p>,
+  value: user => (allRoles[user.role] || {}).label,
 };
 
 @connect(state => ({ ...state.team }), {
@@ -80,7 +80,7 @@ export default class ManageTeamContainer extends ListContainer {
   };
 
   actions = {
-    title: '',
+    title: 'Actions',
     columnClass: 'text-right',
     value: item => (
       <Actions
@@ -101,8 +101,8 @@ export default class ManageTeamContainer extends ListContainer {
     title: 'Member',
     value: user => (
       <div>
-        <p>{user.name}</p>
-        <p className="text-muted">{user.email}</p>
+        {user.name && <p>{user.name}</p>}
+        <p className="text-muted no-margin">{user.email}</p>
         {user.account_locked && (
           <ShowWhen
             myRole="owner admin"
