@@ -18,6 +18,7 @@ use RZP\Dashboard\Dashboard;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Models\Settlement\Merchant as SetlMerchant;
 
 trait SettlementTrait
 {
@@ -776,7 +777,7 @@ trait SettlementTrait
                 try
                 {
                     // create settlement and attempt
-                    $merchantSettler = new Merchant($merchant, $channel, $this->repo, $this->isDebugEnabled());
+                    $merchantSettler = new SetlMerchant($merchant, $channel, $this->repo, $this->isDebugEnabled());
 
                     $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
