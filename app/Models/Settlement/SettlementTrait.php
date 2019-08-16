@@ -3,7 +3,6 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -12,79 +11,168 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Dashboard\Dashboard;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
 
 trait SettlementTrait
 {
-    protected function filterMerchantTransactionsForSettlement($transactions): array
+    protected function filterMerchantTransactionsForSettlement(Base\PublicCollection $transactions): Base\PublicCollection
     {
-        foreach ($transactions as $transaction)
+        $transactions->filter(function ($item)
         {
+            // keep all the elements which except ones which has to be skipped
+            return $this->skipForRefundAuthTxn($item) === false;
+        });
 
-        }
+        return $transactions;
     }
 
+    protected function traceMerchantSettlementSkip(Merchant\Entity $merchant, array $data)
+    {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SKIPPED,
+            [
+                'merchant_id'    => $merchant->getId(),
+            ] + $data
+        );
+    }
+
+    /**
+     * validates if merchant is eligible for settlement
+     *
+     * @param Merchant\Entity $merchant
+     * @return bool
+     */
     protected function isMerchantSettlementAllowed(Merchant\Entity $merchant): bool
     {
-        $merchantFeatures = $merchant->getEnabledFeatures();
-
-        // if early settlement is not enabled then continute with normal settlement cycle for the merchant
-        if (in_array(Feature\Constants::ES_AUTOMATIC, $merchantFeatures, true) === false)
+        // process settlement only for activated merchants
+        if ($merchant->isSuspended() === true)
         {
-            return true;
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant is not active',
+                ]);
+
+            return false;
         }
 
-        // if the merchant has early settlement enabled then check the time
-        if ($this->isEarlySettlementTime() === true)
+        // Do not proceed further if merchant funds are on hold
+        if ($merchant->isFundsOnHold() === true)
         {
-            return true;
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant funds are on hold',
+                ]);
+
+            return false;
         }
 
-        // if ES_AUTOMATIC_THREE_PM is enabled on merchant then do settlement only after 3PM
-        if (in_array(Feature\Constants::ES_AUTOMATIC_THREE_PM, $merchantFeatures, true) === false)
-        {
-            $threePm = Carbon::today(Timezone::IST)->hour(15)->getTimestamp();
+        $bankAccount = $merchant->bankAccount;
 
-            if ($now > $threePm)
-            {
-                return true;
-            }
+        // Do not proceed if merchant does not have active bank account
+        if ($bankAccount === null)
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant doesnt have a active bank account registered',
+                ]);
+
+            return false;
         }
 
-        return false;
-    }
-
-    protected function isEarlySettlementTime(): bool
-    {
-        $now = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $fivePm = Carbon::today(Timezone::IST)->hour(17)->getTimestamp();
-
-        $sixPm = Carbon::today(Timezone::IST)->hour(18)->getTimestamp();
-
-        $nineAm = Carbon::today(Timezone::IST)->hour(9)->getTimestamp();
-
-        $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
-
-        //
-        // Settle the transaction if time is between 9-10 am or 5-6pm
-        // This is the time window promised to the merchants on ES.
-        // For example, if a transaction's settled_at is 7 am, this
-        // condition ensures that it doesn't get settled in the 7 or 8 am
-        // batch but only in the 9 am batch.
-        //
-
-        if ((($now >= $nineAm) and ($now < $tenAm)) or
-            (($now >= $fivePm) and ($now < $sixPm)))
+        if ($this->skipSpecificMerchants($merchant) === true)
         {
             return false;
         }
 
+        $channel = $merchant->getChannel();
+
+        $allowedChannelFor24x7Settlement = Channel::get24x7Channels();
+
+        //
+        // Allow settlement to create of the channel allows 24/7 functionality
+        // bene registration check is not required
+        //
+        if (($this->env !== Environment::TESTING) and
+            (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
+        {
+            return true;
+        }
+
+        $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
+
+        //
+        // Check if beneficiary registration cutoff is crossed
+        // required for all non 24/7 channels
+        //
+        if (($this->env !== Environment::TESTING) and
+            ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason'               => 'bank account created yesterday',
+                    'bank_account_created' => Carbon::createFromTimestamp($txn->getCreatedAt(), Timezone::IST)->format('Y-m-d H:i:s'),
+                ]);
+
+            return false;
+        }
+
         return true;
+    }
+
+    /**
+     * Few merchant doesnt want settlement
+     * so skip such merchants, mostly there are route merchants
+     * there are 3 type of merchants defined which has to be skipped
+     * 1. WEALTHY merchant on saturday
+     * 2. MIDs is in NO_SETTLEMENT_MIDS
+     * 3. If the merchant has feature block_settlements/daily_settlement
+     *
+     * @param Merchant\Entity $merchant
+     * @return bool
+     */
+    protected function skipSpecificMerchants(Merchant\Entity $merchant): bool
+    {
+        if (($merchant->getParentId() === Preferences::MID_WEALTHY) and
+            ($today->dayOfWeek === Carbon::SATURDAY))
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $mid,
+                    'reason'            => Metric::BLOCK_WEALTHY_ON_SATURDAY,
+                ]);
+
+            return true;
+        }
+
+        if (in_array($merchant->getId(), MerchantModel\Preferences::NO_SETTLEMENT_MIDS, true) === true)
+        {
+            return true;
+        }
+
+        // MIDs that have the block_settlements/daily_settlement feature enabled
+        $skipSetlFeatureEnabled = $this->repo
+                                       ->feature
+                                       ->findMerchantWithFeatures(
+                                           $merchant->getId(),
+                                           [
+                                               Feature\Constants::BLOCK_SETTLEMENTS,
+                                               Feature\Constants::DAILY_SETTLEMENT
+                                           ]);
+
+        $skipSettlement = (empty($skipSetlFeatureEnabled) === false);
+
+        return $skipSettlement;
     }
 
     /**
@@ -210,20 +298,6 @@ trait SettlementTrait
                 $txn[Transaction\Entity::SETTLED_AT] = null;
 
                 $this->repo->saveOrFail($txn);
-
-                $this->trace->count(
-                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
-                    [
-                        Metric::SKIP_REASON => Metric::AUTH_PAYMENT
-                    ],
-                    1);
-
-                $this->trace->count(
-                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
-                    [
-                        Metric::SKIP_REASON => Metric::REFUND_AUTH_PAYMENT
-                    ],
-                    1);
 
                 $this->trace->info(
                     TraceCode::SETTLEMENT_SKIPPED,

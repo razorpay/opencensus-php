@@ -1625,7 +1625,7 @@ class Repository extends Base\Repository
                 Transaction\Entity::SETTLED_AT,
                 Transaction\Entity::CREDITS,
                 Transaction\Entity::CREDIT_TYPE
-            ],$columns);
+            ], $columns);
 
         }
 
