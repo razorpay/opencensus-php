@@ -91,7 +91,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
                   formType={RZPFeatures.ROUTE}
                   heading="Route"
                   title="What makes Route great?"
-                  desc="We'd require the following details to enable Razorpay Subscriptions on your account."
+                  desc="We'd require the following details to enable Razorpay Route on your account."
                   imageUrl="https://razorpay.com/assets/route/route-landing.svg"
                 />
               )
