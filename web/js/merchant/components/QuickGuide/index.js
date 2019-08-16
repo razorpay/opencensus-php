@@ -72,16 +72,6 @@ export default params => {
       return newState;
     };
 
-    componentWillUnMount() {
-      if (this.props.currentOnboarding.isTour) {
-        const newState = this.getInitState();
-
-        this.setState({
-          ...newState,
-        });
-      }
-    }
-
     componentWillReceiveProps(nextProps) {
       if (!this.props.currentOnboarding.isTour) return;
 
