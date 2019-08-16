@@ -1,10 +1,10 @@
 <?php
 
+namespace RZP\Models\Settlement\Bucket;
 
-namespace RZP\Models\Settlement\bucket;
+use RZP\Models\Base;
 
-
-class Service
+class Service extends Base\Service
 {
 
 }
