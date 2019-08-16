@@ -18,7 +18,6 @@ export default class Stories extends React.PureComponent {
 
     this.props.children.forEach(child => {
       const { children, ...restProps } = child.props;
-
       this.stories.push(<div class="Story">{children}</div>);
 
       this.storiesMeta.push({
@@ -74,7 +73,6 @@ export default class Stories extends React.PureComponent {
 
         <div class="Stories-frame">{this.stories[curStoryIndex]}</div>
 
-        <br />
         {AfterFrame && (
           <AfterFrame
             storiesMeta={this.storiesMeta}
@@ -109,11 +107,11 @@ export class StoriesTabs extends React.PureComponent {
         {storiesMeta.map((current, idx) => (
           <TabComp
             key={idx}
-            showLoader={idx === curStoryIndex}
+            isActive={idx === curStoryIndex}
             onClick={() => goTo(idx)}
             duration={current.duration}
           >
-            {idx} {current.title}
+            {current.title}
           </TabComp>
         ))}
       </div>
@@ -121,12 +119,19 @@ export class StoriesTabs extends React.PureComponent {
   }
 }
 
-const Tab = ({ children, onClick, showLoader, duration }) => (
-  <div class="StoriesTab" onClick={onClick}>
-    {showLoader && <TimedProgressBar type="success" max={duration} />}
+const Tab = ({ className, children, onClick, isActive, duration }) => (
+  <div
+    class={classList(
+      'StoriesTab',
+      className && 'StoriesTab--' + className,
+      isActive && 'active'
+    )}
+    onClick={onClick}
+  >
+    {isActive && <TimedProgressBar max={duration} />}
 
     {children}
   </div>
 );
 
-export const Story = props => props.children;
+export const Story = ele => ele;
