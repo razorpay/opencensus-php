@@ -6,7 +6,10 @@ import Button from 'component/Button';
 
 import FeatureEnableButton from 'merchant/components/OnBoarding/FeatureEnableButton';
 
-import { handleProductQuickGuide } from 'merchant/modules/onboarding';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
 
 export default params => {
   const { feature: FEATURE } = params;
@@ -16,7 +19,7 @@ export default params => {
     state => ({
       user: state.session.user,
       mode: state.session.mode,
-      currentOnboarding: state.onboarding.products[FEATURE],
+      currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
     }),
     {
       handleProductQuickGuide,
