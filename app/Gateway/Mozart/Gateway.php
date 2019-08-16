@@ -143,9 +143,10 @@ class Gateway extends Base\Gateway
         {
             $this->verifyCallback($input);
         }
+
         if ($input['payment']['gateway'] === "wallet_paypal" )
         {
-            $response = $this->getCallbackResponseData($input);
+            $response = $this->getResponseData($input,$response);
 
             return $response;
         }

@@ -3,12 +3,14 @@
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 
 class PaypalGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -47,6 +49,21 @@ class PaypalGatewayTest extends TestCase
         $mozartEntity = $this->getLastEntity('mozart', true);
 
         $this->assertTestResponse($mozartEntity, 'testPaymentMozartEntity');
+
+        return $payment;
+    }
+
+    public function testRefundPayment()
+    {
+        $payment = $this->testPayment();
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount'], $payment['currency']);
+
+        $this->payment = $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('refunded', $payment['status']);
     }
 
     public function testVerifyPayment()
@@ -66,7 +83,7 @@ class PaypalGatewayTest extends TestCase
         {
             if ($action === 'pay_verify')
             {
-                $content['data']['PayId'] = 'Hacked'; //some random payment_id
+                $content['data']['paymentId'] = 'Hacked'; //some random payment_id
             }
         });
 
@@ -111,10 +128,123 @@ class PaypalGatewayTest extends TestCase
         return $this->submitPaymentCallbackRequest($data);
     }
 
+    public function testVerifyRefundFailedOnGateway()
+    {
+        $payment = $this->testPayment();
+
+        $this->gateway = 'mozart';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content = [
+                    'data' =>
+                        [
+                            'id' => '09188073PT4749456',
+                            'errorCode' => '000',
+                            'links' => [
+                                [
+                                    "href" => "https:debug/debug_id",
+                                    "method" => "GET",
+                                    "rel" => "self",
+                                ]
+                            ],
+                            'status' => 'FAILURE',
+                            '_raw' => '{1234567890qwertyuiopasdfghjklzxcvbnm}',
+                        ],
+                    'error'             => null,
+                    'success'           => false,
+                    'mozart_id'         => 'DUMMY_MOZART_ID',
+                    'external_trace_id' => 'DUMMY_REQUEST_ID',
+                ];
+            }
+        });
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount'], $payment['currency']);
+
+        $this->payment = $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content = [
+                    'data' =>
+                        [
+                            'id' => '0',
+                            "amount"=> [
+                                "currency_code" => "USD",
+                                "value" => 10000,
+                            ],
+                            "create_time" => "2019-08-01T02:25:08-07:00",
+                            "invoice_id" => "25din",
+                            "custom_id" => "25din",
+                            "links" => [
+                                [
+                                    "href" => "https://refund/payment",
+                                    "method" => "GET",
+                                    "rel" => "self",
+                                ],
+                                [
+                                    "href" => "https://refund/payment/status",
+                                    "method" => "GET",
+                                    "rel" => "up",
+                                ]
+                            ],
+                            "seller_payable_breakdown" => [
+                                "gross_amount" => [
+                                    "currency_code" => "USD",
+                                    "value" => "100",
+                                ],
+                                "net_amount" => [
+                                    "currency_code" => "USD",
+                                    "value" => "96",
+                                ],
+                                "paypal_fee" => [
+                                    "currency_code" => "USD",
+                                    "value" => "4",
+                                ],
+                                "total_refunded_amount" => [
+                                    "currency_code" => "USD",
+                                    "value" => "100",
+                                ]
+                            ],
+                            'errorCode' => 000,
+                            "update_time" => "2019-08-01T02:25:08-07:00",
+                            'status' => 'SUCCESS',
+                            '_raw' => '{qazwsxedcrfvtgbyhnujmikolp}',
+                        ],
+                    'error'             => null,
+                    'success'           => false,
+                    'mozart_id'         => '',
+                    'external_trace_id' => '',
+                ];
+
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals(2, $refund['attempts']);
+
+    }
+
     protected function doPaypalAuthAndCapturePayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('paypal');
         $payment['currency'] = "USD";
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthAndCapturePayment($payment,$payment['amount'],$payment['currency']);
     }
 }

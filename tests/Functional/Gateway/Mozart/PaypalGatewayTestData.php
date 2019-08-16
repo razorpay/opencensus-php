@@ -45,7 +45,28 @@ return [
                     'description'       => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
+            'status_code' => 500,
         ],
+        'exception' => [
+            'class'                     => 'RZP\Exception\LogicException',
+            'internal_error_code'       => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ],
+    ],
+
+    'testPaymentVerifyFailed' => [
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+        ]
     ],
 
     'testAuthFailed' => [

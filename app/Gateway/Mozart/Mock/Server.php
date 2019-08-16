@@ -172,6 +172,11 @@ class Server extends Base\Mock\Server
     protected function wallet_paypal($input)
     {
         $content = $input;
+        $content = [
+            'token'     => 'PayPal_Token',
+            'PayId'     => '8DS61651XA862144J',
+            'status'    => 'callback_successful',
+        ];
 
         $this->content($content, 'authorize');
 
