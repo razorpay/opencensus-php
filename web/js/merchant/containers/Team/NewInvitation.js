@@ -2,11 +2,15 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
+
 import InputField from 'rzp/ui/Forms/InputField';
+
 import { required, email, phone } from 'rzp/utils/validators';
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
+
 import { showNotification } from 'rzp/modules/notifications';
+import { classList } from 'common/util';
 
 const selector = formValueSelector('newInvitation');
 @connect(
@@ -28,6 +32,10 @@ const selector = formValueSelector('newInvitation');
   },
 })
 export default class NewInvitation extends Component {
+  static defaultProps = {
+    ctaText: 'Submit',
+  };
+
   // need to rename this component to something more appropriate
   constructor(props) {
     super(props);
@@ -40,7 +48,7 @@ export default class NewInvitation extends Component {
     let user = this.props.user.user;
 
     return this.props
-      .onFormSubmit({ ...body, ...this.props.extraFields })
+      .onFormSubmit(body)
       .then(() => {
         this.props.showNotification({
           type: 'success',
@@ -67,7 +75,13 @@ export default class NewInvitation extends Component {
   };
 
   render() {
-    const { handleSubmit, selectedRole, user, modalType } = this.props;
+    const {
+      handleSubmit,
+      selectedRole,
+      user,
+      visibleFields,
+      ...props
+    } = this.props;
 
     let ROLES = this.filterRoles();
 
@@ -86,7 +100,7 @@ export default class NewInvitation extends Component {
         <div class="form-group Form--vertical">
           <label>Member Details</label>
           {/* this should be configurable from props */}
-          {modalType === 'invite' && (
+          {visibleFields.email && (
             <div class="input-container top-rounded">
               <i class="i i-email" />
               <Field
@@ -108,8 +122,12 @@ export default class NewInvitation extends Component {
             </div>
           )}
           {/* this also should be configurable using props */}
-          {this.props.modalType === 'update_member' && (
-            <div class="input-container no-top-border bottom-rounded">
+          {visibleFields.contactMobile && (
+            <div
+              class={classList('input-container bottom_rounded', {
+                ['no-top-border']: visibleFields.email,
+              })}
+            >
               <i class="i i-phone" />
               <Field
                 name="contact_mobile"
@@ -130,31 +148,35 @@ export default class NewInvitation extends Component {
           )}
         </div>
 
-        <div class="form-group Form--vertical">
-          <label>Role</label>
-          <div class="input-container">
-            <Field name="role" component="select" class="form-control">
-              {Object.keys(ROLES).map(role => (
-                <option key={role} value={role}>
-                  {ROLES[role].label}
-                </option>
-              ))}
-            </Field>
-          </div>
-        </div>
-        <div class="form-group">
-          {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
-            <div class="alert alert-info text-center">
-              {ROLES[selectedRole].desc}
+        {visibleFields.role && (
+          <>
+            <div class="form-group Form--vertical">
+              <label>Role</label>
+              <div class="input-container">
+                <Field name="role" component="select" class="form-control">
+                  {Object.keys(ROLES).map(role => (
+                    <option key={role} value={role}>
+                      {ROLES[role].label}
+                    </option>
+                  ))}
+                </Field>
+              </div>
             </div>
-          ) : null}
-        </div>
+            <div class="form-group">
+              {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
+                <div class="alert alert-info text-center">
+                  {ROLES[selectedRole].desc}
+                </div>
+              ) : null}
+            </div>
+          </>
+        )}
         <div class="form-group">
           <AsyncButton
             class="btn btn-primary btn-block"
-            text="Send Invitation"
+            text={props.ctaText}
             type="submit"
-            pendingText="Sending Invitation..."
+            pendingText="Processing..."
             onClick={handleSubmit(this.save)}
           />
         </div>

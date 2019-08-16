@@ -4,6 +4,8 @@ import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { pickProps } from 'rzp/utils/rzp-utils';
 
+import { showWhenUtil } from 'merchant/components/ShowWhen';
+
 import NewInvitation from './NewInvitation';
 
 export default class MerchantUserActions extends Component {
@@ -36,7 +38,20 @@ export default class MerchantUserActions extends Component {
 
   updateUser = () => {
     const item = this.props.item;
-    const defaults = pickProps(item, ['contact_mobile', 'role']);
+    const visibleFields = {
+      role: true,
+      contactMobile: showWhenUtil({
+        additionalCondition: user => user.isMerchantRestricted,
+      }),
+    };
+
+    const toBePickedFields = [
+      'role',
+      'id',
+      ...(visibleFields.contactMobile ? ['contact_mobile'] : []),
+    ];
+
+    const defaults = pickProps(item, toBePickedFields);
 
     return this.props.openModal({
       size: 'small',
@@ -48,12 +63,12 @@ export default class MerchantUserActions extends Component {
           />
           <div class="modal-body">
             <NewInvitation
-              modalType="update_member"
-              extraFields={{ id: item.id }}
+              visibleFields={visibleFields}
               onFormSubmit={this.props.updateMember}
               onSuccess={this.props.closeModal}
               successMsg={() => 'User has been successfully updated'}
               defaults={{ ...defaults }}
+              ctaText="Update Member"
             />
           </div>
         </div>
@@ -63,7 +78,11 @@ export default class MerchantUserActions extends Component {
 
   updateInvitation = () => {
     const item = this.props.item;
-    const defaults = pickProps(item, ['role']);
+    const defaults = pickProps(item, ['role', 'id']);
+
+    const visibleFields = {
+      role: true,
+    };
 
     return this.props.openModal({
       size: 'small',
@@ -75,12 +94,12 @@ export default class MerchantUserActions extends Component {
           />
           <div class="modal-body">
             <NewInvitation
-              modalType="update_invitation"
               onFormSubmit={this.props.updateInvitation}
               onSuccess={this.props.closeModal}
               successMsg={() => 'Invitation update successfully'}
-              extraFields={{ id: item.id }}
               defaults={{ ...defaults }}
+              visibleFields={visibleFields}
+              ctaText="Update Invitation"
             />
           </div>
         </div>
@@ -89,7 +108,7 @@ export default class MerchantUserActions extends Component {
   };
 
   render() {
-    const item = this.props.item;
+    const { item, allowDelete } = this.props;
     return (
       <>
         <button
@@ -103,11 +122,13 @@ export default class MerchantUserActions extends Component {
           Update
         </button>
 
-        <AsyncButton
-          class="btn btn-default"
-          text="Remove"
-          onClick={this.removeUser}
-        />
+        {allowDelete && (
+          <AsyncButton
+            class="btn btn-default"
+            text="Remove"
+            onClick={this.removeUser}
+          />
+        )}
       </>
     );
   }

@@ -1,11 +1,11 @@
 import { connect } from 'react-redux';
+
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
-import ShowWhen from 'merchant/components/ShowWhen';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 
-import ListContainer from 'merchant/containers/ListContainer';
+import { openModal, closeModal } from 'rzp/modules/modals';
 import { fetchTeam as fetchAll } from 'merchant/modules/collection';
 import {
   removeUser,
@@ -17,6 +17,8 @@ import {
 import { showNotification } from 'rzp/modules/notifications';
 
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
+
+import ListContainer from 'merchant/containers/ListContainer';
 
 import Actions from './Actions';
 import Toggle2FA from './Toggle2FA';
@@ -60,7 +62,7 @@ const userRole = {
   closeModal,
 })
 export default class ManageTeamContainer extends ListContainer {
-  actions = {
+  actions = ({ allowDelete }) => ({
     title: '',
     columnClass: 'text-right',
     value: item => (
@@ -72,6 +74,7 @@ export default class ManageTeamContainer extends ListContainer {
         updateInvitation={this.props.updateInvitation}
         openModal={this.props.openModal}
         closeModal={this.props.closeModal}
+        allowDelete={allowDelete}
         onRemove={() => {
           this.props.showNotification({
             type: 'success',
@@ -80,9 +83,18 @@ export default class ManageTeamContainer extends ListContainer {
         }}
       />
     ),
-  };
+  });
 
   addNewMember = () => {
+    const visibleFields = {
+      email: true,
+      role: true,
+    };
+
+    const defaults = {
+      sender_name: this.props.user.name,
+    };
+
     this.props.openModal({
       size: 'small',
       component: (
@@ -94,13 +106,14 @@ export default class ManageTeamContainer extends ListContainer {
           />
           <div class="modal-body">
             <NewInvitation
-              extraFields={{ sender_name: this.props.user.name }}
-              modalType="invite"
+              visibleFields={visibleFields}
+              defaults={defaults}
               onSuccess={this.props.closeModal}
               onFormSubmit={this.props.sendInvitation}
               successMsg={data =>
                 'Invitation has been successfully sent to ' + data.email
               }
+              ctaText="Send Invitation"
             />
           </div>
         </div>
@@ -109,6 +122,11 @@ export default class ManageTeamContainer extends ListContainer {
   };
 
   render() {
+    // check for allowUpdate happens inside actions component since it depends when item is invitation or user
+    const allowDelete = showWhenUtil({
+      additionalCondition: user => user.isAllowedEdit('team'),
+    });
+
     return (
       <div class="content-wrapper content-sm">
         <Toggle2FA />
@@ -128,18 +146,25 @@ export default class ManageTeamContainer extends ListContainer {
                 <i class="icon icon-external-link" />
               </a>
             </ShowWhen>
-            <button
-              class="btn btn-primary pull-right"
-              onClick={this.addNewMember}
-            >
-              Invite New User
-            </button>
+            <ShowWhen additionalCondition={user => user.isAllowedEdit('team')}>
+              <button
+                class="btn btn-primary pull-right"
+                onClick={this.addNewMember}
+              >
+                Invite New User
+              </button>
+            </ShowWhen>
           </div>
         </HeaderAction>
         <div class="ManageTeam--list">
           <DataTable
             title="Team Members"
-            columns={[name, contactPhone, userRole, this.actions]}
+            columns={[
+              name,
+              contactPhone,
+              userRole,
+              this.actions({ allowDelete }),
+            ]}
             {...this.props}
           />
         </div>
