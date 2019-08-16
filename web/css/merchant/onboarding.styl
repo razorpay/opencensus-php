@@ -262,8 +262,9 @@
         .Input:first-child
           margin-top: 0
 
-.OnBoarding--Subscription, .OnBoarding--Route
-  .OnBoarding--ImageSlide .Landing--Image
+.OnBoarding--Subscription,
+.OnBoarding--Route
+  .Landing--Image
     overflow: hidden
     z-index: 2
     position: relative
@@ -285,8 +286,9 @@
       top: -132px
       border-radius: 1px
       z-index: -1
-      height: 640px
+      // height: 640px
       width: 180%
+      height: 816px
       min-width: 400px
       max-width: 490px
       color: #40c1bb
@@ -294,3 +296,10 @@
       box-shadow: 1px 1px 0 #009688, 2px 2px 0 #009688, 3px 3px 0 #009688, 4px 4px 0 #009688
       transform-origin: 0 0
       transform: rotateZ(45deg) skewX(-15deg) skewY(-16deg)
+
+.OnBoarding--Route
+  .Landing--Image
+    &:before
+      color: #50a8ed
+      box-shadow: 1px 1px 0 #11c0fa, 2px 2px 0 #11c0fa, 3px 3px 0 #11c0fa, 4px 4px 0 #11c0fa
+      background: linear-gradient(50deg, #0f7def, #11c0fa)
