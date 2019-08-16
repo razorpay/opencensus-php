@@ -28,12 +28,16 @@ import OnBoardingForm from '../OnBoardingForm';
   }
 )
 export default class OnBoardingFeatureRequest extends React.PureComponent {
-  state = {
-    submitted: false,
-    isLoading: false,
-    uploadedFile: null,
-    form: {},
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      submitted: false,
+      isLoading: false,
+      uploadedFile: null,
+      form: {},
+    };
+  }
 
   componentWillMount() {
     this.setState({
@@ -75,10 +79,6 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
       fileName = 'vendor_agreement';
     }
 
-    if (this.props.formType === 'subscriptions' && props.website_checkbox) {
-      const { website_checkbox, ...rest } = props;
-      props = rest;
-    }
     if (props.website_details) {
       props.website_details = autoPrefixUrls(props.website_details);
     }
@@ -218,14 +218,8 @@ const FeatureRequestForm = ({
         </div>
       ) : (
         <div class="m-t">
-          {heading.indexOf('Subscriptions') > -1 ? (
-            <span>We will review your request and get back to you.</span>
-          ) : (
-            <span>
-              <b>Please note </b> that your application is under review. We will
-              reach out on your contact email for all updates.
-            </span>
-          )}
+          <b>Please note </b> that your application is under review. We will
+          reach out on your contact email for all updates.
         </div>
       )}
     </div>
