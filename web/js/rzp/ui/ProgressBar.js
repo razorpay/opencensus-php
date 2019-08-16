@@ -51,12 +51,11 @@ export class TimedProgressBar extends React.PureComponent {
 
   render() {
     const { width } = this.state,
-      { color, type, className, children, duration } = this.props;
+      { type, className, children, duration } = this.props;
 
     const style = {
       width,
       transition: `width ${duration}s`,
-      ...(!!color && { backgroundColor: color }),
     };
 
     return (
