@@ -558,10 +558,15 @@ class Processor extends Base\Core
 
         if ($useQueue === true)
         {
-            // queue based implementation is indipendent of channels
-            list($bucketTimestamp, $bucketedMerchantIds) = (new Bucket\Core)->getMerchantIdsFromBucket();
+            $bucketTimestamp = null;
 
-            return $this->pushMerchantsToSettlementQueue($bucketedMerchantIds, $bucketTimestamp);
+            if (empty($merchantIds) === true)
+            {
+                // queue based implementation is indipendent of channels
+                list($bucketTimestamp, $merchantIds) = (new Bucket\Core)->getMerchantIdsFromBucket();
+            }
+
+            return $this->pushMerchantsToSettlementQueue($merchantIds, $bucketTimestamp);
         }
 
         $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);

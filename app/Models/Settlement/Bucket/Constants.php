@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Settlement\Bucket;
 
-
 final class Constants
 {
     //
