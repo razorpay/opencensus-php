@@ -16,6 +16,7 @@ import {
 } from 'merchant/modules/onboarding';
 
 import OnBoardingForm from '../OnBoardingForm';
+import { isFormValid } from '../Forms';
 
 @connect(
   state => ({
@@ -62,9 +63,21 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
   handleChange = e => {
     this.setState({
       form: {
+        ...this.state.form,
         [e.target.name]: e.target.value,
       },
     });
+  };
+
+  handleFileUpload = file => {
+    this.setState({
+      form: {
+        ...this.state.form,
+        uploadedFile: file,
+      },
+    });
+
+    return Promise.resolve();
   };
 
   // Form submit handler
@@ -74,13 +87,9 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
     let file = null;
     let fileName = null;
 
-    if (this.state.uploadedFile && this.props.formType === 'marketplace') {
-      file = this.state.uploadedFile;
+    if (this.state.form.uploadedFile && this.props.formType === 'marketplace') {
+      file = this.state.form.uploadedFile;
       fileName = 'vendor_agreement';
-    }
-
-    if (props.website_details) {
-      props.website_details = autoPrefixUrls(props.website_details);
     }
 
     return this.props
@@ -90,6 +99,7 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
           type: 'success',
           message: 'Your request has been submitted',
         });
+
         this.setState({ submitted: true });
       })
       .catch(({ errors }) => {
@@ -112,13 +122,14 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
         prev,
         desc,
         imageUrl,
-        invalid,
         formType,
         user,
         heading,
         isPreStepCompleted,
       } = this.props,
-      { submitted, isLoading, uploadedFile } = this.state;
+      { submitted, isLoading } = this.state;
+
+    const disabled = isFormValid(formType, this.state.form);
 
     return (
       <div class="OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--FeatureRequest">
@@ -139,10 +150,8 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
             user={user}
             submitted={submitted}
             formType={formType}
-            isPreStepCompleted={isPreStepCompleted}
-            uploadedFile={uploadedFile}
-            invalid={invalid}
             handleChange={this.handleChange}
+            handleFileUpload={this.handleFileUpload}
             switchToTestMode={this.switchToTestMode}
           />
 
@@ -157,6 +166,7 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
                   feature="subscriptions"
                   class="Forward-Button"
                   onClick={this.onSubmitClick}
+                  disabled={disabled}
                 >
                   Submit
                 </AsyncBtn.Primary>
@@ -172,13 +182,11 @@ const FeatureRequestForm = ({
   isLoading,
   formType,
   handleChange,
+  handleFileUpload,
   switchToTestMode,
-  invalid,
   heading,
   submitted,
   user,
-  isPreStepCompleted,
-  uploadedFile,
 }) => {
   if (isLoading) {
     return (
@@ -192,15 +200,9 @@ const FeatureRequestForm = ({
     return (
       <div class="FeatureRequest--Form">
         <OnBoardingForm
-          user={user}
           formType={formType}
           handleChange={handleChange}
-          isPreStepCompleted={
-            isFunction(isPreStepCompleted)
-              ? isPreStepCompleted()
-              : isPreStepCompleted
-          }
-          disabled={invalid || (formType === 'marketplace' && !uploadedFile)}
+          handleFileUpload={handleFileUpload}
         />
       </div>
     );

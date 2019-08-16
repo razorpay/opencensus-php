@@ -47,24 +47,30 @@ export default ({ handleChange }) => {
         </Field>
       </div>
 
-      <div class="form-group">
-        <label for="email_notify" class="label-required">
-          Signed Vendor Agreement
-        </label>
-        <FileUploadInputButton
-          accept="image/jpeg,image/png,application/pdf,application/x-pdf"
-          uploadedFileName=""
-          maxSize="8000000"
-          onChange={handleChange}
-        />
-        <small class="help-block">
-          <i class="i i-info-outline" style={{ marginRight: '4px' }} />
-          <span>
-            As a sample, upload a signed agreement executed with your
-            3rd-parties or vendors
-          </span>
-        </small>
-      </div>
+      <Input.File
+        required
+        name="file"
+        className="Input--vTop"
+        label="Signed Vendor Agreement"
+        acceptedTypes={[
+          'image/jpeg',
+          'image/png',
+          'application/pdf',
+          'application/x-pdf',
+        ]}
+        uploadedFileName="signed_vendor_agreement"
+        maxSize="8000000"
+        onChange={handleFileUpload}
+        description={
+          <React.Fragment>
+            <i class="i i-info-outline m-r" />
+            <span>
+              As a sample, upload a signed agreement executed with your
+              3rd-parties or vendors
+            </span>
+          </React.Fragment>
+        }
+      />
     </div>
   );
 };
