@@ -4,45 +4,87 @@ import AdvancedForm from './AdvancedForm';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
-    state = { isBaseFormOpened: false };
+    state = {
+      isBaseFormOpened: false,
+      isAdvancedFormOpened: false,
+      fieldType: null,
+    };
 
-    toggleBaseForm = forcedState => {
+    closeBaseForm = _ => {
       this.setState({
-        isBaseFormOpened:
+        isBaseFormOpened: false,
+        fieldType: null,
+      });
+    };
+
+    openBaseForm = intentTFieldype => {
+      const newState = {
+        isBaseFormOpened: true,
+      };
+
+      if (intentTFieldype) {
+        newState.fieldType = intentTFieldype;
+      }
+
+      this.setState(newState);
+    };
+
+    toggleAdvancedForm = forcedState => {
+      this.setState({
+        isAdvancedFormOpened:
           typeof forcedState !== 'undefined'
             ? forcedState
-            : !this.state.isBaseFormOpened,
+            : !this.state.isAdvancedFormOpened,
       });
+    };
+
+    onSaveBaseForm = formData => {
+      console.log('BASE FORM...', formData);
+
+      // Combine data from advanced form
+      //this.props.onSubmitAmountField(formData, this.props.index);
+    };
+
+    onSaveAdvancedForm = formData => {
+      console.log('ADVANCED FORM...', formData);
     };
 
     render() {
       const {
         field,
-        fieldType,
         index,
         validateSameTitleExists,
         onDeleteAmountField,
-        onSubmitAmountField,
       } = this.props;
 
       let isFieldRemovable = true; // TODO: Handle condition to check atleast 1 price field is present.
 
       return (
-        <div style={{ position: 'relative' }}>
+        <div class="CreatorManager">
           <_WrappedDisplayFieldComponent
             field={field}
-            openBaseForm={this.toggleBaseForm}
+            openBaseForm={this.openBaseForm}
           />
           {this.state.isBaseFormOpened && (
             <BaseFormModal
               index={index}
               field={field}
-              fieldType={fieldType}
+              fieldType={this.state.fieldType}
               validateSameTitleExists={validateSameTitleExists}
-              onSubmitAmountField={onSubmitAmountField}
+              onSaveForm={this.onSaveBaseForm}
               onDeleteAmountField={onDeleteAmountField}
-              closeFormModal={_ => this.toggleBaseForm(false)}
+              closeFormModal={this.closeBaseForm}
               isFieldRemovable={isFieldRemovable}
+              openAdvancedForm={_ => this.toggleAdvancedForm(true)}
+            />
+          )}
+
+          {this.state.isAdvancedFormOpened && (
+            <AdvancedFormModal
+              field={field}
+              fieldType={this.state.fieldType}
+              onSaveForm={this.onSaveAdvancedForm}
+              closeFormModal={_ => this.toggleAdvancedForm(false)}
             />
           )}
         </div>
@@ -54,8 +96,8 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 }
 
 export class BaseFormModal extends React.PureComponent {
-  onSubmitAmountField = formData => {
-    this.props.onSubmitAmountField(formData, this.props.index);
+  onSaveForm = formData => {
+    this.props.onSaveForm(formData);
     this.props.closeFormModal();
   };
 
@@ -72,6 +114,7 @@ export class BaseFormModal extends React.PureComponent {
       validateSameTitleExists,
       closeFormModal,
       isFieldRemovable,
+      openAdvancedForm,
     } = this.props;
 
     return (
@@ -82,10 +125,11 @@ export class BaseFormModal extends React.PureComponent {
           selfIndex={index}
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeFormModal}
-          onSaveField={this.onSubmitAmountField}
+          onSaveForm={this.onSaveForm}
           onDeleteField={
             isFieldRemovable ? this.onDeleteAmountField : undefined
           }
+          openAdvancedForm={openAdvancedForm}
         />
       </CreatorModal>
     );
@@ -93,8 +137,8 @@ export class BaseFormModal extends React.PureComponent {
 }
 
 export class AdvancedFormModal extends React.PureComponent {
-  onSave = formData => {
-    this.props.onSave(formData);
+  onSaveForm = formData => {
+    this.props.onSaveForm(formData);
     this.props.closeFormModal();
   };
 
@@ -107,7 +151,7 @@ export class AdvancedFormModal extends React.PureComponent {
           field={field}
           fieldType={fieldType}
           onCloseForm={closeFormModal}
-          onSave={this.onSave}
+          onSaveForm={this.onSaveForm}
         />
       </CreatorModal>
     );

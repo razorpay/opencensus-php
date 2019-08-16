@@ -42,13 +42,13 @@ export default class BaseForm extends React.PureComponent {
     this.setState({ disableSubmit });
   };
 
-  onSaveField = formData => {
+  onSaveForm = formData => {
     // Assuming this.state.enum.length > 1 always otherwise toggleSubmitBtn will handle
     if (this.state.enum) {
       formData.enum = this.state.enum;
     }
 
-    this.props.onSaveField(formData);
+    this.props.onSaveForm(formData);
   };
 
   onChangeEnumList = (enumList = []) => {
@@ -140,7 +140,7 @@ export default class BaseForm extends React.PureComponent {
       <Form
         setRef={this.setRefForm}
         onChange={this.onChange}
-        onSubmit={this.onSaveField}
+        onSubmit={this.onSaveForm}
       >
         <Input.TextareaAutoResize
           class="Input--title"

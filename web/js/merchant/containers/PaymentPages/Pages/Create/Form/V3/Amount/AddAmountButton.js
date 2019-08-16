@@ -1,9 +1,9 @@
 import Button from 'component/Button';
 import FieldsDropdown from '../../FieldsDropdown';
 import { getAmountFieldTypes } from '../../Amount_Fields/V3';
-import { BaseFormModal } from './CreatorManager';
+import CreatorManager from './CreatorManager';
 
-export default class AddAmountButton extends React.PureComponent {
+class AddAmountButton extends React.PureComponent {
   state = { isBaseFormOpened: false };
 
   toggleBaseForm = forcedState => {
@@ -24,11 +24,7 @@ export default class AddAmountButton extends React.PureComponent {
   };
 
   onSelectFieldType = field => {
-    this.setState({
-      fieldType: field.key,
-    });
-
-    this.toggleBaseForm(true);
+    this.props.openBaseForm(field.key);
   };
 
   render() {
@@ -41,35 +37,24 @@ export default class AddAmountButton extends React.PureComponent {
     const { fieldType, isBaseFormOpened } = this.state;
 
     return (
-      <React.Fragment>
-        <AmountDropdown
-          onSelect={this.onSelectFieldType}
-          beforeOptionsTxt="New Amount Field"
-        >
-          <Button.Transparent class="btn-dotted">
-            <span class="enclose-circle">
-              <b>₹</b>
-            </span>{' '}
-            <span>
-              <b>Price field</b>
-            </span>
-          </Button.Transparent>
-        </AmountDropdown>
-
-        {isBaseFormOpened && (
-          <BaseFormModal
-            fieldType={fieldType}
-            validateSameTitleExists={validateSameTitleExists}
-            onSubmitAmountField={onSubmitAmountField}
-            onDeleteAmountField={onDeleteAmountField}
-            closeFormModal={_ => this.toggleBaseForm(false)}
-            isFieldRemovable
-          />
-        )}
-      </React.Fragment>
+      <AmountDropdown
+        onSelect={this.onSelectFieldType}
+        beforeOptionsTxt="New Amount Field"
+      >
+        <Button.Transparent class="btn-dotted">
+          <span class="enclose-circle">
+            <b>₹</b>
+          </span>{' '}
+          <span>
+            <b>Price field</b>
+          </span>
+        </Button.Transparent>
+      </AmountDropdown>
     );
   }
 }
+
+export default CreatorManager(AddAmountButton);
 
 export const AmountDropdown = ({
   children,
