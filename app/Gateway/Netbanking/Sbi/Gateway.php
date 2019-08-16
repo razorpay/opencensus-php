@@ -192,7 +192,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequest(array $input)
     {
-        $request = $this->getStandardRequestArray();
+        $request = $this->getStandardRequestArray([], 'post', $this->action . '_' . $this->mode);
 
         if ($this->isFirstRecurringPayment($input) === true)
         {
@@ -387,7 +387,7 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT   => $verify->input['payment']['amount'] / 100,
         ];
 
-        $type = $this->action;
+        $type = $this->action . '_' . $this->mode;
 
         if ($verify->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
@@ -396,7 +396,7 @@ class Gateway extends Base\Gateway
                 RequestFields::MANDATE_VERIFY_TXN_AMOUNT     => Emandate\Constants::TXN_AMOUNT,
             ];
 
-            $type = 'verify_mandate';
+            $type = 'verify_mandate'. '_' . $this->mode;
         }
 
         $stringToEncrypt = $this->getFormattedRequest($requestArray);
