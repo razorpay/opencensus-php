@@ -1,24 +1,28 @@
 import { connect } from 'react-redux';
 
-import { openModal, closeModal } from 'common/modal';
+import { closeModal, openModal } from 'rzp/modules/modals';
+
+import Button from 'component/Button';
 
 import TransfersPreviewModal from './TransfersPreviewModal';
 
-connect(null, {
+@connect(() => ({}), {
   openModal,
   closeModal,
-});
+})
 export default class ShowTransferPreviewModal extends React.PureComponent {
   openTransfersPreviewModal = () => {
     this.props.openModal({
-      size: 'small',
+      size: 'large',
       component: <TransfersPreviewModal closeModal={this.props.closeModal} />,
     });
   };
 
   render() {
     return (
-      <div onClick={this.openTransfersPreviewModal}>{this.props.children}</div>
+      <Button.Transparent onClick={this.openTransfersPreviewModal}>
+        {this.props.children}
+      </Button.Transparent>
     );
   }
 }
