@@ -2,7 +2,7 @@ import { classList } from 'common/util';
 import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
 
-const UDFDisplayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
+const displayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
   return (
     <EditLayer
       class={classList(
@@ -36,4 +36,5 @@ const UDFDisplayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
   );
 };
 
-export default CreatorManager(UDFDisplayField);
+const UDFDisplayField = CreatorManager(displayField);
+export default UDFDisplayField;

@@ -18,6 +18,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     render() {
       const {
         field,
+        fieldType,
         index,
         validateSameTitleExists,
         onDeleteAmountField,
@@ -36,22 +37,13 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             <BaseFormModal
               index={index}
               field={field}
+              fieldType={fieldType}
               validateSameTitleExists={validateSameTitleExists}
               onSubmitAmountField={onSubmitAmountField}
               onDeleteAmountField={onDeleteAmountField}
               closeFormModal={_ => this.toggleBaseForm(false)}
               isFieldRemovable={isFieldRemovable}
             />
-          )}
-
-          {this.state.isAdvancedFormOpened && (
-            <CreatorModal>
-              <AdvancedForm
-                field={field}
-                closeFormModal={_ => this.toggleAdvancedForm(false)}
-                onSubmit={this.onSubmitAdvancedForm}
-              />
-            </CreatorModal>
           )}
         </div>
       );
@@ -75,7 +67,7 @@ export class BaseFormModal extends React.PureComponent {
   render() {
     const {
       field,
-      field_schema,
+      fieldType,
       index,
       validateSameTitleExists,
       closeFormModal,
@@ -85,7 +77,8 @@ export class BaseFormModal extends React.PureComponent {
     return (
       <CreatorModal class="CreatorModal-BaseForm" overElement>
         <BaseForm
-          field={field || field_schema}
+          field={field}
+          fieldType={fieldType}
           selfIndex={index}
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeFormModal}
@@ -100,21 +93,21 @@ export class BaseFormModal extends React.PureComponent {
 }
 
 export class AdvancedFormModal extends React.PureComponent {
-  onSubmitAmountField = formData => {
-    this.props.onSubmit(formData);
+  onSave = formData => {
+    this.props.onSave(formData);
     this.props.closeFormModal();
   };
 
   render() {
-    const { field, index, closeFormModal } = this.props;
+    const { field, fieldType, onSave, closeFormModal } = this.props;
 
     return (
       <CreatorModal class="CreatorModal-AdvancedForm">
         <AdvancedForm
           field={field}
-          selfIndex={index}
+          fieldType={fieldType}
           onCloseForm={closeFormModal}
-          onSaveField={this.onSubmitAmountField}
+          onSave={this.onSave}
         />
       </CreatorModal>
     );

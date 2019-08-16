@@ -1,6 +1,6 @@
 import Button from 'component/Button';
 import FieldsDropdown from '../../FieldsDropdown';
-import { getFieldTypes } from '../../Amount_Fields/V3';
+import { getAmountFieldTypes } from '../../Amount_Fields/V3';
 import { BaseFormModal } from './CreatorManager';
 
 export default class AddAmountButton extends React.PureComponent {
@@ -17,7 +17,7 @@ export default class AddAmountButton extends React.PureComponent {
     };
 
     if (!isBaseFormOpened) {
-      newState.field_type_key = null;
+      newState.fieldType = null;
     }
 
     this.setState(newState);
@@ -25,7 +25,7 @@ export default class AddAmountButton extends React.PureComponent {
 
   onSelectFieldType = field => {
     this.setState({
-      field_type_key: field.label,
+      fieldType: field.key,
     });
 
     this.toggleBaseForm(true);
@@ -38,7 +38,7 @@ export default class AddAmountButton extends React.PureComponent {
       onSubmitAmountField,
     } = this.props;
 
-    const { field_type_key, isBaseFormOpened } = this.state;
+    const { fieldType, isBaseFormOpened } = this.state;
 
     return (
       <React.Fragment>
@@ -58,7 +58,7 @@ export default class AddAmountButton extends React.PureComponent {
 
         {isBaseFormOpened && (
           <BaseFormModal
-            field_type_key={field_type_key}
+            fieldType={fieldType}
             validateSameTitleExists={validateSameTitleExists}
             onSubmitAmountField={onSubmitAmountField}
             onDeleteAmountField={onDeleteAmountField}
@@ -80,7 +80,7 @@ export const AmountDropdown = ({
   <FieldsDropdown
     beforeOptionsTxt={beforeOptionsTxt}
     type="amount"
-    options={getFieldTypes()}
+    options={getAmountFieldTypes()}
     trigger={children}
     onSelect={onSelect}
     selectedOption={selectedOption && selectedOption.label}

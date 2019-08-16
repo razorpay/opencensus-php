@@ -3,7 +3,7 @@ import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList } from 'common/util';
 import { mapFieldToIndex } from '../../UDF_Fields/V3';
-import FieldOptionsDropdown, { OptionsItem } from './FieldOptionsDropdown';
+import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
@@ -42,8 +42,6 @@ export default class BaseForm extends React.PureComponent {
   };
 
   onSaveField = formData => {
-    const fieldType = [Number(formData.field_type)];
-
     // Assuming this.state.enum.length > 1 always otherwise toggleSubmitBtn will handle
     if (this.state.enum) {
       formData.enum = this.state.enum;

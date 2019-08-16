@@ -1,44 +1,35 @@
-import fDefs from './field-definitions';
-
-/*
-* A. Type: text
-*    Validation: single line text(string), alphabets, alphanumeric, number, email, phone, url, large text area, pan, pincode
-*
-* B. Type: Select
-*     Validation: string
-*
-* */
+import FIELD_TYPES from './fieldTypes';
 
 // Note: mapFieldToIndex is prone to error if the position of items is changed in FIELD_TYPES
-export function getFieldTypes() {
-  const FIELD_TYPES = [
-    fDefs.fixed_price,
-    fDefs.fixed_price_optional,
-    fDefs.dynamic_price,
-    fDefs.multiple_purchase,
+export function getAmountFieldTypes() {
+  const fieldTypes = [
+    FIELD_TYPES.fixed_price,
+    FIELD_TYPES.fixed_price_optional,
+    FIELD_TYPES.dynamic_price,
+    FIELD_TYPES.multiple_purchase,
   ];
 
-  return FIELD_TYPES;
+  return fieldTypes;
 }
 
 // Note: If definition of amount types is changed, then this logic would break
-export function mapFieldToIndex(field) {
-  let selectedIndexInOptions = null;
+export function mapFieldToAmountType(amountField) {
+  let amountFieldType = null;
 
   // Fixed price
-  if (field.mandatory) {
-    selectedIndexInOptions = 0; // fDefs.fixed_price,
+  if (amountField.mandatory) {
+    amountFieldType = getFieldTypes[0]; // FIELD_TYPES.fixed_price,
 
-    if (field.min_purchase || field.max_purchase) {
-      selectedIndexInOptions = 3; // fDefs.multiple_purchase
+    if (amountField.min_purchase || field.max_purchase) {
+      amountFieldType = getFieldTypes[3]; // FIELD_TYPES.multiple_purchase
     }
-  } else if (field.amount) {
-    selectedIndexInOptions = 1; // fDefs.fixed_price_optional
+  } else if (amountField.amount) {
+    amountFieldType = getFieldTypes[1]; // FIELD_TYPES.fixed_price_optional
   } else {
-    selectedIndexInOptions = 2; // fDefs.dynamic_price
+    amountFieldType = getFieldTypes[2]; // FIELD_TYPES.dynamic_price
   }
 
-  return selectedIndexInOptions;
+  return amountFieldType;
 }
 
 /*
