@@ -50,6 +50,12 @@ export default class MarketPlaceOnBoarding extends React.Component {
     );
   };
 
+  onClickSkipButton = () => {
+    if (this.props.mode === 'test') return;
+
+    this.props.goTo(2);
+  };
+
   render() {
     const { mode, goTo, active, onSlideChange } = this.props;
 
@@ -95,8 +101,8 @@ export default class MarketPlaceOnBoarding extends React.Component {
             <SliderDots {...sliderProps}>
               {sliderProps.active !== 2 && (
                 <SkipAndGetStartedButton
-                  goTo={goTo}
-                  feature={RZPFeatures.ROUTE}
+                  onClick={this.onClickSkipButton}
+                  feature={isTestMode && RZPFeatures.ROUTE}
                   isTestMode={isTestMode}
                 />
               )}
