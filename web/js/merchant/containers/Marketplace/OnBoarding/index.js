@@ -12,7 +12,7 @@ import OnBoarding, {
   OnBoardingWrapper,
   FeatureEnableSliderButton,
   SkipAndGetStartedButton,
-  isAllowedResetBoarding,
+  getIsAllowedResetBoarding,
 } from 'merchant/components/OnBoarding';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
@@ -26,9 +26,8 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 })
 export default class MarketPlaceOnBoarding extends React.Component {
   closeOnboarding = () => {
-    this.props.closeOnboarding({
-      isFeatureEnabler: true,
-    });
+    setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
+    this.props.closeOnboarding();
   };
 
   getNextBtnProp = sliderProps => () => {
@@ -42,12 +41,18 @@ export default class MarketPlaceOnBoarding extends React.Component {
       );
     }
 
-    return (
-      <FeatureEnableSliderButton
-        feature={RZPFeatures.ROUTE}
-        page={sliderProps.active}
-      />
-    );
+    const props = {
+      feature: RZPFeatures.ROUTE,
+      onClick: this.props.closeOnboarding,
+      page: sliderProps.active,
+    };
+
+    if (this.props.user.isMarketplaceEnabled) {
+      props.isLocalEnabler = true;
+      props.onClick = this.closeOnboarding;
+    }
+
+    return <FeatureEnableSliderButton {...props} />;
   };
 
   onClickSkipButton = () => {
@@ -57,7 +62,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
   };
 
   render() {
-    const { mode, goTo, active, onSlideChange } = this.props;
+    const { mode, active, onSlideChange } = this.props;
 
     const isTestMode = mode === 'test';
 
@@ -114,12 +119,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
   }
 }
 
-export function isAllowedResetRouteBoarding({
-  merchantId,
-  mode,
-  transfers,
-  accounts,
-}) {
+export function getIsAllowedResetRouteBoarding({ transfers, accounts }) {
   if (
     accounts.loading ||
     transfers.loading ||
@@ -129,9 +129,5 @@ export function isAllowedResetRouteBoarding({
     return false;
   }
 
-  return isAllowedResetBoarding({
-    merchantId,
-    mode,
-    feature: RZPFeatures.ROUTE,
-  });
+  return getIsAllowedResetBoarding(RZPFeatures.ROUTE);
 }
