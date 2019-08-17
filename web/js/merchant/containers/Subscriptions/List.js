@@ -26,11 +26,6 @@ import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
-const link = {
-  title: 'Subscription Link',
-  value: item => <CopyLink url={item.short_url} />,
-};
-
 @connect(state => state.subscriptions, { fetchAll })
 export default class SubscriptionsListContainer extends ListContainer {
   componentDidMount() {
