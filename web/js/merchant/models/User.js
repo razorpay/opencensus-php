@@ -3,8 +3,9 @@ import { filterBy } from 'rzp/utils/rzp-utils';
 
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import LocalStorageService from 'rzp/utils/localStorage';
-import { getOrg } from 'merchant/store';
+import { getOrg, getMode } from 'merchant/store';
 import { getExperiment } from 'common/util';
+import { getOnBoardingKeys } from 'merchant/components/OnBoarding';
 
 import {
   roleEditPermissions,
@@ -207,6 +208,22 @@ export default class User {
 
   get isSubscriptionsEnabled() {
     return this.isFeatureEnabled('subscriptions');
+  }
+
+  get isPaymentPagesEnabled() {
+    const { isEnabled } = getOnBoardingKeys({
+      mode: getMode(),
+      merchantId: this.current,
+      feature: 'payment_pages',
+    });
+
+    const paymentPageState = JSON.parse(LocalStorageService.getItem(isEnabled));
+
+    return paymentPageState && paymentPageState.isEnabled;
+  }
+
+  get currentMerchant() {
+    return this.merchants[this.current];
   }
 
   get isGSTDisabled() {

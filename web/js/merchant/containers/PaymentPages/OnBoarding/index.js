@@ -1,5 +1,3 @@
-import { connect } from 'react-redux';
-
 import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
@@ -15,10 +13,6 @@ import OnBoarding, {
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
-@connect(state => ({
-  user: state.session.user,
-  mode: state.session.mode,
-}))
 @OnBoarding({
   feature: RZPFeatures.PP,
 })
@@ -26,6 +20,8 @@ export default class PaymentPagesOnBoarding extends React.Component {
   getNextBtnProp = sliderProps => () => {
     return (
       <FeatureEnableSliderButton
+        isLocalEnabler
+        feature={RZPFeatures.PP}
         onClick={this.props.closeOnboarding}
         page={sliderProps.active}
       />

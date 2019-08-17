@@ -148,14 +148,19 @@ export default class PaymentPagesContainer extends ListContainer {
   }
 
   initPaymentPagesOnboarding = (props = this.props) => {
-    const merchant = props.user.merchants[props.user.current];
+    const { isPaymentPagesEnabled } = props.user;
+    let showOnboarding = !isPaymentPagesEnabled;
 
-    let showOnboarding = isAllowedPaymentPagesOnBoarding({
-      mode: props.mode,
-      merchantId: merchant.id,
-      paymentPages: props.paymentPages,
-      loading: this.state.loading || this.state.loadingAllList,
-    });
+    if (isPaymentPagesEnabled) {
+      const merchant = props.user.merchants[props.user.current];
+
+      showOnboarding = isAllowedPaymentPagesOnBoarding({
+        mode: props.mode,
+        merchantId: merchant.id,
+        paymentPages: props.paymentPages,
+        loading: this.state.loading || this.state.loadingAllList,
+      });
+    }
 
     let isQuickGuideClosed = getPaymentPageQuickGuideIsClosed(props);
 
