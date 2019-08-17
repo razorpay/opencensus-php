@@ -82,29 +82,24 @@ export function getIsAllowedPaymentPagesOnBoarding({
   });
 }
 
-export function getIsPaymentPagesEnabled({
-  mode,
-  feature,
-  user,
-  paymentPages,
-  loading,
-}) {
+export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
   if (user.isPaymentPagesEnabled) {
     return true;
   }
 
   if (paymentPages.length) {
     setOnBoardingDataInLocalState({
-      mode,
-      feature,
-      merchantId: user.current,
+      feature: RZPFeatures.PP,
+      data: {
+        isEnabled: true,
+      },
     });
 
     return true;
   }
 
   if (loading) {
-    return false;
+    return true;
   }
 
   return false;

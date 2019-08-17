@@ -4,7 +4,7 @@ import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
 
 import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
-  getQuickGuideIsClosed,
+  getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
   QuickGuideTitle,
@@ -18,6 +18,7 @@ const { done, locked, active, loading } = PossibleStatuses;
 @connect(state => ({
   user: state.session.user,
   mode: state.session.mode,
+  invoices: state.invoices,
 }))
 @QuickGuide({
   feature: RZPFeatures.PP,
@@ -74,7 +75,7 @@ export default class PaymentPagesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getPaymentPageQuickGuideIsClosed = props => {
-  let isClosed = getQuickGuideIsClosed(props, RZPFeatures.PP);
+  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PP);
 
   // Check if transfers non created state count is more then or equal to 2
   if (isClosed || props.paymentPages.length <= 2) {
@@ -84,11 +85,11 @@ export const getPaymentPageQuickGuideIsClosed = props => {
   return true;
 };
 
-const getStatus = ({ paymentPages }) => {
+const getStatus = ({ paymentPages, invoices }) => {
   let paymentPageStatus = loading,
     paymentReceiveStatus = loading;
 
-  if (paymentPageStatus.loading) {
+  if (invoices.loading) {
     return {
       paymentPageStatus,
       paymentReceiveStatus,
