@@ -23,7 +23,9 @@ import AuthLinksList from './AuthLinks/List';
 import HostedEmanadateBatches from './Batch/List';
 import RecurringPayments from './RecurringPayments/List';
 
-import OnBoarding, { isAllowedResetSubscriptionBoarding } from './OnBoarding';
+import OnBoarding, {
+  getIsAllowedResetSubscriptionBoarding,
+} from './OnBoarding';
 import QuickGuide, { getSubscriptionQuickGuideIsClosed } from './QuickGuide';
 
 @connect(
@@ -79,7 +81,10 @@ export default class SubscriptionsController extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (this.props.user.isChargeAtWillEnabled) return;
 
-    if (nextProps.subscriptions.loading !== this.props.subscriptions.loading) {
+    if (
+      !this.props.user.isChargeAtWillEnabled &&
+      nextProps.subscriptions.loading !== this.props.subscriptions.loading
+    ) {
       this.initSubscriptions(nextProps);
     }
   }
@@ -87,22 +92,18 @@ export default class SubscriptionsController extends React.Component {
   initSubscriptions = (props = this.props) => {
     if (props.user.isChargeAtWillEnabled) return;
 
-    const {
-      isSubscriptionsEnabled,
-      isChargeAtWillEnabled,
-      merchants,
-    } = props.user;
+    const { isSubscriptionsEnabled } = props.user;
+    let showOnboarding = !isSubscriptionsEnabled;
 
-    const merchant = merchants[props.user.current];
-
-    let showOnboarding = !isSubscriptionsEnabled && !isChargeAtWillEnabled;
-
-    if (!showOnboarding) {
-      showOnboarding = isAllowedResetSubscriptionBoarding({
-        merchantId: merchant.id,
-        mode: props.mode,
+    if (isSubscriptionsEnabled) {
+      showOnboarding = getIsAllowedResetSubscriptionBoarding({
         plans: props.plans,
         subscriptions: props.subscriptions,
+      });
+    } else {
+      this.props.handleProductQuickGuide({
+        ...props.subscriptionProductOnBoarding,
+        showOnboarding: true,
       });
     }
 
@@ -120,10 +121,11 @@ export default class SubscriptionsController extends React.Component {
   };
 
   render() {
-    if (!this.props.user.isChargeAtWillEnabled) {
-      if (this.props.subscriptionProductOnBoarding.showOnboarding) {
-        return <OnBoarding />;
-      }
+    if (
+      !this.props.user.isChargeAtWillEnabled &&
+      this.props.subscriptionProductOnBoarding.showOnboarding
+    ) {
+      return <OnBoarding />;
     }
 
     return (
