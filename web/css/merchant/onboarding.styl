@@ -19,8 +19,8 @@
 
   .SliderDots
     position: absolute
-    bottom: -80px
     left: 50%
+    margin-top: 20px
     transform: translate(-50%, 0)
     @media(max-width: 1024px)
       display: none
@@ -248,18 +248,15 @@
 
 .OnBoarding--FeatureRequest
   .FeatureRequest
-    padding: 0 64px 64px 64px
+    margin-top: 64px
+    align-self: flex-start
+    padding: 0 64px
 
     .desc
       color: #8B9498
       font-size: 14px
       line-height: 20px
       margin-bottom: 12px
-
-    .FeatureRequest--Form
-      .form-body
-        .Input:first-child
-          margin-top: 0
 
 .OnBoarding--Subscription,
 .OnBoarding--Route
@@ -302,3 +299,6 @@
       color: #50a8ed
       box-shadow: 1px 1px 0 #11c0fa, 2px 2px 0 #11c0fa, 3px 3px 0 #11c0fa, 4px 4px 0 #11c0fa
       background: linear-gradient(50deg, #0f7def, #11c0fa)
+    
+    img
+      transform: translate(0, -25%)  rotateY(-180deg)
