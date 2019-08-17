@@ -1,3 +1,5 @@
+import { connect } from 'react-redux';
+
 import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
@@ -5,50 +7,42 @@ import Slider, { SliderDots } from 'component/Slider';
 import Landing from 'merchant/components/OnBoarding/Screens/Landing';
 import Features from 'merchant/components/OnBoarding/Screens/Features';
 import OnBoarding, {
-  NextButton,
   OnBoardingWrapper,
   FeatureEnableSliderButton,
   SkipAndGetStartedButton,
-  isAllowedResetBoarding,
+  getIsAllowedResetBoarding,
 } from 'merchant/components/OnBoarding';
+import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { PROS, FEATURES_DATA, FEATURES_LINKS } from './data';
 
+@connect(state => ({ user: state.session.user }))
 @OnBoarding({
   feature: RZPFeatures.SUBSCRIPTIONS,
 })
 export default class SubscriptionOnBoarding extends React.Component {
   closeOnboarding = () => {
-    this.props.closeOnboarding({
-      isFeatureEnabler: true,
-    });
+    setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
+    this.props.closeOnboarding();
   };
 
   getNextButton = sliderProps => () => {
-    const { isSubscriptionsEnabled, isChargeAtWillEnabled } = this.props.user;
+    const props = {
+      feature: RZPFeatures.SUBSCRIPTIONS,
+      onClick: this.props.closeOnboarding,
+      page: sliderProps.active,
+    };
 
-    if (isSubscriptionsEnabled || isChargeAtWillEnabled) {
-      return (
-        <NextButton
-          onClick={this.props.closeOnboarding}
-          page={sliderProps.active}
-        />
-      );
+    if (this.props.user.isSubscriptionsEnabled) {
+      props.isLocalEnabler = true;
+      props.onClick = this.closeOnboarding;
     }
 
-    return (
-      <FeatureEnableSliderButton
-        page={sliderProps.active}
-        feature={RZPFeatures.SUBSCRIPTIONS}
-        onClick={this.closeOnboarding}
-      />
-    );
+    return <FeatureEnableSliderButton {...props} />;
   };
 
   renderSkipButton = sliderProps => {
-    const { isSubscriptionsEnabled, isChargeAtWillEnabled } = this.props.user;
-
-    if (isSubscriptionsEnabled || isChargeAtWillEnabled) {
+    if (this.props.user.isSubscriptionsEnabled) {
       return (
         <SkipAndGetStartedButton
           page={sliderProps.active}
@@ -105,24 +99,18 @@ export default class SubscriptionOnBoarding extends React.Component {
   }
 }
 
-export const isAllowedResetSubscriptionBoarding = ({
-  merchantId,
-  mode,
+export const getIsAllowedResetSubscriptionBoarding = ({
   plans,
   subscriptions,
 }) => {
-  if (
-    plans.loading ||
-    plans.items.length ||
-    subscriptions.loading ||
-    subscriptions.items.length
-  ) {
-    return false;
-  }
+  // if (
+  //   plans.loading ||
+  //   plans.items.length ||
+  //   subscriptions.loading ||
+  //   subscriptions.items.length
+  // ) {
+  //   return false;
+  // }
 
-  return isAllowedResetBoarding({
-    merchantId,
-    mode,
-    feature: RZPFeatures.SUBSCRIPTIONS,
-  });
+  return getIsAllowedResetBoarding(RZPFeatures.SUBSCRIPTIONS);
 };
