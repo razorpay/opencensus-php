@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
+use Cache;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
@@ -12,10 +13,10 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
-use RZP\Jobs\SettlementJob;
 use RZP\Models\BankAccount;
 use RZP\Constants\Environment;
 use RZP\Models\Settlement\Bucket;
+use RZP\Jobs\Settlement\SettlementCreate;
 use RZP\Models\Merchant as MerchantModel;
 
 class Processor extends Base\Core
@@ -44,6 +45,10 @@ class Processor extends Base\Core
     const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
     const MUTEX_LOCK_TIMEOUT    = 1800;
+
+    const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s';
+
+    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 600;
 
     public function __construct()
     {
@@ -264,14 +269,15 @@ class Processor extends Base\Core
 
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
                 function() use ($merchantSettler, $setl, $merchantSettleToPartner)
-            {
-                if ($setl->hasTransaction() === false)
                 {
-                    $merchantSettler->createTransaction($setl);
-                }
+                    if ($setl->hasTransaction() === false)
+                    {
+                        $merchantSettler->createTransaction($setl);
+                    }
 
-                return $merchantSettler->retryFailedSettlement($setl, $merchantSettleToPartner);
-            });
+                    return $merchantSettler->retryFailedSettlement($setl, $merchantSettleToPartner);
+                }
+            );
 
             $setlAttempts->push($bankTransferAtpt);
 
@@ -714,13 +720,19 @@ class Processor extends Base\Core
                 'merchant_count'    => count($merchantIds)
             ]);
 
+        //
+        // add cout of total merchant IDs in cache
+        // so that it can be used to initate transfer when settlement creation is complete
+        //
+        Cache::increment(SettlementCreate::TOTAL_MERCHANT_COUNT, count($merchantIds));
+
         $startTime = time();
 
         foreach ($merchantIds as $merchantId)
         {
             try
             {
-                SettlementJob::dispatch($this->mode, $merchantId, $bucketTimestamp);
+                SettlementCreate::dispatch($this->mode, $merchantId, $bucketTimestamp);
 
                 $this->trace->info(
                     TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT,
@@ -735,6 +747,13 @@ class Processor extends Base\Core
             catch(\Throwable $e)
             {
                 $totalCount['enqueue_failed'] += 1;
+
+                //
+                // in case of failures decremenet the total count stored
+                // this will help maintain the exact count pushed to queue
+                // and also when to iniatie the transfer
+                //
+                Cache::decrement(SettlementCreate::TOTAL_MERCHANT_COUNT);
 
                 $this->trace->traceException(
                     $e,
@@ -765,9 +784,9 @@ class Processor extends Base\Core
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
         // get merchat details for further filtering
-        $this->merchant = $this->repo->merchant->find($merchantId);
+        $merchant = $this->repo->merchant->find($merchantId);
 
-        if ($this->isMerchantSettlementAllowed($this->merchant) === false)
+        if ($this->isMerchantSettlementAllowed($merchant) === false)
         {
             return [
                 'settlement_count' => 0,
@@ -776,8 +795,39 @@ class Processor extends Base\Core
             ];
         }
 
-        $channel = $this->merchant->getChannel();
+        $resource = sprintf(self::MUTEX_SETTLEMENT_CREATE_RESOURCE, $merchantId);
 
+        $result = $this->mutex->acquireAndRelease(
+            $resource,
+            function () use ($merchant)
+            {
+                return $this->createSettlementForMerchant($merchant);
+            },
+            self::MUTEX_SETTLEMENT_CREATE_TIMEOUT);
+
+        //
+        // Marking merchant settlement as complete here (update the bucket entity)
+        // at this point we have tried to settle to merchant
+        // at this stage settlement might have also been skipped because of balance
+        // but still we update the bucket as completed
+        // reason being, if merchant balance is low the only way to get settlement is by fixing the balance
+        // to fix the balance there has to be a transaction (payment/adjustment) created
+        // which will add the merchant to bucket for settlement hence the process continues
+        //
+        (new Bucket\Core)->markMerchantSettlementAsComplete($merchantId);
+
+        $this->trace->count(
+            Metric::PROCESSED_SETTLEMENT_COUNT,
+            [
+                'channel' => $this->channel,
+            ]);
+
+        return $result;
+    }
+
+    protected function createSettlementForMerchant(MerchantModel\Entity $merchant): array
+    {
+        $channel = $this->merchant->getChannel();
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
@@ -794,22 +844,14 @@ class Processor extends Base\Core
                                     ])
                                 ->keyBy(MerchantModel\Entity::ID);
 
-
+        // TODO: try to remove this filter
         $transactionsGroup = [
             $merchantId => $this->filterMerchantTransactionsForSettlement($txns),
         ];
 
         $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchantId]);
 
-        $result = $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner);
-
-        $this->trace->count(
-            Metric::PROCESSED_SETTLEMENT_COUNT,
-            [
-                'channel' => $this->channel,
-            ]);
-
-        return $result;
+        return $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner);
     }
 
     protected function shouldUseQueue(array $input)

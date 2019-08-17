@@ -840,6 +840,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_QUEUE_TRANSACTIONS_FAILED                  = 'SETTLEMENT_QUEUE_TRANSACTIONS_FAILED';
     const SETTLEMENTS_PROCESS_FAILED_FOR_MERCHANT               = 'SETTLEMENTS_PROCESS_FAILED_FOR_MERCHANT';
     const SETTLEMENT_RECON_NOTIFIER_FAILED                      = 'SETTLEMENT_RECON_NOTIFIER_FAILED';
+    const FAILED_TO_ADD_MERCHANT_TO_SETTLEMENT_BUCKET           = 'FAILED_TO_ADD_MERCHANT_TO_SETTLEMENT_BUCKET';
 
     const VPA_CREATE_REQUEST                                    = 'VPA_CREATE_REQUEST';
     const VPA_CREATED                                           = 'VPA_CREATED';

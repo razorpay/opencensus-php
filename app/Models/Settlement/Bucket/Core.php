@@ -40,7 +40,7 @@ class Core extends Base\Core
 
         $merchantIDs = $this->repo
                             ->settlement_bucket
-                            ->getMerchantIdsFromBlucket($bucketTimestamp)
+                            ->getMerchantIdsFromBucket($bucketTimestamp)
                             ->pluck(Entity::MERCHANT_ID)
                             ->toArray();
 
@@ -82,6 +82,25 @@ class Core extends Base\Core
             Preference::getNextBucket($settlementTime);
 
         $this->addToBucket($merchantId, $bucketTimestamp);
+    }
+
+    /**
+     * marks merchant settlement before give time as completed
+     * if timestamp is not provided then timestamp is set to current time
+     *
+     * @param string $merchantId
+     * @param null   $timestamp
+     */
+    public function markMerchantSettlementAsComplete(string $merchantId, $timestamp = null)
+    {
+        if (empty($timestamp) === true)
+        {
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+        }
+
+        $this->repo
+             ->settlement_bucket
+             ->markAsComplete($merchantId, $timestamp);
     }
 
     /**
