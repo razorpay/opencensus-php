@@ -23,14 +23,10 @@ const { done, locked, active, loading } = PossibleStatuses;
   feature: RZPFeatures.PP,
   data_points: ['paymentPages'],
   dataTransformer: (key, state) => {
-    if (key === 'paymentPages') {
-      return {
-        ...state.invoices,
-        items: state.invoices.paymentPages,
-      };
-    }
-
-    return state[key];
+    return {
+      ...state.invoices,
+      items: state.invoices.paymentPages,
+    };
   },
 })
 export default class PaymentPagesQuickGuide extends React.Component {

@@ -70,7 +70,9 @@ export default class PaymentPagesContainer extends ListContainer {
           totalPaymentPagesLength: newLength,
         });
       }
+    }
 
+    if (nextProps.loading !== this.props.loading) {
       this.initPaymentPagesOnboarding(nextProps);
     }
 
@@ -93,6 +95,8 @@ export default class PaymentPagesContainer extends ListContainer {
           });
         }
 
+        this.initPaymentPagesOnboarding();
+
         return resp;
       })
       .catch(() => {});
@@ -106,6 +110,8 @@ export default class PaymentPagesContainer extends ListContainer {
         }
 
         this.setState({ loading: false });
+
+        this.initPaymentPagesOnboarding();
 
         return resp;
       })
@@ -148,7 +154,7 @@ export default class PaymentPagesContainer extends ListContainer {
       mode: props.mode,
       merchantId: merchant.id,
       paymentPages: props.paymentPages,
-      loading: this.state.loadingAllList || this.state.loading,
+      loading: this.state.loading || this.state.loadingAllList,
     });
 
     let isQuickGuideClosed = getPaymentPageQuickGuideIsClosed(props);
