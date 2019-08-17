@@ -233,7 +233,7 @@ export const isAllowedResetBoarding = ({ mode, merchantId, feature }) => {
   const momentLastVisitedTime = moment(lastVisitedTimeVal),
     currentTime = moment(Date.now());
 
-  if (!momentLastVisitedTime) {
+  if (!lastVisitedTimeVal) {
     LocalStorageService.setItem(lastVisitedTime, Date.now());
 
     return true;
