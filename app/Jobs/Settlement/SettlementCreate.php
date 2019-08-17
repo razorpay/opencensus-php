@@ -3,11 +3,12 @@
 namespace RZP\Jobs\Settlement;
 
 use Cache;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Models\Settlement\Processor as SettlementProcessor;
 
 class SettlementCreate extends Job
@@ -67,19 +68,20 @@ class SettlementCreate extends Job
                 ]
             );
 
-            $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement($this->merchantId);
+            $merchant = $this->repoManager->merchant->find($this->merchantId);
+
+            $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement($merchant);
 
             $response = [
                 'merchant_id'   => $this->merchantId,
-                'setl_count'    => $setlResponse['settlement_count'],
-                'txnCount'      => $setlResponse['txn_count'],
-                'attempt_count' => $setlResponse['attempt_count'],
                 'mode'          => $this->mode,
-            ];
+            ] + $setlResponse;
 
             $this->trace->info(
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
                 $response);
+
+            $this->dispatchForSettlementInitiateIfRequired($merchant->getChannel());
         }
         catch (\Throwable $e)
         {
@@ -100,8 +102,67 @@ class SettlementCreate extends Job
         }
         finally
         {
-            // reduce the total count once the processing was successful
+            // reduce the total count once the processing is done
             Cache::decrement(self::TOTAL_MERCHANT_COUNT);
         }
+    }
+
+    /**
+     * takes care of triggering settlement initiate
+     * if there are sufficient amount of settlement available based on channel
+     * it'll also trigger the same if settlement create process is complete
+     *
+     * @param string $channel
+     */
+    protected function dispatchForSettlementInitiateIfRequired(string $channel)
+    {
+        $redis = app('redis')->connection();
+
+        $count = $redis->hincrby(self::CHANNEL_WISE_COUNT, $channel, 1);
+
+        $batchSize = (new Initiator)->getLimitForChannel($channel);
+
+        // if there enough settlement to transfer then initiate the transfer
+        if ($count === $batchSize)
+        {
+            $this->dispatchForSettlementInitiate($redis, $channel, $batchSize);
+
+            return;
+        }
+
+        // if there total merchant count is zero that means settlement creation process completed
+        $isCompleted = (Cache::get(self::TOTAL_MERCHANT_COUNT) === 0);
+
+        // if process is not complete then do not initiate transfer
+        if ($isCompleted === false)
+        {
+            return;
+        }
+
+        $channelCount = $redis->hgetall(self::CHANNEL_WISE_COUNT);
+
+        // If there any channel with pending settlement initiate then dispatch it for the same
+        foreach($channelCount as $ch => $count)
+        {
+            if ($count !== 0)
+            {
+                $this->dispatchForSettlementInitiate($redis, $channel, $count);
+            }
+        }
+    }
+
+    /**
+     * dispatch channel to initiate settlement
+     *
+     * @param        $redis
+     * @param string $channel
+     * @param        $count
+     */
+    protected function dispatchForSettlementInitiate($redis, string $channel, $count)
+    {
+        SettlementInitiate::dispatch($this->mode, $channel);
+
+        // decrement the size by count as those are dispatched to initiate
+        $redis->hdecrby(self::CHANNEL_WISE_COUNT, $channel, $count);
     }
 }

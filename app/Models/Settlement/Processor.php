@@ -784,12 +784,9 @@ class Processor extends Base\Core
         return $totalCount;
     }
 
-    public function fetchAndProcessTransactionsForSettlement(string $merchantId)
+    public function fetchAndProcessTransactionsForSettlement(MerchantModel\Entity $merchant)
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-        // get merchat details for further filtering
-        $merchant = $this->repo->merchant->find($merchantId);
 
         if ($this->isMerchantSettlementAllowed($merchant) === false)
         {

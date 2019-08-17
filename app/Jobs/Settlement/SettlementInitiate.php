@@ -30,22 +30,14 @@ class SettlementInitiate extends Job
     protected $channel;
 
     /**
-     * @var mixed|null
-     */
-    protected $settlementId;
-
-    /**
      * @param string $mode
      * @param string $channel
-     * @param string $settlementId
      */
-    public function __construct(string $mode, string $channel, $settlementId = null)
+    public function __construct(string $mode, string $channel)
     {
         parent::__construct($mode);
 
         $this->channel      = $channel;
-
-        $this->settlementId = $settlementId;
     }
 
     /**

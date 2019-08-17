@@ -305,7 +305,7 @@ class Initiator extends Base\Core
      * @param string $channel
      * @return int|null
      */
-    protected function getLimitForChannel(string $channel)
+    public function getLimitForChannel(string $channel): int
     {
         switch ($channel)
         {
@@ -319,7 +319,7 @@ class Initiator extends Base\Core
                 return 400;
 
             case Channel::KOTAK:
-                return null;
+                return 0;
 
             case Channel::AXIS2:
                 return 400;
