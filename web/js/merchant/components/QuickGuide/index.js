@@ -6,8 +6,6 @@ import {
   setQuickGuideIsClosedInLocalStorage,
 } from './utils';
 
-import { getQuickGuideLocalStorageKey, getQuickGuideIsClosed } from './utils';
-
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
