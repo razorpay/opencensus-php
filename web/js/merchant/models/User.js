@@ -345,6 +345,7 @@ export default class User {
   }
 
   get toShowExtraFieldsInPP() {
+    return true;
     return this.getExpStatus('show_extra_fields_in_pp');
   }
 
@@ -353,6 +354,7 @@ export default class User {
   }
 
   get isPPV3Enabled() {
+    return true;
     return this.getExpStatus('paymentpages_v3');
   }
 }

@@ -187,7 +187,7 @@ export default class BaseForm extends React.PureComponent {
             </div>
           </OptionsItem>
 
-          <OptionsItem isSelected={!!this.state.hasDescription}>
+          <OptionsItem>
             <div onClick={this.props.openAdvancedForm}>
               <i class="i i-info-circle" />
               Advanced Options

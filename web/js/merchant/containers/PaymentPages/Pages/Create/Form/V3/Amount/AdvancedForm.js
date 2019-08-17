@@ -41,18 +41,17 @@ export default class AdvancedForm extends React.PureComponent {
   };
 
   get FIELD_availableQuantity() {
-    const { field } = this.props;
     const { hasQuantity } = this.state;
-    const quantityAvailable = field ? this.props.field.quantity_available : '';
+    const quantityAvailable = this.props.field.quantity_available || '';
 
     return (
       <Input.Radio
-        className="Input--hasQuantity Input--vTop"
+        class="Input--hasQuantity Input--vTop"
         label={() => (
-          <div style={{ fontWeight: 'normal' }}>
+          <React.Fragment>
             Available Quantity
             <div class="modal-description">in stock</div>
-          </div>
+          </React.Fragment>
         )}
         onChange={this.toggleAddQuantity}
         options={[
@@ -79,8 +78,84 @@ export default class AdvancedForm extends React.PureComponent {
     );
   }
 
-  get fieldsForOptionalFixedPrice() {
-    return <React.Fragment />;
+  validateMinAmountLimit = minVal => {
+    const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
+
+    if (minVal <= 0) {
+      return 'Min limit cannot be 0';
+    }
+
+    if (maxVal && minVal > maxVal) {
+      return 'Min limit is more than Max limit';
+    }
+  };
+
+  validateMaxAmountLimit = maxVal => {
+    const minVal = this.minAmountLimit && this.minAmountLimit.value;
+
+    if (maxVal <= 0) {
+      return 'Max limit cannot be 0';
+    }
+
+    if (minVal && maxVal < minVal) {
+      return 'Max limit is less than Min limit';
+    }
+  };
+
+  setRefMinAmountLimit = el => (this.minAmountLimit = el);
+  setRefMaxAmountLimit = el => (this.maxAmountLimit = el);
+
+  get FIELD_amountLimits() {
+    const { field } = this.props;
+    const minAmount = field.min_amount || '';
+    const maxAmount = field.max_amount || '';
+
+    return (
+      <Input.Group class="InputGroup--inline Input--amountLimits">
+        <div class="Input-label">Input Price Limits</div>
+
+        <div class="Input-content">
+          <Input.CurrencySelect
+            defaultValue="INR"
+            disabled
+            parentQuerySelector=".Modal-mask--payment-pages-v3-creator .Modal-body"
+          />
+
+          <Input
+            setRef={this.setRefMinAmountLimit}
+            name="min_amount"
+            defaultValue={minAmount}
+            max="500000"
+            type="number"
+            validator={this.validateMinAmountLimit}
+          >
+            <span class="Input-after">Min</span>
+          </Input>
+        </div>
+
+        <span class="separator">-</span>
+
+        <div class="Input-content">
+          <Input.CurrencySelect
+            defaultValue="INR"
+            disabled
+            parentQuerySelector=".Modal-mask--payment-pages-v3-creator .Modal-body"
+          />
+
+          <Input
+            setRef={this.setRefMaxAmountLimit}
+            name="max_amount"
+            defaultValue={maxAmount}
+            max="500000"
+            type="number"
+            placeholder="No Limit"
+            validator={this.validateMaxAmountLimit}
+          >
+            <span class="Input-after">Max</span>
+          </Input>
+        </div>
+      </Input.Group>
+    );
   }
 
   get fieldsForDynamicPrice() {
@@ -103,7 +178,12 @@ export default class AdvancedForm extends React.PureComponent {
         return this.FIELD_availableQuantity;
 
       case FIELD_TYPES.dynamic_price.key:
-        return this.fieldsForDynamicPrice;
+        return (
+          <React.Fragment>
+            {this.FIELD_availableQuantity}
+            {this.FIELD_amountLimits}
+          </React.Fragment>
+        );
       case FIELD_TYPES.multiple_purchase.key:
         return this.fieldsForMultiplePurchase;
     }
