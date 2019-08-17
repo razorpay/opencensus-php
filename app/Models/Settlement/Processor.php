@@ -15,8 +15,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Constants\Environment;
+use RZP\Jobs\Settlement\Create;
 use RZP\Models\Settlement\Bucket;
-use RZP\Jobs\Settlement\SettlementCreate;
 use RZP\Models\Merchant as MerchantModel;
 
 class Processor extends Base\Core
@@ -724,7 +724,7 @@ class Processor extends Base\Core
         // add cout of total merchant IDs in cache
         // so that it can be used to initate transfer when settlement creation is complete
         //
-        Cache::increment(SettlementCreate::TOTAL_MERCHANT_COUNT, count($merchantIds));
+        Cache::increment(Create::TOTAL_MERCHANT_COUNT, count($merchantIds));
 
         $startTime = time();
 
@@ -737,7 +737,7 @@ class Processor extends Base\Core
                 // for now passing this, just to track the performance
                 // if timestamp exist then its a automated process else its manual
                 //
-                SettlementCreate::dispatch($this->mode, $merchantId, $bucketTimestamp);
+                Create::dispatch($this->mode, $merchantId, $bucketTimestamp);
 
                 $this->trace->info(
                     TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT,
@@ -758,7 +758,7 @@ class Processor extends Base\Core
                 // this will help maintain the exact count pushed to queue
                 // and also when to iniatie the transfer
                 //
-                Cache::decrement(SettlementCreate::TOTAL_MERCHANT_COUNT);
+                Cache::decrement(Create::TOTAL_MERCHANT_COUNT);
 
                 $this->trace->traceException(
                     $e,

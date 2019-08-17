@@ -11,7 +11,7 @@ use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Models\Settlement\Processor as SettlementProcessor;
 
-class SettlementCreate extends Job
+class Create extends Job
 {
     //
     // redis keys used to store intermediate count of settlement process
@@ -160,7 +160,7 @@ class SettlementCreate extends Job
      */
     protected function dispatchForSettlementInitiate($redis, string $channel, $count)
     {
-        SettlementInitiate::dispatch($this->mode, $channel);
+        Initiate::dispatch($this->mode, $channel);
 
         // decrement the size by count as those are dispatched to initiate
         $redis->hdecrby(self::CHANNEL_WISE_COUNT, $channel, $count);

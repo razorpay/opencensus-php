@@ -10,7 +10,7 @@ use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Attempt;
 
-class SettlementInitiate extends Job
+class Initiate extends Job
 {
     const RELEASE_TIME       = 30;
 

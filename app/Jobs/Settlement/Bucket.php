@@ -6,7 +6,7 @@ use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement\Bucket\Core;
 
-class SettlementBucket extends Job
+class Bucket extends Job
 {
     const MAX_ATTEMPTS = 5;
 
