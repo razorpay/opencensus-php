@@ -9,6 +9,7 @@ use RZP\Models\Settlement\Bucket\Core;
 class SettlementBucket extends Job
 {
     const MAX_ATTEMPTS = 5;
+
     /**
      * @var string
      */

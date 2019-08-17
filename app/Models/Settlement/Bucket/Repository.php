@@ -11,7 +11,9 @@ class Repository extends Base\Repository
     public function getMerchantIdsFromBucket(string $bucketTimestamp)
     {
         return $this->newQuery()
-                    ->where(Entity::BUCKET_TIMESTAMP, $bucketTimestamp)
+                    ->select(Entity::MERCHANT_ID)
+                    ->where(Entity::BUCKET_TIMESTAMP, '<', $bucketTimestamp)
+                    ->distinct()
                     ->get();
     }
 
