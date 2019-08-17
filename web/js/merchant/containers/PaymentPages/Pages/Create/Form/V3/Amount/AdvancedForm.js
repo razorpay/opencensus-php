@@ -40,44 +40,42 @@ export default class AdvancedForm extends React.PureComponent {
     });
   };
 
-  get fieldsForFixedPrice() {
+  get FIELD_availableQuantity() {
     const { field } = this.props;
     const { hasQuantity } = this.state;
     const quantityAvailable = field ? this.props.field.quantity_available : '';
 
     return (
-      <React.Fragment>
-        <Input.Radio
-          className="Input--hasQuantity Input--vTop"
-          label={() => (
-            <div style={{ fontWeight: 'normal' }}>
-              Available Quantity
-              <div class="modal-description">in stock</div>
-            </div>
-          )}
-          onChange={this.toggleAddQuantity}
-          options={[
-            'Unlimited',
-            {
-              label: (
-                <div class="Input--quantity">
-                  <span>Limited</span>
-                  {hasQuantity && (
-                    <Input
-                      name="quantity_available"
-                      defaultValue={quantityAvailable}
-                      autoFocus
-                      step="1"
-                      pattern="\d+"
-                    />
-                  )}
-                </div>
-              ),
-            },
-          ]}
-          defaultValue={hasQuantity}
-        />
-      </React.Fragment>
+      <Input.Radio
+        className="Input--hasQuantity Input--vTop"
+        label={() => (
+          <div style={{ fontWeight: 'normal' }}>
+            Available Quantity
+            <div class="modal-description">in stock</div>
+          </div>
+        )}
+        onChange={this.toggleAddQuantity}
+        options={[
+          'Unlimited',
+          {
+            label: (
+              <div class="Input--quantity">
+                <span>Limited</span>
+                {hasQuantity && (
+                  <Input
+                    name="quantity_available"
+                    defaultValue={quantityAvailable}
+                    autoFocus
+                    step="1"
+                    pattern="\d+"
+                  />
+                )}
+              </div>
+            ),
+          },
+        ]}
+        defaultValue={hasQuantity}
+      />
     );
   }
 
@@ -99,10 +97,11 @@ export default class AdvancedForm extends React.PureComponent {
     console.log('FIELD TYPE...', this.props.fieldType);
 
     switch (fieldType) {
+      // Same Advanced Form for both fixed_price and fixed_price_optional
       case FIELD_TYPES.fixed_price.key:
-        return this.fieldsForFixedPrice;
       case FIELD_TYPES.fixed_price_optional.key:
-        return this.fieldsForOptionalFixedPrice;
+        return this.FIELD_availableQuantity;
+
       case FIELD_TYPES.dynamic_price.key:
         return this.fieldsForDynamicPrice;
       case FIELD_TYPES.multiple_purchase.key:
