@@ -25,18 +25,14 @@ export default ({ handleChange, handleFileUpload }) => {
 
       <Input.File
         required
-        autoFocus
-        autoRender
         showCloseBtn
-        name="file"
+        name="vendor_agreement"
         className="Input--vTop"
         label="Signed Vendor Agreement"
         _accept={['pdf', 'image']}
         uploadedFileName="signed_vendor_agreement"
         onChange={handleFileUpload}
         onCloseClick={handleFileUpload}
-        _showAcceptInfo={false}
-        _showStagedFileStatus={false}
         description={
           <React.Fragment>
             <i class="i i-info-outline m-r" />
@@ -46,9 +42,6 @@ export default ({ handleChange, handleFileUpload }) => {
             </span>
           </React.Fragment>
         }
-        _when={() => {
-          return false;
-        }}
       />
     </div>
   );

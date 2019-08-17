@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { autoPrefixUrls, isFunction } from 'rzp/utils/rzp-utils';
+import { RZPFeatures } from 'rzp/utils/constants';
 import LocalStorageService from 'rzp/utils/localStorage';
 
 import Image from 'rzp/ui/Image';
@@ -90,8 +90,8 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
     let file = null;
     let fileName = null;
 
-    if (this.state.form.uploadedFile && this.props.formType === 'marketplace') {
-      file = this.state.form.uploadedFile;
+    if (props.uploadedFile && this.props.formType === RZPFeatures.ROUTE) {
+      file = props.uploadedFile;
       fileName = 'vendor_agreement';
     }
 
@@ -121,14 +121,7 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
   };
 
   render() {
-    const {
-        prev,
-        desc,
-        imageUrl,
-        formType,
-        user,
-        heading,
-      } = this.props,
+    const { prev, desc, imageUrl, formType, user, heading } = this.props,
       { submitted, isLoading } = this.state;
 
     const disabled = isFormValid(formType, this.state.form);
