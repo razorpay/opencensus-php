@@ -21,7 +21,7 @@ import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 
-import OnBoarding, { isAllowedResetRouteBoarding } from './OnBoarding';
+import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
 
 @connect(
@@ -79,17 +79,21 @@ export default class MarketplaceContainer extends React.Component {
   }
 
   initMarketPlace = (props = this.props) => {
-    let showOnboarding = !props.user.isMarketplaceEnabled;
+    const { isMarketplaceEnabled } = props.user;
+    let showOnboarding = !isMarketplaceEnabled;
 
-    if (!showOnboarding) {
-      const merchant = props.user.merchants[props.user.current];
-
-      showOnboarding = isAllowedResetRouteBoarding({
-        merchantId: merchant.id,
-        mode: props.mode,
+    if (isMarketplaceEnabled) {
+      showOnboarding = getIsAllowedResetRouteBoarding({
         transfers: props.transfers,
         accounts: props.accounts,
       });
+    } else {
+      this.props.handleProductQuickGuide({
+        ...props.routeProductOnBoarding,
+        showOnboarding: true,
+      });
+
+      return;
     }
 
     let isQuickGuideClosed = getRouteQuickGuideIsClosed(props);

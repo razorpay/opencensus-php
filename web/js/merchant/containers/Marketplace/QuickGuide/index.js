@@ -4,7 +4,7 @@ import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
 
 import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
-  getQuickGuideIsClosed,
+  getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
   QuickGuideTitle,
@@ -78,7 +78,7 @@ export default class MarketPlaceQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getRouteQuickGuideIsClosed = props => {
-  let isClosed = getQuickGuideIsClosed(props, RZPFeatures.ROUTE);
+  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.ROUTE);
 
   // Check if transfers non created state count is more then or equal to 2
   if (isClosed || props.transfers.items.length <= 2) {
