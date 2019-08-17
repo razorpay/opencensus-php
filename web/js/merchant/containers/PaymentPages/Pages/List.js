@@ -28,7 +28,10 @@ import {
 import ListContainer from 'merchant/containers/ListContainer';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
-import { isAllowedPaymentPagesOnBoarding } from '../OnBoarding';
+import {
+  getIsPaymentPagesEnabled,
+  getIsAllowedPaymentPagesOnBoarding,
+} from '../OnBoarding';
 import { getPaymentPageQuickGuideIsClosed } from '../QuickGuide';
 
 import { trackListActions } from './ga';
@@ -148,18 +151,20 @@ export default class PaymentPagesContainer extends ListContainer {
   }
 
   initPaymentPagesOnboarding = (props = this.props) => {
-    const { isPaymentPagesEnabled } = props.user;
+    const data = {
+      mode: props.mode,
+      user: props.user,
+      merchantId: props.user.current,
+      paymentPages: props.paymentPages,
+      loading: this.state.loading || this.state.loadingAllList,
+    };
+
+    const isPaymentPagesEnabled = getIsPaymentPagesEnabled(data);
+
     let showOnboarding = !isPaymentPagesEnabled;
 
     if (isPaymentPagesEnabled) {
-      const merchant = props.user.merchants[props.user.current];
-
-      showOnboarding = isAllowedPaymentPagesOnBoarding({
-        mode: props.mode,
-        merchantId: merchant.id,
-        paymentPages: props.paymentPages,
-        loading: this.state.loading || this.state.loadingAllList,
-      });
+      showOnboarding = getIsAllowedPaymentPagesOnBoarding(data);
     }
 
     let isQuickGuideClosed = getPaymentPageQuickGuideIsClosed(props);

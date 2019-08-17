@@ -9,6 +9,7 @@ import OnBoarding, {
   OnBoardingWrapper,
   SkipAndGetStartedButton,
   isAllowedResetBoarding,
+  setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
@@ -64,7 +65,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
   }
 }
 
-export function isAllowedPaymentPagesOnBoarding({
+export function getIsAllowedPaymentPagesOnBoarding({
   mode,
   merchantId,
   paymentPages,
@@ -79,4 +80,32 @@ export function isAllowedPaymentPagesOnBoarding({
     merchantId,
     feature: RZPFeatures.PP,
   });
+}
+
+export function getIsPaymentPagesEnabled({
+  mode,
+  feature,
+  user,
+  paymentPages,
+  loading,
+}) {
+  if (user.isPaymentPagesEnabled) {
+    return true;
+  }
+
+  if (paymentPages.length) {
+    setOnBoardingDataInLocalState({
+      mode,
+      feature,
+      merchantId: user.current,
+    });
+
+    return true;
+  }
+
+  if (loading) {
+    return false;
+  }
+
+  return false;
 }

@@ -10,8 +10,8 @@ import {
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
-import OnBoarding, { isAllowedPaymentPagesOnBoarding } from './OnBoarding';
-import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
+import OnBoarding from './OnBoarding';
+import QuickGuide from './QuickGuide';
 
 import PaymentPagesList from './Pages/List';
 

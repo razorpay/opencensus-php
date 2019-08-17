@@ -5,7 +5,7 @@ import { fetchFeaturesAjax } from 'merchant/modules/config';
 import LocalStorageService from 'rzp/utils/localStorage';
 import { getOrg, getMode } from 'merchant/store';
 import { getExperiment } from 'common/util';
-import { getOnBoardingKeys } from 'merchant/components/OnBoarding';
+import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 
 import {
   roleEditPermissions,
@@ -211,15 +211,9 @@ export default class User {
   }
 
   get isPaymentPagesEnabled() {
-    const { isEnabled } = getOnBoardingKeys({
-      mode: getMode(),
-      merchantId: this.current,
-      feature: 'payment_pages',
-    });
+    const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 
-    const paymentPageState = JSON.parse(LocalStorageService.getItem(isEnabled));
-
-    return paymentPageState && paymentPageState.isEnabled;
+    return !!isEnabled;
   }
 
   get currentMerchant() {
