@@ -1,0 +1,85 @@
+import { connect } from 'react-redux';
+
+import { RZPFeatures } from 'rzp/utils/constants';
+
+import Slider, { SliderDots } from 'component/Slider';
+
+import Landing from 'merchant/components/OnBoarding/Screens/Landing';
+import Features from 'merchant/components/OnBoarding/Screens/Features';
+import OnBoarding, {
+  NextButton,
+  OnBoardingWrapper,
+  SkipAndGetStartedButton,
+  isAllowedResetBoarding,
+} from 'merchant/components/OnBoarding';
+
+import { FEATURES_DATA, FEATURES_LINKS } from './data';
+
+@connect(state => ({
+  user: state.session.user,
+  mode: state.session.mode,
+}))
+@OnBoarding({
+  feature: RZPFeatures.PP,
+})
+export default class PaymentPagesOnBoarding extends React.Component {
+  getNextBtnProp = sliderProps => () => {
+    return (
+      <NextButton
+        onClick={this.props.closeOnboarding}
+        page={sliderProps.active}
+      />
+    );
+  };
+
+  render() {
+    const { active, onSlideChange } = this.props;
+
+    return (
+      <OnBoardingWrapper class="PaymentPages">
+        <Slider active={active} onSlideChange={onSlideChange}>
+          {sliderProps => (
+            <Landing
+              {...sliderProps}
+              title="Payment Pages"
+              imageUrl="https://razorpay.com/assets/paymentpages/hero-main.svg"
+              desc="Create custom-branded, hosted Payment Pages in a few clicks to accept payments online. Your business can go online with zero integration and tech efforts."
+            />
+          )}
+
+          {sliderProps => (
+            <Features
+              {...sliderProps}
+              title="What makes Payment Pages great?"
+              nextBtn={this.getNextBtnProp(sliderProps)}
+              featureLinks={FEATURES_LINKS}
+              features={FEATURES_DATA}
+            />
+          )}
+
+          {sliderProps => (
+            <SliderDots {...sliderProps}>
+              <SkipAndGetStartedButton onClick={this.props.closeOnboarding} />
+            </SliderDots>
+          )}
+        </Slider>
+      </OnBoardingWrapper>
+    );
+  }
+}
+
+export function isAllowedPaymentPagesOnBoarding({
+  mode,
+  merchantId,
+  paymentPages,
+}) {
+  if (paymentPages.length) {
+    return false;
+  }
+
+  return isAllowedResetBoarding({
+    mode,
+    merchantId,
+    feature: RZPFeatures.PP,
+  });
+}

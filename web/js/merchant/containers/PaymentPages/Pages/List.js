@@ -1,32 +1,55 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import { NavLink } from 'react-router-dom';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Spinner from 'rzp/ui/Spinner';
-import ListContainer from 'merchant/containers/ListContainer';
-import ListFilter from 'merchant/components/ListFilter';
-import { fetchPaymentPagesList } from './model';
+
+import { RZPFeatures } from 'rzp/utils/constants';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
-import Amount from 'rzp/ui/Amount';
-import TableBody from 'rzp/ui/TableBody';
-import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
+
 import Time from 'rzp/ui/Time';
+import Pager from 'rzp/ui/Pager';
+import Amount from 'rzp/ui/Amount';
+import Spinner from 'rzp/ui/Spinner';
+import TableBody from 'rzp/ui/TableBody';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+
 import { showNotification } from 'rzp/modules/notifications';
+
 import ShowWhen from 'merchant/components/ShowWhen';
+import ListFilter from 'merchant/components/ListFilter';
+import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 
 import { populateRPLReduxList } from 'merchant/modules/invoices/list';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
 
-import OnboardingPP from './OnboardingPP';
+import ListContainer from 'merchant/containers/ListContainer';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
+
+import { isAllowedPaymentPagesOnBoarding } from '../OnBoarding';
+import { getRouteQuickGuideIsClosed } from '../QuickGuide';
+
 import { trackListActions } from './ga';
+import OnboardingPP from './OnboardingPP';
+import { fetchPaymentPagesList } from './model';
 
-@connect(state => ({ ...state.invoices, ...state.session }), {
-  showNotification,
-  populateRPLReduxList,
-})
+@connect(
+  state => ({
+    ...state.invoices,
+    ...state.session,
+    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.PP
+    ),
+  }),
+  {
+    showNotification,
+    populateRPLReduxList,
+    handleProductQuickGuide,
+  }
+)
 export default class PaymentPagesContainer extends ListContainer {
   state = {
     loading: true,
@@ -46,6 +69,8 @@ export default class PaymentPagesContainer extends ListContainer {
           totalPaymentPagesLength: newLength,
         });
       }
+
+      this.initPaymentPagesOnboarding();
     }
 
     super.componentWillReceiveProps(nextProps);
@@ -102,6 +127,39 @@ export default class PaymentPagesContainer extends ListContainer {
 
   onClearAnalytics = () => {
     trackListActions('Clear');
+  };
+
+  componentWillUnmount() {
+    const { paymentPageProductOnBoarding } = this.props;
+
+    if (paymentPageProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...paymentPageProductOnBoarding,
+        isTour: false,
+      });
+    }
+  }
+
+  initPaymentPagesOnboarding = (props = this.props) => {
+    const merchant = props.user.merchants[props.user.current];
+
+    let showOnboarding = isAllowedPaymentPagesOnBoarding({
+      mode: props.mode,
+      merchantId: merchant.id,
+      paymentPages: props.paymentPages,
+    });
+
+    let isQuickGuideClosed = getRouteQuickGuideIsClosed(props);
+
+    let paymentPageProductOnBoarding = {
+      ...props.paymentPageProductOnBoarding,
+      showOnboarding,
+      isQuickGuideOpen: props.paymentPageProductOnBoarding.isTour
+        ? true
+        : !isQuickGuideClosed,
+    };
+
+    this.props.handleProductQuickGuide(paymentPageProductOnBoarding);
   };
 
   render() {
