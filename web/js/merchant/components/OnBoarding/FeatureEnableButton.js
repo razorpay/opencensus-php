@@ -17,7 +17,6 @@ import { getOnBoardingKeys } from './index';
   state => {
     return {
       user: state.session.user,
-      mode: state.session.mode,
       onboarding: state.onboarding,
     };
   },
@@ -34,21 +33,14 @@ export default class FeatureEnableButton extends React.Component {
 
   handleEnableFeature = () => {
     if (this.props.isLocalEnabler) {
-      const { isEnabled } = getOnBoardingKeys({
+      setOnBoardingDataInLocalState({
         feature: this.props.feature,
-        mode: this.props.mode,
-        merchantId: this.props.user.current,
+        data: {
+          isEnabled: true,
+        },
       });
 
-      LocalStorageService.setItem(
-        isEnabled,
-        JSON.stringify({ isEnabled: true })
-      );
-
-      this.props.handleProductQuickGuide({
-        ...this.props.onboarding.products[this.props.feature],
-        showOnboarding: false,
-      });
+      this.props.onClick && this.props.onClick();
 
       return;
     }
@@ -69,6 +61,13 @@ export default class FeatureEnableButton extends React.Component {
 
         this.setState({
           isSuccess: true,
+        });
+
+        setOnBoardingDataInLocalState({
+          feature: this.props.feature,
+          data: {
+            isEnabled: true,
+          },
         });
 
         this.props.onClick && this.props.onClick(res);

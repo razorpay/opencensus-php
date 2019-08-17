@@ -78,16 +78,19 @@ export default params => {
       LocalStorageService.setItem(this.LAST_VISITED_SCREEN_KEY, index);
     };
 
-    closeOnboarding = ({ isFeatureEnabler }) => {
-      LocalStorageService.setItem(this.LAST_VISITED_TIME_KEY, Date.now());
-      LocalStorageService.setItem(this.LAST_VISITED_SCREEN_KEY, 0);
-
-      if (isFeatureEnabler) return;
+    closeOnboarding = () => {
+      setOnBoardingDataInLocalState({
+        feature: FEATURE,
+        data: {
+          isEnabled: true,
+          lastVisitedScreen: 0,
+          lastVisitedTime: Date.now(),
+        },
+      });
 
       this.props.handleProductQuickGuide({
         ...this.props.currentOnboarding,
         showOnboarding: false,
-        isTour: true,
       });
     };
 
