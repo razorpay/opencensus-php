@@ -73,19 +73,11 @@ export default class TeamContainer extends Component {
         </HeaderAction>
         <div class="content-wrapper content-sm content-sm-900">
           <Toggle2FA />
-          {/* <NewInvitation /> */}
           {otherUsers.length ? (
             <div>
               <div class="panel-heading">
                 <b>Team Members</b>
               </div>
-              {/* <DataTable
-              title="Disputes"
-              columns={[
-                email,
-              ]}
-              {...this.props}
-            /> */}
               <table class="table table-noborder" style={{ margin: '0 12px' }}>
                 <tbody>
                   {otherUsers.map(user => (
