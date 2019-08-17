@@ -13,7 +13,6 @@ class SettlementBucket extends Job
     /**
      * @var string
      */
-    // TODO: register a new queue for this
      protected $queueConfigKey = 'settlement_bucket';
 
     /**

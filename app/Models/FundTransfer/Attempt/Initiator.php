@@ -316,7 +316,7 @@ class Initiator extends Base\Core
                 return 100;
 
             case Channel::ICICI:
-                return null;
+                return 400;
 
             case Channel::KOTAK:
                 return null;

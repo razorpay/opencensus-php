@@ -717,7 +717,7 @@ class Processor extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT,
             [
-                'merchant_count'    => count($merchantIds)
+                'merchant_count' => count($merchantIds)
             ]);
 
         //
@@ -732,6 +732,11 @@ class Processor extends Base\Core
         {
             try
             {
+                //
+                // passing $bucketTimestamp is not necessory
+                // for now passing this, just to track the performance
+                // if timestamp exist then its a automated process else its manual
+                //
                 SettlementCreate::dispatch($this->mode, $merchantId, $bucketTimestamp);
 
                 $this->trace->info(
@@ -795,6 +800,7 @@ class Processor extends Base\Core
             ];
         }
 
+        // Avoiding race condition here
         $resource = sprintf(self::MUTEX_SETTLEMENT_CREATE_RESOURCE, $merchantId);
 
         $result = $this->mutex->acquireAndRelease(

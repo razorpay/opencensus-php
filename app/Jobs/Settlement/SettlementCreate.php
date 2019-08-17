@@ -22,7 +22,6 @@ class SettlementCreate extends Job
     /**
      * @var string
      */
-    // TODO: register a new queue for this
     protected $queueConfigKey = 'settlement_create';
 
     /**
@@ -70,9 +69,6 @@ class SettlementCreate extends Job
 
             $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement($this->merchantId);
 
-            // reduce the total count once the processing was successful
-            Cache::decrement(self::TOTAL_MERCHANT_COUNT);
-
             $response = [
                 'merchant_id'   => $this->merchantId,
                 'setl_count'    => $setlResponse['settlement_count'],
@@ -101,6 +97,11 @@ class SettlementCreate extends Job
             $operation = 'Settlement creation failed for MID: ' . $this->merchantId;
 
             (new SlackNotification)->send($operation, $data, null, 1);
+        }
+        finally
+        {
+            // reduce the total count once the processing was successful
+            Cache::decrement(self::TOTAL_MERCHANT_COUNT);
         }
     }
 }
