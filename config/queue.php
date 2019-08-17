@@ -259,6 +259,10 @@ return [
         'test'       => env('AWS_SETTLEMENT_BUCKET_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_BUCKET_LIVE_QUEUE'),
     ],
+    'settlement_initiate' => [
+        'test'       => env('AWS_SETTLEMENT_INITIATE_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_INITIATE_LIVE_QUEUE'),
+    ],
 
     // not using anymore for settlement
     // but has dependency on FTA
