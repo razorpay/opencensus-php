@@ -115,32 +115,22 @@ export const OnBoardingWrapper = ({ className, children }) => (
   <div class={`OnBoarding OnBoarding--${className}`}>{children}</div>
 );
 
-export const FeatureEnableSliderButton = ({ feature, onClick, page }) => {
-  if (feature) {
-    return (
-      <FeatureEnableButton.Primary
-        feature={feature}
-        class="Forward-Button"
-        pendingText="Enabling..."
-        onClick={(...args) => {
-          window.rzpAnalytics({
-            eventCategory: `Product Introduction (${feature})`,
-            eventAction: `Page ${page} - Get Started CTA`,
-          });
+export const FeatureEnableSliderButton = props => {
+  const { isLocalEnabler, feature, onClick, page } = props;
 
-          onClick(args);
-        }}
-      >
-        Get Started
-      </FeatureEnableButton.Primary>
-    );
+  const extraProps = {
+    feature,
+  };
+
+  if (isLocalEnabler) {
+    extraProps.iconAfter = 'arrow-forward';
+    extraProps.isLocalEnabler = true;
   }
 
   return (
-    <Button.Primary
-      feature={feature}
+    <FeatureEnableButton.Primary
+      {...extraProps}
       class="Forward-Button"
-      iconAfter="arrow-forward"
       pendingText="Enabling..."
       onClick={(...args) => {
         window.rzpAnalytics({
@@ -152,7 +142,7 @@ export const FeatureEnableSliderButton = ({ feature, onClick, page }) => {
       }}
     >
       Get Started
-    </Button.Primary>
+    </FeatureEnableButton.Primary>
   );
 };
 
@@ -215,6 +205,7 @@ export const getOnBoardingKeys = ({ mode, merchantId, feature }) => {
 
   return {
     key: KEY,
+    isEnabled: `${KEY}_isEnabled`,
     lastScreen: `${KEY}_last_visited_screen`,
     lastVisitedTime: `${KEY}_last_visited_time`,
   };

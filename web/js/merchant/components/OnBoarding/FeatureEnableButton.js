@@ -1,5 +1,7 @@
 import { connect } from 'react-redux';
 
+import LocalStorageService from 'rzp/utils/localStorage';
+
 import { AsyncBtn } from 'component/Button';
 
 import { classList } from 'common/util';
@@ -9,10 +11,13 @@ import { showNotification } from 'rzp/modules/notifications';
 import { updateFeatures } from 'merchant/modules/config';
 import { handleProductQuickGuide } from 'merchant/modules/onboarding';
 
+import { getOnBoardingKeys } from './index';
+
 @connect(
   state => {
     return {
       user: state.session.user,
+      mode: state.session.mode,
       onboarding: state.onboarding,
     };
   },
@@ -28,6 +33,26 @@ export default class FeatureEnableButton extends React.Component {
   }
 
   handleEnableFeature = () => {
+    if (this.props.isLocalEnabler) {
+      const { isEnabled } = getOnBoardingKeys({
+        feature: this.props.feature,
+        mode: this.props.mode,
+        merchantId: this.props.user.current,
+      });
+
+      LocalStorageService.setItem(
+        isEnabled,
+        JSON.stringify({ isEnabled: true })
+      );
+
+      this.props.handleProductQuickGuide({
+        ...this.props.onboarding.products[this.props.feature],
+        showOnboarding: false,
+      });
+
+      return;
+    }
+
     const data = {
       features: {
         [this.props.feature]: 1,
