@@ -48,8 +48,19 @@ export default class MarketPlaceQuickGuide extends React.Component {
 
     const CloseBtn = this.getCloseBtn(transfersStatus === done);
 
+    let activeStep = 0;
+
+    if (transfersStatus === done) {
+      activeStep = 1;
+    }
+
     return (
-      <QuickStepGuide class="Route" title={Title} closeBtn={CloseBtn}>
+      <QuickStepGuide
+        activeStep={activeStep}
+        class="Route"
+        title={Title}
+        closeBtn={CloseBtn}
+      >
         <Step
           status={accountsStatus}
           {...getQuickGuideData.LinkedAccount(accountsStatus)}
