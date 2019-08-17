@@ -1,19 +1,29 @@
 <?php
 
-namespace RZP\Jobs;
+namespace RZP\Jobs\Settlement;
 
+use Cache;
+
+use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Settlement\Processor as SettlementProcessor;
 
-class SettlementJob extends Job
+class SettlementCreate extends Job
 {
+    //
+    // redis keys used to store intermediate count of settlement process
+    //
+    const TOTAL_MERCHANT_COUNT  = '{settlement}_total_merchant_count';
+
+    const CHANNEL_WISE_COUNT    = '{settlement}_channel_wise_count';
+
     /**
      * @var string
      */
-    // TODO: change the queue, should have dedicated queue for this
-    protected $queueConfigKey = 'settlement_transactions';
+    // TODO: register a new queue for this
+    protected $queueConfigKey = 'settlement_create';
 
     /**
      * @var string
@@ -60,6 +70,9 @@ class SettlementJob extends Job
 
             $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement($this->merchantId);
 
+            // reduce the total count once the processing was successful
+            Cache::decrement(self::TOTAL_MERCHANT_COUNT);
+
             $response = [
                 'merchant_id'   => $this->merchantId,
                 'setl_count'    => $setlResponse['settlement_count'],
@@ -85,7 +98,7 @@ class SettlementJob extends Job
                 TraceCode::SETTLEMENTS_PROCESS_FAILED_FOR_MERCHANT,
                 $data);
 
-            $operation = 'Settlement creation failed for MID:' . $this->merchantId;
+            $operation = 'Settlement creation failed for MID: ' . $this->merchantId;
 
             (new SlackNotification)->send($operation, $data, null, 1);
         }
