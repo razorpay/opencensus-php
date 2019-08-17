@@ -7,8 +7,8 @@ import QuickGuide, {
   getQuickGuideIsClosed,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
-  Title,
-  CloseBtn as QuickGuideCloseBtn,
+  QuickGuideTitle,
+  QuickGuideCloseBtn,
 } from 'merchant/components/QuickGuide/QuickStepGuide';
 
 import { getQuickGuideData } from './data';
@@ -49,7 +49,7 @@ export default class MarketPlaceQuickGuide extends React.Component {
     const CloseBtn = this.getCloseBtn(transfersStatus === done);
 
     return (
-      <QuickStepGuide class="Route" title={QuickGuideTitle} closeBtn={CloseBtn}>
+      <QuickStepGuide class="Route" title={Title} closeBtn={CloseBtn}>
         <Step
           status={accountsStatus}
           {...getQuickGuideData.LinkedAccount(accountsStatus)}
@@ -64,7 +64,7 @@ export default class MarketPlaceQuickGuide extends React.Component {
   }
 }
 
-const QuickGuideTitle = <Title />;
+const Title = <QuickGuideTitle />;
 
 export const getRouteQuickGuideIsClosed = props => {
   let isClosed = getQuickGuideIsClosed(props, RZPFeatures.ROUTE);
