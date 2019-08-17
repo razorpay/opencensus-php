@@ -29,7 +29,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 import { isAllowedPaymentPagesOnBoarding } from '../OnBoarding';
-import { getRouteQuickGuideIsClosed } from '../QuickGuide';
+import { getPaymentPageQuickGuideIsClosed } from '../QuickGuide';
 
 import { trackListActions } from './ga';
 import OnboardingPP from './OnboardingPP';
@@ -58,6 +58,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
   componentDidMount() {
     this.fetchAllEntityList();
+    this.initPaymentPagesOnboarding();
   }
 
   componentWillReceiveProps(nextProps, nextState) {
@@ -70,7 +71,7 @@ export default class PaymentPagesContainer extends ListContainer {
         });
       }
 
-      this.initPaymentPagesOnboarding();
+      this.initPaymentPagesOnboarding(nextProps);
     }
 
     super.componentWillReceiveProps(nextProps);
@@ -147,9 +148,10 @@ export default class PaymentPagesContainer extends ListContainer {
       mode: props.mode,
       merchantId: merchant.id,
       paymentPages: props.paymentPages,
+      loading: this.state.loadingAllList || this.state.loading,
     });
 
-    let isQuickGuideClosed = getRouteQuickGuideIsClosed(props);
+    let isQuickGuideClosed = getPaymentPageQuickGuideIsClosed(props);
 
     let paymentPageProductOnBoarding = {
       ...props.paymentPageProductOnBoarding,

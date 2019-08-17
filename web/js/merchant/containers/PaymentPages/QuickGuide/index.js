@@ -77,7 +77,7 @@ export default class PaymentPagesQuickGuide extends React.Component {
 
 const Title = <QuickGuideTitle />;
 
-export const getRouteQuickGuideIsClosed = props => {
+export const getPaymentPageQuickGuideIsClosed = props => {
   let isClosed = getQuickGuideIsClosed(props, RZPFeatures.PP);
 
   // Check if transfers non created state count is more then or equal to 2

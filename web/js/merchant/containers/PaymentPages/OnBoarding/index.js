@@ -7,7 +7,7 @@ import Slider, { SliderDots } from 'component/Slider';
 import Landing from 'merchant/components/OnBoarding/Screens/Landing';
 import Features from 'merchant/components/OnBoarding/Screens/Features';
 import OnBoarding, {
-  NextButton,
+  FeatureEnableSliderButton,
   OnBoardingWrapper,
   SkipAndGetStartedButton,
   isAllowedResetBoarding,
@@ -25,7 +25,7 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 export default class PaymentPagesOnBoarding extends React.Component {
   getNextBtnProp = sliderProps => () => {
     return (
-      <NextButton
+      <FeatureEnableSliderButton
         onClick={this.props.closeOnboarding}
         page={sliderProps.active}
       />
@@ -72,8 +72,9 @@ export function isAllowedPaymentPagesOnBoarding({
   mode,
   merchantId,
   paymentPages,
+  loading,
 }) {
-  if (paymentPages.length) {
+  if (paymentPages.length || loading) {
     return false;
   }
 
