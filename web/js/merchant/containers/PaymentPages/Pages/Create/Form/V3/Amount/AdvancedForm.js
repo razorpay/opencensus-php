@@ -1,9 +1,14 @@
+import { connect } from 'react-redux';
+
 import Form from 'component/Form';
 import Button from 'component/Button';
 import Input from 'component/Input';
-import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
+
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 
+@connect(state => ({
+  user: state.session.user,
+}))
 export default class AdvancedForm extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -81,42 +86,50 @@ export default class AdvancedForm extends React.PureComponent {
   validateMinAmountLimit = minVal => {
     const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
 
-    if (minVal <= 0) {
-      return 'Min limit cannot be 0';
+    if (minVal === '') {
+      return;
     }
 
-    if (maxVal && minVal > maxVal) {
-      return 'Min limit is more than Max limit';
+    const minAmountAllowed =
+      this.props.user.getCurrencyList[this.props.currency].min_value / 100; // In Paisa(lower unit of currency)
+
+    if (Number(minVal) < Number(minAmountAllowed)) {
+      return `Min amount cannot be less than ${minAmountAllowed}`;
+    }
+
+    if (maxVal && Number(minVal) > Number(maxVal)) {
+      return 'Min amount must be less than Max amount';
     }
   };
 
   validateMaxAmountLimit = maxVal => {
     const minVal = this.minAmountLimit && this.minAmountLimit.value;
 
-    if (maxVal <= 0) {
-      return 'Max limit cannot be 0';
+    if (maxVal === '') {
+      return;
     }
 
-    if (minVal && maxVal < minVal) {
-      return 'Max limit is less than Min limit';
+    if (Number(maxVal) <= 0) {
+      return 'Max amount cannot be 0';
+    }
+
+    if (minVal && Number(maxVal) < Number(minVal)) {
+      return 'Max amount must be more than Min amount';
     }
   };
 
-  setRefMinAmountLimit = el => (this.minAmountLimit = el);
-  setRefMaxAmountLimit = el => (this.maxAmountLimit = el);
-
   get FIELD_amountLimits() {
-    const { field } = this.props;
+    const { field, currency } = this.props;
     const minAmount = field.min_amount || '';
     const maxAmount = field.max_amount || '';
 
     return (
-      <Input.Group class="InputGroup--inline Input--amountLimits">
+      <Input.Group class="InputGroup--inline Input--vTop Input--limits">
         <div class="Input-label">Input Price Limits</div>
 
         <div class="Input-content">
           <Input.CurrencySelect
-            defaultValue="INR"
+            defaultValue={currency}
             disabled
             parentQuerySelector=".Modal-mask--payment-pages-v3-creator .Modal-body"
           />
@@ -125,8 +138,7 @@ export default class AdvancedForm extends React.PureComponent {
             setRef={this.setRefMinAmountLimit}
             name="min_amount"
             defaultValue={minAmount}
-            max="500000"
-            type="number"
+            pattern="\d+"
             validator={this.validateMinAmountLimit}
           >
             <span class="Input-after">Min</span>
@@ -137,7 +149,7 @@ export default class AdvancedForm extends React.PureComponent {
 
         <div class="Input-content">
           <Input.CurrencySelect
-            defaultValue="INR"
+            defaultValue={currency}
             disabled
             parentQuerySelector=".Modal-mask--payment-pages-v3-creator .Modal-body"
           />
@@ -146,8 +158,7 @@ export default class AdvancedForm extends React.PureComponent {
             setRef={this.setRefMaxAmountLimit}
             name="max_amount"
             defaultValue={maxAmount}
-            max="500000"
-            type="number"
+            pattern="\d+"
             placeholder="No Limit"
             validator={this.validateMaxAmountLimit}
           >
@@ -158,12 +169,79 @@ export default class AdvancedForm extends React.PureComponent {
     );
   }
 
-  get fieldsForDynamicPrice() {
-    return <React.Fragment />;
-  }
+  validateMinPurchaseLimit = minVal => {
+    const maxVal = this.maxPurchaseLimit && this.maxPurchaseLimit.value;
 
-  get fieldsForMultiplePurchase() {
-    return <React.Fragment />;
+    if (minVal === '') {
+      return;
+    }
+
+    if (minVal < 0) {
+      return 'Min purchase cannot be 0';
+    }
+
+    if (maxVal && Number(minVal) > Number(maxVal)) {
+      return 'Min purchase is more than Max limit';
+    }
+  };
+
+  validateMaxPurchaseLimit = maxVal => {
+    const minVal = this.minPurchaseLimit && this.minPurchaseLimit.value;
+
+    if (maxVal === '') {
+      return;
+    }
+
+    if (Number(maxVal) <= 0) {
+      return 'Max purchase cannot be 0';
+    }
+
+    if (minVal && Number(maxVal) < Number(minVal)) {
+      return 'Max purchase is less than Min limit';
+    }
+  };
+
+  get FIELD_purchaseLimits() {
+    const { field } = this.props;
+    const minPurchase = field.min_purchase || '';
+    const maxPurchase = field.max_purchase || '';
+
+    return (
+      <Input.Group class="InputGroup--inline  Input--vTop Input--limits">
+        <div class="Input-label">
+          Quantity Limit
+          <div class="modal-description">per order</div>
+        </div>
+
+        <div class="Input-content">
+          <Input
+            setRef={this.setRefMinPurchaseLimit}
+            name="min_amount"
+            defaultValue={minPurchase}
+            pattern="\d+"
+            validator={this.validateMinPurchaseLimit}
+          >
+            <span class="Input-after">Min</span>
+          </Input>
+        </div>
+
+        <span class="separator">-</span>
+
+        <div class="Input-content">
+          <Input
+            setRef={this.setRefMaxPurchaseLimit}
+            name="max_amount"
+            defaultValue={maxPurchase}
+            max="500000"
+            pattern="\d+"
+            placeholder="No Limit"
+            validator={this.validateMaxPurchaseLimit}
+          >
+            <span class="Input-after">Max</span>
+          </Input>
+        </div>
+      </Input.Group>
+    );
   }
 
   get fieldsForFieldType() {
@@ -185,11 +263,22 @@ export default class AdvancedForm extends React.PureComponent {
           </React.Fragment>
         );
       case FIELD_TYPES.multiple_purchase.key:
-        return this.fieldsForMultiplePurchase;
+        return (
+          <React.Fragment>
+            {this.FIELD_availableQuantity}
+            {this.FIELD_purchaseLimits}
+          </React.Fragment>
+        );
     }
   }
 
   setRefForm = el => (this.formEl = el);
+
+  setRefMinAmountLimit = el => (this.minAmountLimit = el);
+  setRefMaxAmountLimit = el => (this.maxAmountLimit = el);
+
+  setRefMinPurchaseLimit = el => (this.minPurchaseLimit = el);
+  setRefMaxPurchaseLimit = el => (this.maxPurchaseLimit = el);
 
   render() {
     const { field, onCloseForm } = this.props;

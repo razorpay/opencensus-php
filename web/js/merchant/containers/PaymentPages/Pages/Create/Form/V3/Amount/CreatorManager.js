@@ -163,6 +163,7 @@ export class AdvancedFormModal extends React.PureComponent {
   render() {
     const { field, fieldType, onSave, closeFormModal } = this.props;
 
+    // TODO: Handle currency
     return (
       <CreatorModal class="CreatorModal-AdvancedForm" onClose={closeFormModal}>
         <AdvancedForm
@@ -170,6 +171,7 @@ export class AdvancedFormModal extends React.PureComponent {
           fieldType={fieldType}
           onCloseForm={closeFormModal}
           onSaveForm={this.onSaveForm}
+          currency={'INR'}
         />
       </CreatorModal>
     );
