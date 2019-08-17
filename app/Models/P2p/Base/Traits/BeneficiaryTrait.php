@@ -14,6 +14,8 @@ trait BeneficiaryTrait
 {
     public function buildBeneficiary(array $input): self
     {
+        unset($input[Beneficiary::TYPE]);
+
         $this->input = $input;
 
         $this->validateInput('beneficiary', $input);

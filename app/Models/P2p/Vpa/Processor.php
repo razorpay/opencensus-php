@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Transaction;
 use RZP\Exception\P2p\BadRequestException;
 
 /**
@@ -29,6 +30,19 @@ class Processor extends Base\Processor
             $username = $this->core->suggestUsername($bankAccount);
         }
 
+        if ($this->core->checkForMaxVpaLimit())
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
+
+        if ($this->core->checkUsernameBlocked($username))
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_VPA_NOT_AVAILABLE, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
         if ($this->core->checkLocalAvailability($username))
         {
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
@@ -51,21 +65,37 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::ADD, $input, true);
 
-        if ($this->core->checkLocalAvailability($this->input->get(Entity::USERNAME)))
+        $username = $this->input->get(Entity::USERNAME);
+
+        if ($this->core->checkForMaxVpaLimit())
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
+
+        if ($this->core->checkUsernameBlocked($username))
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
+
+        if ($this->core->checkLocalAvailability($username))
         {
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
                 Entity::USERNAME    => $username,
             ]);
         }
 
-        $this->gatewayInput->put(Entity::USERNAME, $this->input->get(Entity::USERNAME));
+        $this->gatewayInput->put(Entity::USERNAME, $username);
 
         $bankAccount = (new BankAccount\Core)->find($this->input->get(Entity::BANK_ACCOUNT_ID));
 
         $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
 
         $this->callbackInput->put(Entity::DATA, [
-            Entity::USERNAME            => $this->input->get(Entity::USERNAME),
+            Entity::USERNAME            => $username,
             Entity::BANK_ACCOUNT_ID     => $this->input->get(Entity::BANK_ACCOUNT_ID),
         ]);
 
@@ -155,6 +185,13 @@ class Processor extends Base\Processor
 
         $username = $this->input->get(Entity::USERNAME);
 
+        if ($this->core->checkForMaxVpaLimit())
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
+
         $this->gatewayInput->put(Entity::USERNAME, $username);
 
         $this->callbackInput->put(Entity::DATA, [
@@ -168,9 +205,16 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::CHECK_AVAILABILITY, $input, true);
 
-        $userName = $this->input->get(Entity::USERNAME);
+        $username = $this->input->get(Entity::USERNAME);
 
-        $this->gatewayInput->put(Entity::USERNAME, $userName);
+        if ($this->core->checkForMaxVpaLimit())
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
+
+        $this->gatewayInput->put(Entity::USERNAME, $username);
 
         return $this->callGateway();
     }
@@ -212,7 +256,12 @@ class Processor extends Base\Processor
 
         $vpa = $this->core->fetch($this->input->get(Entity::VPA)[Entity::ID]);
 
-        $this->core->delete($vpa);
+        $this->repo()->transaction(function() use ($vpa)
+        {
+            (new Transaction\Core)->deletePendingCollectForVpa($vpa);
+
+            $this->core->delete($vpa);
+        });
 
         return [
             Entity::SUCCESS     => true,

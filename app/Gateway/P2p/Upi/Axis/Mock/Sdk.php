@@ -340,7 +340,7 @@ class Sdk
                     Fields::MASKED_ACCOUNT_NUMBER       => 'xxxxx0123456',
                     Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
                     Fields::MERCHANT_ID                 => 'MERCHANT',
-                    Fields::MERCHANT_REQUEST_ID         => $input[Fields::MERCHANT_REQUEST_ID],
+                    Fields::MERCHANT_REQUEST_ID         => $input[Fields::MERCHANT_REQUEST_ID] ?? null,
                     Fields::PAYEE_NAME                  => $input[Fields::PAYEE_NAME] ?? 'Beneficiary Name',
                     Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA],
                     Fields::PAYER_MOBILE_NUMBER         => '919000000001',
@@ -348,7 +348,16 @@ class Sdk
                     Fields::TRANSACTION_TIME_STAMP      => $input[Fields::TIMESTAMP] ?? Carbon::now()->getTimestamp(),
                     Fields::TYPE                        => $type,
                 ];
+
+                if ($callback[Fields::GATEWAY_RESPONSE_CODE] === 'U69')
+                {
+                    unset($callback[Fields::MERCHANT_REQUEST_ID]);
+                }
+
                 break;
+
+            default:
+                $callback = $input;
         }
 
         $this->callbacks[] = $callback;
