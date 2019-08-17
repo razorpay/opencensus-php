@@ -390,6 +390,7 @@ class ShieldClient implements ExternalService
                     [
                         'response' => $responseArray,
                         'request'  => $data,
+                        'status'   => $code,
                     ]);
 
             if ((isset($responseArray[ShieldConstants::ACTION_KEY]) === false) or

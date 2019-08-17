@@ -1988,6 +1988,10 @@ trait Authorize
                 {
                     $fallbacktoV1Flow = true;
                 }
+                catch (\Requests_Exception $exception)
+                {
+                    $fallbacktoV1Flow = true;
+                }
             }
 
             /*
