@@ -24,15 +24,18 @@ export default class Slider extends React.Component {
   goTo = index => {
     const active = Number(this.state.active + index);
 
-    if (this.TOTAL_SLIDES_LENGTH <= active || active < 0) {
+    if (0 < active || active <= this.TOTAL_SLIDES_LENGTH) {
       return;
     }
 
-    this.setState({
-      active,
-    });
-
-    this.props.onSlideChange && this.props.onSlideChange(active);
+    this.setState(
+      {
+        active,
+      },
+      () => {
+        this.props.onSlideChange && this.props.onSlideChange(this.state.active);
+      }
+    );
   };
 
   getChildProp = totalSlidesNo => {
