@@ -1,27 +1,37 @@
 import LocalStorageService from 'rzp/utils/localStorage';
 
-export const getQuickGuideLocalStorageKey = (props, feature) => {
-  if (!props) {
-    return;
-  }
+import { getUser, getMode } from 'merchant/store';
 
-  const merchant = props.user.merchants[props.user.current];
+export const getQuickGuideLocalStorageKey = feature => {
+  const mode = getMode(),
+    user = getUser();
 
-  return `rzp_onboarding_${merchant.id}_${
-    props.mode
-  }_${feature}_quick_guide_closed`;
+  return `rzp_onboarding_${user.current}_${mode}_${feature}_quick_guide_closed`;
 };
 
-export const getQuickGuideIsClosed = (props, feature) => {
-  if (!props) {
-    return;
+export const getQuickGuideIsClosedFromLocalStorage = feature => {
+  if (!feature) {
+    return false;
   }
 
-  const localStorageKey = getQuickGuideLocalStorageKey(props, feature);
+  const localStorageKey = getQuickGuideLocalStorageKey(feature);
 
-  let isQuickGuideClosed = LocalStorageService.getItem(localStorageKey);
-  isQuickGuideClosed =
-    isQuickGuideClosed === 'false' || !isQuickGuideClosed ? false : true;
+  let localState =
+    JSON.parse(LocalStorageService.getItem(localStorageKey)) || {};
 
-  return isQuickGuideClosed;
+  return !!localState.isClosed;
+};
+
+export const setQuickGuideIsClosedInLocalStorage = (
+  feature,
+  isClosed = true
+) => {
+  const localStorageKey = getQuickGuideLocalStorageKey(feature);
+
+  LocalStorageService.setItem(
+    localStorageKey,
+    JSON.stringify({
+      isClosed,
+    })
+  );
 };

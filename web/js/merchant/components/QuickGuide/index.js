@@ -1,8 +1,10 @@
 import { connect } from 'react-redux';
 
-import LocalStorageService from 'rzp/utils/localStorage';
-
-import { getQuickGuideLocalStorageKey, getQuickGuideIsClosed } from './utils';
+import {
+  getQuickGuideLocalStorageKey,
+  getQuickGuideIsClosedFromLocalStorage,
+  setQuickGuideIsClosedInLocalStorage,
+} from './utils';
 
 import {
   handleProductQuickGuide,
@@ -114,13 +116,10 @@ export default params => {
     }
 
     onClickClose = () => {
-      const localStorageKey = getQuickGuideLocalStorageKey(this.props, FEATURE);
-
-      LocalStorageService.setItem(localStorageKey, true);
+      setQuickGuideIsClosedInLocalStorage(FEATURE);
 
       this.props.handleProductQuickGuide({
-        feature: FEATURE,
-        showOnboarding: false,
+        ...this.props.currentOnboarding,
         isQuickGuideOpen: false,
         isTour: false,
       });
@@ -150,4 +149,8 @@ export default params => {
   };
 };
 
-export { getQuickGuideIsClosed, getQuickGuideLocalStorageKey };
+export {
+  getQuickGuideIsClosedFromLocalStorage,
+  getQuickGuideLocalStorageKey,
+  setQuickGuideIsClosedInLocalStorage,
+};
