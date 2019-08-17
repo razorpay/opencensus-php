@@ -20,6 +20,7 @@ import * as ModalActions from 'rzp/modules/modals';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
+import EmptyList from 'merchant/components/EmptyList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
 import { getSubscriptionQuickGuideIsClosed } from 'merchant/containers/Subscriptions/QuickGuide';
