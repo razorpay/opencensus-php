@@ -115,23 +115,46 @@ export const OnBoardingWrapper = ({ className, children }) => (
   <div class={`OnBoarding OnBoarding--${className}`}>{children}</div>
 );
 
-export const FeatureEnableSliderButton = ({ feature, onClick, page }) => (
-  <FeatureEnableButton.Primary
-    feature={feature}
-    class="Forward-Button"
-    pendingText="Enabling..."
-    onClick={(...args) => {
-      window.rzpAnalytics({
-        eventCategory: `Product Introduction (${feature})`,
-        eventAction: `Page ${page} - Get Started CTA`,
-      });
+export const FeatureEnableSliderButton = ({ feature, onClick, page }) => {
+  if (feature) {
+    return (
+      <FeatureEnableButton.Primary
+        feature={feature}
+        class="Forward-Button"
+        pendingText="Enabling..."
+        onClick={(...args) => {
+          window.rzpAnalytics({
+            eventCategory: `Product Introduction (${feature})`,
+            eventAction: `Page ${page} - Get Started CTA`,
+          });
 
-      onClick(args);
-    }}
-  >
-    Get Started
-  </FeatureEnableButton.Primary>
-);
+          onClick(args);
+        }}
+      >
+        Get Started
+      </FeatureEnableButton.Primary>
+    );
+  }
+
+  return (
+    <Button.Primary
+      feature={feature}
+      class="Forward-Button"
+      iconAfter="arrow-forward"
+      pendingText="Enabling..."
+      onClick={(...args) => {
+        window.rzpAnalytics({
+          eventCategory: `Product Introduction (${feature})`,
+          eventAction: `Page ${page} - Get Started CTA`,
+        });
+
+        onClick(args);
+      }}
+    >
+      Get Started
+    </Button.Primary>
+  );
+};
 
 export const NextButton = ({ feature, onClick, page }) => (
   <Button.Primary
