@@ -114,15 +114,15 @@ export const removeUser = userId => {
   };
 };
 
-export const toggle2FaEnforcement = (flag, password) => {
+export const toggle2FaEnforcement = data => {
   return {
     type: UPDATE_SESSION,
     payload: merchantFetch({
       url: `merchants/2fa`,
       method: 'patch',
-      data: {
-        second_factor_auth: flag,
-        password: password,
+      data,
+      headers: {
+        'Content-Type': 'application/json',
       },
       should_sync: 1,
     }),
