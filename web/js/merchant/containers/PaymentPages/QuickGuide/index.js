@@ -54,7 +54,7 @@ export default class PaymentPagesQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class="Route"
+        class="PaymetPages"
         title={Title}
         closeBtn={CloseBtn}
       >
@@ -108,7 +108,7 @@ const getStatus = ({ paymentPages, invoices }) => {
       }
     });
   } else {
-    paymentPageStatus = locked;
+    paymentPageStatus = active;
     paymentReceiveStatus = locked;
   }
 

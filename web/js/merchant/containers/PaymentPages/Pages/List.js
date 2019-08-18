@@ -18,6 +18,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListFilter from 'merchant/components/ListFilter';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
 import { populateRPLReduxList } from 'merchant/modules/invoices/list';
 import {
@@ -341,6 +342,8 @@ export default class PaymentPagesContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <TakeATourButton feature={RZPFeatures.PP} />
+
             <ShowWhen
               additionalCondition={user =>
                 user.isOrgAllowedFunctionality('external_links')
