@@ -24,7 +24,7 @@ export default class Slider extends React.Component {
   goTo = activeNum => {
     let active = Number(activeNum);
 
-    if (this.TOTAL_SLIDES_LENGTH <= active || active < 0) {
+    if (active < 0 || active > this.TOTAL_SLIDES_LENGTH) {
       return;
     }
 
