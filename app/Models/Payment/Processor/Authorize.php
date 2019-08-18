@@ -2242,8 +2242,8 @@ trait Authorize
                     ]);
             }
 
-            // mcc is supported only for card payments
-            if ($payment->isCard() === false and $payment->getWallet() != 'paypal')
+            // mcc is supported only for card payments and wallet paypal.
+            if ($payment->isCard() === false and $payment->getWallet() !== 'paypal')
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
