@@ -124,6 +124,9 @@ export const toggle2FaEnforcement = (flag, password) => {
         second_factor_auth: flag,
         password: password,
       },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       should_sync: 1,
     }),
   };
