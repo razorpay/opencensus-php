@@ -222,6 +222,12 @@ export default class User {
     return !!isEnabled;
   }
 
+  get isInvoicesEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState('invoices');
+
+    return !!isEnabled;
+  }
+
   get currentMerchant() {
     return this.merchants[this.current];
   }
