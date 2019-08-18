@@ -196,12 +196,11 @@ class Core extends Base\Core
      */
     public function checkUserAccess(string $userId, string $merchantId): array
     {
-        $accessMaps = $this->repo->merchant_user->fetch([
-            'user_id'       => $userId,
-            'merchant_id'   => $merchantId,
-        ]);
+        $accessMaps = $this->repo
+                           ->merchant_user
+                           ->getMerchantUserRelation($userId, $merchantId);
 
-        $access = ($accessMaps->isEmpty() === false);
+        $access = (empty($accessMaps) === false);
 
         return [ 'access' => $access ];
     }

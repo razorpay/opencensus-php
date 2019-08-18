@@ -30,4 +30,15 @@ class Repository extends Base\Repository
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
     }
+
+    public function getMerchantUserRelation(string $userId, string $merchantId)
+    {
+        return $this->newQUery()
+                    ->select(Entity::MERCHANT_ID, Entity::USER_ID)
+                    ->where(Entity::USER_ID, $userId)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::PRODUCT, 'primary')
+                    ->get()
+                    ->toArray();
+    }
 }

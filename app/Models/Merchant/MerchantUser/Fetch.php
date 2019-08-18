@@ -15,7 +15,7 @@ class Fetch extends BaseFetch
     ];
 
     const ACCESSES = [
-        AuthType::PRIVILEGE_AUTH    => [
+        AuthType::ADMIN_AUTH    => [
             Entity::MERCHANT_ID,
             Entity::USER_ID,
         ],
