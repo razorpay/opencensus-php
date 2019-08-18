@@ -2000,6 +2000,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
     const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
 
+
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';
     const PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY                 = 'PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY';
 
