@@ -6,16 +6,16 @@ export const getQuickGuideData = {
   PaymentPage: status => {
     if (status === done) {
       return {
-        title: '1. Payment Page Created',
+        title: '1. Payment link created',
         content:
-          'Create your own custom pages by adding fields to collect relevant customer information.',
+          'Create a payment link instantly and notify your customer via sms or email.',
       };
     }
 
     return {
-      title: '1. Create Payment Page',
+      title: '1. Create Payment Link',
       content:
-        'Create your own custom pages by adding fields to collect relevant customer information.',
+        'Create a payment link instantly and notify your customer via sms or email.',
     };
   },
   ReceivePayments: status => {
@@ -28,7 +28,7 @@ export const getQuickGuideData = {
 
     return {
       title: '2. Receive Payments',
-      content: 'Publish your page to receive payments from your customers',
+      content: 'Your customers can make payments directly on the payment link.',
     };
   },
 };

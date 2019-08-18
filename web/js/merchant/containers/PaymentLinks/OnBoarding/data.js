@@ -1,22 +1,21 @@
 // Features
 export const FEATURES_DATA = [
   {
-    icon: '/dist/css/assets/feature_onboarding/2.svg',
-    title: 'No Coding Required',
-    desc:
-      'Your business can go online with zero integration and tech efforts. We build and operate for you.',
+    icon: '/dist/css/assets/product_onboarding/2.svg',
+    title: 'Businesses Without Website',
+    desc: `Don't have an app or website for selling? Now let your customers pay online with payment links`,
   },
   {
-    icon: '/dist/css/assets/feature_onboarding/10.svg',
-    title: 'Custom Branded Page',
+    icon: '/dist/css/assets/product_onboarding/5.svg',
+    title: 'Alternative Payment Option',
     desc:
-      'Customize the look and feel of your payment pages to reflect your brand colours, for seamless customer experience.',
+      'Payment Links can be an easy substitute for cash-on-delivery and point-of-sale payment methods in your business.',
   },
   {
-    icon: '/dist/css/assets/feature_onboarding/8.svg',
-    title: 'Memorable URLS',
+    icon: '/dist/css/assets/product_onboarding/3.svg',
+    title: 'Partial Payments',
     desc:
-      'Look professional with a custom URL that is as easy to remember and is an extension of your business.',
+      'Provide your customers with the flexibility to make payments in parts against large orders instead of making the entire payment at once.',
   },
 ];
 
@@ -24,6 +23,10 @@ export const FEATURES_DATA = [
 export const FEATURES_LINKS = [
   {
     label: 'Know more',
+    url: 'https://razorpay.com/docs/payment-pages/',
+  },
+  {
+    label: 'View API Docs',
     url: 'https://razorpay.com/docs/payment-pages/',
   },
 ];

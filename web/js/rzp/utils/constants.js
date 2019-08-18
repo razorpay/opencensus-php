@@ -111,6 +111,7 @@ export const RZPFeatures = {
   ROUTE: 'marketplace',
   VA: 'virtual_accounts',
   PP: 'payment_pages',
+  PL: 'payment_links',
 };
 
 export const SubscriptionsStates = {

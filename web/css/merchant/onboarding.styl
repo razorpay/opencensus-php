@@ -260,7 +260,8 @@
 
 .OnBoarding--Subscription,
 .OnBoarding--Route,
-.OnBoarding--PaymentPages
+.OnBoarding--PaymentPages,
+.OnBoarding--PaymentLinks
   .Landing--Image
     overflow: hidden
     z-index: 2
@@ -310,6 +311,17 @@
       color: #7a47c2;
       background: linear-gradient(0deg, #7a47c2 0%,#9d91d2 100%);
       box-shadow: 1px 1px 0 #9d91d2, 2px 2px 0 #9d91d2, 3px 3px 0 #9d91d2, 4px 4px 0 #9d91d2;
+
+    img
+      transform: translate(0, -25%)  rotateY(-180deg)
+
+.OnBoarding--PaymentLinks
+  .Landing--Image
+    &:before
+      background: #8845fe;
+      color: #8845fe;
+      background: -webkit-linear-gradient(45deg,#9665fd,#7a25ff 50%);
+      background: linear-gradient(45deg,#9665fd,#7a25ff 50%);
 
     img
       transform: translate(0, -25%)  rotateY(-180deg)

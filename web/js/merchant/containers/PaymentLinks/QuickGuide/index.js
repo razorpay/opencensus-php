@@ -1,5 +1,3 @@
-import { connect } from 'react-redux';
-
 import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
 
 import Step from 'merchant/components/StepGuide/Step';
@@ -15,18 +13,13 @@ import { getQuickGuideData } from './data';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
-@connect(state => ({
-  user: state.session.user,
-  mode: state.session.mode,
-  invoices: state.invoices,
-}))
 @QuickGuide({
-  feature: RZPFeatures.PP,
-  data_points: ['paymentPages'],
+  feature: RZPFeatures.PL,
+  data_points: ['invoices'],
   dataTransformer: (key, state) => {
     return {
       ...state.invoices,
-      items: state.invoices.paymentPages,
+      items: state.invoices.invoices,
     };
   },
 })
@@ -41,7 +34,7 @@ export default class PaymentPagesQuickGuide extends React.Component {
   };
 
   render() {
-    const { paymentPageStatus, paymentReceiveStatus } = getStatus(this.props);
+    const { paymentLinkStatus, paymentReceiveStatus } = getStatus(this.props);
 
     const CloseBtn = this.getCloseBtn(paymentReceiveStatus === done);
 
@@ -59,8 +52,8 @@ export default class PaymentPagesQuickGuide extends React.Component {
         closeBtn={CloseBtn}
       >
         <Step
-          status={paymentPageStatus}
-          {...getQuickGuideData.PaymentPage(paymentPageStatus)}
+          status={paymentLinkStatus}
+          {...getQuickGuideData.PaymentPage(paymentLinkStatus)}
         />
 
         <Step
@@ -74,46 +67,46 @@ export default class PaymentPagesQuickGuide extends React.Component {
 
 const Title = <QuickGuideTitle />;
 
-export const getPaymentPageQuickGuideIsClosed = props => {
-  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PP);
+export const getPaymentLinksQuickGuideIsClosed = props => {
+  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PL);
 
   // Check if transfers non created state count is more then or equal to 2
-  if (isClosed || props.paymentPages.length <= 2) {
+  if (isClosed || props.invoices.invoices.length <= 2) {
     return isClosed;
   }
 
-  return true;
+  return false;
 };
 
-const getStatus = ({ paymentPages, invoices }) => {
-  let paymentPageStatus = loading,
+const getStatus = ({ invoices }) => {
+  let paymentLinkStatus = loading,
     paymentReceiveStatus = loading;
 
   if (invoices.loading) {
     return {
-      paymentPageStatus,
+      paymentLinkStatus,
       paymentReceiveStatus,
     };
   }
 
-  if (paymentPages.items.length) {
-    paymentPageStatus = done;
+  if (invoices.items.length) {
+    paymentLinkStatus = done;
     paymentReceiveStatus = active;
 
-    paymentPages.items.forEach(page => {
-      if (page.times_paid) {
+    invoices.items.forEach(page => {
+      if (page.status === 'paid') {
         paymentReceiveStatus = done;
 
         return false;
       }
     });
   } else {
-    paymentPageStatus = locked;
+    paymentLinkStatus = active;
     paymentReceiveStatus = locked;
   }
 
   return {
-    paymentPageStatus,
+    paymentLinkStatus,
     paymentReceiveStatus,
   };
 };

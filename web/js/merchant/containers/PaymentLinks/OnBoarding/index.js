@@ -8,7 +8,7 @@ import OnBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
   SkipAndGetStartedButton,
-  isAllowedResetBoarding,
+  getIsAllowedResetBoarding,
   setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
 
@@ -22,9 +22,9 @@ export default class PaymentPagesOnBoarding extends React.Component {
     return (
       <FeatureEnableSliderButton
         isLocalEnabler
-        feature={RZPFeatures.PP}
-        onClick={this.props.closeOnboarding}
+        feature={RZPFeatures.PL}
         page={sliderProps.active}
+        onClick={this.props.closeOnboarding}
       />
     );
   };
@@ -33,21 +33,21 @@ export default class PaymentPagesOnBoarding extends React.Component {
     const { active, onSlideChange } = this.props;
 
     return (
-      <OnBoardingWrapper class="PaymentPages">
+      <OnBoardingWrapper class="PaymentLinks">
         <Slider active={active} onSlideChange={onSlideChange}>
           {sliderProps => (
             <Landing
               {...sliderProps}
               title="Payment Pages"
-              imageUrl="https://razorpay.com/assets/paymentpages/hero-main.svg"
-              desc="Create custom-branded, hosted Payment Pages in a few clicks to accept payments online. Your business can go online with zero integration and tech efforts."
+              imageUrl="https://razorpay.com/assets/paymentlinks/pl-landing.svg"
+              desc="Share payment links via an email, SMS, messenger, chatbot etc. and get paid immediately."
             />
           )}
 
           {sliderProps => (
             <Features
               {...sliderProps}
-              title="What makes Payment Pages great?"
+              title="What makes Payment Links great?"
               nextBtn={this.getNextBtnProp(sliderProps)}
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
@@ -65,40 +65,32 @@ export default class PaymentPagesOnBoarding extends React.Component {
   }
 }
 
-export function getIsAllowedPaymentPagesOnBoarding({
-  mode,
-  merchantId,
-  paymentPages,
-  loading,
-}) {
-  if (paymentPages.length || loading) {
+export function getIsAllowedResetPaymentLinksOnBoarding(invoices) {
+  if (invoices.invoices.length || invoices.loading) {
     return false;
   }
 
-  return isAllowedResetBoarding({
-    mode,
-    merchantId,
-    feature: RZPFeatures.PP,
-  });
+  return getIsAllowedResetBoarding(RZPFeatures.PL);
 }
 
-export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
-  if (user.isPaymentPagesEnabled) {
+export function getIsPaymentLinksEnabled({ user, invoices }) {
+  if (user.isPaymentLinksEnabled) {
     return true;
   }
 
-  if (paymentPages.length) {
+  if (invoices.invoices.length) {
     setOnBoardingDataInLocalState({
-      feature: RZPFeatures.PP,
+      feature: RZPFeatures.PL,
       data: {
         isEnabled: true,
+        lastVisitedTime: Date.now(),
       },
     });
 
     return true;
   }
 
-  if (loading) {
+  if (invoices.loading) {
     return true;
   }
 
