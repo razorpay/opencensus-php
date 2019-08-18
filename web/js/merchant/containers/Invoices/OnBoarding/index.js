@@ -15,9 +15,9 @@ import OnBoarding, {
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
 @OnBoarding({
-  feature: RZPFeatures.PP,
+  feature: RZPFeatures.INVOICE,
 })
-export default class PaymentPagesOnBoarding extends React.Component {
+export default class InvoicesOnBoarding extends React.Component {
   getNextBtnProp = sliderProps => () => {
     return (
       <FeatureEnableSliderButton
@@ -74,7 +74,7 @@ export function getIsAllowedResetInvoicesOnBoarding(invoices) {
 }
 
 export function getIsInvoicesEnabled({ user, invoices }) {
-  if (user.isPaymentLinksEnabled) {
+  if (user.isInvoicesEnabled) {
     return true;
   }
 

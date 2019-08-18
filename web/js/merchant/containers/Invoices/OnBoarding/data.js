@@ -1,21 +1,21 @@
 // Features
 export const FEATURES_DATA = [
   {
-    icon: '/dist/css/assets/product_onboarding/2.svg',
-    title: 'Businesses Without Website',
-    desc: `Don't have an app or website for selling? Now let your customers pay online with payment links`,
+    icon: '/dist/css/assets/product_onboarding/15.svg',
+    title: 'GST compliant',
+    desc: `Add GST, discounts and shipping details, all in an invoice and let our invoicing solution do the calculation for you.`,
   },
   {
-    icon: '/dist/css/assets/product_onboarding/5.svg',
-    title: 'Alternative Payment Option',
+    icon: '/dist/css/assets/product_onboarding/4.svg',
+    title: 'Partial payments',
     desc:
-      'Payment Links can be an easy substitute for cash-on-delivery and point-of-sale payment methods in your business.',
+      'Enable partial payments for your customers at the time of invoice creation directly from the dashboard.',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/3.svg',
-    title: 'Partial Payments',
+    icon: '/dist/css/assets/product_onboarding/8.svg',
+    title: 'Download Option',
     desc:
-      'Provide your customers with the flexibility to make payments in parts against large orders instead of making the entire payment at once.',
+      'Let your customers save and download .pdf version of invoices for future reference.',
   },
 ];
 
@@ -23,10 +23,10 @@ export const FEATURES_DATA = [
 export const FEATURES_LINKS = [
   {
     label: 'Know more',
-    url: 'https://razorpay.com/docs/payment-pages/',
+    url: 'https://razorpay.com/docs/invoices/',
   },
   {
     label: 'View API Docs',
-    url: 'https://razorpay.com/docs/payment-pages/',
+    url: 'https://razorpay.com/docs/api/invoices/',
   },
 ];

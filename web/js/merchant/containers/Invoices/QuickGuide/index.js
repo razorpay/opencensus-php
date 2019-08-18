@@ -23,7 +23,7 @@ const { done, locked, active, loading } = PossibleStatuses;
     };
   },
 })
-export default class PaymentPagesQuickGuide extends React.Component {
+export default class InvoicesQuickGuide extends React.Component {
   getCloseBtn = isCompleted => {
     return (
       <QuickGuideCloseBtn

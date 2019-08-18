@@ -6,16 +6,16 @@ export const getQuickGuideData = {
   PaymentPage: status => {
     if (status === done) {
       return {
-        title: '1. Payment link created',
+        title: '1. Invoice Created',
         content:
-          'Create a payment link instantly and notify your customer via sms or email.',
+          'Create GST based invoices instantly and notify your customer via sms or email',
       };
     }
 
     return {
-      title: '1. Create Payment Link',
+      title: '1. Create Invoice',
       content:
-        'Create a payment link instantly and notify your customer via sms or email.',
+        'Create GST based invoices instantly and notify your customer via sms or email',
     };
   },
   ReceivePayments: status => {
@@ -28,7 +28,8 @@ export const getQuickGuideData = {
 
     return {
       title: '2. Receive Payments',
-      content: 'Your customers can make payments directly on the payment link.',
+      content:
+        'Your customers can make payments directly via the invoice link.',
     };
   },
 };
