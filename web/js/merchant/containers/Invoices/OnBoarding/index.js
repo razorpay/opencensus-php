@@ -33,21 +33,21 @@ export default class InvoicesOnBoarding extends React.Component {
     const { active, onSlideChange } = this.props;
 
     return (
-      <OnBoardingWrapper class="PaymentLinks">
+      <OnBoardingWrapper class="Invoices">
         <Slider active={active} onSlideChange={onSlideChange}>
           {sliderProps => (
             <Landing
               {...sliderProps}
-              title="Payment Pages"
+              title="Invoices"
               imageUrl="https://razorpay.com/assets/invoices/banner.svg"
-              desc="Share payment links via an email, SMS, messenger, chatbot etc. and get paid immediately."
+              desc="Create and send GST compliant invoices that your customers can pay online instantly."
             />
           )}
 
           {sliderProps => (
             <Features
               {...sliderProps}
-              title="What makes Payment Links great?"
+              title="What makes Invoices great?"
               nextBtn={this.getNextBtnProp(sliderProps)}
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
