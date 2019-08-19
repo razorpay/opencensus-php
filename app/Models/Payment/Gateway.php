@@ -1352,6 +1352,7 @@ class Gateway
      */
     public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
+        IFSC::IDIB => Gateway::NETBANKING_IBK,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::CBIN => Gateway::NETBANKING_CBI,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,
