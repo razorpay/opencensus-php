@@ -61,4 +61,10 @@ final class Shield
     const ACTION_ALLOW            = 'allow';
     const ACTION_REVIEW           = 'review';
     const ACTION_BLOCK            = 'block';
+
+    const ALLOWED_ACTIONS         = [
+        self::ACTION_ALLOW,
+        self::ACTION_REVIEW,
+        self::ACTION_BLOCK,
+    ];
 }

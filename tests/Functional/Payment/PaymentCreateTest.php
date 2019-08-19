@@ -972,29 +972,6 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('Razorpay', $payment['settled_by']);
     }
 
-    public function testPaymentS2SNpciEmandate()
-    {
-        $this->ba->privateAuth();
-
-        $payment = $this->setupEmandateAndGetPaymentRequest(IFSC::YESB);
-
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
-            'name'           => 'Test account',
-        ];
-
-        $this->fixtures->merchant->addFeatures(['s2s']);
-
-        $response = $this->doS2SPrivateAuthPayment($payment);
-
-        $paymentEntity = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($paymentEntity['id'], $response['razorpay_payment_id']);
-
-        $this->assertTrue($this->redirectToAuthorize);
-    }
-
     public function testPaymentS2SAxisEmandate()
     {
         $this->ba->privateAuth();
@@ -1456,6 +1433,7 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
     }
 
+
     public function testRupayPaymentFallbackTo3ds()
     {
         $this->fixtures->merchant->addFeatures(['headless']);
@@ -1573,5 +1551,209 @@ class PaymentCreateTest extends TestCase
             });
 
         $this->app->instance('card.otpelf', $otpelf);
+    }
+
+    /*
+     * /payments/create/json, card payment
+     */
+    public function testPaymentS2SRedirectJsonPrivateAuthCardPayment()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    /*
+     * /payments/create/json, netbanking payment
+     */
+    public function testPaymentS2SRedirectJsonPrivateAuthNetbankingPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['method'] = 'netbanking';
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    /*
+     * /payments/create/json, recurring payment
+     */
+    public function testPaymentS2SRedirectJsonPrivateAuthRecurringPayment()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['save'] = true;
+        $payment['recurring'] = 'preferred';
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    /*
+     * /payments/create/json, emandate payment
+     */
+    public function testPaymentS2SRedirectJsonPrivateAuthEmandatePayment()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB');
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertTrue($this->redirectToAuthorize);
     }
 }

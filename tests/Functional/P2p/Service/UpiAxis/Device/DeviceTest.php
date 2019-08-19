@@ -4,13 +4,14 @@ namespace RZP\Tests\P2p\Service\UpiAxis\Device;
 
 use RZP\Models\P2p\Device;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
-use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
-use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
+use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
+use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 
 class DeviceTest extends TestCase
 {
     use TransactionTrait;
+    use EventsTrait;
 
     public function testInitiateVerification()
     {
@@ -48,6 +49,57 @@ class DeviceTest extends TestCase
                 Fields::UDF_PARAMETERS            => [],
             ]
         ]);
+    }
+
+    public function testVerificationEvents()
+    {
+        $this->setEventsForMerchant();
+
+        $this->mockRaven();
+
+        $helper = $this->getDeviceHelper();
+
+        $initiate = $helper->initiateVerification([
+            Fields::SDK => [
+                Fields::SIM_ID  => '0',
+            ]
+        ]);
+
+        $helper->verification($initiate['callback'], [
+            Fields::SDK => [
+                Fields::STATUS                    => 'SUCCESS',
+                Fields::IS_DEVICE_BOUND           => 'true',
+                Fields::IS_DEVICE_ACTIVATED       => 'true',
+                Fields::DEVICE_FINGERPRINT        => '61F275C82A0AECC4788FA',
+                Fields::CUSTOMER_MOBILE_NUMBER    => '919742417121',
+                Fields::VPA_ACCOUNTS              => [],
+                Fields::UDF_PARAMETERS            => [],
+            ]
+        ]);
+
+        $this->assertRavenRequest(function($input)
+        {
+            $this->assertArraySubset([
+                'receiver'  => '919742417121',
+                'source'    => 'api.test.p2p',
+                'template'  => 'sms.p2p.verification_completed',
+                'params'    => [
+                    'app_name'      => 'Bajaj Application',
+                ],
+            ], $input);
+        });
+
+        $this->assertWebhookContent(function($content)
+        {
+            $this->assertArraySubset([
+                'customer_id'   => 'cust_ArzpLocalCust1',
+                'contact'       => '919742417121',
+                'entity'        => 'device',
+            ], $content['payload']);
+
+            $this->assertStringStartsWith('device_', $content['payload']['id']);
+            $this->assertArrayNotHasKey('auth_token', $content['payload']);
+        });
     }
 
     public function testInitiateGetToken()
@@ -148,7 +200,7 @@ class DeviceTest extends TestCase
         $this->assertTrue($deviceToken->refresh()->trashed());
         $this->assertTrue($bankAccount->refresh()->trashed());
         $this->assertTrue($vpa->refresh()->trashed());
-        $this->assertTrue($transaction->refresh()->trashed());
+        $this->assertTrue($transaction->refresh()->isCreated());
         $this->assertNull($this->getDbLastEntity('p2p_beneficiary'));
     }
 }

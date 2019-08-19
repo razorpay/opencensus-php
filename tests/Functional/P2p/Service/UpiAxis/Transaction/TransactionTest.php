@@ -106,8 +106,8 @@ class TransactionTest extends TestCase
 
         $this->assertArraySubset([
             Entity::CUSTOMER_ID       => $this->fixtures->device->getCustomerId(),
-            Entity::STATUS            => Status::CREATED,
-            Entity::INTERNAL_STATUS   => Status::CREATED,
+            Entity::STATUS            => Status::REQUESTED,
+            Entity::INTERNAL_STATUS   => Status::REQUESTED,
             Entity::PAYER_ID          => $this->fixtures->vpa->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
             Entity::EXPIRE_AT         => $expiry->getTimestamp(),
@@ -194,8 +194,8 @@ class TransactionTest extends TestCase
 
         $this->assertArraySubset([
             Entity::CUSTOMER_ID       => $this->fixtures->device->getCustomerId(),
-            Entity::STATUS            => Status::CREATED,
-            Entity::INTERNAL_STATUS   => Status::CREATED,
+            Entity::STATUS            => Status::REQUESTED,
+            Entity::INTERNAL_STATUS   => Status::REQUESTED,
             Entity::PAYER_ID          => $this->fixtures->vpa->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
         ], $transaction->toArray());
@@ -276,6 +276,47 @@ class TransactionTest extends TestCase
         ], $transaction->upi->toArrayPublic());
     }
 
+    public function testPayPendingToSuccess()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createPayIncomingTransaction([
+            Entity::STATUS           => Status::PENDING,
+            Entity::INTERNAL_STATUS  => Status::PENDING,
+        ], [
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE           => 'BT',
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Transaction pending'
+        ]);
+
+        // To test the case if context vpa is deleted
+        $transaction->payee->deleteOrFail();
+
+        $this->mockSdk()->setCallback('CUSTOMER_CREDITED_VIA_PAY', [
+            Fields::AMOUNT                      => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                     => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+
+        $this->assertTrue($response['success']);
+
+        $this->assertTrue($transaction->reload()->isCompleted());
+        $this->assertArraySubset([
+            Entity::STATUS            => Status::COMPLETED,
+        ], $transaction->toArrayPublic());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE           => 'BT',
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Transaction pending'
+        ], $transaction->upi->toArrayPublic());
+    }
+
     public function testCollectOnus()
     {
         $helper = $this->getTransactionHelper();
@@ -317,8 +358,8 @@ class TransactionTest extends TestCase
 
         $this->assertArraySubset([
             Entity::CUSTOMER_ID       => $this->fixtures->device(self::DEVICE_2)->getCustomerId(),
-            Entity::STATUS            => Status::CREATED,
-            Entity::INTERNAL_STATUS   => Status::CREATED,
+            Entity::STATUS            => Status::REQUESTED,
+            Entity::INTERNAL_STATUS   => Status::REQUESTED,
             Entity::PAYER_ID          => $this->fixtures->vpa(self::DEVICE_2)->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa(self::DEVICE_2)->getBankAccountId(),
             Entity::TYPE              => Type::COLLECT,
@@ -556,8 +597,8 @@ class TransactionTest extends TestCase
     public function testFetchAll()
     {
         $transaction1 = $this->createPayTransaction([
-            Entity::STATUS              => Status::COMPLETED,
-            Entity::INTERNAL_STATUS     => Status::COMPLETED,
+            Entity::STATUS              => Status::PENDING,
+            Entity::INTERNAL_STATUS     => Status::PENDING,
         ]);
 
         $transaction2 = $this->createCollectIncomingTransaction([]);
@@ -576,17 +617,50 @@ class TransactionTest extends TestCase
         $this->assertCollection($collection, 2, [
             [
                 'id'        => $transaction2->getPublicId(),
-                'status'    => 'created',
+                'status'    => 'requested',
                 'type'      => 'collect',
             ],
             [
                 'id'        => $transaction1->getPublicId(),
-                'status'    => 'completed',
+                'status'    => 'pending',
                 'type'      => 'pay',
             ],
         ]);
 
         $this->assertNotEmpty($collection['items'][1]['concern']);
+    }
+
+    public function testFetchAllPending()
+    {
+        $this->createPayTransaction();
+        $this->createPayTransaction([
+            Entity::STATUS  => Status::COMPLETED,
+        ]);
+
+        $this->createCollectIncomingTransaction();
+        $this->createCollectIncomingTransaction([
+            Entity::EXPIRE_AT   => $this->now()->subSecond()->getTimestamp(),
+        ]);
+        $this->createCollectIncomingTransaction([
+            Entity::STATUS  => Status::COMPLETED,
+        ]);
+        $this->createCollectIncomingTransaction([
+            Entity::STATUS  => Status::INITIATED,
+        ]);
+
+        $helper = $this->getTransactionHelper();
+
+        $collection = $helper->fetchAll([
+            'response'  => 'pending',
+        ]);
+
+        $this->assertCollection($collection, 1, [
+            [
+                'status'    => 'requested',
+                'type'      => 'collect',
+                'flow'      => 'debit',
+            ],
+        ]);
     }
 
     public function testFetchDeletedBeneficiary()
@@ -634,5 +708,67 @@ class TransactionTest extends TestCase
         $this->assertSame($this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
                           $transactions['items'][0]['payee']['id']);
         $this->assertTrue($transactions['items'][0]['payer']['validated']);
+    }
+
+    public function testDynamicInitiatePay()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $helper->withSchemaValidated();
+
+        $coproto = $helper->initiatePay([
+            'payee' => [
+                'id'                => null,
+                'type'              => 'vpa',
+                'username'          => 'test',
+                'handle'            => 'mypsp',
+                'beneficiary_name'  => 'Some Merchant',
+            ]
+        ]);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+        $vpa         = $this->fixtures->getDbLastVpa();
+
+        $this->assertTrue($vpa->isBeneficiary());
+        $this->assertSame('test@mypsp', $vpa->getAddress());
+
+        $this->assertSame($this->fixtures->vpa(self::DEVICE_1)->getId(), $transaction->payer->getId());
+        $this->assertSame($vpa->getId(), $transaction->payee->getId());
+
+        $this->assertArraySubset([
+            'payeeVpa'  => 'test@mypsp',
+            'payeeName' => 'Some Merchant',
+        ], $coproto['request']['content']);
+    }
+
+    public function testDynamicInitiateCollect()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $helper->withSchemaValidated();
+
+        $coproto = $helper->initiateCollect([
+            'payer' => [
+                'id'                => null,
+                'type'              => 'vpa',
+                'username'          => 'test',
+                'handle'            => 'mypsp',
+                'beneficiary_name'  => 'Some Merchant',
+            ]
+        ]);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+        $vpa         = $this->fixtures->getDbLastVpa();
+
+        $this->assertTrue($vpa->isBeneficiary());
+        $this->assertSame('test@mypsp', $vpa->getAddress());
+
+        $this->assertSame($vpa->getId(), $transaction->payer->getId());
+        $this->assertSame($this->fixtures->vpa(self::DEVICE_1)->getId(), $transaction->payee->getId());
+
+        $this->assertArraySubset([
+            'payerVpa'  => 'test@mypsp',
+            'payerName' => 'Some Merchant',
+        ], $coproto['request']['content']);
     }
 }

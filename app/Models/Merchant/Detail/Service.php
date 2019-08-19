@@ -53,6 +53,24 @@ class Service extends Base\Service
         return ['files' => $signedUrls];
     }
 
+    public function saveMerchantDetailForPreSignUp(array $input)
+    {
+        $response = $this->saveMerchantDetails($input);
+
+        $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
+
+        return $response;
+    }
+
+    public function saveMerchantDetailsForActivation(array $input)
+    {
+        $response = $this->saveMerchantDetails($input);
+
+        $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
+
+        return $response;
+    }
+
     public function saveMerchantDetails(array $input)
     {
         //
@@ -619,9 +637,7 @@ class Service extends Base\Service
 
         $this->applyCoupon($input);
 
-        $this->saveMerchantDetails($input);
-
-        $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
+        $this->saveMerchantDetailForPreSignUp($input);
 
         if (empty($input[Entity::BUSINESS_NAME]) === false)
         {

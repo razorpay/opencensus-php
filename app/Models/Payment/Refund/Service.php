@@ -575,7 +575,15 @@ class Service extends Base\Service
 
         foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
         {
-            $status = ($refundArray->getSpeedProcessed() === null)? Status::PROCESSING : Status::PROCESSED;
+            $speedDecisioned = $refundArray->getSpeedDecisioned();
+            $speedProcessed = $refundArray->getSpeedProcessed();
+
+            $status = Status::PROCESSING;
+
+            if (($speedDecisioned === Speed::NORMAL) or ($speedProcessed !== null))
+            {
+                $status = Status::PROCESSED;
+            }
 
             $refundId = $refundArray[Entity::ID];
 
@@ -2217,5 +2225,21 @@ class Service extends Base\Service
                 $refundArray[RefundConstants::SPEED_CHANGE_TIME] = $speedChangeTime;
             }
         }
+    }
+
+    public function speedProcessedBackfill(array $input)
+    {
+        $mode = $input['mode'] ?? Mode::LIVE;
+
+        $this->auth->setModeAndDbConnection($mode);
+
+        $limit = (isset($input[RefundConstants::DB_FETCH_LIMIT]) === true) ?
+                  intval($input[RefundConstants::DB_FETCH_LIMIT]) : 5000;
+
+        $updatedCount = $this->repo->refund->backfillSpeedProcessed($limit);
+
+        $responseData['refunds_updated'] = $updatedCount;
+
+        return $responseData;
     }
 }

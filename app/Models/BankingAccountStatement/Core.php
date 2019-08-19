@@ -79,6 +79,7 @@ class Core extends Base\Core
         foreach ($bankTransactions as $bankTransaction)
         {
             $bankTxnId      = $bankTransaction[Entity::BANK_TRANSACTION_ID];
+            $bankTxnSrlNo   = $bankTransaction[Entity::BANK_SERIAL_NUMBER];
             $bankTxnDate    = $bankTransaction[Entity::TRANSACTION_DATE];
             $bankTxnChannel = $bankTransaction[Entity::CHANNEL];
 
@@ -86,11 +87,22 @@ class Core extends Base\Core
                 $bankTxnId,
                 $accountNumber,
                 $bankTxnDate,
-                $bankTxnChannel);
+                $bankTxnChannel,
+                $bankTxnSrlNo);
 
             if ($txnExists === true)
             {
                 $skippedCount++;
+
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_INSERT_SKIP,
+                    [
+                        'bank_transaction_id'               => $bankTxnId,
+                        'bank_transaction_serial_number'    => $bankTxnSrlNo,
+                        'bank_transaction_date'             => $bankTxnDate,
+                        'bank_transaction_channel'          => $bankTxnChannel,
+                        'bank_account_number'               => $accountNumber,
+                    ]);
 
                 continue;
             }

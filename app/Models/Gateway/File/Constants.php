@@ -38,6 +38,8 @@ class Constants
     const CORPORATION      = 'corporation';
     const YESB             = 'yesb';
     const CUB              = 'cub';
+    const IBK              = 'ibk';
+    const IDBI             = 'idbi';
     const CITI             = 'citi';
     const CBI              = 'cbi';
     const SIB              = 'sib';
@@ -88,6 +90,7 @@ class Constants
             self::CORPORATION,
             self::SIB,
             self::CUB,
+            self::IDBI,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -153,6 +156,7 @@ class Constants
             self::YESB        => ['yesb.netbanking.refunds@razorpay.com'],
             self::SIB         => ['sib.netbanking.refunds@razorpay.com'],
             self::CUB         => ['cub.netbanking.refunds@razorpay.com'],
+            self::IDBI        => ['idbi.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

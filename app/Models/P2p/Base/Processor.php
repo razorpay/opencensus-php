@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Base;
 
 use Crypt;
 use RZP\Trace\TraceCode;
+use RZP\Models\P2p\Device;
 use Illuminate\Support\Arr;
 use RZP\Exception\LogicException;
 use RZP\Gateway\P2p\Base\Response;
@@ -205,10 +206,15 @@ class Processor
         return $this->processAction($action, $this->gatewayResponse->data()->toArray());
     }
 
-    public function processAction(string $action, array $input): array
+    public function processAction(string $action, array $input, Device\Entity $device = null): array
     {
         if (method_exists($this, $action))
         {
+            if (is_null($device) === false)
+            {
+                $this->context()->setDevice($device);
+            }
+
             return $this->{$action}($input);
         }
 

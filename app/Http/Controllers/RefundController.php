@@ -312,4 +312,13 @@ class RefundController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function speedProcessedBackfill()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->speedProcessedBackfill($input);
+
+        return ApiResponse::json($data);
+    }
 }

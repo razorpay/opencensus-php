@@ -138,12 +138,16 @@ class Repository extends Base\Repository
         switch($params[Entity::PUBLIC_STATUS])
         {
             case 'processed':
-                $query->whereNotNull(Entity::SPEED_PROCESSED);
+                $query->where(function($subQuery) {
+                    $subQuery->where(Entity::SPEED_DECISIONED, Speed::NORMAL)
+                             ->orWhereNotNull(Entity::SPEED_PROCESSED);
+                });
 
                 break;
 
             case 'processing':
-                $query->whereNull(Entity::SPEED_PROCESSED);
+                $query->where(Entity::SPEED_DECISIONED, '!=', Speed::NORMAL)
+                      ->WhereNull(Entity::SPEED_PROCESSED);
 
                 break;
         }
@@ -1012,5 +1016,17 @@ class Repository extends Base\Repository
         }
 
         return $count;
+    }
+
+    public function backfillSpeedProcessed($limit)
+    {
+        return $this->newQuery()
+                    ->where(RefundEntity::SPEED_DECISIONED, Speed::NORMAL)
+                    ->whereNull(RefundEntity::SPEED_PROCESSED)
+                    ->orderBy(RefundEntity::CREATED_AT, 'desc')
+                    ->limit($limit)
+                    ->update([
+                        RefundEntity::SPEED_PROCESSED => Speed::NORMAL
+                    ]);
     }
 }

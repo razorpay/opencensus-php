@@ -236,6 +236,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::NODAL_ACCOUNT,
                     'merchant_id'   => Account::NODAL_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -272,6 +273,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::ATOM_ACCOUNT,
                     'merchant_id'   => Account::ATOM_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -309,6 +311,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::API_FEE_ACCOUNT,
                     'merchant_id'   => Account::API_FEE_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -387,6 +390,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::TEST_ACCOUNT,
                     'merchant_id'   => Account::TEST_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'balance'       => 100000,
@@ -428,6 +432,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::SHARED_ACCOUNT,
                     'merchant_id'   => Account::SHARED_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     )
@@ -466,6 +471,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => Account::DEMO_ACCOUNT,
                     'merchant_id'   => Account::DEMO_ACCOUNT,
                     'type'          => Balance\Type::PRIMARY,
+                    'channel'       => Balance\AccountType::SHARED,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     )
@@ -1171,6 +1177,8 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
         $this->createNetbankingCubTerminal();
+        $this->createNetbankingIbkTerminal();
+        $this->createNetbankingIdbiTerminal();
         $this->createNetbankingSbiTerminal();
         $this->createNetbankingYesbTerminal();
         $this->createOlamoneyTerminals();
@@ -1798,6 +1806,41 @@ class DatabaseSeeder extends Seeder
                 'gateway_terminal_password2' => Crypt::encrypt('test_terminal_password2'),
                 'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
                 'gateway_secure_secret2'     => Crypt::encrypt('test_secure_secret2'),
+                'recurring'           => 0,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            )
+        );
+    }
+
+    protected function createNetbankingIbkTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                         => Terminal\Shared::NETBANKING_IBK_TERMINAL,
+                'merchant_id'                => Account::TEST_ACCOUNT,
+                'gateway'                    => Gateway::NETBANKING_IBK,
+                'card'                       => '0',
+                'netbanking'                 => '1',
+                'gateway_merchant_id'        => 'test_merchant_netbanking_IBK',
+                'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
+                'recurring'                  => 0,
+                'created_at'                 => time(),
+                'updated_at'                 => time(),
+                )
+        );
+    }
+    protected function createNetbankingIdbiTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                  => Terminal\Shared::NETBANKING_IDBI_TERMINAL,
+                'merchant_id'         => Account::TEST_ACCOUNT,
+                'gateway'             => Gateway::NETBANKING_IDBI,
+                'card'                => '0',
+                'netbanking'          => '1',
+                'gateway_merchant_id'        => 'test_merchant_netbanking_IDBI',
+                'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
                 'recurring'           => 0,
                 'created_at'          => time(),
                 'updated_at'          => time(),

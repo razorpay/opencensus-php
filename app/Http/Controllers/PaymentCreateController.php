@@ -58,6 +58,24 @@ class PaymentCreateController extends Controller
     }
 
     /**
+     * Creates an S2S payment and return json response
+     */
+    public function postCreateS2SJsonPayment()
+    {
+        $input = Request::all();
+
+        $this->logPaymentRequestEvent($input);
+
+        $data = $this->service(E::PAYMENT)->process($input);
+
+        $response = $this->processCoprotoJsonData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * In this case, we ensure that for direct response cases like
      * international credit cards with no 3dsecure, we give back the
      * parent callback page instead of just json.
@@ -442,24 +460,7 @@ class PaymentCreateController extends Controller
                 }
                 else if ($data['request']['method'] === 'redirect')
                 {
-                    $merchant = $this->app['basicauth']->getMerchant();
-
-                    $variant  = $this->app->razorx->getTreatment(
-                                    $merchant->getId(),
-                                    'redirect_form',
-                                    'live'
-                                );
-
-                    if (strtolower($variant) === 'on')
-                    {
-                        return $this->redirectToPaymentPostForm($data);
-                    }
-
-                    $response = \Redirect::away($data['request']['url']);
-
-                    $response->headers->set('X-Razorpay-TaskId', $data['request']['task_id']);
-
-                    return $response;
+                    return $this->redirectToPaymentPostForm($data);
                 }
             }
             else if ($data['type'] === 'otp')
@@ -503,10 +504,18 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
+                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getLogoUrl();
+
+                if(isset($merchantLogoUrl))
+                {
+                    $data['merchant_logo_url'] = $merchantLogoUrl;
+                }
+
                 $templateData = [
                     'data' => $data,
                     'api'  => $this->config->get('url.api.production')
                 ];
+
                 return View::make('gateway.gatewayAsyncForm')
                            ->with('data', $templateData);
             }
@@ -564,6 +573,80 @@ class PaymentCreateController extends Controller
         {
             return $data;
         }
+    }
+
+    protected function processCoprotoJsonData($data)
+    {
+        if (isset($data['request']) === true)
+        {
+            if (($data['type'] === 'first') and
+                ($data['request']['method'] === 'redirect'))
+            {
+               return $this->generateRedirectJson($data);
+            }
+            elseif ($data['type'] === 'otp')
+            {
+              return $this->generateOtpJson($data);
+            }
+        }
+
+        return $data;
+    }
+
+    protected function generateRedirectJson($data)
+    {
+        $response = [];
+
+        $response['razorpay_payment_id'] = $data['payment_id'];
+
+        $next = [
+            [
+                "action" => "redirect",
+                "url"    => $data['request']['url'],
+            ],
+        ];
+
+        $response['next'] = $next;
+
+        return $response;
+    }
+
+    protected function generateOtpJson($data)
+    {
+        // TODO: Create Contant file
+        $otpResend = 'otp_resend';
+        $otpSubmit = 'otp_submit';
+        $redirect  = 'redirect';
+
+        $response = [];
+
+        $response['razorpay_payment_id'] =  $data['payment_id'];
+
+        if (in_array($otpSubmit, $data['next'], true) === true)
+        {
+            $response['next'][] = [
+                'action' => $otpSubmit,
+                'url'    => $data['submit_url_private'],
+            ];
+        }
+
+        if (in_array($otpResend, $data['next'], true) === true)
+        {
+            $response['next'][] = [
+                'action' => $otpResend,
+                'url'    => $data['resend_url_private'],
+            ];
+        }
+
+        if (empty($data['redirect']) === false)
+        {
+            $response['next'][] = [
+                'action' => $redirect,
+                'url'    => $data['redirect'],
+            ];
+        }
+
+        return $response;
     }
 
     protected function logResponseIfApplicable($ret)
