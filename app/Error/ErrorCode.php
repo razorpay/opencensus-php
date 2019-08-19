@@ -924,6 +924,8 @@ class ErrorCode
     const SERVER_ERROR_INVALID_ATTEMPT_ID                                           = 'SERVER_ERROR_INVALID_ATTEMPT_ID';
 
     const SERVER_ERROR_HASH_MISMATCH                                                = 'SERVER_ERROR_HASH_MISMATCH';
+    // Requests from api service to stork failed unexpectedly.
+    const SERVER_ERROR_STORK_FAILURE                                                = 'SERVER_ERROR_STORK_FAILURE';
 
     const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                                 = 'SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE';
     const SERVER_ERROR_BATCH_SERVICE_NOT_CALLED                                     = 'SERVER_ERROR_BATCH_SERVICE_NOT_CALLED';

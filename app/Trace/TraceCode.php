@@ -1992,6 +1992,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
 
+    // Stork service
+    const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
+    const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
+
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                               = 'TERMINAL_ENABLE_REQUEST';
     const TERMINAL_DISABLE_REQUEST                              = 'TERMINAL_DISABLE_REQUEST';

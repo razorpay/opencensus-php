@@ -244,6 +244,9 @@ class Name
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';
 
+    // Perform write operations around stork integration e.g. webhook migrations etc
+    const STORK_WRITE_OPERATION               = 'stork_write_operation';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE              => self::EDIT_MERCHANT_UNARCHIVE,
