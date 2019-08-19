@@ -124,6 +124,8 @@ class InfoCode
 
     const RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE           = 'RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE';
 
+    const RECON_SKIP_INVALID_BLANK_FILE                 = 'RECON_SKIP_INVALID_BLANK_FILE';
+
     const CARD_TYPE_UNKNOWN                             = 'CARD_TYPE_UNKNOWN';
 
     const CARD_TYPE_MISMATCH                            = 'CARD_TYPE_MISMATCH';
