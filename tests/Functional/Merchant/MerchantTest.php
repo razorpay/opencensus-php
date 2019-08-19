@@ -4660,6 +4660,68 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditDashboardWhitelistedIpsLive()
+    {
+        $merchantPublicAttributes = $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantPublicAttributes['id']);
+
+        $this->assertEquals($merchant->getMerchantDashboardWhitelistedIpsLive(), ['1.1.1.1', '2.2.2.2']);
+    }
+
+    public function testEditDashboardInvalidWhitelistedIpsLive()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardRedundantWhitelistedIpsLive()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardWhitelistedIpsTest()
+    {
+        $merchantPublicAttributes = $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantPublicAttributes['id']);
+
+        $this->assertEquals($merchant->getMerchantDashboardWhitelistedIpsTest(), ['1.1.1.1', '2.2.2.2']);
+    }
+
+    public function testEditDashboardInvalidWhitelistedIpsTest()
+    {
+         $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardRedundantWhitelistedIpsTest()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantApplyRestrictionSettingsSuccess()
     {
         $ownerUser = $this->fixtures->create('user');

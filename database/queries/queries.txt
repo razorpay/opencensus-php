@@ -5223,3 +5223,7 @@ ALTER TABLE `pricing`
 ALTER TABLE payouts
     ADD COLUMN failed_at INT(11) DEFAULT NULL AFTER `reversed_at`,
     ADD INDEX payouts_failed_at_index (failed_at);
+
+ALTER TABLE merchants
+    ADD COLUMN dashboard_whitelisted_ips_live text DEFAULT NULL AFTER whitelisted_ips_test,
+    ADD COLUMN dashboard_whitelisted_ips_test text DEFAULT NULL AFTER dashboard_whitelisted_ips_live;

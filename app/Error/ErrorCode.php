@@ -968,6 +968,7 @@ class ErrorCode
 
     // Heimdall Error Codes
     const BAD_REQUEST_ACCESS_DENIED                                                 = 'BAD_REQUEST_ACCESS_DENIED';
+    const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                                  = 'BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED';
 
     const BAD_REQUEST_PASSWORD_EXPIRED                                              = 'BAD_REQUEST_PASSWORD_EXPIRED';
 
