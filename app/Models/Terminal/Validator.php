@@ -471,6 +471,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
     ];
 
     protected static $walletPhonepeEditTerminalRules = [
