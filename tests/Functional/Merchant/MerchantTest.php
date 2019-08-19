@@ -4659,4 +4659,136 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testEditDashboardWhitelistedIpsLive()
+    {
+        $merchantPublicAttributes = $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantPublicAttributes['id']);
+
+        $this->assertEquals($merchant->getMerchantDashboardWhitelistedIpsLive(), ['1.1.1.1', '2.2.2.2']);
+    }
+
+    public function testEditDashboardInvalidWhitelistedIpsLive()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardRedundantWhitelistedIpsLive()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardWhitelistedIpsTest()
+    {
+        $merchantPublicAttributes = $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantPublicAttributes['id']);
+
+        $this->assertEquals($merchant->getMerchantDashboardWhitelistedIpsTest(), ['1.1.1.1', '2.2.2.2']);
+    }
+
+    public function testEditDashboardInvalidWhitelistedIpsTest()
+    {
+         $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardRedundantWhitelistedIpsTest()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantApplyRestrictionSettingsSuccess()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchantIds = $ownerUser->merchants()->distinct()->get()->pluck('id')->toArray();
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchantIds[0];
+
+        $testData['response']['content']['merchant_id'] = $merchantIds[0];
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $this->assertEquals(1, $merchant['restricted']);
+    }
+
+
+    public function testMerchantApplyRestrictionSettingFailure()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertEquals(0, $merchant['restricted']);
+    }
+
+    public function testMerchantRemoveRestrictionSettings()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchantIds = $ownerUser->merchants()->distinct()->get()->pluck('id')->toArray();
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchantIds[0];
+
+        $testData['response']['content']['merchant_id'] = $merchantIds[0];
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $this->assertEquals(0, $merchant['restricted']);
+    }
 }

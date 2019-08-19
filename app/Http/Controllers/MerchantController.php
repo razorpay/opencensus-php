@@ -1330,4 +1330,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function applyRestrictedSettings()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->applyRestrictedSettings($input);
+
+        return ApiResponse::json($response);
+    }
 }
