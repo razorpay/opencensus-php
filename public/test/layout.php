@@ -74,7 +74,7 @@ iframe {
 ⌘ ⏎
 </div>
 <iframe></iframe>
-<div id="code">var test_key = 'rzp_test_1DP5mmOlF5G5ag';
+<div id="code">var test_key = 'rzp_test_RedxfhsDcAtJP6';
 var live_key = 'rzp_live_ILgsfZCZoFIKMb';
 
 var key = test_key;
