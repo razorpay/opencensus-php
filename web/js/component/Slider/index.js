@@ -1,4 +1,5 @@
 import { classList } from 'common/util';
+import { isNone } from 'rzp/utils/rzp-utils';
 
 export default class Slider extends React.Component {
   constructor(props) {
@@ -54,9 +55,7 @@ export default class Slider extends React.Component {
     const SliderDotsIdsList = [],
       SlideChildrenList = [];
 
-    const children = this.props.children.filter(child => {
-      return child !== null && child !== undefined;
-    });
+    const children = this.props.children.filter(child => !isNone(child));
 
     children.forEach((child, idx) => {
       const component = child({});
