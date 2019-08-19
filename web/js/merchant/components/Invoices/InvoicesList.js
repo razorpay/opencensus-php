@@ -62,7 +62,14 @@ const InvoiceListItem = props => {
 };
 
 export default props => {
-  let { type, invoices, isLoading, onCopy = () => {}, onDuplicate } = props;
+  let {
+    type,
+    invoices,
+    isLoading,
+    onCopy = () => {},
+    onDuplicate,
+    EmptyList,
+  } = props;
   const isPaymentLinksType = type === 'link';
   let label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
 
@@ -85,6 +92,7 @@ export default props => {
           colSpan={8}
           rows={invoices}
           emptyTableMsg="No data found!"
+          EmptyComponent={EmptyList}
         >
           {invoices.map(invoice => (
             <InvoiceListItem

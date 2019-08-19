@@ -11,13 +11,18 @@ export default props => {
     rows,
     className,
     children,
+    EmptyComponent,
   } = props;
 
   if (isLoading) {
     tableRowComponent = <TableLoader colSpan={colSpan} />;
   } else if (!rows.length) {
     tableRowComponent = emptyTableRow || (
-      <EmptyTableRow colSpan={colSpan} message={emptyTableMsg} />
+      <EmptyTableRow
+        colSpan={colSpan}
+        message={emptyTableMsg}
+        EmptyComponent={EmptyComponent}
+      />
     );
   }
 
