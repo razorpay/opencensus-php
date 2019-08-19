@@ -444,6 +444,7 @@ class Service extends Base\Service
 
                     $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
                     $data['experiments']['sellerapp_plus'] = $merchantService->getTreatment('sellerapp_plus');
+                    $data['experiments']['post_activation_hotjar_survey'] = $merchantService->getTreatment('post_activation_hotjar_survey');
 
                     $data['current'] = $currentMerchantId;
 
