@@ -44,17 +44,18 @@
     box-shadow: 0 2px 8px 0 rgba(43,47,60,0.36)
     animation: 0.55s fadeIn cubic-bezier(0.08, 0.98, 1, 1)
 
-  .Input input:not([type=radio]),
+  .Input input:not([type=radio]):not([type=checkbox]),
   .Input--Currency .value
     height: 32px
 
   .Modal-container--CreatorModal-BaseForm, .Modal-container--CreatorModal-AdvancedForm
-    .Input-content--amount
-        width: 136px
-        .Input-content
-          margin: 0
+    .Input-content--limits
+      margin-left: -2px
 
-    .Input--amount
+      .Input-content
+        margin: 0
+
+    .Input--limits
       .Input-el
         font-size: 13px
 
@@ -67,14 +68,15 @@
     .InputGroup--full
       width: 100%
 
-      .Input-content--amount
+      .Input-content--limits
         width: 100%
 
-        .Input--amount
+        .Input--limits
           width: 100%
 
     .Input--disabled
       opacity: 1
+      cursor: not-allowed
 
 
   .Modal-container--CreatorModal-BaseForm
@@ -100,9 +102,9 @@
       border-radius: 2px
 
     form
-      padding-right: 12px;
-      display: table;
-      width: 100%;
+      padding-right: 12px
+      display: table
+      width: 100%
 
     .base-form-side-btn
       position: absolute
@@ -185,9 +187,34 @@
       margin-right: 0
       vertical-align: top
       padding-left: 24px
+      position: relative
 
       select
         color: rgba(13, 35, 102, .3)
+
+      .Input-counterTooltip
+        position: absolute
+        top: 0
+        left: 138px
+
+      .Input-checkboxTooltip
+        position: absolute
+        display: inline-block
+        top: 7px
+        right: 0
+
+        .Input-checkbox
+          width: 20px
+          height: 20px
+          margin: 0
+
+          &::after
+            width: 6px
+            height: 12px
+            margin: 2px 0 0 6px
+
+    .Input-content--limits
+      width: 112px
 
     .Input.Input--description
       margin: 4px 0
@@ -260,6 +287,9 @@
     .Input
       margin-bottom: 20px
 
+    .Input-content--limits
+      width: 136px
+
     .Input--hasQuantity
       .Input-label, .Input-content, .Input-radio, .Input-inlineLabel
         display inline-block
@@ -298,11 +328,10 @@
       > .Input-content, > .Input-label, .separator
           display: inline-block
           vertical-align: top
-      //
-      //> .Input-content
-      //    width: 136px
-      //    .Input-content
-      //      margin: 0
+      > .Input-content
+          //width: 136px
+          .Input-content
+            margin: 0
       //
       //.Input-el
       //  font-size: 13px

@@ -7,6 +7,7 @@ import FIELD_TYPES, {
   fieldTypesWithMandatory,
 } from '../../Amount_Fields/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
@@ -90,7 +91,7 @@ export default class BaseForm extends React.PureComponent {
           isDisabled && 'InputGroup--full'
         )}
       >
-        <div class="Input-content Input-content--amount">
+        <div class="Input-content Input-content--limits">
           <Input.CurrencySelect
             name="currency"
             defaultValue={currency}
@@ -99,7 +100,7 @@ export default class BaseForm extends React.PureComponent {
 
           <Input
             name={isDisabled ? '' : 'amount'}
-            class="Input--amount placeholder-field"
+            class="Input--limits placeholder-field"
             placeholder={placeholder}
             defaultValue={amount}
             pattern="^[0-9]+(.([0-9]){1,2})?$"
@@ -124,21 +125,68 @@ export default class BaseForm extends React.PureComponent {
         return (
           <React.Fragment>
             {this.getREP_Amount()}
-            {/* Add checkbox here */}
+            {/* Add dummy Checkbox */}
+            <div class="Input-checkboxTooltip">
+              <Input.Check disabled checked />
+
+              <Popover
+                align="top"
+                theme="dark"
+                parentQuerySelector=".Modal-container"
+              >
+                <PopoverBody>Customer can unselect Item</PopoverBody>
+              </Popover>
+            </div>
           </React.Fragment>
         );
 
       case FIELD_TYPES.dynamic_price.key:
         return this.getREP_Amount(true);
-        {
-          /*Editable*/
-        }
 
       case FIELD_TYPES.multiple_purchase.key:
         return (
           <React.Fragment>
             {this.getREP_Amount()}
-            {/* Add dummy counter */}
+
+            {/* Add dummy Counter */}
+            <div className="Input-counterTooltip">
+              <div className="Field--counter Field--small Input--disabled">
+                <span style={{ margin: '0 9px' }}>×</span>
+                <div
+                  className="Field-wrapper Field-wrapper--counter"
+                  style={{
+                    display: 'inline-block',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <button type="button" disabled>
+                    -
+                  </button>
+                  <input
+                    className="Field-el counter-value"
+                    name="field_1"
+                    defaultValue="1"
+                    disabled
+                  />
+                  <button type="button" disabled>
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <Popover
+                align="top"
+                theme="dark"
+                parentQuerySelector=".Modal-container"
+              >
+                <PopoverBody>
+                  Customer can change Item quantity
+                  <br />
+                  {/* TODO As per the actual limits */}
+                  (Min: 0, Max: Unlimited)
+                </PopoverBody>
+              </Popover>
+            </div>
           </React.Fragment>
         );
     }

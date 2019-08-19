@@ -128,7 +128,7 @@ export default class AdvancedForm extends React.PureComponent {
         class="InputGroup--inline Input--vTop Input--limits"
         label="Input Price Limits"
       >
-        <div class="Input-content Input-content--amount">
+        <div class="Input-content Input-content--limits">
           <Input.CurrencySelect
             defaultValue={currency}
             disabled
@@ -137,7 +137,7 @@ export default class AdvancedForm extends React.PureComponent {
 
           <Input
             setRef={this.setRefMinAmountLimit}
-            class="Input--amount"
+            class="Input--limits"
             name="min_amount"
             defaultValue={minAmount}
             pattern="\d+"
@@ -149,7 +149,7 @@ export default class AdvancedForm extends React.PureComponent {
 
         <span class="separator">-</span>
 
-        <div class="Input-content Input-content--amount">
+        <div class="Input-content Input-content--limits">
           <Input.CurrencySelect
             defaultValue={currency}
             disabled
@@ -215,11 +215,11 @@ export default class AdvancedForm extends React.PureComponent {
           <div class="modal-description">per order</div>
         </div>
 
-        <div class="Input-content">
+        <div class="Input-content Input-content--limits">
           <Input
             setRef={this.setRefMinPurchaseLimit}
-            class="Input--amount"
-            name="min_amount"
+            class="Input--limits"
+            name="min_purchase"
             defaultValue={minPurchase}
             pattern="\d+"
             validator={this.validateMinPurchaseLimit}
@@ -230,10 +230,10 @@ export default class AdvancedForm extends React.PureComponent {
 
         <span class="separator">-</span>
 
-        <div class="Input-content">
+        <div class="Input-content Input-content--limits">
           <Input
             setRef={this.setRefMaxPurchaseLimit}
-            name="max_amount"
+            name="max_purchase"
             defaultValue={maxPurchase}
             max="500000"
             pattern="\d+"
