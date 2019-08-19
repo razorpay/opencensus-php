@@ -472,7 +472,7 @@ class TerminalAuthenticationTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '5567630000002004';
+        $payment['card']['number'] = '6073849700004947';
         $payment['preferred_auth'] = ['3ds'];
 
         $this->fixtures->merchant->addFeatures(['headless']);
