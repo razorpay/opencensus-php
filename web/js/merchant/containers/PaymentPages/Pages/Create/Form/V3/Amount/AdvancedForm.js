@@ -124,18 +124,20 @@ export default class AdvancedForm extends React.PureComponent {
     const maxAmount = field.max_amount || '';
 
     return (
-      <Input.Group class="InputGroup--inline Input--vTop Input--limits">
-        <div class="Input-label">Input Price Limits</div>
-
-        <div class="Input-content">
+      <Input.Group
+        class="InputGroup--inline Input--vTop Input--limits"
+        label="Input Price Limits"
+      >
+        <div class="Input-content Input-content--amount">
           <Input.CurrencySelect
             defaultValue={currency}
             disabled
-            parentQuerySelector=".Modal-mask--payment-pages-v3-creator .Modal-body"
+            parentQuerySelector=".Modal-mask--payment-pages-v3-creator .Modal-container"
           />
 
           <Input
             setRef={this.setRefMinAmountLimit}
+            class="Input--amount"
             name="min_amount"
             defaultValue={minAmount}
             pattern="\d+"
@@ -147,11 +149,11 @@ export default class AdvancedForm extends React.PureComponent {
 
         <span class="separator">-</span>
 
-        <div class="Input-content">
+        <div class="Input-content Input-content--amount">
           <Input.CurrencySelect
             defaultValue={currency}
             disabled
-            parentQuerySelector=".Modal-mask--payment-pages-v3-creator .Modal-body"
+            parentQuerySelector=".Modal-mask--payment-pages-v3-creator .Modal-container"
           />
 
           <Input
@@ -216,6 +218,7 @@ export default class AdvancedForm extends React.PureComponent {
         <div class="Input-content">
           <Input
             setRef={this.setRefMinPurchaseLimit}
+            class="Input--amount"
             name="min_amount"
             defaultValue={minPurchase}
             pattern="\d+"

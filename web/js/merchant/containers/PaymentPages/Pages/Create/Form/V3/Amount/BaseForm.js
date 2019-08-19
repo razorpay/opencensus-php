@@ -78,6 +78,72 @@ export default class BaseForm extends React.PureComponent {
     });
   };
 
+  getREP_Amount(isDisabled) {
+    const { currency, field } = this.props;
+    const amount = field.item.amount || ''; // Note: If amount is there, then isDisabled = false;
+    const placeholder = isDisabled ? 'To be filled by customer' : '0.00';
+
+    return (
+      <Input.Group
+        class={classList(
+          'InputGroup--inline',
+          isDisabled && 'InputGroup--full'
+        )}
+      >
+        <div class="Input-content Input-content--amount">
+          <Input.CurrencySelect
+            name="currency"
+            defaultValue={currency}
+            parentQuerySelector=".Modal-container"
+          />
+
+          <Input
+            name={isDisabled ? '' : 'amount'}
+            class="Input--amount placeholder-field"
+            placeholder={placeholder}
+            defaultValue={amount}
+            pattern="^[0-9]+(.([0-9]){1,2})?$"
+            disabled={isDisabled}
+          />
+        </div>
+      </Input.Group>
+    );
+  }
+
+  get amountRepresentationForFieldType() {
+    const fieldType = this.props.fieldType;
+
+    console.log('FIELD TYPE...', this.fieldType);
+
+    switch (fieldType) {
+      // Same Advanced Form for both fixed_price and fixed_price_optional
+      case FIELD_TYPES.fixed_price.key:
+        return this.getREP_Amount();
+
+      case FIELD_TYPES.fixed_price_optional.key:
+        return (
+          <React.Fragment>
+            {this.getREP_Amount()}
+            {/* Add checkbox here */}
+          </React.Fragment>
+        );
+
+      case FIELD_TYPES.dynamic_price.key:
+        return this.getREP_Amount(true);
+        {
+          /*Editable*/
+        }
+
+      case FIELD_TYPES.multiple_purchase.key:
+        return (
+          <React.Fragment>
+            {this.getREP_Amount()}
+            {/* Add dummy counter */}
+          </React.Fragment>
+        );
+    }
+  }
+
   setRefForm = el => (this.formEl = el);
 
   render() {
@@ -87,6 +153,7 @@ export default class BaseForm extends React.PureComponent {
       validateSameTitleExists,
       onCloseForm,
       onDeleteField,
+      currency,
     } = this.props;
 
     const {
@@ -142,13 +209,7 @@ export default class BaseForm extends React.PureComponent {
         <input name="image_url" value={imageUrl} hidden readOnly />
 
         <div class="Field--representation">
-          <div class="Field-wrapper placeholder-field">
-            <input
-              className="Field-el"
-              placeholder="To be filled by customer"
-              disabled
-            />
-          </div>
+          {this.amountRepresentationForFieldType}
 
           {hasDescription && (
             <Input.TextareaAutoResize

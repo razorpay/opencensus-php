@@ -148,6 +148,7 @@ export class BaseFormModal extends React.PureComponent {
             isFieldRemovable ? this.onDeleteAmountField : undefined
           }
           openAdvancedForm={openAdvancedForm}
+          currency={'INR'}
         />
       </CreatorModal>
     );
