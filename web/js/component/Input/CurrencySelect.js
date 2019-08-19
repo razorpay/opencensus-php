@@ -160,12 +160,14 @@ export default class extends React.Component {
           </div>
         ) : (
           <div class="value">
-            <input
-              name={props.name || 'currency'}
-              value={this.state.currency.name}
-              hidden
-              readOnly
-            />
+            {props.name && (
+              <input
+                name={props.name}
+                value={this.state.currency.name}
+                hidden
+                readOnly
+              />
+            )}
             <AmountTooltip
               currency={this.state.currency.name}
               parentQuerySelector={this.props.parentQuerySelector}
