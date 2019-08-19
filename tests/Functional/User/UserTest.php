@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\Otp;
 use RZP\Models\Admin\Admin;
 use RZP\Models\User\Constants;
+use RZP\Services\HubspotClient;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
@@ -75,6 +76,8 @@ class UserTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->mockHubSpotClient('trackSignupEvent');
+
         $this->startTest();
 
         $merchant = $this->getLastEntity('merchant', true);
@@ -86,6 +89,19 @@ class UserTest extends TestCase
                     ->first();
 
         $this->assertNotNull($row);
+    }
+
+    protected function mockHubSpotClient($methodName)
+    {
+        $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods([$methodName])
+                            ->getMock();
+
+        $this->app->instance('hubspot', $hubSpotMock);
+
+        $hubSpotMock->expects($this->exactly(1))
+                    ->method($methodName);
     }
 
     public function testGet()

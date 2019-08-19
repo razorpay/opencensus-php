@@ -784,7 +784,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantDetails($input);
+        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantDetailsForActivation($input);
 
         return ApiResponse::json($response);
     }
