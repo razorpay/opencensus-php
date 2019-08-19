@@ -1784,7 +1784,10 @@ trait Authorize
             }
         }
 
-        $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);
+        if (isset($gatewayInput['authenticate']['gateway']) === true)
+        {
+            $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);
+        }
 
         $this->setAuthTypeInPayment($payment);
     }
