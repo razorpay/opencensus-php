@@ -103,14 +103,14 @@ export const getIsAllowedResetSubscriptionBoarding = ({
   plans,
   subscriptions,
 }) => {
-  // if (
-  //   plans.loading ||
-  //   plans.items.length ||
-  //   subscriptions.loading ||
-  //   subscriptions.items.length
-  // ) {
-  //   return false;
-  // }
+  if (
+    plans.loading ||
+    plans.items.length ||
+    subscriptions.loading ||
+    subscriptions.items.length
+  ) {
+    return false;
+  }
 
   return getIsAllowedResetBoarding(RZPFeatures.SUBSCRIPTIONS);
 };
