@@ -105,13 +105,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPaymentsWithIds($ids)
-    {
-        return $this->newQuery()
-                    ->whereIn(Entity::ID, $ids)
-                    ->get();
-    }
-
     public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit = 100)
     {
         return $this->newQuery()
@@ -349,15 +342,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPaymentsBetweenIdsWithLimit($lowerId, $upperId, $limit = 1000)
-    {
-        return $this->newQuery()
-                    ->where(Payment\Entity::ID, '<=', $upperId)
-                    ->where(Payment\Entity::ID, '>', $lowerId)
-                    ->orderBy(Payment\Entity::ID)
-                    ->limit($limit)
-                    ->get();
-    }
 
     /**
      * Fetch the payments that are authorized, refund_at time has not been crossed yet,

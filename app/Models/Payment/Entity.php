@@ -1074,11 +1074,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
-    public function setApprovalCodeNull()
-    {
-        $this->setAttribute(self::APPROVAL_CODE, null);
-    }
-
     public function setEmiPlanId($planId)
     {
         $this->setAttribute(self::EMI_PLAN_ID, $planId);
@@ -1146,11 +1141,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setMetadataKey($key, $value)
     {
         $this->metadata[$key] = $value;
-    }
-
-    public function getApprovalCode()
-    {
-        return $this->getAttribute(self::APPROVAL_CODE);
     }
 
     public function getRecurringType()

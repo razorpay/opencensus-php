@@ -79,15 +79,6 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
-    public function setApprovalCodeNullMultiplePayments()
-    {
-        $input = Request::all();
-
-        $summary = $this->service()->setApprovalCodeNullMultiplePayments($input);
-
-        return ApiResponse::json($summary);
-    }
-
     public function postRefundAuthorizedInBulk()
     {
         $input = Request::all();
