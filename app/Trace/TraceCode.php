@@ -2004,6 +2004,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
     const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
+    const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
 
 
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';

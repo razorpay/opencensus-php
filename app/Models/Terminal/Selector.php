@@ -177,7 +177,7 @@ class Selector extends Base\Core
         $shouldHitRoutingServiceFlag = false;
 
         // checking filtered terminals and razorX experiment for smart routing
-        if ((empty($filteredTerminals) === false) && ($this->shouldHitRoutingService($payment->getId()) === true ))
+        if ((empty($filteredTerminals) === false) && ($this->shouldHitRoutingService($payment->getId()) === true))
         {
             $shouldHitRoutingServiceFlag = true;
         };
@@ -579,6 +579,12 @@ class Selector extends Base\Core
                 'gateway_config'      => $this->getGatewayConfig(),
                 'chance'              => $this->options->getChance(),
             ];
+
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_REQUEST,
+                [
+                    'request' => $data
+                ]);
 
             $response = $this->app->smartRouting->sendPaymentData($data);
         }
