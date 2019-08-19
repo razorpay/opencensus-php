@@ -2535,6 +2535,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setRelation('terminal', $terminal);
     }
 
+
+    public function disassociateTerminal()
+    {
+        if ($this->terminal === null)
+        {
+            return;
+        }
+
+        $this->terminal()->dissociate();
+
+        $this->setGateway(null);
+
+        $this->setSettledBy(null);
+    }
+
 // ----------------------- Getters Ends-----------------------------------------
 
     public function toArrayWithCard()

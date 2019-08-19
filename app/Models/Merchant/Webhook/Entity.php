@@ -42,6 +42,14 @@ class Entity extends Base\PublicEntity
 
     const MAX_FAILURE_COUNT = 3;
 
+    // List of fields which when updated requires update in stork.
+    const STORK_UPDATEABLE_FIELDS = [
+        self::URL,
+        self::EVENTS,
+        self::SECRET,
+        self::ACTIVE,
+    ];
+
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
@@ -187,6 +195,21 @@ class Entity extends Base\PublicEntity
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    /**
+     * Gets map of event names as following:
+     * [
+     *     'order.paid' => true,
+     *     'invoice.paid' => false,
+     *     ... and so on.
+     * ]
+     *
+     * @return array
+     */
+    public function getEvents(): array
+    {
+        return $this->getAttribute(self::EVENTS);
     }
 
     public function getTimeDifferenceFromLastSuccessInHour()

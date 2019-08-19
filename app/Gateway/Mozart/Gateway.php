@@ -166,6 +166,8 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::NETBANKING_CBI,
+            Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::NETBANKING_IBK,
         ];
 
         return in_array($gatewayName, $immediateVerificationGateways);
@@ -439,6 +441,8 @@ class Gateway extends Base\Gateway
                 $input['terminal']['gateway_terminal_password']  = $this->config['netbanking_cub']['gateway_terminal_password'];
                 $input['terminal']['gateway_terminal_password2'] = $this->config['netbanking_cub']['gateway_terminal_password2'];
                 break;
+            case Payment\Gateway::NETBANKING_YESB:
+                $input['terminal']['gateway_secure_secret']      = $this->config['netbanking_yesb']['gateway_secure_secret'];
         }
 
         return $input['terminal'];
@@ -455,9 +459,14 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
             Payment\Gateway::NETBANKING_CUB => [
-                Action::PAY_INIT => null,
+                Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
-                Action::VERIFY => Action::PAY_VERIFY,
+                Action::VERIFY     => Action::PAY_VERIFY,
+            ],
+            Payment\Gateway::NETBANKING_IBK => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
             ],
             Payment\Gateway::NETBANKING_IDBI => [
                 Action::PAY_INIT    =>  null,
@@ -465,23 +474,23 @@ class Gateway extends Base\Gateway
                 Action::VERIFY      =>  Action::PAY_VERIFY,
             ],
             Payment\Gateway::NETBANKING_YESB => [
-                Action::PAY_INIT => null,
+                Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => null,
-                Action::VERIFY => Action::PAY_VERIFY,
+                Action::VERIFY     => Action::PAY_VERIFY,
             ],
             Payment\Gateway::WALLET_PHONEPE => [
-                Action::INTENT => null,
-                Action::PAY_INIT => null,
-                Action::PAY_VERIFY => Action::PAY_INIT,
-                Action::VERIFY => null,
-                Action::REFUND => null,
+                Action::INTENT        => null,
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => Action::PAY_INIT,
+                Action::VERIFY        => null,
+                Action::REFUND        => null,
                 Action::VERIFY_REFUND => null,
             ],
             Payment\Gateway::UPI_AIRTEL => [
-                Action::PAY_INIT => null,
-                Action::PAY_VERIFY => null,
-                Action::VERIFY => Action::PAY_VERIFY,
-                Action::REFUND => Action::PAY_VERIFY,
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => Action::PAY_VERIFY,
+                Action::REFUND        => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
             Payment\Gateway::NETBANKING_SIB => [
@@ -549,6 +558,12 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::NETBANKING_CUB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
+
+            Payment\Gateway::NETBANKING_IBK => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
@@ -795,6 +810,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
         ];
 
@@ -817,6 +833,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::UPI_AIRTEL,
         ];
@@ -830,8 +847,8 @@ class Gateway extends Base\Gateway
         {
             $response = [
                 'acquirer' => [
-                    Payment\Entity::VPA         => $mozartResponse['responseBody']['data']['vpa'] ?? $input['terminal']['gateway_merchant_id2'],
-                    Payment\Entity::REFERENCE16 => $mozartResponse['responseBody']['data']['rrn'] ?? null,
+                    Payment\Entity::VPA         => $input['payment']['vpa'] ?? $input['terminal']['gateway_merchant_id2'],
+                    Payment\Entity::REFERENCE16 => $mozartResponse['data']['rrn'] ?? null,
                 ]
             ];
         }
@@ -877,6 +894,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
         ];
 

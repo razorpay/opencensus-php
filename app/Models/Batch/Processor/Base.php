@@ -947,12 +947,11 @@ class Base extends BaseModel\Core
         {
             $this->trace->info(TraceCode::BATCH_FILE_PROCESS_USING_SPREADSHEET, $this->batch->toArrayTraceAll());
 
-            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
+            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath, $this->getNumRowsToSkipExcelFile());
         }
 
-        return $this->parentParseExcelSheets($filePath);
+        return $this->parentParseExcelSheets($filePath, $this->getStartRowExcelFiles());
     }
-
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {
@@ -1537,5 +1536,15 @@ class Base extends BaseModel\Core
         }
 
         return $result;
+    }
+
+    protected function getStartRowExcelFiles()
+    {
+        return 1;
+    }
+
+    protected function getNumRowsToSkipExcelFile()
+    {
+        return 0;
     }
 }

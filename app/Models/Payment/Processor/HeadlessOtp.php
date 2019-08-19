@@ -177,7 +177,6 @@ trait HeadlessOtp
 
         $this->handleFailedResponse($response, $payment, $traceInput);
 
-
         if ($payment->getAuthType() === Payment\AuthType::OTP)
         {
             $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
@@ -199,6 +198,21 @@ trait HeadlessOtp
 
             throw new Exception\GatewayErrorException(
                 $errorCode
+            );
+        }
+
+        if ($this->isS2SJsonRoute === true)
+        {
+            $this->headlessError = true;
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_OTPELF_FAILURE,
+                null,
+                null,
+                [],
+                null,
+                null,
+                true
             );
         }
 
