@@ -2274,8 +2274,10 @@ trait Authorize
         }
 
         $amount = $payment->getAmount();
+        
+        $baseAmount = $amount;
 
-        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
+        //$baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use 1 percentage lower
