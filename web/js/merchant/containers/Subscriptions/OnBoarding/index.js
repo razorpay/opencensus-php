@@ -42,22 +42,18 @@ export default class SubscriptionOnBoarding extends React.Component {
   };
 
   renderSkipButton = sliderProps => {
+    const props = {
+      feature: RZPFeatures.SUBSCRIPTIONS,
+      onClick: this.props.closeOnboarding,
+      page: sliderProps.active,
+    };
+
     if (this.props.user.isSubscriptionsEnabled) {
-      return (
-        <SkipAndGetStartedButton
-          page={sliderProps.active}
-          onClick={this.props.closeOnboarding}
-        />
-      );
+      props.isLocalEnabler = true;
+      props.onClick = this.closeOnboarding;
     }
 
-    return (
-      <SkipAndGetStartedButton
-        page={sliderProps.active}
-        feature={RZPFeatures.SUBSCRIPTIONS}
-        onClick={this.closeOnboarding}
-      />
-    );
+    return <SkipAndGetStartedButton {...props} />;
   };
 
   render() {
