@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Exception\LogicException;
 
 class Core extends Base\Core
 {
@@ -325,11 +326,43 @@ class Core extends Base\Core
     {
         $token = $tokenRegistration->token;
 
+        $invoice = (new Invoice\Repository)->findByMerchantAndTokenRegistration(
+            $this->merchant,
+            $tokenRegistration
+        );
+
+        if (isset($invoice) === false)
+        {
+            throw new LogicException(
+                'invoice can\'t be null',
+                null,
+                [
+                    'token.registration_id' => $tokenRegistration->getPublicId()
+                ]
+            );
+        }
+
+        $previousOrder = $invoice->order;
+
+        if (isset($previousOrder) === false)
+        {
+            throw new LogicException(
+                'order can\'t be null',
+                null,
+                [
+                    'token.registration_id' => $tokenRegistration->getPublicId(),
+                    'invoice_id'            => $invoice->getPublicId(),
+                ]
+            );
+        }
+
         $orderInput = [
             Order\Entity::AMOUNT           => $tokenRegistration->getAmount(),
             Order\Entity::CURRENCY         => $tokenRegistration->getCurrency(),
             Order\Entity::PAYMENT_CAPTURE  => true,
-            Order\Entity::METHOD           => $tokenRegistration->getMethod()
+            Order\Entity::METHOD           => $tokenRegistration->getMethod(),
+            Order\Entity::NOTES            => $previousOrder->getNotes()->toArray(),
+            Order\Entity::RECEIPT          => 'auto_crg_' . Base\UniqueIdEntity::generateUniqueId(),
         ];
 
         $this->trace->info(
