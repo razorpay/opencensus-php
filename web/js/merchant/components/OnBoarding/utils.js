@@ -56,40 +56,27 @@ export const NextButton = ({ feature, onClick, page }) => (
   </Button.Primary>
 );
 
-export const SkipAndGetStartedButton = ({ feature, onClick, page }) => {
-  if (!feature) {
-    return (
-      <Button.Transparent
-        onClick={(...args) => {
-          window.rzpAnalytics({
-            eventCategory: `Product Introduction (${feature})`,
-            eventAction: `Page ${page} - Skip and Get Started`,
-          });
+export const SkipAndGetStartedButton = ({
+  feature,
+  onClick,
+  page,
+  isLocalEnabler,
+}) => (
+  <FeatureEnableButton.Transparent
+    onClick={(...args) => {
+      window.rzpAnalytics({
+        eventCategory: `Product Introduction (${feature})`,
+        eventAction: `Page ${page} - Skip and Get Started`,
+      });
 
-          onClick && onClick(args);
-        }}
-      >
-        Skip And Get Started
-      </Button.Transparent>
-    );
-  }
-
-  return (
-    <FeatureEnableButton.Transparent
-      onClick={(...args) => {
-        window.rzpAnalytics({
-          eventCategory: `Product Introduction (${feature})`,
-          eventAction: `Page ${page} - Skip and Get Started`,
-        });
-
-        onClick && onClick(args);
-      }}
-      feature={feature}
-    >
-      Skip And Get Started
-    </FeatureEnableButton.Transparent>
-  );
-};
+      onClick && onClick(args);
+    }}
+    feature={feature}
+    isLocalEnabler={isLocalEnabler}
+  >
+    Skip And Get Started
+  </FeatureEnableButton.Transparent>
+);
 
 export const getOnBoardingKey = feature => {
   const mode = getMode(),
