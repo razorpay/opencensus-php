@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::URL,
         self::EVENTS,
         self::SECRET,
+        self::ACTIVE,
     ];
 
     protected $generateIdOnCreate = true;
