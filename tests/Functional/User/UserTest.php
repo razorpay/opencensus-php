@@ -185,9 +185,12 @@ class UserTest extends TestCase
 
         $request =[
             'method'    => 'GET',
-            'url'       => '/users/'.$user->getId().'/access',
+            'url'       => '/users/access',
             'content'   => [
                 'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
             ],
         ];
 
@@ -208,9 +211,12 @@ class UserTest extends TestCase
 
         $request =[
             'method'    => 'GET',
-            'url'       => '/users/'.$user->getId().'/access',
+            'url'       => '/users/access',
             'content'   => [
                 'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
             ],
         ];
 
@@ -401,7 +407,7 @@ class UserTest extends TestCase
         ];
 
         $testData['request']['content'] = $content;
-        
+
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
 
         $this->ba->appAuth();
