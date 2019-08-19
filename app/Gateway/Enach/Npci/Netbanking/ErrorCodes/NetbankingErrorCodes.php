@@ -517,8 +517,8 @@ class NetbankingErrorCodes
         self::R310 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
         self::R480 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::R481 => ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
-        self::R486 => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
-        self::R487 => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
+        self::R486 => ErrorCode:: GATEWAY_ERROR_INVALID_PARAMETERS,
+        self::R487 => ErrorCode:: GATEWAY_ERROR_INVALID_PARAMETERS,
 
 
         self::AP04 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
