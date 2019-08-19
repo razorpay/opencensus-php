@@ -594,7 +594,7 @@ class Selector extends Base\Core
         return $response;
     }
 
-    protected function shouldHitRoutingService(string $paymentId)
+    protected function shouldHitRoutingService(string $paymentId = null)
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
@@ -604,6 +604,11 @@ class Selector extends Base\Core
         }
 
         if ($this->isTestMode() === true)
+        {
+            return false;
+        }
+
+        if ($paymentId === null)
         {
             return false;
         }
