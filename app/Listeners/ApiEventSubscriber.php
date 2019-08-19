@@ -182,8 +182,8 @@ class ApiEventSubscriber extends Base\Core
         // before proceeding with fall back of existing flow.
         //
         $this->setShouldDispatchEventToStork();
-        $this->webhookEnabledForEvent = ($this->shouldDispatchEventToStork or
-            $this->isWebhookEnabledForEvent($this->mainEntity));
+        $this->webhookEnabledForEvent = (($this->shouldDispatchEventToStork === true) or
+            ($this->isWebhookEnabledForEvent($this->mainEntity) === true));
 
         //
         // Doesn't execute the event if
