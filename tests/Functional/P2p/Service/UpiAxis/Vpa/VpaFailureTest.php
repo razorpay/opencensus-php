@@ -40,4 +40,54 @@ class VpaFailureTest extends TestCase
             'username' => strtolower($this->fixtures->vpa->getUsername()), // ALC01custVpa03
         ]);
     }
+
+    public function testInitiateCreateVpaWithDifferentPhonenumber()
+    {
+        $helper = $this->getVpaHelper();
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'        => 'BAD_REQUEST_ERROR',
+                'description' => 'VPA not available, try a different username',
+                'action'      => 'initiateCheckAvailability'
+            ], $error);
+        });
+
+        $helper->intiateCreateVpa([
+            'username' => '9999999999',
+        ]);
+    }
+
+    public function testMaxVpaLimitReachedForCustomer()
+    {
+        $helper = $this->getVpaHelper();
+
+        // Creating 2 more VPAs for the customer
+        $this->fixtures->createVpa([]);
+        $vpa = $this->fixtures->createVpa([]);
+
+        $vpas = $helper->fetchAllVpa();
+
+        // We are only allowing 3 max vpas
+        $this->assertCount(3, $vpas['items']);
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'        => 'BAD_REQUEST_ERROR',
+                'description' => 'Maximum VPA allowed per customer limit reached',
+            ], $error);
+        });
+
+        $helper->initiateCheckVpaAvailable();
+
+        // Even if the VPA is deleted
+        $vpa->delete();
+
+        $helper->initiateCheckVpaAvailable();
+
+        // Also for addition
+        $helper->intiateCreateVpa();
+    }
 }

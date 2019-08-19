@@ -36,6 +36,7 @@ final class Route
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_private_json'              => ['post',     'payments/create/json',                           'PaymentCreateController@postCreateS2SJsonPayment'                  ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_subscriptions'             => ['post',     'payments/create/subscriptions',                  'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -67,6 +68,7 @@ final class Route
         'payment_topup_post'                       => ['post',     'payments/{x_entity_id}/topup',                   'PaymentCreateController@postTopup'                                 ],
         'payment_redirect_callback'                => ['post',     'payments/{x_entity_id}/redirect_callback',       'PaymentCreateController@postRedirectCallback'                      ],
         'payment_redirect_3ds'                     => ['post',     'payments/{x_entity_id}/authentication/redirect', 'PaymentCreateController@postRedirect3ds'                           ],
+        'payment_redirect_3ds_get'                 => ['get',      'payments/{x_entity_id}/authentication/redirect', 'PaymentCreateController@postRedirect3ds'                           ],
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
@@ -145,6 +147,7 @@ final class Route
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         'refund_verify_bulk'                       => ['post',     'refunds/verify/bulk',                            'RefundController@postVerifyRefundsBulk'                            ],
         'scrooge_tagging_backfill'                 => ['post',     'refunds/scrooge_tagging_backfill',               'RefundController@scroogeTaggingBackfill'                           ],
+        'refund_speed_processed_backfill'          => ['post',     'refunds/speed_processed_backfill',               'RefundController@speedProcessedBackfill'                           ],
         // We will change this in the future when we want to update more things than just marking it as processed.
         'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
         'refund_fetch_status'                      => ['get',      'refunds/{id}/status',                            'RefundController@getRefundEntity'                                  ],
@@ -314,6 +317,7 @@ final class Route
         'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'MerchantController@getWebhookEvents'                               ],
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
+        'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
@@ -827,6 +831,9 @@ final class Route
         //user change his/her 2fa setting
         'user_2fa_change_setting'                  => ['patch',    'users/2fa',                                      'UserController@change2faSetting'                                   ],
         'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
+        'merchant_restrict'                        => ['patch',    'merchant/restrict',                              'MerchantController@applyRestrictedSettings'                        ],
+        'user_update_contact'                      => ['patch',    'users/contact/update',                           'UserController@editContactMobile'                                  ],
+
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
         'tax_get_meta_states'                      => ['get',      'taxes/meta/states',                              'TaxController@getMetaStates'                                       ],
@@ -1228,6 +1235,7 @@ final class Route
         'merchant_methods_downtime',
         'virtual_account_order_create',
         'payment_redirect_3ds',
+        'payment_redirect_3ds_get',
         'currency_fetch_all',
         'payment_validate_account',
         'fund_account_create_public',
@@ -1271,6 +1279,7 @@ final class Route
     public static $private = [
         'payment_create_private',
         'payment_create_private_old',
+        'payment_create_private_json',
         'payment_fees',
         'payment_create_recurring',
         'payment_create_wallet',
@@ -1585,6 +1594,7 @@ final class Route
         'banking_account_statement_process',
         'subscription_registration_auto_charge',
         'partner_submerchant_map',
+        'refund_speed_processed_backfill',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1814,6 +1824,7 @@ final class Route
         'banking_accounts_list',
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
+        'user_update_contact',
     ];
 
     //
@@ -2205,11 +2216,15 @@ final class Route
         'offer_create_bulk',
         'banking_account_yesb_bulk_create',
 
+        'webhook_stork_migrate',
+
         // action on dashboard
         'set_channel_action',
         'get_channel_action',
         'setl_initiate_action',
         'fund_transfer_attempt_initiate_action',
+
+        'merchant_restrict',
     ];
 
     public static $routePermission = [
@@ -2644,9 +2659,14 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
+
+        'webhook_stork_migrate'                    => Permission::STORK_WRITE_OPERATION,
+
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
+
+        'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
     ];
 
     public static $direct = [
@@ -2881,6 +2901,7 @@ final class Route
             'virtual_account_close_cron',
             'gateway_downtime_detection_purge_keys',
             'subscription_registration_auto_charge',
+            'refund_speed_processed_backfill',
         ],
 
         'subscriptions' => [
@@ -3020,7 +3041,11 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
-        'payment_get_flows'
+        'payment_get_flows',
+    ];
+
+    protected static $s2sJsonRoutes = [
+        'payment_create_private_json'
     ];
 
     /**
@@ -3036,6 +3061,7 @@ final class Route
         'payment_create_openwallet'            => [Feature::OPENWALLET],
         'payment_create_recurring'             => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'           => [Feature::S2S],
+        'payment_create_private_json'          => [Feature::S2S],
         'reports_transaction_broking'          => [Feature::BROKING_REPORT],
         'reports_transaction_dsp'              => [Feature::DSP_REPORT],
         'reports_order_rpp'                    => [Feature::RPP_REPORT],
@@ -3137,6 +3163,7 @@ final class Route
         'payment_create_private',
         'payment_create_recurring',
         'payment_create_private_old',
+        'payment_create_private_json',
         'payment_create_checkout',
         'payment_create_aeps',
         'payment_create_jsonp',
@@ -3168,6 +3195,7 @@ final class Route
     const S2S_PAYMENT_ROUTES = [
         'payment_create_private',
         'payment_create_private_old',
+        'payment_create_private_json',
         'payment_create_recurring',
         'payment_create_aeps',
         'payment_create_openwallet',
@@ -3442,6 +3470,13 @@ final class Route
         $jsonpRoutes = self::$jsonpRoutes;
 
         return in_array($route, $jsonpRoutes);
+    }
+
+    public static function isS2SJsonRoute($route)
+    {
+        $jsonpRoutes = self::$s2sJsonRoutes;
+
+        return (in_array($route, $jsonpRoutes, true) === true);
     }
 
     public function addRouteGroups($groups)

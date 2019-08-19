@@ -72,6 +72,7 @@ class UpiAirtelGatewayTest extends TestCase
         // The payment should now be authorized
         $payment = $this->getEntityById('payment', $paymentId, true);
         $this->assertEquals('authorized', $payment['status']);
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
 
         $this->capturePayment($paymentId, $payment['amount']);
 

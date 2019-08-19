@@ -355,6 +355,33 @@ return [
         ],
     ],
 
+    'testProcessSubMerchantBatchForActivateAlreadyExistingMerchant' => [
+        'request'  => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'                      => 'sub_merchant',
+                'partner_id'                => '10000000000000',
+                'use_email_as_dummy'        => 0,
+                'autofill_details'          => 1,
+                'instantly_activate'        => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
     'defaultEntries' => [
         [
             Header::MERCHANT_NAME            => 'SubMerchantone',

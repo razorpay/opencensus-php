@@ -411,6 +411,56 @@ class SubMerchantBatchTest extends TestCase
         $this->assertEquals('activated', $merchantDetail->getActivationStatus());
     }
 
+    public function testProcessSubMerchantBatchForActivateAlreadyExistingMerchant()
+    {
+        // create merchant and instant activate merchant and submit
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        $merchant = $this->getDbEntity('merchant', ['email' => 'merch3@razorpay.com'], 'test');
+
+        $this->assertNotNull($merchant);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals('instantly_activated', $merchantDetail->getActivationStatus());
+
+        $customActionAttributes = [
+            'type'               => 'sub_merchant',
+            'partner_id'         => '10000000000000',
+            'use_email_as_dummy' => 0,
+            'auto_activate'      => 1,
+            'auto_submit'        => 1,
+            'create_submerchant' => 0,
+            'autofill_details'   => 1,
+        ];
+
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $data = &$this->testData[__FUNCTION__];
+
+        $data['request']['content'] = $customActionAttributes;
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        $merchant = $this->getDbEntity('merchant', ['email' => 'merch3@razorpay.com'], 'test');
+
+        $this->assertNotNull($merchant);
+
+        $this->assertFalse($merchant->getInternationalAttribute());
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals('activated', $merchantDetail->getActivationStatus());
+    }
+
     protected function getDefaultFileEntries(): array
     {
         return $this->testData['defaultEntries'];

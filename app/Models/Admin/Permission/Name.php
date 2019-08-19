@@ -236,12 +236,16 @@ class Name
     const EDIT_THROTTLE_SETTINGS              = 'edit_throttle_settings';
     const CANCEL_BATCH                        = 'cancel_batch';
     const PAYMENT_CAPTURE_BULK                = 'payment_capture_bulk';
+    const MERCHANT_RESTRICT                   = 'merchant_restrict';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
 
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';
+
+    // Perform write operations around stork integration e.g. webhook migrations etc
+    const STORK_WRITE_OPERATION               = 'stork_write_operation';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

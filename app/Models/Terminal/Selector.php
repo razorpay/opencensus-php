@@ -578,7 +578,7 @@ class Selector extends Base\Core
         return $response;
     }
 
-    protected function shouldHitRoutingService(string $merchantId)
+    protected function shouldHitRoutingService(string $paymentId)
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
@@ -592,7 +592,7 @@ class Selector extends Base\Core
             return false;
         }
 
-        $response = $this->app->razorx->getTreatment($merchantId, 'payments_hit_routing_service', $this->mode);
+        $response = $this->app->razorx->getTreatment($paymentId, 'payments_hit_routing_service', $this->mode);
 
         if (($response === 'on'))
         {

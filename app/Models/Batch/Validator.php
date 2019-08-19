@@ -216,6 +216,7 @@ class Validator extends Base\Validator
         ME::PARTNER_ID                => 'required|string|size:14',
         ME::AUTO_ENABLE_INTERNATIONAL => 'filled|boolean',
         ME::SKIP_BA_REGISTRATION      => 'filled|boolean',
+        ME::CREATE_SUBMERCHANT        => 'filled|boolean',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [

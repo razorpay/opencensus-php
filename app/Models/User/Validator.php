@@ -110,6 +110,11 @@ class Validator extends Base\Validator
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
     ];
 
+    protected static $editContactMobileRules = [
+        Entity::CONTACT_MOBILE => 'required|max:15',
+        Entity::OTP            => 'sometimes|filled|min:4',
+    ];
+
     protected static $actionValidators = [
         'product_role'
     ];
