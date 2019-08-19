@@ -162,5 +162,20 @@ $stepIndicatorSize = 36px
       font-size: 16px
       font-weight: bold
 
-.StepGuide--Route .StepGuide--Steps
-  width: 50%
+.StepGuide--Route
+  position: relative
+  &:after
+    content: ''
+    width: 320px
+    height: 100%
+    background: linear-gradient(173.46deg, #fbfdff 0%, #edf8fe 100%)
+    position: absolute
+    right: -131px
+    z-index: 1
+    bottom: -8px
+    transform: rotateZ(222deg) rotateY(122deg) rotateX(18deg)
+    @media (max-width: 767px)
+      display: none
+
+  .StepGuide--Steps
+    width: 50%
