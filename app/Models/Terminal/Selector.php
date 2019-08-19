@@ -284,7 +284,8 @@ class Selector extends Base\Core
             {
                 $terminalSetSentToSmartRouting = [];
 
-                foreach ($sortedTerminals as $terminal) {
+                foreach ($sortedTerminals as $terminal)
+                {
                     $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
                 }
 
@@ -296,8 +297,10 @@ class Selector extends Base\Core
 
                 $newSortedTerminals = [];
 
-                if ($terminalSetReceivedFromSmartRouting !== null) {
-                    foreach ($terminalSetReceivedFromSmartRouting as $terminal) {
+                if ($terminalSetReceivedFromSmartRouting !== null)
+                {
+                    foreach ($terminalSetReceivedFromSmartRouting as $terminal)
+                    {
                         // populating terminalIds array for data link layer
                         array_push($terminalIds, $terminal['id']);
 
@@ -308,7 +311,8 @@ class Selector extends Base\Core
 
                 }
 
-                if (count($sortedTerminals) === count($newSortedTerminals)) {
+                if (count($sortedTerminals) === count($newSortedTerminals))
+                {
                     $sortedTerminals = $newSortedTerminals;
                 }
                 else
@@ -429,13 +433,16 @@ class Selector extends Base\Core
         //
         $sortedTerminals = $terminals;
 
+        // default sorters
+        $sorters = self::$sorters;
+
         // removing smart routing sorters from the list of api sorters
         if ($shouldHitRoutingService === true)
         {
-            self::$sorters = array_diff(self::$sorters, self::$smartRoutingSorters);
+            $sorters = array_diff(self::$sorters, self::$smartRoutingSorters);
         }
 
-        foreach (self::$sorters as $sorter)
+        foreach ($sorters as $sorter)
         {
             $sorterRules = $this->getRulesForSorting($rules);
 
