@@ -4659,4 +4659,74 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testMerchantApplyRestrictionSettingsSuccess()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchantIds = $ownerUser->merchants()->distinct()->get()->pluck('id')->toArray();
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchantIds[0];
+
+        $testData['response']['content']['merchant_id'] = $merchantIds[0];
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $this->assertEquals(1, $merchant['restricted']);
+    }
+
+
+    public function testMerchantApplyRestrictionSettingFailure()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertEquals(0, $merchant['restricted']);
+    }
+
+    public function testMerchantRemoveRestrictionSettings()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchantIds = $ownerUser->merchants()->distinct()->get()->pluck('id')->toArray();
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchantIds[0];
+
+        $testData['response']['content']['merchant_id'] = $merchantIds[0];
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $this->assertEquals(0, $merchant['restricted']);
+    }
 }

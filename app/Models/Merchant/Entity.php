@@ -104,7 +104,6 @@ class Entity extends Base\PublicEntity
     const RESTRICTED               = 'restricted';
     const DEFAULT_REFUND_SPEED     = 'default_refund_speed';
 
-
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
 

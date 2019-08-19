@@ -257,6 +257,11 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL => 'required|boolean'
     ];
 
+    protected static $restrictSettingsMerchantRules = [
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+        Entity::ACTION      => 'required|in:add,remove',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;

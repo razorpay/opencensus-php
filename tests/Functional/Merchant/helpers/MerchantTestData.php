@@ -4619,4 +4619,61 @@ return [
             ],
         ],
     ],
+    'testMerchantApplyRestrictionSettingsSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'add'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '',
+                'restricted'  => true
+            ]
+        ],
+    ],
+
+    'testMerchantApplyRestrictionSettingFailure' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'add'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant Restricted Settings failed to apply',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED,
+        ],
+    ],
+
+    'testMerchantRemoveRestrictionSettings' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'remove'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '',
+                'restricted'  => false
+            ]
+        ],
+    ],
 ];
