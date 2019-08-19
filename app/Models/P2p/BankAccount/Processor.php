@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\BankAccount;
 use RZP\Exception;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Base\Upi;
 
 /**
@@ -46,6 +47,11 @@ class Processor extends Base\Processor
         $bank = (new Bank\Core)->fetch($this->input->get(Entity::BANK_ID));
 
         $bankAccounts = $this->core->createManyForBank($this->input->get(Entity::BANK_ACCOUNTS), $bank);
+
+        if ($bankAccounts->count() === 0)
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_NO_BANK_ACCOUNT_FOUND);
+        }
 
         return $bankAccounts->toArrayPublic();
     }
