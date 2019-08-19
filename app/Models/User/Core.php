@@ -1000,4 +1000,71 @@ class Core extends Base\Core
 
         $this->changePassword($user, $changePasswordData);
     }
+
+    /**
+     *  User updating its contact mobile
+     *
+     *  1) Send OTP to mobile number.
+     *  2) Verify OTP send to the number.
+     *  3) Update the contact mobile and set mobile verified as true.
+     *
+     * @param array  $input
+     * @param Entity $user
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function editContactMobile(array $input, Entity $user)
+    {
+        if ($user->getRestricted() === true)
+        {
+            //
+            // if merchant_user role is admin/owner
+            // allow editing contact mobile.
+            //
+            $userMapping    = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
+                                                                            $user->getId());
+            $this->userRole = $userMapping->pivot->role;
+
+            if (in_array($this->userRole, [Role::ADMIN, Role::OWNER], true) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION);
+            }
+        }
+
+        $smsOtpAuth = $this->app['module']
+            ->secondFactorAuth
+            ::make('SmsOtpAuth');
+
+        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
+
+        if (isset($input[Entity::OTP]) === false)
+        {
+            $smsOtpAuth->sendOtp($smsOtpAuthPayload);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED);
+        }
+        else
+        {
+            $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
+
+            if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
+            {
+                $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+
+                $this->repo->saveOrFail($user);
+
+                $user->setContactMobileVerified(true);
+
+                $this->repo->saveOrFail($user);
+
+                return $user;
+            }
+            else
+            {
+                // Wrong OTP or Mobile number verified. 
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+            }
+        }
+    }
 }

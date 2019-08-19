@@ -1397,4 +1397,61 @@ class UserTest extends TestCase
         $this->app->razorx->method('getTreatment')
                           ->willReturn('on');
     }
+
+    public function testEditContactMobileByUser()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserRestrictedForManagerRole()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantIds[0],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'manager');
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserAndVerify()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $response = $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($response['contact_mobile_verified'], true);
+
+        $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
+
+        $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
+    }
 }

@@ -832,6 +832,7 @@ final class Route
         'user_2fa_change_setting'                  => ['patch',    'users/2fa',                                      'UserController@change2faSetting'                                   ],
         'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
         'merchant_restrict'                        => ['patch',    'merchant/restrict',                              'MerchantController@applyRestrictedSettings'                        ],
+        'user_update_contact'                      => ['patch',    'users/contact/update',                           'UserController@editContactMobile'                                  ],
 
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
@@ -1824,6 +1825,7 @@ final class Route
         'banking_accounts_list',
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
+        'user_update_contact',
     ];
 
     //

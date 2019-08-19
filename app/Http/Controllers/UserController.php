@@ -180,4 +180,17 @@ class UserController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     *  User is updating his/her own contact Mobile
+     * @return mixed
+     */
+    public function editContactMobile()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editContactMobile($input);
+
+        return ApiResponse::json($data);
+    }
 }

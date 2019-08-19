@@ -727,4 +727,12 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function editContactMobile(array $input)
+    {
+        (new Validator)->validateInput('edit_contact_mobile', $input);
+
+        return $this->core()->editContactMobile($input, $this->user);
+    }
+
 }
