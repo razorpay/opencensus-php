@@ -441,6 +441,47 @@ return [
         ],
     ],
 
+    'testAuthenticationGatewayPaysecure' => [
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => 'RUPAY',
+            'step'          => 'authentication',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => 'RUPAY',
+            'step'          => 'authentication',
+            'authentication_gateway' => 'paysecure',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 10000,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => 'RUPAY',
+            'authentication_gateway' => 'paysecure',
+            'step'          => 'authentication',
+        ],
+    ],
+
     'testAuthenticationGatewayHdfcAuthCapabilityFilter' => [
         [
             'method'        => 'card',

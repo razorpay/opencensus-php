@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Card;
 use RZP\Models\Payment\AuthType;
 use RZP\Models\Terminal\Capability;
 
@@ -23,7 +24,25 @@ class AuthenticationTerminals
 
     const CAPABILITY             = 'capability';
 
+    const NETWORK                = 'network';
+
     const AUTHENTICATION_TERMINALS = [
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::HITACHI,
+            self::AUTHENTICATION_GATEWAY    => Gateway::PAYSECURE,
+            self::NETWORK                   => Card\Network::RUPAY,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::HITACHI,
+            self::AUTHENTICATION_GATEWAY    => Gateway::PAYSECURE,
+            self::NETWORK                   => Card\Network::RUPAY,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
