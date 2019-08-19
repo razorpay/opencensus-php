@@ -5230,4 +5230,4 @@ ALTER TABLE merchants
 
 ALTER TABLE payments
     CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
-    ALGORIgTHM=INPLACE, LOCK=NONE;
+    ALGORITHM=INPLACE, LOCK=NONE;
