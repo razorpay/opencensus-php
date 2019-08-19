@@ -46,7 +46,9 @@ export default params => {
     }
 
     get isActive() {
-      return LocalStorageService.getItem(this.LAST_VISITED_SCREEN_KEY) || 0;
+      const data = getOnBoardingDataFromLocalState(FEATURE);
+
+      return data.lastVisitedScreen || 0;
     }
 
     componentDidMount() {
