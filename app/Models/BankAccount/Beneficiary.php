@@ -29,7 +29,7 @@ use RZP\Models\Settlement\SlackNotification;
 
 class Beneficiary extends Base\Core
 {
-    const BENEFICIARY_CACHE_KEY_TTL = 300;
+    const BENEFICIARY_CACHE_KEY_TTL = 5;
 
     public function register(array $input, string $channel): array
     {
