@@ -78,6 +78,8 @@ export default class MarketPlaceQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getRouteQuickGuideIsClosed = props => {
+  if (props.transfers.loading) return true;
+
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.ROUTE);
 
   // Check if transfers non created state count is more then or equal to 2
