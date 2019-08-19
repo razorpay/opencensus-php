@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Hitachi;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\DowntimeMetric;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mpi\Enstage\Field;
 use RZP\Gateway\Hitachi\ResponseFields;
@@ -62,6 +63,25 @@ class HitachiGatewayTest extends TestCase
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
 
         $this->mockCardVault();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'save_all_cards')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
     }
 
     public function testSuccessful13DigitPanForEnrolledCard()
@@ -1006,9 +1026,129 @@ class HitachiGatewayTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
     }
 
+    protected function createGatewayRules($rules)
+    {
+        foreach ($rules as $rule)
+        {
+            $this->fixtures->create('gateway_rule', $rule);
+        }
+    }
+
     public function expressPayEnrolled($iin, $network)
     {
         $this->fixtures->merchant->addFeatures(['axis_express_pay']);
+
+        $this->createGatewayRules([
+            [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => 'headless_otp',
+            'network'       => 'MC',
+            'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
+
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => 'ivr',
+            'network'       => 'MC',
+            'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
+
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => 'otp',
+            'network'       => null,
+            'issuer'        => 'UTIB',
+            'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_enstage',
+
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 50,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'authentication_gateway' => 'mpi_blade',
+            'step'          => 'authentication',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 200,
+            'group'         => 'authentication',
+            'auth_type'     => 'headless_otp',
+            'network'       => 'MC',
+            'authentication_gateway' => 'mpi_blade',
+            'step'          => 'authentication',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 500,
+            'group'         => 'authentication',
+            'auth_type'     => 'otp',
+            'network'       => null,
+            'issuer'        => 'UTIB',
+            'authentication_gateway' => 'mpi_blade',
+            'step'          => 'authentication',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 400,
+            'group'         => 'authentication',
+            'auth_type'     => 'ivr',
+            'network'       => 'MC',
+            'authentication_gateway' => 'mpi_enstage',
+            'step'          => 'authentication',
+        ]
+        ]);
 
         $this->payment['auth_type'] = 'otp';
 
