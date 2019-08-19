@@ -321,24 +321,14 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $mpiEntity = $this->app['repo']
-                          ->mpi
-                          ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
-
-        $authenticationGateway = Payment\Gateway::CYBERSOURCE;
-
-        if ($mpiEntity !== null)
-        {
-            $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
-        }
-
-        switch ($authenticationGateway)
+        switch ($input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY])
         {
             case Payment\Gateway::MPI_BLADE:
             case Payment\Gateway::MPI_ENSTAGE:
                 parent::callback($input);
 
-                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+                $authResponse = $this->callAuthenticationGateway($input,
+                                                        $input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY]);
 
                 $dataForMozart = $this->formatDataForMozart($input, $authResponse);
 

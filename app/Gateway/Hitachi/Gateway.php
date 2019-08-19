@@ -181,11 +181,7 @@ class Gateway extends Base\Gateway
             return $callbackData;
         }
 
-        $mpiEntity = $this->app['repo']
-                          ->mpi
-                          ->findByPaymentIdAndActionGetLastOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
-
-        $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
+        $authenticationGateway = $input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY] ?: Payment\Gateway::MPI_BLADE;
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 

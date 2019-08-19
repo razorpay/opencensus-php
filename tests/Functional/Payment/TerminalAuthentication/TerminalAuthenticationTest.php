@@ -410,6 +410,56 @@ class TerminalAuthenticationTest extends TestCase
         $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
+    public function testAuthenticationGatewayFirstdata()
+    {
+        TerminalOptions::setTestChance(1000);
+
+        $this->otpFlow = false;
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->mockCardVault();
+
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'first_data',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
+        ]);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'first_data',
+            'type'          => 'sorter',
+            'load'          => 10000,
+            'auth_type'     => '3ds',
+            'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = ['3ds'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
+    }
+
     public function testAuthenticationGatewayPaysecure()
     {
         TerminalOptions::setTestChance(1000);
