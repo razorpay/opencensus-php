@@ -305,6 +305,8 @@ class Gateway
         IFSC::CBIN,
         IFSC::CIUB,
         IFSC::DEUT,
+        IFSC::ESFB,
+        IFSC::FDRL,
         IFSC::HDFC,
         IFSC::IBKL,
         IFSC::ICIC,
@@ -315,6 +317,7 @@ class Gateway
         IFSC::MAHB,
         IFSC::PYTM,
         IFSC::RATN,
+        IFSC::SIBL,
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTIB,
@@ -1349,6 +1352,7 @@ class Gateway
      */
     public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
+        IFSC::IDIB => Gateway::NETBANKING_IBK,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::CBIN => Gateway::NETBANKING_CBI,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,

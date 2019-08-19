@@ -33,6 +33,9 @@ final class RazorxTreatment
 
     const CHANGE_QUEUE_BATCH_INVOICE = 'change_queue_batch_invoice';
 
+    // Decides if api's webhook event should be dispatched via stork.
+    const WEBHOOK_EVENT_VIA_STORK = 'webhook_event_via_stork';
+
     const SECOND_FACTOR_AUTH_PROJECT_EXP   = 'second_factor_auth_project';
     const SECOND_FACTOR_AUTH_LOGIN_EXP     = 'second_factor_auth_login';
 }

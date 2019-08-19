@@ -53,6 +53,7 @@ class Constants
         Type::REFUND => [
             self::HDFC,
             self::ICICI,
+            self::IBK,
             self::CSB,
             self::CBI,
             self::ALLA,
@@ -132,6 +133,7 @@ class Constants
             // todo: Fix the receipients
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::IBK           => ['refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
             self::UPI_SBI       => ['refunds@razorpay.com'],
             self::CBI           => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],

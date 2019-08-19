@@ -317,6 +317,7 @@ final class Route
         'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'MerchantController@getWebhookEvents'                               ],
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
+        'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
@@ -2215,6 +2216,8 @@ final class Route
         'offer_create_bulk',
         'banking_account_yesb_bulk_create',
 
+        'webhook_stork_migrate',
+
         // action on dashboard
         'set_channel_action',
         'get_channel_action',
@@ -2656,6 +2659,9 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
+
+        'webhook_stork_migrate'                    => Permission::STORK_WRITE_OPERATION,
+
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,

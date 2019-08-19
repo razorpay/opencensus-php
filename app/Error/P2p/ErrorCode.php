@@ -17,12 +17,17 @@ class ErrorCode extends \RZP\Error\ErrorCode
     const BAD_REQUEST_INVALID_MERCHANT_IN_CONTEXT                   = 'BAD_REQUEST_INVALID_MERCHANT_IN_CONTEXT';
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                       = 'BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID';
 
+    const BAD_REQUEST_NO_BANK_ACCOUNT_FOUND                         = 'BAD_REQUEST_NO_BANK_ACCOUNT_FOUND';
+
+    const BAD_REQUEST_VPA_NOT_AVAILABLE                             = 'BAD_REQUEST_VPA_NOT_AVAILABLE';
     const BAD_REQUEST_DUPLICATE_VPA                                 = 'BAD_REQUEST_DUPLICATE_VPA';
+    const BAD_REQUEST_MAX_VPA_LIMIT_REACHED                         = 'BAD_REQUEST_MAX_VPA_LIMIT_REACHED';
 
     const GATEWAY_ERROR_DEVICE_INVALID_TOKEN                        = 'GATEWAY_ERROR_DEVICE_INVALID_TOKEN';
 
     const BAD_REQUEST_TRANSACTION_INVALID_STATE                     = 'BAD_REQUEST_TRANSACTION_INVALID_STATE';
     const BAD_REQUEST_DUPLICATE_TRANSACTION                         = 'BAD_REQUEST_DUPLICATE_TRANSACTION';
+    const BAD_REQUEST_PAYER_PAYEE_SAME                              = 'BAD_REQUEST_PAYER_PAYEE_SAME';
 
     // @codingStandardsIgnoreEnd
 }

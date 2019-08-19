@@ -156,6 +156,13 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ACTIVE);
     }
 
+    public function getMaxAllowedVpas(string $merchantId): int
+    {
+        // Currently we are hardcoding to 3 for all merchant
+        // Later we need to find a way for separate limit for a handle and merchant
+        return 3;
+    }
+
     public function isAllowedToMerchant(string $merchantId): bool
     {
         return in_array($this->getMerchantId(), [$merchantId, Merchant\Account::SHARED_ACCOUNT], true);

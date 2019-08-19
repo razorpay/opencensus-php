@@ -170,8 +170,6 @@ trait Authorize
             ]);
 
         (new TerminalProcessor)->setAuthenticationGateway($payment, $gatewayInput);
-
-        $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);
     }
 
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array & $gatewayInput)
@@ -1669,6 +1667,8 @@ trait Authorize
      */
     protected function setAuthAndAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
+        $payment->setAuthenticationGateway(null);
+
         try
         {
             if (($payment->isMethodCardOrEmi() === true) and

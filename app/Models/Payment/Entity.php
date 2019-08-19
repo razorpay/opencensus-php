@@ -159,6 +159,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     // Relations
     const CARD                  = 'card';
+    const EMI                   = 'emi';
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
@@ -351,6 +352,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
+        self::EMI,
         self::EMI_PLAN,
         self::DISPUTES,
         self::CREATED_AT,
@@ -2769,6 +2771,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function app()
     {
         return $this->belongsTo('RZP\Models\Customer\AppToken\Entity', self::APP_TOKEN);
+    }
+
+    public function emi()
+    {
+        return $this->belongsTo('RZP\Models\Emi\Entity', self::EMI_PLAN_ID)->withTrashed();
     }
 
     public function emiPlan()

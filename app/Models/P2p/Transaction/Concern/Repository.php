@@ -15,4 +15,9 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    protected function buildFetchQueryAdditional($params, $query)
+    {
+        $query->whereNotIn(Entity::STATUS, [Status::CREATED]);
+    }
 }

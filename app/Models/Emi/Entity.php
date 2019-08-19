@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const DURATION              = 'duration';
     const METHODS               = 'methods';
     const MIN_AMOUNT            = 'min_amount';
+    const ISSUER_NAME           = 'issuer_name';
     const ISSUER_PLAN_ID        = 'issuer_plan_id';
     const SUBVENTION            = 'subvention';
     const MERCHANT_PAYBACK      = 'merchant_payback';
@@ -28,7 +29,7 @@ class Entity extends Base\PublicEntity
     const DELETED_AT            = 'deleted_at';
 
     // Appended attributes
-    const ISSUER_NAME           = 'issuer_name';
+    const ISSUER                = 'issuer';
 
 
     // These are the valid durations that emi plan can have
@@ -56,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::BANK,
         self::NETWORK,
+        self::ISSUER,
         self::ISSUER_NAME,
         self::RATE,
         self::DURATION,
@@ -67,6 +69,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::ISSUER,
         self::ISSUER_NAME,
         self::RATE,
         self::DURATION,
@@ -89,7 +92,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $appends = [
-        self::ISSUER_NAME,
+        self::ISSUER,
     ];
 
     protected static $modifiers = [
@@ -153,6 +156,11 @@ class Entity extends Base\PublicEntity
     public function getIssuerPlanId()
     {
         return $this->getAttribute(self::ISSUER_PLAN_ID);
+    }
+
+    public function getIssuerAttribute()
+    {
+        return $this->getBank();
     }
 
     public function getIssuerNameAttribute(): string

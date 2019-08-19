@@ -17,7 +17,11 @@ class PublicErrorDescription extends \RZP\Error\PublicErrorDescription
     const BAD_REQUEST_INVALID_MERCHANT_IN_CONTEXT               = 'Invalid merchant set in context';
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                   = 'Token is invalid or expired';
 
+    const BAD_REQUEST_NO_BANK_ACCOUNT_FOUND                     = 'No account found, please try with different bank';
+
+    const BAD_REQUEST_VPA_NOT_AVAILABLE                         = 'VPA not available, try a different username';
     const BAD_REQUEST_DUPLICATE_VPA                             = 'Duplicate VPA address, try a different username';
+    const BAD_REQUEST_MAX_VPA_LIMIT_REACHED                     = 'Maximum VPA allowed per customer limit reached';
 
     const GATEWAY_ERROR                                         = 'Action could not be completed at bank';
     const GATEWAY_ERROR_DEVICE_INVALID_TOKEN                    = 'Token is invalid or expired';
@@ -25,5 +29,6 @@ class PublicErrorDescription extends \RZP\Error\PublicErrorDescription
 
     const BAD_REQUEST_TRANSACTION_INVALID_STATE                 = 'Transaction is not in valid state for update';
     const BAD_REQUEST_DUPLICATE_TRANSACTION                     = 'Duplicate transaction request received';
+    const BAD_REQUEST_PAYER_PAYEE_SAME                          = 'Payer/Payee can not belong to same device';
     // @codingStandardsIgnoreEnd
 }

@@ -866,7 +866,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->app->instance('card.cardVault', $cardVault);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setMethods(['getTreatment'])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -963,7 +963,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->app->instance('card.cardVault', $cardVault);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setMethods(['getTreatment'])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1052,7 +1052,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->app->instance('card.cardVault', $cardVault);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setMethods(['getTreatment'])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1136,7 +1136,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->app->instance('card.cardVault', $cardVault);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setMethods(['getTreatment'])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1259,7 +1259,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->app->instance('card.cardVault', $cardVault);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setMethods(['getTreatment'])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
