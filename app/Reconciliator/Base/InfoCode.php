@@ -126,6 +126,8 @@ class InfoCode
 
     const RECON_SKIP_INVALID_BLANK_FILE                 = 'RECON_SKIP_INVALID_BLANK_FILE';
 
+    const RECON_SKIPPED_ROWS                            = 'RECON_SKIPPED_ROWS';
+
     const CARD_TYPE_UNKNOWN                             = 'CARD_TYPE_UNKNOWN';
 
     const CARD_TYPE_MISMATCH                            = 'CARD_TYPE_MISMATCH';
