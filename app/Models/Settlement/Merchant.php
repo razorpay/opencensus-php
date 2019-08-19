@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement;
 use App;
 use Carbon\Carbon;
 
+use RZP\Diag\EventCode;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -406,6 +407,21 @@ class Merchant
      */
     protected function createSettlementAttemptEntity(int $initiateAt = null, array $merchantSettleToPartner)
     {
+        $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+        $customProperties = [
+            'timestamp'             => $timestamp,
+            'channel'               => $this->channel,
+            'settlement_id'         => $this->setl->getId(),
+            'transaction_count'     => $this->txns->count(),
+            'settlement_amount'     => $this->setl->getAmount(),
+        ];
+
+        $this->app['diag']->trackSettlementEvent(EventCode::FTA_CREATION_INITIATED,
+            $this->setl,
+            null,
+            $customProperties);
+
         $fta = $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt, $merchantSettleToPartner);
 
         if ($this->doMockAttemptProcessed() === true)

@@ -2,8 +2,11 @@
 
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
+use Carbon\Carbon;
 use Mail;
 
+use RZP\Constants\Timezone;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Exception\LogicException;
@@ -151,6 +154,20 @@ abstract class FileProcessor extends Processor
             {
                 $reconcileFile = $this->getFile($input);
             }
+
+            //REVERSE_FEED_RECEIVED
+            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+            $customProperties = [
+                'timestamp'   => $timestamp,
+                'channel'     => static::$channel,
+                'file_info'   => $reconcileFile,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::REVERSE_FEED_RECEIVED,
+                null,
+                null,
+                $customProperties);
         }
         catch (\Throwable $exception)
         {

@@ -501,11 +501,65 @@ trait SettlementTrait
             list($setl, $bankTransferAtpt) = $this->settleForMerchant(
                 $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner);
 
+            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+            $transactionCount = $txns->count();
+
+            $customProperties = [
+                'timestamp'             => $timestamp,
+                'channel'               => $channel,
+                'settlement_amount'     => $setlAmount,
+                'transaction_count'     => $transactionCount
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_CREATION_SUCCESS,
+                $setl,
+                null,
+                $customProperties);
+
+            $medium = in_array($channel, Channel::getApiBasedChannels(), true) ? 'API' : 'FILE';
+
+            $customProperties += [
+                'fund_transfer_attempt_id'                => $bankTransferAtpt->getId(),
+                'fund_transfer_attempt_mode'              => $bankTransferAtpt->getMode(),
+                'fund_transfer_attempt_medium'            => $medium
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::FTA_CREATION_SUCCESS,
+                $setl,
+                null,
+                $customProperties);
+
             return [$setl, $bankTransferAtpt];
         }
         catch (\Exception $exception)
         {
             $this->trace->traceException($exception);
+
+            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+            $transactionCount = $txns->count();
+
+            $customProperties = [
+                'timestamp'             => $timestamp,
+                'channel'               => $channel,
+                'settlement_amount'     => $setlAmount,
+                'transaction_count'     => $transactionCount
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_CREATION_FAILED,
+                null,
+                $exception,
+                $customProperties);
+
+            $medium = in_array($channel, Channel::getApiBasedChannels(), true) ? 'API' : 'FILE';
+
+            $customProperties += ['fund_transfer_attempt_medium' => $medium];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::FTA_CREATION_FAILED,
+                null,
+                $exception,
+                $customProperties);
 
             return [null, null];
         }
@@ -806,13 +860,6 @@ trait SettlementTrait
                 'timestamp' => $this->setlTime,
                 'time'      => $time,
             ]);
-
-        $customProperties = ['channel' => $channel, 'timestamp' => $this->setlTime, 'time' => $time];
-
-        $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_CREATION_INITIATED,
-            null,
-            null,
-            $customProperties);
     }
 
     protected function successNotification($data, $settlements, $traceCode)
@@ -825,14 +872,6 @@ trait SettlementTrait
     protected function settlementFailure($channel, $e, $traceCode)
     {
         $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
-
-        $customProperties = ['channel' => $channel];
-
-        $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_CREATION_INITIATED,
-            null,
-            $e,
-            $customProperties);
-
         $this->failureNotification($e);
 
         throw $e;

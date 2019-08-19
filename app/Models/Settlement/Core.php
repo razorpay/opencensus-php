@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -165,6 +166,26 @@ class Core extends Base\Core
         $entity->setFailureReason($attemptFailureReason);
 
         $this->repo->saveOrFail($entity);
+
+        $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+        $batchFta = $entity->batchFundTransfer;
+
+        $customProperties = [
+            'timestamp'                         => $timestamp,
+            'channel'                           => $entity->getChannel(),
+            'fund_transfer_attempt_id'          => $ftaData['fta_id'],
+            'batch_fund_transfer_attempt_id'    => $batchFta->getId(),
+            'fund_transfer_attempt_mode'        => $ftaData['mode'],
+            'fund_transfer_attempt_amount'      => $entity->getAmount(),
+            'settlement_id'                     => $entity->getId(),
+            'error_message'                     => $attemptFailureReason,
+        ];
+
+        $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_STATUS_UPDATED,
+            null,
+            null,
+            $customProperties);
     }
 
     public function updateStatusAfterFtaInitiated(Entity $entity, Attempt\Entity $fta)

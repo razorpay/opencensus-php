@@ -2,10 +2,13 @@
 
 namespace RZP\Jobs;
 
+use Carbon\Carbon;
 use Mail;
 use Requests;
 use Requests_Response;
 
+use RZP\Constants\Timezone;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Services\Beam\Service;
 use Razorpay\Trace\Logger as Trace;
@@ -179,6 +182,30 @@ class BeamJob extends Job
             {
                 $this->release($this->retryTimeLines[$this->attempts() - 1]);
 
+                $batchFundTransferId = null;
+
+                $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+                $mailInfo = $this->mailInfo;
+
+                if(isset($mailInfo['batchFundTransferId']) === true)
+                {
+                    $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+                }
+
+                $channel = $mailInfo['channel'];
+
+                $customProperties = [
+                    'timestamp'                 => $timestamp,
+                    'channel'                   => $channel,
+                    'batch_fund_transfer_id'    => $batchFundTransferId,
+                ];
+
+                $this->app['diag']->trackSettlementEvent(EventCode::BEAM_FILE_PUSH_RETRY,
+                    null,
+                    null,
+                    $customProperties);
+
                 return;
             }
 
@@ -191,6 +218,30 @@ class BeamJob extends Job
 
         if (in_array($this->response->status_code, self::HTTP_SUCCESS_CODES, true) === true)
         {
+            $batchFundTransferId = null;
+
+            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+            $mailInfo = $this->mailInfo;
+
+            if(isset($mailInfo['batchFundTransferId']) === true)
+            {
+                $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+            }
+
+            $channel = $mailInfo['channel'];
+
+            $customProperties = [
+                'timestamp'                 => $timestamp,
+                'channel'                   => $channel,
+                'batch_fund_transfer_id'    => $batchFundTransferId,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::BEAM_FILE_PUSH_SUCCESS,
+                null,
+                null,
+                $customProperties);
+
             $this->delete();
 
             return;
@@ -217,6 +268,30 @@ class BeamJob extends Job
     {
         try
         {
+            $batchFundTransferId = null;
+
+            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+            $mailInfo = $this->mailInfo;
+
+            if(isset($mailInfo['batchFundTransferId']) === true)
+            {
+                $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+            }
+
+            $channel = $mailInfo['channel'];
+
+            $customProperties = [
+                'timestamp'                 => $timestamp,
+                'channel'                   => $channel,
+                'batch_fund_transfer_id'   => $batchFundTransferId,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::BEAM_FILE_PUSH_FAILED,
+                null,
+                null,
+                $customProperties);
+
             $this->sendEmail();
 
             $operation = $this->mailInfo['filetype'] .' file send failed through Beam';

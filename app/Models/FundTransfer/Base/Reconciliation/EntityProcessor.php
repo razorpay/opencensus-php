@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -122,6 +123,30 @@ abstract class EntityProcessor extends Base\Core
         }
 
         $this->fta->setFailureReason($failureReason);
+
+        //FTA_STATUS_UPDATED
+        $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+        $batchFta = $this->fta->batchFundTransfer;
+
+        $customProperties = [
+            'timestamp'                         => $timestamp,
+            'channel'                           => $this->fta->getChannel(),
+            'purpose'                           => $this->fta->getPurpose(),
+            'fund_transfer_attempt_id'          => $this->fta->getId(),
+            'batch_fund_transfer_attempt_id'    => $batchFta->getId(),
+            'utr'                               => $this->fta->getUtr(),
+            'source_type'                       => $this->fta->getSourceType(),
+            'fund_transfer_attempt_mode'        => $this->fta->getMode(),
+            'fund_transfer_attempt_status'      => $this->fta->getStatus(),
+            'source_id'                         => $this->fta->getSourceId(),
+            'error_message'                     => $failureReason,
+        ];
+
+        $this->app['diag']->trackSettlementEvent(EventCode::FTA_STATUS_UPDATED,
+            null,
+            null,
+            $customProperties);
 
         $this->fta->setStatus($status);
 

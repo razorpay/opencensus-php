@@ -232,9 +232,90 @@ class EventCode
         'name'  => 'payment.authentication.omnichannel.request.processed'
     ];
 
+    //Settlement flow events
+    const TRANSACTION_SETTLED_AT_UPDATE = [
+        'group' => 'initiation',
+        'name'  => 'transaction.settledAt.update'
+    ];
+
     const SETTLEMENT_CREATION_INITIATED = [
         'group' => 'initiation',
         'name'  => 'settlement.creation.initiated'
+    ];
+
+    const SETTLEMENT_CREATION_SUCCESS = [
+        'group' => 'success',
+        'name'  => 'settlement.creation.success'
+    ];
+
+    const SETTLEMENT_CREATION_FAILED = [
+        'group' => 'failure',
+        'name'  => 'settlement.creation.failed'
+    ];
+
+    const FTA_CREATION_INITIATED = [
+        'group' => 'initiation',
+        'name'  => 'fta.creation.initiated'
+    ];
+
+    const FTA_CREATION_SUCCESS = [
+        'group' => 'success',
+        'name'  => 'fta.creation.initiated'
+    ];
+
+    const FTA_CREATION_FAILED = [
+        'group' => 'failure',
+        'name'  => 'fta.creation.failed'
+    ];
+
+    const BATCH_FUND_TRANSFER_CREATION_INITIATED = [
+        'group' => 'initiated',
+        'name'  => 'batchFta.creation.initiated'
+    ];
+
+    const BATCH_FUND_TRANSFER_CREATION_SUCCESS = [
+        'group' => 'success',
+        'name'  => 'batchFta.creation.success'
+    ];
+
+    const BATCH_FUND_TRANSFER_CREATION_FAILED = [
+        'group' => 'failure',
+        'name'  => 'batchFta.creation.failed'
+    ];
+
+    const BEAM_FILE_PUSH_SUCCESS = [
+        'group' => 'success',
+        'name'  => 'beam.push.success'
+    ];
+
+    const BEAM_FILE_PUSH_RETRY = [
+        'group' => 'retry',
+        'name'  => 'beam.push.retry'
+    ];
+
+    const BEAM_FILE_PUSH_FAILED = [
+        'group' => 'failure',
+        'name'  => 'beam.push.failed'
+    ];
+
+    const FTA_UTR_UPDATED = [
+        'group' => 'update',
+        'name'  => 'fta.utr.updated'
+    ];
+
+    const FTA_STATUS_UPDATED = [
+        'group' => 'update',
+        'name'  => 'fta.status.updated'
+    ];
+
+    const SETTLEMENT_STATUS_UPDATED = [
+        'group' => 'update',
+        'name'  => 'settlement.status.updated'
+    ];
+
+    const REVERSE_FEED_RECEIVED = [
+        'group' => 'receive',
+        'name'  => 'reverse.feed.received'
     ];
 
 }

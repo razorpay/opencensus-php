@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -176,33 +177,99 @@ class Initiator extends Base\Core
 
         $purpose = $attempts->first()->getPurpose();
 
-        list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
-            $attempts,
-            function(PublicCollection $collection) use ($purpose, $channel)
+        $medium = in_array($channel, Channel::getApiBasedChannels(), true) ? 'API' : 'FILE';
+
+        try
+        {
+            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+            $customProperties = [
+                'timestamp'                     => $timestamp,
+                'channel'                       => $channel,
+                'fund_transfer_attempt_count'   => $count,
+                'purpose'                       => $purpose,
+                'fund_transfer_attempt_medium'  => $medium,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
+                null,
+                null,
+                $customProperties);
+
+            list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
+                $attempts,
+                function(PublicCollection $collection) use ($purpose, $channel)
+                {
+                    $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+
+                    return [
+                        (new $class($purpose))->initiateTransfer($collection),
+                        $collection
+                    ];
+                });
+
+            $allowedChannels = Channel::getApiBasedChannels();
+
+            if (in_array($channel, $allowedChannels, true) === true)
             {
-                $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+                $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+            }
 
-                return [
-                    (new $class($purpose))->initiateTransfer($collection),
-                    $collection
-                ];
-            });
+            $data += $response;
 
-        $allowedChannels = Channel::getApiBasedChannels();
+            $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        if (in_array($channel, $allowedChannels, true) === true)
-        {
-            $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+            //reducing slack alerts for API based channels
+            if (in_array($channel, $allowedChannels, true) === false)
+            {
+                (new SlackNotification)->send('setl_initiate', $slackData);
+            }
+
+            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+            $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
+
+            $batchFTaId = $batchFundTransfer->getId();
+
+            $batchAmount = $batchFundTransfer->getAmount();
+
+            $transactionCount = $batchFundTransfer->getTransactionCount();
+
+            $ftaCountInBatch = $batchFundTransfer->getTotalCount();
+
+            $customProperties = [
+                'timestamp'                             => $timestamp,
+                'channel'                               => $channel,
+                'fund_transfer_attempt_count'           => $ftaCountInBatch,
+                'purpose'                               => $purpose,
+                'fund_transfer_attempt_medium'          => $medium,
+                'batch_fund_transfer_id'                => $batchFTaId,
+                'batch_fund_transfer_attempt_amount'    => $batchAmount,
+                'transaction_count'                     => $transactionCount,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
+                null,
+                null,
+                $customProperties);
+
         }
-
-        $data += $response;
-
-        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
-
-        //reducing slack alerts for API based channels
-        if (in_array($channel, $allowedChannels, true) === false)
+        catch (\Exception $exception)
         {
-            (new SlackNotification)->send('setl_initiate', $slackData);
+            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+            $customProperties = [
+                'timestamp'                     => $timestamp,
+                'channel'                       => $channel,
+                'fund_transfer_attempt_count'   => $count,
+                'purpose'                       => $purpose,
+                'medium'                        => $medium,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(EventCode::BATCH_FUND_TRANSFER_CREATION_FAILED,
+                null,
+                null,
+                $customProperties);
         }
 
         return $data;

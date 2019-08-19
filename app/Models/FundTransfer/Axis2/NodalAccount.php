@@ -272,7 +272,8 @@ class NodalAccount extends NodalBase\FileProcessor
             'channel'   => $this->channel,
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'Axis2 Settlement File Send Failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS]
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS],
+            'batchFundTransferId' => $this->batchFundTransfer->getId(),
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);

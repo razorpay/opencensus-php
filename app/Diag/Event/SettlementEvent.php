@@ -4,7 +4,7 @@ namespace RZP\Diag\Event;
 
 class SettlementEvent extends Event
 {
-    const EVENT_TYPE = 'payment-events';
+    const EVENT_TYPE = 'settlement-events';
     const EVENT_VERSION = 'v1';
 
     protected function getEventProperties()
@@ -36,10 +36,10 @@ class SettlementEvent extends Event
         $settlement = $this->entity;
 
         $properties['settlement'] = [
-            'id'       => $settlement->getId(),
-            'amount'   => $settlement->getAmountAttribute(),
-            'fees' => $settlement->getFeesAttribute(),
-            'settledOn' => $settlement->getSettledOnAttribute()
+            'id'            => $settlement->getId(),
+            'amount'        => $settlement->getAmountAttribute(),
+            'fees'          => $settlement->getFeesAttribute(),
+            'settled_on'    => $settlement->getSettledOnAttribute()
         ];
     }
 }

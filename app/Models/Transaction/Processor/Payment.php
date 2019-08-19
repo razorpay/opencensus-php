@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Diag\EventCode;
 use RZP\Models\Pricing;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -30,6 +33,29 @@ class Payment extends Base
         $this->repo->saveOrFail($this->txn);
 
         $settledAt = $this->getSettledAtTimestamp();
+
+        $type = $this->txn->getType();
+
+        $entity_id = $this->txn->getEntityId();
+
+        $channel = $this->txn->getChannel();
+
+        $transactionId = $this->txn->getId();
+
+        $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+
+        $customProperties = [
+            'type'              => $type,
+            'entity_id'         => $entity_id,
+            'channel'           => $channel,
+            'transaction_id'    => $transactionId,
+            'timestamp'         => $timestamp
+        ];
+
+        $this->app['diag']->trackSettlementEvent(EventCode::TRANSACTION_SETTLED_AT_UPDATE,
+            null,
+            null,
+            $customProperties);
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
     }
