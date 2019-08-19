@@ -151,7 +151,7 @@ export default class BaseForm extends React.PureComponent {
             {/* Add dummy Counter */}
             <div className="Input-counterTooltip">
               <div className="Field--counter Field--small Input--disabled">
-                <span style={{ margin: '0 9px' }}>×</span>
+                <span style={{ margin: '0 10px' }}>×</span>
                 <div
                   className="Field-wrapper Field-wrapper--counter"
                   style={{
