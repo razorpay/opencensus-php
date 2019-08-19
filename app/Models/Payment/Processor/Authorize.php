@@ -170,8 +170,6 @@ trait Authorize
             ]);
 
         (new TerminalProcessor)->setAuthenticationGateway($payment, $gatewayInput);
-
-        $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);
     }
 
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array & $gatewayInput)
@@ -1785,6 +1783,8 @@ trait Authorize
                     break;
             }
         }
+
+        $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);
 
         $this->setAuthTypeInPayment($payment);
     }
