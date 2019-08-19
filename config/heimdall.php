@@ -268,6 +268,7 @@ return [
             Permission::CREATE_RECONCILIATE                 => '',
             Permission::CREATE_PROMOTION_COUPON             => '',
             Permission::BATCH_API_CALL                      => '',
+            Permission::MERCHANT_RESTRICT                   => '',
             Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],

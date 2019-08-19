@@ -830,6 +830,9 @@ final class Route
         //user change his/her 2fa setting
         'user_2fa_change_setting'                  => ['patch',    'users/2fa',                                      'UserController@change2faSetting'                                   ],
         'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
+        'merchant_restrict'                        => ['patch',    'merchant/restrict',                              'MerchantController@applyRestrictedSettings'                        ],
+        'user_update_contact'                      => ['patch',    'users/contact/update',                           'UserController@editContactMobile'                                  ],
+
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
         'tax_get_meta_states'                      => ['get',      'taxes/meta/states',                              'TaxController@getMetaStates'                                       ],
@@ -1590,6 +1593,7 @@ final class Route
         'banking_account_statement_process',
         'subscription_registration_auto_charge',
         'partner_submerchant_map',
+        'refund_speed_processed_backfill',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1819,6 +1823,7 @@ final class Route
         'banking_accounts_list',
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
+        'user_update_contact',
     ];
 
     //
@@ -2215,6 +2220,8 @@ final class Route
         'get_channel_action',
         'setl_initiate_action',
         'fund_transfer_attempt_initiate_action',
+
+        'merchant_restrict',
     ];
 
     public static $routePermission = [
@@ -2652,6 +2659,8 @@ final class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
+
+        'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
     ];
 
     public static $direct = [

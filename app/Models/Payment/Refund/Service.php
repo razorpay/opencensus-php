@@ -575,7 +575,15 @@ class Service extends Base\Service
 
         foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
         {
-            $status = ($refundArray->getSpeedProcessed() === null)? Status::PROCESSING : Status::PROCESSED;
+            $speedDecisioned = $refundArray->getSpeedDecisioned();
+            $speedProcessed = $refundArray->getSpeedProcessed();
+
+            $status = Status::PROCESSING;
+
+            if (($speedDecisioned === Speed::NORMAL) or ($speedProcessed !== null))
+            {
+                $status = Status::PROCESSED;
+            }
 
             $refundId = $refundArray[Entity::ID];
 

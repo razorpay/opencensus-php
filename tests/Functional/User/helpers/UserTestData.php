@@ -1115,4 +1115,74 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testEditContactMobileByUser' => [
+        'request'   => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED,
+        ],
+    ],
+
+    'testEditContactMobileByUserRestrictedForManagerRole' => [
+        'request'   => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+        ],
+    ],
+
+    'testEditContactMobileByUserAndVerify' => [
+        'request'  => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877',
+                'otp'            => '0007',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
 ];

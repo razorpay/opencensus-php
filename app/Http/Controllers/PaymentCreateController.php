@@ -504,10 +504,18 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
+                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getLogoUrl();
+
+                if(isset($merchantLogoUrl))
+                {
+                    $data['merchant_logo_url'] = $merchantLogoUrl;
+                }
+
                 $templateData = [
                     'data' => $data,
                     'api'  => $this->config->get('url.api.production')
                 ];
+
                 return View::make('gateway.gatewayAsyncForm')
                            ->with('data', $templateData);
             }
