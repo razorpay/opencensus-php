@@ -174,8 +174,13 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        // checking razorX experiment here for smart routing
-        $shouldHitRoutingServiceFlag  = $this->shouldHitRoutingService($this->input['merchant']);
+        $shouldHitRoutingServiceFlag = false;
+
+        // checking filtered terminals and razorX experiment for smart routing
+        if ((empty($filteredTerminals) === false) && ($this->shouldHitRoutingService($payment->getId()) === true ))
+        {
+            $shouldHitRoutingServiceFlag = true;
+        };
 
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose, $shouldHitRoutingServiceFlag);
 
@@ -275,43 +280,54 @@ class Selector extends Base\Core
 
         if ($shouldHitRoutingServiceFlag === true)
         {
-            $terminalSetSentToSmartRouting = array();
+            try
+            {
+                $terminalSetSentToSmartRouting = [];
 
-            foreach ($sortedTerminals as $terminal) {
-                $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
+                foreach ($sortedTerminals as $terminal) {
+                    $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
+                }
+
+                // calling the smart routing service for sorted terminals set
+                $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
+                    $this->input['merchant'], $allTerminals, $sortedTerminals, $filteredTerminals);
+
+                $terminalIds = [];
+
+                $newSortedTerminals = [];
+
+                if ($terminalSetReceivedFromSmartRouting !== null) {
+                    foreach ($terminalSetReceivedFromSmartRouting as $terminal) {
+                        // populating terminalIds array for data link layer
+                        array_push($terminalIds, $terminal['id']);
+
+                        // populating newSortedTerminals array for the payment process
+                        array_push($newSortedTerminals, $terminalSetSentToSmartRouting[$terminal['id']]);
+
+                    };
+
+                }
+
+                if (count($sortedTerminals) === count($newSortedTerminals)) {
+                    $sortedTerminals = $newSortedTerminals;
+                }
+
+                // sending the event to data link layer
+                $this->app['diag']->trackPaymentEvent(
+                    EventCode::PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
+                    [
+                        'sorted_terminal_ids' => $terminalIds,
+                    ]
+                );
             }
-
-            // calling the smart routing service for sorted terminals set
-            $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
-                $this->input['merchant'], $allTerminals, $sortedTerminals, $filteredTerminals);
-
-            $terminalIds = [];
-
-            $newSortedTerminals = [];
-
-            if ($terminalSetReceivedFromSmartRouting !== null) {
-                foreach ($terminalSetReceivedFromSmartRouting as $terminal) {
-                    // populating terminalIds array for data link layer
-                    array_push($terminalIds, $terminal['id']);
-
-                    // populating newSortedTerminals array for the payment process
-                    array_push($newSortedTerminals, $terminalSetSentToSmartRouting[$terminal['id']]);
-
-                };
-
+            catch (\Throwable $e)
+            {
+                $this->trace->error(
+                    TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
+                    [
+                        'error' => $e->getMessage(),
+                    ]);
             }
-
-            if (count($sortedTerminals) === count($newSortedTerminals)) {
-                $sortedTerminals = $newSortedTerminals;
-            }
-
-            // sending the event to data link layer
-            $this->app['diag']->trackPaymentEvent(
-                EventCode::PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
-                [
-                    'sorted_terminalIds' => $terminalIds,
-                ]
-            );
         }
 
         return $sortedTerminals;
@@ -578,7 +594,7 @@ class Selector extends Base\Core
         return $response;
     }
 
-    protected function shouldHitRoutingService(string $merchantId)
+    protected function shouldHitRoutingService(string $paymentId)
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
@@ -592,7 +608,7 @@ class Selector extends Base\Core
             return false;
         }
 
-        $response = $this->app->razorx->getTreatment($merchantId, 'payments_hit_routing_service', $this->mode);
+        $response = $this->app->razorx->getTreatment($paymentId, 'payments_hit_routing_service', $this->mode);
 
         if (($response === 'on'))
         {
