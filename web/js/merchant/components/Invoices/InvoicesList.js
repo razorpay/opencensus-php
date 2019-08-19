@@ -91,8 +91,7 @@ export default props => {
           isLoading={isLoading}
           colSpan={8}
           rows={invoices}
-          emptyTableMsg="No data found!"
-          EmptyComponent={EmptyList}
+          emptyTableRow={EmptyList}
         >
           {invoices.map(invoice => (
             <InvoiceListItem

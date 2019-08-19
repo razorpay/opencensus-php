@@ -18,11 +18,7 @@ export default props => {
     tableRowComponent = <TableLoader colSpan={colSpan} />;
   } else if (!rows.length) {
     tableRowComponent = emptyTableRow || (
-      <EmptyTableRow
-        colSpan={colSpan}
-        message={emptyTableMsg}
-        EmptyComponent={EmptyComponent}
-      />
+      <EmptyTableRow colSpan={colSpan} message={emptyTableMsg} />
     );
   }
 
