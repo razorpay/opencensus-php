@@ -311,6 +311,15 @@ class Selector extends Base\Core
                 if (count($sortedTerminals) === count($newSortedTerminals)) {
                     $sortedTerminals = $newSortedTerminals;
                 }
+                else
+                {
+                    $this->trace->error(
+                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR,
+                        [
+                            'input_terminals'    => $sortedTerminals,
+                            'sorted_terminals_from_smart_routing' => $newSortedTerminals,
+                        ]);
+                }
 
                 // sending the event to data link layer
                 $this->app['diag']->trackPaymentEvent(
