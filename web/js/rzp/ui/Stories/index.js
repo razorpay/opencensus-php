@@ -33,14 +33,13 @@ export default class Stories extends React.PureComponent {
   }
 
   goNext = () => {
-    this.setState({
-      curStoryIndex:
-        (this.state.curStoryIndex + 1) % this.props.children.length,
-    });
+    this.setState(({ curStoryIndex }) => ({
+      curStoryIndex: (curStoryIndex + 1) % this.props.children.length,
+    }));
   };
 
   isValidIndex = idx => {
-    return idx && idx < this.props.children.length;
+    return String(idx) && idx < this.props.children.length;
   };
 
   goTo = idx => {
