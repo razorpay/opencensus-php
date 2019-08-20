@@ -2943,6 +2943,8 @@ class Processor
 
                 $payment->setAuthType(Payment\AuthType::_3DS);
 
+                $payment->setAuthenticationGateway(null);
+
                 $this->repo->saveOrFail($payment);
 
                 return $this->authorize($payment, $inputDetails);

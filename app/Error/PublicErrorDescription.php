@@ -611,6 +611,9 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_2FA_ENFORCED                                         = 'Second factor authentication is mandated by one (or more) merchants';
     const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                           = 'Operation is only allowed by the owner of the merchant.';
     const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                 = 'Owner 2FA setup should already be done to perform this action';
+    const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                  = 'Merchant Restricted Settings failed to apply';
+    const BAD_REQUEST_USER_OTP_REQUIRED                                         = 'OTP is required';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION                     = 'Restricted user cannot perform action';
 
     const BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS                             = 'User with given role already exists';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';
@@ -646,6 +649,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                        = 'The input action is not supported for the merchant user';
     const BAD_REQUEST_ACCESS_DENIED                                             = 'Access Denied';
+    const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                              = 'Dashboard cant be accessed from the current location';
 
     // Workflow Related Errors
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                 = 'Workflow entity not found';

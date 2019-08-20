@@ -268,6 +268,7 @@ return [
             Permission::CREATE_RECONCILIATE                 => '',
             Permission::CREATE_PROMOTION_COUPON             => '',
             Permission::BATCH_API_CALL                      => '',
+            Permission::MERCHANT_RESTRICT                   => '',
             Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],
@@ -585,6 +586,9 @@ return [
             ],
             Permission::EDIT_THROTTLE_SETTINGS       => [
                 'description'  => 'Edit throttle settings',
+            ],
+            Permission::STORK_WRITE_OPERATION           => [
+                'description' => 'Perform write operations around stork integration e.g. webhook migrations etc',
             ],
         ],
 

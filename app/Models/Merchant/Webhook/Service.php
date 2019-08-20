@@ -39,4 +39,16 @@ class Service extends Base\Service
 
         $this->core()->prepareAndDispatchWebhook($merchant, $event, $input, $webhook);
     }
+
+    /**
+     * @see Core::webhookStorkMigrate()
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function webhookStorkMigrate(array $input): array
+    {
+        return $this->core()->webhookStorkMigrate($input);
+    }
 }

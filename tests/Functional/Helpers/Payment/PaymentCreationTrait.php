@@ -88,6 +88,7 @@ trait PaymentCreationTrait
             '/payments/create/ajax',
             '/payments/create/checkout',
             '/payments/create/redirect',
+            '/payments/create/json',
             '/payments/create/recurring',
             '/payments/create/upi',
             '/payments');
@@ -102,6 +103,13 @@ trait PaymentCreationTrait
         return (preg_match($pattern, $uri) === 1);
     }
 
+    protected function isOtpCallbackUrlPrivate($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/otp\/submit/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
     protected function isRedirectToAuthorizeUrl($uri)
     {
         $pattern = '/payments\/[\w]+\/authorize/';
@@ -111,7 +119,22 @@ trait PaymentCreationTrait
 
     protected function isOtpFallbackUrl($uri)
     {
-        $pattern = '/payments\/pay_[\w]+\/authentication\/redirect\/[\w]+/';
+        $pattern = '/payments\/pay_[\w]+\/authentication\/redirect\?key_id=rzp_[\w]+/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
+    protected function isOtpResendUrl($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/otp_resend\?[\w]+/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
+    protected function isOtpResendUrlPrivate($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/otp\/resend/';
+
         return (preg_match($pattern, $uri) === 1);
     }
 
@@ -228,7 +251,8 @@ trait PaymentCreationTrait
                         }
                     }
                 }
-                else
+                else if (($request['url'] !== '/payments/create/json') or
+                        ($request['url'] !== '/payments/create/redirect'))
                 {
                     return $response;
                 }
@@ -284,6 +308,15 @@ trait PaymentCreationTrait
                 return $this->makeRedirectToAuthorize($targetUrl);
             }
         }
+
+        if ($request['url'] === '/payments/create/json')
+        {
+            $content = $this->getJsonContentFromResponse($response);
+
+            return $this->makeRedirectToAuthorize($content['url']);
+
+        }
+
         return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
     }
 

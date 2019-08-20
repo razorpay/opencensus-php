@@ -432,7 +432,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::GATEWAY_ACQUIRER, '=', $provider)
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
                     ->where($method, '=', 1)
                     ->enabled()
                     ->firstOrFail();

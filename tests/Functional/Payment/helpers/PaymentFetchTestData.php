@@ -249,6 +249,28 @@ return [
         ],
     ],
 
+    'testFindWithEmiAsExpandsForPrivateAuth' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+            'content' => [
+                'expand' => [
+                    'emi',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'emi'   => [
+                    'issuer' => 'HDFC',
+                    'rate' => 1399,
+                    'duration' => 6,
+                ],
+            ],
+        ],
+    ],
+
     'testFindWithExpandsForPrivateAuthWithInvalidExpand' => [
         'request' => [
             'url'     => '/payments/',

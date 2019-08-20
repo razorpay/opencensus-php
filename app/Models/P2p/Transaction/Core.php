@@ -3,7 +3,9 @@
 namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
+use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 /**
@@ -83,7 +85,7 @@ class Core extends Base\Core
         return $upi;
     }
 
-    public function findAllUpi(array $input)
+    public function findAllUpi(array $input): PublicCollection
     {
         if (isset($input[UpiTransaction\Entity::ACTION]) === false)
         {
@@ -111,6 +113,17 @@ class Core extends Base\Core
         $upi = (new UpiTransaction\Core)->findAll($defined);
 
         return $upi;
+    }
+
+    public function deletePendingCollectForVpa(Vpa\Entity $vpa)
+    {
+        $query = $this->repo->newP2pQuery();
+
+        $query->where(Entity::STATUS, Status::REQUESTED)
+              ->where(Entity::PAYER_TYPE, Vpa\Entity::VPA)
+              ->where(Entity::PAYER_ID, $vpa->getId());
+
+        return $query->delete();
     }
 
     protected function cleanUpiInput(array $input): array

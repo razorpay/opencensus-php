@@ -135,6 +135,11 @@ abstract class NodalAccount extends Base\Core
             $mode = Mode::NEFT;
         }
 
+        if(in_array($merchant->getId(), Merchant\Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $mode = Mode::NEFT;
+        }
+
         return $mode;
     }
 

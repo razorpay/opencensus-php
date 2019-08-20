@@ -340,7 +340,7 @@ class Validator extends Base\Validator
 
         $payoutStatus = $payout->getStatus();
 
-        if ($payoutStatus !== Status::REVERSED)
+        if ($payout->isStatusReversedOrFailed() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED,

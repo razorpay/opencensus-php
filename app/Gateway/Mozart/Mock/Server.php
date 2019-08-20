@@ -231,6 +231,40 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function netbanking_ibk($input)
+    {
+
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+    
+    protected function netbanking_idbi($input)
+    {
+
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'random_encrypted_string' => ''
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     public function google_pay($input)
     {
         $response = [

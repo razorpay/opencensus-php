@@ -4,6 +4,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
+use RZP\Exception\BadRequestValidationFailureException;
 
 return [
     'testCreateKey' => [
@@ -4619,4 +4620,230 @@ return [
             ],
         ],
     ],
+
+    'testMerchantApplyRestrictionSettingsSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'add'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '',
+                'restricted'  => true
+            ]
+        ],
+    ],
+
+    'testMerchantApplyRestrictionSettingFailure' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'add'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant Restricted Settings failed to apply',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED,
+        ],
+    ],
+
+    'testMerchantRemoveRestrictionSettings' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'remove'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '',
+                'restricted'  => false
+            ]
+        ],
+    ],
+
+    'testEditDashboardWhitelistedIpsLive' => [
+        'request'  => [
+            'content' => [
+                'dashboard_whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+            ]
+        ]
+    ],
+    'testEditDashboardInvalidWhitelistedIpsLive' => [
+        'request'   => [
+            'content' => [
+                'dashboard_whitelisted_ips_live' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testEditDashboardWhitelistedIpsTest' => [
+        'request'  => [
+            'content' => [
+                'dashboard_whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+            ]
+        ]
+    ],
+    'testEditDashboardInvalidWhitelistedIpsTest' => [
+        'request'   => [
+            'content' => [
+                'dashboard_whitelisted_ips_test' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testEditDashboardRedundantWhitelistedIpsTest' => [
+        'request'   => [
+            'content' => [
+                'dashboard_whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The dashboard_whitelisted_ips_test.0 field has a duplicate value.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testEditDashboardRedundantWhitelistedIpsLive' => [
+        'request'   => [
+            'content' => [
+                'dashboard_whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The dashboard_whitelisted_ips_live.0 field has a duplicate value.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
 ];

@@ -2035,6 +2035,23 @@ return [
         ]
     ],
 
+    'testCreateNetbankingIbkTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_ibk',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingCanaraTerminal'  => [
         'request' => [
             'content' => [
@@ -2107,6 +2124,7 @@ return [
                 'entity'              => 'terminal',
                 'status' => "activated",
                 'enabled'             =>  true,
+                'notes'               =>  'some notes',
                 'mpan'                =>  [
                     'mc_mpan'             => '1234567890123456',
                     'visa_mpan'           => '9876543210123456',
@@ -2123,8 +2141,9 @@ return [
         'response' => [
             'content' => [
                 'entity'              => 'terminal',
-                'status' => "activated",
+                'status'              => "activated",
                 'enabled'             =>  false,
+                'notes'               =>  'some notes',
                 'mpan'                =>  [
                     'mc_mpan'             => '1234567890123456',
                     'visa_mpan'           => '9876543210123456',
@@ -2144,9 +2163,10 @@ return [
                 'entity'  => 'collection',
                 'items'   => [  
                     [
-                        'entity' => "terminal",
-                        'status' => "activated",
+                        'entity'  => "terminal",
+                        'status'  => "activated",
                         'enabled' => true,
+                        'notes'   => null,
                         'mpan' => [
                             'mc_mpan' =>  "5220240401208405",
                             'rupay_mpan' =>  "6100030401208403",
@@ -2154,9 +2174,10 @@ return [
                         ]
                     ],
                     [
-                        'entity' => "terminal",
-                        'status' => "activated",
+                        'entity'  => "terminal",
+                        'status'  => "activated",
                         'enabled' => true,
+                        'notes'   => null,
                         'mpan' => [
                             'mc_mpan' =>  "4287346823986423",
                             'rupay_mpan' =>  "6287346823986423",
@@ -2164,9 +2185,10 @@ return [
                         ]
                     ],
                     [
-                        'entity' => "terminal",
-                        'status' => "activated",
+                        'entity'  => "terminal",
+                        'status'  => "activated",
                         'enabled' => true,
+                        'notes'   => null,
                         'mpan' => [
                             'mc_mpan' =>  NULL,
                             'rupay_mpan' =>  NULL,

@@ -924,6 +924,8 @@ class ErrorCode
     const SERVER_ERROR_INVALID_ATTEMPT_ID                                           = 'SERVER_ERROR_INVALID_ATTEMPT_ID';
 
     const SERVER_ERROR_HASH_MISMATCH                                                = 'SERVER_ERROR_HASH_MISMATCH';
+    // Requests from api service to stork failed unexpectedly.
+    const SERVER_ERROR_STORK_FAILURE                                                = 'SERVER_ERROR_STORK_FAILURE';
 
     const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                                 = 'SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE';
     const SERVER_ERROR_BATCH_SERVICE_NOT_CALLED                                     = 'SERVER_ERROR_BATCH_SERVICE_NOT_CALLED';
@@ -968,6 +970,7 @@ class ErrorCode
 
     // Heimdall Error Codes
     const BAD_REQUEST_ACCESS_DENIED                                                 = 'BAD_REQUEST_ACCESS_DENIED';
+    const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                                  = 'BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED';
 
     const BAD_REQUEST_PASSWORD_EXPIRED                                              = 'BAD_REQUEST_PASSWORD_EXPIRED';
 
@@ -1043,6 +1046,10 @@ class ErrorCode
     const BAD_REQUEST_USER_2FA_ENFORCED                                             = 'BAD_REQUEST_USER_2FA_ENFORCED';
     const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                               = 'BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER';
     const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                     = 'BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY';
+    const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                      = 'BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED';
+    const BAD_REQUEST_USER_2FA_NOT_ENABLED                                          = 'BAD_REQUEST_USER_2FA_NOT_ENABLED';
+    const BAD_REQUEST_USER_OTP_REQUIRED                                             = 'BAD_REQUEST_USER_OTP_REQUIRED';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION                         = 'BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION';
 
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
@@ -1319,7 +1326,12 @@ class ErrorCode
     const BAD_REQUEST_INVALID_UPI_PROVIDER                                          = 'BAD_REQUEST_INVALID_UPI_PROVIDER';
     const GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT                                         = 'GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT';
 
+
+    //Shield Error Codes
+    const SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED                                = 'SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED';
+
     const SERVER_ERROR_OTP_ELF_FAILED_FOR_RUPAY                                     = 'SERVER_ERROR_OTP_ELF_FAILED_FOR_RUPAY';
 
     const BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS';
+
 }

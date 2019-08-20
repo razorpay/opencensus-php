@@ -1397,6 +1397,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_LOGIN_2FA_WRONG_OTP                              = 'USER_LOGIN_2FA_WRONG_OTP';
     const USER_LOGIN_2FA_OTP_SENT                               = 'USER_LOGIN_2FA_OTP_SENT';
     const USER_LOGIN_2FA_ACCOUNT_LOCKED                         = 'USER_LOGIN_2FA_ACCOUNT_LOCKED';
+    const MERCHANT_RESTRICTED_SETTINGS                          = 'MERCHANT_RESTRICTED_SETTINGS';
 
     // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';
@@ -1990,6 +1991,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_SUCCESSFULL                   = 'MERCHANT_BALANCE_UPDATE_SUCCESSFULL';
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
+
+    // Stork service
+    const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
+    const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
 
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                               = 'TERMINAL_ENABLE_REQUEST';

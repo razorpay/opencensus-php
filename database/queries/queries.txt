@@ -5213,3 +5213,21 @@ ALTER TABLE external
 ALTER TABLE `banking_account_statement`
   DROP INDEX `banking_account_statement_bank_transaction_id_unique`,
   ADD UNIQUE INDEX `banking_account_statement_bank_txn_id_srl_no_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`, `bank_serial_number`);
+
+ALTER TABLE `pricing`
+    ADD COLUMN `account_type` VARCHAR(255) DEFAULT NULL AFTER `receiver_type`,
+    ADD COLUMN `channel` VARCHAR(255) DEFAULT NULL AFTER `account_type`,
+    ADD INDEX `pricing_account_type_index` (`account_type`),
+    ADD INDEX `pricing_channel_index` (`channel`);
+
+ALTER TABLE payouts
+    ADD COLUMN failed_at INT(11) DEFAULT NULL AFTER `reversed_at`,
+    ADD INDEX payouts_failed_at_index (failed_at);
+
+ALTER TABLE merchants
+    ADD COLUMN dashboard_whitelisted_ips_live text DEFAULT NULL AFTER whitelisted_ips_test,
+    ADD COLUMN dashboard_whitelisted_ips_test text DEFAULT NULL AFTER dashboard_whitelisted_ips_live;
+
+ALTER TABLE payments
+    CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
