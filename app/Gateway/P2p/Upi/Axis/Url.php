@@ -6,6 +6,8 @@ class Url
 {
     const TEST_DOMAIN          = 'https://upiuatv3.axisbank.co.in';
 
+    const LIVE_DOMAIN          = 'https://upisdk.axisbank.co.in';
+
     const DEREGISTER           = '/api/b2/merchants/customer/deregister';
 
     const VALIDATE_VPA         = '/api/b2/merchants/vpas/validity';

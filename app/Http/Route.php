@@ -1171,6 +1171,11 @@ final class Route
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'banking_account_yesb_bulk_create'        => ['post',     'banking_accounts/bulk/create/yesbank',                      'BankingAccountController@bulkCreateBankingAccountsForYesbank' ],
+
+        // P2P Admin and Internal Routes
+        'p2p_admin_add_handle'                    => ['post',     'p2p/handles',                                               'P2p\VpaController@createHandle'],
+        'p2p_admin_update_handle'                 => ['put',      'p2p/handles/{code}',                                        'P2p\VpaController@updateHandle'],
+        'p2p_admin_manage_banks'                  => ['post',     'p2p/banks/bulk/manage',                                     'P2p\BankAccountController@manageBulkBanks'],
     ];
 
     public static $public = [
@@ -2234,6 +2239,11 @@ final class Route
         'merchant_restrict',
         'user_update_contact_admin',
         'user_account_lock_unlock_admin',
+
+        // P2p Routes
+        'p2p_admin_add_handle',
+        'p2p_admin_update_handle',
+        'p2p_admin_manage_banks',
     ];
 
     public static $routePermission = [
@@ -2678,6 +2688,10 @@ final class Route
 
         'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
         'user_account_lock_unlock_admin'           => Permission::USER_ACCOUNT_LOCK_UNLOCK,
+
+        'p2p_admin_add_handle'                      => Permission::P2P_MANAGE_MERCHANT,
+        'p2p_admin_update_handle'                   => Permission::P2P_MANAGE_MERCHANT,
+        'p2p_admin_manage_banks'                    => Permission::P2P_MANAGE_MERCHANT,
     ];
 
     public static $direct = [
