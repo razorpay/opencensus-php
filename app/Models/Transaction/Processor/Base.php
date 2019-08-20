@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Processor;
 use Mail;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Pricing;
@@ -13,6 +14,7 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
@@ -580,5 +582,35 @@ abstract class Base extends BaseCore
         $this->repo->balance->updateBalance($this->merchantBalance);
 
         $this->txn->setBalance($this->merchantBalance->getBalance());
+    }
+
+    /**
+     * It'll dispatch the job to update settlement bucket for merchant
+     * This will also suppress the any error occurred at this stage
+     * if settled at is null then it wont dispatch the job
+     *
+     * @param string $merchantId
+     * @param null   $settledAt
+     */
+    public function dispatchForSettlementBucketing(string $merchantId, $settledAt = null)
+    {
+        if ($settledAt === null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Dispatch for bucket creation for settlement
+            Bucket::dispatch($this->mode, $merchantId, $settledAt);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT
+            );
+        }
     }
 }

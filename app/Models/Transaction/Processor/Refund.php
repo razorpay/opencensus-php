@@ -38,6 +38,8 @@ class Refund extends Base
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
         $this->repo->saveOrFail($this->txn);
+
+        $this->dispatchForSettlementBucketing($this->txn->getMerchantId(), $settledAt);
     }
 
     protected function getSettledAtTimestampForRefund()

@@ -30,7 +30,7 @@ class Bucket extends Job
      * @param string $merchantId
      * @param null   $settledAt
      */
-    public function __construct(string $mode, string $merchantId, $settledAt = null)
+    public function __construct(string $mode, string $merchantId, $settledAt)
     {
         parent::__construct($mode);
 

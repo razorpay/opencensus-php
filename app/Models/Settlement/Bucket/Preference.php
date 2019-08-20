@@ -25,11 +25,18 @@ class Preference extends Base\Core
     {
         $timestamp = Carbon::createFromTimestamp($timestamp, Timezone::IST);
 
+        $hourOffset = 1;
+
+        // if the schedule is already anchored to some hour then don't add offset
+        if ($timestamp->minute === 0)
+        {
+            $hourOffset = 0;
+        }
+
         $timestamp->subSeconds($timestamp->second)
                   ->subMinutes($timestamp->minute)
-                  ->addHours(1);
+                  ->addHours($hourOffset);
 
-        // TODO: add hour anchor
         // If no hour anchor is given then used the calculated timestamp
         if ($hour === 0)
         {
@@ -41,7 +48,6 @@ class Preference extends Base\Core
         if ($timestamp->hour > $hour)
         {
             $timestamp = Holidays::getNextWorkingDay($timestamp);
-
         }
 
         $timestamp = $timestamp->setDateTime($timestamp->year, $timestamp->month, $timestamp->day, $hour, 0);

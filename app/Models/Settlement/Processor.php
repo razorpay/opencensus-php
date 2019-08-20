@@ -847,9 +847,10 @@ class Processor extends Base\Core
                                     ])
                                 ->keyBy(MerchantModel\Entity::ID);
 
-        // TODO: try to remove this filter
+        // refund filter is removed as this is handled while creating auth refund
+        // /Models/Transaction/Processor/Refund.php#L34
         $transactionsGroup = [
-            $merchantId => $this->filterMerchantTransactionsForSettlement($txns),
+            $merchantId => $txns,
         ];
 
         $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchantId]);

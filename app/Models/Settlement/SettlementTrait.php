@@ -22,17 +22,6 @@ use RZP\Models\Settlement\Merchant as SetlMerchant;
 
 trait SettlementTrait
 {
-    protected function filterMerchantTransactionsForSettlement(Base\PublicCollection $transactions): Base\PublicCollection
-    {
-        $transactions->filter(function ($item)
-        {
-            // keep all the elements which except ones which has to be skipped
-            return $this->skipForRefundAuthTxn($item) === false;
-        });
-
-        return $transactions;
-    }
-
     protected function traceMerchantSettlementSkip(Merchant\Entity $merchant, array $data)
     {
         $this->trace->info(
