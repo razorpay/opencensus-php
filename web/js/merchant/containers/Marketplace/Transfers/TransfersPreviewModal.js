@@ -25,17 +25,17 @@ export default ({ closeModal }) => (
 const STORIES_DATA = [
   {
     duration: 2000,
-    imgURL: 'https://razorpay.com/assets/payments/dashboard.png',
+    imgURL: '/dist/css/assets/product_onboarding/route/goto_transactions.svg',
     title: '1. Go to Transactions',
   },
   {
     duration: 2000,
-    imgURL: 'https://razorpay.com/assets/payments/dashboard.png',
+    imgURL: '/dist/css/assets/product_onboarding/route/capture_payment.svg',
     title: '2. Select a captured payment',
   },
   {
     duration: 2000,
-    imgURL: 'https://razorpay.com/assets/payments/dashboard.png',
+    imgURL: '/dist/css/assets/product_onboarding/route/create_transfer.svg',
     title: '3. Create Transfer',
   },
 ];
