@@ -303,7 +303,7 @@ export default class BaseForm extends React.PureComponent {
             </div>
           </OptionsItem>
 
-          {!!selfIndex &&
+          {typeof selfIndex !== 'undefined' &&
             onDeleteField && (
               <OptionsItem>
                 <div onClick={this.onDeleteField}>
@@ -315,12 +315,12 @@ export default class BaseForm extends React.PureComponent {
         </FieldOptionsDropdown>
 
         <Button.Transparent
-          class="base-form-side-btn base-form-close"
+          class="base-form-side-btn base-form-cancel"
           type="button"
           onClick={onCloseForm}
         >
           <span>&times;</span>
-          Close
+          Cancel
         </Button.Transparent>
 
         <Button.Transparent

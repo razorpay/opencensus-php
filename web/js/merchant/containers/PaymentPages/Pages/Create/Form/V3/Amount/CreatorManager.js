@@ -74,7 +74,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       const {
         index,
         validateSameTitleExists,
-        onDeleteAmountField,
+        onDeleteFormItem,
         ...restProps
       } = this.props;
 
@@ -101,7 +101,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               fieldType={fieldType}
               validateSameTitleExists={validateSameTitleExists}
               onSaveForm={this.onSaveBaseForm}
-              onDeleteAmountField={onDeleteAmountField}
+              onDeleteFormItem={onDeleteFormItem}
               closeFormModal={this.closeBaseForm}
               isFieldRemovable={isFieldRemovable}
               openAdvancedForm={_ => this.toggleAdvancedForm(true)}
@@ -130,8 +130,8 @@ export class BaseFormModal extends React.PureComponent {
     this.props.closeFormModal();
   };
 
-  onDeleteAmountField = () => {
-    this.props.onDeleteAmountField(this.props.index);
+  onDeleteFormItem = () => {
+    this.props.onDeleteFormItem(this.props.index);
     this.props.closeFormModal();
   };
 
@@ -155,9 +155,7 @@ export class BaseFormModal extends React.PureComponent {
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeFormModal}
           onSaveForm={this.onSaveForm}
-          onDeleteField={
-            isFieldRemovable ? this.onDeleteAmountField : undefined
-          }
+          onDeleteField={isFieldRemovable ? this.onDeleteFormItem : undefined}
           openAdvancedForm={openAdvancedForm}
           currency={'INR'}
         />

@@ -29,7 +29,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         field,
         index,
         validateSameTitleExists,
-        onDeleteUDFField,
+        onDeleteFormItem,
         onSubmitUDFField,
         ...restProps
       } = this.props;
@@ -60,7 +60,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               fieldSchema={this.state.fieldSchema}
               validateSameTitleExists={validateSameTitleExists}
               onSubmitUDFField={onSubmitUDFField}
-              onDeleteUDFField={onDeleteUDFField}
+              onDeleteFormItem={onDeleteFormItem}
               closeFormModal={this.closeBaseForm}
               isFieldRemovable={isFieldRemovable}
             />
@@ -79,8 +79,8 @@ export class BaseFormModal extends React.PureComponent {
     this.props.closeFormModal();
   };
 
-  onDeleteUDFField = () => {
-    this.props.onDeleteUDFField(this.props.index);
+  onDeleteFormItem = () => {
+    this.props.onDeleteFormItem(this.props.index);
     this.props.closeFormModal();
   };
 
@@ -102,7 +102,7 @@ export class BaseFormModal extends React.PureComponent {
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeFormModal}
           onSaveForm={this.onSaveForm}
-          onDeleteField={isFieldRemovable ? this.onDeleteUDFField : undefined}
+          onDeleteField={isFieldRemovable ? this.onDeleteFormItem : undefined}
         />
       </CreatorModal>
     );

@@ -27,7 +27,8 @@ class SortableFormItemsList extends React.Component {
       FORM_ITEMS,
       isListSorting,
       validateSameTitleExists,
-      onDeleteFormItem,
+      onDeleteUDFItem,
+      onDeleteAmountItem,
       onSubmitUDFField,
       onSubmitAmountField,
     } = this.props;
@@ -42,7 +43,7 @@ class SortableFormItemsList extends React.Component {
                 index={idx}
                 field={fi}
                 isListSorting={isListSorting}
-                onDeleteFormItem={onDeleteFormItem}
+                onDeleteFormItem={onDeleteAmountItem}
                 onSubmitAmountField={onSubmitAmountField}
                 validateSameTitleExists={validateSameTitleExists}
               />
@@ -54,7 +55,7 @@ class SortableFormItemsList extends React.Component {
                 index={idx}
                 field={fi}
                 isListSorting={isListSorting}
-                onDeleteFormItem={onDeleteFormItem}
+                onDeleteFormItem={onDeleteUDFItem}
                 onSubmitUDFField={onSubmitUDFField}
                 validateSameTitleExists={validateSameTitleExists}
               />
@@ -73,10 +74,16 @@ class SortableFormItemsList extends React.Component {
   reorderFormItems,
 })
 export default class View extends React.PureComponent {
-  state = { isListSorting: false };
+  state = {
+    isListSorting: false,
+    hasAmountItem: this.props.payment_page_id
+      ? this.props.paymentPageEntity.payment_page_items.length
+      : 0,
+  };
 
   componentWillReceiveProps(nextProps) {
     if (this.props.payment_page_id !== nextProps.payment_page_id) {
+      // TODO: Update state.hasAmountItem = false if nextProps. payment_page_id doesn't exist
       // this.onCreatorClose(); // TODO: Important controller point to close all the modals
     }
   }
@@ -88,9 +95,21 @@ export default class View extends React.PureComponent {
       formItem: amountItem,
       index: indexInFormItems,
     });
+
+    this.setState({
+      hasAmountItem: this.state.hasAmountItem + 1,
+    });
   };
 
-  onDeleteFormItem = indexInFormItems => {
+  onDeleteAmountItem = indexInFormItems => {
+    this.props.deleteInFormItems(indexInFormItems);
+
+    this.setState({
+      hasAmountItem: this.state.hasAmountItem - 1,
+    });
+  };
+
+  onDeleteUDFItem = indexInFormItems => {
     this.props.deleteInFormItems(indexInFormItems);
   };
 
@@ -163,9 +182,8 @@ export default class View extends React.PureComponent {
     return (
       <React.Fragment>
         <div class="UI-form">
-          {
-            /* TODO: Add only when no Amount item exists */
-            <div className="Field" style={{ margin: '32px 0 20px' }}>
+          {!this.state.hasAmountItem && (
+            <div className="Field Field-dummyAmount">
               <div className="Field-label" style={{ opacity: 0.6 }}>
                 Amount
               </div>
@@ -175,13 +193,13 @@ export default class View extends React.PureComponent {
                   field={{ item: { title: 'Amount' } }}
                   onDeleteFormItem={this.onDeleteFormItem}
                   onSubmitAmountField={formData =>
-                    this.onSubmitAmountField(formData, 0)
+                    this.onSubmitAmountField(formData, -1)
                   } /*Added in the starting of form Items*/
                   validateSameTitleExists={this.validateSameTitleExists}
                 />
               </div>
             </div>
-          }
+          )}
 
           <SortableFormItemsList
             lockAxis="y"
@@ -195,7 +213,8 @@ export default class View extends React.PureComponent {
             onSortStart={this.onSortStart}
             isListSorting={this.state.isListSorting}
             FORM_ITEMS={FORM_ITEMS}
-            onDeleteFormItem={this.onDeleteFormItem}
+            onDeleteUDFItem={this.onDeleteUDFItem}
+            onDeleteAmountItem={this.onDeleteAmountItem}
             onSubmitAmountField={this.onSubmitAmountField}
             onSubmitUDFField={this.onSubmitUDFField}
             validateSameTitleExists={this.validateSameTitleExists}
@@ -208,12 +227,12 @@ export default class View extends React.PureComponent {
 
             <div class="Field-content">
               <AddUDFButton
-                onDeleteFormItem={this.onDeleteFormItem}
+                onDeleteFormItem={this.onDeleteUDFItem}
                 onSubmitUDFField={this.onSubmitUDFField}
                 validateSameTitleExists={this.validateSameTitleExists}
               />
               <AddAmountButton
-                onDeleteFormItem={this.onDeleteFormItem}
+                onDeleteFormItem={this.onDeleteAmountItem}
                 onSubmitAmountField={this.onSubmitAmountField}
                 validateSameTitleExists={this.validateSameTitleExists}
               />

@@ -2,6 +2,7 @@ import {
   set,
   merge,
   removeItem,
+  unshift,
   updateItem,
   push,
   deepMerge,
@@ -100,7 +101,7 @@ export default function(state = initialState, action) {
     case `${FETCH_ENTITY}::PENDING`:
       return set(state, 'paymentPageEntity', { id: action.id });
 
-    case `${FETCH_ENTITY}::SUCCESS`:
+    case `${FETCH_ENTITY}::SUCCESS`: {
       const entityData = { ...action.payload.data };
 
       /*
@@ -141,6 +142,7 @@ export default function(state = initialState, action) {
         payment_page_id: entityData.id,
         FORM_ITEMS: formItems, // Sorted items having udf_schema and amount items mixed
       };
+    }
 
     case `${FETCH_ENTITY}::ERROR`:
       return set(state, 'paymentPageEntity', null);
@@ -174,16 +176,26 @@ export default function(state = initialState, action) {
         FORM_ITEMS: removeItem(state.FORM_ITEMS, action.index), // Position of items is not updated until page is created(/saved)
       };
 
-    case 'UPDATE_IN_FORM_ITEMS':
-      return {
-        ...state,
-        isPageDirty: true,
-        FORM_ITEMS: updateItem(
+    case 'UPDATE_IN_FORM_ITEMS': {
+      // Insert in starting of the form items
+      let formItems;
+
+      if (action.payload.index === -1) {
+        formItems = unshift(state.FORM_ITEMS, action.payload.formItem);
+      } else {
+        formItems = updateItem(
           state.FORM_ITEMS,
           action.payload.index,
           action.payload.formItem
-        ),
+        );
+      }
+
+      return {
+        ...state,
+        isPageDirty: true,
+        FORM_ITEMS: formItems,
       };
+    }
 
     case 'ADD_IN_FORM_ITEMS':
       return {
