@@ -8,27 +8,20 @@ import EditLayer from '../../../EditLayer';
 *   3. Dynamic Amount Field
 *   3. Amount with Counter
 * */
-const AmountDisplayField = ({
-  field,
-  openBaseForm,
-  openAdvancedForm,
-  tooltipTxt,
-  setRef,
-}) => {
+const AmountDisplayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
   return (
     <EditLayer
       class={classList(
         'Field Field--disabled',
-        field.hasOwnProperty('enum') && 'Field--select',
-        field.required && 'Field--required'
+        field.mandatory && 'Field--required'
       )}
       onClick={openBaseForm}
       infoTxt={tooltipTxt}
       setRef={setRef}
     >
       <div class="Field-label">
-        {field.title}
-        {field.required && <span class="symbol--red">*</span>}
+        {field.item.title}
+        {field.mandatory && <span class="symbol--red">*</span>}
       </div>
       <div class="Field-content">
         <div
