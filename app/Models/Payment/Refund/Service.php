@@ -557,7 +557,13 @@ class Service extends Base\Service
 
         foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
         {
-            $speed = ($refundArray->getSpeedProcessed() === Speed::NORMAL)? Speed::NORMAL : Speed::INSTANT;
+            $speed = Speed::NORMAL;
+
+            if (($refundArray->getSpeedDecisioned() === Speed::OPTIMUM) and
+                ($refundArray->getSpeedProcessed() !== Speed::NORMAL))
+            {
+                $speed = Speed::INSTANT;
+            }
 
             $refundId = $refundArray[Entity::ID];
 
