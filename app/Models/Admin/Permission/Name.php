@@ -237,6 +237,8 @@ class Name
     const CANCEL_BATCH                        = 'cancel_batch';
     const PAYMENT_CAPTURE_BULK                = 'payment_capture_bulk';
     const MERCHANT_RESTRICT                   = 'merchant_restrict';
+    const USER_ACCOUNT_LOCK_UNLOCK            = 'user_account_lock_unlock';
+    const UPDATE_USER_CONTACT_MOBILE          = 'update_user_contact_mobile';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';

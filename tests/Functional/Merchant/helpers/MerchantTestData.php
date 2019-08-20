@@ -4846,4 +4846,73 @@ return [
         ],
     ],
 
+    'testUpdateContactMobileOfUser' => [
+        'request'  => [
+            'url'     => '/users/contact',
+            'method'  => 'patch',
+            'content' => [
+                'user_id'        => '',
+                'contact_mobile' => '999999999'
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateContactMobileOfUserByAdmin' => [
+        'request'  => [
+            'url'     => '/users-admin/contact',
+            'method'  => 'patch',
+            'content' => [
+                'user_id'        => '',
+                'contact_mobile' => '999999999'
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateContactMobileOfSelfUser' => [
+        'request'   => [
+            'url'     => '/users/contact',
+            'method'  => 'patch',
+            'content' => [
+                'user_id'        => '',
+                'contact_mobile' => '999999999'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Action not allowed for self user',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER,
+        ],
+    ],
+
+    'testUserAccountUnlock' => [
+        'request'  => [
+            'url'     => '/users/account/{id}/unlock',
+            'method'  => 'put',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'account_locked' => false,
+                'user_id'        => '',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
