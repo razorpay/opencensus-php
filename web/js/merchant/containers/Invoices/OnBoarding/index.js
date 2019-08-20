@@ -99,7 +99,7 @@ export function getIsInvoicesEnabled({ user, invoices, items }) {
     invoices.invoices.length ||
     invoices.loading ||
     items.items.length ||
-    items.Landing
+    items.loading
   ) {
     return true;
   }
