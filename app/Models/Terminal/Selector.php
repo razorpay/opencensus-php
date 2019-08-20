@@ -284,6 +284,7 @@ class Selector extends Base\Core
             {
                 $terminalSetSentToSmartRouting = [];
 
+                // making a hash map of terminalId -> terminals
                 foreach ($sortedTerminals as $terminal)
                 {
                     $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
@@ -299,6 +300,7 @@ class Selector extends Base\Core
 
                 if ($terminalSetReceivedFromSmartRouting !== null)
                 {
+                    // creating new sorted terminals using order received from smart routing
                     foreach ($terminalSetReceivedFromSmartRouting as $terminal)
                     {
                         // populating terminalIds array for data link layer
