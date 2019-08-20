@@ -116,7 +116,6 @@ export default class MarketPlaceOnBoarding extends React.Component {
                   feature={RZPFeatures.ROUTE}
                   page={sliderProps.active}
                   onClick={this.onClickSkipButton}
-                  feature={isTestMode && RZPFeatures.ROUTE}
                   isLocalEnabler={user.isMarketplaceEnabled}
                 />
               )}
