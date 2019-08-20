@@ -76,7 +76,8 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        if ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE)
+        if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
+            $content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
