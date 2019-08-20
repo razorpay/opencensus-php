@@ -1,3 +1,5 @@
+import { connect } from 'react-redux';
+
 import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
@@ -10,9 +12,11 @@ import OnBoarding, {
   SkipAndGetStartedButton,
   getIsAllowedResetBoarding,
 } from 'merchant/components/OnBoarding';
+import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { FEATURES_DATA, FEATURES_LINKS, PROS } from './data';
 
+@connect(state => ({ user: state.session.user }))
 @OnBoarding({
   feature: RZPFeatures.VA,
 })
@@ -22,13 +26,21 @@ export default class InvoicesOnBoarding extends React.Component {
       <FeatureEnableSliderButton
         feature={RZPFeatures.VA}
         page={sliderProps.active}
-        onClick={this.props.closeOnboarding}
+        onClick={this.closeOnboarding}
       />
     );
   };
 
+  closeOnboarding = () => {
+    if (this.props.user.isMarketplaceEnabled) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, false);
+    }
+
+    this.props.closeOnboarding();
+  };
+
   render() {
-    const { active, onSlideChange } = this.props;
+    const { active, onSlideChange, user } = this.props;
 
     return (
       <OnBoardingWrapper class="SmartCollect">
@@ -55,7 +67,12 @@ export default class InvoicesOnBoarding extends React.Component {
 
           {sliderProps => (
             <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton onClick={this.props.closeOnboarding} />
+              <SkipAndGetStartedButton
+                feature={RZPFeatures.VA}
+                page={sliderProps.active}
+                onClick={this.closeOnboarding}
+                isLocalEnabler={user.isMarketplaceEnabled}
+              />
             </SliderDots>
           )}
         </Slider>
