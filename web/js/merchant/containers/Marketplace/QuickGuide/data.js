@@ -24,8 +24,13 @@ export const getQuickGuideData = {
     if (status === done) {
       return {
         title: '2. Transfer Initiated',
-        content:
-          'Initiate the payment to be transferred to a linked account from your transactions. Show me how',
+        content: (
+          <div>
+            Initiate the payment to be transferred to a linked account from your
+            transactions. <br />
+            <ShowTransferPreviewModal>Show me how</ShowTransferPreviewModal>
+          </div>
+        ),
       };
     }
 
