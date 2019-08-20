@@ -6,17 +6,17 @@ import AddAmountButton from './Amount/AddAmountButton';
 
 import {
   updateData,
-  deleteInSchema,
-  updateInSchema,
-  addInSchema,
+  deleteInFormItems,
+  updateInFormItems,
+  isFormItemOfTypeAmount,
 } from 'merchant/modules/wysiwyg';
 import { constructFieldSchema } from '../UDF_Fields/V3';
+import { constructAmountField } from '../Amount_Fields/V3';
 
 @connect(state => ({ ...state.wysiwyg }), {
   updateData,
-  deleteInSchema,
-  updateInSchema,
-  addInSchema,
+  deleteInFormItems,
+  updateInFormItems,
 })
 export default class View extends React.PureComponent {
   componentWillReceiveProps(nextProps) {
@@ -25,24 +25,20 @@ export default class View extends React.PureComponent {
     }
   }
 
-  onSubmitAmountField = (formData, udfFieldIndex) => {
-    /*
-    const { currency, amount, quantity, allow_multiple_units } = formData;
+  onSubmitAmountField = (formData, indexInFormItems) => {
+    const amountItem = constructAmountField(formData);
 
-    this.props.updateData({
-      currency,
-      amount: amount || null,
-      quantity: quantity || null,
-      settings: {
-        allow_multiple_units: !!allow_multiple_units,
-      },
+    this.props.updateInFormItems({
+      formItem: amountItem,
+      index: indexInFormItems,
     });
-*/
   };
 
-  onDeleteAmountField = amountFieldIndex => {};
+  onDeleteFormItem = indexInFormItems => {
+    this.props.deleteInFormItems(indexInFormItems);
+  };
 
-  onSubmitUDFField = (formData, udfFieldIndex) => {
+  onSubmitUDFField = (formData, indexInFormItems) => {
     // console.log('FORM DATA.....', formData);
     const fieldSchema = constructFieldSchema(formData);
     // console.log('FIELD SCHEMA...', fieldSchema);
@@ -58,19 +54,18 @@ export default class View extends React.PureComponent {
       fieldSchema.enum = formData.enum.concat();
     }
 
-    this.props.updateInSchema({
-      field: fieldSchema,
-      index: udfFieldIndex,
+    this.props.updateInFormItems({
+      formItem: fieldSchema,
+      index: indexInFormItems,
     });
   };
 
-  onDeleteUDFField = udfFieldIndex => {
-    this.props.deleteInSchema(udfFieldIndex);
-  };
-
   validateSameTitleExists = (title, fieldSelfIndex) => {
-    const allFieldsTitles = this.props.FORM_SCHEMA.map(f => f.title), // TODO: Currently checking for UDF Field. To add for Amount field labels
-      sameTitleIndex = allFieldsTitles.indexOf(title);
+    const allFieldsTitles = this.props.FORM_ITEMS.map(f => {
+      return isFormItemOfTypeAmount(f) ? f.item.title : f.title;
+    });
+
+    const sameTitleIndex = allFieldsTitles.indexOf(title);
 
     if (sameTitleIndex > -1 && sameTitleIndex !== fieldSelfIndex) {
       return true;
@@ -78,7 +73,7 @@ export default class View extends React.PureComponent {
   };
 
   render() {
-    const { paymentPageEntity, FORM_SCHEMA } = this.props;
+    const { paymentPageEntity, FORM_ITEMS } = this.props;
 
     if (!paymentPageEntity) {
       return null;
@@ -98,27 +93,30 @@ export default class View extends React.PureComponent {
     return (
       <React.Fragment>
         <div class="UI-form">
-          {/*
-          <AmountDisplayField
-            key={field.name}
-            index={field.idx}
-            field={field}
-            onDeleteAmountField={this.onDeleteAmountField}
-            onSubmitAmountField={this.onSubmitAmountField}
-            validateSameTitleExists={this.validateSameTitleExists}
-          />
-        */}
-          {FORM_SCHEMA.map((field, idx) => {
-            return (
-              <UDFDisplayField
-                key={field.name}
-                index={idx}
-                field={field}
-                onDeleteUDFField={this.onDeleteUDFField}
-                onSubmitUDFField={this.onSubmitUDFField}
-                validateSameTitleExists={this.validateSameTitleExists}
-              />
-            );
+          {FORM_ITEMS.map((fi, idx) => {
+            if (isFormItemOfTypeAmount(fi)) {
+              return (
+                <AmountDisplayField
+                  key={fi.name}
+                  index={idx}
+                  field={fi}
+                  onDeleteFormItem={this.onDeleteFormItem}
+                  onSubmitUDFField={this.onSubmitUDFField}
+                  validateSameTitleExists={this.validateSameTitleExists}
+                />
+              );
+            } else {
+              return (
+                <UDFDisplayField
+                  key={fi.name}
+                  index={idx}
+                  field={fi}
+                  onDeleteFormItem={this.onDeleteFormItem}
+                  onSubmitUDFField={this.onSubmitUDFField}
+                  validateSameTitleExists={this.validateSameTitleExists}
+                />
+              );
+            }
           })}
 
           <div class="Field" style={{ margin: '32px 0 -21px' }}>
@@ -128,12 +126,12 @@ export default class View extends React.PureComponent {
 
             <div class="Field-content">
               <AddUDFButton
-                onDeleteUDFField={this.onDeleteUDFField}
+                onDeleteFormItem={this.onDeleteFormItem}
                 onSubmitUDFField={this.onSubmitUDFField}
                 validateSameTitleExists={this.validateSameTitleExists}
               />
               <AddAmountButton
-                onDeleteAmountField={this.onDeleteAmountField}
+                onDeleteFormItem={this.onDeleteFormItem}
                 onSubmitAmountField={this.onSubmitAmountField}
                 validateSameTitleExists={this.validateSameTitleExists}
               />

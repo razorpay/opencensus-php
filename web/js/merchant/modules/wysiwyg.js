@@ -13,6 +13,9 @@ import { FIXED_FIELDS } from 'merchant/containers/PaymentPages/Pages/Create/Form
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 
+export const isFormItemOfTypeAmount = formItem =>
+  formItem.hasOwnProperty('item');
+
 export const updateTemplateType = data => {
   const isPageDirty = false;
 
@@ -28,7 +31,7 @@ export const fetchPaymentPage = id => {
   if (!id) {
     return {
       type: 'UPDATE_DATA',
-      fields: {
+      formItems: {
         id: null, // To handle case where intial UI schema to be shown
       },
     };
@@ -41,31 +44,31 @@ export const fetchPaymentPage = id => {
   };
 };
 
-export const updateData = (field, isPageDirty) => ({
+export const updateData = (formItem, isPageDirty) => ({
   type: 'UPDATE_DATA',
-  fields: field,
+  formItems: formItem,
   isPageDirty,
 });
 
-export const deleteInSchema = index => ({
-  type: 'DELETE_IN_SCHEMA',
+export const deleteInFormItems = index => ({
+  type: 'DELETE_IN_FORM_ITEMS',
   index,
 });
 
-export const updateInSchema = ({ field, index }) => {
+export const updateInFormItems = ({ formItem, index }) => {
   if (typeof index === 'undefined') {
-    return addInSchema(field);
+    return addInFormItems(formItem);
   }
 
   return {
-    type: 'UPDATE_IN_SCHEMA',
-    payload: { index, field },
+    type: 'UPDATE_IN_FORM_ITEMS',
+    payload: { index, formItem },
   };
 };
 
-export const addInSchema = field => ({
-  type: 'ADD_IN_SCHEMA',
-  field,
+export const addInFormItems = formItem => ({
+  type: 'ADD_IN_FORM_ITEMS',
+  formItem,
 });
 
 export const markDataSaved = _ => ({
@@ -75,7 +78,7 @@ export const markDataSaved = _ => ({
 let initialState = {
   paymentPageEntity: {},
   payment_page_id: null,
-  FORM_SCHEMA: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API.
+  FORM_ITEMS: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API.
   isPageDirty: false,
 };
 
@@ -109,17 +112,28 @@ export default function(state = initialState, action) {
       entityData.quantity = entityData.times_payable;
       delete entityData.times_payable;
 
+      const formItems = []
+        .concat(JSON.parse(entityData.settings.udf_schema))
+        .concat(entityData.payment_page_items);
+
+      formItems.sort(function(a, b) {
+        const positionA = a.settings.position;
+        const positionB = b.settings.position;
+
+        return Number(positionA) - Number(positionB);
+      });
+
       return {
         paymentPageEntity: entityData,
         payment_page_id: entityData.id,
-        FORM_SCHEMA: JSON.parse(entityData.settings.udf_schema), // Must have phone and email already with it. FE hardcodes only for new payment page.
+        FORM_ITEMS: formItems, // Sorted items having udf_schema and amount items mixed
       };
 
     case `${FETCH_ENTITY}::ERROR`:
       return set(state, 'paymentPageEntity', null);
 
     case 'UPDATE_DATA':
-      if (action.fields.hasOwnProperty('id')) {
+      if (action.formItems.hasOwnProperty('id')) {
         // re-Initialise FE if ID is changed to other ID/null
         return {
           ...initialState,
@@ -135,34 +149,34 @@ export default function(state = initialState, action) {
           paymentPageEntity: deepMerge(
             // Needed for settings
             state.paymentPageEntity,
-            action.fields
+            action.formItems
           ),
         };
       }
 
-    case 'DELETE_IN_SCHEMA':
+    case 'DELETE_IN_FORM_ITEMS':
       return {
         ...state,
         isPageDirty: true,
-        FORM_SCHEMA: removeItem(state.FORM_SCHEMA, action.index),
+        FORM_ITEMS: removeItem(state.FORM_ITEMS, action.index), // Position of items is not updated until page is created(/saved)
       };
 
-    case 'UPDATE_IN_SCHEMA':
+    case 'UPDATE_IN_FORM_ITEMS':
       return {
         ...state,
         isPageDirty: true,
-        FORM_SCHEMA: updateItem(
-          state.FORM_SCHEMA,
+        FORM_ITEMS: updateItem(
+          state.FORM_ITEMS,
           action.payload.index,
-          action.payload.field
+          action.payload.formItem
         ),
       };
 
-    case 'ADD_IN_SCHEMA':
+    case 'ADD_IN_FORM_ITEMS':
       return {
         ...state,
         isPageDirty: true,
-        FORM_SCHEMA: push(state.FORM_SCHEMA, action.field),
+        FORM_ITEMS: push(state.FORM_ITEMS, action.formItem), // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency
       };
 
     case 'MARK_DATA_SAVED':

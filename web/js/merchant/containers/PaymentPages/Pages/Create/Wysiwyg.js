@@ -21,10 +21,12 @@ import {
   updateData,
   markDataSaved,
   updateTemplateType,
+  isFormItemOfTypeAmount,
 } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
+// TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 import { validateUISchema } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
 
 import {
@@ -314,7 +316,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   // Handles both Create and Edit payment page.
   handleSavePublish = () => {
-    const { FORM_SCHEMA, paymentPageEntity } = this.props;
+    const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
 
     const {
@@ -331,7 +333,22 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     } = paymentPageEntity;
 
     // Remove Email and Phone in all cases before sending to API.
-    const udf_schema = [...FORM_SCHEMA];
+    const formItems = [...FORM_ITEMS]; // Separate UDF and amount fields from FORM ITEMS.
+
+    const udf_schema = [],
+      paymentPageItems = [];
+
+    FORM_ITEMS.forEach((fi, ix) => {
+      fi.position = ix; // Updating the position of each item (both udf and amount fields)
+
+      if (isFormItemOfTypeAmount(fi)) {
+        // Will exist only when this.props.user.isPPV3Enabled === true
+        // TODO: Check with BE if id needs to be sent in case of edited amount item.
+        paymentPageItems.push(fi);
+      } else {
+        udf_schema.push(fi);
+      }
+    });
 
     const isValidSchema = validateUISchema(udf_schema);
 
@@ -356,9 +373,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         allow_social_share: settings.allow_social_share ? '1' : '0',
         payment_success_message: settings.payment_success_message,
         payment_success_redirect_url: settings.payment_success_redirect_url,
-        udf_schema: JSON.stringify(udf_schema.slice(2)),
+        udf_schema: JSON.stringify(udf_schema),
       },
     };
+
+    // Will exist only when props.user.isPPV3Enabled = true
+    if (paymentPageItems.length) {
+      reqPayload.payment_page_items = paymentPageItems;
+    }
+
     // console.log('REQ PAYLOAD...', reqPayload);
 
     const isEditExistingId = !!this.props.id;

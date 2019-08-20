@@ -7,9 +7,8 @@ import { constructFieldSchema } from '../UDF_Fields/V2';
 
 import {
   updateData,
-  deleteInSchema,
-  updateInSchema,
-  addInSchema,
+  deleteInFormItems,
+  updateInFormItems,
 } from 'merchant/modules/wysiwyg';
 
 function offset(el) {
@@ -26,9 +25,8 @@ const CreatorType = {
 
 @connect(state => ({ ...state.wysiwyg }), {
   updateData,
-  deleteInSchema,
-  updateInSchema,
-  addInSchema,
+  deleteInFormItems,
+  updateInFormItems,
 })
 export default class View extends React.PureComponent {
   state = { activeCreatorType: null };
@@ -70,8 +68,8 @@ export default class View extends React.PureComponent {
       fieldSchema.enum = formData.enum.concat();
     }
 
-    this.props.updateInSchema({
-      field: fieldSchema,
+    this.props.updateInFormItems({
+      formItem: fieldSchema,
       index: this.state.activeSchemaIndex,
     });
 
@@ -80,7 +78,7 @@ export default class View extends React.PureComponent {
 
   onGenericFieldDelete = idx => {
     this.onCreatorClose();
-    this.props.deleteInSchema(idx);
+    this.props.deleteInFormItems(idx);
   };
 
   onAmountCreatorSubmit = formData => {
@@ -99,7 +97,7 @@ export default class View extends React.PureComponent {
   };
 
   render() {
-    const FORM_SCHEMA = this.props.FORM_SCHEMA;
+    const FORM_ITEMS = this.props.FORM_ITEMS;
     const activeCreatorType = this.state.activeCreatorType;
     const { paymentPageEntity } = this.props;
 
@@ -130,7 +128,7 @@ export default class View extends React.PureComponent {
           />
         );
       } else if (activeCreatorType === CreatorType.GENERIC) {
-        const field = FORM_SCHEMA[this.state.activeSchemaIndex] || {};
+        const field = FORM_ITEMS[this.state.activeSchemaIndex] || {};
         let isRemovable = true;
         if (['email', 'phone'].indexOf(field.name) > -1) {
           isRemovable = false;
@@ -140,7 +138,7 @@ export default class View extends React.PureComponent {
           <GenericCreator
             field={field}
             selfIndex={this.state.activeSchemaIndex}
-            allFieldsLabelList={FORM_SCHEMA.map(f => f.title)}
+            allFieldsLabelList={FORM_ITEMS.map(f => f.title)}
             onClose={this.onCreatorClose}
             onSubmit={this.onGenericCreatorSubmit}
             onFieldDelete={isRemovable ? this.onGenericFieldDelete : undefined}
@@ -162,7 +160,7 @@ export default class View extends React.PureComponent {
             onAddAmount={e => this.openCreator(e, CreatorType.AMOUNT)}
           />
 
-          {FORM_SCHEMA.map((field, idx) => {
+          {FORM_ITEMS.map((field, idx) => {
             let infoTxt = '';
             let isDisabled;
             if (['email', 'phone'].indexOf(field.name) > -1) {
