@@ -31,13 +31,13 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function getMerchantUserRelation(string $userId, string $merchantId)
+    public function getMerchantUserRelation(string $userId, string $merchantId, string $product)
     {
         return $this->newQUery()
                     ->select(Entity::MERCHANT_ID, Entity::USER_ID)
                     ->where(Entity::USER_ID, $userId)
                     ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->where(Entity::PRODUCT, 'primary')
+                    ->where(Entity::PRODUCT, $product)
                     ->get()
                     ->toArray();
     }
