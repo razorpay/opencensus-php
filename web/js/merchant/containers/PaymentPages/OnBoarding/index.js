@@ -83,7 +83,7 @@ export function getIsAllowedPaymentPagesOnBoarding({
 }
 
 export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
-  if (user.isPaymentPagesEnabled) {
+  if (user.isPaymentPagesEnabled || loading) {
     return true;
   }
 
@@ -95,10 +95,6 @@ export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
       },
     });
 
-    return true;
-  }
-
-  if (loading) {
     return true;
   }
 
