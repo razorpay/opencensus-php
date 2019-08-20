@@ -50,7 +50,7 @@ export function mapFieldToAmountType(amountField) {
 };
 */
 
-export function constructAmountItem(fieldData) {
+export function constructAmountField(fieldData) {
   const { title, description, amount, mandatory, ...restProps } = fieldData;
   const prettyTitle = title.trim().replace('  ', ' ');
 

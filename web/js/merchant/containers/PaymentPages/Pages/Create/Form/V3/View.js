@@ -93,15 +93,35 @@ export default class View extends React.PureComponent {
     return (
       <React.Fragment>
         <div class="UI-form">
+          {
+            /* TODO: Add only when no Amount item exists */
+            <div className="Field" style={{ margin: '32px 0 20px' }}>
+              <div className="Field-label" style={{ opacity: 0.6 }}>
+                Amount
+              </div>
+
+              <div className="Field-content">
+                <AddAmountButton
+                  field={{ item: { title: 'Amount' } }}
+                  onDeleteFormItem={this.onDeleteFormItem}
+                  onSubmitAmountField={formData =>
+                    this.onSubmitAmountField(formData, 0)
+                  } /*Added in the starting of form Items*/
+                  validateSameTitleExists={this.validateSameTitleExists}
+                />
+              </div>
+            </div>
+          }
+
           {FORM_ITEMS.map((fi, idx) => {
             if (isFormItemOfTypeAmount(fi)) {
               return (
                 <AmountDisplayField
-                  key={fi.name}
+                  key={fi.item.title}
                   index={idx}
                   field={fi}
                   onDeleteFormItem={this.onDeleteFormItem}
-                  onSubmitUDFField={this.onSubmitUDFField}
+                  onSubmitAmountField={this.onSubmitUDFField}
                   validateSameTitleExists={this.validateSameTitleExists}
                 />
               );

@@ -14,14 +14,13 @@ export default class BaseForm extends React.PureComponent {
     super(props);
     const field = props.field;
 
-    const isEditMode = !!field.title; // If title exist in originally passed field => editing amount item.
-
     const title = field.item.title,
       disableSubmit = !title,
       hasDescription = !!field.item.description,
-      isMandatory = isEditMode
-        ? !!field.mandatory
-        : fieldTypesWithMandatory.indexOf(props.fieldType) > -1,
+      isMandatory =
+        typeof field.mandatory === 'undefined'
+          ? fieldTypesWithMandatory.indexOf(props.fieldType) > -1
+          : !!field.mandatory,
       imageUrl = field.image_url || '';
 
     this.state = {
@@ -105,6 +104,7 @@ export default class BaseForm extends React.PureComponent {
             defaultValue={amount}
             pattern="^[0-9]+(.([0-9]){1,2})?$"
             disabled={isDisabled}
+            required={!isDisabled}
           />
         </div>
       </Input.Group>

@@ -4,27 +4,36 @@ import AdvancedForm from './AdvancedForm';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
-    state = {
-      isBaseFormOpened: false,
-      isAdvancedFormOpened: false,
-      fieldType: null,
-      field: this.props.field || { item: {} },
-    };
+    defaultField = { item: {} };
+
+    state = this.initState;
+
+    get initState() {
+      return {
+        isBaseFormOpened: false,
+        isAdvancedFormOpened: false,
+        fieldType: null,
+        field: this.props.field || this.defaultField,
+      };
+    }
 
     closeBaseForm = _ => {
-      this.setState({
-        isBaseFormOpened: false,
-        fieldType: null,
-      });
+      this.setState(this.initState);
     };
 
-    openBaseForm = intentTFieldype => {
+    openBaseForm = (intentFieldType, field) => {
       const newState = {
         isBaseFormOpened: true,
       };
 
-      if (intentTFieldype) {
-        newState.fieldType = intentTFieldype;
+      console.log('THIS....', field);
+
+      if (intentFieldType) {
+        newState.fieldType = intentFieldType;
+
+        if (field) {
+          newState.field = field;
+        }
       }
 
       this.setState(newState);
@@ -48,7 +57,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       };
 
       // Combine data from advanced form
-      //this.props.onSubmitAmountField(formData, this.props.index);
+      this.props.onSubmitAmountField(formData, this.props.index);
     };
 
     onSaveAdvancedForm = formData => {
