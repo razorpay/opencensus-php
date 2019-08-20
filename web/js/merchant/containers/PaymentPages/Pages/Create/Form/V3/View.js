@@ -33,7 +33,7 @@ class SortableFormItemsList extends React.Component {
     } = this.props;
 
     return (
-      <div>
+      <div class="FormItems">
         {FORM_ITEMS.map((fi, idx) => {
           if (isFormItemOfTypeAmount(fi)) {
             return (
