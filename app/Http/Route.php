@@ -1168,6 +1168,7 @@ final class Route
     ];
 
     public static $public = [
+        'merchant_put_payment_methods',
         'checkout',
         'payment_create',
         'payment_create_checkout',
@@ -2041,7 +2042,7 @@ final class Route
         'merchant_get_banks',
         'merchant_live_disable',
         'merchant_live_enable',
-        'merchant_put_payment_methods',
+        //'merchant_put_payment_methods',
         'merchant_send_activation_mail',
         'merchant_set_banks',
         'merchants_update_bank_account',
@@ -2290,7 +2291,7 @@ final class Route
         'refund_generate_excel'                    => Permission::GENERATE_REFUND_EXCEL,
         'credits_fetch_multiple'                   => Permission::VIEW_MERCHANT_CREDITS_LOG,
         'credits_create'                           => Permission::ADD_MERCHANT_CREDITS,
-        'merchant_put_payment_methods'             => Permission::EDIT_MERCHANT_METHODS,
+        'merchant_put_payment_methods'             => '*',
         'balance_fetch'                            => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_balance_fetch'                   => Permission::VIEW_MERCHANT_BALANCE,
         'feature_get_multiple'                     => Permission::VIEW_MERCHANT_FEATURES,
