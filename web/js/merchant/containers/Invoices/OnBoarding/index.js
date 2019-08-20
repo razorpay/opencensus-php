@@ -1,3 +1,5 @@
+import { connect } from 'react-redux';
+
 import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
@@ -12,8 +14,13 @@ import OnBoarding, {
   setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
 
+import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
+
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
+@connect(state => ({
+  user: state.session.user,
+}))
 @OnBoarding({
   feature: RZPFeatures.INVOICE,
 })
@@ -24,9 +31,17 @@ export default class InvoicesOnBoarding extends React.Component {
         isLocalEnabler
         feature={RZPFeatures.INVOICE}
         page={sliderProps.active}
-        onClick={this.props.closeOnboarding}
+        onClick={this.closeOnboarding}
       />
     );
+  };
+
+  closeOnboarding = () => {
+    if (this.props.user.isInvoicesEnabled) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.INVOICE, false);
+    }
+
+    this.props.closeOnboarding();
   };
 
   render() {
@@ -56,7 +71,12 @@ export default class InvoicesOnBoarding extends React.Component {
 
           {sliderProps => (
             <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton onClick={this.props.closeOnboarding} />
+              <SkipAndGetStartedButton
+                feature={RZPFeatures.INVOICE}
+                page={sliderProps.active}
+                onClick={this.closeOnboarding}
+                isLocalEnabler={user.isInvoicesEnabled}
+              />
             </SliderDots>
           )}
         </Slider>
@@ -65,20 +85,26 @@ export default class InvoicesOnBoarding extends React.Component {
   }
 }
 
-export function getIsAllowedResetInvoicesOnBoarding(invoices) {
-  if (invoices.invoices.length || invoices.loading) {
+export function getIsAllowedResetInvoicesOnBoarding({ invoices, items }) {
+  if (invoices.invoices.length || items.items.length) {
     return false;
   }
 
   return getIsAllowedResetBoarding(RZPFeatures.INVOICE);
 }
 
-export function getIsInvoicesEnabled({ user, invoices }) {
-  if (user.isInvoicesEnabled) {
+export function getIsInvoicesEnabled({ user, invoices, items }) {
+  if (
+    user.isInvoicesEnabled ||
+    invoices.invoices.length ||
+    invoices.loading ||
+    items.items.length ||
+    items.Landing
+  ) {
     return true;
   }
 
-  if (invoices.invoices.length) {
+  if (invoices.invoices.length || items.items.length) {
     setOnBoardingDataInLocalState({
       feature: RZPFeatures.INVOICE,
       data: {
@@ -87,10 +113,6 @@ export function getIsInvoicesEnabled({ user, invoices }) {
       },
     });
 
-    return true;
-  }
-
-  if (invoices.loading) {
     return true;
   }
 

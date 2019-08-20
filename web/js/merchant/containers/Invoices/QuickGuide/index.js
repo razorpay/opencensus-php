@@ -53,7 +53,7 @@ export default class InvoicesQuickGuide extends React.Component {
       >
         <Step
           status={invoiceStatus}
-          {...getQuickGuideData.PaymentPage(invoiceStatus)}
+          {...getQuickGuideData.Invoice(invoiceStatus)}
         />
 
         <Step

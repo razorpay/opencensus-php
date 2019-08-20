@@ -29,6 +29,7 @@ import QuickGuide, {
   state => ({
     ...state.session,
     invoices: state.invoices,
+    items: state.items,
     invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(
       state,
       RZPFeatures.INVOICE
@@ -63,8 +64,8 @@ export default class InvoicingContainer extends Component {
   initPaymentLinksOnboarding = (props = this.props) => {
     const data = {
       user: props.user,
-      merchantId: props.user.current,
       invoices: props.invoices,
+      items: props.items,
     };
 
     const isPaymentLinksEnabled = getIsInvoicesEnabled(data);
@@ -73,6 +74,11 @@ export default class InvoicingContainer extends Component {
 
     if (isPaymentLinksEnabled) {
       showOnboarding = getIsAllowedResetInvoicesOnBoarding(data);
+    } else {
+      this.props.handleProductQuickGuide({
+        ...invoicesProductOnBoarding,
+        showOnboarding: true,
+      });
     }
 
     let isQuickGuideClosed = getInvoicesQuickGuideIsClosed(props);
