@@ -32,6 +32,9 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
+        Entity::CODE,
+        Entity::MERCHANT_ID,
+        Entity::BANK,
         Entity::ACQUIRER,
         Entity::ACTIVE,
     ];
@@ -49,6 +52,8 @@ class Entity extends Base\Entity
         Entity::ENTITY,
         Entity::CODE,
         Entity::BANK,
+        Entity::ACTIVE,
+        Entity::CREATED_AT,
     ];
 
     protected $defaults = [

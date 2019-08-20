@@ -2153,13 +2153,32 @@ return [
         ]
     ],
 
+    'testSubMerchantsShouldNotBeAbleToDisableTerminals'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
+
     'testFetchTerminals'  => [
         'request' => [
             'method' => 'GET'
         ],
         'response' => [
             'content'  => [
-                'count'   => 3,
+                'count'   => 2,
                 'entity'  => 'collection',
                 'items'   => [  
                     [
@@ -2183,22 +2202,47 @@ return [
                             'rupay_mpan' =>  "6287346823986423",
                             'visa_mpan' =>  "5287346823986423"
                         ]
-                    ],
-                    [
-                        'entity'  => "terminal",
-                        'status'  => "activated",
-                        'enabled' => true,
-                        'notes'   => null,
-                        'mpan' => [
-                            'mc_mpan' =>  NULL,
-                            'rupay_mpan' =>  NULL,
-                            'visa_mpan' =>  NULL
-                        ]
                     ]
-
                 ]
             ]
         ]
     ],
 
+    'testPartnerWithouTerminalControlFeatureShouldNotBeAbleToFetchTerminals'  => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
+
+    'testSubMerchantsShouldNotBeAbleToFetchTerminals'  => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
 ];

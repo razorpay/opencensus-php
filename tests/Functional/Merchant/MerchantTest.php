@@ -4791,4 +4791,107 @@ class MerchantTest extends TestCase
 
         $this->assertEquals(0, $merchant['restricted']);
     }
+
+    public function testUpdateContactMobileOfUser()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->merchant->setRestricted(true, $merchant['id']);
+
+        $user1 = $this->fixtures->create('user');
+
+        $user2 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'admin');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1['id']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user2['id'];
+
+        $response = $this->startTest();
+
+        $userDB = $this->getDbEntityById('user', $user2['id']);
+
+        $this->assertEquals($userDB['contact_mobile_verified'], $response['contact_mobile_verified']);
+
+        $this->assertEquals($userDB['contact_mobile_verified'], true);
+
+        $this->assertEquals($userDB['contact_mobile'], $response['contact_mobile']);
+    }
+
+    public function testUpdateContactMobileOfUserByAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDb['contact_mobile_verified'], false);
+    }
+
+    public function testUpdateContactMobileOfSelfUser()
+    {
+        $merchant = $this->createMerchant();
+
+        $this->fixtures->merchant->setRestricted(true, $merchant['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+    }
+
+    public function testUserAccountUnlock()
+    {
+        $merchant = $this->createMerchant();
+
+        $this->fixtures->merchant->setRestricted(true, $merchant['id']);
+
+        $userMapping = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($userMapping['id'], $merchant['id'], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $userMapping['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/account/' . $user['id'] . '/unlock';
+
+        $testData['response']['content']['user_id'] = $user['id'];
+
+        $response = $this->startTest();
+
+        $userDB = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDB['account_locked'], $response['account_locked']);
+    }
 }
