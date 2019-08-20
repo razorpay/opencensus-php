@@ -17,8 +17,6 @@ trait SettlementEvent
 
         $properties = $event->getProperties();
 
-        s($properties);
-
         $this->trackEvent(SE::EVENT_TYPE, SE::EVENT_VERSION, $eventDetails, $properties);
     }
 }
