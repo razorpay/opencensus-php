@@ -153,10 +153,26 @@ return [
         ],
     ],
 
-    'testUserAccess'    => [
+    'testUserAccessWithProductPrimary'    => [
         'response'      => [
             'content'   => [
                 'access'    => true,
+            ],
+        ],
+    ],
+
+    'testUserAccessWithProductBanking'   => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+            ],
+        ],
+    ],
+
+    'testFailedUserAccessAccrossProducts'  => [
+        'response'      => [
+            'content'   => [
+                'access'    => false,
             ],
         ],
     ],

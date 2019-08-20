@@ -48,11 +48,14 @@ class User extends Base
 
         $role = $attributes['role'];
 
+        $product = $attributes['product'] ?? 'primary';
+
         DB::connection($mode)->table('merchant_users')
             ->insert([
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
                 'role'        => $role,
+                'product'     => $product,
                 'created_at'  => Carbon::now()->getTimestamp(),
                 'updated_at'  => Carbon::now()->getTimestamp(),
             ]);

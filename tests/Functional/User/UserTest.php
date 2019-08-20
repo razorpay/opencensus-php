@@ -167,7 +167,7 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testUserAccess()
+    public function testUserAccessWithProductPrimary()
     {
         $user = $this->fixtures->create('user');
 
@@ -177,6 +177,7 @@ class UserTest extends TestCase
             'user_id'     => $user->getId(),
             'merchant_id' => $merchant->getId(),
             'role'        => 'owner',
+            'product'     => 'primary',
         ];
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
@@ -191,6 +192,81 @@ class UserTest extends TestCase
             ],
             'server'     => [
                 'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserAccessWithProductBanking()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedUserAccessAccrossProducts()
+    {
+        // this should faild
+        // since mapping is for one product
+        // and request is coming for different product
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
             ],
         ];
 
