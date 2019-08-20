@@ -11,6 +11,7 @@ class Constants
     const DUMMY                           = 'dummy';
     const WEBHOOKS                        = 'webhooks';
     const AGGREGATOR                      = 'aggregator';
+    const TERMINAL_ONBOARDING             = 'terminal_onboarding';
     const TOKENS                          = 'tokens';
     const S2SWALLET                       = 's2swallet';
     const S2SUPI                          = 's2supi';
