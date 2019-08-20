@@ -6,6 +6,9 @@ import {
   push,
   deepMerge,
 } from 'rzp/utils/immutable';
+
+import { arrayMove } from 'common/util';
+
 import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/model';
 
 // TODO: Remove dependency from here
@@ -80,6 +83,16 @@ let initialState = {
   payment_page_id: null,
   FORM_ITEMS: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API.
   isPageDirty: false,
+};
+
+export const reorderFormItems = ({
+  oldIndex: oldIndexInFormItems,
+  newIndex: newIndexInFormItems,
+}) => {
+  return {
+    type: 'REORDER_FORM_ITEMS',
+    payload: { oldIndexInFormItems, newIndexInFormItems },
+  };
 };
 
 export default function(state = initialState, action) {
@@ -183,6 +196,16 @@ export default function(state = initialState, action) {
       return {
         ...state,
         isPageDirty: false,
+      };
+
+    case 'REORDER_FORM_ITEMS':
+      return {
+        ...state,
+        FORM_ITEMS: arrayMove(
+          state.FORM_ITEMS,
+          action.payload.oldIndexInFormItems,
+          action.payload.newIndexInFormItems
+        ),
       };
 
     default:

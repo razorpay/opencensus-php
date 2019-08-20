@@ -75,6 +75,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         index,
         validateSameTitleExists,
         onDeleteAmountField,
+        ...restProps
       } = this.props;
 
       const {
@@ -91,6 +92,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           <_WrappedDisplayFieldComponent
             field={field}
             openBaseForm={this.openBaseForm}
+            {...restProps}
           />
           {isBaseFormOpened && (
             <BaseFormModal

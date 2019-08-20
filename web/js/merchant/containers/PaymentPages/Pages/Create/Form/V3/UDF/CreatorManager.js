@@ -31,6 +31,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         validateSameTitleExists,
         onDeleteUDFField,
         onSubmitUDFField,
+        ...restProps
       } = this.props;
 
       let tooltipTxt,
@@ -50,6 +51,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             field={field}
             openBaseForm={this.openBaseForm}
             tooltipTxt={tooltipTxt}
+            {...restProps}
           />
           {this.state.isBaseFormOpened && (
             <BaseFormModal

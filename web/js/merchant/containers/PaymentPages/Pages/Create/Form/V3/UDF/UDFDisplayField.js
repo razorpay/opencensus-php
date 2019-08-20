@@ -2,7 +2,16 @@ import { classList } from 'common/util';
 import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
 
-const displayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
+import { sortableHandle } from 'react-sortable-hoc';
+const DragHandle = sortableHandle(() => <span class="dragHandle">::</span>);
+
+const displayField = ({
+  field,
+  openBaseForm,
+  tooltipTxt,
+  setRef,
+  isListSorting,
+}) => {
   let _RepresentationEl = 'input',
     _RepresentationClass = '';
 
@@ -19,12 +28,15 @@ const displayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
       class={classList(
         'Field Field--disabled',
         _RepresentationClass,
-        field.required && 'Field--required'
+        field.required && 'Field--required',
+        isListSorting && 'disable-hover'
       )}
       onClick={openBaseForm}
       infoTxt={tooltipTxt}
       setRef={setRef}
     >
+      <DragHandle />
+
       <div class="Field-label">
         {field.title}
         {field.required && <span class="symbol--red">*</span>}

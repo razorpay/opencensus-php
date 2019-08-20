@@ -17,6 +17,42 @@
       line-height: 20px
       background-color: rgba(82,143,240,0.17)
 
+
+
+  .wysiwyg-edit-layer
+    .dragHandle
+      font-size: 16px
+      position: absolute
+      left: 20px
+      letter-spacing: 2px
+      font-weight: 600
+      line-height: 16px
+      visibility: hidden
+
+    &:not(.disable-hover):hover
+      .Input-info
+        opacity: 1
+
+      .dragHandle, .i
+        visibility: visible
+
+    &:hover
+      .Input-info
+        opacity: 0
+
+      .i
+        visibility: hidden
+
+
+  #draggableElementsContainer .wysiwyg-edit-layer
+    background-color: #fff
+    box-shadow: 0 5px 13px 0 rgba(0,0,0,0.14)
+
+    .dragHandle
+      visibility: visible
+
+
+
   // For handling Field as a CreatorManager (existing field)
   .CreatorManager
     position: relative

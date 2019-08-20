@@ -2,23 +2,28 @@ import { classList } from 'common/util';
 import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
 
+import { sortableHandle } from 'react-sortable-hoc';
+const DragHandle = sortableHandle(() => <span class="dragHandle">::</span>);
+
 /* TODO: This component contains all the variations of displaying Amount
 *   1. Fixed Amount
 *   2. Fixed Amount with checkbox(mandatory)
 *   3. Dynamic Amount Field
 *   3. Amount with Counter
 * */
-const AmountDisplayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
+const displayField = ({ field, openBaseForm, setRef, isListSorting }) => {
   return (
     <EditLayer
       class={classList(
         'Field Field--disabled',
-        field.mandatory && 'Field--required'
+        field.mandatory && 'Field--required',
+        isListSorting && 'disable-hover'
       )}
       onClick={openBaseForm}
-      infoTxt={tooltipTxt}
       setRef={setRef}
     >
+      <DragHandle />
+
       <div class="Field-label">
         {field.item.title}
         {field.mandatory && <span class="symbol--red">*</span>}
@@ -41,7 +46,7 @@ const AmountDisplayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
   );
 };
 
-export default CreatorManager(AmountDisplayField);
+export default CreatorManager(displayField);
 
 /*TODO: Merge this and above component */
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {

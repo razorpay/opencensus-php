@@ -9,16 +9,72 @@ import {
   deleteInFormItems,
   updateInFormItems,
   isFormItemOfTypeAmount,
+  reorderFormItems,
 } from 'merchant/modules/wysiwyg';
 import { constructFieldSchema } from '../UDF_Fields/V3';
 import { constructAmountField } from '../Amount_Fields/V3';
+import { sortableContainer, sortableElement } from 'react-sortable-hoc';
+
+import { arrayMove } from 'common/util';
+
+const Sortable_UDFDisplayField = sortableElement(UDFDisplayField);
+const Sortable_AmountDisplayField = sortableElement(AmountDisplayField);
+
+@sortableContainer
+class SortableFormItemsList extends React.Component {
+  render() {
+    const {
+      FORM_ITEMS,
+      isListSorting,
+      validateSameTitleExists,
+      onDeleteFormItem,
+      onSubmitUDFField,
+      onSubmitAmountField,
+    } = this.props;
+
+    return (
+      <div>
+        {FORM_ITEMS.map((fi, idx) => {
+          if (isFormItemOfTypeAmount(fi)) {
+            return (
+              <Sortable_AmountDisplayField
+                key={fi.item.title}
+                index={idx}
+                field={fi}
+                isListSorting={isListSorting}
+                onDeleteFormItem={onDeleteFormItem}
+                onSubmitAmountField={onSubmitAmountField}
+                validateSameTitleExists={validateSameTitleExists}
+              />
+            );
+          } else {
+            return (
+              <Sortable_UDFDisplayField
+                key={fi.name}
+                index={idx}
+                field={fi}
+                isListSorting={isListSorting}
+                onDeleteFormItem={onDeleteFormItem}
+                onSubmitUDFField={onSubmitUDFField}
+                validateSameTitleExists={validateSameTitleExists}
+              />
+            );
+          }
+        })}
+      </div>
+    );
+  }
+}
 
 @connect(state => ({ ...state.wysiwyg }), {
   updateData,
   deleteInFormItems,
   updateInFormItems,
+  reorderFormItems,
 })
 export default class View extends React.PureComponent {
+  state = { isListSorting: false };
+
   componentWillReceiveProps(nextProps) {
     if (this.props.payment_page_id !== nextProps.payment_page_id) {
       // this.onCreatorClose(); // TODO: Important controller point to close all the modals
@@ -72,6 +128,20 @@ export default class View extends React.PureComponent {
     }
   };
 
+  onSortStart = _ => {
+    this.setState({
+      isListSorting: true,
+    });
+  };
+
+  onSortEnd = _ => {
+    this.setState({
+      isListSorting: false,
+    });
+
+    this.props.reorderFormItems(_);
+  };
+
   render() {
     const { paymentPageEntity, FORM_ITEMS } = this.props;
 
@@ -113,31 +183,23 @@ export default class View extends React.PureComponent {
             </div>
           }
 
-          {FORM_ITEMS.map((fi, idx) => {
-            if (isFormItemOfTypeAmount(fi)) {
-              return (
-                <AmountDisplayField
-                  key={fi.item.title}
-                  index={idx}
-                  field={fi}
-                  onDeleteFormItem={this.onDeleteFormItem}
-                  onSubmitAmountField={this.onSubmitUDFField}
-                  validateSameTitleExists={this.validateSameTitleExists}
-                />
-              );
-            } else {
-              return (
-                <UDFDisplayField
-                  key={fi.name}
-                  index={idx}
-                  field={fi}
-                  onDeleteFormItem={this.onDeleteFormItem}
-                  onSubmitUDFField={this.onSubmitUDFField}
-                  validateSameTitleExists={this.validateSameTitleExists}
-                />
-              );
-            }
-          })}
+          <SortableFormItemsList
+            lockAxis="y"
+            useDragHandle
+            lockToContainerEdges
+            helperClass="CreatorManager"
+            helperContainer={document.getElementById(
+              'draggableElementsContainer'
+            )}
+            onSortEnd={this.onSortEnd}
+            onSortStart={this.onSortStart}
+            isListSorting={this.state.isListSorting}
+            FORM_ITEMS={FORM_ITEMS}
+            onDeleteFormItem={this.onDeleteFormItem}
+            onSubmitAmountField={this.onSubmitAmountField}
+            onSubmitUDFField={this.onSubmitUDFField}
+            validateSameTitleExists={this.validateSameTitleExists}
+          />
 
           <div class="Field" style={{ margin: '32px 0 -21px' }}>
             <div class="Field-label" style={{ opacity: 0.6 }}>
@@ -159,6 +221,8 @@ export default class View extends React.PureComponent {
           </div>
 
           <FormFooter amountToPay={paymentPageEntity.amount} />
+
+          <div id="draggableElementsContainer" />
         </div>
       </React.Fragment>
     );
