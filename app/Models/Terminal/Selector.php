@@ -458,6 +458,7 @@ class Selector extends Base\Core
 
     private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals, $filteredTerminals)
     {
+
         try
         {
             if ($this->shouldHitRoutingService($payment->getId()) === false)
@@ -469,7 +470,18 @@ class Selector extends Base\Core
 
             if ($payment->hasCard() === true)
             {
-                $paymentData['card'] = $this->repo->card->findOrFail($payment->getCardId())->toArray();
+                $card = $this->repo->card->findOrFail($payment->getCardId());
+
+                $paymentData['card'] = $card->toArray();
+
+                $iin = $card->iinRelation;
+
+                if ($iin !== null)
+                {
+                    $flows = $iin->getFlows();
+
+                    $paymentData['card']['flows'] = $flows;
+                }
             }
 
             if ($payment->getEmiPlanId() !== null)
