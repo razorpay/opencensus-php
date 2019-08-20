@@ -16,6 +16,7 @@ import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
 
 import ShowWhen from 'merchant/components/ShowWhen';
+import EmptyList from 'merchant/components/EmptyList';
 import ListFilter from 'merchant/components/ListFilter';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
@@ -36,7 +37,6 @@ import {
 import { getPaymentPageQuickGuideIsClosed } from '../QuickGuide';
 
 import { trackListActions } from './ga';
-import OnboardingPP from './OnboardingPP';
 import { fetchPaymentPagesList } from './model';
 
 @connect(
@@ -202,7 +202,7 @@ export default class PaymentPagesContainer extends ListContainer {
       !paymentPages.length
     ) {
       // !paymentPages check is required so that while creation first time, the list would be updated while totalPaymentPagesLength still = 0
-      content = <OnboardingPP />;
+      content = <EmptyComponent />;
     } else {
       content = (
         <React.Fragment>
@@ -372,3 +372,14 @@ export default class PaymentPagesContainer extends ListContainer {
     );
   }
 }
+
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no payment pages yet!!</div>
+        <div>Start creating new links now.</div>
+      </React.Fragment>
+    }
+  />
+);
