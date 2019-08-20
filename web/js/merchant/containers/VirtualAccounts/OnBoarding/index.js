@@ -32,7 +32,7 @@ export default class InvoicesOnBoarding extends React.Component {
   };
 
   closeOnboarding = () => {
-    if (this.props.user.isMarketplaceEnabled) {
+    if (this.props.user.isVirtualAccountsEnabled) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, false);
     }
 
@@ -71,7 +71,7 @@ export default class InvoicesOnBoarding extends React.Component {
                 feature={RZPFeatures.VA}
                 page={sliderProps.active}
                 onClick={this.closeOnboarding}
-                isLocalEnabler={user.isMarketplaceEnabled}
+                isLocalEnabler={user.isVirtualAccountsEnabled}
               />
             </SliderDots>
           )}

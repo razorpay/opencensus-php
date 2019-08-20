@@ -64,6 +64,10 @@ export default class InvoicesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getVAQuickGuideIsClosed = props => {
+  if (props.loading) {
+    return true;
+  }
+
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.VA);
 
   // Check if transfers non created state count is more then or equal to 2
@@ -90,10 +94,7 @@ const getStatus = ({ virtualaccounts }) => {
     paymentReceiveStatus = active;
 
     virtualaccounts.items.forEach(account => {
-      if (
-        account.status === 'paid' ||
-        virtualaccounts.status === 'partially_paid'
-      ) {
+      if (account.amount_paid > 0) {
         paymentReceiveStatus = done;
 
         return false;
