@@ -229,7 +229,7 @@ class Gateway extends Base\Gateway
 
             }
             $this->action($input, Action::VERIFY);
-            return $this->verify($input);
+            return $this->topupCallbackVerify($input);
         }
 
 
@@ -425,6 +425,78 @@ class Gateway extends Base\Gateway
 
         return $this->runPaymentVerifyFlow($verify);
     }
+
+    public function topupCallbackVerify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $gatewayPayment = $this->getPaymentToVerify($verify);
+
+        $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["Verify Payment", $verify, $gatewayPayment]);
+
+        if (($gatewayPayment === null) and
+            ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]
+            );
+
+            return null;
+        }
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $payment = $verify->payment;
+        $input = $verify->input;
+        $content = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        // Gateway marked payment as a failure
+        if ((isset($content[ResponseFields::STATUS]) === false) or
+            ($content[ResponseFields::STATUS] !== Status::TRANSACTION_SUCCESS))
+        {
+            $verify->match = false;
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+        else if ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS)
+        {
+            $verify->match = true;
+        }
+
+        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
+
+        if (($verify->amountMismatch === true) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'gateway'    => $this->gateway
+                ]
+            );
+        }
+
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+
+        return $verify->getDataToTrace();
+    }
+
+
 
     public function verifyRefund(array $input)
     {
