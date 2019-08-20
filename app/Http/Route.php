@@ -13,6 +13,8 @@ use RZP\Models\Admin\Permission\Name as Permission;
 final class Route
 {
     protected static $apiRoutes = [
+        // Anubhav
+        'pdf_bank_account_statement' => ['get', 'pdf', 'PDFController@genPDF'],
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
 
@@ -1277,6 +1279,7 @@ final class Route
     ];
 
     public static $private = [
+        'pdf_bank_account_statement',
         'payment_create_private',
         'payment_create_private_old',
         'payment_create_private_json',
