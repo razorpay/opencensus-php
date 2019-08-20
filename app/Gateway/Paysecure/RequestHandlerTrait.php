@@ -374,7 +374,14 @@ trait RequestHandlerTrait
             }
             else
             {
-                throw $sf;
+                $ex = new Exception\GatewayRequestException($sf->getMessage(), $sf);
+
+                if ($command !== Command::AUTHORIZE)
+                {
+                    $ex->markSafeRetryTrue();
+                }
+
+                throw $ex;
             }
         }
         finally
