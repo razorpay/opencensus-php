@@ -83,7 +83,8 @@ abstract class RowProcessor extends Base\Core
                 'source_id'                         => $this->reconEntity->getSourceId(),
             ];
 
-            $this->app['diag']->trackSettlementEvent(EventCode::FTA_UTR_UPDATED,
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::FTA_UTR_UPDATED,
                 null,
                 null,
                 $customProperties);
@@ -238,7 +239,8 @@ abstract class RowProcessor extends Base\Core
             'error_message'                     => $publicErrorMessage,
         ];
 
-        $this->app['diag']->trackSettlementEvent(EventCode::FTA_STATUS_UPDATED,
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::FTA_STATUS_UPDATED,
             null,
             null,
             $customProperties);

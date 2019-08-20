@@ -201,7 +201,10 @@ class BeamJob extends Job
                     'batch_fund_transfer_id'    => $batchFundTransferId,
                 ];
 
-                $this->app['diag']->trackSettlementEvent(EventCode::BEAM_FILE_PUSH_RETRY,
+                $app = App::getFacadeRoot();
+
+                $app['diag']->trackSettlementEvent(
+                    EventCode::BEAM_FILE_PUSH_RETRY,
                     null,
                     null,
                     $customProperties);
@@ -237,7 +240,10 @@ class BeamJob extends Job
                 'batch_fund_transfer_id'    => $batchFundTransferId,
             ];
 
-            $this->app['diag']->trackSettlementEvent(EventCode::BEAM_FILE_PUSH_SUCCESS,
+            $app = App::getFacadeRoot();
+
+            $app['diag']->trackSettlementEvent(
+                EventCode::BEAM_FILE_PUSH_SUCCESS,
                 null,
                 null,
                 $customProperties);
@@ -287,7 +293,10 @@ class BeamJob extends Job
                 'batch_fund_transfer_id'   => $batchFundTransferId,
             ];
 
-            $this->app['diag']->trackSettlementEvent(EventCode::BEAM_FILE_PUSH_FAILED,
+            $app = App::getFacadeRoot();
+
+            $app['diag']->trackSettlementEvent(
+                EventCode::BEAM_FILE_PUSH_FAILED,
                 null,
                 null,
                 $customProperties);

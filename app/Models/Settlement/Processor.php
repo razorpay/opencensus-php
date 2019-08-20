@@ -440,7 +440,8 @@ class Processor extends Base\Core
                 'timestamp'             => $timestamp
             ];
 
-            $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_CREATION_INITIATED,
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::SETTLEMENT_CREATION_INITIATED,
                 null,
                 null,
                 $customProperties);

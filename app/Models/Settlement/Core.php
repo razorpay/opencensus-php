@@ -182,7 +182,8 @@ class Core extends Base\Core
             'error_message'                     => $attemptFailureReason,
         ];
 
-        $this->app['diag']->trackSettlementEvent(EventCode::SETTLEMENT_STATUS_UPDATED,
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::SETTLEMENT_STATUS_UPDATED,
             null,
             null,
             $customProperties);

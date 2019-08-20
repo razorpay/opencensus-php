@@ -143,7 +143,8 @@ abstract class EntityProcessor extends Base\Core
             'error_message'                     => $failureReason,
         ];
 
-        $this->app['diag']->trackSettlementEvent(EventCode::FTA_STATUS_UPDATED,
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::FTA_STATUS_UPDATED,
             null,
             null,
             $customProperties);

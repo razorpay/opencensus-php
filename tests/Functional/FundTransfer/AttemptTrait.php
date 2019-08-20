@@ -38,6 +38,7 @@ trait AttemptTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
+        s($content);
         return $content;
     }
 
@@ -223,6 +224,7 @@ trait AttemptTrait
             $batchTestData = $batchTestData . 'Vpa';
         }
 
+        s($batch);
         $this->assertTestResponse($batch, $batchTestData);
 
         $this->assertEquals($channel, $batch[Batch\Entity::CHANNEL]);

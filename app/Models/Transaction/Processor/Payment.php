@@ -52,7 +52,8 @@ class Payment extends Base
             'timestamp'         => $timestamp
         ];
 
-        $this->app['diag']->trackSettlementEvent(EventCode::TRANSACTION_SETTLED_AT_UPDATE,
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::TRANSACTION_SETTLED_AT_UPDATE,
             null,
             null,
             $customProperties);

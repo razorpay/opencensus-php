@@ -164,7 +164,8 @@ abstract class FileProcessor extends Processor
                 'file_info'   => $reconcileFile,
             ];
 
-            $this->app['diag']->trackSettlementEvent(EventCode::REVERSE_FEED_RECEIVED,
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::REVERSE_FEED_RECEIVED,
                 null,
                 null,
                 $customProperties);

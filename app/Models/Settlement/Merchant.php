@@ -46,9 +46,11 @@ class Merchant
      */
     protected $ba;
 
+    protected $app;
+
     public function __construct($merchant, $channel, $repo = null, $logging = false)
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
         $this->merchant = $merchant;
 
@@ -56,18 +58,18 @@ class Merchant
 
         $this->repo = $repo;
 
-        $this->ba = $app['basicauth'];
+        $this->ba = $this->app['basicauth'];
 
-        $this->trace = $app['trace'];
+        $this->trace = $this->app['trace'];
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
 
         $this->logging = $logging;
 
-        $this->mode = $app['rzp.mode'];
+        $this->mode = $this->app['rzp.mode'];
 
-        $this->env = $app['env'];
+        $this->env = $this->app['env'];
     }
 
     public function retryFailedSettlement(Settlement\Entity $setl, array $merchantSettleToPartner)
@@ -413,11 +415,12 @@ class Merchant
             'timestamp'             => $timestamp,
             'channel'               => $this->channel,
             'settlement_id'         => $this->setl->getId(),
-            'transaction_count'     => $this->txns->count(),
+            'transaction_count'     => $this->txns ? $this->txns->count() : 0,
             'settlement_amount'     => $this->setl->getAmount(),
         ];
 
-        $this->app['diag']->trackSettlementEvent(EventCode::FTA_CREATION_INITIATED,
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::FTA_CREATION_INITIATED,
             $this->setl,
             null,
             $customProperties);

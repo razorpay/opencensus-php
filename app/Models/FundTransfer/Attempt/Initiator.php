@@ -191,7 +191,8 @@ class Initiator extends Base\Core
                 'fund_transfer_attempt_medium'  => $medium,
             ];
 
-            $this->app['diag']->trackSettlementEvent(EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
                 null,
                 null,
                 $customProperties);
@@ -248,7 +249,8 @@ class Initiator extends Base\Core
                 'transaction_count'                     => $transactionCount,
             ];
 
-            $this->app['diag']->trackSettlementEvent(EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
                 null,
                 null,
                 $customProperties);
@@ -266,7 +268,8 @@ class Initiator extends Base\Core
                 'medium'                        => $medium,
             ];
 
-            $this->app['diag']->trackSettlementEvent(EventCode::BATCH_FUND_TRANSFER_CREATION_FAILED,
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_FAILED,
                 null,
                 null,
                 $customProperties);

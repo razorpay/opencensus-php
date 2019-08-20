@@ -23,11 +23,7 @@ class SettlementEvent extends Event
         $merchant = $this->entity->merchant;
 
         $properties['merchant'] = [
-            'id'        => $merchant->getId(),
-            'name'      => $merchant->getBillingLabel(),
-            'mcc'       => $merchant->getCategory(),
-            'category'  => $merchant->getCategory2(),
-            'tpv'       => $merchant->isTPVRequired()
+            'merchant_id'        => $merchant->getId(),
         ];
     }
 
@@ -37,9 +33,9 @@ class SettlementEvent extends Event
 
         $properties['settlement'] = [
             'id'            => $settlement->getId(),
-            'amount'        => $settlement->getAmountAttribute(),
-            'fees'          => $settlement->getFeesAttribute(),
-            'settled_on'    => $settlement->getSettledOnAttribute()
+            'amount'        => $settlement->getAmount(),
+            'fees'          => $settlement->getFees(),
+            'settled_on'    => $settlement->getSettledOn()
         ];
     }
 }
