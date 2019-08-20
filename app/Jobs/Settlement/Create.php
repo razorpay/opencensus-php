@@ -56,6 +56,8 @@ class Create extends Job
      */
     public function handle()
     {
+        $merchant = $this->repoManager->merchant->find($this->merchantId);
+
         try
         {
             parent::handle();
@@ -68,8 +70,6 @@ class Create extends Job
                 ]
             );
 
-            $merchant = $this->repoManager->merchant->find($this->merchantId);
-
             $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement($merchant);
 
             $response = [
@@ -80,8 +80,6 @@ class Create extends Job
             $this->trace->info(
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
                 $response);
-
-            $this->dispatchForSettlementInitiateIfRequired($merchant->getChannel());
         }
         catch (\Throwable $e)
         {
@@ -104,6 +102,8 @@ class Create extends Job
         {
             // reduce the total count once the processing is done
             Cache::decrement(self::TOTAL_MERCHANT_COUNT);
+
+            $this->dispatchForSettlementInitiateIfRequired($merchant->getChannel());
         }
     }
 

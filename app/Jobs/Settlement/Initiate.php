@@ -19,6 +19,7 @@ class Initiate extends Job
     const MUTEX_LOCK_TIMEOUT = 30;
 
     const MUTEX_RESOURCE     = 'SETTLEMENT_INITIATE_%s';
+
     /**
      * @var string
      */

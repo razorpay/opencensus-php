@@ -2,13 +2,12 @@
 
 namespace RZP\Models\Transaction\Processor;
 
-use RZP\Models\Pricing;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
-use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Gateway;
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Base as BaseCollection;
 use RZP\Models\Payment as PaymentEntity;
 use RZP\Models\Transaction\ReconciledType;
@@ -32,6 +31,8 @@ class Payment extends Base
         $settledAt = $this->getSettledAtTimestamp();
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->dispatchForSettlementBucketing($this->txn->getMerchantId(), $settledAt);
     }
 
     private function checkAndSetTxnReconciliation()

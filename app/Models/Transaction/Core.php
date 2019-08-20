@@ -4,9 +4,12 @@ namespace RZP\Models\Transaction;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
+
 use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
@@ -155,6 +158,8 @@ class Core extends Base\Core
 
         $this->updateBalances($txn);
 
+        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
+
         return [$txn, $feesSplit];
     }
 
@@ -192,6 +197,8 @@ class Core extends Base\Core
         $this->updateCredits($txn, $payment);
 
         $this->updateBalances($txn, false);
+
+        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
 
         return [$txn, $feesSplit];
     }
@@ -614,7 +621,7 @@ class Core extends Base\Core
         if ($amount < 0)
             $debit = -1 * $amount;
 
-        $settledAt = time();
+        $settledAt = Carbon::now(Timezone::IST);
 
         $values = array(
             Transaction\Entity::DEBIT           => $debit,
@@ -642,6 +649,8 @@ class Core extends Base\Core
         $adj->transaction()->associate($txn);
 
         $this->updateBalances($txn, $updateEscrow);
+
+        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
 
         return $txn;
     }
@@ -676,7 +685,7 @@ class Core extends Base\Core
         $txn->setFee($fee);
         $txn->setTax($tax);
 
-        $settledAt = time();
+        $settledAt = Carbon::now(Timezone::IST);
 
         //
         // We're checking for available balance here and not earlier because
@@ -734,6 +743,8 @@ class Core extends Base\Core
         //
         $this->repo->saveOrFail($txn);
 
+        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
+
         $this->updateCredits($txn, $transfer);
 
         $this->updateBalances($txn, false);
@@ -781,6 +792,8 @@ class Core extends Base\Core
         $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
+
+        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settleTimestamp);
 
         return $txn;
     }
@@ -868,7 +881,7 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($txn);
 
-        $settledAt = time();
+        $settledAt = Carbon::now(Timezone::IST);
 
         $amount = $payout->getAmount();
 
@@ -923,6 +936,8 @@ class Core extends Base\Core
         ];
 
         $txn->fill($values);
+
+        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
 
         return $txn;
     }
@@ -1545,5 +1560,35 @@ class Core extends Base\Core
         $txn->setBalanceUpdated(true);
 
         $this->repo->saveOrFail($txn);
+    }
+
+    /**
+     * It'll dispatch the job to update settlement bucket for merchant
+     * This will also suppress the any error occurred at this stage
+     * if settled at is null then it wont dispatch the job
+     *
+     * @param string $merchantId
+     * @param null   $settledAt
+     */
+    public function dispatchForSettlementBucketing(string $merchantId, $settledAt = null)
+    {
+        if ($settledAt === null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Dispatch for bucket creation for settlement
+            Bucket::dispatch($this->mode, $merchantId, $settledAt);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT
+            );
+        }
     }
 }
