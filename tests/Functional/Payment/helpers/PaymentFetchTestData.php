@@ -271,6 +271,28 @@ return [
         ],
     ],
 
+    'testFindWithEmiPlanAsExpandsForProxyAuth' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+            'content' => [
+                'expand' => [
+                    'emi_plan',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'emi_plan'   => [
+                    'issuer' => 'HDFC',
+                    'rate' => 1399,
+                    'duration' => 6,
+                ],
+            ],
+        ],
+    ],
+
     'testFindWithExpandsForPrivateAuthWithInvalidExpand' => [
         'request' => [
             'url'     => '/payments/',

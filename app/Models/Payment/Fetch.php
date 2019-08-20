@@ -52,7 +52,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
-            self::EXPAND_EACH => 'filled|string|in:card,emi,disputes,transfer,transfer.recipient_settlement|custom:expand',
+            self::EXPAND_EACH => 'filled|string|in:card,emi,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
         ],
         AuthType::ADMIN_AUTH => [
             Entity::NOTES       => 'sometimes|notes_fetch',
