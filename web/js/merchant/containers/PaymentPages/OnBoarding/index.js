@@ -1,3 +1,5 @@
+import { connect } from 'react-redux';
+
 import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
@@ -8,12 +10,17 @@ import OnBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
   SkipAndGetStartedButton,
-  isAllowedResetBoarding,
+  getIsAllowedResetBoarding,
   setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
 
+import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
+
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
+@connect(state => ({
+  user: state.session.user,
+}))
 @OnBoarding({
   feature: RZPFeatures.PP,
 })
@@ -23,10 +30,18 @@ export default class PaymentPagesOnBoarding extends React.Component {
       <FeatureEnableSliderButton
         isLocalEnabler
         feature={RZPFeatures.PP}
-        onClick={this.props.closeOnboarding}
+        onClick={this.closeOnboarding}
         page={sliderProps.active}
       />
     );
+  };
+
+  closeOnboarding = () => {
+    if (this.props.user.isPaymentPagesEnabled) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, false);
+    }
+
+    this.props.closeOnboarding();
   };
 
   render() {
@@ -56,7 +71,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
 
           {sliderProps => (
             <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton onClick={this.props.closeOnboarding} />
+              <SkipAndGetStartedButton onClick={this.closeOnboarding} />
             </SliderDots>
           )}
         </Slider>
@@ -65,9 +80,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
   }
 }
 
-export function getIsAllowedPaymentPagesOnBoarding({
-  mode,
-  merchantId,
+export function getIsAllowedPaymentPagesResetOnBoarding({
   paymentPages,
   loading,
 }) {
@@ -75,11 +88,7 @@ export function getIsAllowedPaymentPagesOnBoarding({
     return false;
   }
 
-  return isAllowedResetBoarding({
-    mode,
-    merchantId,
-    feature: RZPFeatures.PP,
-  });
+  return getIsAllowedResetBoarding(RZPFeatures.PP);
 }
 
 export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {

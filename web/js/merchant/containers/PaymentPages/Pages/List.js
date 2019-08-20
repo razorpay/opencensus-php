@@ -32,7 +32,7 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 import {
   getIsPaymentPagesEnabled,
-  getIsAllowedPaymentPagesOnBoarding,
+  getIsAllowedPaymentPagesResetOnBoarding,
 } from '../OnBoarding';
 import { getPaymentPageQuickGuideIsClosed } from '../QuickGuide';
 
@@ -153,9 +153,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
   initPaymentPagesOnboarding = (props = this.props) => {
     const data = {
-      mode: props.mode,
       user: props.user,
-      merchantId: props.user.current,
       paymentPages: props.paymentPages,
       loading: this.state.loading || this.state.loadingAllList,
     };
@@ -165,7 +163,7 @@ export default class PaymentPagesContainer extends ListContainer {
     let showOnboarding = !isPaymentPagesEnabled;
 
     if (isPaymentPagesEnabled) {
-      showOnboarding = getIsAllowedPaymentPagesOnBoarding(data);
+      showOnboarding = getIsAllowedPaymentPagesResetOnBoarding(data);
     }
 
     let isQuickGuideClosed = getPaymentPageQuickGuideIsClosed(props);
