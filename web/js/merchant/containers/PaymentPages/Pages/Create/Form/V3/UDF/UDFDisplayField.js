@@ -3,11 +3,22 @@ import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
 
 const displayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
+  let _RepresentationEl = 'input',
+    _RepresentationClass = '';
+
+  if (field.hasOwnProperty('options') && field.options.cmp === 'textarea') {
+    _RepresentationEl = 'textarea';
+    _RepresentationClass = 'Field--textarea';
+  } else if (field.hasOwnProperty('enum')) {
+    _RepresentationEl = 'select';
+    _RepresentationClass = 'Field--select';
+  }
+
   return (
     <EditLayer
       class={classList(
         'Field Field--disabled',
-        field.hasOwnProperty('enum') && 'Field--select',
+        _RepresentationClass,
         field.required && 'Field--required'
       )}
       onClick={openBaseForm}
@@ -25,7 +36,7 @@ const displayField = ({ field, openBaseForm, tooltipTxt, setRef }) => {
             field._type && 'Field-wrapper--' + field_type
           )}
         >
-          <input class="Field-el" disabled />
+          <_RepresentationEl class="Field-el" disabled />
         </div>
         {field.description && (
           <div class="Field-description">{field.description}</div>
