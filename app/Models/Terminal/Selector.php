@@ -634,6 +634,7 @@ class Selector extends Base\Core
 
         if ($paymentId === null)
         {
+            $this->trace->info(TraceCode::PAYMENT_ID_NULL);
             return false;
         }
 
