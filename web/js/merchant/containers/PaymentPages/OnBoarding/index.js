@@ -71,7 +71,12 @@ export default class PaymentPagesOnBoarding extends React.Component {
 
           {sliderProps => (
             <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton onClick={this.closeOnboarding} />
+              <SkipAndGetStartedButton
+                feature={RZPFeatures.PP}
+                onClick={this.closeOnboarding}
+                page={sliderProps.active}
+                isLocalEnabler={user.isPaymentPagesEnabled}
+              />
             </SliderDots>
           )}
         </Slider>
