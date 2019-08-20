@@ -5227,3 +5227,7 @@ ALTER TABLE payouts
 ALTER TABLE merchants
     ADD COLUMN dashboard_whitelisted_ips_live text DEFAULT NULL AFTER whitelisted_ips_test,
     ADD COLUMN dashboard_whitelisted_ips_test text DEFAULT NULL AFTER dashboard_whitelisted_ips_live;
+
+ALTER TABLE payments
+    CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;

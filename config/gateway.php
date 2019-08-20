@@ -772,6 +772,9 @@ return [
             'gateway_terminal_password'  => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD'),
             'gateway_terminal_password2' => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD2'),
         ],
+        'netbanking_cbi' => [
+            'account_number'         => env('CBI_NODAL_ACCOUNT_NUMBER'),
+        ],
         'razorpayx' => [
             'direct' => [
                 'rbl' => [

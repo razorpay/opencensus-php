@@ -1390,6 +1390,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_2FA_OTP_SMS_FOR_ACTION                         = 'VERIFY_2FA_OTP_SMS_FOR_ACTION';
     const SEND_2FA_OTP_SMS_FAILED                               = 'SEND_2FA_OTP_SMS_FAILED';
     const VERIFY_2FA_OTP_SMS_FOR_ACTION_FAILED                  = 'VERIFY_2FA_OTP_SMS_FOR_ACTION';
+    const USER_CONTACT_MOBILE_UPDATE                            = 'USER_CONTACT_MOBILE_UPDATE';
+    const USER_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'USER_ACCOUNT_LOCK_UNLOCK_ACTION';
 
     //Trace codes for 2fa features
     const LOCKED_USER_LOGIN                                     = 'LOCKED_USER_LOGIN';

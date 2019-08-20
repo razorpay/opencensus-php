@@ -96,6 +96,7 @@ class TerminalAuthenticationTest extends TestCase
         self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayHeadlessOtp()
@@ -147,6 +148,7 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('headless_otp' ,$payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayIvr()
@@ -193,6 +195,7 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayExpressPay()
@@ -237,9 +240,10 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
 
-        $payment = $this->getLastEntity('mpi', true);
+        $mpi = $this->getLastEntity('mpi', true);
 
-        self::assertEquals('mpi_enstage', $payment['gateway']);
+        self::assertEquals('mpi_enstage', $mpi['gateway']);
+        $this->assertEquals('mpi_enstage', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     // boost 3ds over headless otp
@@ -306,6 +310,7 @@ class TerminalAuthenticationTest extends TestCase
         $this->assertEquals('pin', $payment['auth_type']);
         $this->assertEquals('card_fss', $payment['gateway']);
         $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
+        $this->assertNull($payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     // boost 3ds over headless otp
@@ -357,6 +362,7 @@ class TerminalAuthenticationTest extends TestCase
         self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     // boost cyber source mpi gateway
@@ -400,6 +406,8 @@ class TerminalAuthenticationTest extends TestCase
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
         self::assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayHdfcCapabilityFilter()
@@ -442,6 +450,8 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('authorized', $payment['status']);
 
         self::assertEquals('hdfc', $payment['gateway']);
+
+        $this->assertNull($payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayHdfcAuthCapabilityFilter()

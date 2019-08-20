@@ -824,6 +824,7 @@ final class Route
         'user_otp_create'                          => ['post',     'users/otp/send',                                 'UserController@sendOtp'                                            ],
         'user_verify_contact'                      => ['post',     'users/verify_contact',                           'UserController@verifyContactWithOtp'                               ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
+        'user_account_unlock'                      => ['put',      'users/account/{id}/{action}',                    'UserController@accountLockUnlock'                                  ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
         // 2fa route for user
         'user_login_2fa_setup_mobile'              => ['post',     'users/login/2fa_setup/mobile',                   'UserController@setup2faMobileOnLogin'                              ],
@@ -833,6 +834,10 @@ final class Route
         'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
         'merchant_restrict'                        => ['patch',    'merchant/restrict',                              'MerchantController@applyRestrictedSettings'                        ],
         'user_update_contact'                      => ['patch',    'users/contact/update',                           'UserController@editContactMobile'                                  ],
+
+        'user_update_contact_admin'                => ['patch',    'users-admin/contact',                            'UserController@updateContactMobile'                                ],
+        'user_update_contact_merchant'             => ['patch',    'users/contact',                                  'UserController@updateContactMobile'                                ],
+        'user_account_lock_unlock_admin'           => ['put',      'users-admin/account/{id}/{action}',              'UserController@accountLockUnlock'                                  ],
 
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
@@ -1825,6 +1830,8 @@ final class Route
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
         'user_update_contact',
+        'user_update_contact_merchant',
+        'user_account_unlock',
     ];
 
     //
@@ -2225,6 +2232,8 @@ final class Route
         'fund_transfer_attempt_initiate_action',
 
         'merchant_restrict',
+        'user_update_contact_admin',
+        'user_account_lock_unlock_admin',
     ];
 
     public static $routePermission = [
@@ -2533,6 +2542,7 @@ final class Route
         'upi_psp_disallow'                         => '*',
         'user_confirm'                             => '*',
         'user_create'                              => '*',
+        'user_update_contact_admin'                => Permission::UPDATE_USER_CONTACT_MOBILE,
         'admin_get_app_auth'                       => '*',
         'reports_transaction_dsp'                  => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
         'reports_refund_irctc'                     => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
@@ -2667,6 +2677,7 @@ final class Route
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 
         'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
+        'user_account_lock_unlock_admin'           => Permission::USER_ACCOUNT_LOCK_UNLOCK,
     ];
 
     public static $direct = [
