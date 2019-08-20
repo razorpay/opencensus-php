@@ -18,4 +18,11 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function manageBulk(array $input): array
+    {
+        $response = $this->processor->manageBulk($input);
+
+        return $response;
+    }
 }

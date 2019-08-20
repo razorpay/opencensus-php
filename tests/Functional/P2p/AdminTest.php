@@ -100,4 +100,56 @@ class AdminTest extends TestCase
             'acquirer'      => Constants::P2P_UPI_AXIS,
         ], $entity->toArrayAdmin());
     }
+
+    public function testAdminP2pBanksBulkManage()
+    {
+        $bank = $this->getDbLastEntity('p2p_bank');
+
+        $content = [
+            [
+                'name'          => 'Bank 1',
+                'handle'        => Constants::RAZOR_AXIS,
+                'gateway_data'  => [
+                    'id' => 'bank_1_gateway_id',
+                ],
+                'upi_iin'       => '123345',
+                'active'        => 1
+            ],
+            [
+                'name'          => 'Bank 2',
+                'handle'        => Constants::RAZOR_AXIS,
+                'gateway_data'  => [
+                    'id' => 'bank_2_gateway_id',
+                ],
+                'upi_iin'       => '123456',
+                'active'        => 1
+            ],
+            [
+                'upi_iin'       => $bank->getUpiIin(),
+                'ifsc'          => 'RSRT',
+                'active'        => 0
+            ],
+        ];
+
+        $request = [
+            'url'       => '/p2p/banks/bulk/manage',
+            'method'    => 'POST',
+            'content'   => $content,
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertCount(3, $response['items']);
+
+        $banks = $this->getDbEntities('p2p_bank');
+
+        $this->assertSame('123456', $banks->pop()->getUpiIin());
+        $this->assertSame('123345', $banks->pop()->getUpiIin());
+
+        $bank->refresh();
+
+        $this->assertSame('RSRT', $bank->getIfsc());
+    }
 }
