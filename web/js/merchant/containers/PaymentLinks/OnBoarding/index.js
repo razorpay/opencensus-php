@@ -1,3 +1,5 @@
+import { connect } from 'react-redux';
+
 import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
@@ -12,8 +14,13 @@ import OnBoarding, {
   setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
 
+import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
+
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
+@connect(state => ({
+  user: state.session.user,
+}))
 @OnBoarding({
   feature: RZPFeatures.PP,
 })
@@ -24,9 +31,17 @@ export default class PaymentPagesOnBoarding extends React.Component {
         isLocalEnabler
         feature={RZPFeatures.PL}
         page={sliderProps.active}
-        onClick={this.props.closeOnboarding}
+        onClick={this.closeOnboarding}
       />
     );
+  };
+
+  closeOnboarding = () => {
+    if (this.props.user.isPaymentLinksEnabled) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, false);
+    }
+
+    this.props.closeOnboarding();
   };
 
   render() {
@@ -38,7 +53,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
           {sliderProps => (
             <Landing
               {...sliderProps}
-              title="Payment Pages"
+              title="Payment Links"
               imageUrl="https://razorpay.com/assets/paymentlinks/pl-landing.svg"
               desc="Share payment links via an email, SMS, messenger, chatbot etc. and get paid immediately."
             />
@@ -74,7 +89,7 @@ export function getIsAllowedResetPaymentLinksOnBoarding(invoices) {
 }
 
 export function getIsPaymentLinksEnabled({ user, invoices }) {
-  if (user.isPaymentLinksEnabled) {
+  if (user.isPaymentLinksEnabled || invoices.loading) {
     return true;
   }
 
@@ -87,10 +102,6 @@ export function getIsPaymentLinksEnabled({ user, invoices }) {
       },
     });
 
-    return true;
-  }
-
-  if (invoices.loading) {
     return true;
   }
 

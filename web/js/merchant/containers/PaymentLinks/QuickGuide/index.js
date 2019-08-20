@@ -68,6 +68,10 @@ export default class PaymentPagesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getPaymentLinksQuickGuideIsClosed = props => {
+  if (props.invoices.loading) {
+    return true;
+  }
+
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PL);
 
   // Check if transfers non created state count is more then or equal to 2
@@ -75,7 +79,7 @@ export const getPaymentLinksQuickGuideIsClosed = props => {
     return isClosed;
   }
 
-  return false;
+  return true;
 };
 
 const getStatus = ({ invoices }) => {
@@ -94,7 +98,7 @@ const getStatus = ({ invoices }) => {
     paymentReceiveStatus = active;
 
     invoices.items.forEach(page => {
-      if (page.status === 'paid') {
+      if (page.status === 'paid' || page.status === 'partially_paid') {
         paymentReceiveStatus = done;
 
         return false;
