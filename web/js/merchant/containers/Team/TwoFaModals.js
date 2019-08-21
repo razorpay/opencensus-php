@@ -1,150 +1,108 @@
-import React, { Component } from 'react';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { OtpInput } from 'merchant/components/OtpInput';
+import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
-import InputField from 'rzp/ui/Forms/InputField';
-import { required, phone } from 'rzp/utils/validators';
 import AsyncButton from 'react-async-button';
 
-const VerifyOtp = ({
-  mobile,
-  closeModal,
-  onConfirm,
-  verified,
-  onOtpEnter,
-  changeMobile,
-}) => {
-  let otpValue = '';
-  return (
-    <div>
-      <ModalHeader title="Verify Mobile Number" onCloseClick={closeModal} />
-      <div class="modal-body">
-        <p>
-          An SMS with 6-digit OTP has been sent to {mobile}
-          <a onClick={changeMobile}>[Change]</a>
-        </p>
-        <p>OTP will expire in 5mins. </p>
+import ModalHeader from 'rzp/ui/ModalHeader';
+import { showNotification } from 'rzp/modules/notifications';
 
-        <OtpInput
-          onComplete={otp => {
-            otpValue = otp;
-            onOtpEnter && onOtpEnter(otp);
-          }}
-          wrong={!verified}
-        />
-        <p>Didn’t receive an SMS? Sending.</p>
-        <div class="Modal__actions">
-          <button
-            class="btn btn-primary btn-block"
-            onClick={() => onConfirm(otpValue)}
-          >
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { OtpInput } from 'merchant/components/OtpInput';
+import { Field, reduxForm } from 'redux-form';
+import InputField from 'rzp/ui/Forms/InputField';
+import { required, phone } from 'rzp/utils/validators';
 
-const MissingNumbers = ({ count, closeModal }) => {
-  return (
-    <div class="2fa-modal">
-      <ModalHeader title="2-step verification" onCloseClick={closeModal} />
-      <div class="modal-body">
-        <p>
-          To enable 2-step verification all your team members should have phone
-          numbers associated to their account.
-        </p>
-        <div class="error-msg">
-          <div style={{ flex: 1 }}>
-            <i
-              class="i i-error pull-left wrong-msg"
-              style={{ fontSize: '18px' }}
+@connect(null, { showNotification })
+class VerifyOtp extends Component {
+  state = {};
+  onConfirm = () => {
+    return this.props
+      .onSubmit({
+        contact_mobile: this.props.contactMobile,
+        otp: this.otpValue,
+      })
+      .catch(({ errors }) => {
+        const error = (errors || [])[0];
+        if (error === 'Verification failed because of incorrect OTP.') {
+          this.setState({
+            wrongOtp: true,
+          });
+        } else {
+          this.props.showNotification({
+            type: 'error',
+            message: error,
+          });
+        }
+      });
+  };
+
+  onResend = () => {
+    return this.props.onResend({
+      contact_mobile: this.props.contactMobile,
+    });
+  };
+
+  updateOtpValue = otp => {
+    this.otpValue = otp;
+  };
+
+  render() {
+    const { contactMobile, closeModal, onChangeMobileNumber } = this.props;
+
+    return (
+      <div>
+        <ModalHeader title="Verify Mobile Number" onCloseClick={closeModal} />
+        <div class="modal-body">
+          <p>
+            An SMS with 6-digit OTP has been sent to {contactMobile}{' '}
+            <a onClick={onChangeMobileNumber}>[Change]</a>
+          </p>
+          <p>OTP will expire in 5mins.</p>
+
+          <OtpInput
+            onComplete={this.updateOtpValue}
+            onChange={this.updateOtpValue}
+            wrong={this.state.wrongOtp}
+          />
+          <p>
+            Didn’t receive an SMS?
+            <AsyncButton
+              class="btn btn-link"
+              text="Send OTP"
+              pendingText="Sending OTP..."
+              onClick={this.onResend}
+            />
+          </p>
+          <div class="Modal__actions">
+            <AsyncButton
+              class="btn btn-primary btn-block"
+              onClick={this.onConfirm}
+              text="Confirm"
+              pendingText="Sending OTP..."
             />
           </div>
-          <div style={{ flex: 9 }}>
-            <p>
-              There are <strong>{count} team members</strong> who don't have
-              phone numbers linked.
-            </p>
-          </div>
-        </div>
-        <div class="Modal__actions no-side-padding">
-          <button class="btn btn-primary btn-block" onClick={closeModal}>
-            Close
-          </button>
         </div>
       </div>
-    </div>
-  );
-};
-const EnableAgreement = ({ closeModal, onAgree }) => {
-  return (
-    <div class="2fa-modal">
-      <ModalHeader
-        title="Setting up 2-step verification"
-        onCloseClick={closeModal}
-      />
-      <div class="modal-body">
-        <p>
-          To enforce 2-step verification to your team, your account needs to be
-          2-step enabled
-        </p>
-        <div class="Modal__actions no-side-padding">
-          <button class="btn btn-primary btn-block" onClick={onAgree}>
-            Agree and proceed
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-const DisableAgreement = ({ closeModal, onAgree }) => {
-  return (
-    <div class="2fa-modal">
-      <ModalHeader
-        title="Disable 2-step verification"
-        onCloseClick={closeModal}
-      />
-      <div class="modal-body">
-        <p>
-          Are you sure you want to disable 2-step verification to all your team
-          members?
-        </p>
-        <div
-          class="Modal__actions no-side-padding"
-          style={{ display: 'flex', justifyContent: 'space-between' }}
-        >
-          <button
-            class="btn btn-default"
-            onClick={closeModal}
-            style={{ width: '131px' }}
-          >
-            No, Don’t!
-          </button>
-          <button
-            class="btn btn-primary"
-            onClick={onAgree}
-            style={{ width: '131px' }}
-          >
-            Yes, disable it
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+    );
+  }
+}
 
+@connect(
+  state => ({
+    initialValues: {
+      contact_mobile: (state.session.user.user || {}).contact_mobile,
+    },
+  }),
+  { showNotification }
+)
 @reduxForm({
   form: 'askPhone',
-  initialValues: {
-    contact_mobile: '',
-  },
 })
 class AskMobileNumber extends Component {
+  onSubmit = data => {
+    return this.props.onSubmit(data);
+  };
+
   render() {
-    const { closeModal, onComplete, handleSubmit } = this.props;
+    const { closeModal, handleSubmit } = this.props;
     return (
       <div class="2fa-modal">
         <ModalHeader
@@ -156,10 +114,7 @@ class AskMobileNumber extends Component {
             Let's setup a mobile number where you will receive an SMS with OTP
             everytime you log in.
           </p>
-          <form
-            onSubmit={handleSubmit(values => onComplete(values.contact_mobile))}
-            style={{ marginBottom: '35px' }}
-          >
+          <form style={{ marginBottom: '35px' }}>
             <div class="form-group">
               <label>Enter your phone number </label>
               <Field
@@ -167,15 +122,7 @@ class AskMobileNumber extends Component {
                 component={InputField}
                 class="form-control"
                 placeholder="Phone Number"
-                validate={[
-                  required(),
-                  phone('Invalid Mobile'),
-                  value => {
-                    if (value === this.props.user.user.contact_mobile) {
-                      return "You can't invite yourself";
-                    }
-                  },
-                ]}
+                validate={[required(), phone('Invalid Mobile')]}
               />
             </div>
             <div class="form-group">
@@ -183,9 +130,7 @@ class AskMobileNumber extends Component {
                 class="btn btn-primary btn-block"
                 text="Send OTP"
                 pendingText="Sending OTP..."
-                onClick={handleSubmit(values =>
-                  onComplete(values.contact_mobile)
-                )}
+                onClick={handleSubmit(this.onSubmit)}
               />
             </div>
           </form>
@@ -194,55 +139,54 @@ class AskMobileNumber extends Component {
     );
   }
 }
+
+@connect(
+  state => ({
+    email: state.session.user.user.email,
+  }),
+  { showNotification }
+)
 @reduxForm({
-  form: 'confimrPassword',
-  initialValues: {
-    password: '',
-  },
+  form: 'confirmPassword',
 })
 class PasswordVerification extends Component {
-  render() {
-    const { closeModal, title, email, handleSubmit, onConfirm } = this.props;
-    const confimrPassword = values => onConfirm(values.password);
+  onSubmit = ({ password }) => {
+    return this.props.onSubmit({
+      ...this.props.dataSentWithPassword,
+      password,
+    });
+  };
 
+  render() {
+    const { email, enable, handleSubmit, closeModal } = this.props;
     return (
       <div class="2fa-modal">
-        <ModalHeader title={title} onCloseClick={closeModal} />
+        <ModalHeader
+          title={(enable ? 'Enable' : 'Disable') + '2-step verification'}
+          onCloseClick={closeModal}
+        />
         <div class="modal-body">
           <p>
             To confirm please enter the password for <strong>{email}</strong>
           </p>
-          <form
-            onSubmit={handleSubmit(confimrPassword)}
-            style={{ marginBottom: '35px' }}
-          >
+          <form style={{ marginBottom: '35px' }}>
             <div class="form-group">
               <Field
+                type="password"
                 name="password"
                 component={InputField}
                 class="form-control"
                 placeholder="Password"
                 validate={[required()]}
-                autoFocus={true}
+                autoFocus
               />
             </div>
-            <div
-              class="Modal__actions no-side-padding"
-              style={{ display: 'flex', justifyContent: 'space-between' }}
-            >
-              <button
-                class="btn btn-default"
-                onClick={closeModal}
-                style={{ width: '131px' }}
-              >
-                Cancel
-              </button>
+            <div class="Modal__actions">
               <AsyncButton
-                style={{ width: '131px' }}
                 class="btn btn-primary btn-block"
                 text="Confirm"
                 pendingText="Please Wait..."
-                onClick={handleSubmit(confimrPassword)}
+                onClick={handleSubmit(this.onSubmit)}
               />
             </div>
           </form>
@@ -252,11 +196,4 @@ class PasswordVerification extends Component {
   }
 }
 
-export {
-  VerifyOtp,
-  MissingNumbers,
-  EnableAgreement,
-  DisableAgreement,
-  PasswordVerification,
-  AskMobileNumber,
-};
+export { VerifyOtp, PasswordVerification, AskMobileNumber };

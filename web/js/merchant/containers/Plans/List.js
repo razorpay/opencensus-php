@@ -1,14 +1,5 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import PlansListFilter from 'merchant/components/Plans/ListFilter';
-import DataTable from 'rzp/ui/Table/DataTable';
-import ListContainer from 'merchant/containers/ListContainer';
-import { fetchPlans as fetchAll } from 'merchant/modules/plans';
-import * as ModalActions from 'rzp/modules/modals';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { NavLink } from 'react-router-dom';
-import DocsLink from 'merchant/components/DocsLink';
 
 import {
   planId,
@@ -18,6 +9,19 @@ import {
   createdAt,
 } from 'rzp/ui/item/pair';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
+import DataTable from 'rzp/ui/Table/DataTable';
+import HeaderAction from 'rzp/ui/HeaderAction';
+
+import { fetchPlans as fetchAll } from 'merchant/modules/plans';
+import * as ModalActions from 'rzp/modules/modals';
+
+import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
+import EmptyList from 'merchant/components/EmptyList';
+import PlansListFilter from 'merchant/components/Plans/ListFilter';
+
+import ListContainer from 'merchant/containers/ListContainer';
 
 @connect(state => state.plans, { fetchAll, ...ModalActions })
 export default class PlansListContainer extends ListContainer {
@@ -53,20 +57,18 @@ export default class PlansListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            {
-              docUrl && <DocsLink url={docUrl}/>
-            }
+            {docUrl && <DocsLink url={docUrl} />}
             <ShowWhen
               additionalCondition={user => user.isAllowedEdit('subscriptions')}
             >
-                <NavLink to="/plans/new">
-                  <button class="pull-right btn btn-primary">
-                    <i class="i i-plus" />
-                    <span>New Plan</span>
-                  </button>
-                </NavLink>
-              </ShowWhen>
-            </div>
+              <NavLink to="/plans/new">
+                <button class="pull-right btn btn-primary">
+                  <i class="i i-plus" />
+                  <span>New Plan</span>
+                </button>
+              </NavLink>
+            </ShowWhen>
+          </div>
         </HeaderAction>
 
         <PlansListFilter
@@ -83,9 +85,21 @@ export default class PlansListContainer extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
+          EmptyComponent={EmptyComponent}
           {...this.props}
         />
       </div>
     );
   }
 }
+
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no plans yet!!</div>
+        <div>Create new plans.</div>
+      </React.Fragment>
+    }
+  />
+);

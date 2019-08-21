@@ -1,161 +1,228 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { updateFeatures } from 'merchant/modules/config';
-import { showNotification } from 'rzp/modules/notifications';
-import { toggle2FaEnforcement } from 'merchant/modules/team';
+import PropTypes from 'prop-types';
+
+import { classList } from 'common/util';
+
+import User from 'merchant/models/User';
+
+import { toggle2FaEnforcement, updateSelfContact } from 'merchant/modules/team';
+import { updateSession } from 'merchant/modules/session';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import {
   VerifyOtp,
-  MissingNumbers,
   AskMobileNumber,
-  EnableAgreement,
-  DisableAgreement,
   PasswordVerification,
-} from 'merchant/containers/Team/TwoFAModals';
+} from 'merchant/containers/Team/TwoFaModals';
 
-@connect(
-  state => {
-    return {
-      user: state.session.user,
-    };
-  },
-  {
-    updateFeatures,
-    showNotification,
-    openModal,
-    closeModal,
-    toggle2FaEnforcement,
-  }
-)
+@connect(state => ({ user: state.session.user }), {
+  openModal,
+  closeModal,
+  toggle2FaEnforcement,
+  updateSelfContact,
+  updateSession,
+  showNotification,
+})
 export default class Toggle2FA extends Component {
-  // constructor(props) {
-  //   super(props);
-  //   this.state = this.props.state
-
-  // }
-
-  componentWillReceiveProps(nextProps) {
-    // if (!this.props.features.length && nextProps.features.length) {
-    //   const twoFAEnabled = this.getToggle2FAFlag(nextProps.features);
-    //   this.setState({ twoFAEnabled });
-    // }
-  }
-
-  getToggle2FAFlag(features) {
-    // let noToggle2FA =
-    //   features.find(feature => feature.feature === 'noToggle2FA') || {};
-    // const twoFAEnabled = !noToggle2FA.value;
-    // return twoFAEnabled;
-  }
-
-  analytics = action => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settings',
-      eventAction: `${action} - Flash Checkout`,
-    });
+  static contextTypes = {
+    confirm: PropTypes.func,
   };
+
   showModal = component => {
-    //Close anyother open modal
-    this.props.closeModal();
     this.props.openModal({
       size: 'small',
       component: component,
     });
   };
+
+  //Set the sate in redux store to reflect the new changes
+  update2FAState = flag => {
+    const { user: currentUser } = this.props.user;
+    const user = new User({
+      ...this.props.user,
+      user: { ...currentUser, second_factor_auth_enforced: flag },
+    });
+    this.props.updateSession({ user });
+  };
+
+  verifyPassword = flag => {
+    this.showModal(
+      <PasswordVerification
+        closeModal={this.abort}
+        onSubmit={this.onPasswordSubmit}
+        dataSentWithPassword={{ second_factor_auth: flag }}
+      />
+    );
+  };
+
+  onPasswordSubmit = data => {
+    return this.props
+      .toggle2FaEnforcement(data)
+      .then(response => {
+        const { second_factor_auth } = response.data;
+        const message = `2-step verification successfully turned ${
+          second_factor_auth ? 'on' : 'off'
+        } for all your team members`;
+
+        this.props.showNotification({
+          type: 'success',
+          message,
+        });
+
+        this.onSuccess();
+      })
+      .catch(({ errors }) => {
+        const error = (errors || [])[0];
+        if (error === 'User 2FA setup is required') {
+          this.props.closeModal();
+          this.showAllUsers2faSetupRequired();
+        } else {
+          this.props.showNotification({
+            type: 'error',
+            message: error,
+          });
+        }
+      });
+  };
+
+  otpVerification = (contactMobile, flag) => {
+    this.showModal(
+      <VerifyOtp
+        closeModal={this.abort}
+        onSubmit={data => {
+          return this.props.updateSelfContact(data).then(response => {
+            if (response.success) {
+              this.verifyPassword(flag);
+            }
+          });
+        }}
+        onResend={this.props.updateSelfContact}
+        onChangeMobileNumber={this.verifyMobile}
+        contactMobile={contactMobile}
+      />
+    );
+  };
+
+  verifyMobile = flag => {
+    this.showModal(
+      <AskMobileNumber
+        closeModal={this.abort}
+        onSubmit={data => {
+          return (
+            this.props
+              .updateSelfContact(data)
+              // there will be no then since it will fail from api, since we've not sent OTP
+              .catch(({ errors }) => {
+                const error = (errors || [])[0];
+
+                if (error === 'OTP is required') {
+                  this.otpVerification(data.contact_mobile, flag);
+                } else {
+                  this.props.showNotification({
+                    type: 'error',
+                    message: error,
+                  });
+                }
+              })
+          );
+        }}
+      />
+    );
+  };
+
+  success = () => {
+    this.props.closeModal();
+    this.actionCompleted(true);
+  };
+
+  abort = () => {
+    this.props.closeModal();
+    //Any intermediate modal closure or cancel will abort the process
+    this.actionCompleted(false);
+  };
+
+  showAllUsers2faSetupRequired = () => {
+    this.context.confirm({
+      header: '2-step verification',
+      message:
+        'To enable 2-step verification all your team members should have phone numbers associated to their account.',
+      abortLabel: 'Close',
+      affirmativeLabel: 'Okay',
+      abort: this.abort,
+      action: this.abort,
+    });
+  };
+
+  confirmEnable = ({ action, flag }) => {
+    this.context.confirm({
+      header: 'Enable 2-step verification',
+      message:
+        'Are you sure you want to enable 2-step verification to all your team members?',
+      affirmativeLabel: 'Yes, enable it',
+      abort: this.abort,
+      action: () => action(flag),
+    });
+  };
+
+  confirmDisable({ action, flag }) {
+    this.context.confirm({
+      header: 'Disable 2-step verification',
+      message:
+        'Are you want to disable 2-step verification to all your team members?',
+      affirmativeLabel: 'Yes, disable it',
+      abortLabel: "No, Don't!",
+      abort: this.abort,
+      action: () => action(flag),
+    });
+  }
+
   toggle2FA = flag => {
-    //Step
-    const verifyPassword = () => {
-      const title = (flag ? 'Enable' : 'Disable') + ' 2-step verification';
-      this.showModal(
-        <PasswordVerification
-          title={title}
-          {...this.props}
-          email={this.props.user.email}
-          onConfirm={password =>
-            this.props.toggle2FaEnforcement(flag, password)
-          }
-        />
-      );
-    };
-    const otpVerification = mobile => {
-      this.showModal(
-        <VerifyOtp
-          {...this.props}
-          mobile={mobile}
-          onConfirm={otp => {
-            //Verify Otp here
-            //On Success
-            verifyPassword();
-            //On failure
-            // otpVerification(false)
-          }}
-        />
-      );
-    };
-    const verifyMobile = () => {
-      this.showModal(
-        <AskMobileNumber
-          {...this.props}
-          onComplete={mobile => otpVerification(mobile)}
-        />
-      );
-    };
-    if (flag) {
-      //Step 1: check of user has mobile number verified for setup to continue, if yes ask for password after agreement
-      let { user: { second_factor_auth } } = this.props.user;
-      if (undefined !== second_factor_auth && second_factor_auth) {
-        this.showModal(
-          <EnableAgreement {...this.props} onAgree={verifyPassword} />
-        );
+    //Hold the toggle state until a final API call is made & resolved
+    return new Promise(resolve => {
+      this.actionCompleted = resolve;
+      if (flag) {
+        const { user: { second_factor_auth_setup } } = this.props.user;
+
+        const action =
+          //Check if user has mobile number verified for setup to continue, if yes skip mobile number verification & move to password verification
+          second_factor_auth_setup ? this.verifyPassword : this.verifyMobile;
+        this.confirmEnable({ action, flag });
       } else {
-        this.showModal(
-          <EnableAgreement {...this.props} onAgree={verifyMobile} />
-        );
+        this.confirmDisable({ action: verifyPassword, flag });
       }
-      // //Step 2: Make initial check if everyone in team has mobile number, if not show missing mobile number
-      // if (false)
-      //   this.showModal(
-      //     <MissingNumbers {...this.props} onAgree={verifyPassword} />
-      //   );
-      //Step 2: Show an agreement to enable the 2FA & verify Password after agreement
-      // this.showModal(
-      //   <EnableAgreement {...this.props} onAgree={verifyPassword} />
-      // );
-      //Step 3:Once Password is confimred, check if second_factor_auth_setup is true
-      if (false)
-        this.showModal(
-          <AskMobileNumber {...this.props} onComplete={() => VerifyOtp} />
-        );
-    } else {
-      //Step 1: Show an agreement to enable the 2FA & verify Password after agreement
-      this.showModal(
-        <DisableAgreement {...this.props} onAgree={verifyPassword} />
-      );
-    }
+    });
   };
 
   render() {
-    let { user: { second_factor_auth: twoFAEnabled } } = this.props.user;
+    const { user: { second_factor_auth_enforced } } = this.props.user;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
           <span class="title">
-            <i class="i i-phonelink-lock" /> &nbsp; 2-Step verification to the
-            team
+            <i class="i i-phonelink-lock" /> 2-Step verification to the team
           </span>
           <span class="toggler-btn">
             <SwitchField
-              defaultChecked={!!twoFAEnabled}
-              onChange={flag => this.toggle2FA(flag)}
+              defaultChecked={second_factor_auth_enforced}
+              onChange={(flag, cb) =>
+                this.toggle2FA(flag).then(completed => {
+                  this.update2FAState(flag);
+                  cb(completed);
+                })
+              }
               type="prime"
             />
-            {true ? (
-              <b class="text-primary">Enabled</b>
-            ) : (
-              <b className="text-faded">Disabled</b>
-            )}
+            <strong
+              class={classList(
+                'm-l',
+                second_factor_auth_enforced ? 'text-primary' : 'text-faded'
+              )}
+            >
+              {second_factor_auth_enforced ? 'Enabled' : 'Disabled'}
+            </strong>
           </span>
         </div>
 

@@ -62,6 +62,7 @@ import {
   commissionsReducer,
   commissionsAggregateReducer,
   teamReducer,
+  invitationsReducer,
 } from 'merchant/modules/collection';
 
 import {
@@ -136,4 +137,5 @@ export default combineReducers({
   tokens: tokensReducer,
   token: tokenReducer,
   batches: batchesReducer,
+  invitations: invitationsReducer,
 });

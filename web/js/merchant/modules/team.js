@@ -10,10 +10,10 @@ export const INVITATION_UPDATE = 'INVITATION_UPDATE';
 export const INVITATION_REMOVE = 'INVITATION_REMOVE';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_REMOVE = 'USER_REMOVE';
+export const UPDATE_SESSION = 'UPDATE_SESSION';
 
 const TEAM_MEMBER_DELETE = 'TEAM_MEMBER_DELETE';
-const TEAM_MEMBER_EDIT = 'TEAM_MEMBER_EDIT';
-const TEAM_MEMBER_CREATE = 'TEAM_MEMBER_CREATE';
+const TEAM_MEMBER_UNLOCK = 'TEAM_MEMBER_UNLOCK';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -63,6 +63,18 @@ export const updateUser = (userId, data) => {
   };
 };
 
+export const updateSelfContact = data => {
+  return {
+    type: UPDATE_SESSION,
+    payload: merchantFetch({
+      url: `users/contact/update`,
+      method: 'patch',
+      data,
+      mode: 'live',
+    }),
+  };
+};
+
 export const cancelInvitation = inviteId => {
   const team = new Team();
   return {
@@ -100,18 +112,24 @@ export const removeUser = userId => {
   };
 };
 
-export const toggle2FaEnforcement = flag => {
+export const toggle2FaEnforcement = data => {
   return {
-    type: USER_UPDATE,
-    payload: defaultAjax(`/merchants/2fa`, {
+    type: UPDATE_SESSION,
+    payload: merchantFetch({
+      url: `merchants/2fa`,
       method: 'patch',
-      appendModeInURL: false,
-      data: {
-        second_factor_auth: flag,
+      data,
+      headers: {
+        'Content-Type': 'application/json',
       },
+      should_sync: 1,
     }),
   };
 };
+export const unlock = memberId => ({
+  type: TEAM_MEMBER_UNLOCK,
+  payload: new Team().unlock(memberId),
+});
 
 let initialState = {
   loading: true,
