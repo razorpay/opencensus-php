@@ -27,7 +27,8 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
-import { validateUISchema } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
+import { validateUISchema as validateUISchemaV2 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
+import { validateUISchema as validateUISchemaV3 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V3';
 
 import {
   trackWYSIWYGCloseIntent,
@@ -333,6 +334,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       expire_by,
     } = paymentPageEntity;
 
+    console.log('....paymentPageEntity...', paymentPageEntity);
+
     // Remove Email and Phone in all cases before sending to API.
     const formItems = [...FORM_ITEMS]; // Separate UDF and amount fields from FORM ITEMS.
 
@@ -379,7 +382,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     }
 
-    const isValidSchema = validateUISchema(udf_schema);
+    const isValidSchema = isPPV3Enabled
+      ? validateUISchemaV3(udf_schema)
+      : validateUISchemaV2(udf_schema);
+
+    console.log('udf_schema......', udf_schema);
 
     if (!isValidSchema) {
       throw 'UI Schema is not valid';
