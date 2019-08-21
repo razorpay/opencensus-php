@@ -355,7 +355,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       if (!paymentPageItems.length) {
         this.props.showNotification({
           type: 'error',
-          message: 'Add atleast 1 Price item',
+          message: 'Add atleast 1 Price field',
         });
 
         return;
@@ -367,10 +367,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             break;
           }
         }
+
         if (!has1PriceMandatory) {
           this.props.showNotification({
             type: 'error',
-            message: 'Atleast 1 Price item must be mandatory payable',
+            message: 'Atleast 1 Price field must be mandatory payable',
           });
 
           return;
@@ -513,7 +514,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   render() {
     const { isPageReady, isPageLoadError } = this.state;
-    const { paymentPageEntity, id: payment_page_id } = this.props;
+    const { paymentPageEntity, id: payment_page_id, user } = this.props;
     let isAllowedToSubmit, actionBtns, themeColor;
 
     const merchantData = {
@@ -523,10 +524,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     };
 
     if (paymentPageEntity) {
-      isAllowedToSubmit =
-        paymentPageEntity &&
-        paymentPageEntity.hasOwnProperty('amount') &&
-        paymentPageEntity.title;
+      isAllowedToSubmit = paymentPageEntity && paymentPageEntity.title;
+
+      // For PPV3, notification error will be thrown.
+      if (!user.isPPV3Enabled) {
+        isAllowedToSubmit =
+          isAllowedToSubmit && paymentPageEntity.hasOwnProperty('amount');
+      }
 
       actionBtns = (
         <React.Fragment>

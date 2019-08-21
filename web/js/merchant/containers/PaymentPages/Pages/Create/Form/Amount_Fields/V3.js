@@ -57,8 +57,9 @@ export function constructAmountField(fieldData) {
   const prettyTitle = amountItem.item.title.trim().replace('  ', ' ');
   amountItem.title = prettyTitle;
 
-  if (mandatory) {
-    amountItem.mandatory = mandatory; // BOOL
+  if (typeof mandatory !== 'undefined') {
+    amountItem.mandatory =
+      typeof mandatory === 'boolean' ? mandatory : Boolean(Number(mandatory)); // BOOL
   }
 
   return amountItem;
