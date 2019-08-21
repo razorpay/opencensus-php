@@ -71,9 +71,13 @@ const Title = <QuickGuideTitle />;
 export const getInvoicesQuickGuideIsClosed = props => {
   if (
     props.invoicesProductOnBoarding &&
-    props.invoicesProductOnBoarding.showOnboarding
+    props.invoicesProductOnBoarding.isQuickGuideOpen
   ) {
     return false;
+  }
+
+  if (props.invoices.loading) {
+    return true;
   }
 
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.INVOICE);
