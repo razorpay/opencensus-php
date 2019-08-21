@@ -2826,6 +2826,7 @@ final class Route
             'user_reset_password_create',
             'user_merchant_upgrade',
             'user_change_password',
+            'user_access',
             'user_2fa_change_setting',
             'user_fetch',
             'invitation_action',
@@ -2842,7 +2843,6 @@ final class Route
 
         'dashboard_internal' => [
             'admin_oauth_authenticate',
-            'user_access',
         ],
 
         'cron' => [
