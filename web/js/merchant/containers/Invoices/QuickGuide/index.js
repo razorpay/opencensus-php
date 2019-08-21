@@ -68,6 +68,13 @@ export default class InvoicesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getInvoicesQuickGuideIsClosed = props => {
+  if (
+    props.invoicesProductOnBoarding &&
+    props.invoicesProductOnBoarding.showOnboarding
+  ) {
+    return false;
+  }
+
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.INVOICE);
 
   // Check if transfers non created state count is more then or equal to 2

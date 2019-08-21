@@ -79,6 +79,8 @@ export default class InvoicingContainer extends Component {
         ...invoicesProductOnBoarding,
         showOnboarding: true,
       });
+
+      return;
     }
 
     let isQuickGuideClosed = getInvoicesQuickGuideIsClosed(props);
