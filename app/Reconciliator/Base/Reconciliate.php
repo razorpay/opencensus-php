@@ -307,6 +307,45 @@ class Reconciliate extends Base\Core
         ];
 
         $this->messenger->raiseReconInfo($traceData);
+
+        $this->generateReconAnalyticsData($data, $batch, $sheetName);
+    }
+
+    protected function generateReconAnalyticsData($data, $batch, $sheetName)
+    {
+        if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true) {
+            $creator = new FileStore\Creator;
+
+            $extension = FileStore\Format::CSV;
+
+            $batchId = $batch->getId();
+
+            $analyticsOutputFileName = $batchId . $sheetName . '_analytics' . self::OUTPUT_FILE_SUFFIX;
+
+            $dirPath = 'reconciliation_output/' . $this->gateway;
+
+            $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
+
+            $creator->localFilePath($analyticsOutputFilePath)
+                ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                ->name($dirPath . '/' . $analyticsOutputFileName)
+                ->extension($extension)
+                ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
+                ->entity($batch)
+                ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
+                ->save();
+
+            $fileStoreEntity = $creator->get();
+
+            $traceData = [
+                'file_id' => $fileStoreEntity['id'],
+                'file_name' => $fileStoreEntity['name'],
+                'batch_id' => $batchId,
+                'gateway' => $this->gateway,
+            ];
+
+            $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
+        }
     }
 
     protected function getOutputWithRemovedBlackListedColumns($reconOutputData)
