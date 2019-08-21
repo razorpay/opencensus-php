@@ -222,7 +222,7 @@ export default class RefundModal extends Component {
                     <p>Note</p>
                     <p>
                       If the instant refund is unsuccessful, the fee will be
-                      reversed. The payment will still be reversed in 5-7 days.
+                      reversed. The payment will still be refunded in 5-7 days.
                     </p>
                   </div>
                 </React.Fragment>
