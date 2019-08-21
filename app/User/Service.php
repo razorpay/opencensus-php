@@ -197,7 +197,7 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $data) = $this->checkAccessOfUserOnMerchant($user->id, $merchantId);
+        list($error, $data) = $this->checkAccessOfUserOnMerchant($merchantId);
 
         if (empty($error) === true)
         {
@@ -656,7 +656,7 @@ class Service extends Base\Service
         return [$error, $genericUser];
     }
 
-    protected function checkAccessOfUserOnMerchant($userId, $merchantId)
+    protected function checkAccessOfUserOnMerchant($merchantId)
     {
         $request = new \App\Admin\ApiRequestAny();
 
@@ -664,7 +664,7 @@ class Service extends Base\Service
             'merchant_id'   => $merchantId,
         ];
 
-        $path = 'users/'.$userId.'/access';
+        $path = 'users/access';
 
         return $request->send($path.'?'.http_build_query($queryParams), 'GET');
     }
