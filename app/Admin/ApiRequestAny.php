@@ -101,9 +101,14 @@ class ApiRequestAny
 
         $originDomain = ApiUrl::getRequestOriginUrl();
 
+        $requestedClientIPS = \Request::ips();
+
+        $clientIp = end($requestedClientIPS);
+
         $defaultHeaders = [
             'X-Dashboard'       => 'true',
             'X-User-Agent'      => Request::header('User-Agent'),
+            'X-Dashboard-Ip'    => $clientIp,
             'X-IP-Address'      => Request::ip(),
             'X-Org-Hostname'    => $domain,
             'X-Request-Origin'  => $originDomain,
