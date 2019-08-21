@@ -440,9 +440,7 @@ class GatewayController extends Controller
 
         $payment = $this->app['repo']->payment->findOrFail($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $publicPaymentId = $payment->getPublicId();
 
@@ -491,9 +489,7 @@ class GatewayController extends Controller
 
         $publicPaymentId = $payment->getPublicId();
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
