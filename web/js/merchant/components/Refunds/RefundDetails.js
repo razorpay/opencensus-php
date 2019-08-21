@@ -59,17 +59,16 @@ export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
                 {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
                   <EntityDetailRow
                     label="Refund Mode"
-                    value={() =>
-                      refund.speed_change_time ? (
-                        <RefundUpdate
-                          strikeThroughContent="Instant"
-                          updatedContent="Normal"
-                          description="Refund mode updated to normal as this refund was not able to be processed instantly."
-                        />
+                    value={() => {
+                      return refund.speed_processed !== null ? (
+                        <span>
+                          {refund.speed_processed.charAt(0).toUpperCase() +
+                            refund.speed_processed.slice(1)}
+                        </span>
                       ) : (
-                        <span>{refund.speed_processed}</span>
-                      )
-                    }
+                        <span>{'Instant'}</span>
+                      );
+                    }}
                   />
                 ) : null}
 

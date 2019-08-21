@@ -180,7 +180,6 @@ export default class RefundModal extends Component {
     if (hasAmountErrors) {
       return;
     }
-    this.props.fetchRefundFee(this.props.payment, props.amount);
 
     // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
     if (partial && props.reverse_all && this.props.transfers.items.length > 1) {
@@ -204,48 +203,52 @@ export default class RefundModal extends Component {
 
     // If instant_refund is checked
     if (props.instant_refund) {
-      this.context
-        .confirm({
-          header: 'Do you want to refund this payment?',
-          message: () => (
-            <React.Fragment>
-              <div class="text-semi-muted">
-                <p>
-                  This payment will be instantly refunded to the customer. A fee
-                  of &#8377; {this.props.refundFee.data.fee} will be charged
-                  from your unsettled balance.
-                </p>
-              </div>
-              <div class="confirm-note">
-                <p>Note</p>
-                <p>
-                  If the instant refund is unsuccessful, the fee will be
-                  reversed. The payment will still be reversed in 5-7 days.
-                </p>
-              </div>
-            </React.Fragment>
-          ),
-          affirmativeLabel: 'Yes, Refund',
-          affirmativePendingLabel: 'Refunding...',
-          abortLabel: "No, don't!",
-          action: () => {
-            window.rzpAnalytics({
-              eventCategory: 'Dashboard - Payments',
-              eventAction: 'Refund - Payment',
-              eventLabel: `payment_id=${this.props.payment.id}`,
-              speed_requested: 'optimum',
-            });
+      this.props
+        .fetchRefundFee(this.props.payment, props.amount * 100)
+        .then(() => {
+          this.context
+            .confirm({
+              header: 'Do you want to refund this payment?',
+              message: () => (
+                <React.Fragment>
+                  <div class="text-semi-muted">
+                    <p>
+                      This payment will be instantly refunded to the customer. A
+                      fee of &#8377; {this.props.refundFee.data.fee} will be
+                      charged from your unsettled balance.
+                    </p>
+                  </div>
+                  <div class="confirm-note">
+                    <p>Note</p>
+                    <p>
+                      If the instant refund is unsuccessful, the fee will be
+                      reversed. The payment will still be reversed in 5-7 days.
+                    </p>
+                  </div>
+                </React.Fragment>
+              ),
+              affirmativeLabel: 'Yes, Refund',
+              affirmativePendingLabel: 'Refunding...',
+              abortLabel: "No, don't!",
+              action: () => {
+                window.rzpAnalytics({
+                  eventCategory: 'Dashboard - Payments',
+                  eventAction: 'Refund - Payment',
+                  eventLabel: `payment_id=${this.props.payment.id}`,
+                  speed_requested: 'optimum',
+                });
 
-            this.refund('optimum', props, partial);
-          },
-        })
-        .catch(() => {
-          window.rzpAnalytics({
-            eventCategory: 'Dashboard - Payments',
-            eventAction: 'Click - Cancel Refund',
-            eventLabel: `payment_id=${this.props.payment.id}`,
-            speed_requested: 'optimum',
-          });
+                this.refund('optimum', props, partial);
+              },
+            })
+            .catch(() => {
+              window.rzpAnalytics({
+                eventCategory: 'Dashboard - Payments',
+                eventAction: 'Click - Cancel Refund',
+                eventLabel: `payment_id=${this.props.payment.id}`,
+                speed_requested: 'optimum',
+              });
+            });
         });
     } else {
       this.context

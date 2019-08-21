@@ -8,36 +8,70 @@ function ShowTime({ time }) {
 export default class RefundStatusTimeline extends React.Component {
   getMilestones = refund => {
     const mileStones = [];
-    mileStones.push({
-      status: 'processing',
-      mode: `(${refund.speed_processed} refund)`,
-      timeStamp: refund.created_at,
-    });
 
-    if (refund.speed_change_time) {
-      mileStones.push(
-        {
-          text: 'Refund mode updated to Normal',
-          timeStamp: refund.speed_change_time,
-        },
-        {
+    if (refund.speed_processed === 'normal') {
+      if (refund.speed_requested === 'normal') {
+        mileStones.push({
           status: 'processing',
-          mode: `(${refund.speed_processed} refund)`,
-          timeStamp: refund.speed_change_time,
-        }
-      );
+          mode: `Normal Refund`,
+          timeStamp: refund.created_at,
+        });
+        mileStones.push({
+          status: 'processed',
+          mode: 'Normal Refund',
+          timeStamp: refund.created_at,
+        });
+      } else {
+        mileStones.push({
+          status: 'processing',
+          mode: `Instant Refund`,
+          timeStamp: refund.created_at,
+        });
+
+        mileStones.push(
+          {
+            text: 'Refund mode updated to Normal',
+            timeStamp: refund.speed_change_time
+              ? refund.speed_change_time
+              : refund.created_at,
+          },
+          {
+            status: 'processing',
+            mode: `Normal Refund`,
+            timeStamp: refund.speed_change_time
+              ? refund.speed_change_time
+              : refund.created_at,
+          }
+        );
+
+        mileStones.push({
+          status: 'processed',
+          mode: `Normal Refund`,
+          timeStamp: refund.speed_change_time
+            ? refund.speed_change_time
+            : refund.created_at,
+        });
+      }
     }
 
-    if (refund.public_status === 'processed') {
+    if (refund.speed_processed === 'instant') {
+      mileStones.push({
+        status: 'processing',
+        mode: `Instant Refund`,
+        timeStamp: refund.processed_at,
+      });
       mileStones.push({
         status: 'processed',
-        mode: `(${refund.speed_processed} refund)`,
-        timeStamp:
-          refund.speed_processed === 'normal'
-            ? refund.speed_change_time
-              ? refund.speed_change_time
-              : refund.created_at
-            : refund.processed_at,
+        mode: 'Instant Refund',
+        timeStamp: refund.processed_at,
+      });
+    }
+
+    if (refund.speed_processed === null) {
+      mileStones.push({
+        status: 'processing',
+        mode: `Instant Refund`,
+        timeStamp: refund.created_at,
       });
     }
 
