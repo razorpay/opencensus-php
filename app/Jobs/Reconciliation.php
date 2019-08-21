@@ -28,7 +28,7 @@ class Reconciliation extends Job
      */
     protected $params;
 
-    protected $queueConfigKey = 'recon_batch';
+    protected $queueConfigKey = 'reconciliation_batch';
 
     const MAX_KUBERNETES_JOB_COUNT = 8;
 

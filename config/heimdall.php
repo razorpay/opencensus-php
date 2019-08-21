@@ -765,6 +765,13 @@ return [
                 'workflow'    => true,
             ],
         ],
+
+        PermissionCategory::P2P => [
+            Permission::P2P_MANAGE_MERCHANT => [
+                'description'   => 'Allows to manage merchant setup',
+                'assignable'    => true,
+            ],
+        ],
     ],
 
     'workflows' => [

@@ -48,6 +48,9 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_METHOD_TYPE)
                   ->nullable();
 
+            $table->string(Pricing::PAYMENT_METHOD_SUBTYPE)
+                  ->nullable();
+
             $table->string(Pricing::AUTH_TYPE)
                   ->nullable();
 

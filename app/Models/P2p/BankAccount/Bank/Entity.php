@@ -18,13 +18,17 @@ class Entity extends Base\Entity
     const SPOC             = 'spoc';
 
     const UPI              = 'upi';
+    const BANK             = 'bank';
+    const BANKS            = 'banks';
 
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_bank';
     protected $primaryKey         = self::ID;
     protected $generateIdOnCreate = true;
-    protected static $generators  = [];
+    protected static $generators  = [
+        Entity::REFRESHED_AT,
+    ];
     protected static $sign        = 'bank';
 
     protected $dates = [
@@ -36,20 +40,22 @@ class Entity extends Base\Entity
     protected $fillable = [
         Entity::IFSC,
         Entity::NAME,
+        Entity::HANDLE,
+        Entity::GATEWAY_DATA,
         Entity::UPI_IIN,
         Entity::UPI_FORMAT,
         Entity::ACTIVE,
-        Entity::SPOC,
     ];
 
     protected $visible = [
         Entity::ID,
         Entity::IFSC,
         Entity::NAME,
+        Entity::HANDLE,
+        Entity::GATEWAY_DATA,
         Entity::UPI_IIN,
         Entity::UPI_FORMAT,
         Entity::ACTIVE,
-        Entity::SPOC,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -69,7 +75,6 @@ class Entity extends Base\Entity
         Entity::UPI_IIN          => null,
         Entity::UPI_FORMAT       => null,
         Entity::ACTIVE           => null,
-        Entity::SPOC             => null,
     ];
 
     protected $casts = [

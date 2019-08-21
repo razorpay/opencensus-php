@@ -3,6 +3,8 @@
 namespace RZP\Models\Terminal\Onboarding;
 
 use RZP\Models\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Core as TerminalCore;
 
@@ -27,8 +29,11 @@ class Service extends Base\Service
             TraceCode::TERMINAL_ENABLE_REQUEST,
             [
                 'merchant_id' => $merchantId,
-                'terminal_id' => $id
+                'terminal_id' => $id,
+                'partner_id'  => $this->app['basicauth']->getPartnerMerchantId()
             ]);
+
+        $this->verifyPartnerTerminalOnboardingAccess();
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
@@ -45,22 +50,50 @@ class Service extends Base\Service
             TraceCode::TERMINAL_DISABLE_REQUEST,
             [
                 'merchant_id' => $merchantId,
-                'terminal_id' => $id
+                'terminal_id' => $id,
+                'partner_id'  => $this->app['basicauth']->getPartnerMerchantId()
             ]);
+
+        $this->verifyPartnerTerminalOnboardingAccess();
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
         $terminal = (new TerminalCore)->toggle($terminal, false);
-        
+
         return $terminal->toArrayPublic();
     }
 
     public function fetchTerminals(array $input)
     {
+        $this->verifyPartnerTerminalOnboardingAccess();
+
         $merchantId = $this->merchant->getId();
 
         $terminals = $this->repo->terminal->fetch($input, $merchantId);
 
         return $terminals->toArrayPublic();
+    }
+
+    protected function verifyPartnerTerminalOnboardingAccess()
+    {
+        if ($this->isTerminalOnboardinglEnabled() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED);
+        }
+    }
+
+    protected function isTerminalOnboardinglEnabled()
+    {
+        $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+        if ($partnerMerchantId !== null)
+        {
+            $partnerMerchant = $this->repo->merchant->findOrFailPublic($partnerMerchantId);
+
+            return $partnerMerchant->isTerminalOnboardingEnabled();
+        }
+
+        return false;
     }
 }

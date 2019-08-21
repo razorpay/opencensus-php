@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Invitation;
 use DB;
 use Mail;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -170,6 +171,59 @@ class InvitationTest extends TestCase
 
         $this->assertEquals('manager', $merchants->role);
 
+    }
+
+    public function testAcceptInvitationByRestrictedMerchant()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->create(
+            'user',
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'testteaminvite@razorpay.com'
+            ]);
+
+        $merchant = $this->fixtures->create('merchant',
+                                            ['restricted' => true]);
+
+        $invitation = $this->fixtures->create('invitation',
+                                              ['merchant_id' => $merchant['id'],
+                                               'email'       => 'testteaminvite@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testAcceptInvitationForRestrictedUser()
+    {
+        $this->mockRazorxTreatment();
+
+        $user = $this->fixtures->create('user',
+                                [
+                                    'id'    => '1000InviteUser',
+                                    'email' => 'testteaminvite@razorpay.com'
+                                ]);
+
+        $merchantIdsCaller = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->edit($merchantIdsCaller[0], ['restricted' => true]);
+
+        $invitation = $this->fixtures->create('invitation',
+                                               ['email'       => 'testteaminvite@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 
     public function testRejectInvitation()
@@ -458,6 +512,56 @@ class InvitationTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertEquals(count($response['invitations']), 1);
+    }
+
+    public function testPostSendInvitationForUserRestricted()
+    {
+        $this->mockRazorxTreatment();
+
+        $userCaller = $this->fixtures->create('user');
+
+        $merchantIdsCaller = $userCaller->merchants()->get()->pluck('id')->toArray();
+
+        $user = $this->fixtures->create('user', ['email' => 'testteaminvite@razorpay.com']);
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->edit($merchantIds[0], ['restricted' => true]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIdsCaller[0], $userCaller['id'], 'owner');
+
+        $this->startTest();
+    }
+
+    protected function mockRazorxTreatment()
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('On');
+    }
+
+    public function testPostSendInvitationByMerchantRestricted()
+    {
+        $this->mockRazorxTreatment();
+
+        $userCaller = $this->fixtures->create('user');
+
+        $merchantIdsCaller = $userCaller->merchants()->get()->pluck('id')->toArray();
+
+        $user = $this->fixtures->create('user', ['email' => 'testteaminvite@razorpay.com']);
+
+        $this->fixtures->merchant->edit($merchantIdsCaller[0], ['restricted' => true]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIdsCaller[0], $userCaller['id'], 'owner');
+
+        $this->startTest();
     }
 
     protected function sendInvitation($attributes)

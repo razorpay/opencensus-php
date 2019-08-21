@@ -248,6 +248,8 @@ class Name
 
     // Perform write operations around stork integration e.g. webhook migrations etc
     const STORK_WRITE_OPERATION               = 'stork_write_operation';
+    // Permissions for P2P Service
+    const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

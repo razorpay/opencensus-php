@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type as CardType;
 use RZP\Models\Payment;
 use RZP\Models\Payout;
@@ -25,29 +26,30 @@ use RZP\Models\BankingAccountStatement\Channel as BASChannel;
 class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
-        Entity::PRODUCT             => 'sometimes|string|custom',
-        Entity::FEATURE             => 'sometimes|alpha_dash',
-        Entity::GATEWAY             => 'sometimes',
-        Entity::PROCURER            => 'sometimes|nullable|in:razorpay,merchant',
-        Entity::PLAN_NAME           => 'sometimes',
-        Entity::PAYMENT_METHOD      => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
-        Entity::PAYMENT_NETWORK     => 'sometimes|nullable|string',
-        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater|nullable|alpha|max:10',
-        Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
-        Entity::AUTH_TYPE           => 'sometimes_if:payment_method_type,debit|nullable|in:pin',
-        Entity::INTERNATIONAL       => 'sometimes|in:0,1',
-        Entity::RECEIVER_TYPE       => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code',
-        Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
-        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|integer|nullable|max:20000000000',
-        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|integer|nullable|min:100|max:20000000000',
-        Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
-        Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
-        Entity::MIN_FEE             => 'sometimes|integer|max:100000',
-        Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
-        Entity::TYPE                => 'sometimes|string|custom',
-        Entity::ACCOUNT_TYPE        => 'required_only_if:product,banking|filled|custom',
-        Entity::CHANNEL             => 'required_if:account_type,direct|filled|custom',
+        Entity::PRODUCT                 => 'sometimes|string|custom',
+        Entity::FEATURE                 => 'sometimes|alpha_dash',
+        Entity::GATEWAY                 => 'sometimes',
+        Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
+        Entity::PLAN_NAME               => 'sometimes',
+        Entity::PAYMENT_METHOD          => 'required|string',
+        Entity::PAYMENT_METHOD_TYPE     => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
+        Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
+        Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
+        Entity::PAYMENT_ISSUER          => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater|nullable|alpha|max:10',
+        Entity::EMI_DURATION            => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
+        Entity::AUTH_TYPE               => 'sometimes_if:payment_method_type,debit|nullable|in:pin',
+        Entity::INTERNATIONAL           => 'sometimes|in:0,1',
+        Entity::RECEIVER_TYPE           => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code',
+        Entity::AMOUNT_RANGE_ACTIVE     => 'sometimes|in:0,1',
+        Entity::AMOUNT_RANGE_MIN        => 'required_only_if:amount_range_active,1|integer|nullable|max:20000000000',
+        Entity::AMOUNT_RANGE_MAX        => 'required_only_if:amount_range_active,1|integer|nullable|min:100|max:20000000000',
+        Entity::PERCENT_RATE            => 'sometimes|integer|max:10000',
+        Entity::FIXED_RATE              => 'sometimes|integer|max:100000',
+        Entity::MIN_FEE                 => 'sometimes|integer|max:100000',
+        Entity::MAX_FEE                 => 'sometimes|nullable|integer|min:1|max:100000',
+        Entity::TYPE                    => 'sometimes|string|custom',
+        Entity::ACCOUNT_TYPE            => 'required_only_if:product,banking|filled|custom',
+        Entity::CHANNEL                 => 'required_if:account_type,direct|filled|custom',
     ];
 
     protected static $editPlanRuleRules = [
@@ -216,6 +218,13 @@ class Validator extends Base\Validator
                     throw new Exception\BadRequestValidationFailureException(
                         'Payment method type for card should be debit / credit / prepaid');
                 }
+            }
+
+            if (isset($input[Entity::PAYMENT_METHOD_SUBTYPE]) === true)
+            {
+                $subType = $input[Entity::PAYMENT_METHOD_SUBTYPE];
+
+                SubType::checkSubType($subType);
             }
         }
     }
@@ -529,6 +538,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
+                ($rule[Entity::PAYMENT_METHOD_SUBTYPE] === $newRule[Entity::PAYMENT_METHOD_SUBTYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
                 ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
@@ -547,6 +557,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
+                ($rule[Entity::PAYMENT_METHOD_SUBTYPE] === $newRule[Entity::PAYMENT_METHOD_SUBTYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
                 ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
