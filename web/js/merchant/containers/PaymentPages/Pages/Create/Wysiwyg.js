@@ -351,6 +351,33 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     });
 
+    if (isPPV3Enabled) {
+      if (!paymentPageItems.length) {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Add atleast 1 Price item',
+        });
+
+        return;
+      } else {
+        let has1PriceMandatory = false;
+        for (let i = 0; i < paymentPageItems.length; i++) {
+          if (paymentPageItems[i].mandatory) {
+            has1PriceMandatory = true;
+            break;
+          }
+        }
+        if (!has1PriceMandatory) {
+          this.props.showNotification({
+            type: 'error',
+            message: 'Atleast 1 Price item must be mandatory payable',
+          });
+
+          return;
+        }
+      }
+    }
+
     const isValidSchema = validateUISchema(udf_schema);
 
     if (!isValidSchema) {
