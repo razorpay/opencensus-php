@@ -16,6 +16,13 @@ export const QuickGuideTitle = ({ title = 'QUICK GUIDE' }) => (
 
 export const QuickGuideCloseBtn = ({ isCompleted, onClick }) => (
   <Button.Transparent onClick={onClick}>
-    {isCompleted ? <span class="done">Got It</span> : <i class="i i-close" />}
+    {isCompleted ? (
+      <span class="done">
+        {' '}
+        <i class="i i-thumbs-up" /> Got It{' '}
+      </span>
+    ) : (
+      <i class="i i-close" />
+    )}
   </Button.Transparent>
 );
