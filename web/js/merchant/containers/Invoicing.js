@@ -4,16 +4,17 @@ import { Route, NavLink, withRouter } from 'react-router-dom';
 
 import { RZPFeatures } from 'rzp/utils/constants';
 
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+import { fetchItems } from 'merchant/modules/items';
+
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import Invoices from 'merchant/containers/Invoices/List';
 import Customers from 'merchant/containers/Customers/List';
 import Items from 'merchant/containers/Items/List';
-
-import {
-  handleProductQuickGuide,
-  getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
 
 import OnBoarding, {
   getIsInvoicesEnabled,
@@ -37,16 +38,23 @@ import QuickGuide, {
   }),
   {
     handleProductQuickGuide,
+    fetchItems,
   }
 )
 export default class InvoicingContainer extends Component {
   componentDidMount() {
-    this.initPaymentLinksOnboarding();
+    this.initInvoicesOnboarding();
+
+    if (this.props.invoices.invoices.length) return;
+
+    if (!this.props.items.items.length) {
+      this.props.fetchItems();
+    }
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.invoices.loading != this.props.invoices.loading) {
-      this.initPaymentLinksOnboarding(nextProps);
+      this.initInvoicesOnboarding(nextProps);
     }
   }
 
@@ -56,27 +64,28 @@ export default class InvoicingContainer extends Component {
     if (invoicesProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...invoicesProductOnBoarding,
+        isQuickGuideOpen: false,
         isTour: false,
       });
     }
   }
 
-  initPaymentLinksOnboarding = (props = this.props) => {
+  initInvoicesOnboarding = (props = this.props) => {
     const data = {
       user: props.user,
       invoices: props.invoices,
       items: props.items,
     };
 
-    const isPaymentLinksEnabled = getIsInvoicesEnabled(data);
+    const isInvoicesEnabled = getIsInvoicesEnabled(data);
 
-    let showOnboarding = !isPaymentLinksEnabled;
+    let showOnboarding = !isInvoicesEnabled;
 
-    if (isPaymentLinksEnabled) {
+    if (isInvoicesEnabled) {
       showOnboarding = getIsAllowedResetInvoicesOnBoarding(data);
     } else {
       this.props.handleProductQuickGuide({
-        ...invoicesProductOnBoarding,
+        ...props.invoicesProductOnBoarding,
         showOnboarding: true,
       });
 
