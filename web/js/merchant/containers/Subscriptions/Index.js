@@ -73,6 +73,7 @@ export default class SubscriptionsController extends React.Component {
     ) {
       this.props.handleProductQuickGuide({
         ...subscriptionProductOnBoarding,
+        isQuickGuideOpen: false,
         isTour: false,
       });
     }

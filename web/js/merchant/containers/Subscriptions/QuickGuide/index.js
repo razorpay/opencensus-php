@@ -75,6 +75,13 @@ export default class SubscriptionQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getSubscriptionQuickGuideIsClosed = props => {
+  if (
+    props.subscriptionProductOnBoarding &&
+    props.subscriptionProductOnBoarding.isQuickGuideOpen
+  ) {
+    return false;
+  }
+
   if (props.subscriptions.loading) return true;
 
   let isClosed = getQuickGuideIsClosedFromLocalStorage(
