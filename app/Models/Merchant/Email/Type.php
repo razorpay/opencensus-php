@@ -8,7 +8,8 @@ class Type
     const SUPPORT       = 'support';
     const REFUND        = 'refund';
     const DISPUTE       = 'dispute';
-    const CHARGEBACK    = 'charegback';
+    const CHARGEBACK    = 'chargeback';
+    const RZPINTERNAL   = 'rzpinternal';
 
     /**
      * Use to strictly reject any communication even
