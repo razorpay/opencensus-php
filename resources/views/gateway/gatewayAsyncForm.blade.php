@@ -89,7 +89,7 @@
       opacity: 0.8;
     }
 
-    #banner {
+    .banner {
       padding: 24px;
     }
 
@@ -122,9 +122,7 @@
 </head>
 <body>
   <div id='content'>
-    <div id="banner">
-      <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
-
+    <div class="banner">
       {{-- Add the merchant logo if it exists --}}
       @if (isset($data['merchant_logo_url']) === true)
         <img src="{{$data["merchant_logo_url"]}}" id="merc_logo" style="max-height: 52px; margin: 20px auto; display: block;">
@@ -145,6 +143,10 @@
         <div id="cancel-btn"><b>Cancel Payment</b></div>
         <div class="hide" id="retry-btn" onclick="initUpiActivity()"><b>Retry Payment</b></div>
       </div>
+    </div>
+
+    <div class="banner">
+      <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
     </div>
 
     <form id="form" method="post"></form>
