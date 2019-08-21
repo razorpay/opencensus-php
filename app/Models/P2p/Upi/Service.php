@@ -42,6 +42,21 @@ class Service extends Base\Service
                 $processor = new Transaction\Processor;
 
                 $processor->processAction($context[Base\Entity::ACTION], $callback);
+
+                break;
+
+            case Transaction\Entity::CONCERNS:
+
+                foreach ($callback[Transaction\Entity::CONCERNS] as $concern)
+                {
+                    $processor = new Transaction\Processor;
+
+                    $device = $this->processor->resolveDeviceFromConcern($concern);
+
+                    $processor->processAction($context[Base\Entity::ACTION], [
+                        Transaction\Entity::CONCERN => $concern,
+                    ], $device);
+                }
         }
     }
 }

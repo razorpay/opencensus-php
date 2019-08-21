@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
@@ -203,7 +204,7 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function getBankingDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    public function getBankingSharedAccountDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
 
@@ -211,6 +212,21 @@ class Repository extends Base\Repository
                     ->product(Product::BANKING)
                     ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
                     ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::SHARED)
+                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->get();
+    }
+
+    public function getBankingDirectAccountDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    {
+        $orgId = $merchant->getOrgId();
+
+        return $this->newQuery()
+                    ->product(Product::BANKING)
+                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->get();

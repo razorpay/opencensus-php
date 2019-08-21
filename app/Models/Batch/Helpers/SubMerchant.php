@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Batch\Helpers;
 
+use Illuminate\Support\Arr;
 use RZP\Models\Batch\Header;
+use RZP\Models\Batch\Constants;
 use RZP\Models\User\Entity as User;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
@@ -84,6 +86,37 @@ class SubMerchant
             MDEntity::COMPANY_CIN                 => $e[Header::COMPANY_CIN],
             MDEntity::COMPANY_PAN                 => $e[Header::COMPANY_PAN],
             MDEntity::COMPANY_PAN_NAME            => $e[Header::COMPANY_PAN_NAME],
+        ];
+    }
+
+    /**
+     * Sanitizes merchant detail input
+     *
+     * @param array  $detailInput
+     *
+     * @param string $context
+     *
+     * @return array
+     */
+    public static function sanitizeMerchantDetailInput(array $detailInput, string $context = '')
+    {
+        $keysToSanitize = self::getKeysToSanitize()[$context] ?? [];
+
+        return Arr::except($detailInput, $keysToSanitize);
+    }
+
+    private static function getKeysToSanitize(): array
+    {
+        return [
+            Constants::BANK_DETAILS     => [
+                MDEntity::BANK_ACCOUNT_NUMBER,
+                MDEntity::BANK_BRANCH_IFSC,
+                MDEntity::BANK_ACCOUNT_NAME,
+            ],
+            Constants::CATEGORY_DETAILS => [
+                MDEntity::BUSINESS_CATEGORY,
+                MDEntity::BUSINESS_SUBCATEGORY,
+            ]
         ];
     }
 

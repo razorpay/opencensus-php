@@ -167,7 +167,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $this->repo->banking_account->saveOrFail($bankingAccount);
     }
-    
+
     public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
     {
         $rbl = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
@@ -192,11 +192,12 @@ class Processor extends BankingAccount\Gateway\Processor
         return $body;
     }
 
-    public function getBalanceAttributesToSave()
+    public function getBalanceAttributesToSave(BankingAccount\Entity $bankingAccount)
     {
         $attributes = [
             Balance\Entity::ACCOUNT_TYPE        => Balance\AccountType::DIRECT,
-            Balance\Entity::CHANNEL             => Balance\Channel::RBL
+            Balance\Entity::CHANNEL             => Balance\Channel::RBL,
+            Balance\Entity::ACCOUNT_NUMBER      => $bankingAccount->getAccountNumber(),
         ];
 
         return $attributes;
@@ -283,7 +284,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
                     ($retryCount < self::MAX_MOZART_RETRIES))
                 {
-                    $this->trace-info(
+                    $this->trace->info(
                         TraceCode::MOZART_SERVICE_RETRY,
                         [
                             'message' => $exception->getMessage(),
@@ -310,7 +311,7 @@ class Processor extends BankingAccount\Gateway\Processor
     protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount, array $input)
     {
         $credentials = $this->getAccountCredentials();
-        
+
         $merchantCredentials = [
             Fields::SUBCORP_ID                => $input[Fields::SUBCORP_ID],
             Fields::SUBCORP_USER_ID           => $input[Fields::SUBCORP_USER_NAME],

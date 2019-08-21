@@ -123,4 +123,18 @@ class Service extends Base\Service
             );
         }
     }
+
+    public function bulkCreateBankingAccountsForYesbank(array $input)
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_YESBANK_BULK_CREATE_REQUEST,
+            [
+                'input'     => $input,
+                'channel'   => Channel::YESBANK,
+            ]);
+
+        $response = $this->core->bulkCreateBankingAccountsForYesbank($input);
+
+        return $response;
+    }
 }

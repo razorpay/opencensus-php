@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::TYPE             => 'required|string|custom',
         Entity::ACCOUNT_TYPE     => 'filled|string|custom',
         Entity::CHANNEL          => 'sometimes|string|nullable|custom',
+        Entity::ACCOUNT_NUMBER   => 'sometimes|string|nullable',
     ];
 
     protected function validateType($attribute, $type)

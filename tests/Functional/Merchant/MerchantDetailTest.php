@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Services\HubspotClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -61,6 +62,8 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+
+        $this->mockHubSpotClient('trackL2ContactProperties');
 
         $this->startTest();
     }
@@ -592,11 +595,26 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    protected function mockHubSpotClient($methodName)
+    {
+        $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods([$methodName])
+                            ->getMock();
+
+        $this->app->instance('hubspot', $hubSpotMock);
+
+        $hubSpotMock->expects($this->exactly(1))
+                    ->method($methodName);
+    }
+
     public function testPutPreSignupDetails()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+
+        $this->mockHubSpotClient('trackPreSignupEvent');
 
         $this->startTest();
     }
@@ -690,7 +708,12 @@ class MerchantDetailTest extends TestCase
      */
     public function testUpdateCriticalFieldsPostActivation()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $attributes = [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::MUTUAL_FUND,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
 
         $merchantId = $merchantDetail['merchant_id'];
 

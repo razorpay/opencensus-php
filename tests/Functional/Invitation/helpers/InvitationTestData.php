@@ -207,6 +207,60 @@ return [
         ]
     ],
 
+    'testAcceptInvitationByRestrictedMerchant' => [
+        'request'   => [
+            'url'     => '/invitations/8hd48md930kel3/accept',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVITATION_ACCEPT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_ACCEPT_FAILED,
+        ],
+    ],
+
+    'testAcceptInvitationForRestrictedUser' => [
+        'request'   => [
+            'url'     => '/invitations/8hd48md930kel3/accept',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVITATION_ACCEPT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_ACCEPT_FAILED,
+        ],
+    ],
+
     'testRejectInvitation' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3/reject',
@@ -475,6 +529,56 @@ return [
                 'email' => "upper_case@razorpay.com",
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testPostSendInvitationForUserRestricted' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'owner',
+                'sender_name' => 'sender_name'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVITATION_CREATE_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_CREATE_FAILED,
+        ],
+    ],
+
+    'testPostSendInvitationByMerchantRestricted' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'owner',
+                'sender_name' => 'sender_name'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVITATION_CREATE_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_CREATE_FAILED,
         ],
     ],
 ];

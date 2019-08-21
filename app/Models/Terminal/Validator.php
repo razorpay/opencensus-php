@@ -522,13 +522,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
     ];
     protected static $netbankingCbiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_cbi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+    ];
+
+    protected static $netbankingIbkTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_ibk',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
@@ -542,6 +545,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+    ];
+
+    protected static $netbankingIdbiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_idbi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
     ];
 
     protected static $netbankingVijayaTerminalRules = [

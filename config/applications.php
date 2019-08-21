@@ -138,7 +138,7 @@ return [
     ],
 
     'rbl' => [
-        'secret' => env('RBL_SECRET'),
+        'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
     ],
 
     'bharatqr' => [

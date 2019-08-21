@@ -458,9 +458,10 @@ class Selector extends Base\Core
 
     private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals, $filteredTerminals)
     {
+
         try
         {
-            if ($this->shouldHitRoutingService($merchant->getId()) === false)
+            if ($this->shouldHitRoutingService($payment->getId()) === false)
             {
                 return;
             }
@@ -469,7 +470,18 @@ class Selector extends Base\Core
 
             if ($payment->hasCard() === true)
             {
-                $paymentData['card'] = $this->repo->card->findOrFail($payment->getCardId())->toArray();
+                $card = $this->repo->card->findOrFail($payment->getCardId());
+
+                $paymentData['card'] = $card->toArray();
+
+                $iin = $card->iinRelation;
+
+                if ($iin !== null)
+                {
+                    $flows = $iin->getFlows();
+
+                    $paymentData['card']['flows'] = $flows;
+                }
             }
 
             if ($payment->getEmiPlanId() !== null)
@@ -517,7 +529,7 @@ class Selector extends Base\Core
         }
     }
 
-    protected function shouldHitRoutingService(string $merchantId)
+    protected function shouldHitRoutingService(string $paymentId)
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
@@ -531,7 +543,7 @@ class Selector extends Base\Core
             return false;
         }
 
-        $response = $this->app->razorx->getTreatment($merchantId, 'payments_hit_routing_service', $this->mode);
+        $response = $this->app->razorx->getTreatment($paymentId, 'payments_hit_routing_service', $this->mode);
 
         if (($response === 'on'))
         {

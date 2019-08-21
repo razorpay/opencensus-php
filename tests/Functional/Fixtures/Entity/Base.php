@@ -129,7 +129,7 @@ class Base
         return $entity;
     }
 
-    public function createEntityInTestAndLive($entity, $attributes = array())
+    public function createEntityInTestAndLive($entity, $attributes = [])
     {
         $this->eloquentUnguard();
 

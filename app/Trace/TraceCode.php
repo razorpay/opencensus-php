@@ -257,6 +257,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
 
+    const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
+
     const GATEWAY_INTERNAL_FORMATTED_RESPONSE                   = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
 
     const AUTO_CAPTURE_REFUND_DELAY                             = 'AUTO_CAPTURE_REFUND_DELAY';
@@ -1387,6 +1389,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_2FA_OTP_SMS_FOR_ACTION                         = 'VERIFY_2FA_OTP_SMS_FOR_ACTION';
     const SEND_2FA_OTP_SMS_FAILED                               = 'SEND_2FA_OTP_SMS_FAILED';
     const VERIFY_2FA_OTP_SMS_FOR_ACTION_FAILED                  = 'VERIFY_2FA_OTP_SMS_FOR_ACTION';
+    const USER_CONTACT_MOBILE_UPDATE                            = 'USER_CONTACT_MOBILE_UPDATE';
+    const USER_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'USER_ACCOUNT_LOCK_UNLOCK_ACTION';
 
     //Trace codes for 2fa features
     const LOCKED_USER_LOGIN                                     = 'LOCKED_USER_LOGIN';
@@ -1395,6 +1399,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_LOGIN_2FA_WRONG_OTP                              = 'USER_LOGIN_2FA_WRONG_OTP';
     const USER_LOGIN_2FA_OTP_SENT                               = 'USER_LOGIN_2FA_OTP_SENT';
     const USER_LOGIN_2FA_ACCOUNT_LOCKED                         = 'USER_LOGIN_2FA_ACCOUNT_LOCKED';
+    const MERCHANT_RESTRICTED_SETTINGS                          = 'MERCHANT_RESTRICTED_SETTINGS';
 
     // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';
@@ -1402,6 +1407,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVITATION_ACCEPT                                     = 'INVITATION_ACCEPT';
     const INVITATION_REJECT                                     = 'INVITATION_REJECT';
     const INVITATION_EMAIL                                      = 'INVITATION_EMAIL';
+    const INVITATION_CREATE_FAILED                              = 'INVITATION_CREATE_FAILED';
+    const INVITATION_ACCEPT_FAILED                              = 'INVITATION_ACCEPT_FAILED';
 
     // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST                           = 'GATEWAY_RULE_CREATE_REQUEST';
@@ -1938,6 +1945,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DUPLICATE_ACCOUNT_INFO_WEBHOOK                        = 'DUPLICATE_ACCOUNT_INFO_WEBHOOK';
     const BANKING_ACCOUNT_ENTITY_CREATED                        = 'BANKING_ACCOUNT_ENTITY_CREATED';
     const BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE                 = 'BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE';
+    const BANKING_ACCOUNT_YESBANK_BULK_CREATE_REQUEST           = 'BANKING_ACCOUNT_YESBANK_BULK_CREATE_REQUEST';
+    const BANKING_ACCOUNT_YESBANK_CREATE_FAILED                 = 'BANKING_ACCOUNT_YESBANK_CREATE_FAILED';
+    const BANKING_ACCOUNT_YESBANK_BULK_CREATE_RESPONSE          = 'BANKING_ACCOUNT_YESBANK_BULK_CREATE_RESPONSE';
     const BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST          = 'BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST';
     const BANKING_ACCOUNT_FTS_MAPPING_ALREADY_PRESENT           = 'BANKING_ACCOUNT_FTS_MAPPING_ALREADY_PRESENT';
     const BANKING_ACCOUNT_FTS_MAPPING_CREATION_RESPONSE         = 'BANKING_ACCOUNT_FTS_MAPPING_CREATION_RESPONSE';
@@ -1973,7 +1983,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPTURE_VERIFY_ONHOLD_ACTION                          = 'CAPTURE_VERIFY_ONHOLD_ACTION';
     const CAPTURE_VERIFY_FAILED_PAYMENT                         = 'CAPTURE_VERIFY_FAILED_PAYMENT';
 
-
     // Mozart Service
     const MOZART_SERVICE_UNEXPECTED_RESPONSE                    = 'MOZART_SERVICE_UNEXPECTED_RESPONSE';
     const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
@@ -1987,6 +1996,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
 
+    // Stork service
+    const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
+    const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
+
+    // Terminal Onboarding
+    const TERMINAL_ENABLE_REQUEST                               = 'TERMINAL_ENABLE_REQUEST';
+    const TERMINAL_DISABLE_REQUEST                              = 'TERMINAL_DISABLE_REQUEST';
+
     // Smart Routing
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
@@ -1999,6 +2016,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SET_CHANNEL_STATE_FAILED                              = 'SET_CHANNEL_STATE_FAILED';
     const GET_CHANNEL_STATE_FAILED                              = 'GET_CHANNEL_STATE_FAILED';
+
+    const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

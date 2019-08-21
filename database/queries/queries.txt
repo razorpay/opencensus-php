@@ -5041,6 +5041,9 @@ ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
+ALTER TABLE `pricing`
+    ADD COLUMN `payment_method_subtype` VARCHAR(255) NULL;
+
 ALTER TABLE `merchants`
     ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
     ADD COLUMN `restricted` BOOLEAN DEFAULT 0 NOT NULL AFTER `second_factor_auth`;
@@ -5092,14 +5095,14 @@ ALTER TABLE `refunds`
     ADD COLUMN `speed_decisioned` enum('normal', 'optimum', 'instant') NOT NULL DEFAULT 'normal' AFTER `speed_requested`;
 
 ALTER TABLE `action_checker`
-	ADD COLUMN `checker_type` VARCHAR(255) DEFAULT NULL AFTER admin_id,
-	ADD COLUMN `checker_id` CHAR(14) DEFAULT NULL AFTER checker_type,
-	MODIFY COLUMN admin_id CHAR(14) DEFAULT NULL,
-	ADD INDEX action_checker_checker_id_index (checker_id);
+    ADD COLUMN `checker_type` VARCHAR(255) DEFAULT NULL AFTER admin_id,
+    ADD COLUMN `checker_id` CHAR(14) DEFAULT NULL AFTER checker_type,
+    MODIFY COLUMN admin_id CHAR(14) DEFAULT NULL,
+    ADD INDEX action_checker_checker_id_index (checker_id);
 
 ALTER TABLE action_state
-	ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER merchant_id,
-	ADD INDEX action_state_user_id_index (user_id);
+    ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD INDEX action_state_user_id_index (user_id);
 
 ALTER TABLE `workflow_payout_amount_rules`
     CHANGE COLUMN x_amount min_amount BIGINT UNSIGNED DEFAULT NULL,
@@ -5113,12 +5116,12 @@ ALTER TABLE payouts
 
 ALTER TABLE `workflow_actions`
     ADD COLUMN `state_changer_type` VARCHAR(255) DEFAULT NULL AFTER state_changer_id,
-	MODIFY COLUMN state_changer_id CHAR(14) DEFAULT NULL,
+    MODIFY COLUMN state_changer_id CHAR(14) DEFAULT NULL,
     DROP FOREIGN KEY workflow_actions_state_changer_id_foreign;
 
 ALTER TABLE workflows
-	ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
-	ADD INDEX workflows_merchant_id_index (merchant_id);
+    ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
+    ADD INDEX workflows_merchant_id_index (merchant_id);
 
 ALTER TABLE banking_accounts
        ADD COLUMN bank_internal_reference_number VARCHAR(255) DEFAULT NULL AFTER balance_id,
@@ -5161,7 +5164,7 @@ ALTER table `gateway_rules`
     ADD COLUMN org_id VARCHAR(14) NOT NULL DEFAULT '100000razorpay' AFTER `merchant_id`,
     MODIFY COLUMN merchant_id varchar(14) DEFAULT NULL,
     ADD INDEX gateway_rules_org_id_merchant_id_index (`org_id`, `merchant_id`);
-    
+
 ALTER TABLE banking_accounts
     CHANGE COLUMN reference_1 reference1 varchar(255) DEFAULT NULL,
     ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
@@ -5201,3 +5204,33 @@ ALTER table terminals
     ADD COLUMN `notes` TEXT DEFAULT NULL AFTER `ifsc_code`,
     ADD INDEX terminals_org_id_index (`org_id`),
     ADD INDEX terminals_status_index (`status`);
+
+ALTER TABLE reversals
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER channel,
+    ADD INDEX reversals_utr_index (utr);
+
+ALTER TABLE external
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
+    ADD INDEX external_utr_index (utr);
+
+ALTER TABLE `banking_account_statement`
+  DROP INDEX `banking_account_statement_bank_transaction_id_unique`,
+  ADD UNIQUE INDEX `banking_account_statement_bank_txn_id_srl_no_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`, `bank_serial_number`);
+
+ALTER TABLE `pricing`
+    ADD COLUMN `account_type` VARCHAR(255) DEFAULT NULL AFTER `receiver_type`,
+    ADD COLUMN `channel` VARCHAR(255) DEFAULT NULL AFTER `account_type`,
+    ADD INDEX `pricing_account_type_index` (`account_type`),
+    ADD INDEX `pricing_channel_index` (`channel`);
+
+ALTER TABLE payouts
+    ADD COLUMN failed_at INT(11) DEFAULT NULL AFTER `reversed_at`,
+    ADD INDEX payouts_failed_at_index (failed_at);
+
+ALTER TABLE merchants
+    ADD COLUMN dashboard_whitelisted_ips_live text DEFAULT NULL AFTER whitelisted_ips_test,
+    ADD COLUMN dashboard_whitelisted_ips_test text DEFAULT NULL AFTER dashboard_whitelisted_ips_live;
+
+ALTER TABLE payments
+    CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;

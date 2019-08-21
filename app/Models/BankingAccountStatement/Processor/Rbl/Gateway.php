@@ -59,6 +59,8 @@ class Gateway extends BaseProcessor
                     self::MOZART_ACTION,
                     $requestData);
 
+                $this->modifyBankResponse($bankResponse);
+
             }
             catch (Exception\GatewayErrorException $ex)
             {
@@ -90,6 +92,23 @@ class Gateway extends BaseProcessor
                  ($attemptCount < 3));
 
         return $finalFormattedResponse;
+    }
+
+    protected function modifyBankResponse(array & $response)
+    {
+        $txnDetails = $response[Fields::DATA][Fields::PAYMENT_GENERIC_RESPONSE]
+                               [Fields::BODY][Fields::TRANSACTION_DETAILS] ?? [];
+
+        if (empty($txnDetails) === true)
+        {
+            return;
+        }
+
+        if (is_associative_array($txnDetails) === true)
+        {
+            $response[Fields::DATA][Fields::PAYMENT_GENERIC_RESPONSE]
+                     [Fields::BODY][Fields::TRANSACTION_DETAILS] = [$txnDetails];
+        }
     }
 
     protected function validateMozartResponse(array $response)

@@ -3142,6 +3142,19 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         return (new TerminalService)->onboardMerchant($merchant, $input, false)
-                                    ->toArrayPublic();
+                                    ->toArrayAdmin();
+    }
+
+    public function applyRestrictedSettings(array $input): array
+    {
+        (new Validator)->validateInput('restrict_settings_merchant', $input);
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $action = $input[Entity::ACTION];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        return $this->core()->applyRestrictedSettings($merchant, $action);
     }
 }

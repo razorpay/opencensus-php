@@ -268,6 +268,9 @@ return [
             Permission::CREATE_RECONCILIATE                 => '',
             Permission::CREATE_PROMOTION_COUPON             => '',
             Permission::BATCH_API_CALL                      => '',
+            Permission::MERCHANT_RESTRICT                   => '',
+            Permission::UPDATE_USER_CONTACT_MOBILE          => '',
+            Permission::USER_ACCOUNT_LOCK_UNLOCK            => '',
             Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],
@@ -586,6 +589,9 @@ return [
             Permission::EDIT_THROTTLE_SETTINGS       => [
                 'description'  => 'Edit throttle settings',
             ],
+            Permission::STORK_WRITE_OPERATION           => [
+                'description' => 'Perform write operations around stork integration e.g. webhook migrations etc',
+            ],
         ],
 
         // Permissions
@@ -757,6 +763,13 @@ return [
                 'description' => 'Merchant can create a new payout',
                 'assignable'  => false,
                 'workflow'    => true,
+            ],
+        ],
+
+        PermissionCategory::P2P => [
+            Permission::P2P_MANAGE_MERCHANT => [
+                'description'   => 'Allows to manage merchant setup',
+                'assignable'    => true,
             ],
         ],
     ],

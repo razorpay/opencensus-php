@@ -44,28 +44,26 @@ class VerifyRefundData extends Base\Mock\Server
     public function wallet_phonepe($entities)
     {
         $response = [
-            'data'=>
+            'data' =>
                 [
-                    '_raw'=> '',
-                    'code'=> 'PAYMENT_SUCCESS',
-                    'data'=> [
-                        'amount'=> $entities['payment']['amount'],
-                        'merchantId'=> 'abc',
-                        'payResponseCode'=> 'SUCCESS',
-                        'paymentState'=> 'COMPLETED',
-                        'providerReferenceId'=> 'phonepeProviderRefId',
-                        'transactionId'=> $entities['refund']['id'],
-                    ],
-                    'message'=> 'Your payment is successful.',
-                    'received'=> true,
-                    'status'=> 'verification_successful',
-                    'success'=> true
+                    '_raw' => '',
+                    'code' => 'PAYMENT_SUCCESS',
+                    'amount' => $entities['payment']['amount'],
+                    'merchantId' => 'abc',
+                    'payResponseCode' => 'SUCCESS',
+                    'paymentState' => 'COMPLETED',
+                    'providerReferenceId' => 'phonepeProviderRefId',
+                    'transactionId' => $entities['refund']['id'],
+                    'message' => 'Your payment is successful.',
+                    'received' => true,
+                    'status' => 'verification_successful',
+                    'success' => true
                 ],
-            'error'=> null,
-            'external_trace_id'=> '',
-            'mozart_id'=> '',
-            'next'=> [],
-            'success'=> true,
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [],
+            'success' => true,
         ];
         return $response;
     }

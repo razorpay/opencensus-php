@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Admin;
+use RZP\Models\Batch;
 use RZP\Models\Device;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -23,6 +24,7 @@ use RZP\Models\EntityOrigin;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as User;
+use RZP\Models\Batch\Entity as BatchEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Account\Entity as Account;
 
@@ -323,6 +325,20 @@ class BasicAuth
      */
     public $partnerAuthCallbackData = [];
 
+    /**
+     * Sets context data when the batch flow is being executed
+     *
+     * @var array
+     */
+    protected $batchRequestContext = [];
+
+    /**
+     * Sets the batch object when the batch flow is being executed
+     *
+     * @var Batch\Entity
+     */
+    protected $batch;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -408,6 +424,36 @@ class BasicAuth
                 $this->authCreds->setKeyEntity($key);
             }
         }
+    }
+
+    /**
+     * Determines whether the current request through batch upload
+     *
+     * @return bool
+     */
+    public function isBatchFlow(): bool
+    {
+        return (empty($this->batch) === false);
+    }
+
+    public function setBatch(BatchEntity $batch)
+    {
+        $this->batch = $batch;
+    }
+
+    public function setBatchContext(array $batchRequestContext)
+    {
+        $this->batchRequestContext = $batchRequestContext;
+    }
+
+    public function getBatchContext()
+    {
+        if ($this->isBatchFlow() === true)
+        {
+            return $this->batchRequestContext;
+        }
+
+        return null;
     }
 
     /**

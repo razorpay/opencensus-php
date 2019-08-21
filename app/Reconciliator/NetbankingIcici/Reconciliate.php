@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\NetbankingIcici;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\RequestProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -20,6 +21,8 @@ class Reconciliate extends Base\Reconciliate
     ];
 
     const EXCLUDE_FILE_STRING = 'success';
+
+    const BLANK_FILE_SIZE = 100;
 
     /**
      * Currently Icici shares only payment report
@@ -97,6 +100,30 @@ class Reconciliate extends Base\Reconciliate
 
     public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
+        //
+        // We get many files of nb_icici, where the file
+        // content has just the below line (or something similar)
+        //
+        // "Cannot open ../data/../work/reports/P000000001440.success.dat for READ. [No such file or directory]"
+        //
+        // Such files have size = 100. Verified from DB that
+        // no other gateway has file size of 100 (since Jan 2018)
+        // So skipping size 100 files.
+        //
+        if ($fileDetails['size'] === self::BLANK_FILE_SIZE)
+        {
+            $this->trace->info(
+                TraceCode::RECON_FILE_SKIP,
+                [
+                    'info_code' => Base\InfoCode::RECON_SKIP_INVALID_BLANK_FILE,
+                    'file_name' => $fileDetails['file_name'],
+                    'size'      => $fileDetails['size'],
+                    'gateway'   => RequestProcessor\Base::NETBANKING_ICICI,
+                ]);
+
+            return true;
+        }
+
         if (strpos($fileDetails['file_name'], self::EXCLUDE_FILE_STRING) !== false)
         {
             return true;

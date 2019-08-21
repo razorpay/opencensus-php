@@ -210,7 +210,9 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
-           'account_number' => '1234567890'
+           'account_number'         => '1234567890',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
         ]);
 
         $dataToReplace = [
@@ -387,7 +389,6 @@ class BankingAccountTest extends TestCase
     public function testUpdateBankingAccountToUnserviceable()
     {
         $bankingAccount = $this->createBankingAccount();
-
 
         $this->fixtures->edit('banking_account',
             $bankingAccount['id'],

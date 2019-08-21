@@ -145,7 +145,7 @@ class NetbankingCbiRefundFileTest extends TestCase
 
             $testData = [
                 'body'        => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_CBI],
-                'file_name'   => "CBIRefunds_$today.txt",
+                'file_name'   => "CBIRefund_$today.txt",
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);

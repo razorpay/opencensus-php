@@ -128,6 +128,10 @@ class Base extends BaseModel\Core
         $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
 
         $this->app['basicauth']->setMerchant($this->merchant);
+
+        // Indicates that the request is being executed by a batch upload flow
+        $this->app['basicauth']->setBatch($batch);
+
     }
 
     public function setParams(array $params = null)
@@ -141,6 +145,15 @@ class Base extends BaseModel\Core
         $this->params = $params ?: [];
 
         return $this;
+    }
+
+    public function getBatchContext(): array
+    {
+        $batchContext                        = [];
+        $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
+        $batchContext[Batch\Constants::DATA] = $this->params;
+
+        return $batchContext;
     }
 
     /**
@@ -934,12 +947,11 @@ class Base extends BaseModel\Core
         {
             $this->trace->info(TraceCode::BATCH_FILE_PROCESS_USING_SPREADSHEET, $this->batch->toArrayTraceAll());
 
-            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
+            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath, $this->getNumRowsToSkipExcelFile());
         }
 
-        return $this->parentParseExcelSheets($filePath);
+        return $this->parentParseExcelSheets($filePath, $this->getStartRowExcelFiles());
     }
-
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {
@@ -1524,5 +1536,15 @@ class Base extends BaseModel\Core
         }
 
         return $result;
+    }
+
+    protected function getStartRowExcelFiles()
+    {
+        return 1;
+    }
+
+    protected function getNumRowsToSkipExcelFile()
+    {
+        return 0;
     }
 }

@@ -85,6 +85,8 @@ class Terminal extends Base
         $this->createSharedNetbankingEquitasTerminal();
         $this->createSharedNetbankingYesbTerminal();
         $this->createSharedNetbankingCubTerminal();
+        $this->createSharedNetbankingIbkTerminal();
+        $this->createSharedNetbankingIdbiTerminal();
         $this->createSharedNetbankingSbiTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
@@ -2282,6 +2284,40 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedNetbankingIbkTerminal(array $attributes = []){
+
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+        'id'                    => Shared::NETBANKING_IBK_TERMINAL,
+        'merchant_id'           => $merchantId,
+        'gateway'               => Gateway::NETBANKING_IBK,
+        'gateway_merchant_id'   => 'netbanking_ibk_merchant_id',
+        'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues,$attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingIdbiTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                   => Shared::NETBANKING_IDBI_TERMINAL,
+            'merchant_id'          => $merchantId,
+            'gateway'              => Gateway::NETBANKING_IDBI,
+            'gateway_merchant_id'  => 'netbanking_idbi_merchant_id',
+            'netbanking'           => 1,
+        ];
+
+        $attributes = array_merge($defaultValues,$attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingCubTpvTerminal(array $attributes = [])
     {
         $attributes = [
@@ -2291,6 +2327,22 @@ class Terminal extends Base
         ];
 
         return $this->createSharedNetbankingCubTerminal($attributes);
+    }
+
+    public function createSharedNetbankingIbkTpvTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $attributes = [
+            'id'               => '1000NbIbkTpvTl',
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_IBK,
+            'gateway_merchant_id'   => 'netbanking_ibk_merchant_id',
+            'netbanking'            => 1,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedNetbankingIbkTerminal($attributes);
     }
 
     public function createSharedNetbankingSbiTerminal(array $attributes = [])

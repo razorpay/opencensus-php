@@ -1250,23 +1250,41 @@ class Service extends Base\Service
     public function timeoutOldPayments(array $input)
     {
         $count = 0;
-        $error = 0;
 
         $limit = $input['limit'] ?? 1000;
+
+        $allMethods = Payment\Method::getAllPaymentMethods();
+
+        foreach ($allMethods as $method)
+        {
+            $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method);
+        }
+
+        return ['count' => $count];
+    }
+
+    public function timeoutOldPaymentsForMethod($limit, $method)
+    {
+        $count = 0;
+
+        $error = 0;
 
         $startTime = microtime(true);
 
         // All Payments in created state will be marked as failed after 9 minutes
         $now = time();
+
         $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
-        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp, $limit);
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForMethodForTimeout($timestamp, $limit, $method);
+
+        $total = count($payments);
 
         foreach ($payments as $payment)
         {
             if ($payment->shouldTimeout($now) === true)
             {
-                $this->repo->transaction(function() use ($payment, & $count, & $error)
+                $this->repo->transaction(function () use ($payment, & $count, & $error)
                 {
                     $this->repo->payment->lockForUpdateAndReload($payment);
 
@@ -1279,6 +1297,7 @@ class Service extends Base\Service
                         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
                         $count++;
+
                     }
                     catch (\Throwable $e)
                     {
@@ -1293,13 +1312,14 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::PAYMENT_TIMED_OUT,
             [
+                'total'      => $total,
                 'count'      => $count,
                 'error'      => $error,
                 'timestamp'  => time(),
                 'time_taken' => microtime(true) - $startTime
             ]);
 
-        return ['count' => $count];
+        return $count;
     }
 
     public function autoCaptureOldAuthorizedPayments()
