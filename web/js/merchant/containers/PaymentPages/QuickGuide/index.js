@@ -83,6 +83,10 @@ export const getPaymentPageQuickGuideIsClosed = props => {
     return false;
   }
 
+  if (props.invoices.loading) {
+    return true;
+  }
+
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PP);
 
   // Check if transfers non created state count is more then or equal to 2
