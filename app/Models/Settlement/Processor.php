@@ -748,10 +748,12 @@ class Processor extends Base\Core
         }
 
         // trace metric to get idea on time taken
-        $this->trace->gauge(
+        $this->trace->count(
             Metric::TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT,
-            get_diff_in_millisecond($startTime),
-            $totalCount);
+            [
+                'time_taken'  => get_diff_in_millisecond($startTime),
+                'total_count' => $totalCount,
+            ]);
 
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE,

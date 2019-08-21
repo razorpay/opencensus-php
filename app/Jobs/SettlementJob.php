@@ -87,7 +87,7 @@ class SettlementJob extends Job
 
             $operation = 'Settlement creation failed for MID:' . $this->merchantId;
 
-            (new SlackNotification)->send($operation, $data, null, 1);
+            (new SlackNotification)->send($operation, $data, $e);
         }
     }
 }

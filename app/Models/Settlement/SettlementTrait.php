@@ -363,8 +363,6 @@ trait SettlementTrait
         // the merchant's settlement window, because this transaction's
         // settlement should have been done at 9, and it's not delayed.
         //
-        // TODO: handle this my sending merchant ID in the settlement create
-        //  so the execution is overriden on these conditions
         if ((($txn->getSettledAt() <= $fivePm) and ($now > $fivePm)) or
             (($txn->getSettledAt() <= $nineAm) and ($now > $nineAm)))
         {
