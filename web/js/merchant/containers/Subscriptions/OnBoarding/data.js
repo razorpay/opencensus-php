@@ -41,7 +41,7 @@ export const FEATURES_LINKS = [
   },
   {
     label: 'View API Docs',
-    url: 'https://razorpay.com/docs/subscriptions/',
+    url: 'https://razorpay.com/docs/api/subscriptions/',
     ga: 'View API Docs',
   },
 ];
