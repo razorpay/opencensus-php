@@ -3,9 +3,11 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use Cache;
+use RZP\Models\BankingAccountStatement\StatementGenerator\Factory;
+
 
 use RZP\Models\Base;
-use RZP\Models\BankingAccountStatement;
+
 
 class Service extends Base\Service
 {
@@ -15,4 +17,16 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function generateAccountStatement(array $input)
+    {
+        $account_number = array_pull($input, Entity::ACCOUNT_NUMBER);
+        $channel = array_pull($input, Entity::CHANNEL);
+        $format = array_pull($input, Entity::FORMAT);
+        $x = Factory::getStatementGenerator($account_number, $channel, $format);
+        return $x->pdf();
+
+
+    }
+
 }

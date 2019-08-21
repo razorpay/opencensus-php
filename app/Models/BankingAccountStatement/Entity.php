@@ -39,6 +39,9 @@ class Entity extends Base\PublicEntity
     const POSTED_DATE           = 'posted_date';
     const TRANSACTION_DATE      = 'transaction_date';
 
+    // Used to find out which format the banking account statement is to be generated
+    const FORMAT                = 'format';
+
     // Relation names/attributes
     const SOURCE                = 'source';
 

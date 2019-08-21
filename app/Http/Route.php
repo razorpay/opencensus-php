@@ -13,8 +13,6 @@ use RZP\Models\Admin\Permission\Name as Permission;
 final class Route
 {
     protected static $apiRoutes = [
-        // Anubhav
-        'pdf_bank_account_statement' => ['get', 'pdf', 'PDFController@genPDF'],
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
 
@@ -1164,10 +1162,12 @@ final class Route
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
+        'banking_account_statement_pdf'       =>     ['get',      'banking_account_statement/pdf',                             'BankingAccountStatementController@pdf'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'banking_account_yesb_bulk_create'        => ['post',     'banking_accounts/bulk/create/yesbank',                      'BankingAccountController@bulkCreateBankingAccountsForYesbank' ],
+
     ];
 
     public static $public = [
@@ -1279,7 +1279,7 @@ final class Route
     ];
 
     public static $private = [
-        'pdf_bank_account_statement',
+        'banking_account_statement_pdf',
         'payment_create_private',
         'payment_create_private_old',
         'payment_create_private_json',

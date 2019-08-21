@@ -15,4 +15,13 @@ class BankingAccountStatementController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function pdf()
+    {
+        // Expected account_number, format, channel
+        $input = Request::all();
+        $response = $this->service()->generateAccountStatement($input);
+        return ApiResponse::json($response);
+
+    }
 }
