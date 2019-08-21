@@ -1,14 +1,6 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
-import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilter';
-import DataTable from 'rzp/ui/Table/DataTable';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
-import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import DocsLink from 'merchant/components/DocsLink';
-import ListContainer from 'merchant/containers/ListContainer';
-import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
 import {
   subscriptionId,
   planId,
@@ -19,10 +11,17 @@ import {
 } from 'rzp/ui/item/pair';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
-const link = {
-  title: 'Subscription Link',
-  value: item => <CopyLink url={item.short_url} />,
-};
+import DataTable from 'rzp/ui/Table/DataTable';
+import HeaderAction from 'rzp/ui/HeaderAction';
+
+import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
+
+import DocsLink from 'merchant/components/DocsLink';
+import EmptyList from 'merchant/components/EmptyList';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilter';
+
+import ListContainer from 'merchant/containers/ListContainer';
 
 @connect(state => state.subscriptions, { fetchAll })
 export default class SubscriptionsListContainer extends ListContainer {
@@ -58,7 +57,7 @@ export default class SubscriptionsListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/subscriptions/"/>
+            <DocsLink url="https://razorpay.com/docs/subscriptions/" />
             <NavLink class="btn btn-primary" to="/subscriptions/new">
               <i class="i i-plus" />
               <span>Create New Subscription</span>
@@ -87,9 +86,26 @@ export default class SubscriptionsListContainer extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
+          EmptyComponent={EmptyComponent}
           {...this.props}
         />
       </div>
     );
   }
 }
+
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no subscriptions yet!!</div>
+        <div>Create a plan first to create a subscription.</div>
+      </React.Fragment>
+    }
+  />
+);
+
+const link = {
+  title: 'Subscription Link',
+  value: item => <CopyLink url={item.short_url} />,
+};
