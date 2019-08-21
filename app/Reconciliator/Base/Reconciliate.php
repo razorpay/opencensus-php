@@ -293,7 +293,6 @@ class Reconciliate extends Base\Core
                 ->extension($extension)
                 ->type(FileStore\Type::RECONCILIATION_BATCH_OUTPUT)
                 ->entity($batch)
-                ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
                 ->save();
 
         $fileStoreEntity = $creator->get();
