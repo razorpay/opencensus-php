@@ -61,13 +61,6 @@ export default class FeatureEnableButton extends React.Component {
           isSuccess: true,
         });
 
-        setOnBoardingDataInLocalState({
-          feature: this.props.feature,
-          data: {
-            isEnabled: true,
-          },
-        });
-
         this.props.onClick && this.props.onClick(res);
 
         setTimeout(() => location.reload());
