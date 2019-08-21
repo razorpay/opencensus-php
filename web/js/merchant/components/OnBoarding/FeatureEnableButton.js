@@ -1,7 +1,5 @@
 import { connect } from 'react-redux';
 
-import LocalStorageService from 'rzp/utils/localStorage';
-
 import { AsyncBtn } from 'component/Button';
 
 import { classList } from 'common/util';
@@ -11,7 +9,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { updateFeatures } from 'merchant/modules/config';
 import { handleProductQuickGuide } from 'merchant/modules/onboarding';
 
-import { getOnBoardingKeys } from './index';
+import { setOnBoardingDataInLocalState } from './index';
 
 @connect(
   state => {
