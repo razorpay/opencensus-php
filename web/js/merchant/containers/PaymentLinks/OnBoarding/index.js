@@ -4,6 +4,11 @@ import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
 
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+
 import Landing from 'merchant/components/OnBoarding/Screens/Landing';
 import Features from 'merchant/components/OnBoarding/Screens/Features';
 import OnBoarding, {
@@ -18,11 +23,18 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
-@connect(state => ({
-  user: state.session.user,
-}))
+@connect(
+  state => ({
+    user: state.session.user,
+    paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.PL
+    ),
+  }),
+  { handleProductQuickGuide }
+)
 @OnBoarding({
-  feature: RZPFeatures.PP,
+  feature: RZPFeatures.PL,
 })
 export default class PaymentPagesOnBoarding extends React.Component {
   getNextBtnProp = sliderProps => () => {
@@ -40,6 +52,11 @@ export default class PaymentPagesOnBoarding extends React.Component {
     if (this.props.user.isPaymentLinksEnabled) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, false);
     }
+
+    this.props.handleProductQuickGuide({
+      ...this.props.paymentLinksProductOnBoarding,
+      showOnboarding: false,
+    });
 
     this.props.closeOnboarding();
   };
@@ -72,10 +89,10 @@ export default class PaymentPagesOnBoarding extends React.Component {
           {sliderProps => (
             <SliderDots {...sliderProps}>
               <SkipAndGetStartedButton
+                isLocalEnabler
                 onClick={this.props.closeOnboarding}
                 feature={RZPFeatures.PL}
                 page={sliderProps.active}
-                isLocalEnabler={user.isPaymentLinksEnabled}
               />
             </SliderDots>
           )}
