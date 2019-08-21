@@ -4,7 +4,12 @@ import { connect } from 'react-redux';
 
 import { fetchPlans } from 'merchant/modules/plans';
 import { fetchItems } from 'merchant/modules/items';
-import { saveSubscription } from 'merchant/modules/subscriptions';
+import {
+  fetchSubscription,
+  saveSubscription,
+} from 'merchant/modules/subscriptions';
+import { fetchAddOns } from 'merchant/modules/addons';
+import { fetchCustomer } from 'merchant/modules/customers';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { ModalAsideNav } from 'component/Wizard';
@@ -12,13 +17,17 @@ import { Modal, ModalContent } from 'component/Modal';
 import Form from 'component/Form';
 import Button, { AsyncBtn } from 'component/Button';
 
-import { stringToObj } from 'common/util';
-import { isPresent, findBy } from 'rzp/utils/rzp-utils';
+import { stringToObj, deepClone } from 'common/util';
+import { isPresent, findBy, getURLQueryParams } from 'rzp/utils/rzp-utils';
 
 import AddOnDetails from './AddOnDetails';
 import LinkDetails from './LinkDetails';
 import PlanDetails from '../common/PlanDetails';
 import Review from './Review';
+import Spinner from 'rzp/ui/Spinner';
+import moment from 'moment';
+
+import { trackSaveDuplicateSubscription } from '../../ga';
 
 @withRouter
 @connect(
@@ -27,7 +36,14 @@ import Review from './Review';
     items: state.items,
     user: state.session.user,
   }),
-  { fetchPlans, fetchItems, saveSubscription, showNotification }
+  {
+    fetchSubscription,
+    fetchCustomer,
+    fetchPlans,
+    fetchItems,
+    saveSubscription,
+    showNotification,
+  }
 )
 export default class NewSubscriptionLink extends Component {
   state = {
@@ -41,8 +57,127 @@ export default class NewSubscriptionLink extends Component {
   };
 
   componentWillMount() {
-    this.props.fetchPlans({ count: 100 });
+    this.props.fetchPlans({ count: 100 }).then(_ => this.initializePlan());
+
     this.props.fetchItems({ count: 100, type: 'addon' });
+
+    this.fetchIfIntentDuplicate();
+  }
+
+  initializePlan() {
+    if (
+      this.state.fields.plan_id &&
+      this.props.plans.items &&
+      this.props.plans.items.length
+    ) {
+      const currencyOfSelectedPlan = this.props.plans.items.filter(
+        p => p.id === this.state.fields.plan_id
+      )[0].item.currency;
+
+      this.setState({
+        currencyOfSelectedPlan,
+        isFetchingSubscription: false,
+      });
+    }
+  }
+
+  fetchIfIntentDuplicate() {
+    const searchQuery = getURLQueryParams(this.props.location.search);
+
+    if (searchQuery.duplicate_id) {
+      this.setState({
+        isFetchingSubscription: true,
+      });
+
+      this.props.fetchSubscription(searchQuery.duplicate_id).then(data => {
+        this.isIntentDuplicate = true;
+
+        let expire_by = data.expire_by && moment(data.expire_by * 1000);
+        let start_at = data.start_at && moment(data.start_at * 1000);
+
+        // If null or is before current time
+        if (!expire_by || expire_by.diff(moment()) < 0) {
+          expire_by = '';
+        } else {
+          expire_by = data.expire_by;
+        }
+
+        // If null or is before current time
+        if (!start_at || start_at.diff(moment()) < 0) {
+          start_at = '';
+        } else {
+          start_at = data.start_at;
+        }
+
+        const newSubscription = {
+          customer_notify: data.customer_notify,
+          plan_id: data.plan_id,
+          quantity: data.quantity,
+          start_at,
+          total_count: data.total_count,
+          expire_by,
+        };
+
+        newSubscription.notes = Object.keys(data.notes).map(key => ({
+          key,
+          value: data.notes[key],
+        }));
+
+        this.setState(
+          {
+            fields: newSubscription,
+            internals: {
+              _startsImmediately: !start_at,
+              _isNonExpiringLink: !expire_by,
+            },
+          },
+          _ => this.initializePlan()
+        );
+
+        // Fetch addons
+        fetchAddOns({
+          subscription_id: searchQuery.duplicate_id,
+        }).then(({ data }) => {
+          const addons = data.items.map(a => ({
+            item_id: a.item.id,
+            quantity: a.quantity,
+            item: {
+              name: a.item.name,
+              description: a.item.description,
+              amount: a.item.amount,
+              currency: a.item.currency,
+              type: 'addon',
+            },
+          }));
+
+          this.setState({
+            fields: {
+              ...this.state.fields,
+              addons,
+            },
+            internals: {
+              ...this.state.internals,
+              _addOnPresent: isPresent(addons),
+            },
+          });
+        });
+
+        // Fetch customer details
+        if (data.customer_notify) {
+          this.props.fetchCustomer(data.customer_id).then(data => {
+            this.setState({
+              fields: {
+                ...this.state.fields,
+                notify_info: {
+                  notify_email: data.email,
+                  notify_phone: data.contact,
+                },
+              },
+            });
+          });
+        }
+      });
+    }
   }
 
   handleTabChange = ({ target }) => {
@@ -169,6 +304,7 @@ export default class NewSubscriptionLink extends Component {
     fieldName = fieldName.replace('_time', '');
 
     let current = this.state.fields[fieldName];
+
     // adding time to current day
     current = Number(
       moment(current, 'X')
@@ -189,8 +325,12 @@ export default class NewSubscriptionLink extends Component {
   };
 
   handleCreate = () => {
+    if (this.isIntentDuplicate) {
+      trackSaveDuplicateSubscription();
+    }
+
     let { fields: data, internals } = this.state;
-    data = { ...data };
+    data = deepClone(data);
 
     if (internals._startsImmediately) {
       delete data.start_at;
@@ -329,8 +469,9 @@ export default class NewSubscriptionLink extends Component {
   }
 
   renderWizard() {
-    const { currentTab } = this.state;
+    const { isFetchingSubscription, currentTab } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
+
     return (
       // need to improve this css styling
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
@@ -346,46 +487,55 @@ export default class NewSubscriptionLink extends Component {
             tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]
           }
         />
-        <main class="form-container">
-          <main-title>{tabs[currentTab]}</main-title>
-          <Form
-            class="PaymentLinks--Create--Form"
-            layout="tabular"
-            onChange={this.handleChangeIn}
-          >
-            {this.renderForm()}
-          </Form>
-        </main>
-        <footer>
-          {currentTab > 0 && (
-            <Button onClick={this.changeTab(-1)} type="button">
-              Previous
-            </Button>
-          )}
-          {!isLastTab ? (
-            <Button.Primary
-              onClick={this.changeTab(1)}
-              type="button"
-              disabled={!this.isFormValid()}
-            >
-              Next
-            </Button.Primary>
-          ) : (
-            <AsyncBtn.Primary
-              pendingState="Creating..."
-              type="submit"
-              onClick={this.handleCreate}
-            >
-              Create Subscription Link
-            </AsyncBtn.Primary>
-          )}
-        </footer>
+        {isFetchingSubscription ? (
+          <div className="page-center">
+            <Spinner />
+          </div>
+        ) : (
+          <>
+            <main class="form-container">
+              <main-title>{tabs[currentTab]}</main-title>
+              <Form
+                class="PaymentLinks--Create--Form"
+                layout="tabular"
+                onChange={this.handleChangeIn}
+              >
+                {this.renderForm()}
+              </Form>
+            </main>
+            <footer>
+              {currentTab > 0 && (
+                <Button onClick={this.changeTab(-1)} type="button">
+                  Previous
+                </Button>
+              )}
+              {!isLastTab ? (
+                <Button.Primary
+                  onClick={this.changeTab(1)}
+                  type="button"
+                  disabled={!this.isFormValid()}
+                >
+                  Next
+                </Button.Primary>
+              ) : (
+                <AsyncBtn.Primary
+                  pendingState="Creating..."
+                  type="submit"
+                  onClick={this.handleCreate}
+                >
+                  Create Subscription Link
+                </AsyncBtn.Primary>
+              )}
+            </footer>
+          </>
+        )}
       </div>
     );
   }
 
   render() {
     const isModalView = this.props.onClose;
+
     return isModalView ? (
       <Modal
         class="NewSubscriptionLink animate-down"

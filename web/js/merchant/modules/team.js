@@ -1,6 +1,8 @@
 import { set, merge, unshift, remove } from 'rzp/utils/immutable';
 import defaultAjax, { merchantFetch } from 'merchant/utils/ajax';
 
+import Team from 'merchant/models/Team';
+
 export const TEAM_FETCH = 'TEAM_FETCH';
 export const INVITATION_SEND = 'INVITATION_SEND';
 export const INVITATION_RESEND = 'INVITATION_RESEND';
@@ -9,6 +11,9 @@ export const INVITATION_REMOVE = 'INVITATION_REMOVE';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_REMOVE = 'USER_REMOVE';
 export const UPDATE_SESSION = 'UPDATE_SESSION';
+
+const TEAM_MEMBER_DELETE = 'TEAM_MEMBER_DELETE';
+const TEAM_MEMBER_UNLOCK = 'TEAM_MEMBER_UNLOCK';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -70,17 +75,6 @@ export const updateInvitation = (inviteId, data) => {
   };
 };
 
-export const cancelInvitation = inviteId => {
-  return {
-    type: INVITATION_REMOVE,
-    payload: merchantFetch({
-      method: 'delete',
-      url: `invitations/${inviteId}`,
-      mode: 'live',
-    }),
-  };
-};
-
 export const updateUser = (userId, data) => {
   return {
     type: USER_UPDATE,
@@ -105,12 +99,19 @@ export const updateSelfContact = data => {
   };
 };
 
-export const removeUser = userId => {
+export const cancelInvitation = inviteId => {
+  const team = new Team();
   return {
-    type: USER_REMOVE,
-    payload: defaultAjax(`users/${userId}/detach`, {
-      method: 'put',
-    }),
+    type: TEAM_MEMBER_DELETE,
+    payload: team.cancelInvitation(inviteId),
+  };
+};
+
+export const removeUser = userId => {
+  const team = new Team();
+  return {
+    type: TEAM_MEMBER_DELETE,
+    payload: team.deleteMember(userId),
   };
 };
 
@@ -128,6 +129,10 @@ export const toggle2FaEnforcement = data => {
     }),
   };
 };
+export const unlock = memberId => ({
+  type: TEAM_MEMBER_UNLOCK,
+  payload: new Team().unlock(memberId),
+});
 
 let initialState = {
   loading: true,

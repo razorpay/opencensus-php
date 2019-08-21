@@ -1,32 +1,65 @@
 import fUnits from './field-units';
 
+let getUser;
+
+if (typeof window !== 'undefined') {
+  getUser = require('merchant/store').getUser;
+}
+
 /*
 * A. Type: text
-*    Validation: single line text(string), number, email, phone, url, large text area
+*    Validation: single line text(string), alphabets, alphanumeric, number, email, phone, url, large text area, pan, pincode
 *
 * B. Type: Select
 *     Validation: string
 *
 * */
 
-export const FIELD_TYPES = [
-  {
-    label: 'Text',
-    icon: 'sort i-fix-sort',
-    options: [
-      fUnits.str,
-      fUnits.number,
-      fUnits.email,
-      fUnits.phone,
-      fUnits.url,
-      fUnits.textarea,
-    ],
-  },
-  fUnits.dropdown,
-];
+export function getFieldTypes() {
+  let FIELD_TYPES = [
+    {
+      label: 'Text',
+      icon: 'sort i-fix-sort',
+      options: [
+        fUnits.str,
+        fUnits.number,
+        fUnits.email,
+        fUnits.phone,
+        fUnits.url,
+        fUnits.textarea,
+      ],
+    },
+    fUnits.dropdown,
+  ];
+
+  if (getUser && getUser().toShowExtraFieldsInPP) {
+    FIELD_TYPES = [
+      {
+        label: 'Text',
+        icon: 'sort i-fix-sort',
+        options: [
+          fUnits.str,
+          fUnits.alphabets,
+          fUnits.alphanumeric,
+          fUnits.number,
+          fUnits.email,
+          fUnits.phone,
+          fUnits.url,
+          fUnits.textarea,
+          fUnits.pan,
+          fUnits.pincode,
+        ],
+      },
+      fUnits.dropdown,
+    ];
+  }
+
+  return FIELD_TYPES;
+}
 
 export function flattenFIELD_TYPES() {
   const flatten = [];
+  const FIELD_TYPES = getFieldTypes();
 
   for (let i = 0; i < FIELD_TYPES.length; i++) {
     const FIELD = FIELD_TYPES[i];
@@ -66,23 +99,59 @@ export function mapFieldToIndex(field) {
       ? Object.keys(schemaFields.options)
       : {};
 
+    let isMismatch = false;
+
     if (
       FIELD_TYPES_keys.length !== field_keys.length ||
       FIELD_TYPES_opts_keys.length !== field_opts_keys.length
     ) {
+      isMismatch = true;
+    }
+
+    if (isMismatch) {
       continue;
     }
 
     for (let j = 0; j < FIELD_TYPES_keys.length; j++) {
-      if (FIELD_TYPES_keys[j] !== field_keys[j]) {
+      // EXCEPTION 1: values of schema.options is checked in next for-each block.
+      // EXCEPTION 2: value for enum is not to be compared as it's an array, it can be skipped and options.cmp will handle existence of 'key:enum'
+      if (['options', 'enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
+        continue;
+      }
+
+      const valueInFieldSchema = schemaFields[FIELD_TYPES_keys[j]];
+      const valueInFieldMapSchema = fieldTypes[i].schema[FIELD_TYPES_keys[j]];
+
+      if (valueInFieldSchema !== valueInFieldMapSchema) {
+        isMismatch = true;
         break;
       }
     }
 
+    if (isMismatch) {
+      continue;
+    }
+
     for (let j = 0; j < FIELD_TYPES_opts_keys.length; j++) {
-      if (FIELD_TYPES_opts_keys[j] !== field_opts_keys[j]) {
+      // EXCEPTION 1: values of schema.options.enum_label will always be different. So, skipped because relying on schema.options.cmp == 'select'
+      if (['enum_labels'].indexOf(FIELD_TYPES_opts_keys[j]) > -1) {
+        continue;
+      }
+
+      const valueInFieldSchemaOptions =
+        schemaFields.options && schemaFields.options[FIELD_TYPES_opts_keys[j]];
+      const valueInFieldMapSchemaOptions =
+        fieldTypes[i].schema.options &&
+        fieldTypes[i].schema.options[FIELD_TYPES_opts_keys[j]];
+
+      if (valueInFieldSchemaOptions !== valueInFieldMapSchemaOptions) {
+        isMismatch = true;
         break;
       }
+    }
+
+    if (isMismatch) {
+      continue;
     }
 
     selectedIndexInOptions = fieldTypes[i].level;
@@ -98,6 +167,7 @@ export function mapFieldToIndex(field) {
 
 export function getFieldFromIndices(indicesString) {
   let FIELD;
+  const FIELD_TYPES = getFieldTypes();
 
   if (indicesString === null || indicesString === undefined) {
     return false;
@@ -214,7 +284,15 @@ export function _isSupportedType(type) {
 }
 
 export function _isSupportedPattern(pattern) {
-  const supportedPatterns = ['email', 'phone', 'number', 'url'];
+  const supportedPatterns = [
+    'email',
+    'phone',
+    'number',
+    'url',
+    'alphanumeric',
+    'alphabets',
+    'pan',
+  ];
 
   return supportedPatterns.indexOf(pattern) > -1;
 }

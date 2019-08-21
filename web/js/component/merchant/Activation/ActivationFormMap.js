@@ -13,6 +13,8 @@ import {
 } from 'rzp/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 
+import AddressFields from 'merchant/containers/Activation/AddressFieldsMap';
+
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
 export const INDIVIDUAL = 2;
@@ -311,80 +313,7 @@ const registrationDetails = [
       name: 'promoter_pan_name',
     },
   ],
-  [
-    {
-      name: 'business_registered_address',
-      placeholder: 'Enter Street Address',
-      label: 'Registered Address',
-      _cmp: Input.Textarea,
-    },
-    {
-      name: 'business_registered_pin',
-      label: 'Pincode',
-      size: 'small',
-      maxLength: '6',
-      validator: value => {
-        let pin = Number(value);
-        if (!pin || pin < 100000 || pin > 999999) {
-          return 'Please enter 6 digit pincode';
-        }
-      },
-    },
-    {
-      name: 'business_registered_city',
-      label: 'City',
-      _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
-    },
-    {
-      name: 'business_registered_state',
-      label: 'State',
-      _cmp: Input.Select,
-      options: stateOptions,
-      _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
-    },
-  ],
-  {
-    _name: 'same_address',
-    fieldLabel: 'Operational Address same as Registered Address',
-    description: 'Physical Verification may take place at this address',
-    _cmp: Input.Check,
-  },
-  [
-    {
-      name: 'business_operation_address',
-      placeholder: 'Enter Street Address',
-      label: 'Operational Address',
-      _cmp: Input.Textarea,
-      _when: differentAddress,
-    },
-    {
-      name: 'business_operation_pin',
-      label: 'Pincode',
-      size: 'small',
-      maxLength: '6',
-      validator: value => {
-        let pin = Number(value);
-        if (!pin || pin < 100000 || pin > 999999) {
-          return 'Please enter 6 digit pincode';
-        }
-      },
-      _when: differentAddress,
-    },
-    {
-      name: 'business_operation_city',
-      label: 'City',
-      _when: differentAddress,
-      _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
-    },
-    {
-      name: 'business_operation_state',
-      label: 'State',
-      _when: differentAddress,
-      _cmp: Input.Select,
-      options: stateOptions,
-      _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
-    },
-  ],
+  ...AddressFields, // check ./AddressFieldsMap.js for address fields
   [
     {
       _name: 'has_gstin',

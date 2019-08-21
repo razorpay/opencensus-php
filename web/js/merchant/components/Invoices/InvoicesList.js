@@ -6,6 +6,7 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
+import Button from 'component/Button';
 
 const InvoiceListItem = props => {
   let { invoice, onCopy } = props;
@@ -61,7 +62,7 @@ const InvoiceListItem = props => {
 };
 
 export default props => {
-  let { type, invoices, isLoading, onCopy = () => {} } = props;
+  let { type, invoices, isLoading, onCopy = () => {}, onDuplicate } = props;
   const isPaymentLinksType = type === 'link';
   let label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
 
