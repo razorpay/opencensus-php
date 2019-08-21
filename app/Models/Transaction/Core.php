@@ -621,7 +621,7 @@ class Core extends Base\Core
         if ($amount < 0)
             $debit = -1 * $amount;
 
-        $settledAt = Carbon::now(Timezone::IST);
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         $values = array(
             Transaction\Entity::DEBIT           => $debit,
@@ -685,7 +685,7 @@ class Core extends Base\Core
         $txn->setFee($fee);
         $txn->setTax($tax);
 
-        $settledAt = Carbon::now(Timezone::IST);
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         //
         // We're checking for available balance here and not earlier because
@@ -881,7 +881,7 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($txn);
 
-        $settledAt = Carbon::now(Timezone::IST);
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         $amount = $payout->getAmount();
 

@@ -85,7 +85,7 @@ class Payout extends Base
 
     public function updateTransaction()
     {
-        $settledAt = $reconciledAt = Carbon::now(Timezone::IST);
+        $settledAt = $reconciledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->txn->setSettledAt($settledAt);
 

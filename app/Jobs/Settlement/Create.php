@@ -75,6 +75,7 @@ class Create extends Job
             $response = [
                 'merchant_id'   => $this->merchantId,
                 'mode'          => $this->mode,
+                'channel'       => $merchant->getChannel(),
             ] + $setlResponse;
 
             $this->trace->info(
@@ -96,7 +97,7 @@ class Create extends Job
 
             $operation = 'Settlement creation failed for MID: ' . $this->merchantId;
 
-            (new SlackNotification)->send($operation, $data, null, 1);
+            (new SlackNotification)->send($operation, $data, $e);
         }
         finally
         {
