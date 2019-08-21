@@ -167,7 +167,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($entity);
 
-        $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $batchFta = $entity->batchFundTransfer;
 

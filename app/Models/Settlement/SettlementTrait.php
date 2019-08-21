@@ -503,7 +503,7 @@ trait SettlementTrait
 
             if(($setl !== null) and ($bankTransferAtpt !== null))
             {
-                $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+                $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
                 $transactionCount = $txns->count();
 
@@ -541,7 +541,7 @@ trait SettlementTrait
         {
             $this->trace->traceException($exception);
 
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $transactionCount = $txns->count();
 

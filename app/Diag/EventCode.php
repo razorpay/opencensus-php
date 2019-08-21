@@ -235,7 +235,7 @@ class EventCode
     //Settlement flow events
     const TRANSACTION_SETTLED_AT_UPDATE = [
         'group' => 'initiation',
-        'name'  => 'transaction.settledAt.update'
+        'name'  => 'transaction.settled.at.update'
     ];
 
     const SETTLEMENT_CREATION_INITIATED = [

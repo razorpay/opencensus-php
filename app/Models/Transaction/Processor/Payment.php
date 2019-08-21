@@ -42,7 +42,7 @@ class Payment extends Base
 
         $transactionId = $this->txn->getId();
 
-        $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $customProperties = [
             'type'              => $type,

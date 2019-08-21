@@ -181,7 +181,7 @@ class Initiator extends Base\Core
 
         try
         {
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $customProperties = [
                 'timestamp'                     => $timestamp,
@@ -226,7 +226,7 @@ class Initiator extends Base\Core
                 (new SlackNotification)->send('setl_initiate', $slackData);
             }
 
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
 
@@ -258,7 +258,7 @@ class Initiator extends Base\Core
         }
         catch (\Exception $exception)
         {
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $customProperties = [
                 'timestamp'                     => $timestamp,

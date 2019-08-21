@@ -409,7 +409,7 @@ class Merchant
      */
     protected function createSettlementAttemptEntity(int $initiateAt = null, array $merchantSettleToPartner)
     {
-        $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $customProperties = [
             'timestamp'             => $timestamp,

@@ -430,7 +430,7 @@ class Processor extends Base\Core
         {
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START);
 
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $transactionCount = $txns->count();
 

@@ -184,7 +184,7 @@ class BeamJob extends Job
 
                 $batchFundTransferId = null;
 
-                $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+                $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
                 $mailInfo = $this->mailInfo;
 
@@ -223,7 +223,7 @@ class BeamJob extends Job
         {
             $batchFundTransferId = null;
 
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $mailInfo = $this->mailInfo;
 
@@ -276,7 +276,7 @@ class BeamJob extends Job
         {
             $batchFundTransferId = null;
 
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $mailInfo = $this->mailInfo;
 

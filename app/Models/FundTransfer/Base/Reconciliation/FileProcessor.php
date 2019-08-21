@@ -155,7 +155,7 @@ abstract class FileProcessor extends Processor
             }
 
             //REVERSE_FEED_RECEIVED
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $customProperties = [
                 'timestamp'   => $timestamp,

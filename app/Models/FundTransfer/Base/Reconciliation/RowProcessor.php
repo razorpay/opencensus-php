@@ -66,7 +66,7 @@ abstract class RowProcessor extends Base\Core
             $this->fetchEntities();
 
             //FTA_UTR_UPDATED
-            $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $batchFta = $this->reconEntity->batchFundTransfer;
 
@@ -221,7 +221,7 @@ abstract class RowProcessor extends Base\Core
             'failure_reason'    => $publicErrorMessage,
         ];
 
-        $timestamp = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $batchFta = $this->reconEntity->batchFundTransfer;
 
