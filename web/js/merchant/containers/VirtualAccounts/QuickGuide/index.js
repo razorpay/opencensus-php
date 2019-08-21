@@ -2,6 +2,7 @@ import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
 
 import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
+  setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
@@ -64,6 +65,10 @@ export default class InvoicesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getVAQuickGuideIsClosed = props => {
+  if (props.VAProductOnBoarding && props.VAProductOnBoarding.isQuickGuideOpen) {
+    return false;
+  }
+
   if (props.loading) {
     return true;
   }
@@ -74,6 +79,8 @@ export const getVAQuickGuideIsClosed = props => {
   if (isClosed || props.items.length <= 2) {
     return isClosed;
   }
+
+  setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, true);
 
   return true;
 };
