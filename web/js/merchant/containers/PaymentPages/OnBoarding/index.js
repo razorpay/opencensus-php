@@ -4,6 +4,11 @@ import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
 
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+
 import Landing from 'merchant/components/OnBoarding/Screens/Landing';
 import Features from 'merchant/components/OnBoarding/Screens/Features';
 import OnBoarding, {
@@ -18,9 +23,18 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
-@connect(state => ({
-  user: state.session.user,
-}))
+@connect(
+  state => ({
+    user: state.session.user,
+    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.PP
+    ),
+  }),
+  {
+    handleProductQuickGuide,
+  }
+)
 @OnBoarding({
   feature: RZPFeatures.PP,
 })
@@ -42,6 +56,11 @@ export default class PaymentPagesOnBoarding extends React.Component {
     }
 
     this.props.closeOnboarding();
+
+    this.props.handleProductQuickGuide({
+      ...this.props.paymentPageProductOnBoarding,
+      showOnboarding: false,
+    });
   };
 
   render() {
