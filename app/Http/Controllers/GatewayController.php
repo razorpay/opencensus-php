@@ -586,21 +586,11 @@ class GatewayController extends Controller
 
         if ($nb === null)
         {
-            $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
-        }
-
-        if ($nb === null)
-        {
             $mode = 'test';
 
             $app['config']->set('database.default', $mode);
 
             $nb = $repo->findByVerificationIdAndAction($traceId, Action::AUTHORIZE);
-
-            if ($nb === null)
-            {
-                $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
-            }
         }
 
         return ['nb' => $nb, 'mode' => $mode];
