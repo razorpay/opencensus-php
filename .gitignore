@@ -48,3 +48,6 @@ storage/files/qrcodes/*
 
 #intellij
 api.iml
+
+
+*.dev

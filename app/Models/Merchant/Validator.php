@@ -1183,6 +1183,22 @@ class Validator extends Base\Validator
     }
 
     /**
+     *
+     * @param array $input
+     *
+     * @return bool
+     */
+    public function isAccountNumberPresentInArray(array & $input) {
+        $accountNumber = $input[Balance\Entity::ACCOUNT_NUMBER] ?? null;
+
+        if (empty($accountNumber) === true) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @param  Admin\Entity    $admin
      * @param  Entity          $merchant
      *
