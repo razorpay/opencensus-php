@@ -86,11 +86,6 @@ export default params => {
           lastVisitedTime: Date.now(),
         },
       });
-
-      this.props.handleProductQuickGuide({
-        ...this.props.currentOnboarding,
-        showOnboarding: false,
-      });
     };
 
     render() {
