@@ -80,7 +80,7 @@ export const markDataSaved = _ => ({
 });
 
 let initialState = {
-  paymentPageEntity: {},
+  paymentPageEntity: { settings: {} },
   payment_page_id: null,
   FORM_ITEMS: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API.
   isPageDirty: false,
@@ -153,10 +153,13 @@ export default function(state = initialState, action) {
         return {
           ...initialState,
           payment_page_id: action.id,
-          paymentPageEntity: { id: action.id },
+          paymentPageEntity: deepMerge(state.paymentPageEntity, {
+            id: action.id,
+          }),
           isPageDirty: false,
         };
       } else {
+        console.log('state.paymentPageEntity.......', state.paymentPageEntity);
         return {
           ...state,
           isPageDirty:
