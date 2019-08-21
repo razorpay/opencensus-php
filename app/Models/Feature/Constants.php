@@ -367,6 +367,7 @@ class Constants
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
+        self::TERMINAL_ONBOARDING             => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,
