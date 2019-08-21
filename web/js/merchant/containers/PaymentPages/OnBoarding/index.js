@@ -45,7 +45,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
   };
 
   render() {
-    const { active, onSlideChange } = this.props;
+    const { active, onSlideChange, user } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentPages">
