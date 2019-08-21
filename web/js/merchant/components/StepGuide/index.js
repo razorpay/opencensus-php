@@ -44,7 +44,7 @@ export default class StepGuide extends React.Component {
       <div
         class={classList(
           'StepGuide',
-          className,
+          className && `StepGuide--${className}`,
           isMobileResolution && 'StepGuide-mobile'
         )}
       >
