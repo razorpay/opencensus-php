@@ -53,12 +53,12 @@ export default class InvoicesOnBoarding extends React.Component {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.INVOICE, false);
     }
 
+    this.props.closeOnboarding();
+
     this.props.handleProductQuickGuide({
       ...this.props.invoicesProductOnBoarding,
       showOnboarding: false,
     });
-
-    this.props.closeOnboarding();
   };
 
   render() {
@@ -116,15 +116,11 @@ export function getIsAllowedResetInvoicesOnBoarding({ invoices, items }) {
 }
 
 export function getIsInvoicesEnabled({ user, invoices, items }) {
-  if (invoices.loading) {
+  if (user.isInvoicesEnabled || invoices.loading || items.loading) {
     return true;
   }
 
-  if (
-    user.isInvoicesEnabled ||
-    invoices.invoices.length ||
-    items.items.length
-  ) {
+  if (invoices.invoices.length || items.items.length) {
     setOnBoardingDataInLocalState({
       feature: RZPFeatures.INVOICE,
       data: {
