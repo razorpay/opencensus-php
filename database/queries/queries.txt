@@ -5234,3 +5234,6 @@ ALTER TABLE merchants
 ALTER TABLE payments
     CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE netbanking
+    ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
