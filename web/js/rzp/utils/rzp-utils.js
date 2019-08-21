@@ -722,20 +722,42 @@ export const pluralize = (str, length) => {
 export const capitalize = input =>
   !!input ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
 
-export const isValidZipcodeCountryWise = (country, zipcode) => {
-  let isValid = false;
+const countries = {
+  UK: 'united kingdom',
+  IND: 'india',
+};
 
+export const getCountryPINcodeType = (country = '') => {
+  const countryLowerCase = country.toLowerCase();
+
+  switch (countryLowerCase) {
+    case countries.UK: {
+      return 'text';
+    }
+    default: {
+      return 'number';
+    }
+  }
+};
+
+export const isValidZipcodeCountryWise = (country = '', zipcode) => {
   if (!country) {
     return false;
   }
 
-  if (country.toLowerCase() === 'india') {
-    isValid = zipcode.length === 6;
-  } else {
-    isValid = zipcode.length <= 8 && zipcode.length >= 3;
-  }
+  const countryLowerCase = country.toLowerCase();
 
-  return isValid;
+  switch (countryLowerCase) {
+    case countries.IND: {
+      return zipcode.length === 6;
+    }
+    case countries.UK: {
+      return zipcode.length >= 6 && zipcode.length <= 8;
+    }
+    default: {
+      return zipcode.length <= 8 && zipcode.length >= 3;
+    }
+  }
 };
 
 /**
