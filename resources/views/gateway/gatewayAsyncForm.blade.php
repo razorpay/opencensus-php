@@ -124,6 +124,11 @@
   <div id='content'>
     <div id="banner">
       <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
+
+      {{-- Add the merchant logo if it exists --}}
+      @if (isset($data['merchant_logo_url']) === true)
+        <img src="{{$data["merchant_logo_url"]}}" id="merc_logo" style="max-height: 52px; margin: 20px auto; display: block;">
+      @endif
     </div>
 
     <div class="card">
