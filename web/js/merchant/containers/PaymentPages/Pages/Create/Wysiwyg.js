@@ -316,6 +316,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   // Handles both Create and Edit payment page.
   handleSavePublish = () => {
+    const isPPV3Enabled = this.props.user.isPPV3Enabled;
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
 
@@ -339,10 +340,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       paymentPageItems = [];
 
     FORM_ITEMS.forEach((fi, ix) => {
-      fi.position = ix; // Updating the position of each item (both udf and amount fields)
+      fi.settings = fi.settings || {};
+      fi.settings.position = isPPV3Enabled ? ix : ix + 1; // Updating the position of each item (both udf and amount fields)
 
       if (isFormItemOfTypeAmount(fi)) {
-        // Will exist only when this.props.user.isPPV3Enabled === true
         // TODO: Check with BE if id needs to be sent in case of edited amount item.
         paymentPageItems.push(fi);
       } else {
