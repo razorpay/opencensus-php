@@ -66,6 +66,11 @@ class Entity extends Base\PublicEntity
     const STATUS_LENGTH             = 20;
 
     /**
+     * Constants used in Batch processing.
+     */
+    const IDEMPOTENCY_ID_LENGTH     = 30;
+
+    /**
      * Additional constants
      */
     const FILE                      = 'file';

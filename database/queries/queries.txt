@@ -5247,3 +5247,12 @@ ALTER TABLE `merchant_emails`
 
 ALTER TABLE netbanking
     ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
+
+ALTER TABLE contacts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
+
+ALTER TABLE fund_accounts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
+
+ALTER TABLE payouts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER batch_id;

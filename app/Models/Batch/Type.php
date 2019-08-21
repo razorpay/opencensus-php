@@ -205,7 +205,9 @@ class Type
      * @var array
      */
     public static $batchTypeMigrating = [
-        self::PAYMENT_LINK
+        self::PAYMENT_LINK,
+        self::PAYOUT,
+        self::FUND_ACCOUNT
     ];
 
     /**
