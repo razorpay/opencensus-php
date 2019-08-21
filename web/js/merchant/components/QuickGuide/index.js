@@ -72,7 +72,7 @@ export default params => {
 
         return {
           ...accumulator,
-          [type]: data,
+          ...data,
         };
       }, {});
     };
