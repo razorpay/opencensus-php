@@ -4,9 +4,18 @@ import GenericEntity from './GenericEntity';
 export default class MerchantUser extends GenericEntity {
   resourceUrl = 'merchants-users';
 
-  fetchTeamMembers() {
+  fetchAll() {
     return this.makeGenericAjaxCall({
       url: this.resourceUrl,
+    }).then(response => {
+      const currentUser = store.getState().session.user.user;
+      return {
+        data: {
+          items: (response.data || []).filter(
+            member => member.id !== currentUser.id
+          ),
+        },
+      };
     });
   }
 
@@ -15,26 +24,6 @@ export default class MerchantUser extends GenericEntity {
       url: 'invitations',
       data: { mode: 'live' },
     });
-  }
-
-  fetchAll() {
-    return Promise.all([this.fetchInvitations(), this.fetchTeamMembers()]).then(
-      ([invitationResponse, teamMembersResponse]) => {
-        const currentUser = store.getState().session.user.user;
-        return {
-          data: {
-            items: [
-              ...[...invitationResponse.data],
-              ...[
-                ...teamMembersResponse.data.filter(
-                  member => member.id !== currentUser.id
-                ),
-              ],
-            ],
-          },
-        };
-      }
-    );
   }
 
   unlock(memberId) {
