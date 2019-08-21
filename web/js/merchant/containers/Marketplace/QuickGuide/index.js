@@ -79,6 +79,13 @@ export default class MarketPlaceQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getRouteQuickGuideIsClosed = props => {
+  if (
+    props.routeProductOnBoarding &&
+    props.routeProductOnBoarding.isQuickGuideOpen
+  ) {
+    return false;
+  }
+
   if (props.transfers.loading || props.accounts.loading) {
     return true;
   }
