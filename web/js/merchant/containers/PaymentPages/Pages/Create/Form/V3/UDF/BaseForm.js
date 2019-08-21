@@ -215,12 +215,14 @@ export default class BaseForm extends React.PureComponent {
             </Button.Transparent>
           }
         >
-          <OptionsItem isSelected={!this.state.isRequired}>
-            <div onClick={this.toggleOptional}>
-              <i class="i i-info-circle" />
-              Optional
-            </div>
-          </OptionsItem>
+          {!this.props.isFieldForcedRequired && (
+            <OptionsItem isSelected={!this.state.isRequired}>
+              <div onClick={this.toggleOptional}>
+                <i class="i i-info-circle" />
+                Optional
+              </div>
+            </OptionsItem>
+          )}
 
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>

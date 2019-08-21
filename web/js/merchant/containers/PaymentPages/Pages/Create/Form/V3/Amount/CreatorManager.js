@@ -81,8 +81,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         isAdvancedFormOpened,
       } = this.state;
 
-      let isFieldRemovable = true; // TODO: Handle condition to check atleast 1 price field is present.
-
       return (
         <div class="CreatorManager">
           <_WrappedDisplayFieldComponent
@@ -99,7 +97,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               onSaveForm={this.onSaveBaseForm}
               onDeleteFormItem={onDeleteFormItem}
               closeFormModal={this.closeBaseForm}
-              isFieldRemovable={isFieldRemovable}
               openAdvancedForm={_ => this.toggleAdvancedForm(true)}
             />
           )}
@@ -120,7 +117,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
   return HOC;
 }
 
-export class BaseFormModal extends React.PureComponent {
+class BaseFormModal extends React.PureComponent {
   onSaveForm = formData => {
     this.props.onSaveForm(formData);
     this.props.closeFormModal();
@@ -138,7 +135,6 @@ export class BaseFormModal extends React.PureComponent {
       index,
       validateSameTitleExists,
       closeFormModal,
-      isFieldRemovable,
       openAdvancedForm,
     } = this.props;
 
@@ -151,7 +147,7 @@ export class BaseFormModal extends React.PureComponent {
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeFormModal}
           onSaveForm={this.onSaveForm}
-          onDeleteField={isFieldRemovable ? this.onDeleteFormItem : undefined}
+          onDeleteField={this.onDeleteFormItem}
           openAdvancedForm={openAdvancedForm}
           currency={'INR'}
         />
@@ -160,7 +156,7 @@ export class BaseFormModal extends React.PureComponent {
   }
 }
 
-export class AdvancedFormModal extends React.PureComponent {
+class AdvancedFormModal extends React.PureComponent {
   onSaveForm = formData => {
     this.props.onSaveForm(formData);
     this.props.closeFormModal();
