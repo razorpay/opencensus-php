@@ -1,15 +1,19 @@
 import { connect } from 'react-redux';
 
-import LocalStorageService from 'rzp/utils/localStorage';
-
-import Button from 'component/Button';
-
-import FeatureEnableButton from 'merchant/components/OnBoarding/FeatureEnableButton';
-
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
+
+import {
+  NextButton,
+  SkipAndGetStartedButton,
+  FeatureEnableSliderButton,
+  getIsAllowedResetBoarding,
+  getOnBoardingKey,
+  setOnBoardingDataInLocalState,
+  getOnBoardingDataFromLocalState,
+} from './utils';
 
 export default params => {
   const { feature: FEATURE } = params;
@@ -17,8 +21,6 @@ export default params => {
   let _WrappedComponent;
   @connect(
     state => ({
-      user: state.session.user,
-      mode: state.session.mode,
       currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
     }),
     {
@@ -28,17 +30,6 @@ export default params => {
   class OnBoardingHOC extends React.Component {
     constructor(props) {
       super(props);
-
-      const merchant = props.user.merchants[props.user.current];
-
-      const { lastScreen, lastVisitedTime } = getOnBoardingKeys({
-        merchantId: merchant.id,
-        mode: props.mode,
-        feature: FEATURE,
-      });
-
-      this.LAST_VISITED_SCREEN_KEY = lastScreen;
-      this.LAST_VISITED_TIME_KEY = lastVisitedTime;
 
       this.state = {
         active: this.isActive,
@@ -52,14 +43,15 @@ export default params => {
     }
 
     componentDidMount() {
-      const reset = isAllowedResetBoarding({
-        feature: FEATURE,
-        mode: this.props.mode,
-        merchantId: this.props.user.merchants[this.props.user.current].id,
-      });
+      const reset = getIsAllowedResetBoarding(FEATURE);
 
       if (reset) {
-        LocalStorageService.setItem(this.LAST_VISITED_SCREEN_KEY, 0);
+        setOnBoardingDataInLocalState({
+          feature: FEATURE,
+          data: {
+            lastVisitedScreen: 0,
+          },
+        });
 
         this.setState({
           active: 0,
@@ -76,8 +68,13 @@ export default params => {
       this.setState({ active }, () => this.onSlideChange(active));
     };
 
-    onSlideChange = index => {
-      LocalStorageService.setItem(this.LAST_VISITED_SCREEN_KEY, index);
+    onSlideChange = lastVisitedScreen => {
+      setOnBoardingDataInLocalState({
+        feature: FEATURE,
+        data: {
+          lastVisitedScreen,
+        },
+      });
     };
 
     closeOnboarding = () => {
@@ -120,114 +117,12 @@ export const OnBoardingWrapper = ({ className, children }) => (
   <div class={`OnBoarding OnBoarding--${className}`}>{children}</div>
 );
 
-export const FeatureEnableSliderButton = props => {
-  const { isLocalEnabler, feature, onClick, page } = props;
-
-  const extraProps = {
-    feature,
-  };
-
-  if (isLocalEnabler) {
-    extraProps.iconAfter = 'arrow-forward';
-    extraProps.isLocalEnabler = true;
-  }
-
-  return (
-    <FeatureEnableButton.Primary
-      {...extraProps}
-      class="Forward-Button"
-      pendingText="Enabling..."
-      onClick={(...args) => {
-        window.rzpAnalytics({
-          eventCategory: `Product Introduction (${feature})`,
-          eventAction: `Page ${page} - Get Started CTA`,
-        });
-
-        onClick(args);
-      }}
-    >
-      Get Started
-    </FeatureEnableButton.Primary>
-  );
-};
-
-export const NextButton = ({ feature, onClick, page }) => (
-  <Button.Primary
-    feature={feature}
-    class="Forward-Button"
-    iconAfter="arrow-forward"
-    pendingText="Enabling..."
-    onClick={(...args) => {
-      window.rzpAnalytics({
-        eventCategory: `Product Introduction (${feature})`,
-        eventAction: `Page ${page} - Next CTA`,
-      });
-
-      onClick(args);
-    }}
-  >
-    Get Started
-  </Button.Primary>
-);
-
-export const SkipAndGetStartedButton = ({ feature, onClick, page }) => {
-  if (!feature) {
-    return (
-      <Button.Transparent
-        onClick={(...args) => {
-          window.rzpAnalytics({
-            eventCategory: `Product Introduction (${feature})`,
-            eventAction: `Page ${page} - Skip and Get Started`,
-          });
-
-          onClick(args);
-        }}
-      >
-        Skip And Get Started
-      </Button.Transparent>
-    );
-  }
-
-  return (
-    <FeatureEnableButton.Transparent
-      onClick={(...args) => {
-        window.rzpAnalytics({
-          eventCategory: `Product Introduction (${feature})`,
-          eventAction: `Page ${page} - Skip and Get Started`,
-        });
-
-        onClick(args);
-      }}
-      feature={feature}
-    >
-      Skip And Get Started
-    </FeatureEnableButton.Transparent>
-  );
-};
-
-export const getOnBoardingKeys = ({ mode, merchantId, feature }) => {
-  const KEY = `rzp_onboarding_${merchantId}_${mode}_${feature}`;
-
-  return {
-    key: KEY,
-    isEnabled: `${KEY}_isEnabled`,
-    lastScreen: `${KEY}_last_visited_screen`,
-    lastVisitedTime: `${KEY}_last_visited_time`,
-  };
-};
-
-export const isAllowedResetBoarding = ({ mode, merchantId, feature }) => {
-  const { lastVisitedTime } = getOnBoardingKeys({
-    feature,
-    mode,
-    merchantId,
-  });
-
-  const lastVisitedTimeVal =
-    Number(LocalStorageService.getItem(lastVisitedTime)) || void 0;
-
-  const momentLastVisitedTime = moment(lastVisitedTimeVal),
-    currentTime = moment(Date.now());
-
-  return currentTime.diff(momentLastVisitedTime, 'days') >= 15;
+export {
+  NextButton,
+  SkipAndGetStartedButton,
+  FeatureEnableSliderButton,
+  getOnBoardingKey,
+  setOnBoardingDataInLocalState,
+  getOnBoardingDataFromLocalState,
+  getIsAllowedResetBoarding,
 };
