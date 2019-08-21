@@ -11,6 +11,11 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 
+/*
+  DATA_POINTS: contains keys to get data from redux store
+  FEATURE: Product name
+*/
+
 export default params => {
   const { feature: FEATURE, data_points: DATA_POINTS } = params;
 
@@ -62,15 +67,14 @@ export default params => {
     };
 
     getInitState = () => {
-      let newState = {};
-
-      DATA_POINTS.forEach(type => {
+      return DATA_POINTS.reducer((accumulator, type) => {
         const data = this.generateDataPointFromProps(type);
 
-        newState[key] = { ...data };
-      });
-
-      return newState;
+        return {
+          ...accumulator,
+          [type]: data,
+        };
+      }, {});
     };
 
     componentWillReceiveProps(nextProps) {
