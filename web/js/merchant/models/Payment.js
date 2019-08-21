@@ -41,6 +41,7 @@ export default class Payment extends GenericEntity {
       notes: {
         comment: params.comment,
       },
+      speed: params.speed,
     };
 
     return this.makeGenericAjaxCall({ method, data, url });
@@ -77,5 +78,16 @@ export default class Payment extends GenericEntity {
     if (session.user.tags.indexOf('Feebearer') > -1) {
       this.capturableAmount = this.amount - this.fee;
     }
+  }
+
+  fetchInstantRefundFee(id, amount) {
+    const method = 'get';
+    const url = `/refunds/fee/`;
+    const data = {
+      payment_id: id,
+      amount: amount,
+    };
+
+    return this.makeGenericAjaxCall({ url, data, method });
   }
 }
