@@ -21,18 +21,17 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       this.setState(this.initState);
     };
 
-    openBaseForm = (intentFieldType, field) => {
+    openBaseForm = (intentFieldType, baseField) => {
       const newState = {
         isBaseFormOpened: true,
       };
 
-      console.log('THIS....', field);
-
-      if (intentFieldType) {
+      // Checking if intent is not event
+      if (intentFieldType && !intentFieldType.hasOwnProperty('target')) {
         newState.fieldType = intentFieldType;
 
-        if (field) {
-          newState.field = field;
+        if (baseField) {
+          newState.field = baseField;
         }
       }
 
@@ -49,15 +48,13 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     };
 
     onSaveBaseForm = formData => {
-      console.log('BASE FORM...', formData);
-
       const combinedFormData = {
         ...this.state.field,
         ...formData,
       };
 
       // Combine data from advanced form
-      this.props.onSubmitAmountField(formData, this.props.index);
+      this.props.onSubmitAmountField(combinedFormData, this.props.index);
     };
 
     onSaveAdvancedForm = formData => {
@@ -67,7 +64,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           ...formData,
         },
       });
-      console.log('ADVANCED FORM...', formData);
     };
 
     render() {

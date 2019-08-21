@@ -107,8 +107,6 @@ export default class BaseForm extends React.PureComponent {
       mirrorDisplayTitle,
     } = this.state;
 
-    console.log('FIELD...', field);
-
     let _RepresentationEl = (
         <input
           className="Field-el"

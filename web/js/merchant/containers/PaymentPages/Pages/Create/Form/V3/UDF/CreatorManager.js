@@ -17,7 +17,8 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         isBaseFormOpened: true,
       };
 
-      if (intentSchema) {
+      // Checking if intent is not event
+      if (intentSchema && !intentSchema.hasOwnProperty('target')) {
         newState.fieldSchema = intentSchema;
       }
 

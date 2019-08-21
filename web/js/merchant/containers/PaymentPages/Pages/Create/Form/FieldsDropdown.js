@@ -5,7 +5,6 @@ export default class FieldsDropdown extends React.PureComponent {
   state = { selectedLabel: this.props.selectedLabel };
 
   onSelect = option => {
-    console.log('SELECTED...', option);
     this.props.onSelect && this.props.onSelect(option);
   };
 

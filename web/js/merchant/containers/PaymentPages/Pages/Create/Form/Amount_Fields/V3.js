@@ -13,23 +13,23 @@ export function getAmountFieldTypes() {
 }
 
 // Note: If definition of amount types is changed, then this logic would break
-export function mapFieldToAmountType(amountField) {
+export function mapFieldToAmountFieldType(amountField) {
   let amountFieldType = null;
 
   // Fixed price
   if (amountField.mandatory) {
-    amountFieldType = getFieldTypes[0]; // FIELD_TYPES.fixed_price,
+    amountFieldType = getAmountFieldTypes()[0]; // FIELD_TYPES.fixed_price,
 
-    if (amountField.min_purchase || field.max_purchase) {
-      amountFieldType = getFieldTypes[3]; // FIELD_TYPES.multiple_purchase
+    if (amountField.min_purchase || amountField.max_purchase) {
+      amountFieldType = getAmountFieldTypes()[3]; // FIELD_TYPES.multiple_purchase
     }
   } else if (amountField.amount) {
-    amountFieldType = getFieldTypes[1]; // FIELD_TYPES.fixed_price_optional
+    amountFieldType = getAmountFieldTypes()[1]; // FIELD_TYPES.fixed_price_optional
   } else {
-    amountFieldType = getFieldTypes[2]; // FIELD_TYPES.dynamic_price
+    amountFieldType = getAmountFieldTypes()[2]; // FIELD_TYPES.dynamic_price
   }
 
-  return amountFieldType;
+  return amountFieldType && amountFieldType.key;
 }
 
 /*
@@ -51,17 +51,11 @@ export function mapFieldToAmountType(amountField) {
 */
 
 export function constructAmountField(fieldData) {
-  const { title, description, amount, mandatory, ...restProps } = fieldData;
-  const prettyTitle = title.trim().replace('  ', ' ');
+  const { mandatory, ...restProps } = fieldData;
+  const amountItem = { ...restProps };
 
-  const amountItem = {
-    item: {
-      title: prettyTitle,
-      description,
-      amount,
-    },
-    ...restProps,
-  };
+  const prettyTitle = amountItem.item.title.trim().replace('  ', ' ');
+  amountItem.title = prettyTitle;
 
   if (mandatory) {
     amountItem.mandatory = mandatory; // BOOL

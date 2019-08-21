@@ -4,6 +4,7 @@ import Form from 'component/Form';
 import Button from 'component/Button';
 import Input from 'component/Input';
 
+import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 
 @connect(state => ({
@@ -17,8 +18,10 @@ export default class AdvancedForm extends React.PureComponent {
 
     this.state = {
       disableSubmit: false,
-      hasQuantity: !!field && typeof field.quantity_available !== 'undefined',
+      hasQuantity: typeof field.quantity_available !== 'undefined',
     };
+
+    this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
   }
 
   onChange = ({ target }) => {
@@ -38,8 +41,6 @@ export default class AdvancedForm extends React.PureComponent {
   };
 
   toggleAddQuantity = data => {
-    console.log('data.....', data);
-
     this.setState({
       hasQuantity: !this.state.hasQuantity,
     });
@@ -248,9 +249,7 @@ export default class AdvancedForm extends React.PureComponent {
   }
 
   get fieldsForFieldType() {
-    const fieldType = this.props.fieldType;
-
-    console.log('FIELD TYPE...', this.props.fieldType);
+    const fieldType = this.fieldType;
 
     switch (fieldType) {
       // Same Advanced Form for both fixed_price and fixed_price_optional
@@ -286,8 +285,6 @@ export default class AdvancedForm extends React.PureComponent {
   render() {
     const { field, onCloseForm } = this.props;
     const { disableSubmit } = this.state;
-
-    console.log('FIELD...', field);
 
     return (
       <div>

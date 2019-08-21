@@ -46,7 +46,19 @@ export default class BaseForm extends React.PureComponent {
   };
 
   onSaveForm = formData => {
-    this.props.onSaveForm(formData);
+    const { title, description, amount, ...restFormData } = formData;
+
+    // Normalize data as per amount field's blueprint
+    const baseFormData = {
+      item: {
+        title,
+        description,
+        amount,
+      },
+      ...restFormData,
+    };
+
+    this.props.onSaveForm(baseFormData);
   };
 
   toggleDescriptionField = _ => {
@@ -112,9 +124,7 @@ export default class BaseForm extends React.PureComponent {
   }
 
   get amountRepresentationForFieldType() {
-    const fieldType = this.props.fieldType;
-
-    console.log('FIELD TYPE...', this.fieldType);
+    const fieldType = this.fieldType;
 
     switch (fieldType) {
       // Same Advanced Form for both fixed_price and fixed_price_optional
@@ -212,8 +222,6 @@ export default class BaseForm extends React.PureComponent {
       mirrorDisplayTitle,
     } = this.state;
 
-    console.log('FIELD...', field);
-
     return (
       <Form
         setRef={this.setRefForm}
@@ -282,17 +290,19 @@ export default class BaseForm extends React.PureComponent {
             </Button.Transparent>
           }
         >
-          <OptionsItem isSelected={!!this.state.isMandatory}>
+          <OptionsItem isSelected={!!this.state.imageUrl}>
             <div onClick={this.toggleImage}>
               <i class="i i-info-circle" />
-              {this.state.hasDescription ? 'Remove' : 'Add'} Image
+              {this.state.imageUrl ? 'Remove Image' : 'Add Image'}
             </div>
           </OptionsItem>
 
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>
               <i class="i i-info-circle" />
-              {this.state.hasDescription ? 'Remove' : 'Add'} Description
+              {this.state.hasDescription
+                ? 'Remove Description'
+                : 'Add Description'}
             </div>
           </OptionsItem>
 
