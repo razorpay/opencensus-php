@@ -16,6 +16,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CREATED_RESPONSE                              = 'PAYMENT_CREATED_RESPONSE';
     const PAYMENT_CREATE_FAILED                                 = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                                  = 'PAYMENT_AUTH_SUCCESS';
+    const PAYMENT_ID_NULL                                       = 'PAYMENT_ID_NULL';
     const PAYMENT_AUTH_PENDING                                  = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                                  = 'PAYMENT_AUTH_FAILURE';
     const PAYMENT_AUTH_ESIGN_FAILURE                            = 'PAYMENT_AUTH_ESIGN_FAILURE';
@@ -1407,6 +1408,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVITATION_ACCEPT                                     = 'INVITATION_ACCEPT';
     const INVITATION_REJECT                                     = 'INVITATION_REJECT';
     const INVITATION_EMAIL                                      = 'INVITATION_EMAIL';
+    const INVITATION_CREATE_FAILED                              = 'INVITATION_CREATE_FAILED';
+    const INVITATION_ACCEPT_FAILED                              = 'INVITATION_ACCEPT_FAILED';
 
     // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST                           = 'GATEWAY_RULE_CREATE_REQUEST';
@@ -2005,8 +2008,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Smart Routing
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
-    const NON_BLOCKING_HTTP_DATA                                = 'NON_BLOCKING_HTTP_DATA';
     const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
+    const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
+    const SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR          = 'SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR';
 
 
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';

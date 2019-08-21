@@ -48,5 +48,6 @@ class Validator extends Base\Validator
         'SuccessStaticFlag'     => 'required|in:N',
         'FailureStaticFlag'     => 'required|in:N',
         'TxnAmount'             => 'required|numeric|max:999999999999999',
+        Fields::REF1            => 'required',
     ];
 }

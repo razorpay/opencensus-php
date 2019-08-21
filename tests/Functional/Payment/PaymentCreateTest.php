@@ -1177,6 +1177,45 @@ class PaymentCreateTest extends TestCase
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
+    public function testPaymentFlowWithSyncCallToSmartRouting()
+    {
+        // creating a downtime
+        $this->ba->adminAuth();
+
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'begin'       => time(),
+                'method'      => 'card',
+                'issuer'      => 'HDFC',
+                'source'      => 'other',
+                'acquirer'    => 'ALL'
+                  ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        // making a card payment here
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        // adding terminals to get multiple terminals for sorting
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->doAuthPayment($payment);
+    }
 
     public function testPaymentByUpiTpvForSpecificBanks()
     {

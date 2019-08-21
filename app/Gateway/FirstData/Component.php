@@ -9,6 +9,7 @@ class Component
     const BUS     = 'BUS';
 
     const ACTION_MAPPING = [
+        Action::AUTHENTICATE   => self::CONNECT,
         Action::AUTHORIZE      => self::CONNECT,
         Action::CAPTURE        => self::API,
         Action::REFUND         => self::API,

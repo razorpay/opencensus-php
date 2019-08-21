@@ -5041,6 +5041,9 @@ ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
+ALTER TABLE `pricing`
+    ADD COLUMN `payment_method_subtype` VARCHAR(255) NULL;
+
 ALTER TABLE `merchants`
     ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
     ADD COLUMN `restricted` BOOLEAN DEFAULT 0 NOT NULL AFTER `second_factor_auth`;
@@ -5231,3 +5234,17 @@ ALTER TABLE merchants
 ALTER TABLE payments
     CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
+
+<<<<<<< HEAD
+ALTER TABLE netbanking
+    ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
+
+ALTER TABLE `merchant_emails`
+    DROP INDEX `merchant_emails_merchant_id_type_email_unique`,
+    DROP INDEX `merchant_emails_email_index`,
+    ADD INDEX `merchant_emails_merchant_id` (`merchant_id`),
+    ADD UNIQUE KEY `merchant_emails_merchant_id_type` (`merchant_id`,`type`),
+    MODIFY `email` TEXT;
+
+ALTER TABLE netbanking
+    ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;

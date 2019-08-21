@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
+use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Reconciliator\NetbankingHdfc\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -21,7 +22,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        return $row[Constants::COLUMN_PAYMENT_ID] ?? null;
+        // TODO: fix this to use Ref1 column of recon row.
+        /** @var Entity $gatewayPayment */
+        $this->gatewayPayment = $this->repo->netbanking->findByVerificationIdAndAction($row[Constants::COLUMN_PAYMENT_ID],
+                                                                                    Action::AUTHORIZE);
+
+        if ($this->gatewayPayment === null)
+        {
+            return $row[Constants::COLUMN_PAYMENT_ID] ?? null;
+        }
+
+        return $this->gatewayPayment->getPaymentId() ?? null;
     }
 
      protected function getReferenceNumber($row)

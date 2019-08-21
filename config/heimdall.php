@@ -300,6 +300,10 @@ return [
                 'assignable' => true,
                 'workflow'   => true
             ],
+            Permission::EDIT_MERCHANT_ADDITIONAL_EMAIL      => [
+                'assignable' => true,
+                'workflow'   => false,
+            ],
             Permission::MERCHANT_AUTOFILL_FORM              => '',
             Permission::EDIT_MERCHANT_MARK_REFERRED         => '',
             Permission::VIEW_AS_ENTITY                      => '',

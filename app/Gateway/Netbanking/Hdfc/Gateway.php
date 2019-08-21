@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Merchant;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
@@ -49,6 +50,7 @@ class Gateway extends Base\Gateway
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
         'Date'          => 'date',
+        'MerchantRefNo' => 'verification_id',
     ];
 
     const DISPLAY_DETAILS = 'Y';
@@ -96,7 +98,14 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackChecksum($input);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
+        if (empty($input['gateway'][Fields::REF1]) === false)
+        {
+            $this->assertPaymentId($input['payment']['id'], $input['gateway'][Fields::REF1]);
+        }
+        else
+        {
+            $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
+        }
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
@@ -198,6 +207,13 @@ class Gateway extends Base\Gateway
             'FailureStaticFlag' => 'N',
             'Date'              => $date,
         ];
+
+        if ($input['payment']['merchant_id'] === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $data['MerchantRefNo'] = substr($input['payment']['description'] . '-' . strrev($input['payment']['id']), 0, 19);
+        }
+
+        $data[Fields::REF1] = $input['payment']['id'];
 
         if ($input['merchant']->isTPVRequired())
         {
@@ -326,13 +342,14 @@ class Gateway extends Base\Gateway
         $content = array(
             'MerchantCode'          => $this->getMerchantId(),
             'Date'                  => $date,
-            'MerchantRefNo'         => $payment['payment_id'],
+            'MerchantRefNo'         => $payment['verification_id'] ?: $payment['payment_id'],
             'TransactionId'         => 'XTXTV01',
             'FlgVerify'             => $flgVerify,
             'ClientCode'            => $clientCode,
             'SuccessStaticFlag'     => 'N',
             'FailureStaticFlag'     => 'N',
             'TxnAmount'             => $txnAmount,
+            'Ref1'                  => $payment['payment_id']
         );
 
         $url = $this->getUrl();

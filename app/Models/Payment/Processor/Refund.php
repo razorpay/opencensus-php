@@ -96,6 +96,13 @@ trait Refund
         return $refund;
     }
 
+    public function isInstantRefundSupported(Payment\Entity $payment)
+    {
+        // This will keep changing as we add more coverage
+        return (($payment->isCard() === true) and
+                ($this->isCapturedPaymentAndFeatureEnabled($payment) === true));
+    }
+
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
     {
         return (($payment->isCaptured() === true) and
