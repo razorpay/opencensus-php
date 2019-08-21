@@ -89,7 +89,8 @@ var Razorpay = {
 
 var options = {
   key: key,
-  amount: 600000,
+  amount: 100,
+  currency: 'USD',
   handler: resp => alert(resp.razorpay_payment_id),
   prefill: {
     name: 'HarshilMathur',
