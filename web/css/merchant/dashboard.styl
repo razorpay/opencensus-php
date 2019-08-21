@@ -2088,3 +2088,50 @@ $stepIndicatorSize = 36px;
 
   margin-bottom: 0;
 }
+
+[data-tooltip] {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    padding: 4px;
+}
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    display: none;
+    position: absolute;
+    background: #fff;
+    color: #8991ae;
+    padding: 10px 15px 15px 10px;
+    font-size: 12px;
+    min-width: 100px;
+    text-align: center;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.13);
+}
+[data-tooltip-position="top"]:before{
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 100%;
+    margin-bottom: 6px;
+}
+
+[data-tooltip]:after {
+    content: '';
+    display: none;
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+}
+[data-tooltip-position="top"]:after {
+    bottom: 100%;
+    border-width: 6px 6px 0;
+    border-top-color: #fff;
+    left: 50%;
+    margin-left: -6px;
+}
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after {
+    display: block;
+    z-index: 50;
+}
