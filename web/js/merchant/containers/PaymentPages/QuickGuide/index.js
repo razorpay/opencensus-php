@@ -76,6 +76,13 @@ export default class PaymentPagesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getPaymentPageQuickGuideIsClosed = props => {
+  if (
+    props.paymentPageProductOnBoarding &&
+    props.paymentPageProductOnBoarding.isQuickGuideOpen
+  ) {
+    return false;
+  }
+
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PP);
 
   // Check if transfers non created state count is more then or equal to 2
