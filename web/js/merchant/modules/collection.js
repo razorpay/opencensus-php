@@ -12,6 +12,7 @@ import Submerchant from 'merchant/models/Submerchant';
 import Token from 'merchant/models/Token';
 import Commission from 'merchant/models/Commission';
 import Team from 'merchant/models/Team';
+import Invitation from 'merchant/models/Invitation';
 
 import AuthLink from 'merchant/models/AuthLink';
 
@@ -189,3 +190,8 @@ export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
     );
   },
 });
+
+// Invitations
+export const fetchInvitations = params =>
+  fetchAll(params, Invitation, 'INVITATIONS');
+export const invitationsReducer = makeActionCollectionReducer('INVITATIONS');
