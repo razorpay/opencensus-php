@@ -4,7 +4,6 @@ namespace RZP\Models\Terminal;
 
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Card;
 use RZP\Models\Payment\AuthType;
 use RZP\Models\Terminal\Capability;
 
@@ -24,14 +23,11 @@ class AuthenticationTerminals
 
     const CAPABILITY             = 'capability';
 
-    const NETWORK                = 'network';
-
     const AUTHENTICATION_TERMINALS = [
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
             self::AUTHENTICATION_GATEWAY    => Gateway::PAYSECURE,
-            self::NETWORK                   => Card\Network::RUPAY,
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
         ],
@@ -39,15 +35,12 @@ class AuthenticationTerminals
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
             self::AUTHENTICATION_GATEWAY    => Gateway::PAYSECURE,
-            self::NETWORK                   => Card\Network::RUPAY,
             self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
         ],
-        // Hitachi visa rules:
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::VISA,
             self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
@@ -55,7 +48,6 @@ class AuthenticationTerminals
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::VISA,
             self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
             self::AUTH_TYPE                 => AuthType::IVR,
             self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
@@ -63,7 +55,6 @@ class AuthenticationTerminals
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::VISA,
             self::AUTHENTICATION_GATEWAY    => Gateway::MPI_ENSTAGE,
             self::AUTH_TYPE                 => AuthType::OTP,
             self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
@@ -71,7 +62,6 @@ class AuthenticationTerminals
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::VISA,
             self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
             self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
@@ -79,89 +69,6 @@ class AuthenticationTerminals
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::VISA,
-            self::AUTHENTICATION_GATEWAY    => null,
-            self::AUTH_TYPE                 => AuthType::SKIP,
-            self::GATEWAY_AUTH_TYPE         => null,
-        ],
-        // Hitachi mastercard rules:
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MC,
-            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
-            self::AUTH_TYPE                 => AuthType::_3DS,
-            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
-        ],
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MC,
-            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
-            self::AUTH_TYPE                 => AuthType::IVR,
-            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
-        ],
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MC,
-            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_ENSTAGE,
-            self::AUTH_TYPE                 => AuthType::OTP,
-            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
-        ],
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MC,
-            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
-            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
-            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
-        ],
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MC,
-            self::AUTHENTICATION_GATEWAY    => null,
-            self::AUTH_TYPE                 => AuthType::SKIP,
-            self::GATEWAY_AUTH_TYPE         => null,
-        ],
-        // Hitachi maestro rules:
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MAES,
-            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
-            self::AUTH_TYPE                 => AuthType::_3DS,
-            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
-        ],
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MAES,
-            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
-            self::AUTH_TYPE                 => AuthType::IVR,
-            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
-        ],
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MAES,
-            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_ENSTAGE,
-            self::AUTH_TYPE                 => AuthType::OTP,
-            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
-        ],
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MAES,
-            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
-            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
-            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
-        ],
-        [
-            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
-            self::GATEWAY                   => Gateway::HITACHI,
-            self::NETWORK                   => Card\Network::MAES,
             self::AUTHENTICATION_GATEWAY    => null,
             self::AUTH_TYPE                 => AuthType::SKIP,
             self::GATEWAY_AUTH_TYPE         => null,
