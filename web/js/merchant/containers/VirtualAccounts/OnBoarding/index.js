@@ -21,14 +21,34 @@ import { FEATURES_DATA, FEATURES_LINKS, PROS } from './data';
   feature: RZPFeatures.VA,
 })
 export default class InvoicesOnBoarding extends React.Component {
-  getNextBtnProp = sliderProps => () => {
-    return (
-      <FeatureEnableSliderButton
-        feature={RZPFeatures.VA}
-        page={sliderProps.active}
-        onClick={this.closeOnboarding}
-      />
-    );
+  getNextButton = sliderProps => () => {
+    const props = {
+      feature: RZPFeatures.VA,
+      onClick: this.props.closeOnboarding,
+      page: sliderProps.active,
+    };
+
+    if (this.props.user.isVirtualAccountsEnabled) {
+      props.isLocalEnabler = true;
+      props.onClick = this.closeOnboarding;
+    }
+
+    return <FeatureEnableSliderButton {...props} />;
+  };
+
+  renderSkipButton = sliderProps => {
+    const props = {
+      feature: RZPFeatures.VA,
+      onClick: this.props.closeOnboarding,
+      page: sliderProps.active,
+    };
+
+    if (this.props.user.isVirtualAccountsEnabled) {
+      props.isLocalEnabler = true;
+      props.onClick = this.closeOnboarding;
+    }
+
+    return <SkipAndGetStartedButton {...props} />;
   };
 
   closeOnboarding = () => {
@@ -59,7 +79,7 @@ export default class InvoicesOnBoarding extends React.Component {
             <Features
               {...sliderProps}
               title="What makes Smart Collect great?"
-              nextBtn={this.getNextBtnProp(sliderProps)}
+              nextBtn={this.getNextButton(sliderProps)}
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
             />
@@ -67,12 +87,7 @@ export default class InvoicesOnBoarding extends React.Component {
 
           {sliderProps => (
             <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton
-                feature={RZPFeatures.VA}
-                page={sliderProps.active}
-                onClick={this.closeOnboarding}
-                isLocalEnabler={user.isVirtualAccountsEnabled}
-              />
+              {this.renderSkipButton(sliderProps)}
             </SliderDots>
           )}
         </Slider>
