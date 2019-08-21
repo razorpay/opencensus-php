@@ -6,6 +6,7 @@ import {
 
 import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
+  setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
@@ -102,6 +103,7 @@ export const getSubscriptionQuickGuideIsClosed = props => {
     if (createCount >= 2) {
       isClosed = true;
 
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, true);
       return false;
     }
   });
