@@ -2245,4 +2245,30 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
         ],
     ],
+
+    'testTerminalOnboardingCreateTerminal' => [
+        'request' => [
+            'content' => [
+                "mpan" => [
+                  "mastercard"  => "1234567880123456",
+                  "visa"        => "1234567890123456",
+                  "rupay"       => "1234567890123457"
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  "1234567880123456",
+                    'rupay_mpan'    =>  "1234567890123457",
+                    'visa_mpan'     =>  "1234567890123456"
+                ]
+
+            ]
+        ]
+    ],
 ];

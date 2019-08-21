@@ -1287,4 +1287,17 @@ class TerminalTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testTerminalOnboardingCreateTerminal()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+       
+        $url = '/accounts/'.$subMerchantId.'/terminals';
+        
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        
+        $this->startTest();
+    }
 }

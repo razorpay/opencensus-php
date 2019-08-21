@@ -20,6 +20,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
+        Entity::STATUS                      => 'sometimes',
         Entity::GATEWAY                     => 'required',
         Entity::PROCURER                    => 'sometimes|in:razorpay,merchant',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
