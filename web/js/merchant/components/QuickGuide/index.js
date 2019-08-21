@@ -65,10 +65,9 @@ export default params => {
       let newState = {};
 
       DATA_POINTS.forEach(type => {
-        newState = {
-          ...newState,
-          ...this.generateDataPointFromProps(type),
-        };
+        const data = this.generateDataPointFromProps(type);
+
+        newState[key] = { ...data };
       });
 
       return newState;
