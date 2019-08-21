@@ -2,14 +2,14 @@
 
 namespace RZP\Jobs;
 
-use Carbon\Carbon;
 use Mail;
 use Requests;
 use Requests_Response;
 
-use RZP\Constants\Timezone;
+use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Beam\BeamRequestFailure;
@@ -196,9 +196,9 @@ class BeamJob extends Job
                 $channel = $mailInfo['channel'];
 
                 $customProperties = [
-                    'timestamp'                 => $timestamp,
-                    'channel'                   => $channel,
-                    'batch_fund_transfer_id'    => $batchFundTransferId,
+                    'timestamp'                         => $timestamp,
+                    'channel'                           => $channel,
+                    'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
                 ];
 
                 $app = App::getFacadeRoot();
@@ -235,9 +235,9 @@ class BeamJob extends Job
             $channel = $mailInfo['channel'];
 
             $customProperties = [
-                'timestamp'                 => $timestamp,
-                'channel'                   => $channel,
-                'batch_fund_transfer_id'    => $batchFundTransferId,
+                'timestamp'                         => $timestamp,
+                'channel'                           => $channel,
+                'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
             ];
 
             $app = App::getFacadeRoot();
@@ -288,9 +288,9 @@ class BeamJob extends Job
             $channel = $mailInfo['channel'];
 
             $customProperties = [
-                'timestamp'                 => $timestamp,
-                'channel'                   => $channel,
-                'batch_fund_transfer_id'   => $batchFundTransferId,
+                'timestamp'                         => $timestamp,
+                'channel'                           => $channel,
+                'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
             ];
 
             $app = App::getFacadeRoot();

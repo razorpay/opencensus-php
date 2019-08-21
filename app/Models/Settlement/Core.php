@@ -5,9 +5,9 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;

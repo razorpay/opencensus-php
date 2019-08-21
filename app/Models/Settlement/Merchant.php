@@ -5,10 +5,10 @@ namespace RZP\Models\Settlement;
 use App;
 use Carbon\Carbon;
 
-use RZP\Diag\EventCode;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;

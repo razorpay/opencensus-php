@@ -5,10 +5,10 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;

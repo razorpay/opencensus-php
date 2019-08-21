@@ -6,8 +6,8 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Diag\EventCode;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;

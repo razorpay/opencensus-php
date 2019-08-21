@@ -6,10 +6,10 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
