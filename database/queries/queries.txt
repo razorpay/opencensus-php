@@ -5041,6 +5041,9 @@ ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
+ALTER TABLE `pricing`
+    ADD COLUMN `payment_method_subtype` VARCHAR(255) NULL;
+
 ALTER TABLE `merchants`
     ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
     ADD COLUMN `restricted` BOOLEAN DEFAULT 0 NOT NULL AFTER `second_factor_auth`;

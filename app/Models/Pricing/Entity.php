@@ -16,18 +16,19 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
     use Cacheable;
 
-    const ID                   = 'id';
-    const PLAN_ID              = 'plan_id';
-    const PLAN_NAME            = 'plan_name';
-    const PRODUCT              = 'product';
-    const PROCURER             = 'procurer';
-    const FEATURE              = 'feature';
-    const GATEWAY              = 'gateway';
-    const PAYMENT_METHOD       = 'payment_method';
-    const AUTH_TYPE            = 'auth_type';
-    const PAYMENT_METHOD_TYPE  = 'payment_method_type';
-    const PAYMENT_NETWORK      = 'payment_network';
-    const INTERNATIONAL        = 'international';
+    const ID                            = 'id';
+    const PLAN_ID                       = 'plan_id';
+    const PLAN_NAME                     = 'plan_name';
+    const PRODUCT                       = 'product';
+    const PROCURER                      = 'procurer';
+    const FEATURE                       = 'feature';
+    const GATEWAY                       = 'gateway';
+    const PAYMENT_METHOD                = 'payment_method';
+    const AUTH_TYPE                     = 'auth_type';
+    const PAYMENT_METHOD_TYPE           = 'payment_method_type';
+    const PAYMENT_METHOD_SUBTYPE        = 'payment_method_subtype';
+    const PAYMENT_NETWORK               = 'payment_network';
+    const INTERNATIONAL                 = 'international';
 
     //
     // By default, all the rules are of type pricing
@@ -85,6 +86,7 @@ class Entity extends Base\PublicEntity
         self::PROCURER,
         self::GATEWAY,
         self::PAYMENT_METHOD,
+        self::PAYMENT_METHOD_SUBTYPE,
         self::PAYMENT_METHOD_TYPE,
         self::AUTH_TYPE,
         self::PAYMENT_NETWORK,
@@ -121,21 +123,22 @@ class Entity extends Base\PublicEntity
     protected static $generators = ['plan_id', 'org_id'];
 
     protected $defaults = [
-        self::PROCURER            => null,
-        self::PRODUCT             => Product::PRIMARY,
-        self::FEATURE             => Feature::PAYMENT,
-        self::PAYMENT_METHOD_TYPE => null,
-        self::PAYMENT_NETWORK     => null,
-        self::AUTH_TYPE           => null,
-        self::PAYMENT_ISSUER      => null,
-        self::PERCENT_RATE        => 0,
-        self::FIXED_RATE          => 0,
-        self::MIN_FEE             => 0,
-        self::MAX_FEE             => null,
-        self::AMOUNT_RANGE_ACTIVE => '0',
-        self::EMI_DURATION        => null,
-        self::RECEIVER_TYPE       => null,
-        self::TYPE                => Type::PRICING,
+        self::PROCURER                  => null,
+        self::PRODUCT                   => Product::PRIMARY,
+        self::FEATURE                   => Feature::PAYMENT,
+        self::PAYMENT_METHOD_TYPE       => null,
+        self::PAYMENT_METHOD_SUBTYPE    => null,
+        self::PAYMENT_NETWORK           => null,
+        self::AUTH_TYPE                 => null,
+        self::PAYMENT_ISSUER            => null,
+        self::PERCENT_RATE              => 0,
+        self::FIXED_RATE                => 0,
+        self::MIN_FEE                   => 0,
+        self::MAX_FEE                   => null,
+        self::AMOUNT_RANGE_ACTIVE       => '0',
+        self::EMI_DURATION              => null,
+        self::RECEIVER_TYPE             => null,
+        self::TYPE                      => Type::PRICING,
     ];
 
     /**
@@ -300,6 +303,11 @@ class Entity extends Base\PublicEntity
     public function getPaymentMethodType()
     {
         return $this->getAttribute(self::PAYMENT_METHOD_TYPE);
+    }
+
+    public function getPaymentMethodSubType()
+    {
+        return $this->getAttribute(self::PAYMENT_METHOD_SUBTYPE);
     }
 
     public function getAuthType()
