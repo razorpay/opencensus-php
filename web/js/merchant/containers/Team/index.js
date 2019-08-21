@@ -1,44 +1,17 @@
-import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import HeaderAction from 'rzp/ui/HeaderAction';
-import DataTable from 'rzp/ui/Table/DataTable';
 import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
 
-import ListContainer from 'merchant/containers/ListContainer';
-import { fetchTeam as fetchAll } from 'merchant/modules/collection';
 import { removeUser, cancelInvitation, unlock } from 'merchant/modules/team';
-import { showNotification } from 'rzp/modules/notifications';
-
-import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 
 import Actions from './Actions';
+import InvitationsList from './Invitations/List';
+import MembersList from './Members/List';
 
-const allRoles = {
-  ...roles,
-  ...agentRole,
-  ...RBLRoles,
-};
-
-const contactPhone = {
-  title: 'Phone Number',
-  value: user => user.contact_mobile || '--',
-};
-
-const userRole = {
-  title: 'Role',
-  value: user => (allRoles[user.role] || {}).label,
-};
-
-@connect(state => ({ ...state.team }), {
-  fetchAll,
-  removeUser,
-  cancelInvitation,
-  showNotification,
-  unlock,
-})
-export default class ManageTeamContainer extends ListContainer {
+export default class ManageTeamContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -128,28 +101,15 @@ export default class ManageTeamContainer extends ListContainer {
       <div class="content-wrapper content-sm">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
-            >
-              <a
-                class="btn btn-link"
-                href="https://razorpay.com/docs/team-support/"
-                target="_blank"
-              >
-                Documentation &nbsp;
-                <i class="icon icon-external-link" />
-              </a>
-            </ShowWhen>
+            <DocsLink url="https://razorpay.com/docs/team-support/" />
           </div>
         </HeaderAction>
         <div class="ManageTeam--list">
-          <DataTable
-            title="Team Members"
-            columns={[this.nameColumn, contactPhone, userRole, this.actions]}
-            {...this.props}
-          />
+          <InvitationsList {...this.props} />
+
+          <div class="m-t" />
+
+          <MembersList {...this.props} />
         </div>
       </div>
     );
