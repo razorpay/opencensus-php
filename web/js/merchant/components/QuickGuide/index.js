@@ -67,7 +67,7 @@ export default params => {
     };
 
     getInitState = () => {
-      return DATA_POINTS.reducer((accumulator, type) => {
+      return DATA_POINTS.reduce((accumulator, type) => {
         const data = this.generateDataPointFromProps(type);
 
         return {
