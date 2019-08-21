@@ -6,6 +6,8 @@ import ListContainer from 'merchant/containers/ListContainer';
 
 import { fetchTeam as fetchAll } from 'merchant/modules/collection';
 
+import Actions from './Actions';
+
 const member = {
   title: 'Member',
   value: item => (
@@ -21,13 +23,28 @@ const contactPhone = {
   value: user => user.contact_mobile || '--',
 };
 
+const actions = {
+  title: '',
+  value: user => <Actions user={user} />,
+};
+
 @connect(state => ({ ...state.team }), { fetchAll })
 export default class MembersListContainer extends ListContainer {
   render() {
+    const { items, loading } = this.props;
     return (
       <DataTable
         title="Members"
-        columns={[member, contactPhone, role]}
+        panelHeading={
+          !loading && {
+            title: (
+              <>
+                Team Members (<small class="text-muted">{items.length}</small>)
+              </>
+            ),
+          }
+        }
+        columns={[member, contactPhone, role, actions]}
         {...this.props}
       />
     );
