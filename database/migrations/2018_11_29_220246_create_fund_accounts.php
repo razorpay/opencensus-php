@@ -41,6 +41,9 @@ class CreateFundAccounts extends Migration
             $table->char(Payout::BATCH_ID, Batch::ID_LENGTH)
                   ->nullable();
 
+            $table->char(FundAccount::IDEMPOTENCY_KEY, Batch::IDEMPOTENCY_ID_LENGTH)
+                  ->nullable();
+
             $table->tinyInteger(FundAccount::ACTIVE)
                   ->default(1);
 
@@ -69,11 +72,6 @@ class CreateFundAccounts extends Migration
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
-            $table->foreign(FundAccount::BATCH_ID)
-                  ->references(Batch::ID)
-                  ->on(Table::BATCH)
-                  ->on_delete('restrict');
         });
 
         Schema::table(Table::PAYOUT, function($table)
@@ -100,11 +98,6 @@ class CreateFundAccounts extends Migration
         Schema::table(Table::FUND_ACCOUNT, function($table)
         {
             $table->dropForeign(Table::FUND_ACCOUNT . '_' . FundAccount::MERCHANT_ID . '_foreign');
-        });
-
-        Schema::table(Table::FUND_ACCOUNT, function($table)
-        {
-            $table->dropForeign(Table::FUND_ACCOUNT . '_' . FundAccount::BATCH_ID . '_foreign');
         });
 
         Schema::drop(Table::FUND_ACCOUNT);

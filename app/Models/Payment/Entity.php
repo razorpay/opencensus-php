@@ -394,6 +394,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::STATUS,
         self::AMOUNT,
         self::CREATED_AT,
+        self::CURRENCY,
     ];
 
     protected $publicSetters = [

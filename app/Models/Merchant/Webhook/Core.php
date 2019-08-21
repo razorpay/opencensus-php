@@ -157,7 +157,7 @@ class Core extends Base\Core
             try
             {
                 $stork->upsert($webhook);
-                $successIds[] = $webhook->getId();
+                $successfulIds[] = $webhook->getId();
             }
             catch (\Throwable $e)
             {

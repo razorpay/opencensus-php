@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
@@ -1176,6 +1177,45 @@ class PaymentCreateTest extends TestCase
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
+    public function testPaymentFlowWithSyncCallToSmartRouting()
+    {
+        // creating a downtime
+        $this->ba->adminAuth();
+
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'begin'       => time(),
+                'method'      => 'card',
+                'issuer'      => 'HDFC',
+                'source'      => 'other',
+                'acquirer'    => 'ALL'
+                  ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        // making a card payment here
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        // adding terminals to get multiple terminals for sorting
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->doAuthPayment($payment);
+    }
 
     public function testPaymentByUpiTpvForSpecificBanks()
     {
@@ -1530,6 +1570,47 @@ class PaymentCreateTest extends TestCase
                 $this->doAuthPayment($payment);
             },
             \RZP\Exception\GatewayErrorException::class);
+    }
+
+    public function testOtpPaymentCardBlockError()
+    {
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $this->mockOtpElfForBlockCardResponse();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '6075007194490126';
+
+        $this->fixtures->edit('iin', 607500, ['flows' => ['headless_otp' => '1']]);
+
+        $payment['auth_type'] = 'otp';
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'card'                       => 1,
+            'gateway_merchant_id'       => 'HDFC000012340818',
+            'gateway_merchant_id2'      => '38R10000',
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\GatewayErrorException::class,
+            "Payment processing failed because cardholder's card was blocked\n".
+            "Gateway Error Code: \n".
+            "Gateway Error Desc: ");
     }
 
     protected function mockOtpElfForBlockCardResponse()

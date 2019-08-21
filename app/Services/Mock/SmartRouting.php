@@ -9,10 +9,8 @@ class SmartRouting extends BaseSmartRouting
 
     public function sendPaymentData($data)
     {
-        return [
-            'error' => '',
-            'success' => true,
-        ];    }
+        return null;
+    }
 
     public function createGatewayRule($data)
     {

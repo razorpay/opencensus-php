@@ -538,6 +538,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::AXIS_EXPRESS_PAY);
     }
 
+    public function isTerminalOnboardingEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::TERMINAL_ONBOARDING);
+    }
+
     public function isGooglePayOmnichannelEnabled(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_OMNICHANNEL);

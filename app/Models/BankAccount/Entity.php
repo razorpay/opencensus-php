@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const BANK_NAME                     = 'bank_name';
     const ACCOUNT_NUMBER                = 'account_number';
     const BENEFICIARY_NAME              = 'beneficiary_name';
+    const REGISTERED_BENEFICIARY_NAME   = 'registered_beneficiary_name';
     const BENEFICIARY_ADDRESS1          = 'beneficiary_address1';
     const BENEFICIARY_ADDRESS2          = 'beneficiary_address2';
     const BENEFICIARY_ADDRESS3          = 'beneficiary_address3';
