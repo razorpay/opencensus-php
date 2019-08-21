@@ -38,7 +38,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         $this->fileToWriteName = 'Recon_' . Carbon::now(Timezone::IST)->format('dmY');
 
-        for ($i = 0; $i < 5; $i++)
+        for ($i = 0; $i < 4; $i++)
         {
             $data[] = [];
         }

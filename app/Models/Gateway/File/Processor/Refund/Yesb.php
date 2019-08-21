@@ -20,7 +20,7 @@ class Yesb extends Base
     const EXTENSION                  = FileStore\Format::XLS;
     const FILE_TYPE                  = FileStore\Type::YESB_NETBANKING_REFUND;
     const GATEWAY                    = Payment\Gateway::NETBANKING_YESB;
-    const PAYMENT_BANK               = 'Yes Bank';
+    const PAYMENT_BANK               = 'Yesbank';
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::YESB;
 
