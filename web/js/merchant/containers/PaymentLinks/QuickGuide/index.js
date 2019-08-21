@@ -2,6 +2,7 @@ import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
 
 import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
+  setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
@@ -86,6 +87,7 @@ export const getPaymentLinksQuickGuideIsClosed = props => {
     return isClosed;
   }
 
+  setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, true);
   return true;
 };
 
