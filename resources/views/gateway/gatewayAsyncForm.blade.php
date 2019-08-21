@@ -133,7 +133,7 @@
 
     <div class="card">
       <div id='message-txt'>
-        Please accept collect request from Razorpay's VPA in your UPI app
+        Please accept the collect request sent to your UPI app
       </div>
 
       <div id="spinner">
