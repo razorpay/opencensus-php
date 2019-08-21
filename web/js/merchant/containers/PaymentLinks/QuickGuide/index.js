@@ -53,7 +53,7 @@ export default class PaymentPagesQuickGuide extends React.Component {
       >
         <Step
           status={paymentLinkStatus}
-          {...getQuickGuideData.PaymentPage(paymentLinkStatus)}
+          {...getQuickGuideData.PaymentLinks(paymentLinkStatus)}
         />
 
         <Step
@@ -68,6 +68,13 @@ export default class PaymentPagesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getPaymentLinksQuickGuideIsClosed = props => {
+  if (
+    props.paymentLinksProductOnBoarding &&
+    props.paymentLinksProductOnBoarding.isQuickGuideOpen
+  ) {
+    return false;
+  }
+
   if (props.invoices.loading) {
     return true;
   }

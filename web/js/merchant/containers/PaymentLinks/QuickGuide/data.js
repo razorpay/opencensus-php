@@ -3,7 +3,7 @@ import { PossibleStatuses } from 'rzp/utils/constants';
 const { done } = PossibleStatuses;
 
 export const getQuickGuideData = {
-  PaymentPage: status => {
+  PaymentLinks: status => {
     if (status === done) {
       return {
         title: '1. Payment link created',
