@@ -1077,10 +1077,15 @@ class Gateway extends Base\Gateway
 
     protected function getValidWalletToken($input)
     {
-        return (New Token\Core)->getValidWalletToken(
+        $token = (New Token\Repository)->getByWalletTerminalAndCustomerId(
             $input['payment']['wallet'],
             $input['terminal']['id'],
             $input['customer']['id']);
+
+        if (($token !== null) and ($token->getExpiredAt() > time()))
+        {
+            return $token;
+        }
     }
 
     protected function getTopupWalletRedirectRequestArray($input)

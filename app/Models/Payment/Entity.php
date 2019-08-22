@@ -3247,9 +3247,4 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return false;
     }
-
-    public function getAppTokenId()
-    {
-        return $this->getAttribute(self::APP_TOKEN);
-    }
 }

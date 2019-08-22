@@ -33,21 +33,6 @@ trait Topup
         }
     }
 
-    protected function getTopupUrl(Payment\Entity $payment)
-    {
-        $currentRoute = $this->route->getCurrentRouteName();
-        if (\Str::endsWith($currentRoute, '_ajax'))
-        {
-            $routeName = 'payment_topup_ajax';
-        }
-        else
-        {
-            $routeName = 'payment_topup_post';
-        }
-        $params = ['id' => $payment->getPublicId()];
-        return $this->route->getUrlWithPublicAuth($routeName, $params);
-    }
-
     protected function callGatewayTopup($payment, array $data)
     {
         $request = $this->callGatewayFunction(
