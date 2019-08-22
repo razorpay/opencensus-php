@@ -4,6 +4,11 @@ import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
 
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+
 import Landing from 'merchant/components/OnBoarding/Screens/Landing';
 import Features from 'merchant/components/OnBoarding/Screens/Features';
 import FeatureRequest from 'merchant/components/OnBoarding/Screens/FeatureRequest';
@@ -14,13 +19,21 @@ import OnBoarding, {
   SkipAndGetStartedButton,
   getIsAllowedResetBoarding,
 } from 'merchant/components/OnBoarding';
+import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
-@connect(state => ({
-  user: state.session.user,
-  mode: state.session.mode,
-}))
+@connect(
+  state => ({
+    user: state.session.user,
+    mode: state.session.mode,
+    routeProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.ROUTE
+    ),
+  }),
+  { handleProductQuickGuide }
+)
 @OnBoarding({
   feature: RZPFeatures.ROUTE,
 })
@@ -28,6 +41,13 @@ export default class MarketPlaceOnBoarding extends React.Component {
   closeOnboarding = () => {
     setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
     this.props.closeOnboarding();
+
+    if (this.props.user.isMarketplaceEnabled) {
+      this.props.handleProductQuickGuide({
+        ...this.props.routeProductOnBoarding,
+        showOnboarding: false,
+      });
+    }
   };
 
   getNextBtnProp = sliderProps => () => {
