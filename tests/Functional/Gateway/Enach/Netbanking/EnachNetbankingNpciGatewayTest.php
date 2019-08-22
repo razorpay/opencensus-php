@@ -87,31 +87,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('initiated', $token['recurring_status']);
     }
 
-//    protected function doPartnerAuthPayment($payment, $clientId, $submerchantId)
-//    {
-//        $server = [
-//            'HTTP_X-Razorpay-Account' => $submerchantId,
-//        ];
-//
-//        if ($payment === null)
-//        {
-//            $payment = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
-//        }
-//
-//        $request = [
-//            'method'  => 'POST',
-//            'url'     => '/payments',
-//            'content' => $payment,
-//            'server'  => $server,
-//        ];
-//
-//        $this->ba->publicAuth('rzp_test_partner_' . $clientId);
-//        $content = $this->makeRequestAndGetContent($request);
-//
-//        return $content;
-//    }
-
-
     public function testPartnerPayment()
     {
         $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
@@ -124,14 +99,11 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
 
-//        $this->fixtures->create('terminal:direct_enach_npci_netbanking_terminal');
-
         list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
 
         $this->doPartnerAuthPayment($payment, $clientId, $submerchantId);
 
         $payment = $this->getLastEntity('payment', true);
-
 
         $this->assertSame('authorized', $payment['status']);
     }
@@ -732,6 +704,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 $url, $method, $content);
         }
 
+        $this->ba->publicCallbackAuth();
+
         $response = $this->sendRequest($request);
 
         $this->assertEquals($response->getStatusCode(), '302');
@@ -742,6 +716,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         if (filter_var($data['url'], FILTER_VALIDATE_URL))
         {
+            // Hack: only way to remove IsPartnerAuth from container
+            $this->app['basicauth']->checkAndSetKeyId('');
+
             return $this->submitPaymentCallbackRedirect($data['url']);
         }
 
