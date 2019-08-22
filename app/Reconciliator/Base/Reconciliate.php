@@ -98,7 +98,9 @@ class Reconciliate extends Base\Core
 
 
     const ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS = [
-        RequestProcessor\Base::NETBANKING_HDFC
+        RequestProcessor\Base::NETBANKING_HDFC,
+        RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::HDFC,
     ];
 
     /*********************
@@ -351,22 +353,20 @@ class Reconciliate extends Base\Core
     {
         $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
 
-        if (empty($blackListedColumns) === false)
+        $updatedData = [];
+
+        foreach ($reconOutputData as $row)
         {
-            $updatedData = [];
+            $this->trace->info(TraceCode::RECON_BATCH_OUTPUT_FILE, ["array diff key", array_diff_key($row, array_flip($blackListedColumns)), $blackListedColumns]);
 
-            foreach ($reconOutputData as $row)
-            {
-                $row = array_diff_key($row, array_flip($blackListedColumns));
+            $row = array_diff_key($row, array_flip($blackListedColumns));
 
-                $row['updated_at'] = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+            $row['updated_at'] = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
 
-                array_push($updatedData, $row);
-            }
-
-            return $updatedData;
+            array_push($updatedData, $row);
         }
-        return $reconOutputData;
+
+        return $updatedData;
     }
 
     /**
