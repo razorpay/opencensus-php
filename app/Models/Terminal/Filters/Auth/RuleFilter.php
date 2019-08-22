@@ -75,6 +75,7 @@ class RuleFilter extends BaseRuleFilter
             'rejected' => $rejectedTerminals,
             'final'    => $filteredTerminals,
         ];
+        s($data['final']);
 
         $this->traceTerminalsForGroup($data, $group, $verbose);
     }

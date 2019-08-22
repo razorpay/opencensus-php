@@ -27,6 +27,7 @@ class AuthSelector extends Base\Core
 
     protected $autflow;
 
+    /** @var Terminal\Auth\Card\AuthFilter $autflowObj */
     protected $autflowObj;
 
     protected static $filters = [
@@ -79,7 +80,7 @@ class AuthSelector extends Base\Core
         {
             return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
-
+s($applicableRules);
         $applicableTerminals = $this->filterTerminals($applicableTerminals, $applicableRules);
 
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');

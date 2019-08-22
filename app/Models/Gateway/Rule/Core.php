@@ -132,7 +132,7 @@ class Core extends Base\Core
         ];
 
         $this->trace->info(TraceCode::AUTH_RULES_SEARCH_CRITERIA, $searchCriteria);
-
+s($searchCriteria);
         $applicableRules = $this->repo
                                 ->gateway_rule
                                 ->fetchAuthenticationRulesForSearchCriteria($searchCriteria);
