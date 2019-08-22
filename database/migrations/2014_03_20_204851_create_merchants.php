@@ -136,6 +136,10 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::RECEIPT_EMAIL_ENABLED)
                   ->default(1);
 
+            $table->tinyInteger(Merchant::RECEIPT_EMAIL_TRIGGER_EVENT)
+                  ->unsigned()
+                  ->default(1);
+
             $table->integer(Merchant::MAX_PAYMENT_AMOUNT)
                   ->unsigned()
                   ->nullable();

@@ -5259,3 +5259,6 @@ ALTER TABLE fund_accounts
 
 ALTER TABLE payouts
     ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER batch_id;
+
+ALTER TABLE merchants
+    ADD COLUMN receipt_email_trigger_event TINYINT(1) UNSIGNED DEFAULT 1 AFTER receipt_email_enabled;

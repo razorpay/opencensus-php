@@ -51,6 +51,7 @@ class Validator extends Base\Validator
         Entity::BILLING_LABEL                         => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL              => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED                 => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_TRIGGER_EVENT           => 'sometimes|nullable|string|in:authorized,captured',
         Entity::LINKED_ACCOUNT_KYC                    => 'sometimes|boolean',
         Entity::CHANNEL                               => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                           => 'sometimes|min:0|max:5',
