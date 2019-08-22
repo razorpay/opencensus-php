@@ -1,11 +1,19 @@
 import Button from 'component/Button';
 import FieldsDropdown from '../../FieldsDropdown';
-import { getAmountFieldTypes } from '../../Amount_Fields/V3';
+import {
+  getAmountFieldTypes,
+  getBaseFieldForAmountFieldType,
+} from '../../Amount_Fields/V3';
 import CreatorManager from './CreatorManager';
 
 class AddAmountButton extends React.PureComponent {
   onSelectFieldType = fieldType => {
-    this.props.openBaseForm(fieldType.key, this.props.field);
+    const initWithField = {
+      ...getBaseFieldForAmountFieldType(fieldType.key),
+      ...this.props.field,
+    };
+
+    this.props.openBaseForm(fieldType.key, initWithField);
   };
 
   render() {

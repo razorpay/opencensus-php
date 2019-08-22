@@ -3,9 +3,7 @@ import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList } from 'common/util';
 import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
-import FIELD_TYPES, {
-  fieldTypesWithMandatory,
-} from '../../Amount_Fields/fieldTypes';
+import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
@@ -17,21 +15,25 @@ export default class BaseForm extends React.PureComponent {
     const title = field.item.title,
       disableSubmit = !title,
       hasDescription = !!field.item.description,
-      isMandatory =
-        typeof field.mandatory === 'undefined'
-          ? fieldTypesWithMandatory.indexOf(props.fieldType) > -1
-          : !!field.mandatory,
       imageUrl = field.image_url || '';
 
     this.state = {
       disableSubmit,
       hasDescription,
       mirrorDisplayTitle: title || '',
-      isMandatory,
       imageUrl,
     };
 
     this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
+  }
+
+  get isMandatory() {
+    const isMandatory =
+      typeof this.props.field.mandatory === 'boolean'
+        ? this.props.field.mandatory
+        : Boolean(Number(field.mandatory));
+
+    return isMandatory;
   }
 
   onChange = ({ target }) => {
@@ -46,7 +48,7 @@ export default class BaseForm extends React.PureComponent {
   };
 
   onSaveForm = formData => {
-    const { title, description, amount, ...restFormData } = formData;
+    const { title, description, amount, mandatory, ...restFormData } = formData;
 
     // Normalize data as per amount field's blueprint
     const baseFormData = {
@@ -124,6 +126,7 @@ export default class BaseForm extends React.PureComponent {
   }
 
   get amountRepresentationForFieldType() {
+    const { field } = this.props;
     const fieldType = this.fieldType;
 
     switch (fieldType) {
@@ -175,7 +178,7 @@ export default class BaseForm extends React.PureComponent {
                   <input
                     className="Field-el counter-value"
                     name="field_1"
-                    defaultValue="1"
+                    value={field.min_purchase}
                     disabled
                   />
                   <button type="button" disabled>
@@ -192,8 +195,9 @@ export default class BaseForm extends React.PureComponent {
                 <PopoverBody>
                   Customer can change Item quantity
                   <br />
-                  {/* TODO As per the actual limits */}
-                  (Min: 0, Max: Unlimited)
+                  {/* TODO: As per the actual limits */}
+                  (Min: {field.min_purchase}, Max:{' '}
+                  {field.max_purchase || 'No Limit'})
                 </PopoverBody>
               </Popover>
             </div>
@@ -216,7 +220,6 @@ export default class BaseForm extends React.PureComponent {
 
     const {
       imageUrl,
-      isMandatory,
       hasDescription,
       disableSubmit,
       mirrorDisplayTitle,
@@ -253,7 +256,7 @@ export default class BaseForm extends React.PureComponent {
           <div
             class={classList(
               'Field Field--mirrorDisplay',
-              isMandatory && 'Field--required'
+              this.isMandatory && 'Field--required'
             )}
           >
             <span class="mirror-title">{mirrorDisplayTitle}</span>
@@ -261,7 +264,6 @@ export default class BaseForm extends React.PureComponent {
           </div>
         </Input.TextareaAutoResize>
 
-        <input name="mandatory" value={isMandatory | 0} hidden readOnly />
         <input name="image_url" value={imageUrl} hidden readOnly />
 
         <div class="Field--representation">

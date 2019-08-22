@@ -5,8 +5,6 @@ import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
-    defaultField = { item: {} };
-
     state = this.initState;
 
     get initState() {
@@ -14,7 +12,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         isBaseFormOpened: false,
         isAdvancedFormOpened: false,
         fieldType: null,
-        field: this.props.field || this.defaultField,
+        field: this.props.field,
       };
     }
 
@@ -22,7 +20,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       this.setState(this.initState);
     };
 
-    openBaseForm = (intentFieldType, baseField) => {
+    openBaseForm = (intentFieldType, initWithBaseField) => {
       const newState = {
         isBaseFormOpened: true,
       };
@@ -31,8 +29,8 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       if (intentFieldType && !intentFieldType.hasOwnProperty('target')) {
         newState.fieldType = intentFieldType;
 
-        if (baseField) {
-          newState.field = baseField;
+        if (initWithBaseField) {
+          newState.field = initWithBaseField;
         }
       }
 
@@ -67,10 +65,35 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     };
 
     onSaveAdvancedForm = formData => {
+      const { field, fieldType } = this.state;
+
+      console.log(formData);
+
+      // Explicitly handle field.mandatory because unlike udf field having field for "required", amount field doesn't have for "mandatory".
+      let isMandatory =
+        typeof field.mandatory === 'boolean'
+          ? field.mandatory
+          : Boolean(Number(field.mandatory));
+
+      if (fieldType === FIELD_TYPES.dynamic_price.key) {
+        isMandatory = Number(formData.min_amount) > 0; // mandatory only if min_amount > 0
+      } else if (fieldType === FIELD_TYPES.multiple_purchase.key) {
+        isMandatory = Number(formData.min_purchase) > 0; // mandatory only if min_purchase > 0
+      }
+
+      if (formData.hasOwnProperty('min_purchase') && !formData.min_purchase) {
+        formData.min_purchase = 0; // Setting to default value 0 (null/empty string also works fine, but 0 is more apt default value)
+      }
+
+      if (formData.hasOwnProperty('min_amount') && !formData.min_amount) {
+        formData.min_amount = 0; // Setting to default value 0 (null/empty string also works fine, but 0 is more apt default value)
+      }
+
       this.setState({
         field: {
           ...field,
           ...formData,
+          mandatory: isMandatory,
         },
       });
     };

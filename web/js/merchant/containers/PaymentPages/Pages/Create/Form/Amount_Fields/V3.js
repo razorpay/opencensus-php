@@ -32,6 +32,37 @@ export function mapFieldToAmountFieldType(amountField) {
   return amountFieldType && amountFieldType.key;
 }
 
+export function getBaseFieldForAmountFieldType(amountFieldType) {
+  switch (amountFieldType) {
+    case FIELD_TYPES.fixed_price.key:
+      return {
+        item: {},
+        mandatory: true, // fixed_price is always mandatory
+      };
+
+    case FIELD_TYPES.fixed_price_optional.key:
+      return {
+        item: {},
+        mandatory: false, // fixed_price_optional is always non-mandatory
+      };
+
+    case FIELD_TYPES.dynamic_price.key:
+      return {
+        item: {},
+        mandatory: false, // By default non-mandatory because customer can enter amount value = 0
+        // As per currency
+        min_amount: null, // Convert in Rupees (bigger unit)
+      };
+
+    case FIELD_TYPES.multiple_purchase.key:
+      return {
+        item: {},
+        mandatory: false, // By default non-mandatory because min_purchase = 0
+        min_purchase: 0,
+      };
+  }
+}
+
 /*
 // Exhaustive set of keys for amount item
 {
