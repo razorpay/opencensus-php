@@ -434,8 +434,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->getPaymentToVerify($verify);
 
-        $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["Verify Payment", $verify, $gatewayPayment]);
-
         if (($gatewayPayment === null) and
             ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
         {
@@ -936,6 +934,17 @@ class Gateway extends Base\Gateway
         $content = $this->jsonToArray($response->body);
 
         $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_CHECK_BALANCE_RESPONSE);
+
+        if(isset($input['isPowerWalletFlow']) === true and $input['isPowerWalletFlow'] === true){
+            $contentToSave = [
+                RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
+                RequestFields::EMAIL         => $input['payment']['email'],
+                RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
+                RequestFields::AMOUNT        => $input['payment']['amount'],
+            ];
+
+            $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
+        }
 
         if (isset($content[ResponseFields::WALLET_BALANCE]))
         {

@@ -96,7 +96,6 @@ trait Authorize
 
         $this->runPaymentInputValidations($payment, $input);
 
-        $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["Gateway Input", $payment, $input, $gatewayInput]);
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
     }
 
@@ -110,8 +109,6 @@ trait Authorize
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
         $this->validateAndSaveInputDetailsIfRequired($payment, $input, $gatewayInput, $ret);
-
-        $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["Gateway Output", $payment, $input, $gatewayInput, $ret]);
 
         if ($ret !== null)
         {
@@ -305,9 +302,8 @@ trait Authorize
                     // If the appToken and walletToken is set then for a power wallet, run the
                     // power wallet flow. Run otp flow if appToken and walletToken are set
                     // but the wallet is not a power wallet.
-                    $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["PWFC", $payment, $payment->getAppTokenId(), $payment->getGlobalTokenId(), Payment\Gateway::isPowerWalletSupported($payment)]);
-                    if (($payment->getAppTokenId() !== null) and
-                        ($payment->getGlobalTokenId() !== null) and
+                    $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["PWFC", $payment, $payment->getGlobalCustomerId(), $payment->getGlobalTokenId(), Payment\Gateway::isPowerWalletSupported($payment)]);
+                    if (($payment->getGlobalTokenId() !== null) and
                         (Payment\Gateway::isPowerWalletSupported($payment) === true))
                     {
                         $request = $this->runPowerWalletFlow($terminalGatewayInput, $payment);
@@ -513,6 +509,12 @@ trait Authorize
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
     {
+        if (($payment->getGlobalTokenId() !== null) and
+            (Payment\Gateway::isPowerWalletSupported($payment) === true) and
+            (isset($request['type'])===true) and ($request['type']==='first'))
+        {
+            return $request;
+        }
         $payment->incrementOtpCount();
 
         $this->repo->save($payment);
@@ -2393,6 +2395,8 @@ trait Authorize
         // First fetch the relevant customer (global or local)
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                                                                 $input, $this->merchant, $followGlobal);
+
+        $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["getCustomerAndApp Output", $customer, $customerApp ]);
 
         if ($customer === null)
         {
@@ -4847,6 +4851,7 @@ trait Authorize
     {
         $gatewayInput['customer'] = $payment->globalCustomer;
         $gatewayInput['token'] = $payment->globalToken;
+        $gatewayInput['isPowerWalletFlow'] = true;
         $this->trace->info(
             TraceCode::PAYMENT_POWER_WALLET_INITIATED,
             [
@@ -4865,7 +4870,6 @@ trait Authorize
             // If the accessToken for the wallet is invalid, run the
             // otpGenerate flow for it.
             //
-            $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["PWFE", $gatewayInput, $payment]);
             if ($this->isGatewayTokenInvalid($error) === true)
             {
                 return $this->runOtpPaymentFlow($gatewayInput, $payment);
@@ -4881,7 +4885,8 @@ trait Authorize
                         'payment_id'  => $payment->getId(),
                         'terminal_id' => $payment->getTerminalId(),
                     ]);
-                return $this->getTopupCoProtoCall($payment);
+                $this->repo->saveOrFail($payment);
+                return $this->topup($payment->getPublicId(), $payment);
             }
             throw $e;
         }
@@ -4889,30 +4894,13 @@ trait Authorize
         return $this->processPowerWalletFlowResponse($response, $payment);
     }
 
-    protected function processPowerWalletFlowResponse($request, $payment): array
+    protected function processPowerWalletFlowResponse($request, $payment)
     {
-        if ($request !== null)
-        {
-            $payment->incrementOtpCount();
-            $payment->save();
-            $response = [
-                'type' => 'otp',
-                'request' => $request,
-                'version' => 1,
-                'payment_id' => $payment->getPublicId(),
-                'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
-                // TODO: Return metadata in a better format
-                'contact' => $payment->getContact(),
-                'amount'  => number_format(($payment->getAmount() / 100), 2),
-                'wallet'  => $payment->getWallet()
-            ];
-            $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
-            return $response;
-        }
         $this->updateAndNotifyPaymentAuthorized();
         $this->updateTwoFactorAuthForOneStepPayment();
         $payment = $this->payment;
-        return $this->postPaymentAuthorizeProcessing($payment);
+        $this->postPaymentAuthorizeProcessing($payment);
+        return null;
     }
 
     protected function isGatewayTokenInvalid($error)
@@ -4926,20 +4914,8 @@ trait Authorize
                 return false;
         }
     }
-    protected function getTopupCoProtoCall($payment)
-    {
-        return [
-            'type' => 'topup',
-            'version' => 1,
-            'request' => [
-                'url' => $this->getTopupUrl($payment),
-                'method' => 'post',
-            ],
-            'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
-            'wallet'  => $payment->getWallet(),
-        ];
-    }
-    protected function shouldPowerWalletTopup(Error\Error $error)
+
+    protected function shouldPowerWalletTopup($error)
     {
         $errorCode = $error->getInternalErrorCode();
         switch($errorCode)
