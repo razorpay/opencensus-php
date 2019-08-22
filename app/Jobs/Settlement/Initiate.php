@@ -46,7 +46,10 @@ class Initiate extends Job
      */
     public function handle()
     {
-        try {
+        parent::handle();
+
+        try
+        {
             $mutex = App::getFacadeRoot()['api.mutex'];
 
             $resource = sprintf(self::MUTEX_RESOURCE, $this->channel);
@@ -64,7 +67,9 @@ class Initiate extends Job
                 static::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
 
-        } catch (\Throwable $e) {
+        }
+        catch (\Throwable $e)
+        {
             // if the max attempt is not exhausted then release the job for retry
             if ($this->attempts() <= self::MAX_ATTEMPTS)
             {

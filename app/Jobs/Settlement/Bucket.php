@@ -44,6 +44,8 @@ class Bucket extends Job
      */
     public function handle()
     {
+        parent::handle();
+
         try
         {
             (new Core)->addMerchantToSettlementBucket($this->merchantId, $this->settledAt);

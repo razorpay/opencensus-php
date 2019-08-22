@@ -97,6 +97,8 @@ trait SettlementTrait
             return true;
         }
 
+        $today = Carbon::today(Timezone::IST);
+
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
         //
@@ -148,7 +150,7 @@ trait SettlementTrait
             return true;
         }
 
-        if (in_array($merchant->getId(), MerchantModel\Preferences::NO_SETTLEMENT_MIDS, true) === true)
+        if (in_array($merchant->getId(), Preferences::NO_SETTLEMENT_MIDS, true) === true)
         {
             return true;
         }
@@ -929,19 +931,6 @@ trait SettlementTrait
         }
 
         return $shouldSettle;
-    }
-
-    protected function traceSetlInitiating($channel)
-    {
-        $time = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
-
-        $this->trace->info(
-            TraceCode::SETTLEMENT_INITIATING,
-            [
-                'channel'   => $channel,
-                'timestamp' => $this->setlTime,
-                'time'      => $time,
-            ]);
     }
 
     protected function successNotification($data, $settlements, $traceCode)

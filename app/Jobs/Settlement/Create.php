@@ -56,7 +56,9 @@ class Create extends Job
      */
     public function handle()
     {
-        $merchant = $this->repoManager->merchant->find($this->merchantId);
+        parent::handle();
+
+        $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
 
         try
         {
@@ -119,7 +121,7 @@ class Create extends Job
     {
         $redis = app('redis')->connection();
 
-        $count = $redis->hincrby(self::CHANNEL_WISE_COUNT, $channel, 1);
+        $count = (int) $redis->hincrby(self::CHANNEL_WISE_COUNT, $channel, 1);
 
         $batchSize = (new Initiator)->getLimitForChannel($channel);
 
@@ -132,7 +134,7 @@ class Create extends Job
         }
 
         // if there total merchant count is zero that means settlement creation process completed
-        $isCompleted = (Cache::get(self::TOTAL_MERCHANT_COUNT) === 0);
+        $isCompleted = (((int)Cache::get(self::TOTAL_MERCHANT_COUNT)) === 0);
 
         // if process is not complete then do not initiate transfer
         if ($isCompleted === false)
@@ -163,7 +165,14 @@ class Create extends Job
     {
         Initiate::dispatch($this->mode, $channel);
 
+        $this->trace->info(
+            TraceCode::DISPATCH_FOR_SETTLEMENT_INITIATE,
+            [
+                'channel' => $channel,
+                'count'   => $count,
+            ]);
+
         // decrement the size by count as those are dispatched to initiate
-        $redis->hdecrby(self::CHANNEL_WISE_COUNT, $channel, $count);
+        $redis->hincrby(self::CHANNEL_WISE_COUNT, $channel, -1 * $count);
     }
 }
