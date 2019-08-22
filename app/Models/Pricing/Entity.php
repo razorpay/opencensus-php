@@ -9,23 +9,26 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Base\QueryCache\Cacheable;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
     use Cacheable;
 
-    const ID                   = 'id';
-    const PLAN_ID              = 'plan_id';
-    const PLAN_NAME            = 'plan_name';
-    const PRODUCT              = 'product';
-    const FEATURE              = 'feature';
-    const GATEWAY              = 'gateway';
-    const PAYMENT_METHOD       = 'payment_method';
-    const AUTH_TYPE            = 'auth_type';
-    const PAYMENT_METHOD_TYPE  = 'payment_method_type';
-    const PAYMENT_NETWORK      = 'payment_network';
-    const INTERNATIONAL        = 'international';
+    const ID                            = 'id';
+    const PLAN_ID                       = 'plan_id';
+    const PLAN_NAME                     = 'plan_name';
+    const PRODUCT                       = 'product';
+    const PROCURER                      = 'procurer';
+    const FEATURE                       = 'feature';
+    const GATEWAY                       = 'gateway';
+    const PAYMENT_METHOD                = 'payment_method';
+    const AUTH_TYPE                     = 'auth_type';
+    const PAYMENT_METHOD_TYPE           = 'payment_method_type';
+    const PAYMENT_METHOD_SUBTYPE        = 'payment_method_subtype';
+    const PAYMENT_NETWORK               = 'payment_network';
+    const INTERNATIONAL                 = 'international';
 
     //
     // By default, all the rules are of type pricing
@@ -52,6 +55,16 @@ class Entity extends Base\PublicEntity
     const MIN_FEE              = 'min_fee';
     const MAX_FEE              = 'max_fee';
 
+    //
+    // account_type can be shared (for Virtual Accounts) or direct (for Current Accounts)
+    //
+    const ACCOUNT_TYPE         = 'account_type';
+    //
+    // channel which provides the account, eg: rbl, yesbank
+    // would be null for account_type=shared and null(primary)
+    //
+    const CHANNEL              = 'channel';
+
     const EXPIRED_AT           = 'expired_at';
     const DELETED_AT           = 'deleted_at';
 
@@ -70,8 +83,10 @@ class Entity extends Base\PublicEntity
         self::PLAN_NAME,
         self::PRODUCT,
         self::FEATURE,
+        self::PROCURER,
         self::GATEWAY,
         self::PAYMENT_METHOD,
+        self::PAYMENT_METHOD_SUBTYPE,
         self::PAYMENT_METHOD_TYPE,
         self::AUTH_TYPE,
         self::PAYMENT_NETWORK,
@@ -88,6 +103,8 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::ORG_ID,
         self::TYPE,
+        self::CHANNEL,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $entity = 'pricing';
@@ -106,20 +123,22 @@ class Entity extends Base\PublicEntity
     protected static $generators = ['plan_id', 'org_id'];
 
     protected $defaults = [
-        self::PRODUCT             => Product::PRIMARY,
-        self::FEATURE             => Feature::PAYMENT,
-        self::PAYMENT_METHOD_TYPE => null,
-        self::PAYMENT_NETWORK     => null,
-        self::AUTH_TYPE           => null,
-        self::PAYMENT_ISSUER      => null,
-        self::PERCENT_RATE        => 0,
-        self::FIXED_RATE          => 0,
-        self::MIN_FEE             => 0,
-        self::MAX_FEE             => null,
-        self::AMOUNT_RANGE_ACTIVE => '0',
-        self::EMI_DURATION        => null,
-        self::RECEIVER_TYPE       => null,
-        self::TYPE                => Type::PRICING,
+        self::PROCURER                  => null,
+        self::PRODUCT                   => Product::PRIMARY,
+        self::FEATURE                   => Feature::PAYMENT,
+        self::PAYMENT_METHOD_TYPE       => null,
+        self::PAYMENT_METHOD_SUBTYPE    => null,
+        self::PAYMENT_NETWORK           => null,
+        self::AUTH_TYPE                 => null,
+        self::PAYMENT_ISSUER            => null,
+        self::PERCENT_RATE              => 0,
+        self::FIXED_RATE                => 0,
+        self::MIN_FEE                   => 0,
+        self::MAX_FEE                   => null,
+        self::AMOUNT_RANGE_ACTIVE       => '0',
+        self::EMI_DURATION              => null,
+        self::RECEIVER_TYPE             => null,
+        self::TYPE                      => Type::PRICING,
     ];
 
     /**
@@ -128,6 +147,7 @@ class Entity extends Base\PublicEntity
      * @var array
      */
     protected $casts = [
+        self::PROCURER            => 'string',
         self::INTERNATIONAL       => 'bool',
         self::AMOUNT_RANGE_ACTIVE => 'bool',
         self::PERCENT_RATE        => 'int',
@@ -285,6 +305,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_METHOD_TYPE);
     }
 
+    public function getPaymentMethodSubType()
+    {
+        return $this->getAttribute(self::PAYMENT_METHOD_SUBTYPE);
+    }
+
     public function getAuthType()
     {
         return $this->getAttribute(self::AUTH_TYPE);
@@ -366,6 +391,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
     public function isPrimaryProduct(): bool
     {
         return ($this->getProduct() === Product::PRIMARY);
@@ -374,6 +404,16 @@ class Entity extends Base\PublicEntity
     public function isBankingProduct(): bool
     {
         return ($this->getProduct() === Product::BANKING);
+    }
+
+    public function isAccountTypeDirect()
+    {
+        return ($this->getAccountType() === AccountType::DIRECT);
+    }
+
+    public function isAccountTypeShared()
+    {
+        return (($this->getAccountType() === AccountType::SHARED));
     }
 
     /**

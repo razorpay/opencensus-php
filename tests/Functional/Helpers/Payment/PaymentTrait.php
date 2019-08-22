@@ -18,6 +18,7 @@ use RZP\Models\Payment\Verify\Action;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
@@ -409,6 +410,31 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SPrivateAuthJsonPayment($payment = null, $server = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SRecurringPayment($payment = null, $server = null)
     {
         if ($payment === null)
@@ -614,7 +640,15 @@ trait PaymentTrait
             'method'    => 'POST',
         ];
 
-        return $this->sendRequest($request);
+        $response = $this->sendRequest($request);
+
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response);
+
+        $this->ba->publicAuth();
+
+        $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+
+        return $this->submitPaymentCallbackRequest($request);
     }
 
     protected function makeS2sCallbackAndGetContent($content, $gateway = null)
@@ -1000,6 +1034,11 @@ trait PaymentTrait
                 case 3470:
                     $event = 'fee_only_reversal_event';
                     break;
+
+                case 3471:
+                    $event = 'processed_event';
+                    $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
+                    break;
             }
 
             if ($event !== '')
@@ -1038,6 +1077,11 @@ trait PaymentTrait
         if (($this->gateway === Payment\Gateway::UPI_MINDGATE) or ($this->gateway === Payment\Gateway::UPI_ICICI))
         {
             $input['reference_no'] = random_integer(12);
+        }
+
+        if (empty($refund[RefundEntity::SPEED_PROCESSED]) === false)
+        {
+            $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
         }
 
         $input['event'] = $event;
@@ -1904,6 +1948,7 @@ trait PaymentTrait
                     $bin = $payment->card->getIin();
 
                     $binRiskMapping = [
+                        '341111' => '22.0',
                         '510510' => '22.0',
                         '401201' => '15.3',
                         '555555' => '2.4',
@@ -2015,7 +2060,12 @@ trait PaymentTrait
                     'status_code'   => 500,
                 ];
 
-                throw new Exception\GatewayRequestException('cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ');
+                throw new Exception\GatewayRequestException(
+                    'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                    new \Requests_Exception_Transport_cURL('SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                        'curlerror',
+                        'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                        35));
             }
 
         });

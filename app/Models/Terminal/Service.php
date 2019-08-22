@@ -15,7 +15,7 @@ class Service extends Base\Service
 
         $terminal = (new Terminal\Core)->create($input, $merchant);
 
-        return $terminal->toArrayPublic();
+        return $terminal;
     }
 
     public function copyTerminal($mid, $tid, $input)
@@ -40,7 +40,7 @@ class Service extends Base\Service
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
-        return $terminals->toArrayPublic($subMerchantFlag);
+        return $terminals->toArrayAdmin($subMerchantFlag);
     }
 
     public function getTerminal($mid, $tid)
@@ -49,7 +49,7 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function deleteTerminal($mid, $tid)
@@ -63,7 +63,7 @@ class Service extends Base\Service
         if ($terminal === null)
             return [];
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function deleteTerminal2($id)
@@ -75,7 +75,7 @@ class Service extends Base\Service
         if ($terminal === null)
             return [];
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function modifyTerminal($mid, $tid, $input)
@@ -84,7 +84,7 @@ class Service extends Base\Service
 
         $terminal = (new Terminal\Core)->edit($terminal, $input);
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function editTerminal($tid, $input)
@@ -93,7 +93,7 @@ class Service extends Base\Service
 
         $terminal = (new Terminal\Core)->edit($terminal, $input);
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function restoreTerminal($id)
@@ -110,7 +110,7 @@ class Service extends Base\Service
 
         $terminal->restore();
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function removeMerchantFromTerminal(string $id, string $merchantId)
@@ -119,7 +119,7 @@ class Service extends Base\Service
 
         $terminal = (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function reassignMerchantForTerminal(string $id, array $input)
@@ -134,7 +134,7 @@ class Service extends Base\Service
 
         $terminal = (new Terminal\Core)->reassignMerchantForTerminal($terminal, $merchant);
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function addMerchantToTerminal(string $id, string $mid)
@@ -143,7 +143,7 @@ class Service extends Base\Service
 
         $terminal = (new Terminal\Core)->addMerchantToTerminal($terminal, $mid);
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function toggleTerminal($id, $input)
@@ -154,7 +154,7 @@ class Service extends Base\Service
 
         (new Terminal\Core)->toggle($terminal, $toggle);
 
-        return $terminal->toArrayPublic();
+        return $terminal->toArrayAdmin();
     }
 
     public function checkTerminalEncryptedValue($id, $input)

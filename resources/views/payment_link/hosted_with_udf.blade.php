@@ -6,7 +6,6 @@
     $meta_description           = $description_meta_text ? $description_meta_text : 'Payment request by '. $data['merchant']['name'];
     $dark_theme_color           = '#383838';
     $light_theme_color          = '#efefef';
-    $is_payment_success_view    = isset($request_params['razorpay_payment_id']);
     $is_error_view              = isset($request_params['error']['description']);
 ?>
 
@@ -59,7 +58,10 @@
             var paymentPageData = data.payment_link;
             paymentPageData.description = paymentPageData.description ? JSON.parse(paymentPageData.description).value : null;
 
+            var requestParams = {!!utf8_json_encode($request_params)!!};
+
             var templateData = {
+                key_id: data.key_id,
                 is_test_mode: data.is_test_mode,
                 merchant: data.merchant,
                 payment_page_data: data.payment_link,
@@ -67,16 +69,16 @@
                   page_title: data.payment_link.title,
                   form_title: 'Payment Details'
                 },
+                requestParams: requestParams
               };
         </script>
 
-        @if (($is_payment_success_view ===  false) and ($is_error_view === false))
+        @if ($is_error_view === false)
             <script>
                 function renderPaymentPage() {
                     window.RZP.renderApp('paymentpage-container', templateData);
                 }
             </script>
-
 
             <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
             <script src="https://cdn.razorpay.com/static/assets/color.js"></script>
@@ -89,10 +91,7 @@
 
     <body>
         <div id="paymentpage-container">
-            @if ($is_payment_success_view === true)
-                @include('hostedpage.partials.success')
-                <div id="post-msg"><a href="{{{$payment_page_data['short_url']}}}"">Make Another Payment</a></div>
-            @elseif ($is_error_view === true)
+            @if ($is_error_view === true)
                 @include('hostedpage.partials.success', ['error' => true])
                 <div id="post-msg">
                     <div>{{$request_params['error']['description'] ?? 'If any amount is deducted, it will be automatically refunded'}}</div>
@@ -100,9 +99,5 @@
                 </div>
             @endif
         </div>
-
-        @if ($is_payment_success_view === true)
-            <script>showSuccessMsg()</script>
-        @endif
     </body>
 </html>

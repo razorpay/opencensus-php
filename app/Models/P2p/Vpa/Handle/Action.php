@@ -8,4 +8,8 @@ use RZP\Models\P2p\Base;
 class Action extends Base\Action
 {
     const FETCH_ALL    = 'fetchAll';
+
+    const ADD          = 'add';
+
+    const UPDATE       = 'update';
 }

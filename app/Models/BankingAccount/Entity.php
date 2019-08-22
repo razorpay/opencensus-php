@@ -103,6 +103,7 @@ class Entity extends Base\PublicEntity
         self::USERNAME,
         self::PASSWORD,
         self::REFERENCE1,
+        self::BENEFICIARY_PIN,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
         self::BENEFICIARY_ADDRESS1,
@@ -142,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
         self::BENEFICIARY_ADDRESS3,
+        self::BENEFICIARY_PIN,
         self::BANK_INTERNAL_STATUS,
         self::ACCOUNT_TYPE,
         self::BANK_REFERENCE_NUMBER,
@@ -162,7 +164,6 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
         self::BANK_INTERNAL_STATUS,
-        self::USERNAME,
         self::REFERENCE1,
         self::ACCOUNT_TYPE,
         self::ACCOUNT_CURRENCY,
@@ -170,13 +171,44 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
+        self::USERNAME,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
 
     public function setStatus(string $status)
     {
-        $this->setAttribute(self::STATUS, $status);
+        if ($this->isChannelYesbank() === true)
+        {
+            $this->setAttribute(self::STATUS, $status);
+
+            return;
+        }
+
+        if ($this->getStatus() === null)
+        {
+            Status::validateInInitialStatuses($status);
+
+            $this->setAttribute(self::STATUS, $status);
+
+            return;
+        }
+
+        if ($this->isDirty(Entity::STATUS) === false)
+        {
+            return;
+        }
+
+        $originalStatus = $this->getOriginal(Entity::STATUS);
+
+        $newStatus = $this->getStatus();
+
+        Status::validatePreviousToCurrentMapping($originalStatus, $newStatus);
+
+        if ($newStatus === Status::PROCESSED)
+        {
+            (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $this->toArray());
+        }
     }
 
     public function setBankReferenceNumber(string $number)
@@ -192,6 +224,11 @@ class Entity extends Base\PublicEntity
     public function setFtsFundAccountId(string $fundAccountId)
     {
         $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $fundAccountId);
+    }
+
+    public function setPassword(string $password)
+    {
+        $this->setAttribute(self::PASSWORD, $password);
     }
 
     // -------------------------- Getters ------------------------------------ //
@@ -241,7 +278,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_CITY);
     }
 
-    public function getBeneficiaryEMail()
+    public function getBeneficiaryEmail()
     {
         return $this->getAttribute(self::BENEFICIARY_EMAIL);
     }
@@ -301,17 +338,6 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
     }
 
-    // --------------------------- Mutators ----------------------------------- //
-
-    public function setPasswordAttribute(string $password)
-    {
-        $bankingAccountCore = new Core();
-
-        $token = $bankingAccountCore->tokenizeBankingAccountCredentials($password);
-
-        $this->attributes[self::PASSWORD] = $token;
-    }
-
     // --------------------------- Relations ---------------------------------- //
 
     public function merchant()
@@ -322,5 +348,17 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
+    }
+
+    protected function isChannelYesbank()
+    {
+        $channel = $this->getChannel();
+
+        if ($channel === Channel::YESBANK)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -8,5 +8,5 @@ class Url
     const TEST_DOMAIN   = 'https://eqibt.equitasbank.com';
 
     const AUTHORIZE     = '/EquitasPaymentGateway';
-    const VERIFY        = '/EquitasPaymentGatewayInquiry/RequestProcessor';
+    const VERIFY        = '/EquitasPaymentGatewayInquiry/PaymentInquiry';
 }

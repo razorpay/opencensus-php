@@ -55,7 +55,6 @@ class Repository extends Transaction\Repository
 
         $statement = $this->getQueryForFindWithParams($params)
                           ->merchantId($merchant->getId())
-                          ->where(Entity::BALANCE_ID, $merchant->bankingBalance->getId())
                           ->findOrFailPublic($id);
 
         if ($statement->isTypePayout() === true)

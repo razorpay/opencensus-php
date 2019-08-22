@@ -9,18 +9,54 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::TYPE   => 'required|string|max:255|custom',
-        Entity::EMAIL  => 'required|email|max:255',
-        Entity::PHONE  => 'sometimes|string',
-        Entity::POLICY => 'sometimes|string',
-        Entity::URL    => 'sometimes|string',
+        Entity::EMAIL  => 'required|string|custom',
+        Entity::PHONE  => 'sometimes|string|nullable',
+        Entity::POLICY => 'sometimes|string|nullable',
+        Entity::URL    => 'sometimes|string|nullable',
     ];
 
+    protected static $editRules = [
+        Entity::TYPE   => 'required|string|max:255|custom',
+        Entity::EMAIL  => 'filled|string|custom',
+        Entity::PHONE  => 'sometimes|string|nullable',
+        Entity::POLICY => 'sometimes|string|nullable',
+        Entity::URL    => 'sometimes|string|nullable',
+    ];
+
+    protected static $emailRules = [
+        Entity::EMAIL => 'required|email',
+    ];
+
+    /**
+     * validateType validate if the type of the email is valid or not
+     *
+     * @param string $attribute
+     * @param string $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateType(string $attribute, string $value)
     {
         if (Type::exists($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Email type is invalid: ' . $value);
+        }
+    }
+
+    /**
+     * validateEmail validates email string contain any invalid email or not
+     *
+     * @param string $attribute
+     * @param string $value
+     */
+    public function validateEmail(string $attribute, string $value)
+    {
+        $emails = explode(',', $value);
+
+        foreach ($emails as $email)
+        {
+            $this->validateInput('email', [Entity::EMAIL => $email]);
         }
     }
 }

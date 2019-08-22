@@ -32,6 +32,7 @@ return [
         'kotak',
         'mobikwik',
         'netbanking_sib',
+        'netbanking_cbi',
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
@@ -52,6 +53,8 @@ return [
         'netbanking_equitas',
         'netbanking_sbi',
         'netbanking_cub',
+        'netbanking_ibk',
+        'netbanking_idbi',
         'netbanking_yesb',
         'paytm',
         'sharp',
@@ -102,6 +105,7 @@ return [
     'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
     'mock_paytm'                  => env('PAYTM_MOCK'),
     'mock_netbanking_sib'         => env('NETBANKING_SIB_MOCK'),
+    'mock_netbanking_cbi'         => env('NETBANKING_CBI_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
@@ -121,6 +125,8 @@ return [
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
     'mock_netbanking_cub'         => env('NETBANKING_CUB_MOCK'),
+    'mock_netbanking_ibk'         => env('NETBANKING_IBK_MOCK'),
+    'mock_netbanking_idbi'        => env('NETBANKING_IDBI_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_netbanking_yesb'        => env('NETBANKING_YESB_MOCK'),
@@ -462,6 +468,13 @@ return [
     'upi_sbi' => [
         'test_merchant_id' => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
         'hash_secret'      => env('UPI_MINDGATE_SBI_HASH_SECRET'),
+        'public_key'       => env('UPI_MINDGATE_SBI_PUBLIC_KEY'),
+        'private_key'      => env('UPI_MINDGATE_SBI_PRIVATE_KEY'),
+        'passphrase'       => env('UPI_MINDGATE_SBI_PASSPHRASE'),
+        'client_id'        => env('UPI_MINDGATE_SBI_CLIENT_ID'),
+        'client_secret'    => env('UPI_MINDGATE_SBI_CLIENT_SECRET'),
+        'username'         => env('UPI_MINDGATE_SBI_OAUTH_USERNAME'),
+        'password'         => env('UPI_MINDGATE_SBI_OAUTH_PASSWORD'),
     ],
 
     'wallet_payzapp' => [
@@ -656,6 +669,10 @@ return [
 
         // Aditiya birla direct settlement TID
         'live_merchant_id2_aditiya_birla_direct' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_AB_DIRECT'),
+
+        //Cred direct Settlement TID
+        'live_hash_secret_cred'   => env('NETBANKING_ICICI_LIVE_HASH_SECRET_CRED'),
+        'live_merchant_id2_cred'  => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_CRED'),
     ],
 
     'netbanking_axis' => [
@@ -749,6 +766,15 @@ return [
         'netbanking_yesb' => [
             'gateway_secure_secret' => env('NETBANKING_YESB_GATEWAY_SECURE_SECRET')
         ],
+        'netbanking_cub' => [
+            'gateway_secure_secret'      => env('NETBANKING_CUB_GATEWAY_SECURE_SECRET'),
+            'gateway_secure_secret2'     => env('NETBANKING_CUB_GATEWAY_SECURE_SECRET2'),
+            'gateway_terminal_password'  => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD'),
+            'gateway_terminal_password2' => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD2'),
+        ],
+        'netbanking_cbi' => [
+            'account_number'         => env('CBI_NODAL_ACCOUNT_NUMBER'),
+        ],
         'razorpayx' => [
             'direct' => [
                 'rbl' => [
@@ -756,6 +782,7 @@ return [
                     'auth_password' => env('BANKING_ACCOUNT_RBL_PASSWORD'),
                     'client_id'     => env('BANKING_ACCOUNT_RBL_CLIENT_ID'),
                     'client_secret' => env('BANKING_ACCOUNT_RBL_CLIENT_SECRET'),
+                    'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER'),
                 ],
             ]
         ],

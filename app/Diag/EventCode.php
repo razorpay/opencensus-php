@@ -71,6 +71,11 @@ class EventCode
         'name'  => 'payment.terminal.selection.processed'
     ];
 
+    const PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING    = [
+        'group' => 'internal_checks',
+        'name'  => 'payment.sorted.terminals.received.from.smart.routing'
+    ];
+
     const PAYMENT_CREATION_PROCESSED                    = [
         'group' => 'payment_creation',
         'name'  => 'payment.creation.processed'
@@ -220,6 +225,16 @@ class EventCode
     const PAYMENT_VERIFICATION_PROCESSED                = [
         'group' => 'verification',
         'name'  => 'payment.verification.processed'
+    ];
+
+    const PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_INITIATED = [
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.omnichannel.request.initiated'
+    ];
+
+    const PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_PROCESSED = [
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.omnichannel.request.processed'
     ];
 
 }

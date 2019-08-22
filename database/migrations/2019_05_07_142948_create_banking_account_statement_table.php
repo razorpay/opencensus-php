@@ -80,10 +80,11 @@ class CreateBankingAccountStatementTable extends Migration
 
             $table->unique([
                 Entity::BANK_TRANSACTION_ID,
+                Entity::BANK_SERIAL_NUMBER,
                 Entity::ACCOUNT_NUMBER,
                 Entity::TRANSACTION_DATE,
                 Entity::CHANNEL
-            ], 'banking_account_statement_bank_transaction_id_unique');
+            ], 'banking_account_statement_bank_txn_id_srl_no_unique');
 
             // Indexes
 

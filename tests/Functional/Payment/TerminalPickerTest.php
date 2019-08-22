@@ -25,6 +25,9 @@ class TerminalTest extends TestCase
 
         // Create all shared terminals
         $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'BKID';
+
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);

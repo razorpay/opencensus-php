@@ -31,8 +31,10 @@ class Gateway extends Base\Gateway
 
     const TIMEOUT       = 20;
 
+    const MAX_RETRY_COUNT = 5;
+
     /**
-     * @var Crypto
+     * @var AESCrypto
      */
     protected $aesCrypto;
 

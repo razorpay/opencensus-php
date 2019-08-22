@@ -9,15 +9,15 @@ class BankingAccountController extends Controller
 {
     use Traits\HasCrudMethods;
 
-    public function storeCredentials(string $id)
+    public function storeCredentialsAndActivateAccount(string $id)
     {
         $input = Request::all();
 
-        $response = $this->service()->storeCredentials($id, $input);
+        $response = $this->service()->storeCredentialsAndActivateAccount($id, $input);
 
         return ApiResponse::json($response);
     }
-    
+
     public function postServiceablePincodes(string $channel)
     {
         $input = Request::all();
@@ -34,5 +34,14 @@ class BankingAccountController extends Controller
         $response = $this->service()->processAccountInfoWebhook($channel, $input);
 
         return $response;
+    }
+
+    public function bulkCreateBankingAccountsForYesbank()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkCreateBankingAccountsForYesbank($input);
+
+        return ApiResponse::json($response);
     }
 }

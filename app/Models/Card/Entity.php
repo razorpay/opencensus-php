@@ -769,6 +769,15 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isHeadLessOtp()
+    {
+        if ($this->iinRelation !== null)
+        {
+            return $this->iinRelation->isHeadLessOtp();
+        }
+        return false;
+    }
+
     protected function getTokenRelevantAttributes()
     {
         $attributes = [
@@ -791,6 +800,18 @@ class Entity extends Base\PublicEntity
         unset($attributes[self::ID]);
 
         return $attributes;
+    }
+
+    public function toArray()
+    {
+        $data = parent::toArray();
+
+        if (empty($data[Card\Entity::VAULT_TOKEN]) === true)
+        {
+            $data[Card\Entity::VAULT_TOKEN] = $this->getCardVaultToken();
+        }
+
+        return $data;
     }
 
     public function toArrayFundAccount()

@@ -7,17 +7,21 @@ use RZP\Models\P2p\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $editRules;
     protected static $fetchAllRules;
+    protected static $retrieveSuccessRules;
 
     public function rules()
     {
         $rules = [
             Entity::IFSC             => 'string',
             Entity::NAME             => 'string',
+            Entity::HANDLE           => 'string',
             Entity::UPI_IIN          => 'string',
             Entity::UPI_FORMAT       => 'string',
-            Entity::ACTIVE           => 'string',
+            Entity::ACTIVE           => 'boolean',
             Entity::SPOC             => 'array',
+            Entity::GATEWAY_DATA     => 'array',
         ];
 
         return $rules;
@@ -26,12 +30,30 @@ class Validator extends Base\Validator
     public function makeCreateRules()
     {
         $rules = $this->makeRules([
+            Entity::NAME             => 'required',
+            Entity::HANDLE           => 'required',
+            Entity::ACTIVE           => 'required',
+            Entity::UPI_IIN          => 'required',
             Entity::IFSC             => 'sometimes',
-            Entity::NAME             => 'sometimes',
-            Entity::UPI_IIN          => 'sometimes',
             Entity::UPI_FORMAT       => 'sometimes',
-            Entity::ACTIVE           => 'sometimes',
             Entity::SPOC             => 'sometimes',
+            Entity::GATEWAY_DATA     => 'sometimes',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeEditRules()
+    {
+        $rules = $this->makeRules([
+            Entity::UPI_IIN          => 'required',
+            Entity::ACTIVE           => 'sometimes',
+            Entity::HANDLE           => 'sometimes',
+            Entity::NAME             => 'sometimes',
+            Entity::IFSC             => 'sometimes',
+            Entity::UPI_FORMAT       => 'sometimes',
+            Entity::SPOC             => 'sometimes',
+            Entity::GATEWAY_DATA     => 'sometimes',
         ]);
 
         return $rules;
@@ -39,7 +61,30 @@ class Validator extends Base\Validator
 
     public function makeFetchAllRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules([
+            Entity::UPI_IIN          => 'required',
+            Entity::IFSC             => 'sometimes',
+            Entity::NAME             => 'sometimes',
+            Entity::UPI_FORMAT       => 'sometimes',
+            Entity::ACTIVE           => 'sometimes',
+            Entity::SPOC             => 'sometimes',
+            Entity::GATEWAY_DATA     => 'sometimes',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeRetrieveSuccessRules()
+    {
+        $rules = $this->makeRules([
+            Entity::UPI_IIN          => 'required',
+            Entity::IFSC             => 'sometimes',
+            Entity::NAME             => 'sometimes',
+            Entity::UPI_FORMAT       => 'sometimes',
+            Entity::ACTIVE           => 'sometimes',
+            Entity::SPOC             => 'sometimes',
+            Entity::GATEWAY_DATA     => 'sometimes',
+        ])->wrapRules(Entity::BANKS, true);
 
         return $rules;
     }

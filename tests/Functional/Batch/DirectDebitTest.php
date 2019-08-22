@@ -40,6 +40,7 @@ class DirectDebitTest extends TestCase
 
         // Just asserting that job is being pushed on creation of batch entity
         // for payment link type.
+        Queue::assertPushedOn('payment_batch', BatchJob::class);
 
         Queue::assertPushed(BatchJob::class);
     }

@@ -110,7 +110,7 @@ class Service extends Merchant\Service
 
     public function fetchAccount(string $accountId): array
     {
-        $this->core()->validatePartnerAccess($this->merchant);
+        $this->core()->validatePartnerAccess($this->merchant, $accountId);
 
         Entity::verifyIdAndStripSign($accountId);
 
@@ -122,6 +122,17 @@ class Service extends Merchant\Service
     public function createAccount(array $input): array
     {
         $account = $this->core()->createAccount($this->merchant, $input);
+
+        return $this->getResponseObject()->generateResponse($account);
+    }
+
+    public function editAccount(string $accountId, array $input): array
+    {
+        $this->core()->validatePartnerAccess($this->merchant, $accountId);
+
+        Entity::verifyIdAndStripSign($accountId);
+
+        $account = $this->core()->editAccount($this->merchant, $accountId, $input);
 
         return $this->getResponseObject()->generateResponse($account);
     }
@@ -139,7 +150,7 @@ class Service extends Merchant\Service
 
     public function performAction(string $accountId, string $action): array
     {
-        $this->merchant->getValidator()->validateIsAggregatorPartner($this->merchant);
+        $this->core()->validatePartnerAccess($this->merchant, $accountId);
 
         $input = [
             Merchant\Entity::ACTION => Action::validateInputAndGetAccountAction($action),
@@ -155,8 +166,6 @@ class Service extends Merchant\Service
         Entity::verifyIdAndStripSign($accountId);
 
         $account = $this->repo->merchant->findOrFail($accountId);
-
-        $this->core()->isMerchantMappedToNonPurePlatformPartner($account->getId(), $this->merchant->getId());
 
         $account = $this->core()->action($account, $input, false);
 

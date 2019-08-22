@@ -15,4 +15,6 @@ class Action
     const AUTHORIZE         = 'authorize';
 
     const OMNI_PAY          = 'omni_pay';
+
+    const INTENT            = 'intent';
 }

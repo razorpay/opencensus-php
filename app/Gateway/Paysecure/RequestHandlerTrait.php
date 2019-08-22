@@ -38,7 +38,7 @@ trait RequestHandlerTrait
             $this->input,
             null,
             [
-                'enrolled' => $response[Fields::STATUS] ?? ''
+                'enrolled' => ($response[Fields::STATUS] === StatusCode::SUCCESS) ? 'Y' : 'F',
             ]);
 
         return $response;
@@ -286,6 +286,8 @@ trait RequestHandlerTrait
      */
     protected function sendRequest($command, $params)
     {
+        $this->wasGatewayHit = true;
+
         $this->traceGatewayPaymentRequest(
             [
                 'command'    => $command,
@@ -372,7 +374,14 @@ trait RequestHandlerTrait
             }
             else
             {
-                throw $sf;
+                $ex = new Exception\GatewayRequestException($sf->getMessage(), $sf);
+
+                if ($command !== Command::AUTHORIZE)
+                {
+                    $ex->markSafeRetryTrue();
+                }
+
+                throw $ex;
             }
         }
         finally

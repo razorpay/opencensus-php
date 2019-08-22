@@ -72,7 +72,7 @@ class NetbankingYesbCombinedFileTest extends TestCase
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
             $testData = [
-                'subject' => 'Yes Bank Netbanking claims and refund files for '.$date,
+                'subject' => 'Yesbank Netbanking claims and refund files for '.$date,
                 'amount' => [
                     'claims'  => '1000.00',
                     'refunds' => '505.00',

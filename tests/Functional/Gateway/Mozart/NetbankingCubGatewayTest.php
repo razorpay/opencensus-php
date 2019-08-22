@@ -131,6 +131,10 @@ class NetbankingCubGatewayTest extends TestCase
         {
             $this->doNetbankingCubAuthAndCapturePayment();
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
     }
 
     public function testAuthFailedVerifySuccess()

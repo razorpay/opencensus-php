@@ -18,4 +18,18 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function add(array $input): array
+    {
+        $response = $this->processor->add($input);
+
+        return $response;
+    }
+
+    public function update(array $input): array
+    {
+        $response = $this->processor->update($input);
+
+        return $response;
+    }
 }

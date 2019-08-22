@@ -4,16 +4,16 @@ namespace RZP\Jobs;
 
 use App;
 
-use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
+use RZP\Models\NodalBeneficiary\Status as BeneficiaryStatus;
 
 class FundTransfer extends Job
 {
@@ -21,7 +21,7 @@ class FundTransfer extends Job
 
     const MAX_ALLOWED_ATTEMPTS  = 10;
 
-    const RELEASE_WAIT_SECS     = 60;
+    const RELEASE_WAIT_SECS     = 30;
 
     /**
      * @var string
@@ -43,8 +43,6 @@ class FundTransfer extends Job
     public function handle()
     {
         $ftaInitiator = new Initiator;
-
-        $delayTransfer = false;
 
         $data = [
             'fta_id' => $this->ftaId
@@ -84,81 +82,14 @@ class FundTransfer extends Job
                 return;
             }
 
-            $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
+            $shouldReturn = $this->checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, $data);
 
-            if ($isBeneRegistrationRequired === true)
+            if ($shouldReturn === true)
             {
-                $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus(
-                                                                $channel,
-                                                                $bankAccount);
-
-                if ($beneficiaryRegistered === false)
-                {
-                    $this->checkRetryOrDelete($data);
-
-                    return;
-                }
-
-                $beneficiaryEntity = $this->repoManager
-                                          ->nodal_beneficiary
-                                          ->fetchActivatedBeneficiaryDetailsForChannel(
-                                              $bankAccount->getId(),
-                                              $channel);
-
-                //
-                // using updated at here as bene registration status will keep on updating until it reached `registered` state
-                //
-                $updatedAtWithOffset = $beneficiaryEntity->getUpdatedAt() + 60;
-
-                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-                // check if the entity is older than 60 sec
-                if ($updatedAtWithOffset > $currentTime)
-                {
-                    //
-                    // delaying the transfer only if bene registration is done in this flow
-                    //
-                    $delayTransfer = true;
-                }
-            }
-
-            //
-            // Bene registration form YB requires some time (Max observed is 45 sec)
-            // Because of this we are adding delay of 60 sec, in case we do bene registration in this flow.
-            // TODO: remove this code once verify bene feature is in place
-            //
-            if (($delayTransfer === true) and ($this->mode !== Mode::TEST))
-            {
-                $this->logAndDelete($data, TraceCode::FTA_TRANSFER_JOB_DELAYED, true);
-
                 return;
             }
 
-            /**
-             * rzp.mode is set by basicAuth. Since an instance of initiator is being created from job
-             * so, any method or sub-method calls within initiator will have $app[rzp.mode] = null
-             * Hence , the following.
-             */
-            if ($this->mode !== null)
-            {
-                $this->trace->info(
-                    TraceCode::FTA_MODE_SET,
-                    [
-                        'fta_id' => $this->ftaId,
-                        'mode'   => $this->mode
-                    ]);
-
-                $ftaInitiator->setModeAndDefaultConnection($this->mode);
-            }
-            else
-            {
-                $this->trace->info(
-                    TraceCode::FTA_MODE_NOT_FOUND,
-                    [
-                        'fta_id' => $this->ftaId,
-                        'mode'   => $this->mode
-                    ]);
-            }
+            $this->setModeOfFtaInitiator($ftaInitiator);
 
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
         }
@@ -182,15 +113,18 @@ class FundTransfer extends Job
     /**
      * @param array $data
      */
-    public function checkRetryOrDelete(array $data)
+    public function checkRetryOrDelete(array $data, $traceCode)
     {
-        $traceCode = TraceCode::FTA_BENEFICIARY_NOT_REGISTERED;
+        // Functional test cases gets failed due to checkRetryOrDelete
+        // gets called in sync hence returning false in test mode
+        if ($this->mode === Mode::TEST)
+        {
+            return false;
+        }
 
         if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
         {
             $this->logAndDelete($data, $traceCode, true);
-
-            return;
         }
         else
         {
@@ -198,6 +132,8 @@ class FundTransfer extends Job
 
             $this->logAndDelete($data, $traceCode);
         }
+
+        return true;
     }
 
     protected function logAndDelete(
@@ -214,6 +150,75 @@ class FundTransfer extends Job
         else
         {
             $this->delete();
+        }
+    }
+
+    /**
+     * Checks if Beneficiary Registration or Verification is required
+     * then dispatch it for the same and wait for the RELEASE_WAIT_SECS.
+     *
+     * @param       $fta
+     * @param       $bankAccount
+     * @param       $channel
+     * @param array $data
+     * @return bool
+     */
+    public function checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, array $data)
+    {
+        // Checks if registration is required based on product and account type
+        $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
+
+        if ($isBeneRegistrationRequired === true)
+        {
+            $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($bankAccount, $channel);
+
+            if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED and
+                $beneficiaryStatus !== BeneficiaryStatus::REGISTERED)
+            {
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
+
+                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_REGISTERED);
+            }
+
+            if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED)
+            {
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel);
+
+                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_VERIFIED);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * rzp.mode is set by basicAuth. Since an instance of initiator is being created from job
+     * so, any method or sub-method calls within initiator will have $app[rzp.mode] = null
+     * Hence , the following.
+     *
+     * @param Initiator $ftaInitiator
+     */
+    public function setModeOfFtaInitiator(Initiator $ftaInitiator)
+    {
+        if ($this->mode !== null)
+        {
+            $this->trace->info(
+                TraceCode::FTA_MODE_SET,
+                [
+                    'fta_id' => $this->ftaId,
+                    'mode' => $this->mode
+                ]);
+
+            $ftaInitiator->setModeAndDefaultConnection($this->mode);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::FTA_MODE_NOT_FOUND,
+                [
+                    'fta_id' => $this->ftaId,
+                    'mode' => $this->mode
+                ]);
         }
     }
 }

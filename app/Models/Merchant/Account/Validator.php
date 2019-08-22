@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Base\Fetch;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity as CE;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Merchant\Validator
 {
@@ -31,14 +33,21 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $createAccountRules = [
-        Constants::ENTITY          => 'required|string',
+        Constants::ENTITY          => 'required|string|in:'.CE::ACCOUNT,
         Constants::BUSINESS_ENTITY => 'sometimes|string',
         Constants::MANAGED         => 'sometimes|boolean',
         Constants::EMAIL           => 'required|email',
         Constants::PHONE           => 'required|numeric|digits_between:8,11',
         Constants::NOTES           => 'sometimes|notes',
         Constants::PROFILE         => 'required|array',
-        Constants::SETTLEMENT      => 'required|array',
+        Constants::SETTLEMENT      => 'sometimes|array',
+        Constants::TNC             => 'sometimes|array',
+    ];
+
+    protected static $editAccountRules = [
+        Constants::PHONE           => 'filled|numeric|digits_between:8,11',
+        Constants::NOTES           => 'sometimes|notes',
+        Constants::PROFILE         => 'sometimes|array',
         Constants::TNC             => 'sometimes|array',
     ];
 
@@ -46,11 +55,29 @@ class Validator extends Merchant\Validator
         Constants::ADDRESSES         => 'required|array|max:2',
         Constants::NAME              => 'required|string',
         Constants::DESCRIPTION       => 'sometimes|string',
-        Constants::BUSINESS_MODEL    => 'sometimes|string',
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
         Constants::MCC               => 'required|numeric',
         Constants::BRAND             => 'sometimes|array',
         Constants::DASHBOARD_DISPLAY => 'sometimes|string',
         Constants::WEBSITE           => 'sometimes|string',
+        Constants::APPS              => 'sometimes|array',
+        Constants::SUPPORT           => 'sometimes|array',
+        Constants::CHARGEBACK        => 'sometimes|array',
+        Constants::REFUND            => 'sometimes|array',
+        Constants::DISPUTE           => 'sometimes|array',
+        Constants::BILLING_LABEL     => 'sometimes|string',
+        Constants::IDENTIFICATION    => 'sometimes|array',
+    ];
+
+    protected static $editProfileRules = [
+        Constants::ADDRESSES         => 'sometimes|array|max:2',
+        Constants::NAME              => 'filled|string',
+        Constants::DESCRIPTION       => 'sometimes|string',
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
+        Constants::MCC               => 'filled|numeric',
+        Constants::BRAND             => 'sometimes|array',
+        Constants::DASHBOARD_DISPLAY => 'sometimes|string|nullable',
+        Constants::WEBSITE           => 'sometimes|string|nullable',
         Constants::APPS              => 'sometimes|array',
         Constants::SUPPORT           => 'sometimes|array',
         Constants::CHARGEBACK        => 'sometimes|array',
@@ -69,24 +96,45 @@ class Validator extends Merchant\Validator
         Constants::COUNTRY => 'required|string',
     ];
 
+    protected static $editAccountAddressRules = [
+        Constants::TYPE    => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::LINE1   => 'filled|string',
+        Constants::LINE2   => 'filled|string',
+        Constants::CITY    => 'filled|string',
+        Constants::STATE   => 'filled|string',
+        Constants::PIN     => 'filled|string',
+        Constants::COUNTRY => 'filled|string',
+    ];
+
     protected static $brandRules = [
         Constants::ICON  => 'sometimes|string',
         Constants::LOGO  => 'sometimes|string',
         Constants::COLOR => 'sometimes|string',
     ];
 
-    protected static $emailRules = [
+    protected static $merchantEmailRules = [
         Constants::EMAIL  => 'required|string',
         Constants::PHONE  => 'required|numeric|digits_between:8,11',
-        Constants::POLICY => 'sometimes|string',
-        Constants::URL    => 'sometimes|string',
+        Constants::POLICY => 'sometimes|string|nullable',
+        Constants::URL    => 'sometimes|string|nullable',
+    ];
+
+    protected static $editMerchantEmailRules = [
+        Constants::EMAIL  => 'filled|string',
+        Constants::PHONE  => 'filled|numeric|digits_between:8,11',
+        Constants::POLICY => 'sometimes|string|nullable',
+        Constants::URL    => 'sometimes|string|nullable',
     ];
 
     protected static $settlementRules = [
-        Constants::BALANCE_RESERVED                                 => 'sometimes|numeric',
-        Constants::SCHEDULES                                        => 'sometimes|array',
-        Constants::FUND_ACCOUNTS                                    => 'required|array|size:1',
-        Constants::FUND_ACCOUNTS . '.*.' . Constants::BANK_ACCOUNTS => 'required|array|size:1',
+        Constants::BALANCE_RESERVED => 'sometimes|numeric',
+        Constants::SCHEDULES        => 'sometimes|array',
+        Constants::FUND_ACCOUNTS    => 'sometimes|array|size:1',
+    ];
+
+    protected static $fundAccountRules = [
+        Constants::CONTACT_ID    => 'sometimes|string',
+        Constants::BANK_ACCOUNT  => 'required|associative_array',
     ];
 
     protected static $bankAccountRules = [
@@ -100,25 +148,80 @@ class Validator extends Merchant\Validator
         Merchant\Constants::SKIP  => 'integer',
     ];
 
+    protected static $documentRules = [
+        Constants::TYPE                  => 'required|string|custom:document_type',
+        Constants::IDENTIFICATION_NUMBER => 'required|string',
+        Constants::DOCUMENT              => 'sometimes|string',
+    ];
+
     protected static $createAccountValidators = [
         'profile_input',
         'settlement_input',
     ];
 
+    protected static $editAccountValidators = [
+        'edit_profile_input',
+    ];
+
+    protected function validateEditProfileInput(array $input)
+    {
+        if (isset($input[Constants::PROFILE]) === false)
+        {
+            return;
+        }
+
+        $profileInput = $input[Constants::PROFILE];
+
+        $this->validateInput('edit_profile', $profileInput);
+
+        if (isset($profileInput[Constants::ADDRESSES]) === true)
+        {
+            $this->validateAddresses($profileInput, 'edit');
+        }
+
+        $this->validateBrandInput($profileInput);
+
+        $this->validateEmails($profileInput, 'edit');
+    }
+
     protected function validateProfileInput(array $input)
     {
-        $this->validateInput('profile', $input[Constants::PROFILE]);
+        $profileInput = $input[Constants::PROFILE];
 
-        foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $address)
+        $this->validateInput('profile', $profileInput);
+
+        $this->validateAddresses($profileInput);
+
+        $this->validateBrandInput($profileInput);
+
+        $this->validateEmails($profileInput);
+
+        $this->validateIdentificationDocuments($profileInput);
+    }
+
+    protected function validateAddresses(array $profileInput, string $action = '')
+    {
+        foreach ($profileInput[Constants::ADDRESSES] as $address)
         {
-            $this->validateInput('account_address', $address);
+            $this->validateInput($action . 'AccountAddress', $address);
+        }
+    }
+
+    protected function validateIdentificationDocuments(array $profileInput)
+    {
+        if (isset($profileInput[Constants::IDENTIFICATION]) === false)
+        {
+            return;
         }
 
-        if (isset($input[Constants::PROFILE][Constants::BRAND]) === true)
+        foreach ($profileInput[Constants::IDENTIFICATION] as $document)
         {
-            $this->validateInput('brand', $input[Constants::PROFILE][Constants::BRAND]);
+            $this->validateInput('document', $document);
         }
+    }
 
+    protected function validateEmails(array $profileInput, string $action = '')
+    {
         $fieldNames = [
             Constants::SUPPORT,
             Constants::CHARGEBACK,
@@ -128,22 +231,52 @@ class Validator extends Merchant\Validator
 
         foreach ($fieldNames as $fieldName)
         {
-            if (isset($input[Constants::PROFILE][$fieldName]) === true)
+            if (isset($profileInput[$fieldName]) === true)
             {
-                $this->validateInput('email', $input[Constants::PROFILE][$fieldName]);
+                $this->validateInput($action . 'MerchantEmail', $profileInput[$fieldName]);
             }
+        }
+    }
+
+    protected function validateBrandInput(array $profileInput)
+    {
+        if (isset($profileInput[Constants::BRAND]) === true)
+        {
+            $this->validateInput('brand', $profileInput[Constants::BRAND]);
         }
     }
 
     protected function validateSettlementInput(array $input)
     {
+        if (isset($input[Constants::SETTLEMENT]) === false)
+        {
+            return;
+        }
+
         $this->validateInput('settlement', $input[Constants::SETTLEMENT]);
 
-        $fundAccounts = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS];
-
-        foreach ($fundAccounts[0][Constants::BANK_ACCOUNTS] as $bankAccount)
+        if (isset($input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS]) === true)
         {
-            $this->validateInput('bank_account', $bankAccount);
+            $fundAccounts = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS];
+
+            foreach ($fundAccounts as $fundAccount)
+            {
+                $this->validateInput('fund_account', $fundAccount);
+                $this->validateInput('bank_account', $fundAccount[Constants::BANK_ACCOUNT]);
+            }
+        }
+    }
+
+    protected function validateDocumentType($attribute, $value)
+    {
+        DocumentType::validate($value);
+    }
+
+    protected function validateBusinessModel($attribute, $value)
+    {
+        if (in_array($value, Constants::$validBusinessModels, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid business model: ' . $value);
         }
     }
 }

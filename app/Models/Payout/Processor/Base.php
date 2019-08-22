@@ -39,6 +39,11 @@ class Base extends BaseCore
     protected $batch;
 
     /**
+     * @var string
+     */
+    protected $batchId;
+
+    /**
      * @var Customer\Entity
      */
     protected $customer;
@@ -248,9 +253,17 @@ class Base extends BaseCore
         return $this;
     }
 
-    public function setBatch(Batch\Entity $batch = null): self
+    public function setBatch($batchIdOrBatch): self
     {
-        $this->batch = $batch;
+        // TODO: remove batch entity handling once ramped to 100%
+        if (($batchIdOrBatch instanceof Batch\Entity) === true)
+        {
+            $this->batch = $batchIdOrBatch;
+        }
+        else if (is_string($batchIdOrBatch) === true)
+        {
+            $this->batchId = $batchIdOrBatch;
+        }
 
         return $this;
     }
@@ -282,17 +295,15 @@ class Base extends BaseCore
         //
         app('basicauth')->setOrgDetails($this->merchant->org);
 
-        $payout = null;
+        //
+        // Call the create Payout callback that will return a base Payout entity,
+        // which we further work with.
+        //
+        /** @var Payout\Entity $payout */
+        $payout = $createPayoutCallback();
 
         try
         {
-            //
-            // Call the create Payout callback that will return a base Payout entity,
-            // which we further work with.
-            //
-            /** @var Payout\Entity $payout */
-            $payout = $createPayoutCallback();
-
             //
             // Initiate the workflow process. If a workflow is triggered successfully,
             // this function will thrown an EarlyWorkflowResponse exception.
@@ -325,10 +336,12 @@ class Base extends BaseCore
         }
         catch (\Throwable $t)
         {
+            $this->trace->traceException($t);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
                 null,
-                ['payout_id' => $payout->getId()]);
+                ['payout_id' => optional($payout)->getId()]);
         }
 
         return $payout;
@@ -384,7 +397,6 @@ class Base extends BaseCore
      * @param array $input
      *
      * @return Payout\Entity
-     * @throws Exception\BadRequestValidationFailureException
      */
     protected function createPayoutEntity(array $input)
     {
@@ -416,7 +428,7 @@ class Base extends BaseCore
         //
         $this->associateUserIfApplicable($payout);
 
-        $payout->batch()->associate($this->batch);
+        $this->batchId ? ($payout->setBatchId($this->batchId)) : ($payout->batch()->associate($this->batch));
 
         //
         // Doing this after all the associations since

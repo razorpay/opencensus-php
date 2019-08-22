@@ -9,14 +9,18 @@ class ShieldController extends Controller
 {
     public function list()
     {
-        $response = $this->app['shield']->getRules();
+        $input = Request::all();
+
+        $response = $this->app['shield']->getRules($input['merchant_id']);
 
         return ApiResponse::json($response);
     }
 
     public function get(string $id)
     {
-        $response = $this->app['shield']->getRuleById($id);
+        $input = Request::all();
+
+        $response = $this->app['shield']->getRuleById($id, $input['merchant_id']);
 
         return ApiResponse::json($response);
     }

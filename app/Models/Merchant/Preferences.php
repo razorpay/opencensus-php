@@ -47,7 +47,67 @@ class Preferences
     const MID_RBLLENDING            = 'BOX702yaBbEfJo';
     const MID_APOLLO_MUNICH         = 'BYqeLRvN6FfCCY';
     const MID_SWIGGY_DROPPT         = 'CTwAEBRfwEjEme';
+    const MID_SURYODAY_BANK         = 'CxRu8Yxj1LgPnw';
     const MID_RELIANCE_AMC          = 'CR3D37POcSDpR3';
+    const MID_KALMADI_HIGH_SCHOOL   = '7icgzKgnv7IMbP';
+    const MID_RI_PARAMEDICAL        = '7icw1On5t9IXsB';
+    const MID_MICROCON_2017         = '7oDON3kPcJ7H0m';
+    const MID_KALMADI_PRE_PRIMARY   = '88IcLp3vpTAiRs';
+    const MID_KALMADI_SECONDARY     = '88Mb148fYyG8IV';
+    const MID_AISSMS_POLY_PUNE      = '8D5KopQF8YFlp8';
+    const MID_ALL_INDIA_SHIVAJI     = '8D6kwfRAxV53kG';
+    const MID_AISSMS_COE_ME_PUNE    = '8D6ljzbPGn7vlU';
+    const MID_AISSMS_HMCT_PUNE      = '8D6mpG7TaWEexQ';
+    const MID_AISSMS_HMCT_BSC_PUNE5 = '8D6nDCfvutIgnL';
+    const MID_AISSMS_POLY_PUNE_1_SS = '8D6nbb1N6W5Vsi';
+    const MID_AISSMS_COF_PHD        = '8D6oBTMSWEHWXZ';
+    const MID_AISSMS_IOM_PUNE       = '8D6oVXlSDPDHE4';
+    const MID_AISSMS_INSTITUTE_IT   = '8D6p49fCibBw0q';
+    const MID_AISSMS_COE_PUNE       = '8DLX1GnevI3yrF';
+    const MID_AISSMS_HMCT_MHMCT     = '8DLoeDaskH75I4';
+    const MID_AISSMS_COF_M_PHARM    = '8DLrylJRCO1W7n';
+    const MID_AISSMS_COF_B_PHARM    = '8DLwBBvuGh6CSP';
+    const MID_BOMBAY_SAPPERS_ARMY   = '8l7NbZVeQn3JLz';
+    const MID_NAGPUR_TRAFFIC_POLICE = 'BfJ6bcwgtERLYS';
+    const MID_BL_INT_SMART_SCHOOL   = 'BhTHR8Ph7VfgeB';
+    const MID_BL_INT_SMART_SCHOOL_2 = 'BlLkcctXMtQpWm';
+    const MID_VFH_BOB_MERCHANTS     = 'CENIroHjft6MH1';
+    const MID_GOVT_DEG_COLL_VFH     = 'CEUCo0PzZebQqv';
+    const MID_GOVT_POLY_COLL_VFH    = 'CEUCp0yYH2PBjS';
+    const MID_DEV_IN_NATIONAL_VFH   = 'CEUCpvmdnlxUd2';
+    const MID_IIM_KOZHIKODE_VFH     = 'CEUCszAS02gylE';
+    const MID_BHAVANS_VIDYA_VFH     = 'CEUCtxZ9OhPXMK';
+    const MID_BRAIN_TREE_INT_VFH    = 'CEUCumhjuv3OYG';
+    const MID_AIR_FORCE_GURG_VFH    = 'CEUCwmIlZZVqEx';
+    const MID_OXFORD_COE_VFH        = 'CEUCyNOdaKhkBG';
+    const MID_THOMAS_PUBLIC_VFH     = 'CEUCzA5V6jOtYa';
+    const MID_NAVKIS_KKA_BANG_VFH   = 'CEUCzz9bKuNlW4';
+    const MID_ST_XAVIR_COW_AL_VFH   = 'CEUD0mgsjHekBs';
+    const MID_BALDWIN_ED_EXT_HS_VFH = 'CEUD1Ya6UhsH3l';
+    const MID_SITWANTO_DMKS_VFH     = 'CEUD2N3pCDXMlu';
+    const MID_LAKSHMI_JANARDAN_VFH  = 'CEUD3I5rcFeTXC';
+    const MID_MSRIT_VFH             = 'CEUD4D78dukeZt';
+    const MID_MNNIT_ALD_VFH         = 'CEUD5PWePwwWHu';
+    const MID_SHARADA_VIDYALAYA_VFH = 'CEUD6vBEYaK4uQ';
+    const MID_MOUNT_GUIDE_INT_VFH   = 'CEUDBZLpM0qIhW';
+    const MID_MOUNT_CARMEL_VFH      = 'CEUDE0eVVBY5jk';
+    const MID_VELTECH_UNI_VFH       = 'CEUDFJWTDScF4o';
+    const MID_INST_MANPOWER_CAR_VFH = 'CEhSTrXvwDrvg6';
+    const MID_NAVKIS_KINDER_KARE_MYS= 'CTkZcQkexhhnBT';
+    const MID_NAVKIS_EDU_MYS        = 'CTomG5COHkph2k';
+    const MID_NAVKIS_EDU_BANGLORE   = 'CTp4xOKuVpKmnC';
+    const MID_MARIA_MONTE_HOUSE_CHI = 'CTpCbGJ3hxmvhl';
+    const MID_PRES_WARDEN_STJE_SOC  = 'CTpMjoSzhhVOTJ';
+    const MID_UHUDA_RERA            = 'CV04yKB3sjIYdG';
+    const MID_YAMUNA_EXPRESSWAY     = 'CjeLqZN5ToFLox';
+    const MID_PT_SENDERLAL_OPEN_UNI = 'CmOpbOIG251EkR';
+    const MID_SDM_YOGA_AND_NATURE   = 'CoMA8GeyufpdOA';
+    const MID_ARMY_PUBLIC_SCHOOL    = 'Coie6L2Dma3sI1';
+    const MID_RBL_PDD_BANK          = 'CvUGpq6RlNHdQK';
+    const MID_RBL_PDD_CREDIT        = 'Cya5vz9ti9rO25';
+    const MID_BFL_BANK              = 'CvUFJHEqgYwE85';
+    const MID_BFL_CARD              = 'Cya3FzbrKbxMGg';
+    const MID_RBL_LAPOD             = 'CzQAGjwnr3RSqw';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
@@ -151,6 +211,60 @@ class Preferences
     const ONLY_NEFT_SETTLEMENT_MIDS = [
         self::MID_PIGGY,
         self::MID_PIGGY_TPV,
+        self::MID_KALMADI_HIGH_SCHOOL,
+        self::MID_RI_PARAMEDICAL,
+        self::MID_MICROCON_2017,
+        self::MID_KALMADI_PRE_PRIMARY,
+        self::MID_KALMADI_SECONDARY,
+        self::MID_AISSMS_POLY_PUNE ,
+        self::MID_ALL_INDIA_SHIVAJI,
+        self::MID_AISSMS_COE_ME_PUNE,
+        self::MID_AISSMS_HMCT_PUNE,
+        self::MID_AISSMS_HMCT_BSC_PUNE5,
+        self::MID_AISSMS_POLY_PUNE_1_SS,
+        self::MID_AISSMS_COF_PHD,
+        self::MID_AISSMS_IOM_PUNE,
+        self::MID_AISSMS_INSTITUTE_IT,
+        self::MID_AISSMS_COE_PUNE,
+        self::MID_AISSMS_HMCT_MHMCT,
+        self::MID_AISSMS_COF_M_PHARM,
+        self::MID_AISSMS_COF_B_PHARM,
+        self::MID_BOMBAY_SAPPERS_ARMY,
+        self::MID_NAGPUR_TRAFFIC_POLICE,
+        self::MID_BL_INT_SMART_SCHOOL,
+        self::MID_BL_INT_SMART_SCHOOL_2,
+        self::MID_VFH_BOB_MERCHANTS ,
+        self::MID_GOVT_DEG_COLL_VFH ,
+        self::MID_GOVT_POLY_COLL_VFH,
+        self::MID_DEV_IN_NATIONAL_VFH,
+        self::MID_IIM_KOZHIKODE_VFH,
+        self::MID_BHAVANS_VIDYA_VFH,
+        self::MID_BRAIN_TREE_INT_VFH,
+        self::MID_AIR_FORCE_GURG_VFH,
+        self::MID_OXFORD_COE_VFH,
+        self::MID_THOMAS_PUBLIC_VFH,
+        self::MID_NAVKIS_KKA_BANG_VFH,
+        self::MID_ST_XAVIR_COW_AL_VFH,
+        self::MID_BALDWIN_ED_EXT_HS_VFH,
+        self::MID_SITWANTO_DMKS_VFH,
+        self::MID_LAKSHMI_JANARDAN_VFH,
+        self::MID_MSRIT_VFH,
+        self::MID_MNNIT_ALD_VFH,
+        self::MID_SHARADA_VIDYALAYA_VFH,
+        self::MID_MOUNT_GUIDE_INT_VFH,
+        self::MID_MOUNT_CARMEL_VFH,
+        self::MID_VELTECH_UNI_VFH,
+        self::MID_INST_MANPOWER_CAR_VFH,
+        self::MID_NAVKIS_KINDER_KARE_MYS,
+        self::MID_NAVKIS_EDU_MYS,
+        self::MID_NAVKIS_EDU_BANGLORE,
+        self::MID_MARIA_MONTE_HOUSE_CHI,
+        self::MID_PRES_WARDEN_STJE_SOC,
+        self::MID_UHUDA_RERA,
+        self::MID_YAMUNA_EXPRESSWAY,
+        self::MID_PT_SENDERLAL_OPEN_UNI,
+        self::MID_SDM_YOGA_AND_NATURE,
+        self::MID_ARMY_PUBLIC_SCHOOL,
     ];
 
     public static function checkZohoHeaders(Headers $headers)

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
+use RZP\Services\HubspotClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -76,6 +77,8 @@ class ActivationTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
+        $this->mockHubSpotClient('trackL1ContactProperties');
+
         $this->startTest();
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
@@ -89,6 +92,19 @@ class ActivationTest extends TestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+    }
+
+    protected function mockHubSpotClient($methodName)
+    {
+        $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods([$methodName])
+                            ->getMock();
+
+        $this->app->instance('hubspot', $hubSpotMock);
+
+        $hubSpotMock->expects($this->exactly(1))
+                    ->method($methodName);
     }
 
     public function mockRazorX(string $functionName, string $featureName, string $variant)

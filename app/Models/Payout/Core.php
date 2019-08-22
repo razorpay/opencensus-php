@@ -118,15 +118,17 @@ class Core extends Base\Core
      * SOURCE: Merchant Balance (PG/Banking)
      * TO: Fund Account (BankAccount/VPA/Card etc) (fund_account_id)
      *
-     * @param array           $input
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param Batch\Entity    $batch
+     * @param Batch\Entity $batch
+     * @param string|null $batchId
      *
      * @return Entity
      */
     public function createPayoutToFundAccount(array $input,
                                               Merchant\Entity $merchant,
-                                              Batch\Entity $batch = null): Entity
+                                              Batch\Entity $batch = null,
+                                              string $batchId = null): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
@@ -134,9 +136,24 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->payout->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
+                                                                $merchant->getId(),
+                                                                $batchId);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
+
+        // TODO: remove batch entity handling once ramped to 100%
+        $batchIdOrBatch = $batchId === null ? $batch : $batchId;
+
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
-                       ->setBatch($batch)
+                       ->setBatch($batchIdOrBatch)
                        ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);
@@ -265,18 +282,26 @@ class Core extends Base\Core
 
     public function updateStatusAfterFtaRecon(Entity $payout, array $ftaData)
     {
-        switch ($ftaData[Attempt\Constants::FTA_STATUS])
+        $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS];
+
+        $status = Status::getPayoutStatusFromFtaStatus($payout, $ftaStatus);
+
+        switch ($status)
         {
-            case Attempt\Status::PROCESSED:
-                $this->handleFtaProcessed($payout);
+            case Status::PROCESSED:
+                $this->handlePayoutProcessed($payout);
                 break;
 
-            case Attempt\Status::FAILED:
-                $this->handleFtaFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+            case Status::REVERSED:
+                $this->handlePayoutReversed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
-            case Attempt\Status::CREATED:
-            case Attempt\Status::INITIATED:
+            case Status::FAILED:
+                $this->handlePayoutFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+                break;
+
+            case Status::CREATED:
+            case Status::INITIATED:
                 break;
 
             default:
@@ -642,7 +667,7 @@ class Core extends Base\Core
         return $payoutInput;
     }
 
-    protected function handleFtaProcessed(Entity $payout)
+    protected function handlePayoutProcessed(Entity $payout)
     {
         if ($payout->isStatusReversed() === true)
         {
@@ -661,11 +686,40 @@ class Core extends Base\Core
         $this->app->events->fire('api.payout.processed', [$payout]);
     }
 
-    protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
+    protected function handlePayoutReversed(Entity $payout, string $ftaFailureReason = null)
     {
         $this->reversePayout($payout, $ftaFailureReason);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
+    }
+
+    protected function handlePayoutFailed(Entity $payout, string $ftaFailureReason = null)
+    {
+        if ($payout->hasTransaction() === true)
+        {
+            throw new Exception\LogicException(
+                'A Payout with transaction can not be moved to failed state, it should be reversed',
+                null,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'failure_reason' => $ftaFailureReason,
+                ]);
+        }
+
+        $currentStatus = $payout->getStatus();
+
+        //
+        // Payout can go to failed state from initiated or created state only
+        //
+        Status::validatePreviousToCurrentMapping($currentStatus, Status::FAILED);
+
+        $payout->setStatus(Status::FAILED);
+
+        $payout->setFailureReason($ftaFailureReason);
+
+        $this->repo->saveOrFail($payout);
+
+        $this->app->events->fire('api.payout.failed', [$payout]);
     }
 
     protected function reversePayout(Entity $payout, string $reverseReason = null): Reversal\Entity
@@ -792,6 +846,14 @@ class Core extends Base\Core
         // We do it later when we actually process that payout.
         //
         if ($payout->isStatusBeforeCreate() === true)
+        {
+            return;
+        }
+
+        // After FTA creation the fund account source internally dispatches Fund transfer to FTS
+        $isFts = $payout->fundTransferAttempts->first()->getIsFts();
+
+        if ($isFts === true)
         {
             return;
         }

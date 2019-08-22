@@ -83,4 +83,13 @@ trait DbEntityFetchTrait
 
         return $entityObject;
     }
+
+    protected function getDbEntitiesInOrder(
+        string $entity, string $column, array $input = [], $sort = 'asc', $mode = 'test')
+    {
+        return $this->getEntityObjectForMode($entity, $mode)
+                    ->where($input)
+                    ->orderBy($column, $sort)
+                    ->get();
+    }
 }

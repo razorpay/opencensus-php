@@ -13,6 +13,7 @@ class Validator extends Base\Validator
     const PRE_ACCOUNT_INFO_WEBHOOK    = 'pre_account_info_webhook';
     const ACCOUNT_UPDATE              = 'account_update';
     const ACCOUNT_AVAILABILITY        = 'availability';
+    const ADD_CREDENTIALS             = 'add_credentials';
 
     protected static $availabilityRules = [
         BankingAccount\Entity::CHANNEL => 'required|string|in:rbl',
@@ -27,7 +28,7 @@ class Validator extends Base\Validator
 
     protected static $accountInfoWebhookRules = [
         Fields::CUSTOMER_NAME          => 'required|string',
-        Fields::ACCOUNT_NUMBER         => 'required|string|max:40',
+        Fields::ACCOUNT_NO             => 'required|string|max:40',
         Fields::IFSC                   => 'required|alpha_num|size:11',
         Fields::PINCODE                => 'required|integer|digits:6',
         Fields::ADDR_1                 => 'required|string',
@@ -38,8 +39,8 @@ class Validator extends Base\Validator
         Fields::STATE                  => 'required|string',
         Fields::COUNTRY                => 'required|string',
         Fields::RZP_REFERENCE_NUMBER   => 'required|string|size:5',
-        Fields::ACTIVATION_DATE        => 'required|string',
-        Fields::PHONE_NUM              => 'required|string',
+        Fields::ACTIVATION_DATE        => 'required|date',
+        Fields::PHONE_NO               => 'required|string',
         Fields::EMAIL_ID               => 'required|email',
     ];
 
@@ -47,6 +48,13 @@ class Validator extends Base\Validator
         BankingAccount\Entity::BANK_INTERNAL_STATUS            => 'filled|string|custom',
         BankingAccount\Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
         BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
+    ];
+
+    // ToDO add proper validations here after confirming with RBL
+    protected static $addCredentialsRules = [
+        Fields::SUBCORP_ID               => 'required|string',
+        Fields::SUBCORP_USER_NAME        => 'required|string',
+        Fields::SUBCORP_USER_PASSWORD    => 'required|string',
     ];
 
     protected function validateStatus(string $attribute, string $status = null)

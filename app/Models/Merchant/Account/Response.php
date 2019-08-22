@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\Detail;
 
 class Response extends Core
@@ -23,9 +24,15 @@ class Response extends Core
             Constants::REVIEW_STATUS   => $this->getReviewStatusData($account, $accountDetails),
             Constants::PROFILE         => $this->getProfileData($account, $accountDetails),
             Constants::PAYMENT         => $this->getPaymentData($account),
-            Constants::SETTLEMENT      => $this->getSettlementData($account),
             Constants::CREATED_AT      => $account->getCreatedAt(),
         ];
+
+        $settlementData = $this->getSettlementData($account);
+
+        if (empty($settlementData) === false)
+        {
+            $data[Constants::SETTLEMENT] = $settlementData;
+        }
 
         $customFields = $accountDetails->getCustomFields();
 
@@ -69,6 +76,16 @@ class Response extends Core
             ],
         ];
 
+        $companyPan = $accountDetails->getPan();
+
+        if (empty($companyPan) === false)
+        {
+            $data[Constants::IDENTIFICATION][] = [
+                Constants::TYPE                  => DocumentType::COMPANY_PAN,
+                Constants::IDENTIFICATION_NUMBER => $companyPan,
+            ];
+        }
+
         $customFields = $accountDetails->getCustomFields();
 
         if (isset($customFields[Constants::APPS]) === true)
@@ -87,26 +104,33 @@ class Response extends Core
 
     protected function getAddressesData(Merchant\Entity $account, Detail\Entity $accountDetails): array
     {
-        $data = [
-            [
+        $data = [];
+
+        if ($accountDetails->hasBusinessRegisteredAddress() === true)
+        {
+            $data[] = [
                 Constants::TYPE    => Constants::REGISTERED,
                 Constants::LINE1   => $accountDetails->getBusinessRegisteredAddress(),
                 Constants::LINE2   => $accountDetails->getBusinessRegisteredAddressLine2(),
                 Constants::CITY    => $accountDetails->getBusinessRegisteredCity(),
-                Constants::STATE   => $accountDetails->getBusinessRegisteredState(),
+                Constants::STATE   => IndianStates::getStateNameByCode($accountDetails->getBusinessRegisteredState()),
                 Constants::COUNTRY => $accountDetails->getBusinessRegisteredCountry(),
                 Constants::PIN     => $accountDetails->getBusinessRegisteredPin(),
-            ],
-            [
+            ];
+        }
+
+        if ($accountDetails->hasBusinessOperationAddress() === true)
+        {
+            $data[] = [
                 Constants::TYPE    => Constants::OPERATION,
                 Constants::LINE1   => $accountDetails->getBusinessOperationAddress(),
                 Constants::LINE2   => $accountDetails->getBusinessOperationAddressLine2(),
                 Constants::CITY    => $accountDetails->getBusinessOperationCity(),
-                Constants::STATE   => $accountDetails->getBusinessOperationState(),
+                Constants::STATE   => IndianStates::getStateNameByCode($accountDetails->getBusinessOperationState()),
                 Constants::COUNTRY => $accountDetails->getBusinessOperationCountry(),
                 Constants::PIN     => $accountDetails->getBusinessOperationPin(),
-            ],
-        ];
+            ];
+        }
 
         return $data;
     }
@@ -125,9 +149,18 @@ class Response extends Core
 
     protected function getSettlementData(Merchant\Entity $account): array
     {
+        $bankAccount = $account->bankAccount;
+
+        if (empty($bankAccount) === true)
+        {
+            return [];
+        }
+
         $data = [
             Constants::FUND_ACCOUNTS => [
-                Constants::BANK_ACCOUNTS => [$account->bankAccount->toArrayPublic()],
+                [
+                    Constants::BANK_ACCOUNT => $bankAccount->toArrayPublic(),
+                ]
             ],
         ];
 

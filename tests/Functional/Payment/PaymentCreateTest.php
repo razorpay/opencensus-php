@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Bank\IFSC;
-use RZP\Exception\BadRequestException;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
@@ -989,12 +989,29 @@ class PaymentCreateTest extends TestCase
 
         $response = $this->doS2SPrivateAuthPayment($payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $paymentEntity = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+        $this->assertEquals($paymentEntity['id'], $response['razorpay_payment_id']);
 
         $this->assertTrue($this->redirectToAuthorize);
 
+        $payment['token'] = $paymentEntity['token_id'];
+        $payment['amount'] = 3000;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+        $payment['order_id'] = $order->getPublicId();
+
+        //
+        // Second auth payment for the recurring product
+        //
+
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('netbanking_axis', $paymentEntity['gateway']);
     }
 
     public function testPaymentS2SRedirectPrivateAuth()
@@ -1160,6 +1177,45 @@ class PaymentCreateTest extends TestCase
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
+    public function testPaymentFlowWithSyncCallToSmartRouting()
+    {
+        // creating a downtime
+        $this->ba->adminAuth();
+
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'begin'       => time(),
+                'method'      => 'card',
+                'issuer'      => 'HDFC',
+                'source'      => 'other',
+                'acquirer'    => 'ALL'
+                  ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        // making a card payment here
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        // adding terminals to get multiple terminals for sorting
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->doAuthPayment($payment);
+    }
 
     public function testPaymentByUpiTpvForSpecificBanks()
     {
@@ -1415,5 +1471,370 @@ class PaymentCreateTest extends TestCase
         $res = $this->doAuthPayment($payment);
 
         $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
+    }
+
+
+    public function testRupayPaymentFallbackTo3ds()
+    {
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $this->mockOtpElfForFailedRupayResponse();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '6075007194490126';
+
+        $this->fixtures->edit('iin', 607500, ['flows' => ['headless_otp' => '1']]);
+
+        $payment['preferred_auth'] = ['otp'];
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'card'                       => 1,
+            'gateway_merchant_id'       => 'HDFC000012340818',
+            'gateway_merchant_id2'      => '38R10000',
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $res = $this->doAuthPayment($payment);
+
+        $payment_id = explode('_', $res['razorpay_payment_id'])[1];
+
+        $paySecureEntities = $this->getEntities('paysecure', ['payment_id' => $payment_id], true);
+
+        $this->assertEquals(2, count($paySecureEntities['items']));
+    }
+
+    protected function mockOtpElfForFailedRupayResponse()
+    {
+        $otpelf = Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+        $this->app->instance('card.otpelf', $otpelf);
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function (array $input)
+            {
+                return [
+                    'success' => false,
+                    'data' => [
+
+                    ]
+                ];
+            });
+
+        $this->app->instance('card.otpelf', $otpelf);
+    }
+
+    public function testRupayPaymentFallbackTo3dsForCardBlockError()
+    {
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $this->mockOtpElfForBlockCardResponse();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '6075007194490126';
+
+        $this->fixtures->edit('iin', 607500, ['flows' => ['headless_otp' => '1']]);
+
+        $payment['preferred_auth'] = ['otp'];
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'card'                       => 1,
+            'gateway_merchant_id'       => 'HDFC000012340818',
+            'gateway_merchant_id2'      => '38R10000',
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\GatewayErrorException::class);
+    }
+
+    public function testOtpPaymentCardBlockError()
+    {
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $this->mockOtpElfForBlockCardResponse();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '6075007194490126';
+
+        $this->fixtures->edit('iin', 607500, ['flows' => ['headless_otp' => '1']]);
+
+        $payment['auth_type'] = 'otp';
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'card'                       => 1,
+            'gateway_merchant_id'       => 'HDFC000012340818',
+            'gateway_merchant_id2'      => '38R10000',
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\GatewayErrorException::class,
+            "Payment processing failed because cardholder's card was blocked\n".
+            "Gateway Error Code: \n".
+            "Gateway Error Desc: ");
+    }
+
+    protected function mockOtpElfForBlockCardResponse()
+    {
+        $otpelf = Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+        $this->app->instance('card.otpelf', $otpelf);
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function (array $input)
+            {
+                return [
+                    'success' => false,
+                    'error' => [
+                        'reason' => 'CARD_BLOCKED'
+                    ]
+                ];
+            });
+
+        $this->app->instance('card.otpelf', $otpelf);
+    }
+
+    /*
+     * /payments/create/json, card payment
+     */
+    public function testPaymentS2SRedirectJsonPrivateAuthCardPayment()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    /*
+     * /payments/create/json, netbanking payment
+     */
+    public function testPaymentS2SRedirectJsonPrivateAuthNetbankingPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['method'] = 'netbanking';
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    /*
+     * /payments/create/json, recurring payment
+     */
+    public function testPaymentS2SRedirectJsonPrivateAuthRecurringPayment()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['save'] = true;
+        $payment['recurring'] = 'preferred';
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    /*
+     * /payments/create/json, emandate payment
+     */
+    public function testPaymentS2SRedirectJsonPrivateAuthEmandatePayment()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB');
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertTrue($this->redirectToAuthorize);
     }
 }

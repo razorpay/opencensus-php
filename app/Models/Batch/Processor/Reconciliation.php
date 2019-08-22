@@ -53,9 +53,38 @@ class Reconciliation extends Base
         $this->scroogeDispatch();
     }
 
-    public function setScroogeDispatchData(array $data)
+    public function setScroogeDispatchData(array $scroogeData)
     {
-        $this->scroogeDispatchData = $data;
+        if (empty($this->scroogeDispatchData) === true)
+        {
+            // setting for the first time
+            $this->scroogeDispatchData = $scroogeData;
+        }
+        else
+        {
+            //
+            // When excel sheet has multiple sheets, then this method
+            // is called for each sheet. So we should not overwrite the
+            // scroogeDispatchData, instead we add them along with refunds
+            // belonging to previous sheets.
+            //
+            $refunds = $scroogeData['data'];
+
+            foreach ($refunds as $refundId => $refundDetails)
+            {
+                $this->scroogeDispatchData['data'][$refundId] = $refundDetails;
+            }
+        }
+    }
+
+    public function setReconBatchOutputData(array $data)
+    {
+        $this->reconBatchOutputData = $data;
+    }
+
+    public function getReconBatchOutputData()
+    {
+        return $this->reconBatchOutputData;
     }
 
     public function setStatusAfterSuccessfulProcessing()
@@ -153,7 +182,12 @@ class Reconciliation extends Base
         // We use the original filename here instead of the batch id as it s required
         // by the reconciliator classes to determine the type of reconciliation
         $fileName = pathinfo($fileNameWithExt, PATHINFO_FILENAME);
-        $fileName = Batch\Entity::INPUT_FILE_PREFIX . $fileName;
+
+        //
+        // Adding batch id in filename to make file name unique per batch and
+        // to avoid replacement of file in case new batch is created with same name.
+        //
+        $fileName = Batch\Entity::INPUT_FILE_PREFIX . $fileName . '_' . $this->batch->getId();
 
         $extension = strtolower($file->getExtension());
         $mimeType = strtolower(mime_content_type($file->getRealPath()));
@@ -435,8 +469,13 @@ class Reconciliation extends Base
             );
         }
 
+        //
+        // Removing appended batch id in file name because recon uses filename for some validations/configs.
+        //
+        $originalFileName = str_replace('_' . $this->batch->getId(), '', $inputFile->getFilename());
+
         return [
-            FileProcessor::FILE_NAME => strtolower($inputFile->getFilename()),
+            FileProcessor::FILE_NAME => strtolower($originalFileName),
             FileProcessor::EXTENSION => strtolower($inputFile->getExtension()),
             FileProcessor::MIME_TYPE => $mimeType,
             FileProcessor::SIZE      => $inputFile->getSize(),

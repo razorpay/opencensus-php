@@ -130,7 +130,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION         = 'Payment processing declined. The card issuing bank has prevented the payment from being authorized.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE                        = 'The card number provided is not a legitimate one.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID                      = 'The payment failed most probably due to an invalid card number';
-    const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
+    const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_AMOUNT_LIMITS_EXCEEDED            = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
+    const BAD_REQUEST_PAYMENT_CARD_DAILY_WITHDRAWAL_FREQUENCY_LIMITS_EXCEEDED   = 'Payment processing failed because card\'s withdrawal frequency limit has exceeded.';
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT          = 'The bank has declined the payment as this card cannot be used for this type of payment. Please use an alternate credit card for the purpose.';
     const BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE                     = 'The card cvv length should only be 3 digits';
     const BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR                 = 'The American Express card cvv length must be 4 digits';
@@ -212,6 +213,9 @@ class PublicErrorDescription
     const BAD_REQUEST_ALL_FTA_NOT_FAILED                                        = 'All FTAs for the refund are not in failed state.';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
+    const BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS                             = 'Merchant email already exists';
+    const BAD_REQUEST_MERCHANT_INVALID_MCC_CODE                                 = 'Invalid mcc code';
+    const BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED                     = 'Registered address is required';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED                           = 'The merchant funds are already released';
     const BAD_REQUEST_RECEIPT_EMAILS_ALREADY_ENABLED                            = 'The merchant receipt emails are already enabled';
@@ -219,7 +223,6 @@ class PublicErrorDescription
     const BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED                             = 'Merchant international is already enabled';
     const BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED                            = 'Merchant international is already disabled';
     const BAD_REQUEST_MERCHANT_INVALID                                          = 'The payment has been rejected by the gateway.';
-    const BAD_REQUEST_MERCHANT_EMAIL_DUPLICATE_FOR_TYPE                         = 'Duplicate email for given type';
     const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                 = 'Recurring payments are not supported for this merchant.';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';
     const BAD_REQUEST_KEY_EXPIRED                                               = 'Key is expired';
@@ -319,11 +322,16 @@ class PublicErrorDescription
     const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
     const BAD_REQUEST_REFUND_ALREADY_IN_UNPROCESSED_LIST                        = 'The refund is already present in the unprocessed list in cache';
     const BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET                                  = 'Business website is invalid or not set';
+    const BAD_REQUEST_CARD_PAYMENT_DECLINED_MODE_NOT_SUPPORTED                  = 'Payment declined by issuer. Issuer does not support this mode of transaction.';
+    const BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS                            = 'Payments Blocked by cardholder on this card.';
+    const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
+    const BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST                             = 'Merchant email type does not Exist';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED                      = 'Payment rejected by customer';
 
+    const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                             = 'Cashback request exceeds issuer limit';
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                               = 'Payment verification with gateway failed';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment declined by gateway. Most probably due to customer clicking the cancel button on 3dSecure page';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                               = 'Payment declined';
@@ -591,11 +599,30 @@ class PublicErrorDescription
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
 
+    const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
+    const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Login failed because of incorrect OTP';
+    const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                   = 'Second factor authentication setup failed because of incorrect OTP';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                          = 'User is restricted by its associated merchant to perform the action';
+    const BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED                               = 'Second factor authentication is enabled for user. OTP field is required';
+    const BAD_REQUEST_USER_2FA_SETUP_REQUIRED                                   = 'User 2FA setup is required';
+    const BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED                             = 'User 2FA setup is required before user logins.';
+    const BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED                            = 'Second factor authentication is not enabled for the user.';
+    const BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED                                  = 'User account is locked.';
+    const BAD_REQUEST_USER_2FA_ENFORCED                                         = 'Second factor authentication is mandated by one (or more) merchants';
+    const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                           = 'Operation is only allowed by the owner of the merchant.';
+    const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                 = 'Owner 2FA setup should already be done to perform this action';
+    const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                  = 'Merchant Restricted Settings failed to apply';
+    const BAD_REQUEST_USER_OTP_REQUIRED                                         = 'OTP is required';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION                     = 'Restricted user cannot perform action';
+
     const BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS                             = 'User with given role already exists';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';
     const BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT                          = 'User doesn\'t belong to the current merchant';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
+    const BAD_REQUEST_INVITATION_CREATE_FAILED                                  = 'Invitation create failed either due to user invited is restricted or merchant is restricted';
+    const BAD_REQUEST_INVITATION_ACCEPT_FAILED                                  = 'Invitation accept failed either due to user invited is restricted or merchant is restricted';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
     const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                              = 'Self-Invitation not allowed';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                              = 'SuperAdmin Role is not editable';
@@ -625,6 +652,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                        = 'The input action is not supported for the merchant user';
     const BAD_REQUEST_ACCESS_DENIED                                             = 'Access Denied';
+    const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                              = 'Dashboard cant be accessed from the current location';
 
     // Workflow Related Errors
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                 = 'Workflow entity not found';
@@ -835,6 +863,7 @@ class PublicErrorDescription
     const BAD_REQUEST_APPLICATION_ID_PARTNER_ID_BOTH_PRESENT                        = 'Application id and Partner id both sent in the request';
     const BAD_REQUEST_APPLICATION_SUBMERCHANT_CONFIG_EXISTS                         = 'Application/submerchant config already exists';
     const BAD_REQUEST_EXPIRY_DATE_SET_FOR_SUBVENTION                                = 'Expiry date should not be set for subvention model';
+    const BAD_REQUEST_PARTNER_CONFIGURATION_INVALID                                 = 'The partner configuration is invalid';
 
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
 
@@ -842,4 +871,11 @@ class PublicErrorDescription
 
     // Instant refunds
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'Instant refund not supported for the payment';
+
+    // Banking Accounts
+    const BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED            = 'Operation could not be completed. Please try again';
+    const BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED                       = 'Operation could not be completed. Please try again';
+    const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
+    const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
+    const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
 }

@@ -25,7 +25,7 @@ class Fetch extends BaseFetch
             Entity::TRANSFER_ID                  => 'filled|public_id|size:18',
             Entity::CAPTURED                     => 'sometimes|boolean',
             Entity::BATCH_ID                     => 'sometimes|string|size:20',
-            self::EXPAND_EACH                    => 'filled|string|in:card',
+            self::EXPAND_EACH                    => 'filled|string|in:card,emi',
             Entity::NOTES                        => 'sometimes|string|max:500',
             Entity::VERIFIED                     => 'sometimes|in:null,0,1,2',
             Entity::REFUND_STATUS                => 'sometimes|in:null,partial,full',
@@ -52,7 +52,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
-            self::EXPAND_EACH => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
+            self::EXPAND_EACH => 'filled|string|in:card,emi,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
         ],
         AuthType::ADMIN_AUTH => [
             Entity::NOTES       => 'sometimes|notes_fetch',

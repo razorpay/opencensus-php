@@ -3,7 +3,6 @@
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use RZP\Models\Base;
-use RZP\Models\Payout;
 use RZP\Models\Merchant;
 
 class Core extends Base\Core
@@ -34,8 +33,20 @@ class Core extends Base\Core
         /** @var Entity $rule */
         foreach ($rules as $rule)
         {
-            if (($rule->getMinAmount() < $amount) and
-                ($rule->getMaxAmount() >= $amount))
+            $minAmount = $rule->getMinAmount();
+            $maxAmount = $rule->getMaxAmount();
+
+            if (($minAmount === null) and
+                ($maxAmount === null))
+            {
+                $evaluatedRule = $rule;
+
+                break;
+            }
+
+            $maxAmount = $maxAmount ?: PHP_INT_MAX;
+
+            if (($minAmount < $amount) and ($maxAmount >= $amount))
             {
                 $evaluatedRule = $rule;
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use App;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
 
@@ -26,12 +27,14 @@ class Batch extends Job
 
     public $timeout = 5400;
 
-    public function __construct(string $mode, string $id, array $params = [])
+    public function __construct(string $mode, string $id, string $type = null, array $params = [])
     {
         parent::__construct($mode);
 
         $this->id     = $id;
         $this->params = $params;
+
+        $this->setQueueConfigKeyFromBatchType($type);
     }
 
     public function handle()
@@ -107,5 +110,23 @@ class Batch extends Job
     public function getParams(): array
     {
         return $this->params;
+    }
+
+    /**
+     * Setting queue config key based on batch type. Specific batch types will be pushed to other dedicated queues.
+     * Rest will go to default batch queue.
+     *
+     * @param $type
+     */
+    protected function setQueueConfigKeyFromBatchType(string $type = null)
+    {
+        $configKey = $type . '_batch';
+
+        $app = App::getFacadeRoot();
+
+        if (isset($app['config']['queue'][$configKey]) === true)
+        {
+            $this->queueConfigKey = $configKey;
+        }
     }
 }

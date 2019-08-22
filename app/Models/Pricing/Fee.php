@@ -4,7 +4,6 @@ namespace RZP\Models\Pricing;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -267,14 +266,32 @@ class Fee extends Base\Core
             return $pricingPlan;
         }
 
+        $pricingPlan = $this->addBankingPayoutRules($pricingPlan, $merchant);
+
+        return $pricingPlan;
+    }
+
+    protected function addBankingPayoutRules(Plan $pricingPlan, Merchant\Entity $merchant)
+    {
         //
-        // Add default pricing rules, only when no rules are already defined.
+        // Add default pricing rules, only when no rules are already defined for Shared accounts.
         // If ANY custom pricing rules have been added for banking payouts, we do not attach
         // default pricing rules
         //
-        if ($pricingPlan->hasBankingPayoutRule() === false)
+        if ($pricingPlan->hasBankingSharedAccountPayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingSharedAccountDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
+        }
+
+        //
+        // Add default pricing rules, only when no rules are already defined for Direct accounts.
+        // If ANY custom pricing rules have been added for banking payouts, we do not attach
+        // default pricing rules
+        //
+        if ($pricingPlan->hasBankingDirectAccountPayoutRule() === false)
+        {
+            $rules       = $this->repo->getBankingDirectAccountDefaultPricingRules(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 

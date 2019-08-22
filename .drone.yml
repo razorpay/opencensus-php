@@ -454,6 +454,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -468,6 +470,9 @@ pipeline:
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: func
     tag:
@@ -507,6 +512,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -521,6 +528,9 @@ pipeline:
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: beta
     tag:
@@ -609,6 +619,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -623,6 +635,9 @@ pipeline:
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: echo
     tag:
@@ -685,6 +700,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -699,6 +716,9 @@ pipeline:
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: delta
     tag:
@@ -761,6 +781,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -775,6 +797,9 @@ pipeline:
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: charlie
     tag:
@@ -814,6 +839,8 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-beneficiary-test
+        - api-sqs-beneficiary-live
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
@@ -828,6 +855,9 @@ pipeline:
         - api-sqs-scrooge-test
         - api-sqs-scrooge-live
         - api-sqs-refund
+        - api-sqs-payment-batch
+        - api-sqs-capture-test
+        - api-sqs-capture-live
       repo: razorpay/api
       namespace: api
       tag:
@@ -868,6 +898,8 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-beneficiary-test
+        - api-sqs-beneficiary-live
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
@@ -882,6 +914,9 @@ pipeline:
         - api-sqs-scrooge-test
         - api-sqs-scrooge-live
         - api-sqs-refund
+        - api-sqs-payment-batch
+        - api-sqs-capture-test
+        - api-sqs-capture-live
       repo: razorpay/api
       namespace: api
       tag:
@@ -1001,6 +1036,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -1015,6 +1052,9 @@ pipeline:
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: zeta
     tag:

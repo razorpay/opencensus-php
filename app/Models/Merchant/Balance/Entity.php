@@ -8,6 +8,11 @@ use RZP\Base\BuilderEx;
 use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
 
+/**
+ * Class Entity
+ *
+ * @property BankingAccount\Entity $bankingAccount
+ */
 class Entity extends Base\PublicEntity
 {
     const ID             = 'id';
@@ -29,10 +34,14 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER = 'account_number';
 
     //
-    // These attributes are populated for all non-primary balance accounts
+    // account_type can be shared (for Virtual Accounts) or direct (for Current Accounts)
     //
-    const ACCOUNT_TYPE     = 'account_type';
-    const CHANNEL          = 'channel';
+    const ACCOUNT_TYPE         = 'account_type';
+    //
+    // channel which provides the account, eg: rbl, yesbank
+    // would be null for account_type=shared and for primary balance accounts
+    //
+    const CHANNEL              = 'channel';
 
     // Additional input keys
     const BALANCE_ID     = 'balance_id';
@@ -64,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
         self::CHANNEL,
+        self::UPDATED_AT,
     ];
 
     protected $entity = 'balance';
@@ -289,6 +299,16 @@ class Entity extends Base\PublicEntity
     public function setAccountNumber(string $accountNumber)
     {
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
+    public function setAccountType(string $type)
+    {
+        $this->setAttribute(self::ACCOUNT_TYPE, $type);
+    }
+
+    public function setChannel(string $channel = null)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
     }
 
     public function save(array $options = array())

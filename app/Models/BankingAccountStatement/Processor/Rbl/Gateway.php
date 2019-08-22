@@ -59,13 +59,15 @@ class Gateway extends BaseProcessor
                     self::MOZART_ACTION,
                     $requestData);
 
+                $this->modifyBankResponse($bankResponse);
+
             }
             catch (Exception\GatewayErrorException $ex)
             {
                 $responseError = $ex->getData();
 
-                if ((isset($responseError[Mozart::GATEWAY_ERROR_CODE]) === true) and
-                    ($responseError[Mozart::GATEWAY_ERROR_CODE] === self::RBL_NO_NEW_DATA))
+                if ((isset($responseError[Mozart::ERROR][Mozart::GATEWAY_ERROR_CODE]) === true) and
+                    ($responseError[Mozart::ERROR][Mozart::GATEWAY_ERROR_CODE] === self::RBL_NO_NEW_DATA))
                 {
                     return [];
                 }
@@ -90,6 +92,23 @@ class Gateway extends BaseProcessor
                  ($attemptCount < 3));
 
         return $finalFormattedResponse;
+    }
+
+    protected function modifyBankResponse(array & $response)
+    {
+        $txnDetails = $response[Fields::DATA][Fields::PAYMENT_GENERIC_RESPONSE]
+                               [Fields::BODY][Fields::TRANSACTION_DETAILS] ?? [];
+
+        if (empty($txnDetails) === true)
+        {
+            return;
+        }
+
+        if (is_associative_array($txnDetails) === true)
+        {
+            $response[Fields::DATA][Fields::PAYMENT_GENERIC_RESPONSE]
+                     [Fields::BODY][Fields::TRANSACTION_DETAILS] = [$txnDetails];
+        }
     }
 
     protected function validateMozartResponse(array $response)
@@ -228,7 +247,7 @@ class Gateway extends BaseProcessor
 
     public function getFormattedResponse(array $responseData)
     {
-        $responseBody = $responseData[Fields::ACC_STMT_DATE_RANGE_RESPONSE][Fields::BODY];
+        $responseBody = $responseData[Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY];
 
         $transactionsData = $responseBody[Fields::TRANSACTION_DETAILS] ?? [];
 
@@ -374,7 +393,7 @@ class Gateway extends BaseProcessor
 
     public function hasMoreData($bankResponse)
     {
-        $responseBody = $bankResponse[Fields::DATA][Fields::ACC_STMT_DATE_RANGE_RESPONSE][Fields::BODY];
+        $responseBody = $bankResponse[Fields::DATA][Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY];
 
         $hasMoreData = $responseBody[Fields::HAS_MORE_DATA];
 

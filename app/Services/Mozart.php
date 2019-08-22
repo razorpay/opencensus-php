@@ -29,6 +29,9 @@ class Mozart
     const GATEWAY_STATUS_CODE            = 'gateway_status_code';
     const INTERNAL_ERROR_CODE            = 'internal_error_code';
     const GATEWAY_ERROR_DESCRIPTION      = 'gateway_error_description';
+    const ERROR                          = 'error';
+    const DATA                           = 'data';
+    const MORE_INFORMATION               = 'moreInformation';
 
     protected $app;
 
@@ -258,7 +261,10 @@ class Mozart
                 ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
                 $response['error']['gateway_error_code'] ?? 'gateway_error_code',
                 $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
-                $response['error'],
+                [
+                    'error' => $response['error'],
+                    'data'  => $response['data']
+                ],
                 null,
                 $this->getUrl());
         }
@@ -268,7 +274,7 @@ class Mozart
     {
         unset($request['options']['auth']);
 
-        $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, $request);
+        $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, $request);
     }
 
     protected function traceMozartServiceResponse($response)

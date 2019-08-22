@@ -60,7 +60,7 @@ class Constants
     const INTERVAL           = 'interval';
     const FUND_ACCOUNTS      = 'fund_accounts';
     const CONTACT_ID         = 'contact_id';
-    const BANK_ACCOUNTS      = 'bank_accounts';
+    const BANK_ACCOUNT       = 'bank_account';
     const ACCOUNT_NUMBER     = 'account_number';
     const IFSC               = 'ifsc';
     const TNC                = 'tnc';
@@ -75,6 +75,21 @@ class Constants
     const OPERATION          = 'operation';
     const REGISTERED         = 'registered';
 
+    const IDENTIFICATION        = 'identification';
+    const DOCUMENT              = 'document';
+    const IDENTIFICATION_NUMBER = 'identification_number';
+
     // defaults
     const DEFAULT_ACCOUNT_COUNT = 20;
+
+    // business model values
+    const B2B  = 'B2B';
+    const B2C  = 'B2C';
+    const B2BC = 'B2B+B2C';
+
+    public static $validBusinessModels = [
+        self::B2B,
+        self::B2C,
+        self::B2BC,
+    ];
 }

@@ -8,7 +8,7 @@ use RZP\Constants\Timezone;
 
 class Yesb extends Base
 {
-    const BANK_NAME = 'Yes Bank';
+    const BANK_NAME = 'Yesbank';
 
     protected function formatDataForMail(array $data)
     {

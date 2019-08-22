@@ -26,8 +26,10 @@ use RZP\Jobs\ScroogeRefundRetry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
@@ -86,16 +88,32 @@ trait Refund
 
         $this->pushMetrics();
 
+        if ($this->refund->isRefundSpeedInstant() === false)
+        {
+            $this->eventRefundProcessed($this->refund);
+        }
+
         return $refund;
+    }
+
+    public function isInstantRefundSupported(Payment\Entity $payment)
+    {
+        // This will keep changing as we add more coverage
+        return (($payment->isCard() === true) and
+                ($this->isCapturedPaymentAndFeatureEnabled($payment) === true));
+    }
+
+    public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
+    {
+        return (($payment->isCaptured() === true) and
+                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true));
     }
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
     {
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-                (($payment->getMethod() !== Payment\Method::CARD) or
-                 ($this->payment->isCaptured() === false) or
-                 ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false)));
+                ($this->isCapturedPaymentAndFeatureEnabled($payment) === false));
     }
 
     protected function pushMetrics()
@@ -752,12 +770,23 @@ trait Refund
             //         'The reversals parameter is required for this refund request');
         }
 
-        $this->repo->transaction(function () use ($input)
+        try
         {
-            $this->processReversals($input['reversals']);
+            $this->repo->transaction(function() use ($input)
+            {
+                $this->processReversals($input['reversals']);
 
-            unset($input['reversals']);
-        });
+                unset($input['reversals']);
+            });
+
+            (new TransferMetric)->pushReversalSuccessMetrics();
+        }
+        catch (\Exception $e)
+        {
+            (new TransferMetric)->pushReversalFailedMetrics(e);
+
+            throw $e;
+        }
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, array $input)
@@ -1333,6 +1362,11 @@ trait Refund
             }
         }
 
+        if ($refund->isRefundSpeedInstant() === false)
+        {
+            $refund->setSpeedProcessed(RefundSpeed::NORMAL);
+        }
+
         $refund->merchant()->associate($this->merchant);
 
         $refund->setBaseAmount();
@@ -1358,6 +1392,19 @@ trait Refund
         $this->refund = $refund;
 
         return $refund;
+    }
+
+    public function fetchFeeForRefundAmount($payment, $input)
+    {
+        // We are just building refund Entity to return fee and not saving the entity
+        $refund = $this->buildRefundEntity($payment, $input);
+
+        $refundFees = [
+            RefundEntity::FEE => $refund->getFee(),
+            RefundEntity::TAX => $refund->getTax(),
+        ];
+
+        return $refundFees;
     }
 
     protected function processRefund()
@@ -1820,6 +1867,7 @@ trait Refund
             'payment_created_at'        => $payment->getCreatedAt(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
             'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
+            'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
         ];
 
         $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
@@ -2060,6 +2108,33 @@ trait Refund
         ];
 
         return $this->callGatewayForRefundValidation($data);
+    }
+
+    public function eventRefundProcessed(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.processed', $eventPayload);
+    }
+
+    public function eventRefundFailed(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.failed', $eventPayload);
+    }
+
+    public function eventRefundSpeedChanged(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.speed_changed', $eventPayload);
     }
 
     protected function refundViaFundTransfer(RefundEntity $refund, Payment\Entity $payment, $data = []): array

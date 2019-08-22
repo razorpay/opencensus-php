@@ -4,6 +4,8 @@ namespace RZP\Reconciliator\NetbankingCanara;
 
 class Constants
 {
+    const HEADER_MERCHANTREFRENCE   = 'MERCHANTREFRENCE';
+
     const COLUMN_MERCHANT_CODE      = 'merchant_code';
 
     const COLUMN_PAYMENT_AMOUNT     = 'transaction_amount';
