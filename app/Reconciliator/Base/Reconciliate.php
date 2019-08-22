@@ -312,9 +312,19 @@ class Reconciliate extends Base\Core
         $this->generateReconAnalyticsData($data, $batch, $sheetName);
     }
 
+    /**
+     * @param $data
+     * @param $batch
+     * @param $sheetName
+     * @throws \RZP\Exception\LogicException
+     *
+     * output file stored in a rzp-edh bucket for analytics. once all the gateways are migrated,
+     * output file will be stored only in this bucket.
+     */
     protected function generateReconAnalyticsData($data, $batch, $sheetName)
     {
-        if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true) {
+        if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
+        {
             $creator = new FileStore\Creator;
 
             $extension = FileStore\Format::CSV;
@@ -328,26 +338,32 @@ class Reconciliate extends Base\Core
             $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
 
             $creator->localFilePath($analyticsOutputFilePath)
-                ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                ->name($dirPath . '/' . $analyticsOutputFileName)
-                ->extension($extension)
-                ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
-                ->entity($batch)
-                ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
-                ->save();
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                    ->name($dirPath . '/' . $analyticsOutputFileName)
+                    ->extension($extension)
+                    ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
+                    ->entity($batch)
+                    ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
+                    ->save();
 
             $fileStoreEntity = $creator->get();
 
             $traceData = [
-                'file_id' => $fileStoreEntity['id'],
+                'file_id'   => $fileStoreEntity['id'],
                 'file_name' => $fileStoreEntity['name'],
-                'batch_id' => $batchId,
-                'gateway' => $this->gateway,
+                'batch_id'  => $batchId,
+                'gateway'   => $this->gateway,
             ];
 
             $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
         }
     }
+
+    /**
+     * @param $reconOutputData
+     * @return array
+     * removes blacklisted columns if present. otherwise adds processed_at column for each row.
+     */
 
     protected function getOutputWithRemovedBlackListedColumns($reconOutputData)
     {
@@ -357,11 +373,9 @@ class Reconciliate extends Base\Core
 
         foreach ($reconOutputData as $row)
         {
-            $this->trace->info(TraceCode::RECON_BATCH_OUTPUT_FILE, ["array diff key", array_diff_key($row, array_flip($blackListedColumns)), $blackListedColumns]);
-
             $row = array_diff_key($row, array_flip($blackListedColumns));
 
-            $row['updated_at'] = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+            $row['processed_at'] = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
 
             array_push($updatedData, $row);
         }
