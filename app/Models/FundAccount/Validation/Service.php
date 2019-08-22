@@ -31,6 +31,14 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->fund_account_validation;
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array
+     *
+     * @throws Exception\BadRequestException
+     * @throws \Throwable
+     */
     public function create(array $input): array
     {
         $this->processAccountNumber($input);
@@ -38,6 +46,24 @@ class Service extends Base\Service
         $entity = $this->core->create($input, $this->merchant);
 
         return $entity->toArrayPublic();
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
+    public function fetchMultiple(array $input): array
+    {
+        $this->processAccountNumber($input);
+
+        $entities = $this->entityRepo
+            ->fetch($input, $this->merchant->getId());
+
+        return $entities->toArrayPublic();
     }
 
     public function retry(array $input): array
