@@ -4,7 +4,7 @@ namespace RZP\Models\Settlement\Bucket;
 
 use RZP\Models\Base;
 
-class Entity extends Base\Entity
+class Entity extends Base\PublicEntity
 {
     const ID                 = 'id';
     const MERCHANT_ID        = 'merchant_id';
@@ -20,12 +20,14 @@ class Entity extends Base\Entity
     ];
 
     protected $visible = [
+        self::ID,
         self::MERCHANT_ID,
         self::BUCKET_TIMESTAMP,
         self::COMPLETED,
     ];
 
     protected $public = [
+        self::ID,
         self::MERCHANT_ID,
         self::BUCKET_TIMESTAMP,
         self::COMPLETED,

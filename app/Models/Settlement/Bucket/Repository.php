@@ -6,7 +6,7 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'settlement_buckets';
+    protected $entity = 'settlement_bucket';
 
     public function getMerchantIdsFromBucket(string $bucketTimestamp)
     {
