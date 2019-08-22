@@ -35,7 +35,7 @@ export default params => {
       super(props);
 
       this.state = {
-        active: 0 || props.active,
+        active: props.active || 0,
       };
     }
 
@@ -57,6 +57,11 @@ export default params => {
           isEnabled: true,
           lastVisitedTime: Date.now(),
         },
+      });
+
+      this.props.handleProductQuickGuide({
+        ...this.props.currentOnboarding,
+        showOnboarding: false,
       });
     };
 
