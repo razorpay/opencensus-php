@@ -40,5 +40,22 @@ class Validator extends Base\Validator
                 'Invalid account provider:' . $channel);
         }
     }
+
+    /**
+     *
+     * @param array $input
+     *
+     * @return bool
+     */
+    public function isAccountNumberPresentInArray(array & $input) {
+        $accountNumber = $input[Entity::ACCOUNT_NUMBER] ?? null;
+
+        if (empty($accountNumber) === true) {
+            return false;
+        }
+
+        return true;
+    }
+
 }
 

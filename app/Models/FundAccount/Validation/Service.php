@@ -97,10 +97,13 @@ class Service extends Base\Service
      */
     protected function processAccountNumber(array & $input)
     {
+        /** @var Merchant\Balance\Validator $merchantBalanceValidator */
+        $merchantBalanceValidator = $this->merchant->balance->getValidator();
+
         /** @var Merchant\Validator $merchantValidator */
         $merchantValidator = $this->merchant->getValidator();
 
-        if ($merchantValidator->isAccountNumberPresentInArray($input))
+        if ($merchantBalanceValidator->isAccountNumberPresentInArray($input))
         {
             $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
         }

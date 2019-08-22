@@ -269,6 +269,39 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function getAuthMerchantBalanceByFiltersOrFail(array $filters): Entity
+    {
+        //
+        // Gets merchant identifier from current auth context.
+        // Must not use $this->merchantId because when auth's merchant is set/reset it does not affect
+        // singleton repository objects which are already resolved.
+        //
+        $merchantId = $this->auth->getMerchantId();
+
+        $query = $this->newQuery();
+
+        if (array_key_exists(Entity::ACCOUNT_NUMBER, $filters)
+            && !is_null($filters[Entity::ACCOUNT_NUMBER]))
+        {
+            $query = $query->where(Entity::ACCOUNT_NUMBER, $filters[Entity::ACCOUNT_NUMBER]);
+        }
+
+        if (array_key_exists(Entity::TYPE, $filters)
+            && !is_null($filters[Entity::TYPE]))
+        {
+            $query = $query->where(Entity::TYPE, $filters[Entity::TYPE]);
+        }
+
+        if (array_key_exists(Entity::ACCOUNT_TYPE, $filters)
+            && !is_null($filters[Entity::ACCOUNT_TYPE]))
+        {
+            $query = $query->where(Entity::ACCOUNT_TYPE, $filters[Entity::ACCOUNT_TYPE]);
+        }
+
+        return $query->where(Entity::MERCHANT_ID, $merchantId)
+            ->firstOrFailPublic();
+    }
+
     public function getBalanceByMerchantIdAccountNumberAndChannelOrFail(
         string $merchantId,
         string $accountNumber,
