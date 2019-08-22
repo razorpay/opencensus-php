@@ -50,15 +50,13 @@ export default class MarketplaceContainer extends React.Component {
   componentDidMount() {
     this.initMarketPlace();
 
-    if (this.props.transfers.items.length > 0) {
+    if (this.props.transfers.items.length) {
       return;
     }
 
-    this.props.fetchTransfers({ count: 2 });
+    this.props.fetchTransfers({ count: 25 });
 
-    if (!this.props.accounts.accounts.length) {
-      this.props.fetchAccounts({ count: 1 });
-    }
+    this.props.fetchAccounts({ count: 25 });
   }
 
   componentWillReceiveProps(nextProps) {
