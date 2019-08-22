@@ -9,7 +9,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { updateFeatures } from 'merchant/modules/config';
 import { handleProductQuickGuide } from 'merchant/modules/onboarding';
 
-import { setOnBoardingDataInLocalState } from './index';
+import { setOnBoardingDataInLocalState } from './utils';
 
 @connect(
   state => {
@@ -21,13 +21,9 @@ import { setOnBoardingDataInLocalState } from './index';
   { updateFeatures, showNotification, handleProductQuickGuide }
 )
 export default class FeatureEnableButton extends React.Component {
-  constructor(props) {
-    super();
-
-    this.state = {
-      isSuccess: false,
-    };
-  }
+  state = {
+    isSuccess: false,
+  };
 
   handleEnableFeature = () => {
     if (this.props.isLocalEnabler) {

@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import LocalStorageService from 'rzp/utils/localStorage';
 
 import { getUser, getMode } from 'merchant/store';
