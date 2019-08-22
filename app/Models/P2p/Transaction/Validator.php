@@ -248,10 +248,12 @@ class Validator extends Base\Validator
     public function makeRaiseConcernSuccessRules()
     {
         $rules = (new Concern\Validator)->makeRules([
-            Concern\Entity::TRANSACTION_ID          => 'required',
+            Concern\Entity::ID                      => 'required',
             Concern\Entity::GATEWAY_REFERENCE_ID    => 'required',
             Concern\Entity::INTERNAL_STATUS         => 'required',
             Concern\Entity::RESPONSE_CODE           => 'required',
+            Concern\Entity::HANDLE                  => 'sometimes',
+            Concern\Entity::TRANSACTION_ID          => 'sometimes',
             Concern\Entity::RESPONSE_DESCRIPTION    => 'sometimes',
             Concern\Entity::GATEWAY_DATA            => 'sometimes',
         ])->wrapRules(Entity::CONCERN);

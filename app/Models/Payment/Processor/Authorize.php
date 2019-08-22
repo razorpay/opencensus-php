@@ -1667,6 +1667,8 @@ trait Authorize
      */
     protected function setAuthAndAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
+        $payment->setAuthenticationGateway(null);
+
         try
         {
             if (($payment->isMethodCardOrEmi() === true) and
@@ -4887,7 +4889,8 @@ trait Authorize
         }
 
         if (($this->payment->isRecurring() === false) and
-            ($this->isPreferredRecurring($input) === false))
+            ($this->isPreferredRecurring($input) === false) and
+            ($this->payment->isMoto() === false))
         {
             $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
 

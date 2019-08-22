@@ -727,4 +727,35 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function editContactMobile(array $input)
+    {
+        (new Validator)->validateInput('edit_contact_mobile', $input);
+
+        return $this->core()->editContactMobile($input, $this->user);
+    }
+
+
+    public function updateContactMobile(array $input)
+    {
+        (new Validator)->validateInput('update_contact_mobile', $input);
+
+        $user = $this->repo->user->findOrFailPublic($input[Entity::USER_ID]);
+
+        return $this->core()->updateContactMobile($input, $user);
+    }
+
+    public function accountLockUnlock(string $userId, string $action): array
+    {
+        $accountLockData = [
+            Entity::USER_ID => $userId,
+            Entity::ACTION  => $action,
+        ];
+
+        (new Validator)->validateInput('user_account_lock_unlock', $accountLockData);
+
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        return $this->core()->accountLockUnlock($user, $action);
+    }
 }

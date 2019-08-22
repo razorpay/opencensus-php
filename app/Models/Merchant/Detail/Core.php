@@ -226,6 +226,8 @@ class Core extends Base\Core
 
             $this->trackActivationProgressEvents($merchant, $activationProgress);
 
+            $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
+
             // Only Linked accounts will have auto Activated set to true.
             $response['auto_activated'] = false;
 

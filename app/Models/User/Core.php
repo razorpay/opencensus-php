@@ -18,6 +18,7 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
+use RZP\Models\Admin\Admin\Token;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
@@ -136,8 +137,83 @@ class Core extends Base\Core
         {
             return false;
         }
-        
+
         return true;
+    }
+
+    /**
+     * Method to lock/unlock a user account
+     *
+     * @param Entity $user
+     * @param string $action
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function accountLockUnlock(Entity $user, string $action): array
+    {
+        $isAdminAuth = app('basicauth')->isAdminAuth();
+
+        $traceInfo = [
+            Entity::USER_ID => $user->getId(),
+            Entity::ACTION  => $action,
+            'admin_auth'    => $isAdminAuth,
+        ];
+
+        if ($isAdminAuth === false)
+        {
+            // merchant is not allowed to lock the user account.
+
+            if ($action === Constants::LOCK)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED);
+            }
+
+            $merchant = app('basicauth')->getMerchant();
+
+            $this->canMerchantUpdateUserDetails($merchant, $user);
+
+            $dashboardUser = app('basicauth')->getUser();
+
+            if ((empty($dashboardUser) === true) or ($user->getId() === $dashboardUser->getId()))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER);
+            }
+
+            $traceInfo[Entity::MERCHANT_ID] = $merchant->getId();
+        }
+        else
+        {
+            $traceInfo[Token\Entity::ADMIN_ID] = app('basicauth')->getAdmin()->getId();
+        }
+
+        $this->trace->info(
+            TraceCode::USER_ACCOUNT_LOCK_UNLOCK_ACTION,
+            $traceInfo);
+
+        switch ($action)
+        {
+            case Constants::LOCK:
+
+                $user->setAccountLocked(true);
+
+                break;
+
+            case Constants::UNLOCK:
+
+                $user->setWrong2faAttempts(0);
+
+                $user->setAccountLocked(false);
+
+                break;
+        }
+
+        $this->repo->saveOrFail($user);
+
+        return [
+            Entity::ACCOUNT_LOCKED => $user->isAccountLocked(),
+            Entity::USER_ID        => $user->getId(),
+        ];
     }
 
     public function login(array $input)
@@ -147,7 +223,7 @@ class Core extends Base\Core
         $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
 
         $enable2FAExpForUser = $this->is2FAForUserEnabled($user);
-        
+
         if ($enable2FAExpForUser === false)
         {
             return $this->get($user);
@@ -213,7 +289,7 @@ class Core extends Base\Core
 
                 //if the otp is incorrect, increment the number of wrong 2fa attempts.
                 $this->incrementWrong2faAttempts($user);
-                
+
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
                         null,
                         [
@@ -999,5 +1075,169 @@ class Core extends Base\Core
         ];
 
         $this->changePassword($user, $changePasswordData);
+    }
+
+    /**
+     *  User updating its contact mobile
+     *
+     *  1) Send OTP to mobile number.
+     *  2) Verify OTP send to the number.
+     *  3) Update the contact mobile and set mobile verified as true.
+     *
+     * @param array  $input
+     * @param Entity $user
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function editContactMobile(array $input, Entity $user)
+    {
+        if ($user->getRestricted() === true)
+        {
+            //
+            // if merchant_user role is admin/owner
+            // allow editing contact mobile.
+            //
+            $userMapping    = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
+                                                                            $user->getId());
+            $this->userRole = $userMapping->pivot->role;
+
+            if (in_array($this->userRole, [Role::ADMIN, Role::OWNER], true) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION);
+            }
+        }
+
+        $smsOtpAuth = $this->app['module']
+            ->secondFactorAuth
+            ::make('SmsOtpAuth');
+
+        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
+
+        if (isset($input[Entity::OTP]) === false)
+        {
+            $smsOtpAuth->sendOtp($smsOtpAuthPayload);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED);
+        }
+        else
+        {
+            $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
+
+            if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
+            {
+                $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+
+                $this->repo->saveOrFail($user);
+
+                $user->setContactMobileVerified(true);
+
+                $this->repo->saveOrFail($user);
+
+                return $user;
+            }
+            else
+            {
+                // Wrong OTP or Mobile number verified.
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+            }
+        }
+    }
+
+    /**
+     * update contact mobile of a user using userId
+     *
+     * @param array  $input
+     *
+     * @param Entity $user
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function updateContactMobile(array $input, Entity $user): Entity
+    {
+        // for admin contact_mobile_verified is set to false
+
+        if (app('basicauth')->isAdminAuth() === true)
+        {
+            $contactMobileVerified = false;
+
+            $this->trace->info(
+                TraceCode::USER_CONTACT_MOBILE_UPDATE,
+                [
+                    Entity::USER_ID        => $user->getId(),
+                    Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
+                    'admin_id'             => $this->app['basicauth']->getAdmin()->getId(),
+                ]);
+        }
+        else
+        {
+            $merchant = app('basicauth')->getMerchant();
+
+            $this->trace->info(
+                TraceCode::USER_CONTACT_MOBILE_UPDATE,
+                [
+                    Entity::USER_ID        => $user->getId(),
+                    Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
+                    Entity::MERCHANT_ID    => $merchant->getId(),
+                ]);
+
+            $teamData = [
+                'merchant_id' => $merchant->getId(),
+                'user_id'     => $user->getId(),
+            ];
+
+            // check if merchant is updating its own user's
+            // contact mobile, then do no allow.
+            $user->getValidator()->validateInput('teamManagement', $teamData);
+
+            // Check if merchant can update user contact details
+            $this->canMerchantUpdateUserDetails($merchant, $user);
+
+            // for merchant/proxy auth contact_mobile_verified is set to true
+            $contactMobileVerified = true;
+        }
+
+        $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+
+        $this->repo->saveOrFail($user);
+
+        $user->setContactMobileVerified($contactMobileVerified);
+
+        $this->repo->saveOrFail($user);
+
+        return $user;
+    }
+
+    /**
+     *  This function checks if
+     *  1) user is associated with merchant
+     *  2) merchant whose updating user details should have owner/admin role
+     *  3) merchant should be restricted
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $user
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function canMerchantUpdateUserDetails(Merchant\Entity $merchant, Entity $user)
+    {
+        // check if user belongs to same merchant.
+        $user->getValidator()->validateMerchantUserRelation($merchant, $user);
+
+        $dashboardUser = app('basicauth')->getUser();
+
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchant->getId(), $dashboardUser->getId());
+
+        $this->userRole = $userMapping->pivot->role;
+
+        // check if the userRole is only admin/owner.
+        (new Role())->validateMerchantUserRoleForUpdateUserDetails($this->userRole);
+
+        // check if merchant is restricted.
+        if ($merchant->getRestricted() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_RESTRICTED_TO_PERFORM_ACTION);
+        }
     }
 }

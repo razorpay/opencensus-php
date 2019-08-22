@@ -6,7 +6,6 @@ use Mail;
 use Crypt;
 use Config;
 use Carbon\Carbon;
-use RZP\Base\RuntimeManager;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 
@@ -43,10 +42,6 @@ class Service extends Base\Service
     protected $slack;
 
     protected $mutex;
-
-    public static $approvalCodeNullCronPaymentIdBeforeFirst = '7rvcM8NW4wJTQp';
-
-    public static $approvalCodeNullCronEndId = '8fCb5414DBTBL3';
 
     public function __construct()
     {
@@ -910,7 +905,7 @@ class Service extends Base\Service
     protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
     {
         $entity[RefundConstants::INSTANT_REFUND_SUPPORT] = $this->getNewProcessor($this->merchant)
-                                                                ->isCapturedPaymentAndFeatureEnabled($payment);
+                                                                ->isInstantRefundSupported($payment);
     }
 
     public function getPaymentFlows(array $input)
@@ -1835,67 +1830,6 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $data, $cacheTtl);
 
         return $token;
-    }
-
-    public function setApprovalCodeNullMultiplePayments($input)
-    {
-        $limit = $input['limit'] ?? 1000;
-
-        $key = 'payments_set_approval_code_null_cron_start_id';
-
-        $startId = $this->app['cache']->get($key);
-
-        if ($startId === null)
-        {
-            $startId = self::$approvalCodeNullCronPaymentIdBeforeFirst;
-        }
-
-        /** @var Base\PublicCollection $payments */
-        $payments = $this->repo->payment->getPaymentsBetweenIdsWithLimit($startId, self::$approvalCodeNullCronEndId, $limit);
-
-        if ($payments->count() === 0)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
-                null,
-                null,
-                'no payment found');
-        }
-
-        $this->app['cache']->put($key, $payments->last()->getId(), 60 * 24 * 10);
-
-        $result = [
-            'payment_failed' => [],
-        ];
-
-        $paymentsCount = 0;
-
-        /** @var Payment\Entity $payment */
-        foreach ($payments as $payment)
-        {
-            try
-            {
-                if ($payment->getApprovalCode() !== null)
-                {
-                    $payment->setApprovalCodeNull();
-
-                    $this->repo->saveOrFail($payment);
-
-                    $paymentsCount++;
-                }
-            }
-            catch (\Throwable $e)
-            {
-                $result['payment_failed'][] = $payment->getId();
-
-                $this->traceException($e, Trace::ERROR, TraceCode::PAYMENT_SET_APPROVAL_CODE_NULL_EXCEPTION);
-            }
-        }
-
-        $result['payments_count'] = $paymentsCount;
-
-        $this->trace->info(TraceCode::PAYMENT_SET_APPROVAL_CODE_NULL_RESULT, $result);
-
-        return $result;
     }
 
     public function migrateCardVaultToken(string $cardId, string $paymentId = null)

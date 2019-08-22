@@ -180,6 +180,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::ACQUIRER_DATA,
         self::CREATED_AT,
+        self::CURRENCY,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];

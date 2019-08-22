@@ -63,7 +63,10 @@ class TokenRegistrationAutoCharge extends Job
                         $e,
                         null,
                         TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_FAILED,
-                        $this->getTraceData());
+                        [
+                            'token_registration_id' => $this->tokenRegistration->getPublicId(),
+                        ]
+                    );
 
                     $this->delete();
                 }

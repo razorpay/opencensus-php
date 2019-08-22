@@ -94,6 +94,8 @@ class TerminalProcessor extends Base\Core
               'gateway'   => $terminal['authentication_gateway'],
               'auth_type' => $terminal['gateway_auth_type']
             ];
+
+            $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);
         }
     }
 

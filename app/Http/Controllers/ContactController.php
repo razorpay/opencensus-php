@@ -42,4 +42,17 @@ class ContactController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     *  Route to create bulk contacts.
+     *  Currently it is used by batch Service
+     */
+    public function createContactBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createBulkContact($input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -67,6 +67,10 @@ class EventServiceProvider extends ServiceProvider
             Listeners\QueueEventListener::class,
         ],
 
+        P2p\DeviceVerificationCompleted::class => [
+            Listeners\P2pWebhookListener::class,
+            Listeners\P2pNotificationListener::class,
+        ],
         P2p\TransactionCreated::class => [
             Listeners\P2pWebhookListener::class,
             Listeners\P2pNotificationListener::class,

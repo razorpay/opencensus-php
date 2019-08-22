@@ -13,6 +13,7 @@ use RZP\Models\P2p\Base;
  * @property Vpa\Entity $payee
  * @property Concern\Entity $concern
  * @property UpiTransaction\Entity $upi
+ * @property boolean $isConcernEligible
  *
  * Class Entity
  * @package RZP\Models\P2p\Transaction
@@ -62,6 +63,9 @@ class Entity extends Base\Entity
     const BANK_ACCOUNT         = 'bank_account';
     const CL                   = 'cl';
     const CONCERN              = 'concern';
+    const CONCERNS             = 'concerns';
+    const IS_CONCERN_ELIGIBLE  = 'is_concern_eligible';
+    const IS_PENDING_COLLECT   = 'is_pending_collect';
 
     /************** Entity Properties ************/
 
@@ -125,6 +129,8 @@ class Entity extends Base\Entity
         Entity::INTERNAL_ERROR_CODE,
         Entity::PAYER_APPROVAL_CODE,
         Entity::PAYEE_APPROVAL_CODE,
+        Entity::IS_CONCERN_ELIGIBLE,
+        Entity::IS_PENDING_COLLECT,
         Entity::INITIATED_AT,
         Entity::EXPIRE_AT,
         Entity::COMPLETED_AT,
@@ -147,6 +153,8 @@ class Entity extends Base\Entity
         Entity::STATUS,
         Entity::ERROR_CODE,
         Entity::ERROR_DESCRIPTION,
+        Entity::IS_CONCERN_ELIGIBLE,
+        Entity::IS_PENDING_COLLECT,
         Entity::INITIATED_AT,
         Entity::EXPIRE_AT,
         Entity::COMPLETED_AT,
@@ -207,6 +215,8 @@ class Entity extends Base\Entity
         Entity::INTERNAL_ERROR_CODE  => 'string',
         Entity::PAYER_APPROVAL_CODE  => 'string',
         Entity::PAYEE_APPROVAL_CODE  => 'string',
+        Entity::IS_CONCERN_ELIGIBLE  => 'boolean',
+        Entity::IS_PENDING_COLLECT   => 'boolean',
         Entity::INITIATED_AT         => 'int',
         Entity::EXPIRE_AT            => 'int',
         Entity::COMPLETED_AT         => 'int',
@@ -216,6 +226,11 @@ class Entity extends Base\Entity
 
     protected $with = [
         Entity::UPI,
+    ];
+
+    protected $appends = [
+        Entity::IS_CONCERN_ELIGIBLE,
+        Entity::IS_PENDING_COLLECT,
     ];
 
     /***************** SETTERS *****************/
@@ -652,7 +667,7 @@ class Entity extends Base\Entity
 
     public function isProcessing(): bool
     {
-        return in_array($this->getInternalStatus(), [Status::INITIATED, Status::PENDING]);
+        return in_array($this->getInternalStatus(), [Status::REQUESTED, Status::INITIATED, Status::PENDING]);
     }
 
     public function isFailed(): bool
@@ -667,10 +682,12 @@ class Entity extends Base\Entity
 
     public function isPendingCollect(): bool
     {
-        return (
-            ($this->getFlow() === Flow::DEBIT) and
-            ($this->getType() === Type::COLLECT) and
-            ($this->getStatus() === Status::CREATED));
+        return $this->getAttribute(self::IS_PENDING_COLLECT);
+    }
+
+    public function isConcernEligible()
+    {
+        return $this->getAttribute(self::IS_CONCERN_ELIGIBLE);
     }
 
     /***************** RELATIONS *****************/
@@ -707,12 +724,27 @@ class Entity extends Base\Entity
 
     public function concern()
     {
-        return $this->hasOne(Concern\Entity::class, Concern\Entity::TRANSACTION_ID)->latest();
+        return $this->hasOne(Concern\Entity::class, Concern\Entity::TRANSACTION_ID)
+                    ->whereNotIn(Concern\Entity::STATUS, [Concern\Status::CREATED])
+                    ->latest();
     }
 
     public function setPublicEntityAttribute(array & $array)
     {
         $array[self::ENTITY] = 'customer.transaction';
+    }
+
+    protected function getIsConcernEligibleAttribute()
+    {
+        return in_array($this->getInternalStatus(), [
+            Status::FAILED,
+            Status::PENDING,
+        ]);
+    }
+
+    protected function getIsPendingCollectAttribute()
+    {
+        return ($this->getStatus() === Status::REQUESTED);
     }
 
     public function toArrayPublic(): array
@@ -748,10 +780,11 @@ class Entity extends Base\Entity
     {
         $array = $this->toArrayPublic();
 
-        $array[self::UPI] = $this->upi->toArrayPublic();
-        $array[self::PAYER] = $this->payer->toArrayPublic();
-        $array[self::PAYEE] = $this->payee->toArrayPublic();
-        $array[self::BANK_ACCOUNT] = $this->bankAccount->toArrayPublic();
+        $array[self::CUSTOMER_ID]   = Customer\Entity::getSignedId($this->getCustomerId());
+        $array[self::UPI]           = $this->upi->toArrayPublic();
+        $array[self::PAYER]         = array_except($this->payer->toArrayPublic(), self::BANK_ACCOUNT);
+        $array[self::PAYEE]         = array_except($this->payee->toArrayPublic(), self::BANK_ACCOUNT);
+        $array[self::BANK_ACCOUNT]  = $this->bankAccount->toArrayPublic();
 
         return $array;
     }

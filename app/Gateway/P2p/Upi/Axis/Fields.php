@@ -102,6 +102,7 @@ class Fields
     const QUERY_COMMENT                 = 'queryComment';
     const QUERY_REFERENCE_ID            = 'queryReferenceId';
     const QUERY_CLOSING_TIMESTAMP       = 'queryClosingTimestamp';
+    const QUERIES                       = 'queries';
     const LIMIT                         = 'limit';
     const OFFSET                        = 'offset';
 

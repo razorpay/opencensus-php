@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\Otp;
 use RZP\Models\Admin\Admin;
 use RZP\Models\User\Constants;
+use RZP\Services\HubspotClient;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
@@ -75,6 +76,8 @@ class UserTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->mockHubSpotClient('trackSignupEvent');
+
         $this->startTest();
 
         $merchant = $this->getLastEntity('merchant', true);
@@ -86,6 +89,19 @@ class UserTest extends TestCase
                     ->first();
 
         $this->assertNotNull($row);
+    }
+
+    protected function mockHubSpotClient($methodName)
+    {
+        $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods([$methodName])
+                            ->getMock();
+
+        $this->app->instance('hubspot', $hubSpotMock);
+
+        $hubSpotMock->expects($this->exactly(1))
+                    ->method($methodName);
     }
 
     public function testGet()
@@ -1366,6 +1382,130 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testSetAccountLock()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->create('permission', ['name' => 'user_account_lock_unlock']);
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users-admin/account/' . $user['id'] . '/lock';
+
+        $testData['response']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDbRecord = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDbRecord['account_locked'], 1);
+    }
+
+    public function testSetAccountUnlock()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->create('permission', ['name' => 'user_account_lock_unlock']);
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users-admin/account/' . $user['id'] . '/unlock';
+
+        $testData['response']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDbRecord = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDbRecord['account_locked'], 0);
+        $this->assertEquals($userDbRecord['wrong_2fa_attempts'], 0);
+    }
+
+    public function testSetAccountLockByMerchant()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchant->setRestricted(true);
+
+        $merchant->saveOrFail();
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/account/' . $user['id'] . '/lock';
+
+        $this->startTest();
+    }
+
+    public function testSetAccountUnlockByMerchant()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchant->setRestricted(true);
+
+        $merchant->saveOrFail();
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/account/' . $user['id'] . '/unlock';
+
+        $testData['response']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDbRecord = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDbRecord['account_locked'], 0);
+        $this->assertEquals($userDbRecord['wrong_2fa_attempts'], 0);
+    }
+
     protected function setPasswordResetTestData(string $callee)
     {
         $testData = & $this->testData[$callee];
@@ -1396,5 +1536,81 @@ class UserTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
                           ->willReturn('on');
+    }
+
+    public function testEditContactMobileByUser()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserRestrictedForManagerRole()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantIds[0],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'manager');
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserAndVerify()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $response = $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($response['contact_mobile_verified'], true);
+
+        $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
+
+        $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
+    }
+
+    public function testUpdateContactMobile()
+    {
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user->getId();
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $userDB = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertEquals($userDB['contact_mobile_verified'], false);
+
+        $this->assertEquals($userDB['contact_mobile'], $response['contact_mobile']);
     }
 }

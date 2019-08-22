@@ -7,6 +7,8 @@ use Razorpay\Trace\Logger;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Contact\Entity;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends \Razorpay\Spine\Validation\Validator
 {
@@ -59,5 +61,37 @@ class Validator extends \Razorpay\Spine\Validation\Validator
         $app = App::getFacadeRoot();
 
         return $app['trace'];
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBatchId($batchId)
+    {
+        if (empty($batchId) === true)
+        {
+            throw new BadRequestValidationFailureException(Entity::BATCH_ID . ' not present');
+        }
+    }
+
+    /**
+     * @param $idempotencyKey
+     * @param $batchId
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateIdempotencyKey($idempotencyKey, $batchId)
+    {
+        if (empty($idempotencyKey) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                Entity::IDEMPOTENCY_KEY . ' not present',
+                null,
+                [
+                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                    Entity::BATCH_ID        => $batchId,
+                ]
+            );
+        }
     }
 }
