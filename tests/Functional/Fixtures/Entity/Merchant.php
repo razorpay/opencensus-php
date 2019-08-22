@@ -646,6 +646,11 @@ class Merchant extends Base
         return $this->edit($id, ['has_key_access' => $hasKeyAccess]);
     }
 
+    public function setRestricted(bool $restricted, string $id = '10000000000000')
+    {
+        return $this->edit($id, ['restricted' => $restricted]);
+    }
+
     public function editPricingPlanId($planId, $id = '10000000000000')
     {
         return $this->edit($id, ['pricing_plan_id' => $planId]);

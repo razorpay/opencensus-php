@@ -48,12 +48,32 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getGatewaySettledAt(array $row)
     {
-        if (empty($row[ReconciliationFields::PAYMENT_DATE]) === false)
+        if (empty($row[ReconciliationFields::PAYMENT_DATE]) === true)
         {
-            $date = Carbon::createFromFormat('d-m-Y', $row[ReconciliationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
-
-            return $date;
+            return null;
         }
+
+        $gatewaySettledAtTimestamp = null;
+
+        $settledAt = $row[ReconciliationFields::PAYMENT_DATE];
+
+        try
+        {
+            $gatewaySettledAtTimestamp = Carbon::parse($settledAt)->setTimezone(Timezone::IST)->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'         => InfoCode::INCORRECT_DATE_FORMAT,
+                    'settled_at'        => $settledAt,
+                    'refund_id'         => $this->refund->getId(),
+                    'gateway'           => $this->gateway,
+                ]);
+        }
+
+        return $gatewaySettledAtTimestamp;
     }
 
     /**

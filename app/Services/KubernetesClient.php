@@ -112,7 +112,7 @@ class KubernetesClient
                 $this->nodeSelector = $this->batchNodePreference[$batchType];
             }
             // Create Job Spec
-            $jobSpec = $this->generateJobSpec($mode, $batchId, $params);
+            $jobSpec = $this->generateJobSpec($mode, $batchId, $params, $batchType);
 
             $job = new Job($jobSpec);
 
@@ -170,10 +170,13 @@ class KubernetesClient
 
     }
 
-    private function generateJobSpec(string $mode, string $batchId, array $params)
+    private function generateJobSpec(string $mode, string $batchId, array $params, string $batchType = null)
     {
-        $metaName = strtolower('batch-'.$batchId);
+        $metaName = strtolower('batch-' . $batchId);
+
         $dockerImage = $this->getDockerImage();
+
+        $this->nodeSelector = $params['node_selector'] ?? $this->nodeSelector;
 
         $jobSpec = [
             'metadata' => [
@@ -191,7 +194,8 @@ class KubernetesClient
                         'annotations' => [
                             'iam.amazonaws.com/role' => $this->iamRole,
                             'k8s.rzp.io/logger' => 'efk',
-                            'k8s.rzp.io/logs' => 'true'
+                            'k8s.rzp.io/logs' => 'true',
+                            'batch_job_type' => $batchType ?? '',
                         ]
                     ],
                     'spec' => [

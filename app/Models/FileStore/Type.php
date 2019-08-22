@@ -68,6 +68,8 @@ class Type
 
     const CUB_NETBANKING_CLAIM              = 'cub_netbanking_claim';
 
+    const IBK_NETBANKING_REFUND             = 'ibk_netbanking_refund';
+
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
@@ -206,6 +208,7 @@ class Type
             self::CBI_NETBANKING_REFUND,
             self::CUB_NETBANKING_REFUND,
             self::CUB_NETBANKING_CLAIM,
+            self::IBK_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
             self::SIB_NETBANKING_REFUND,
@@ -345,6 +348,7 @@ class Type
         self::CBI_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
+        self::IBK_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
         self::SIB_NETBANKING_REFUND,

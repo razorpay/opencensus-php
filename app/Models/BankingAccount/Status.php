@@ -13,6 +13,7 @@ class Status
     const CANCELLED         = 'cancelled';
     const ACTIVATED         = 'activated';
     const UNSERVICEABLE     = 'unserviceable';
+    const REJECTED          = 'rejected';
 
     protected static $initialStatuses = [
         Status::CREATED,
@@ -23,9 +24,15 @@ class Status
         self::CREATED,
         self::INITIATED,
         self::PROCESSING,
+        // when user cancels his application to open CA.
         self::CANCELLED,
         self::PROCESSED,
+        // when the user's pincode does not belong
+        // to the region of pincodes serviceable
         self::UNSERVICEABLE,
+        // when the user's application to open CA
+        //is rejected by RBL for some reason
+        self::REJECTED,
     ];
 
     /**
@@ -38,32 +45,35 @@ class Status
         self::CREATED => [
             self::INITIATED,
             self::UNSERVICEABLE,
-            self::CANCELLED
+            self::CANCELLED,
         ],
         self::INITIATED => [
             self::PROCESSING,
             self::PROCESSED,
             self::UNSERVICEABLE,
-            self::CANCELLED
+            self::CANCELLED,
+            self::REJECTED,
         ],
         self::PROCESSING => [
             self::PROCESSED,
             self::UNSERVICEABLE,
-            self::CANCELLED
+            self::CANCELLED,
+            self::REJECTED,
         ],
         self::PROCESSED => [
-            self::ACTIVATED
+            self::ACTIVATED,
         ],
         self::UNSERVICEABLE => [],
         self::CANCELLED => [],
+        self::REJECTED  => [],
     ];
 
     public static $internallyEditStatuses = [
       self::INITIATED,
       self::PROCESSED,
-      self::CANCELLED,
       self::PROCESSING,
       self::UNSERVICEABLE,
+      self::REJECTED,
     ];
 
     public static function isValidStatus(string $status = null)

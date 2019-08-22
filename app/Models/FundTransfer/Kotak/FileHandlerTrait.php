@@ -795,12 +795,13 @@ trait FileHandlerTrait
                      ->toArray();
     }
 
-    protected function parseExcelSheets($filePath)
+    protected function parseExcelSheets($filePath, $startRow = 1)
     {
         $app = App::getFacadeRoot();
 
         Config::set('excel.import.force_sheets_collection', true);
         Config::set('excel.import.heading', 'original');
+        Config::set('excel.import.startRow', $startRow);
 
         //
         // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
@@ -842,23 +843,33 @@ trait FileHandlerTrait
      * Parses excel sheets at given path and returns array content.
      * Uses new phpoffice/phpspreadsheet package instead of maatwebsite/excel.
      * @param  string $filePath
+     * @param int $numRowsToSkip
      * @return array
      */
-    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath): array
+    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath, $numRowsToSkip = 0): array
     {
         $fileType = SpreadsheetIOFactory::identify($filePath);
+
         $reader = SpreadsheetIOFactory::createReader($fileType);
+
         $reader->setReadDataOnly(true);
+
         $spreadsheet = $reader->load($filePath);
+
         assertTrue($spreadsheet->getSheetCount() === 1);
+
         $rows = $spreadsheet->getActiveSheet()->toArray();
-        // First row is always expected to be header
+
+        $rows = array_slice($rows, $numRowsToSkip);
+
         $headers = array_values(array_shift($rows) ?? []);
+
         // No rows exists
         if (empty($headers) === true)
         {
             return [];
         }
+
         // Format rows as "heading key => value" kind of associative array
         foreach ($rows as & $row)
         {

@@ -88,6 +88,9 @@ class UserRolesScope
             // Merchant user routes
             'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
+            //2fa
+            'merchant_2fa_change_setting' => [Role::OWNER],
+
             // webhook routes
             'webhook_create'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'webhook_fetch_multiple' => [Role::OWNER, Role::MANAGER, Role::ADMIN],

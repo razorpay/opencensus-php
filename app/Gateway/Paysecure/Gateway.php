@@ -20,16 +20,12 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
-    use Base\CardCacheTrait;
     use RequestHandlerTrait;
     use Base\AuthorizeFailed;
 
     protected $gateway = 'paysecure';
 
-    protected $secureCacheDriver;
-
     const CACHE_KEY = 'paysecure_%s_card_details';
-    const CARD_CACHE_TTL = 14400;
 
     const GATEWAY_PAYSECURE_STAN = 'gateway_paysecure_stan';
 
@@ -38,12 +34,13 @@ class Gateway extends Base\Gateway
     protected $wsdlDetails = [];
 
     protected $map = [
-        Fields::ERROR_CODE    => Entity::ERROR_CODE,
-        Fields::ERROR_MESSAGE => Entity::ERROR_MESSAGE,
-        Fields::STATUS        => Entity::STATUS,
-        Fields::APPRCODE      => Entity::APPRCODE,
-        Fields::TRAN_ID       => Entity::GATEWAY_TRANSACTION_ID,
-        Entity::FLOW          => Entity::FLOW,
+        Fields::ERROR_CODE          => Entity::ERROR_CODE,
+        Fields::ERROR_MESSAGE       => Entity::ERROR_MESSAGE,
+        Fields::STATUS              => Entity::STATUS,
+        Fields::APPRCODE            => Entity::APPRCODE,
+        Fields::TRAN_ID             => Entity::GATEWAY_TRANSACTION_ID,
+        Entity::FLOW                => Entity::FLOW,
+        Fields::ACCU_RESPONSE_CODE  => Entity::ERROR_CODE,
     ];
 
     public function __construct()
@@ -67,8 +64,6 @@ class Gateway extends Base\Gateway
         parent::setGatewayParams($input, $mode, $terminal);
 
         $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
-
-        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     /**
@@ -147,6 +142,11 @@ class Gateway extends Base\Gateway
             );
         }
 
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionGetLastOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $input['gateway']);
+
         // Check payment status
         if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE],
                 [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
@@ -173,8 +173,6 @@ class Gateway extends Base\Gateway
             EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
             $input);
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionGetLastOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
 
         // Guid would be sent back only for the redirect flow and not for the iframe flow
         if (isset($input['gateway'][Fields::ACCU_GUID]) === true)
@@ -519,15 +517,6 @@ class Gateway extends Base\Gateway
                 Action::AUTHENTICATE,
                 true);
         }
-    }
-
-    protected function callAdviceGateway(array $input)
-    {
-        $this->app['gateway']->call(
-            Payment\Gateway::HITACHI,
-            Action::ADVICE,
-            $input,
-            $this->mode);
     }
 
     protected function callRefundGateway(array $input)

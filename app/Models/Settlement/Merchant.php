@@ -69,18 +69,18 @@ class Merchant
         $this->env = $app['env'];
     }
 
-    public function retryFailedSettlement(Settlement\Entity $setl)
+    public function retryFailedSettlement(Settlement\Entity $setl, array $merchantSettleToPartner)
     {
         $this->setl = $setl;
 
-        $this->updateSettlementEntity();
+        $this->updateSettlementEntity($merchantSettleToPartner);
 
         $this->setl->incrementAttempts();
 
         $this->repo->saveOrFail($this->setl);
 
         // Create Settlement attempt entity
-        $this->createSettlementAttemptEntity();
+        $this->createSettlementAttemptEntity(null, $merchantSettleToPartner);
 
         return [$this->setl, $this->bankTransferAtpt];
     }
@@ -92,7 +92,8 @@ class Merchant
         $apiFee,
         $tax,
         $setlTime,
-        array $setlDetailAmounts): Entity
+        array $setlDetailAmounts,
+        array $merchantSettleToPartner): Entity
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
@@ -110,10 +111,10 @@ class Merchant
             $startTime = microtime(true);
         }
 
-        $this->repo->transaction(function()
+        $this->repo->transaction(function() use ($merchantSettleToPartner)
         {
             //create new settlement entity
-            $this->newSettlementEntity();
+            $this->newSettlementEntity($merchantSettleToPartner);
 
             // Create Settlement Details entity
             $this->createSettlementDetailsEntities();
@@ -152,13 +153,13 @@ class Merchant
         });
     }
 
-    public function createSettlementAttempt() : FundTransferAttempt\Entity
+    public function createSettlementAttempt($merchantSettleToPartner) : FundTransferAttempt\Entity
     {
         assert($this->setl->hasTransaction(), true);
 
         $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
 
-        $this->createSettlementAttemptEntity($initiateAt);
+        $this->createSettlementAttemptEntity($initiateAt, $merchantSettleToPartner);
 
         return $this->bankTransferAtpt;
     }
@@ -313,7 +314,7 @@ class Merchant
         return $setlDetailEntity;
     }
 
-    protected function newSettlementEntity()
+    protected function newSettlementEntity($merchantSettleToPartner)
     {
         $setl = (new Settlement\Entity)->generateId();
 
@@ -329,7 +330,20 @@ class Merchant
 
         $setl->merchant()->associate($this->merchant);
 
-        $setl->bankAccount()->associate($this->bankAccount);
+        $mid = $this->merchant->getId();
+
+        if (isset($merchantSettleToPartner[$mid]) === true)
+        {
+            $partnerBankAccountId = $merchantSettleToPartner[$mid];
+
+            $partnerBankAccount = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+
+            $setl->bankAccount()->associate($partnerBankAccount);
+        }
+        else
+        {
+            $setl->bankAccount()->associate($this->bankAccount);
+        }
 
         // in case of test mode set settlement status to initiated
         if ($this->doMockAttemptProcessed() === true)
@@ -340,13 +354,27 @@ class Merchant
         $this->setl = $setl;
     }
 
-    protected function updateSettlementEntity()
+    protected function updateSettlementEntity(array $merchantSettleToPartner)
     {
         $setl = $this->setl;
 
-        // try the settlment with current merchant bank account as that might
+        $mid = $this->merchant->getId();
+
+        // add partner bank account to settlement entity if submerchant is settling to partner
+        // else try the settlment with current merchant bank account as that might
         // have been the reason for settlement failure
-        $setl->bankAccount()->associate($this->bankAccount);
+        if(isset($merchantSettleToPartner[$mid]) === true)
+        {
+            $partnerBankAccountId = $merchantSettleToPartner[$mid];
+
+            $partnerBankAccount = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+
+            $setl->bankAccount()->associate($partnerBankAccount);
+        }
+        else
+        {
+            $setl->bankAccount()->associate($this->bankAccount);
+        }
 
         // set the settlement status back to created, and other fields to null
         $setl->setStatus(Status::CREATED);
@@ -374,10 +402,11 @@ class Merchant
      * for success condition
      *
      * @param int|null $initiateAt
+     * @param array $merchantSettleToPartner
      */
-    protected function createSettlementAttemptEntity(int $initiateAt = null)
+    protected function createSettlementAttemptEntity(int $initiateAt = null, array $merchantSettleToPartner)
     {
-        $fta = $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt);
+        $fta = $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt, $merchantSettleToPartner);
 
         if ($this->doMockAttemptProcessed() === true)
         {
@@ -457,7 +486,8 @@ class Merchant
     protected function createFundTransferAttempt(
         Base\Entity $source,
         BankAccount\Entity $bankAccount,
-        int $initiateAt = null)
+        int $initiateAt = null,
+        $merchantSettleToPartner)
     {
         // TODO: this should be in fta core and should be using `create` function to do all this
 
@@ -465,9 +495,22 @@ class Merchant
 
         $fundTransferAttempt->merchant()->associate($this->merchant);
 
+        $mid = $this->merchant->getId();
+
+        if(isset($merchantSettleToPartner[$mid]) === true)
+        {
+            $partnerBankAccountId = $merchantSettleToPartner[$mid];
+            $partnerBankAccount = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+            $fundTransferAttempt->bankAccount()->associate($partnerBankAccount);
+
+        }
+        else
+        {
+            $fundTransferAttempt->bankAccount()->associate($bankAccount);
+        }
+
         $fundTransferAttempt->source()->associate($source);
 
-        $fundTransferAttempt->bankAccount()->associate($bankAccount);
 
         $initiateAt = ($initiateAt ?: Carbon::now(Timezone::IST)->getTimestamp());
 

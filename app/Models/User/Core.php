@@ -18,6 +18,8 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
+use RZP\Models\Admin\Admin\Token;
+use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
 {
@@ -106,13 +108,422 @@ class Core extends Base\Core
         return $user;
     }
 
+    private function checkUserAccountNotLockedOrThrowException(Entity $user)
+    {
+        if ($user->isAccountLocked() === true)
+        {
+            $this->trace->info(TraceCode::LOCKED_USER_LOGIN, ['user_id' => $user->getId()]);
+
+            $this->trace->count(Metric::LOCKED_USER_LOGIN);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
+                    null,
+                    [
+                    'internal_error_code'  => ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
+                    'user_details'         => ['restricted' => $user->restricted, 'account_locked' => true],
+                    ]);
+        }
+    }
+
+    protected function is2FAForUserEnabled(Entity $user): bool
+    {
+        $loginExp = $this->app->razorx->getTreatment(
+                                $user->getId(),
+                                Merchant\RazorxTreatment::SECOND_FACTOR_AUTH_LOGIN_EXP,
+                                $this->mode
+                            );
+
+        if (strtolower($loginExp) !== 'on')
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Method to lock/unlock a user account
+     *
+     * @param Entity $user
+     * @param string $action
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function accountLockUnlock(Entity $user, string $action): array
+    {
+        $isAdminAuth = app('basicauth')->isAdminAuth();
+
+        $traceInfo = [
+            Entity::USER_ID => $user->getId(),
+            Entity::ACTION  => $action,
+            'admin_auth'    => $isAdminAuth,
+        ];
+
+        if ($isAdminAuth === false)
+        {
+            // merchant is not allowed to lock the user account.
+
+            if ($action === Constants::LOCK)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED);
+            }
+
+            $merchant = app('basicauth')->getMerchant();
+
+            $this->canMerchantUpdateUserDetails($merchant, $user);
+
+            $dashboardUser = app('basicauth')->getUser();
+
+            if ((empty($dashboardUser) === true) or ($user->getId() === $dashboardUser->getId()))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER);
+            }
+
+            $traceInfo[Entity::MERCHANT_ID] = $merchant->getId();
+        }
+        else
+        {
+            $traceInfo[Token\Entity::ADMIN_ID] = app('basicauth')->getAdmin()->getId();
+        }
+
+        $this->trace->info(
+            TraceCode::USER_ACCOUNT_LOCK_UNLOCK_ACTION,
+            $traceInfo);
+
+        switch ($action)
+        {
+            case Constants::LOCK:
+
+                $user->setAccountLocked(true);
+
+                break;
+
+            case Constants::UNLOCK:
+
+                $user->setWrong2faAttempts(0);
+
+                $user->setAccountLocked(false);
+
+                break;
+        }
+
+        $this->repo->saveOrFail($user);
+
+        return [
+            Entity::ACCOUNT_LOCKED => $user->isAccountLocked(),
+            Entity::USER_ID        => $user->getId(),
+        ];
+    }
+
     public function login(array $input)
     {
         (new Entity)->getValidator()->validateInput('login', $input);
 
-        $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+        $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
 
-        $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $user->getPassword());
+        $enable2FAExpForUser = $this->is2FAForUserEnabled($user);
+
+        if ($enable2FAExpForUser === false)
+        {
+            return $this->get($user);
+        }
+
+        $this->checkUserAccountNotLockedOrThrowException($user);
+
+        //check if second factor auth is enabled for the user
+        if (($user->isSecondFactorAuth() === true) or
+            ($user->isSecondFactorAuthEnforced() === true))
+        {
+            $this->trace->info(TraceCode::USER_LOGIN_2FA_ENABLED, ['user_id' => $user->getId()]);
+
+            $this->trace->count(Metric::LOGIN_USER_2FA_ENABLED);
+
+            if ($user->isSecondFactorAuthSetup() === true)
+            {
+                return $this->handleLoginFlowUser2faEnabledAndSetupDone($user, $input);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::USER_LOGIN_2FA_ENABLED_NO_SETUP, ['user_id' => $user->getId()]);
+
+                $dimensions = ['restricted' => $user->getRestricted()];
+
+                $this->trace->count(Metric::LOGIN_USER_2FA_NOT_SETUP, $dimensions);
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                        null,
+                        [
+                            'internal_error_code'    => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                            'user_details'           => ['restricted' => $user->getRestricted()]
+                        ]);
+            }
+        }
+
+        $this->trace->count(Metric::LOGIN_2FA_SUCCESS);
+
+        return $this->get($user);
+    }
+
+    // User 2fa is enabled and 2fa is setup. If the request has the otp, it will check
+    // if the otp is correct. Else if the otp is not there it will throw an exception.
+    private function handleLoginFlowUser2faEnabledAndSetupDone(Entity $user, array $input)
+    {
+        $smsOtpAuth = $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH);
+
+        if (isset($input[Entity::OTP]) === true)
+        {
+            $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user);
+            $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
+
+            if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
+            {
+                $this->trace->count(Metric::LOGIN_2FA_CORRECT_OTP);
+
+                $this->resetUserWrong2faAttempts($user);
+                return $this->get($user);
+            }
+            else
+            {
+                $this->trace->count(Metric::LOGIN_2FA_CORRECT_OTP);
+
+                //if the otp is incorrect, increment the number of wrong 2fa attempts.
+                $this->incrementWrong2faAttempts($user);
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+                        null,
+                        [
+                        'internal_error_code'    => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+                        'user_details'           => ['restricted' => $user->restricted, 'account_locked' => $user->isAccountLocked()],
+                        ]);
+            }
+        }
+        else
+        {
+            $smsOtpAuth->sendOtp($this->getSmsOtpAuthBasePayload($user));
+
+            $this->trace->info(TraceCode::USER_LOGIN_2FA_OTP_SENT, ['user_id' => $user->getId()]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                        null,
+                        [
+                        'internal_error_code'    => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                        ]);
+        }
+    }
+
+    private function resetUserWrong2faAttempts(Entity $user)
+    {
+        if ($user->getWrong2faAttempts() !== 0)
+        {
+            $user->setWrong2faAttempts(0);
+            $this->repo->saveOrFail($user);
+        }
+    }
+
+    //used by login flow to increment wrong attempts and lock account if required
+    private function incrementWrong2faAttempts(Entity $user)
+    {
+        $wrongTries = $user->getWrong2faAttempts() + 1;
+
+        $user->setWrong2faAttempts($wrongTries);
+
+        $this->trace->info(TraceCode::USER_LOGIN_2FA_WRONG_OTP, ['user_id' => $user->getId()]);
+
+        $maxWrongTries = $this->config->get('applications.user_2fa.max_incorrect_tries');
+
+        if ($wrongTries >= $maxWrongTries)
+        {
+            $user->setAccountLocked(true);
+
+            $this->trace->info(TraceCode::USER_LOGIN_2FA_ACCOUNT_LOCKED, ['user_id' => $user->getId()]);
+        }
+
+        $this->repo->saveOrFail($user);
+    }
+
+    /**
+     * This method is used when user is trying to login but
+     * his/her 2fa is not setup. So, user won't be able to login.
+     * This will allow the frontend to pass the username, password
+     * and hence setup the mobile 2fa.
+     * Pass mobile number for setting up 2fa. The method
+     * sends an otp the number and store the number in users table.
+     *
+     * @param   array $input
+     */
+    public function setup2faMobileOnLogin(array $input)
+    {
+        (new Entity)->getValidator()->validateInput('setup2faMobile', $input);
+
+        $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
+
+        $this->checkIfUserCanHitSetup2faRoute($user);
+
+        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
+        
+        $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+
+        $this->repo->saveOrFail($user);
+
+        $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH)
+            ->sendOtp($smsOtpAuthPayload);
+
+        return [];
+    }
+
+     /**
+     * Verifies the otp sent on the number in setup2faMobile.
+     * If otp is correct, the login for the user needs to be successful.
+     * The method returns the user object if the otp is correct.
+     *
+     * @param   array $input
+     * @return  User
+     */
+    public function setup2faVerifyMobileOnLogin(array $input)
+    {
+        (new Entity)->getValidator()->validateInput('setup2faVerifyMobile', $input);
+
+        $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
+
+        $this->checkIfUserCanHitSetup2faRoute($user);
+
+        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
+
+        $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
+
+        $smsOtpAuth = $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH);
+
+        if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
+        {
+            $user->setContactMobileVerified(true);
+
+            $this->repo->saveOrFail($user);
+
+            return $this->get($user);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_SETUP_INCORRECT_OTP,
+                    null,
+                    [
+                        'internal_error_code'   => ErrorCode::BAD_REQUEST_2FA_SETUP_INCORRECT_OTP,
+                    ]);
+        }
+    }
+
+    /**
+     * Checks if the user can hit this route. Only a user
+     * which doesn't belong to non-restrcited can hit this route.
+     * User should not already have a verified mobile number.
+     * 
+     * @param  Entity $user
+     * @throws Exception\BadRequestException
+     */
+    protected function checkIfUserCanHitSetup2faRoute(Entity $user)
+    {
+
+        if (($user->isSecondFactorAuth() === false) and
+            ($user->isSecondFactorAuthEnforced() === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
+                    null,
+                    [
+                        'internal_error_code'   => ErrorCode::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
+                    ]);
+        }
+
+        if ($user->isAccountLocked() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED,
+                    null,
+                    [
+                    'internal_error_code'   => ErrorCode::BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED,
+                    'restricted'            => $user->restricted,
+                    'account_locked'        => true,
+                    ]);
+        }
+
+        if ($user->getRestricted() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
+                    null,
+                    [
+                        'internal_error_code'   => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
+                    ]);
+        }
+
+        if ($user->isSecondFactorAuthSetup() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
+                    null,
+                    [
+                        'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
+                    ]);
+        }
+    }
+
+    /**
+     * Changes the 2fa setting against a user.
+     * It can only be changed if 2fa is not mandated by any
+     * merchant, the user belongs to.
+     *
+     * @param Entity $user
+     * @param array $input
+     *
+     * @return array
+     */
+    public function change2faSetting(Entity $user, array $input): array
+    {
+        if ($user->isSecondFactorAuthEnforced() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_ENFORCED);
+        }
+
+        if ($user->isSecondFactorAuthSetup() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED);
+        }
+
+        $action = $input[Entity::SECOND_FACTOR_AUTH];
+
+        $user->setSecondFactorAuth($action);
+
+        $this->repo->saveOrFail($user);
+
+        return [
+            Entity::SECOND_FACTOR_AUTH => $user->isSecondFactorAuth(),
+        ];
+    }
+
+    /**
+     * Payload for sms based 2fa auth
+     */
+    protected function getSmsOtpAuthBasePayload(Entity $user, array $input = null): array
+    {
+        $contact = isset($input[Entity::CONTACT_MOBILE]) === true ?
+                    $input[Entity::CONTACT_MOBILE] : $user->getContactMobile();
+
+        return [
+            Entity::ACTION      =>  'setup_2fa',
+            'receiver'          =>  $contact,
+            'unique_id'         =>  $user->getId(),
+        ];
+    }
+
+    /**
+     * Takes in username and password and returns
+     * user entity
+     *
+     * @param string $email
+     * @param string $password
+     * @return Entity
+     */
+    protected function getUserByEmailAndVerifyPassword(string $email, string $password): Entity
+    {
+        $user = $this->repo->user->findByEmail($email);
+
+        $isPasswordEqual = (new BcryptHasher)->check($password, $user->getPassword());
 
         if ($isPasswordEqual === false)
         {
@@ -120,7 +531,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
         }
 
-        return $this->get($user);
+        return $user;
     }
 
     /**
@@ -664,5 +1075,169 @@ class Core extends Base\Core
         ];
 
         $this->changePassword($user, $changePasswordData);
+    }
+
+    /**
+     *  User updating its contact mobile
+     *
+     *  1) Send OTP to mobile number.
+     *  2) Verify OTP send to the number.
+     *  3) Update the contact mobile and set mobile verified as true.
+     *
+     * @param array  $input
+     * @param Entity $user
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function editContactMobile(array $input, Entity $user)
+    {
+        if ($user->getRestricted() === true)
+        {
+            //
+            // if merchant_user role is admin/owner
+            // allow editing contact mobile.
+            //
+            $userMapping    = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
+                                                                            $user->getId());
+            $this->userRole = $userMapping->pivot->role;
+
+            if (in_array($this->userRole, [Role::ADMIN, Role::OWNER], true) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION);
+            }
+        }
+
+        $smsOtpAuth = $this->app['module']
+            ->secondFactorAuth
+            ::make('SmsOtpAuth');
+
+        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
+
+        if (isset($input[Entity::OTP]) === false)
+        {
+            $smsOtpAuth->sendOtp($smsOtpAuthPayload);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED);
+        }
+        else
+        {
+            $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
+
+            if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
+            {
+                $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+
+                $this->repo->saveOrFail($user);
+
+                $user->setContactMobileVerified(true);
+
+                $this->repo->saveOrFail($user);
+
+                return $user;
+            }
+            else
+            {
+                // Wrong OTP or Mobile number verified.
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+            }
+        }
+    }
+
+    /**
+     * update contact mobile of a user using userId
+     *
+     * @param array  $input
+     *
+     * @param Entity $user
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function updateContactMobile(array $input, Entity $user): Entity
+    {
+        // for admin contact_mobile_verified is set to false
+
+        if (app('basicauth')->isAdminAuth() === true)
+        {
+            $contactMobileVerified = false;
+
+            $this->trace->info(
+                TraceCode::USER_CONTACT_MOBILE_UPDATE,
+                [
+                    Entity::USER_ID        => $user->getId(),
+                    Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
+                    'admin_id'             => $this->app['basicauth']->getAdmin()->getId(),
+                ]);
+        }
+        else
+        {
+            $merchant = app('basicauth')->getMerchant();
+
+            $this->trace->info(
+                TraceCode::USER_CONTACT_MOBILE_UPDATE,
+                [
+                    Entity::USER_ID        => $user->getId(),
+                    Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
+                    Entity::MERCHANT_ID    => $merchant->getId(),
+                ]);
+
+            $teamData = [
+                'merchant_id' => $merchant->getId(),
+                'user_id'     => $user->getId(),
+            ];
+
+            // check if merchant is updating its own user's
+            // contact mobile, then do no allow.
+            $user->getValidator()->validateInput('teamManagement', $teamData);
+
+            // Check if merchant can update user contact details
+            $this->canMerchantUpdateUserDetails($merchant, $user);
+
+            // for merchant/proxy auth contact_mobile_verified is set to true
+            $contactMobileVerified = true;
+        }
+
+        $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+
+        $this->repo->saveOrFail($user);
+
+        $user->setContactMobileVerified($contactMobileVerified);
+
+        $this->repo->saveOrFail($user);
+
+        return $user;
+    }
+
+    /**
+     *  This function checks if
+     *  1) user is associated with merchant
+     *  2) merchant whose updating user details should have owner/admin role
+     *  3) merchant should be restricted
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $user
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function canMerchantUpdateUserDetails(Merchant\Entity $merchant, Entity $user)
+    {
+        // check if user belongs to same merchant.
+        $user->getValidator()->validateMerchantUserRelation($merchant, $user);
+
+        $dashboardUser = app('basicauth')->getUser();
+
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchant->getId(), $dashboardUser->getId());
+
+        $this->userRole = $userMapping->pivot->role;
+
+        // check if the userRole is only admin/owner.
+        (new Role())->validateMerchantUserRoleForUpdateUserDetails($this->userRole);
+
+        // check if merchant is restricted.
+        if ($merchant->getRestricted() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_RESTRICTED_TO_PERFORM_ACTION);
+        }
     }
 }

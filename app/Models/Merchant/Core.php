@@ -1337,6 +1337,80 @@ class Core extends Base\Core
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
     }
 
+    /**
+     * Changes the 2fa setting of the merchant.
+     *
+     * Only an owner can enable/disable 2fa
+     * for the merchant id.
+     *
+     * In all cases, the owner's mobile should be setup
+     *
+     * In case of restricted merchant, all the users
+     * associated with the merchant should have their mobile setup.
+     *
+     *
+     * @param Entity $user
+     * @param Entity $merchant
+     * @param array $input
+     *
+     * @return array
+     */
+    public function change2faSetting(User\Entity $user, Entity $merchant, array $input): array
+    {
+        $action = $input[Entity::SECOND_FACTOR_AUTH];
+
+        if ($input === false)
+        {
+            $merchant->setSecondFactorAuth($action);
+            $this->repo->saveOrFail($merchant);
+
+            return [
+                Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
+            ];
+        }
+
+        //owner should have their own 2fa setup done
+        if ($user->isSecondFactorAuthSetup() === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY);
+        }
+
+        if ($merchant->getRestricted() === true)
+        {
+            $query = $merchant->users()
+                        ->where(function ($q)
+                        {
+                            $q->where(User\Entity::CONTACT_MOBILE_VERIFIED, 0)
+                            ->orWhereNull(User\Entity::CONTACT_MOBILE);
+                        });
+
+            $totalUsersWithNo2faSetup = $query->get()->count();
+
+            if ($totalUsersWithNo2faSetup !== 0)
+            {
+                $maxUserDetailsInError = 20;
+
+                $usersWithNo2faSetup = $query->get()->take($maxUserDetailsInError);
+
+                $usersWithNo2faSetupToArrayMerchant = $usersWithNo2faSetup->callOnEveryItem('toArrayMerchant');
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                    null,
+                    [
+                        'total_users'   => $totalUsersWithNo2faSetup,
+                        'users'         => $usersWithNo2faSetupToArrayMerchant,
+                    ]);
+            }
+        }
+
+        $merchant->setSecondFactorAuth($action);
+        $this->repo->saveOrFail($merchant);
+
+        return [
+            Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
+        ];
+    }
+
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
         $tag = 'ref-' . $partnerId;
@@ -2087,8 +2161,32 @@ class Core extends Base\Core
      */
     public function autoEnableInternational(Entity $merchant): bool
     {
+        $isRazorpayOrg = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
 
-        return ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
+        if ($isRazorpayOrg === false)
+        {
+            return false;
+        }
+
+        //
+        // SubMerchant batch upload flow defines a way to disable the auto-enabling international feature
+        // If the submerchant is getting activated using a submerchant batch and if the submerchant
+        // batch parameters define to not auto-enable international attribute, false will be returned.
+        //
+        $isBatchFlow = (app('basicauth')->isBatchFlow() === true);
+
+        if ($isBatchFlow === true)
+        {
+            $batchContext = app('basicauth')->getBatchContext();
+
+            $batchName               = $batchContext['type'] ?? null;
+            $autoEnableInternational = $batchContext['data'][Merchant\Entity::AUTO_ENABLE_INTERNATIONAL] ?? false;
+
+            return ($batchName === Batch\Type::SUB_MERCHANT)
+                   and ($autoEnableInternational === true);
+        }
+
+        return true;
     }
 
     /*
@@ -2216,5 +2314,89 @@ class Core extends Base\Core
         $merchant->setCurrencyConversion(null);
 
         $this->repo->saveOrFail($merchant);
+    }
+
+    /**
+     *  Restricted Merchant will have all its users associated to only itself.
+     *  If Restricted cannot be applied, will return userIds which are associated
+     *  with more than one merchant.
+     *
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    protected function getMerchantUsersWithMultipleMerchants(Entity $merchant): array
+    {
+        $users = $merchant->users()
+                          ->get();
+
+        $userAssociatedWithMoreMerchants = [];
+
+        foreach ($users as $user)
+        {
+            $merchantIds = $user->merchants()->distinct()->get()->pluck(Entity::ID)->toArray();
+
+            if (count($merchantIds) !== 1)
+            {
+                $userAssociatedWithMoreMerchants[] = $user->getId();
+            }
+        }
+
+        return $userAssociatedWithMoreMerchants;
+    }
+
+    /**
+     * This method does remove/apply restricted settings.
+     *
+     * @param Entity $merchant
+     * @param string $action
+     *
+     * @return array
+     */
+    public function applyRestrictedSettings(Entity $merchant, string $action): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_RESTRICTED_SETTINGS,
+            [
+                Entity::MERCHANT_ID => $merchant->getId(),
+                Entity::ACTION      => $action,
+                'admin_id'          => $this->app['basicauth']->getAdmin()->getId(),
+            ]);
+
+        if ($action === Constants::REMOVE)
+        {
+            return $this->addRestrictedSettingsToMerchant($merchant, false);
+        }
+        else
+        {
+            $userIds = $this->getMerchantUsersWithMultipleMerchants($merchant);
+
+            // Will add restricted settings only if all users
+            // are associated with one merchant itself.
+
+            if (count($userIds) === 0)
+            {
+                return $this->addRestrictedSettingsToMerchant($merchant, true);
+            }
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED,
+                                                    null,
+                                                    [
+                                                        'total_users' => count($userIds),
+                                                        'users'       => $userIds,
+                                                    ]);
+        }
+    }
+
+    protected function addRestrictedSettingsToMerchant(Entity $merchant, bool $action)
+    {
+        $merchant->setAttribute(Entity::RESTRICTED, $action);
+
+        $this->repo->saveOrFail($merchant);
+
+        return [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            Entity::RESTRICTED  => $merchant->getRestricted(),
+        ];
     }
 }

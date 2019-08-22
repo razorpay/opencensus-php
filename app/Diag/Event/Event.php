@@ -74,7 +74,7 @@ abstract class Event
             {
                 $properties['error_code'] = $this->exception->getCode();
             }
-            else 
+            else
             {
                 $properties['error_code'] = ErrorCode::SERVER_ERROR;
             }

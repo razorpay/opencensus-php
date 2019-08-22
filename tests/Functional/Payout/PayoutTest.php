@@ -327,6 +327,20 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutToCardFundAccountUsingUpi()
+    {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'account_id'   => '10000000ICcard',
+                'active'       => 1,
+            ]);
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutToInactiveContactFundAccount()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'active' => 0]);
@@ -1135,6 +1149,34 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
+    public function testBulkPayout()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        
+        $this->startTest();
+    }
+
+    public function testBulkPayoutWithSameIdempotencyandBatchId()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        
+        $this->startTest();
+    }
+    
     public function createEsIndex()
     {
         $esMock = Config::get('database.es_mock');
@@ -1193,4 +1235,126 @@ class PayoutTest extends TestCase
 
         return json_decode($response->getContent(), true);
     }
+
+//    public function testCreatePayoutForRblDirectAccount(): array
+//    {
+//        $newBalance = $this->getDbLastEntity('balance');
+//
+//        $this->fixtures->balance->edit($newBalance['id'],
+//            [
+//                'balance'           => 10000000,
+//                'account_type'      => 'direct',
+//                'channel'           => 'rbl',
+//            ]);
+//
+//        $this->ba->privateAuth();
+//
+//        $this->startTest();
+//
+//        $payout = $this->getLastEntity('payout', true);
+//
+//        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+//
+//        // On private auth, payout.user_id should be null
+//        $this->assertNull($payout['user_id']);
+//
+//        // Verify attempt entity
+//        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+//        $this->assertEquals('Batman', $payoutAttempt['narration']);
+//        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+//        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+//        $this->assertEquals($payout['channel'], 'yesbank');
+//
+//        // Verify transaction entity
+//        $txn = $this->getLastEntity('transaction', true);
+//        $txnId = str_after($txn['id'], 'txn_');
+//
+//        $this->assertEquals($payout['transaction_id'], $txn['id']);
+//        $this->assertNotNull($txn['balance_id']);
+//
+//        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+//
+//        $expectedBreakup = [
+//            'name'            => "payout",
+//            'transaction_id'  => $txnId,
+//            'pricing_rule_id' => "Bbg7fgaDwax04u",
+//            'percentage'      => null,
+//            'amount'          => 0,
+//        ];
+//
+//        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+//
+//        return $payout;
+//    }
+//
+//    public function testCreatePayoutForRblDirectWithSharedRules(): array
+//    {
+//        $pricingPlan = [
+//            'plan_name'           => 'Banking merchant plan',
+//            'product'             => 'primary',
+//            'feature'             => 'payout',
+//            'payment_method'      => 'fund_transfer',
+//            'percent_rate'        => 0,
+//            'fixed_rate'          => 500,
+//            'amount_range_active' => 1,
+//            'amount_range_min'    => 0,
+//            'amount_range_max'    => 200000,
+//            'org_id'              => '100000Razorpay',
+//            'expired_at'          => null,
+//            'created_at'          => time(),
+//            'updated_at'          => time(),
+//        ];
+//
+//        $pricingPlan = $this->fixtures->create('pricing', $pricingPlan);
+//
+//        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $pricingPlan['plan_id']]);
+//
+//        $newBalance = $this->getDbLastEntity('balance');
+//
+//        $this->fixtures->balance->edit($newBalance['id'],
+//            [
+//                'balance'           => 10000000,
+//                'account_type'      => 'direct',
+//                'channel'           => 'rbl',
+//            ]);
+//
+//        $this->ba->privateAuth();
+//
+//        $this->startTest();
+//
+//        $payout = $this->getLastEntity('payout', true);
+//
+//        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+//
+//        // On private auth, payout.user_id should be null
+//        $this->assertNull($payout['user_id']);
+//
+//        // Verify attempt entity
+//        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+//        $this->assertEquals('Batman', $payoutAttempt['narration']);
+//        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+//        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+//        $this->assertEquals($payout['channel'], 'yesbank');
+//
+//        // Verify transaction entity
+//        $txn = $this->getLastEntity('transaction', true);
+//        $txnId = str_after($txn['id'], 'txn_');
+//
+//        $this->assertEquals($payout['transaction_id'], $txn['id']);
+//        $this->assertNotNull($txn['balance_id']);
+//
+//        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+//
+//        $expectedBreakup = [
+//            'name'            => "payout",
+//            'transaction_id'  => $txnId,
+//            'pricing_rule_id' => "Bbg7fgaDwax04u",
+//            'percentage'      => null,
+//            'amount'          => 0,
+//        ];
+//
+//        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+//
+//        return $payout;
+//    }
 }

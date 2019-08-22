@@ -38,7 +38,24 @@ class Server extends Base\Mock\Server
     }
     public function advice($input)
     {
-        return $this->callback($input);
+        $content = json_decode($input, true);
+
+        $this->request($content, __FUNCTION__);
+
+        $this->validateActionInput($content, 'advice');
+
+        $response = $this->getAuthorizeResponse($content);
+
+        $json = json_encode($response);
+
+        $this->content($json, __FUNCTION__);
+
+        $response = $this->makeResponse($json);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+
     }
 
     public function getBharatQrCallback($qrCodeId, $ref = null, $input = [])

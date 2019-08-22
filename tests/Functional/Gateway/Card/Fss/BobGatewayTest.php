@@ -272,4 +272,25 @@ class BobGatewayTest extends TestCase
 
         return $payment;
     }
+
+    public function testPaymentAuthWithPrepaidCardType()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin'     => '457392',
+            'country' => 'IN',
+            'network' => 'RuPay',
+            'type'    => 'prepaid',
+            'issuer'  => 'ICIC',
+        ]);
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+    }
 }

@@ -107,6 +107,7 @@ class Preferences
     const MID_RBL_PDD_CREDIT        = 'Cya5vz9ti9rO25';
     const MID_BFL_BANK              = 'CvUFJHEqgYwE85';
     const MID_BFL_CARD              = 'Cya3FzbrKbxMGg';
+    const MID_RBL_LAPOD             = 'CzQAGjwnr3RSqw';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [

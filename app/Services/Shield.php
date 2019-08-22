@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Carbon\Carbon;
+use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -27,22 +28,15 @@ class Shield
 
         $this->trace = $app['trace'];
 
-        $this->allowedActions = [
-            ShieldConstants::ACTION_ALLOW,
-            ShieldConstants::ACTION_REVIEW,
-            ShieldConstants::ACTION_BLOCK,
-        ];
     }
 
     public function getRiskAssessment(Payment\Entity $payment)
     {
         $this->trace->info(
             TraceCode::FRAUD_DETECTION_STARTED,
-            ['payment_id' => $payment->getId()]
-        );
-
-        $riskData = [];
-        $recommendedAction = ShieldConstants::ACTION_ALLOW;
+            [
+                'payment_id' => $payment->getId()
+            ]);
 
         try
         {
@@ -50,26 +44,15 @@ class Shield
 
             $response = $this->shieldClient->evaluateRules($shieldPayload);
 
-            if ((isset($response[ShieldConstants::ACTION_KEY]) === false) or
-                (in_array($response[ShieldConstants::ACTION_KEY], $this->allowedActions) === false))
-            {
-                $this->trace->error(
-                    TraceCode::FRAUD_DETECTION_FAILED,
-                    [
-                        'response'   => $response,
-                        'payment_id' => $payment->getId(),
-                    ]
-                );
-            }
-            else
-            {
-                $recommendedAction = $response[ShieldConstants::ACTION_KEY];
-            }
+            $riskData = $this->parseShieldResponse($response);
 
             $this->trace->info(
                 TraceCode::FRAUD_DETECTION_DONE,
-                ['payment_id' => $payment->getId()]
-            );
+                [
+                    'payment_id' => $payment->getId()
+                ]);
+
+            return $riskData;
         }
         catch (\Throwable $e)
         {
@@ -81,7 +64,18 @@ class Shield
                     'payment_id' => $payment->getId(),
                 ]
             );
+
+            $this->trace->count(Payment\Metric::SHIELD_FRAUD_DETECTION_FAILED);
+
+            throw $e;
         }
+    }
+
+    protected function parseShieldResponse($response)
+    {
+        $riskData = [];
+
+        $recommendedAction = $response[ShieldConstants::ACTION_KEY];
 
         switch ($recommendedAction)
         {
@@ -102,6 +96,7 @@ class Shield
         }
 
         return $riskData;
+
     }
 
     protected function generateShieldPayload(Payment\Entity $payment)

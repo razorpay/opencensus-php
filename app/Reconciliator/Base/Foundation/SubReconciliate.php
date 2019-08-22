@@ -59,6 +59,14 @@ class SubReconciliate extends Base\Core
     protected $failures = [];
 
     /**
+     * All the rows for which we could not decide the recon type
+     * and thus skipped from processing.
+     *
+     * @var array
+     */
+    protected $skippedRows = [];
+
+    /**
      * Decides whether to mark the row as success / failure if it is unprocessable.
      * By default, we want to mark such a row as failed, hence setting it to true.
      *

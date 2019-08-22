@@ -74,9 +74,10 @@ class EnachRbl extends Base
     /**
      * {@override}
      * @param  string $filePath
+     * @param int $numRowsToSkip
      * @return array
      */
-    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath): array
+    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath, $numRowsToSkip = 0): array
     {
         $fileType = SpreadsheetIOFactory::identify($filePath);
         $reader = SpreadsheetIOFactory::createReader($fileType);

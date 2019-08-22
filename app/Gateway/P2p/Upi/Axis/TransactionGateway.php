@@ -130,24 +130,39 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
         $upi = $this->input->get(Entity::UPI);
         $concern = $this->input->get(Entity::CONCERN);
 
-        $request->merge([
-            Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
-            Fields::UPI_REQUEST_ID          => $upi[UpiTransaction\Entity::NETWORK_TRANSACTION_ID],
-            Fields::UPI_RESPONSE_ID         => $upi[UpiTransaction\Entity::RRN],
-            Fields::QUERY_COMMENT           => $concern[Concern\Entity::COMMENT],
-        ]);
+        $transformer = new TransactionConcernTransformer($this->input->toArray(), $this->action);
 
-        $s2s = $this->sendS2sRequest($request);
+        $concernResponse = $transformer->transformInternal();
 
-        $this->handleGatewayResponseCode($s2s[Fields::PAYLOAD]);
+        if (is_null($concernResponse) === true)
+        {
+            $request->merge([
+                Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+                Fields::UPI_REQUEST_ID          => $upi[UpiTransaction\Entity::NETWORK_TRANSACTION_ID],
+                Fields::UPI_RESPONSE_ID         => $upi[UpiTransaction\Entity::RRN],
+                Fields::QUERY_COMMENT           => $concern[Concern\Entity::COMMENT],
+            ]);
 
-        $transformer = new TransactionConcernTransformer($s2s[Fields::PAYLOAD], $this->action);
+            // Will be used in callback
+            $request->mergeUdf([
+                Entity::ID      => $concern[Concern\Entity::ID],
+                Entity::HANDLE  => $concern[Concern\Entity::HANDLE],
+            ]);
 
-        $transformer->put(Entity::ID, $concern[Entity::ID]);
-        $transformer->put(Concern\Entity::TRANSACTION_ID, $concern[Concern\Entity::TRANSACTION_ID]);
+            $s2s = $this->sendS2sRequest($request);
+
+            $this->handleGatewayResponseCode($s2s[Fields::PAYLOAD]);
+
+            $transformer = new TransactionConcernTransformer($s2s[Fields::PAYLOAD], $this->action);
+
+            $transformer->put(Entity::ID, $concern[Entity::ID]);
+            $transformer->put(Concern\Entity::TRANSACTION_ID, $concern[Concern\Entity::TRANSACTION_ID]);
+
+            $concernResponse = $transformer->transform();
+        }
 
         $response->setData([
-            Entity::CONCERN => $transformer->transform(),
+            Entity::CONCERN => $concernResponse,
         ]);
     }
 

@@ -579,6 +579,12 @@ class Gateway extends Base\Gateway
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
                 break;
 
+            // Request failure
+            case ($amount === 3456):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS;
+                break;
+
             default:
                 $response = [
                     'result'                => 'REFUND SUCCESSFUL',

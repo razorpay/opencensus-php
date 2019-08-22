@@ -29,7 +29,7 @@ use RZP\Models\Settlement\SlackNotification;
 
 class Beneficiary extends Base\Core
 {
-    const BENEFICIARY_CACHE_KEY_TTL = 300;
+    const BENEFICIARY_CACHE_KEY_TTL = 5;
 
     public function register(array $input, string $channel): array
     {
@@ -90,6 +90,14 @@ class Beneficiary extends Base\Core
             if ((Cache::has($cacheKey) === true) or
                 (Cache::has($verifyCacheKey) === true))
             {
+                $this->trace->info(
+                    TraceCode::BENEFICIARY_REGISTRATION_ALREADY_IN_PROGRESS,
+                    [
+                        'mode'            => $this->mode,
+                        'channel'         => $channel,
+                        'bank_account_id' => $bankAccount->getId(),
+                    ]);
+
                 return;
             }
 
@@ -137,6 +145,14 @@ class Beneficiary extends Base\Core
             // Return if Already dispatched and in process.
             if (Cache::has($cacheKey) === true)
             {
+                $this->trace->info(
+                    TraceCode::BENEFICIARY_VERIFICATION_ALREADY_IN_PROGRESS,
+                    [
+                        'mode'            => $this->mode,
+                        'channel'         => $channel,
+                        'bank_account_id' => $bankAccount->getId(),
+                    ]);
+
                 return ;
             }
 
