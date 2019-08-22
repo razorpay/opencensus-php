@@ -4,6 +4,11 @@ import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
 
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+
 import Landing from 'merchant/components/OnBoarding/Screens/Landing';
 import Features from 'merchant/components/OnBoarding/Screens/Features';
 import OnBoarding, {
@@ -16,7 +21,16 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 import { FEATURES_DATA, FEATURES_LINKS, PROS } from './data';
 
-@connect(state => ({ user: state.session.user }))
+@connect(
+  state => ({
+    user: state.session.user,
+    VAProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.VA
+    ),
+  }),
+  { handleProductQuickGuide }
+)
 @OnBoarding({
   feature: RZPFeatures.VA,
 })
@@ -52,9 +66,12 @@ export default class InvoicesOnBoarding extends React.Component {
   };
 
   closeOnboarding = () => {
-    if (this.props.user.isVirtualAccountsEnabled) {
-      setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, false);
-    }
+    setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, false);
+
+    this.props.handleProductQuickGuide({
+      ...this.props.VAProductOnBoarding,
+      showOnboarding: false,
+    });
 
     this.props.closeOnboarding();
   };
