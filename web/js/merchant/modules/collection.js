@@ -61,7 +61,7 @@ export const updateEntityInList = (state, action) => {
 };
 
 export const removeEntityFromList = (state, action) => {
-  let itemsList = remove(state.items, item => item.id === action.id);
+  let itemsList = remove(state.items, item => item.id === action.payload.id);
   return set(state, 'items', itemsList);
 };
 
