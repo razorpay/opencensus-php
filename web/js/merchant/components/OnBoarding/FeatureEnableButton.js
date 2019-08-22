@@ -11,6 +11,7 @@ import {
   saveOnboarding,
   handleProductQuickGuide,
 } from 'merchant/modules/onboarding';
+import { fetchUser } from 'merchant/modules/session';
 
 import { setOnBoardingDataInLocalState } from './utils';
 
@@ -23,6 +24,7 @@ import { setOnBoardingDataInLocalState } from './utils';
     };
   },
   {
+    fetchUser,
     saveOnboarding,
     updateFeatures,
     showNotification,
@@ -60,19 +62,21 @@ export default class FeatureEnableButton extends React.Component {
         this.props.user.current
       );
     } else {
-      saveOnboarding = this.props.saveOnboarding(this.props.feature);
+      saveOnboarding = this.props.saveOnboarding(this.props.feature, {
+        feature: this.props.feature,
+      });
     }
 
-    return this.props
-      .saveOnboarding()
+    return saveOnboarding
+      .then(() => {
+        return this.props.fetchUser();
+      })
       .then(res => {
         this.setState({
           isSuccess: true,
         });
 
         this.props.onClick && this.props.onClick(res);
-
-        setTimeout(() => location.reload());
       })
       .catch(err => {
         this.props.showNotification({
