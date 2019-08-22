@@ -7,7 +7,10 @@ import { classList } from 'common/util';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { updateFeatures } from 'merchant/modules/config';
-import { handleProductQuickGuide } from 'merchant/modules/onboarding';
+import {
+  saveOnboarding,
+  handleProductQuickGuide,
+} from 'merchant/modules/onboarding';
 
 import { setOnBoardingDataInLocalState } from './utils';
 
@@ -15,10 +18,16 @@ import { setOnBoardingDataInLocalState } from './utils';
   state => {
     return {
       user: state.session.user,
+      isTestMode: state.session.mode === 'test',
       onboarding: state.onboarding,
     };
   },
-  { updateFeatures, showNotification, handleProductQuickGuide }
+  {
+    saveOnboarding,
+    updateFeatures,
+    showNotification,
+    handleProductQuickGuide,
+  }
 )
 export default class FeatureEnableButton extends React.Component {
   state = {
@@ -39,20 +48,24 @@ export default class FeatureEnableButton extends React.Component {
       return;
     }
 
-    const data = {
-      features: {
-        [this.props.feature]: 1,
-      },
-    };
+    let saveOnboarding = null;
+
+    if (this.props.isTestMode) {
+      saveOnboarding = this.props.updateFeatures(
+        {
+          features: {
+            [this.props.feature]: 1,
+          },
+        },
+        this.props.user.current
+      );
+    } else {
+      saveOnboarding = this.props.saveOnboarding(this.props.feature);
+    }
 
     return this.props
-      .updateFeatures(data, this.props.user.current)
+      .saveOnboarding()
       .then(res => {
-        this.props.showNotification({
-          type: 'success',
-          message: `${this.props.feature} has been enabled!`,
-        });
-
         this.setState({
           isSuccess: true,
         });
