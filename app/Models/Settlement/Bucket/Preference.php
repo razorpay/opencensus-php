@@ -54,6 +54,33 @@ class Preference extends Base\Core
 
         return $timestamp->getTimestamp();
     }
+
+    /**
+     * check if settlement should be skipped for this merchant
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    public function skipMerchantSettlement(string $merchantId)
+    {
+        if (in_array($merchantId, Merchant\Preferences::NO_SETTLEMENT_MIDS, true) === true)
+        {
+            return true;
+        }
+
+        // MIDs that have the block_settlements/daily_settlement feature enabled
+        $isFeatureEnabled = $this->repo
+                                 ->feature
+                                 ->findMerchantWithFeatures(
+                                     $merchantId,
+                                     [
+                                         Feature\Constants::BLOCK_SETTLEMENTS,
+                                         Feature\Constants::DAILY_SETTLEMENT
+                                     ]);
+
+        return (empty($isFeatureEnabled) === false);
+    }
+
     /**
      * get suitable bucket timestamp for early settlement.
      * if early settlement is not enabled for the merchant then it'll return false
@@ -120,7 +147,37 @@ class Preference extends Base\Core
             return $data;
         }
 
-        return [false, 0];
+        $data = $this->getWealthySettlementBucket($merchant, $settlementTime);
+
+        if ($data[0] === true)
+        {
+            return $data;
+        }
+
+        return [false, $settlementTime->getTimestamp()];
+    }
+
+    /**
+     * Specific check for wealthy
+     * they dont want settlement on saturdays
+     *
+     * @param Merchant\Entity $merchant
+     * @param Carbon          $settlementTime
+     * @return array
+     */
+    protected function getWealthySettlementBucket(Merchant\Entity $merchant, Carbon $settlementTime): array
+    {
+        if (($merchant->getParentId() === Merchant\Preferences::MID_WEALTHY) and
+            ($settlementTime->dayOfWeek === Carbon::SATURDAY))
+        {
+            $timestamp = Holidays::getNextWorkingDay($settlementTime);
+
+            $timestamp = self::getNextBucket($timestamp->getTimestamp(), Constants::NINE_AM);
+
+            return [true, $timestamp];
+        }
+
+        return [false, $settlementTime->getTimestamp()];
     }
 
     /**
@@ -199,7 +256,7 @@ class Preference extends Base\Core
             return [false, 0];
         }
 
-        $hour = 0;
+        $hour = Constants::THREE_PM;
 
         if (($settlementTime->hour < Constants::ONE_PM) or ($settlementTime->hour >= Constants::THREE_PM))
         {

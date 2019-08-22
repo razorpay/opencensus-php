@@ -55,6 +55,14 @@ class Core extends Base\Core
      */
     public function addMerchantToSettlementBucket(string $merchantId, $settlementTime)
     {
+        $status = $this->preference
+                       ->skipMerchantSettlement($merchantId);
+
+        if ($status === true)
+        {
+            return;
+        }
+
         list($status, $timestamp) = $this->preference
                                          ->getEarlySettlementBucketIfApplicable($merchantId, $settlementTime);
 

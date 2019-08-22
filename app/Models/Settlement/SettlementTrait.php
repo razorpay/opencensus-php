@@ -132,6 +132,9 @@ trait SettlementTrait
      */
     protected function skipSpecificMerchants(Merchant\Entity $merchant): bool
     {
+        $today = Carbon::today(Timezone::IST);
+
+        // redundant check to ensure this does not happen while creating the settlement
         if (($merchant->getParentId() === Preferences::MID_WEALTHY) and
             ($today->dayOfWeek === Carbon::SATURDAY))
         {
