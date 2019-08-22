@@ -68,10 +68,11 @@ export default class GenericEntity extends Entity {
     });
   }
 
-  delete() {
+  delete(data) {
     return this.makeGenericAjaxCall({
       method: 'delete',
       url: `${this.resourceUrl}/${this.id}`,
+      data,
     });
   }
 
