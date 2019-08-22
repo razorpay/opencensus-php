@@ -9,8 +9,8 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 
-import Landing from 'merchant/components/OnBoarding/Screens/Landing';
-import Features from 'merchant/components/OnBoarding/Screens/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
 import OnBoarding, {
   OnBoardingWrapper,
   FeatureEnableSliderButton,
@@ -38,12 +38,10 @@ export default class SubscriptionOnBoarding extends React.Component {
   closeOnboarding = () => {
     setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
 
-    if (this.props.user.isSubscriptionsEnabled) {
-      this.props.handleProductQuickGuide({
-        ...this.props.subscriptionProductOnBoarding,
-        showOnboarding: false,
-      });
-    }
+    this.props.handleProductQuickGuide({
+      ...this.props.subscriptionProductOnBoarding,
+      showOnboarding: false,
+    });
 
     this.props.closeOnboarding();
   };
