@@ -80,7 +80,7 @@ export const markDataSaved = _ => ({
 });
 
 let initialState = {
-  paymentPageEntity: { settings: {} },
+  paymentPageEntity: { currency: 'INR', settings: {} }, // Initialising with INR currency
   payment_page_id: null,
   FORM_ITEMS: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API.
   isPageDirty: false,
@@ -114,7 +114,7 @@ export default function(state = initialState, action) {
       }
 
       if (entityData.amount) {
-        entityData.amount /= 100;
+        entityData.amount /= 100; // Convert in Rupees (or bigger unit).
       }
 
       entityData.settings.allow_social_share =

@@ -1,6 +1,7 @@
 import CreatorModal from '../CreatorModal';
 import BaseForm from './BaseForm';
 import AdvancedForm from './AdvancedForm';
+import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
@@ -48,19 +49,27 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     };
 
     onSaveBaseForm = formData => {
-      const combinedFormData = {
-        ...this.state.field,
-        ...formData,
-      };
+      const { currency, ...restFormData } = formData;
 
       // Combine data from advanced form
+      const combinedFormData = {
+        ...this.state.field,
+        ...restFormData,
+      };
+
+      // Update amount item
       this.props.onSubmitAmountField(combinedFormData, this.props.index);
+
+      // Update currency for payment page entity
+      this.props.updateData({
+        currency,
+      });
     };
 
     onSaveAdvancedForm = formData => {
       this.setState({
         field: {
-          ...this.state.field,
+          ...field,
           ...formData,
         },
       });
@@ -69,6 +78,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     render() {
       const {
         index,
+        currency,
         validateSameTitleExists,
         onDeleteFormItem,
         ...restProps
@@ -93,6 +103,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               index={index}
               field={field}
               fieldType={fieldType}
+              currency={currency}
               validateSameTitleExists={validateSameTitleExists}
               onSaveForm={this.onSaveBaseForm}
               onDeleteFormItem={onDeleteFormItem}
@@ -105,6 +116,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             <AdvancedFormModal
               field={field}
               fieldType={fieldType}
+              currency={currency}
               onSaveForm={this.onSaveAdvancedForm}
               closeFormModal={_ => this.toggleAdvancedForm(false)}
             />
@@ -130,9 +142,10 @@ class BaseFormModal extends React.PureComponent {
 
   render() {
     const {
+      index,
       field,
       fieldType,
-      index,
+      currency,
       validateSameTitleExists,
       closeFormModal,
       openAdvancedForm,
@@ -149,7 +162,7 @@ class BaseFormModal extends React.PureComponent {
           onSaveForm={this.onSaveForm}
           onDeleteField={this.onDeleteFormItem}
           openAdvancedForm={openAdvancedForm}
-          currency={'INR'}
+          currency={currency}
         />
       </CreatorModal>
     );
@@ -163,7 +176,7 @@ class AdvancedFormModal extends React.PureComponent {
   };
 
   render() {
-    const { field, fieldType, onSave, closeFormModal } = this.props;
+    const { field, fieldType, currency, closeFormModal } = this.props;
 
     // TODO: Handle currency
     return (
@@ -173,7 +186,7 @@ class AdvancedFormModal extends React.PureComponent {
           fieldType={fieldType}
           onCloseForm={closeFormModal}
           onSaveForm={this.onSaveForm}
-          currency={'INR'}
+          currency={currency}
         />
       </CreatorModal>
     );

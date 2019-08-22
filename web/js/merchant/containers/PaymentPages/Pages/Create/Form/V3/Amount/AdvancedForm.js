@@ -86,13 +86,16 @@ export default class AdvancedForm extends React.PureComponent {
 
   validateMinAmountLimit = minVal => {
     const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
+    const { currency } = this.props;
 
+    // TODO: This should be communicated properly to the merchant that if set empty then field becomes optional
+    // Letting min amount to be ''. If so, then field will automatically become non-optional
     if (minVal === '') {
       return;
     }
 
     const minAmountAllowed =
-      this.props.user.getCurrencyList[this.props.currency].min_value / 100; // In Paisa(lower unit of currency)
+      this.props.user.getCurrencyList[currency].min_value / 100; // In Paisa(lower unit of currency)
 
     if (Number(minVal) < Number(minAmountAllowed)) {
       return `Min amount cannot be less than ${minAmountAllowed}`;
@@ -141,7 +144,7 @@ export default class AdvancedForm extends React.PureComponent {
             class="Input--limits"
             name="min_amount"
             defaultValue={minAmount}
-            pattern="\d+"
+            type="number"
             validator={this.validateMinAmountLimit}
           >
             <span class="Input-after">Min</span>
@@ -161,7 +164,7 @@ export default class AdvancedForm extends React.PureComponent {
             setRef={this.setRefMaxAmountLimit}
             name="max_amount"
             defaultValue={maxAmount}
-            pattern="\d+"
+            type="number"
             placeholder="No Limit"
             validator={this.validateMaxAmountLimit}
           >

@@ -348,6 +348,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
       if (isFormItemOfTypeAmount(fi)) {
         // TODO: Check with BE if id needs to be sent in case of edited amount item.
+
+        if (fi.item.amount) {
+          fi.item.amount *= 100;
+        }
+
+        /*
+        * NOTE: Since payment_page_items are not shareable items with other payment pages, therefore, currency of payment_page entity is used as single source of truth .
+        * Currency of each payment_page_item is ignored in general, and is being added here only for the reason that blueprint of line_items of invoices is reused for PP in BE.
+        * */
+        fi.item.currency = currency;
+
         paymentPageItems.push(fi);
       } else {
         udf_schema.push(fi);

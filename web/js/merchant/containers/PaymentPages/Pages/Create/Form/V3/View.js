@@ -24,9 +24,11 @@ const Sortable_AmountDisplayField = sortableElement(AmountDisplayField);
 class SortableFormItemsList extends React.Component {
   render() {
     const {
+      currency,
       FORM_ITEMS,
       isListSorting,
       validateSameTitleExists,
+      updateData,
       onDeleteUDFItem,
       onDeleteAmountItem,
       onSubmitUDFField,
@@ -42,7 +44,9 @@ class SortableFormItemsList extends React.Component {
                 key={fi.item.title}
                 index={idx}
                 field={fi}
+                currency={currency}
                 isListSorting={isListSorting}
+                updateData={updateData}
                 onDeleteFormItem={onDeleteAmountItem}
                 onSubmitAmountField={onSubmitAmountField}
                 validateSameTitleExists={validateSameTitleExists}
@@ -191,6 +195,8 @@ export default class View extends React.PureComponent {
               <div className="Field-content">
                 <AddAmountButton
                   field={{ item: { title: 'Amount' } }}
+                  currency={paymentPageEntity.currency}
+                  updateData={this.props.updateData}
                   onDeleteFormItem={this.onDeleteFormItem}
                   onSubmitAmountField={formData =>
                     this.onSubmitAmountField(formData, -1)
@@ -212,7 +218,9 @@ export default class View extends React.PureComponent {
             onSortEnd={this.onSortEnd}
             onSortStart={this.onSortStart}
             isListSorting={this.state.isListSorting}
+            currency={paymentPageEntity.currency}
             FORM_ITEMS={FORM_ITEMS}
+            updateData={this.props.updateData}
             onDeleteUDFItem={this.onDeleteUDFItem}
             onDeleteAmountItem={this.onDeleteAmountItem}
             onSubmitAmountField={this.onSubmitAmountField}
@@ -232,6 +240,8 @@ export default class View extends React.PureComponent {
                 validateSameTitleExists={this.validateSameTitleExists}
               />
               <AddAmountButton
+                currency={paymentPageEntity.currency}
+                updateData={this.props.updateData}
                 onDeleteFormItem={this.onDeleteAmountItem}
                 onSubmitAmountField={this.onSubmitAmountField}
                 validateSameTitleExists={this.validateSameTitleExists}
