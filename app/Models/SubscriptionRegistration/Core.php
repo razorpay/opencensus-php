@@ -67,6 +67,7 @@ class Core extends Base\Core
 
     public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
     {
+        $this->populateAuthLinkParamsFromOrder($tokenRegistrationInput, $order);
         $this->populateInvoiceParamsFromOrder($tokenRegistrationInput, $order);
 
         $invoice = $this->repo->transaction(
@@ -80,6 +81,13 @@ class Core extends Base\Core
             });
 
         return $invoice;
+    }
+
+    private function populateAuthLinkParamsFromOrder(array & $input, Order\Entity $order)
+    {
+        (new Validator)->validateMethodWithOrder($input, $order);
+
+        $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD] = $order->getMethod();
     }
 
     private function populateInvoiceParamsFromOrder(array & $input, Order\Entity $order)
