@@ -2,15 +2,17 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccountStatement\StatementGenerator\Factory as StatementGeneratorFactory;
 use RZP\Models\Base;
 use RZP\Models\External;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Reversal;
-use RZP\Models\BankingAccount;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+use RZP\Models\Reversal;
+use RZP\Trace\TraceCode;
+
 
 class Core extends Base\Core
 {
@@ -59,7 +61,34 @@ class Core extends Base\Core
         return ['processed' => true];
     }
 
+    /***
+     * This would take in the following parameters
+     * @param channel channel name
+     * @param account_number
+     * @param format
+     *
+     * Then this would call create all the data that is required to be created
+     * And then call the StatementGenerator
+     * Which will give you back the file handle, based on the data and the channel
+     * Which this guy will return
+     */
+    public function generateBankAccountStatementPdf($accountNumber, $channel)
+    {
+        $statementGenerator = StatementGeneratorFactory::getStatementGenerator($accountNumber, $channel);
+
+        return $statementGenerator->pdf();
+    }
+
     protected function getProcessor(string $channel, string $accountNumber): Processor\Base
+    {
+        $processor = __NAMESPACE__ . '\\' . 'Processor';
+
+        $processor .= '\\' . studly_case($channel) . '\\' . 'Gateway';
+
+        return new $processor($channel, $accountNumber);
+    }
+
+    protected function getStatementGeneratorProcessor(string $channel, string $accountNumber): Processor\Base
     {
         $processor = __NAMESPACE__ . '\\' . 'Processor';
 

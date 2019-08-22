@@ -3,7 +3,6 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use RZP\Models\Base;
-use RZP\Models\BankingAccountStatement\Entity;
 
 class Repository extends Base\Repository
 {
@@ -27,5 +26,12 @@ class Repository extends Base\Repository
                     ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
                     ->latest(Entity::ID)
                     ->first();
+    }
+
+    public function findByAccountNumberWithInPeriod($accountNumber, $fromDate = null, $toDate = null)
+    {
+        # TODO: Fix this query, to incorporate fromDate and toDate
+        return $this->newQuery()
+            ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)->get();
     }
 }
