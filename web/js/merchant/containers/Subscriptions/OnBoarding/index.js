@@ -4,6 +4,11 @@ import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
 
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+
 import Landing from 'merchant/components/OnBoarding/Screens/Landing';
 import Features from 'merchant/components/OnBoarding/Screens/Features';
 import OnBoarding, {
@@ -16,13 +21,30 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 import { PROS, FEATURES_DATA, FEATURES_LINKS } from './data';
 
-@connect(state => ({ user: state.session.user }))
+@connect(
+  state => ({
+    user: state.session.user,
+    subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.SUBSCRIPTIONS
+    ),
+  }),
+  { handleProductQuickGuide }
+)
 @OnBoarding({
   feature: RZPFeatures.SUBSCRIPTIONS,
 })
 export default class SubscriptionOnBoarding extends React.Component {
   closeOnboarding = () => {
     setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
+
+    if (this.props.user.isSubscriptionsEnabled) {
+      this.props.handleProductQuickGuide({
+        ...this.props.subscriptionProductOnBoarding,
+        showOnboarding: false,
+      });
+    }
+
     this.props.closeOnboarding();
   };
 
