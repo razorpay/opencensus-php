@@ -74,7 +74,7 @@ iframe {
 ⌘ ⏎
 </div>
 <iframe></iframe>
-<div id="code">var test_key = 'rzp_test_RedxfhsDcAtJP6';
+<div id="code">var test_key = 'rzp_test_1DP5mmOlF5G5ag';
 var live_key = 'rzp_live_ILgsfZCZoFIKMb';
 
 var key = test_key;
@@ -89,8 +89,7 @@ var Razorpay = {
 
 var options = {
   key: key,
-  amount: 100,
-  currency: 'USD',
+  amount: 600000,
   handler: resp => alert(resp.razorpay_payment_id),
   prefill: {
     name: 'HarshilMathur',
