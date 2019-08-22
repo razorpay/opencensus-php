@@ -56,7 +56,10 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
         });
       })
       .catch(err => {
-        // Handle errors
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
       });
   }
 
@@ -214,14 +217,14 @@ const FeatureRequestForm = ({
       to <a onClick={switchToTestMode}>Test Mode</a> to try the product.
       {!user.isActivated ? (
         <div class="m-t">
-          <b> Please note </b> that this is activation form for {heading}. Your
-          request will be processed after you submit the{' '}
+          <strong> Please note </strong> that this is activation form for{' '}
+          {heading}. Your request will be processed after you submit the{' '}
           <Link to="/activation">primary activation form</Link>.
         </div>
       ) : (
         <div class="m-t">
-          <b>Please note </b> that your application is under review. We will
-          reach out on your contact email for all updates.
+          <strong>Please note </strong> that your application is under review.
+          We will reach out on your contact email for all updates.
         </div>
       )}
     </div>
