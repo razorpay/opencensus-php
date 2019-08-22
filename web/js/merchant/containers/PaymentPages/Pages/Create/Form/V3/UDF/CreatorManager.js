@@ -1,5 +1,6 @@
 import CreatorModal from '../CreatorModal';
 import BaseForm from './BaseForm';
+import Alert from 'component/Alert';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
@@ -106,6 +107,12 @@ class BaseFormModal extends React.PureComponent {
           onDeleteField={isFieldDeletable ? this.onDeleteFormItem : undefined}
           isFieldForcedRequired={isFieldForcedRequired}
         />
+        {!isFieldDeletable && (
+          <Alert.Warning>
+            <b>Mandatory</b> {field.name} field to be filled by customers. This
+            field cannot be deleted.
+          </Alert.Warning>
+        )}
       </CreatorModal>
     );
   }
