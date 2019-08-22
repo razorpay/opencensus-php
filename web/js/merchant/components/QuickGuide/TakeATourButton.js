@@ -8,24 +8,34 @@ import { handleProductQuickGuide } from 'merchant/modules/onboarding';
   { handleProductQuickGuide }
 )
 export default class TakeATourButton extends React.Component {
-  onClick = () => {
-    this.props.handleProductQuickGuide({
-      feature: this.props.feature,
-      showOnboarding: false,
-      isQuickGuideOpen: true,
-      isTour: true,
-    });
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
 
-    window.rzpAnalytics({
-      eventCategory: `Restart Tutorial (${this.props.feature})`,
-      eventAction: `Need help? Take a Tour CTA `,
+  onClick = () => {
+    this.context.confirm({
+      header: 'Retake the Tour',
+      message: 'Are you sure you want to take tour again?',
+      affirmativeLabel: 'Yes',
+      abortLabel: 'No',
+      action: () => {
+        this.props.handleProductQuickGuide({
+          feature: this.props.feature,
+          showOnboarding: true,
+          isQuickGuideOpen: true,
+          isTour: true,
+        });
+
+        window.rzpAnalytics({
+          eventCategory: `Restart Tutorial (${this.props.feature})`,
+          eventAction: `Need help? Take a Tour CTA `,
+        });
+      },
     });
   };
 
   render() {
-    const currentOnboarding = this.props.onboarding[this.props.feature];
-
-    if (currentOnboarding.isQuickGuideOpen) return null;
+    const currentOnboarding = this.props.onboarding[this.props.feature] || {};
 
     return (
       <span class="btn btn-link" onClick={this.onClick}>
