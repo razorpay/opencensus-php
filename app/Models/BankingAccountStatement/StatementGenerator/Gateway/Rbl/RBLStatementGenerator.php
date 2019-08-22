@@ -3,8 +3,8 @@
 
 namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 
-use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\Constants as RBLBankConstants;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Base;
+use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\Constants as RBLBankConstants;
 use RZP\Models\BankingAccountStatement\Type as StatementType;
 
 class RBLStatementGenerator extends Base
@@ -45,7 +45,10 @@ class RBLStatementGenerator extends Base
             'drawing_power' => RBLBankConstants::DRAWING_POWER,
             'branch_timings' => RBLBankConstants::BRANCH_TIMINGS,
             'call_center' => RBLBankConstants::CALL_CENTER_NUMBER,
-            'branch_phone_number' => RBLBankConstants::BRANCH_PHONE_NUMBER
+            'branch_phone_number' => RBLBankConstants::BRANCH_PHONE_NUMBER,
+            'branch_city' => RBLBankConstants::BRANCH_CITY,
+            'branch_state' => RBLBankConstants::BRANCH_STATE,
+            'branch_pincode' => RBLBankConstants::BRANCH_PINCODE
         ];
 
         $transactions = $this->serializeTransactions($all_bank_account_transactions);
@@ -88,13 +91,13 @@ class RBLStatementGenerator extends Base
         }
 
         return [
-                'opening_balance' => $opening_balance,
-                'closing_balance' => $closing_balance,
-                'effective_balance' => $effective_balance,
-                'lien_amount' => $lien_amount,
-                'debit_count' => $debit_count,
-                'credit_count' => $credit_count
-            ];
+            'opening_balance' => $opening_balance,
+            'closing_balance' => $closing_balance,
+            'effective_balance' => $effective_balance,
+            'lien_amount' => $lien_amount,
+            'debit_count' => $debit_count,
+            'credit_count' => $credit_count
+        ];
     }
 
     protected function serializeTransactions($bank_account_statements)
