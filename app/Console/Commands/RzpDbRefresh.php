@@ -38,11 +38,11 @@ class RzpDbRefresh extends RefreshCommand
         {
             $this->info('<info>Installing test database.</info>');
 
-            $this->call('migrate', ['--database' => 'test']);
+            $this->call('migrate', ['--database' => 'test_migration']);
 
             $this->info('<info>Installing live database.</info>');
 
-            $this->call('migrate', ['--database' => 'live']);
+            $this->call('migrate', ['--database' => 'live_migration']);
         }
         else
         {
