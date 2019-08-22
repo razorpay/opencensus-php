@@ -162,6 +162,7 @@ final class Route
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
         // TODO: Add rate limiting on this route!
         'refund_fetch_for_customer'                => ['get',      'customer/refund',                                'RefundController@getRefundDetailsForCustomer'                      ],
+        'refunds_fetch_for_customer'               => ['get',      'customer/refunds',                               'RefundController@getRefundsDetailsForCustomer'                     ],
         'card_check_recurring'                     => ['get',      'cards/recurring',                                'PaymentController@getCardRecurring'                                ],
         'card_fetch_by_id'                         => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                      => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
@@ -2779,6 +2780,7 @@ final class Route
         'gateway_payment_callback_bharatqr',
         'gateway_payment_validate_bharatqr',
         'refund_fetch_for_customer',
+        'refunds_fetch_for_customer',
         'get_merchant_partner_status',
         'payment_redirect_to_authorize',
         'payment_redirect_to_authorize_get',

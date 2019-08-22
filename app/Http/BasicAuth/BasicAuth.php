@@ -222,6 +222,14 @@ class BasicAuth
     private $viaQueryParams = false;
 
     /**
+     * Denotes whether merchant Id is required for multiple fetch
+     * It is by default true - it is set to false in the transaction tracker direct routes
+     * since merchant ID is not given and multiple fetch is required
+     * @var boolean
+     */
+    private $merchantIdRequiredForMultipleFetch = true;
+
+    /**
      * Laravel request class instance
      * @var Request
      */
@@ -1545,6 +1553,11 @@ class BasicAuth
         }
     }
 
+    public function setMerchantIdRequiredForMultipleFetch(bool $merchantIdRequiredForMultipleFetch)
+    {
+        $this->merchantIdRequiredForMultipleFetch = $merchantIdRequiredForMultipleFetch;
+    }
+
     /**
      * Sets $merchant instance var value by given $merchantId.
      * Called by OAuth flow. OAuth server response contains the same($merchantId).
@@ -1630,6 +1643,11 @@ class BasicAuth
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
+    }
+
+    public function isMerchantIdRequiredForMultipleFetch() : bool
+    {
+        return $this->merchantIdRequiredForMultipleFetch;
     }
 
     public function isDeviceAuth()
