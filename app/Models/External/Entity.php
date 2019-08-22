@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID            = 'transaction_id';
     const CHANNEL                   = 'channel';
     const BANK_REFERENCE_NUMBER     = 'bank_reference_number';
+    const UTR                       = 'utr';
     const TYPE                      = 'type';
     const AMOUNT                    = 'amount';
     const CURRENCY                  = 'currency';
@@ -31,6 +32,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::AMOUNT,
         self::CURRENCY,
+        self::UTR,
     ];
 
     protected $visible = [
@@ -40,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
+        self::UTR,
         self::TYPE,
         self::AMOUNT,
         self::CURRENCY,
@@ -54,9 +57,11 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
+        self::UTR,
         self::TYPE,
         self::AMOUNT,
         self::CURRENCY,
+        self::ENTITY,
     ];
 
     protected $defaults = [
@@ -97,6 +102,11 @@ class Entity extends Base\PublicEntity
     public function transaction()
     {
         return $this->belongsTo(Transaction\Entity::class);
+    }
+
+    public function setUtr($utr)
+    {
+        $this->setAttribute(self::UTR, $utr);
     }
 
     public function getChannel()

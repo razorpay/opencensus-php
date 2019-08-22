@@ -570,8 +570,17 @@ class Core extends Base\Core
 
             (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
 
-            (new Differ\Core)->updateStateInEs(
-                $action->getId(), $stateData[State\Entity::NAME]);
+            $documents = (new Differ\Core)->getDocumentsFromEs($action->getId());
+
+            //
+            // Sometimes Es sync fails , in this case support team should be able to
+            // close workflow and recreate a new workflow
+            //
+            if (empty($documents) === false)
+            {
+                (new Differ\Core)->updateStateInEs(
+                    $action->getId(), $stateData[State\Entity::NAME]);
+            }
         });
     }
 

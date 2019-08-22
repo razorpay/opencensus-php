@@ -36,7 +36,6 @@ use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
-
 /**
  * Trait Refund
  *
@@ -97,12 +96,24 @@ trait Refund
         return $refund;
     }
 
+    public function isInstantRefundSupported(Payment\Entity $payment)
+    {
+        // This will keep changing as we add more coverage
+        return (($payment->isCard() === true) and
+                ($this->isCapturedPaymentAndFeatureEnabled($payment) === true));
+    }
+
+    public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
+    {
+        return (($payment->isCaptured() === true) and
+                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true));
+    }
+
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
     {
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-                (($this->payment->isCaptured() === false) or
-                 ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false)));
+                ($this->isCapturedPaymentAndFeatureEnabled($payment) === false));
     }
 
     protected function pushMetrics()

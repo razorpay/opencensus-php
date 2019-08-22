@@ -59,8 +59,6 @@ class BladeGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNull($payment['approval_code']);
-
         $mpi = $this->getLastEntity('mpi', true);
 
         $this->assertEquals('mpi_blade', $mpi['gateway']);
@@ -97,8 +95,6 @@ class BladeGatewayTest extends TestCase
         $mpi = $this->getLastEntity('mpi', true);
 
         $this->assertEquals('mpi_blade', $mpi['gateway']);
-
-        $this->assertNull($payment['approval_code']);
     }
 
     public function testEnrolledUSCardWithSkipInternationalAuth()

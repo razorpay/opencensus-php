@@ -64,8 +64,10 @@ class Base extends Core
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_SIB         = 'NetbankingSib';
+    const NETBANKING_CBI         = 'NetbankingCbi';
     const NETBANKING_YESB        = 'NetbankingYesb';
     const NETBANKING_CUB         = 'NetbankingCub';
+    const NETBANKING_IBK         = 'NetbankingIbk';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_CSB         = 'NetbankingCsb';
     const NETBANKING_IDFC        = 'NetbankingIdfc';
@@ -120,8 +122,10 @@ class Base extends Core
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_SIB         => ['epayments@sib.co.in'],
+        self::NETBANKING_CBI         => ['smcbipso@centralbankofindia.org.in'],
         self::NETBANKING_YESB        => [''],
         self::NETBANKING_CUB         => [''],
+        self::NETBANKING_IBK         => [''],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
         self::NETBANKING_CANARA      => ['canarabank@canarabank.com'],
@@ -181,8 +185,10 @@ class Base extends Core
         Gateway::NETBANKING_IDFC        => self::NETBANKING_IDFC,
         Gateway::NETBANKING_FEDERAL     => self::NETBANKING_FEDERAL,
         Gateway::NETBANKING_SIB         => self::NETBANKING_SIB,
+        Gateway::NETBANKING_CBI         => self::NETBANKING_CBI,
         Gateway::NETBANKING_YESB        => self::NETBANKING_YESB,
         Gateway::NETBANKING_CUB         => self::NETBANKING_CUB,
+        Gateway::NETBANKING_IBK         => self::NETBANKING_IBK,
         Gateway::NETBANKING_EQUITAS     => self::NETBANKING_EQUITAS,
         Gateway::NETBANKING_BOB         => self::NETBANKING_BOB,
         Gateway::NETBANKING_VIJAYA      => self::NETBANKING_VIJAYA,

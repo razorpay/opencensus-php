@@ -454,6 +454,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -510,6 +512,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -615,6 +619,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -694,6 +700,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -773,6 +781,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
@@ -829,6 +839,8 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-beneficiary-test
+        - api-sqs-beneficiary-live
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
@@ -886,6 +898,8 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-beneficiary-test
+        - api-sqs-beneficiary-live
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
@@ -1022,6 +1036,8 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault

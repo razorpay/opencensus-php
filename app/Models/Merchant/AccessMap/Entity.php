@@ -76,4 +76,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Merchant\Entity::class, self::ENTITY_OWNER_ID);
     }
+
+    public function getEntityOwnerId()
+    {
+        return $this->getAttribute(self::ENTITY_OWNER_ID);
+    }
 }

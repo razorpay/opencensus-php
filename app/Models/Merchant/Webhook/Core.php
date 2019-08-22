@@ -8,6 +8,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 
 class Core extends Base\Core
@@ -126,5 +127,45 @@ class Core extends Base\Core
         return (($webhook !== null) and
             ($webhook->isActive() === true) and
             ($webhook->isEventEnabled($event)));
+    }
+
+    /**
+     * Reads webhooks from api for given after-id, limit and writes to stork.
+     * @param  array  $input - Optionally should contain after-id, limit parameters.
+     * @return array         - List of webhook ids written into stork.
+     */
+    public function webhookStorkMigrate(array $input): array
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(1000);
+
+        // Ref: http://support.ecisolutions.com/doc-ddms/help/reportsmenu/ascii_sort_order_chart.htm
+        $afterId = $input['after_id'] ?? ' ';
+        $limit = $input['limit'] ?? 100;
+
+        $webhooks = Entity::where(Entity::ID, '>=', $afterId)
+                            ->orderBy(Entity::ID)
+                            ->take($limit)
+                            ->get();
+
+        $stork = new Stork;
+        $successfulIds = [];
+        $failedIds = [];
+
+        foreach ($webhooks as $webhook)
+        {
+            try
+            {
+                $stork->upsert($webhook);
+                $successfulIds[] = $webhook->getId();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+                $failedIds[] = $webhook->getId();
+            }
+        }
+
+        return compact('successfulIds', 'failedIds');
     }
 }

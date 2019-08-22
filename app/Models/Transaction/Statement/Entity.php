@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction\Statement;
 
 use RZP\Models\Payout;
+use RZP\Models\External;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
@@ -94,6 +95,10 @@ class Entity extends Transaction\Entity
                 // Do nothing special for reversal transactions
                 break;
 
+            case E::EXTERNAL:
+                $this->setPublicSourceAttributeForExternal($array);
+                break;
+
             default:
                 // By default do not expose any source attributes
                 $array[self::SOURCE] = [];
@@ -122,11 +127,24 @@ class Entity extends Transaction\Entity
             ]);
     }
 
+    protected function setPublicSourceAttributeForExternal(array & $array)
+    {
+        $array[self::SOURCE] = array_only(
+            $array[self::SOURCE],
+            [
+                External\Entity::ENTITY,
+                External\Entity::AMOUNT,
+                External\Entity::UTR,
+                External\Entity::CREATED_AT,
+            ]);
+    }
+
     protected function setPublicSourceAttributeForBankTransfer(array & $array)
     {
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
             [
+                BankTransfer\Entity::ENTITY,
                 BankTransfer\Entity::MODE,
                 BankTransfer\Entity::BANK_REFERENCE,
                 BankTransfer\Entity::AMOUNT,

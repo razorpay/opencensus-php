@@ -2,6 +2,7 @@
 
 use RZP\Constants\Table;
 use Illuminate\Database\Seeder;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class BusinessBankingSeeder extends Seeder
 {
@@ -76,6 +77,8 @@ class BusinessBankingSeeder extends Seeder
                     'balance'        => 0,
                     'currency'       => 'INR',
                     'account_number' => '2224440041626905',
+                    'account_type'   => AccountType::SHARED,
+                    'channel'        => null,
                     'created_at'     => time(),
                     'updated_at'     => time(),
                 ],

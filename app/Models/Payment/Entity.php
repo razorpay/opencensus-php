@@ -105,7 +105,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
-    const APPROVAL_CODE         = 'approval_code';
     const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -160,6 +159,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     // Relations
     const CARD                  = 'card';
+    const EMI                   = 'emi';
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
@@ -181,6 +181,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const OFFER_ID              = 'offer_id';
     const SETTLED_BY            = 'settled_by';
 
+    const AUTHENTICATION_GATEWAY = 'authentication_gateway';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -189,7 +191,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
-    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 864000;   // 10 Days -- TODO: Reduce later
+    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -225,7 +227,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::SAVE,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
-        self::APPROVAL_CODE,
         self::REFERENCE1,
         self::REFERENCE2,
         self::REFERENCE16,
@@ -233,6 +234,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTED,
         self::AUTH_TYPE,
         self::RECURRING_TYPE,
+        self::AUTHENTICATION_GATEWAY,
     ];
 
     protected $visible = [
@@ -277,7 +279,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
-        self::APPROVAL_CODE,
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
@@ -317,6 +318,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REFUND_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::AUTHENTICATION_GATEWAY,
     ];
 
     protected $public = [
@@ -350,6 +352,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
+        self::EMI,
         self::EMI_PLAN,
         self::DISPUTES,
         self::CREATED_AT,
@@ -391,6 +394,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::STATUS,
         self::AMOUNT,
         self::CREATED_AT,
+        self::CURRENCY,
     ];
 
     protected $publicSetters = [
@@ -474,6 +478,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ACKNOWLEDGED_AT      => null,
         self::REFUND_AT            => null,
         self::CPS_ROUTE            => false,
+        self::AUTHENTICATION_GATEWAY => null,
     ];
 
     protected $amounts = [
@@ -1079,6 +1084,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::EMI_PLAN_ID, $planId);
     }
 
+    public function setAuthenticationGateway($authenticationGateway)
+    {
+        $this->setAttribute(self::AUTHENTICATION_GATEWAY, $authenticationGateway);
+    }
+
     public function setOtpAttempts($attempts)
     {
         $this->setAttribute(self::OTP_ATTEMPTS, $attempts);
@@ -1146,6 +1156,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getRecurringType()
     {
         return $this->getAttribute(self::RECURRING_TYPE);
+    }
+
+    public function getAuthenticationGateway()
+    {
+        return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
     }
 
     public function setMetadata($input)
@@ -2535,6 +2550,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setRelation('terminal', $terminal);
     }
 
+
+    public function disassociateTerminal()
+    {
+        if ($this->terminal === null)
+        {
+            return;
+        }
+
+        $this->terminal()->dissociate();
+
+        $this->setGateway(null);
+
+        $this->setSettledBy(null);
+    }
+
 // ----------------------- Getters Ends-----------------------------------------
 
     public function toArrayWithCard()
@@ -2742,6 +2772,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function app()
     {
         return $this->belongsTo('RZP\Models\Customer\AppToken\Entity', self::APP_TOKEN);
+    }
+
+    public function emi()
+    {
+        return $this->belongsTo('RZP\Models\Emi\Entity', self::EMI_PLAN_ID)->withTrashed();
     }
 
     public function emiPlan()

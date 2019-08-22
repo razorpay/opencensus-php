@@ -48,6 +48,9 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_METHOD_TYPE)
                   ->nullable();
 
+            $table->string(Pricing::PAYMENT_METHOD_SUBTYPE)
+                  ->nullable();
+
             $table->string(Pricing::AUTH_TYPE)
                   ->nullable();
 
@@ -93,6 +96,12 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->string(Pricing::ACCOUNT_TYPE)
+                  ->nullable();
+
+            $table->string(Pricing::CHANNEL)
+                  ->nullable();
+
             $table->char(Pricing::ORG_ID, Pricing::ID_LENGTH)
                   ->nullable();
 
@@ -109,6 +118,8 @@ class CreatePricing extends Migration
             $table->index([Pricing::ORG_ID, Pricing::PLAN_ID]);
             $table->index([Pricing::ORG_ID, Pricing::PLAN_NAME]);
             $table->index(Pricing::INTERNATIONAL);
+            $table->index(Pricing::ACCOUNT_TYPE);
+            $table->index(Pricing::CHANNEL);
             $table->index(Pricing::DELETED_AT);
             $table->index(Pricing::CREATED_AT);
         });

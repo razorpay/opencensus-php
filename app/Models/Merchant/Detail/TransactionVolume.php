@@ -21,4 +21,23 @@ class TransactionVolume
 
         return constant(__CLASS__.'::'.'RANGE'.$num);
     }
+
+    public static function mapTransactionVolume($volume)
+    {
+        $transactionVolumeMap = [
+            1 => 'Haven\'t started processing yet',
+            2 => 'Less than 5 Lac',
+            3 => '5 Lacs to 25 Lacs',
+            4 => '25 Lacs to 50 Lacs',
+            5 => '50 Lacs to 1 Crore',
+            6 => 'More than 1 Crore',
+        ];
+
+        if (array_key_exists($volume, $transactionVolumeMap) === true)
+        {
+            return $transactionVolumeMap[$volume];
+        }
+
+        return '';
+    }
 }

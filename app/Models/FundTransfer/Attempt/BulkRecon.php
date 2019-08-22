@@ -378,7 +378,14 @@ class BulkRecon extends Base\Core
 
             $allEntityIds[] = $entityId;
 
-            if ($entity->isStatusFailed() === true)
+            $method = 'isStatusFailed';
+
+            if (method_exists($entity, 'isStatusReversedOrFailed') === true)
+            {
+                $method = 'isStatusReversedOrFailed';
+            }
+
+            if ($entity->$method() === true)
             {
                 $failureEntities[] = $entity;
             }

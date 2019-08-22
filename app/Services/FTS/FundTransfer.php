@@ -39,6 +39,8 @@ class FundTransfer extends Base
 
     const PENNY_TESTING = 'penny_testing';
 
+    const PAYOUT        = 'payout';
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -119,6 +121,12 @@ class FundTransfer extends Base
             $product = self::PENNY_TESTING;
         }
 
+        if (($sourceType === Constants::PAYOUT) and
+            ($this->fta->getChannel() === Channel::RBL))
+        {
+            $product = self::PAYOUT;
+        }
+
         $request = [
             Constants::PRODUCT           => $product,
             Constants::MERCHANT_ID       => $this->fta->merchant->getId(),
@@ -183,8 +191,8 @@ class FundTransfer extends Base
 
             if (method_exists($source, 'getSourceFtsFundAccountId'))
             {
-                $request[Constants::TRANSFER] = [
-                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => $this->fta->source->getSourceFtsFundAccountId(),
+                $request[Constants::TRANSFER] += [
+                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $this->fta->source->getSourceFtsFundAccountId(),
                 ];
             }
         }
@@ -205,7 +213,7 @@ class FundTransfer extends Base
     {
         $accountType = $this->fta->bankAccount->getAccountType();
 
-        if(empty($accountType) === true)
+        if (empty($accountType) === true)
         {
             $accountType = Constants::SAVING;
         }
@@ -216,13 +224,13 @@ class FundTransfer extends Base
                         Constants::ACCOUNT_TYPE               => $accountType,
                         Constants::ACCOUNT_NUMBER             => $this->fta->bankAccount->getAccountNumber(),
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
-                        Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity(),
-                        Constants::BENEFICIARY_EMAIL          => $this->fta->bankAccount->getBeneficiaryEMail(),
-                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState(),
-                        Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile(),
+                        Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity() ?? 'Bangalore',
+                        Constants::BENEFICIARY_EMAIL          => $this->fta->bankAccount->getBeneficiaryEmail() ?? 'no-reply@razorpay.com',
+                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState() ?? 'KA',
+                        Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile() ?? '9999999999',
                         Constants::IS_VIRTUAL_ACCOUNT         => $this->fta->bankAccount->isVirtual(),
-                        Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1(),
-                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry(),
+                        Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1() ?? 'Razorpay',
+                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry() ?? 'IN',
                 ],
         ];
 

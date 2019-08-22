@@ -19,6 +19,7 @@ use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Mozart as Mozart;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
+use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
@@ -574,21 +575,22 @@ class GatewayController extends Controller
     {
         $app = $this->app;
 
+        /** @var Repository $repo */
         $repo = $app['repo']->netbanking;
 
-        $mode = 'test';
+        $mode = 'live';
 
         $app['config']->set('database.default', $mode);
 
-        $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
+        $nb = $repo->findByVerificationIdAndAction($traceId, Action::AUTHORIZE);
 
         if ($nb === null)
         {
-            $mode = 'live';
+            $mode = 'test';
 
             $app['config']->set('database.default', $mode);
 
-            $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
+            $nb = $repo->findByVerificationIdAndAction($traceId, Action::AUTHORIZE);
         }
 
         return ['nb' => $nb, 'mode' => $mode];

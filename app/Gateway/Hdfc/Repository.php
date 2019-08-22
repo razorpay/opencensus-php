@@ -288,6 +288,7 @@ class Repository extends Base\Repository
             'payment_id'    => $data['trackid'],
             'status'        => $status,
             'action'        => $request['action'],
+            'enroll_result' => $request['enrollmentflag'],
             'amount'        => $data['amt'],
             'result'        => $data['result'],
             'currency'      => $request['currencycode'],
@@ -378,6 +379,7 @@ class Repository extends Base\Repository
             'action'                => $request['action'],
             'amount'                => $request['amt'],
             'currency'              => $request['currencycode'],
+            'enroll_result'         => $request['enrollmentflag'],
             'error_code2'           => $error['code'],
             'error_text'            => $error['text'],
             'status'                => Payment\Status::AUTHORIZE_FAILED

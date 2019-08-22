@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
     // Additional input & output attributes
     const ACCOUNT_NUMBER  = 'account_number';
     const FUND_ACCOUNT_ID = 'fund_account_id';
+    const IDEMPOTENCY_KEY = 'idempotency_key';
 
     protected $generateIdOnCreate = true;
 
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_ID,
         self::ACTIVE,
         self::NOTES,
+        self::IDEMPOTENCY_KEY
     ];
 
     protected $public = [
@@ -68,16 +70,17 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::NOTES,
         self::FUND_ACCOUNTS,
-        self::CREATED_AT,
+        self::CREATED_AT
     ];
 
     protected $defaults = [
-        self::CONTACT      => null,
-        self::EMAIL        => null,
-        self::TYPE         => null,
-        self::REFERENCE_ID => null,
-        self::NOTES        => [],
-        self::ACTIVE       => true,
+        self::CONTACT           => null,
+        self::EMAIL             => null,
+        self::TYPE              => null,
+        self::REFERENCE_ID      => null,
+        self::NOTES             => [],
+        self::ACTIVE            => true,
+        self::IDEMPOTENCY_KEY   => null
     ];
 
     protected $casts = [
@@ -193,6 +196,11 @@ class Entity extends Base\PublicEntity
                                                     ->getResults()
                                                     ->toArrayPublicEmbedded();
         }
+    }
+
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
     }
 
     // --------- End Public Setters ----------

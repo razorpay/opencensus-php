@@ -168,6 +168,18 @@ class CreateMerchants extends Migration
             $table->string(Merchant::WHITELISTED_IPS_TEST, 255)
                   ->nullable();
 
+            $table->tinyInteger(Merchant::SECOND_FACTOR_AUTH)
+                  ->default(0);
+
+            $table->tinyInteger(Merchant::RESTRICTED)
+                  ->default(0);
+
+            $table->text(Merchant::DASHBOARD_WHITELISTED_IPS_LIVE)
+                  ->nullable();
+
+            $table->text(Merchant::DASHBOARD_WHITELISTED_IPS_TEST)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
 
             $table->integer(Merchant::UPDATED_AT);

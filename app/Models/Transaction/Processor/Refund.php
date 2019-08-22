@@ -59,8 +59,10 @@ class Refund extends Base
     protected function shouldUpdateBalance()
     {
         $payment = $this->source->payment;
+        $refund  = $this->source;
 
-        if ($payment->isAuthorized() === true)
+        if (($payment->isAuthorized() === true) and
+            ($refund->isDirectSettlementWithoutRefund() === false))
         {
             return false;
         }
@@ -95,7 +97,8 @@ class Refund extends Base
 
         $payment = $refund->payment;
 
-        if ($payment->isCaptured() === true)
+        if (($payment->isCaptured() === true) or
+            ($refund->isDirectSettlementWithoutRefund() === true))
         {
             if ($refund->isRefundSpeedInstant() === true)
             {
