@@ -5248,6 +5248,9 @@ ALTER TABLE `merchant_emails`
 ALTER TABLE netbanking
     ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
 
+ALTER TABLE netbanking
+    ADD INDEX verification_id_index (verification_id);
+
 ALTER TABLE contacts
     ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
 
