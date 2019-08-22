@@ -13,14 +13,22 @@ const email = {
   value: item => item.email,
 };
 
-const actions = {
-  title: '',
-  columnClass: 'text-right',
-  value: item => <Actions item={item} />,
-};
-
-@connect(state => ({ ...state.invitations }), { fetchAll })
+@connect(
+  state => ({ ...state.invitations, loggedInUser: state.session.user.user }),
+  { fetchAll }
+)
 export default class InvitationsListContainer extends ListContainer {
+  actions = {
+    title: '',
+    columnClass: 'text-right',
+    value: invitation => (
+      <Actions
+        invitation={invitation}
+        loggedInUserName={this.props.loggedInUser.name}
+      />
+    ),
+  };
+
   render() {
     const { items, loading } = this.props;
     return (
@@ -37,7 +45,7 @@ export default class InvitationsListContainer extends ListContainer {
             ),
           }
         }
-        columns={[email, role, actions]}
+        columns={[email, role, this.actions]}
         {...this.props}
       />
     );

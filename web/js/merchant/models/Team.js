@@ -19,13 +19,6 @@ export default class MerchantUser extends GenericEntity {
     });
   }
 
-  fetchInvitations() {
-    return this.makeGenericAjaxCall({
-      url: 'invitations',
-      data: { mode: 'live' },
-    });
-  }
-
   unlock(memberId) {
     return this.makeGenericAjaxCall({
       url: `users/account/${memberId}/unlock`,
@@ -63,19 +56,6 @@ export default class MerchantUser extends GenericEntity {
     return this.makeGenericAjaxCall({
       url: 'invitations',
       method: 'post',
-      data: {
-        ...data,
-        mode: 'live',
-      },
-    }).then(response => ({
-      ...response.data,
-    }));
-  }
-
-  updateInvitation({ id, ...data }) {
-    return this.makeGenericAjaxCall({
-      url: `invitations/${id}`,
-      method: 'patch',
       data: {
         ...data,
         mode: 'live',

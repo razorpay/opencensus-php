@@ -75,14 +75,6 @@ export const updateSelfContact = data => {
   };
 };
 
-export const cancelInvitation = inviteId => {
-  const team = new Team();
-  return {
-    type: TEAM_MEMBER_DELETE,
-    payload: team.cancelInvitation(inviteId),
-  };
-};
-
 export const sendInvitation = data => {
   const team = new Team();
   return {
@@ -90,11 +82,6 @@ export const sendInvitation = data => {
     payload: team.sendInvitation(data),
   };
 };
-
-export const updateInvitation = data => ({
-  type: TEAM_MEMBER_EDIT,
-  payload: new Team().updateInvitation(data),
-});
 
 export const updateMember = data => {
   const team = new Team();

@@ -10,6 +10,7 @@ import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 
 import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'rzp/modules/modals';
 import { classList } from 'common/util';
 
 const selector = formValueSelector('newInvitation');
@@ -22,6 +23,7 @@ const selector = formValueSelector('newInvitation');
   },
   {
     showNotification,
+    closeModal,
   }
 )
 @reduxForm({
@@ -46,15 +48,16 @@ export default class NewInvitation extends Component {
   }
   save = body => {
     let user = this.props.user.user;
-
+    const { successMsg } = this.props;
     return this.props
       .onFormSubmit(body)
       .then(() => {
         this.props.showNotification({
           type: 'success',
-          message: this.props.successMsg(body),
+          message:
+            typeof successMsg === 'function' ? successMsg(body) : successMsg,
         });
-        this.props.onSuccess();
+        this.props.closeModal();
       })
       .catch(err => {
         this.props.showNotification({

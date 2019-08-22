@@ -5,13 +5,10 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 
-import { removeUser, cancelInvitation, unlock } from 'merchant/modules/team';
-
-import ListContainer from 'merchant/containers/ListContainer';
-
 import Actions from './Actions';
 import InvitationsList from './Invitations/List';
 import MembersList from './Members/List';
+import Toggle2FA from './Toggle2FA';
 
 export default class ManageTeamContainer extends React.Component {
   static contextTypes = {
@@ -77,7 +74,7 @@ export default class ManageTeamContainer extends React.Component {
     ),
   };
 
-  addNewMember = () => {
+  inviteNewMember = () => {
     const visibleFields = {
       email: true,
       role: true,
@@ -146,6 +143,11 @@ export default class ManageTeamContainer extends React.Component {
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <DocsLink url="https://razorpay.com/docs/team-support/" />
+            <ShowWhen myRole="owner">
+              <button class="btn btn-primary" onClick={this.inviteNewMember}>
+                Invite New Member
+              </button>
+            </ShowWhen>
           </div>
         </HeaderAction>
         <div class="ManageTeam--list">
