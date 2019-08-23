@@ -4,6 +4,7 @@ namespace RZP\Models\Contact;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Validator
@@ -22,13 +23,19 @@ class Validator extends Base\Validator
 
     const MAX_TYPES_ALLOWED = 100;
 
+    /**
+     * Rate limit on items sending for bulk contact create.
+     */
+    const MAX_BULK_CONTACTS_LIMIT = 15;
+
     protected static $createRules = [
-        Entity::NAME         => 'required|string|max:50|nullable|custom',
-        Entity::CONTACT      => 'sometimes|nullable|contact_syntax',
-        Entity::EMAIL        => 'sometimes|nullable|email',
-        Entity::TYPE         => 'sometimes|nullable|max:40|alpha_dash_space',
-        Entity::REFERENCE_ID => 'sometimes|string|max:40',
-        Entity::NOTES        => 'sometimes|notes',
+        Entity::NAME                    => 'required|string|max:50|nullable|custom',
+        Entity::CONTACT                 => 'sometimes|nullable|contact_syntax',
+        Entity::EMAIL                   => 'sometimes|nullable|email',
+        Entity::TYPE                    => 'sometimes|nullable|max:40|alpha_dash_space',
+        Entity::REFERENCE_ID            => 'sometimes|string|max:40',
+        Entity::NOTES                   => 'sometimes|notes',
+        Entity::IDEMPOTENCY_KEY         => 'sometimes|nullable|string',
     ];
 
     protected static $editRules = [
@@ -54,6 +61,24 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The name field is invalid.',
                 Entity::NAME);
+        }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of contact creation in Bulk Route
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkContactCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_CONTACTS_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Current batch size ' . count($input) . ', max limit of Bulk Contact is ' . self::MAX_BULK_CONTACTS_LIMIT,
+                null,
+                null
+            );
         }
     }
 }

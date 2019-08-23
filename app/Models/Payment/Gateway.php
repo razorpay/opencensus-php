@@ -23,6 +23,7 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const ATOS                   = 'atos';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -54,6 +55,8 @@ class Gateway
     const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CUB         = 'netbanking_cub';
+    const NETBANKING_IBK         = 'netbanking_ibk';
+    const NETBANKING_IDBI        = 'netbanking_idbi';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
@@ -303,6 +306,8 @@ class Gateway
         IFSC::CBIN,
         IFSC::CIUB,
         IFSC::DEUT,
+        IFSC::ESFB,
+        IFSC::FDRL,
         IFSC::HDFC,
         IFSC::IBKL,
         IFSC::ICIC,
@@ -313,6 +318,7 @@ class Gateway
         IFSC::MAHB,
         IFSC::PYTM,
         IFSC::RATN,
+        IFSC::SIBL,
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTIB,
@@ -643,6 +649,8 @@ class Gateway
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
             self::NETBANKING_CUB,
+            self::NETBANKING_IBK,
+            self::NETBANKING_IDBI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
             self::NETBANKING_CORPORATION,
@@ -1324,6 +1332,8 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CIUB         => Gateway::NETBANKING_CUB,
+        IFSC::IDIB         => Gateway::NETBANKING_IBK,
+        IFSC::IBKL         => Gateway::NETBANKING_IDBI,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
@@ -1343,6 +1353,7 @@ class Gateway
      */
     public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
+        IFSC::IDIB => Gateway::NETBANKING_IBK,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::CBIN => Gateway::NETBANKING_CBI,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,

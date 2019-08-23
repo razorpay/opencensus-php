@@ -34,6 +34,7 @@ class Validator extends Base\Validator
         Entity::EXPIRES_ON             => 'sometimes|epoch',
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
         Entity::SKIP_DEDUCTION         => 'sometimes|boolean',
+        Entity::COMMENTS               => 'sometimes|string|min:5|max:255|utf8',
     ];
 
     protected static $createValidators = [

@@ -53,6 +53,8 @@ return [
         'netbanking_equitas',
         'netbanking_sbi',
         'netbanking_cub',
+        'netbanking_ibk',
+        'netbanking_idbi',
         'netbanking_yesb',
         'paytm',
         'sharp',
@@ -123,6 +125,8 @@ return [
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
     'mock_netbanking_cub'         => env('NETBANKING_CUB_MOCK'),
+    'mock_netbanking_ibk'         => env('NETBANKING_IBK_MOCK'),
+    'mock_netbanking_idbi'        => env('NETBANKING_IDBI_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_netbanking_yesb'        => env('NETBANKING_YESB_MOCK'),
@@ -767,6 +771,9 @@ return [
             'gateway_secure_secret2'     => env('NETBANKING_CUB_GATEWAY_SECURE_SECRET2'),
             'gateway_terminal_password'  => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD'),
             'gateway_terminal_password2' => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD2'),
+        ],
+        'netbanking_cbi' => [
+            'account_number'         => env('CBI_NODAL_ACCOUNT_NUMBER'),
         ],
         'razorpayx' => [
             'direct' => [

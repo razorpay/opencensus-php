@@ -38,6 +38,8 @@ class Constants
     const CORPORATION      = 'corporation';
     const YESB             = 'yesb';
     const CUB              = 'cub';
+    const IBK              = 'ibk';
+    const IDBI             = 'idbi';
     const CITI             = 'citi';
     const CBI              = 'cbi';
     const SIB              = 'sib';
@@ -51,6 +53,7 @@ class Constants
         Type::REFUND => [
             self::HDFC,
             self::ICICI,
+            self::IBK,
             self::CSB,
             self::CBI,
             self::ALLA,
@@ -88,6 +91,7 @@ class Constants
             self::CORPORATION,
             self::SIB,
             self::CUB,
+            self::IDBI,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -129,6 +133,7 @@ class Constants
             // todo: Fix the receipients
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::IBK           => ['refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
             self::UPI_SBI       => ['refunds@razorpay.com'],
             self::CBI           => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
@@ -153,6 +158,7 @@ class Constants
             self::YESB        => ['yesb.netbanking.refunds@razorpay.com'],
             self::SIB         => ['sib.netbanking.refunds@razorpay.com'],
             self::CUB         => ['cub.netbanking.refunds@razorpay.com'],
+            self::IDBI        => ['idbi.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

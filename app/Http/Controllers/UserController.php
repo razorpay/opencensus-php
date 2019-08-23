@@ -1,7 +1,6 @@
 <?php
 namespace RZP\Http\Controllers;
 
-use Razorpay\Api\Api;
 use Request;
 use ApiResponse;
 
@@ -86,6 +85,15 @@ class UserController extends Controller
         $input = Request::all();
 
         $data = $this->service()->login($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function checkUserAccess()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->checkUserAccess($input);
 
         return ApiResponse::json($data);
     }
@@ -179,5 +187,49 @@ class UserController extends Controller
         $response = $this->service()->change2faSetting($input);
 
         return ApiResponse::json($response);
+    }
+
+    /**
+     *  User is updating his/her own contact Mobile
+     * @return mixed
+     */
+    public function editContactMobile()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editContactMobile($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Update contact mobile of a user using userId
+     * by Restricted Merchant or Admin
+     * @return mixed
+     */
+    public function updateContactMobile()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateContactMobile($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Lock/Unlock action for user account
+     *
+     * @param string $id
+     * @param string $action
+     *
+     * @return mixed
+     */
+    public function accountLockUnlock(string $id, string $action)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->accountLockUnlock($id, $action);
+
+        return ApiResponse::json($data);
     }
 }

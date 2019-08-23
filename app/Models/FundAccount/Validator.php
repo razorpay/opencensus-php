@@ -33,6 +33,7 @@ class Validator extends Base\Validator
         // dummy cvv and that requires network and that requires card number.
         // The other card details are validated as part of card creation.
         Entity::CARD . '.' . Card\Entity::NUMBER    => 'required_with:card|numeric|luhn|digits_between:12,19',
+        Entity::IDEMPOTENCY_KEY                     => 'sometimes|string',
     ];
 
     protected static $beforeCreateRules = [

@@ -135,6 +135,7 @@ class NetbankingErrorCodes
     const R302 = '302';
     const R303 = '303';
     const R305 = '305';
+    const R310 = '310';
     const R234 = '234';
     const R223 = '223';
     const R235 = '235';
@@ -173,6 +174,10 @@ class NetbankingErrorCodes
     const R478 = '478';
     const R476 = '476';
     const R479 = '479';
+    const R480 = '480';
+    const R481 = '481';
+    const R486 = '486';
+    const R487 = '487';
     const AP04 = 'AP04';
     const AP05 = 'AP05';
     const AP06 = 'AP06';
@@ -366,6 +371,11 @@ class NetbankingErrorCodes
         self::R478 => 'DESTBANK_NOT_CERT',
         self::R476 => 'Sponsor Bank Not in Approved List for Corporate',
         self::R479 => 'Bank Invalid XML structure',
+        self::R310 => 'Cancelled as per customer request',
+        self::R480 => 'SPN_DESTBANK_NOT_CERT',
+        self::R481 => 'DEST_SPNBANK_NOT_CERT',
+        self::R486 => 'No Variant is eligible for Selection',
+        self::R487 => 'No Variant is eligible for Selection',
         self::AP04 => 'Account Inoperative',
         self::AP05 => 'No such account',
         self::AP06 => 'Not a CBS act no.or old act no.representwithCBS no',
@@ -504,6 +514,12 @@ class NetbankingErrorCodes
         self::R478 => ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
         self::R476 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::R479 => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE_BY_DESTINATION_BANK,
+        self::R310 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
+        self::R480 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
+        self::R481 => ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
+        self::R486 => ErrorCode:: GATEWAY_ERROR_INVALID_PARAMETERS,
+        self::R487 => ErrorCode:: GATEWAY_ERROR_INVALID_PARAMETERS,
+
 
         self::AP04 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::AP05 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,

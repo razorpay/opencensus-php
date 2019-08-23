@@ -512,4 +512,15 @@ class Repository extends Base\Repository
                  (optional($entity->fundAccount)->getSourceType() === E::CONTACT)) and
                 (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
     }
+
+    public function fetchByIdempotentKey(string $idempotentKey,
+                                         string $merchantId,
+                                         string $batchId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::IDEMPOTENCY_KEY, '=', $idempotentKey)
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->merchantId($merchantId)
+                    ->first();
+    }
 }

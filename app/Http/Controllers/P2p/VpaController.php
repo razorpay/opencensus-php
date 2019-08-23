@@ -19,6 +19,26 @@ class VpaController extends Controller
         return $this->response($response);
     }
 
+    public function createHandle()
+    {
+        $input = $this->request()->all();
+
+        $response = (new P2p\Vpa\Handle\Service)->add($input);
+
+        return $this->response($response);
+    }
+
+    public function updateHandle()
+    {
+        $input = $this->request()->all();
+
+        $input[P2p\Vpa\Handle\Entity::CODE] = $this->request()->route(P2p\Vpa\Handle\Entity::CODE);
+
+        $response = (new P2p\Vpa\Handle\Service)->update($input);
+
+        return $this->response($response);
+    }
+
     public function initiateCreate()
     {
         $input = $this->request()->all();

@@ -12,4 +12,6 @@ class Constants
     const TO_LOWER_CASE                  = 2;
     const BATCH_SERVICE                  = 'batch_service';
     const DATA                           = 'data';
+    const BANK_DETAILS                   = 'bank_details';
+    const CATEGORY_DETAILS               = 'category_details';
 }

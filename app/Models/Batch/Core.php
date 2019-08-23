@@ -255,19 +255,14 @@ class Core extends Base\Core
 
         if (Type::isKubernetesJobQueueGroup($batch->getType()) === true)
         {
-            // Get razorx treatment
-            $variant = $this->app->razorx->getTreatment(
-                $batch->getMerchantId(),
-                Merchant\RazorxTreatment::K8S_RECON_BATCH_TREATMENT,
-                $this->mode
-            );
-
-            if (strtolower($variant) === 'on')
+            if ($batch->getType() === Type::RECONCILIATION)
             {
-                unset($input[Entity::FILE]);
-                Reconciliation::dispatch($this->mode, $batch->getId(), $input);
+                $k8sJobProcess = $this->ifProcessReconBatchViaK8sJob($batch, $input);
 
-                return;
+                if ($k8sJobProcess === true)
+                {
+                    return;
+                }
             }
         }
 
@@ -276,6 +271,31 @@ class Core extends Base\Core
             unset($input[Entity::FILE]);
 
             BatchJob::dispatch($this->mode, $batch->getId(), $batch->getType(), $input);
+        }
+    }
+
+    /**
+     * Returns true if recon batch needs to be run via Kubernetes
+     *
+     * @param Entity $batch
+     * @param array $input
+     * @return bool
+     */
+    protected function ifProcessReconBatchViaK8sJob(Entity $batch, array $input = [])
+    {
+        // Get razorx treatment
+        $variant = $this->app->razorx->getTreatment(
+            $batch->getMerchantId(),
+            Merchant\RazorxTreatment::K8S_RECON_BATCH_TREATMENT,
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            unset($input[Entity::FILE]);
+            Reconciliation::dispatch($this->mode, $batch->getId(), $input);
+
+            return true;
         }
     }
 

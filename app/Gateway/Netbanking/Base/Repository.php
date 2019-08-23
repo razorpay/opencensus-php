@@ -29,4 +29,12 @@ class Repository extends Base\Repository
                     ->where(Entity::ACTION, '=', $action)
                     ->firstOrFail();
     }
+
+    public function findByVerificationIdAndAction($paymentId, $action)
+    {
+        return $this->newQuery()
+                    ->where(Entity::VERIFICATION_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', $action)
+                    ->first();
+    }
 }

@@ -24,9 +24,15 @@ class Response extends Core
             Constants::REVIEW_STATUS   => $this->getReviewStatusData($account, $accountDetails),
             Constants::PROFILE         => $this->getProfileData($account, $accountDetails),
             Constants::PAYMENT         => $this->getPaymentData($account),
-            Constants::SETTLEMENT      => $this->getSettlementData($account),
             Constants::CREATED_AT      => $account->getCreatedAt(),
         ];
+
+        $settlementData = $this->getSettlementData($account);
+
+        if (empty($settlementData) === false)
+        {
+            $data[Constants::SETTLEMENT] = $settlementData;
+        }
 
         $customFields = $accountDetails->getCustomFields();
 

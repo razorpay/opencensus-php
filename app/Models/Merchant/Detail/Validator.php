@@ -509,7 +509,9 @@ class Validator extends Base\Validator
     /**
      * Block the merchant from updating the instant activation critical fields if the merchant is already activated.
      *
-     * @param array $input
+     * @param array  $input
+     *
+     * @param Entity $merchantDetails
      *
      * @throws Exception\BadRequestValidationFailureException
      */
@@ -519,7 +521,8 @@ class Validator extends Base\Validator
 
         $criticalInput = array_only($input, Entity::INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES);
 
-        if (($merchant->isActivated() === true) and (empty($criticalInput) === false))
+        if (($merchant->isActivated() === true) and
+            (empty($criticalInput) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED,

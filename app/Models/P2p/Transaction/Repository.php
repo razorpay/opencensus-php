@@ -14,11 +14,14 @@ class Repository extends Base\Repository
     {
         if ($params[Entity::RESPONSE] === 'history')
         {
-            $query->where(function(BuilderEx $query)
-            {
-                $query->where(Entity::TYPE, '!=', Type::PAY)
-                      ->orWhere(Entity::STATUS, '!=', Status::CREATED);
-            });
+            $query->whereNotIn(Entity::STATUS, [Status::CREATED]);
+        }
+        elseif ($params[Entity::RESPONSE] === 'pending')
+        {
+            $timestamp = $query->getModel()->freshTimestamp();
+
+            $query->where(Entity::STATUS, '=', Status::REQUESTED)
+                  ->where(Entity::EXPIRE_AT, '>', $timestamp);
         }
     }
 }
