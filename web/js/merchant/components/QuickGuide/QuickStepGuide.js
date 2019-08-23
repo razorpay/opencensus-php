@@ -6,7 +6,7 @@ export default function QuickStepGuide(props) {
   return <StepGuide {...props} class={`${props.className} QuickGuide`} />;
 }
 
-export const QuickGuideTitle = ({ title = 'QUICK GUIDE' }) => (
+export const QuickGuideTitle = ({ title = 'GET STARTED' }) => (
   <React.Fragment>
     {title}
 
