@@ -100,6 +100,24 @@
   .Input input:not([type=radio]):not([type=checkbox]),
   .Input--Currency .value
     height: 32px
+    line-height: 32px !important
+    font-size: 13px
+
+  .Input--Currency
+    .Input-el
+      height: 32px
+
+    .PowerSelect__Trigger, .PowerSelect__TriggerLabel, .PowerSelect__TriggerStatus
+      height: 30px
+
+    .PowerSelect__TriggerLabel
+      padding: 0
+      > div
+        margin: 0 auto
+
+    .PowerSelect__TriggerStatus
+      padding-right: 6px
+      padding-left: 0
 
   .Modal-container--CreatorModal-BaseForm, .Modal-container--CreatorModal-AdvancedForm
     .Input-content--limits
@@ -277,7 +295,8 @@
             margin: 2px 0 0 6px
 
     .Input-content--limits
-      width: 112px
+      .Input--limits
+        width: 112px
 
     .Input.Input--description
       margin: 4px 0
@@ -380,6 +399,7 @@
         position: absolute
         right: 6px
         top: 7px
+        line-height: 20px
         font-size: 12px
         opacity: .7
         z-index: 1
