@@ -302,7 +302,6 @@ trait Authorize
                     // If the appToken and walletToken is set then for a power wallet, run the
                     // power wallet flow. Run otp flow if appToken and walletToken are set
                     // but the wallet is not a power wallet.
-                    $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["PWFC", $payment, $payment->getGlobalCustomerId(), $payment->getGlobalTokenId(), Payment\Gateway::isPowerWalletSupported($payment)]);
                     if (($payment->getGlobalTokenId() !== null) and
                         (Payment\Gateway::isPowerWalletSupported($payment) === true))
                     {
@@ -2395,8 +2394,6 @@ trait Authorize
         // First fetch the relevant customer (global or local)
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                                                                 $input, $this->merchant, $followGlobal);
-
-        $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["getCustomerAndApp Output", $customer, $customerApp ]);
 
         if ($customer === null)
         {

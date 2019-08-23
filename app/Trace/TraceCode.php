@@ -2016,7 +2016,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SET_CHANNEL_STATE_FAILED                              = 'SET_CHANNEL_STATE_FAILED';
     const GET_CHANNEL_STATE_FAILED                              = 'GET_CHANNEL_STATE_FAILED';
 
-    const FRC_LNP_DEBUG                                         = 'FRC_LNP_DEBUG';
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
 
     protected static $messages = [

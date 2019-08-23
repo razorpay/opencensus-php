@@ -258,7 +258,6 @@ class Processor
     {
         try
         {
-            $this->trace->info(TraceCode::FRC_LNP_DEBUG, ["Processor Input", $input, $gatewayInput]);
             $startTime = microtime(true);
 
             $this->setMethodForInput($input);
