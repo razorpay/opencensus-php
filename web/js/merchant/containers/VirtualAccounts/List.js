@@ -28,6 +28,8 @@ import {
   getEventCategoryFromPath,
 } from 'rzp/utils/rzp-utils';
 
+import EmptyList from 'merchant/components/EmptyList';
+
 const heading =
   'A powerful system to easily collect payments via direct bank transfers (NEFT/RTGS). Automate the tedious reconciliation process, starting now.';
 
@@ -245,6 +247,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
                 count={this.state.count}
                 skip={this.state.skip}
                 paginate={this.paginate}
+                EmptyComponent={EmptyComponent}
                 {...this.props}
               />
             </div>
@@ -254,3 +257,14 @@ export default class VirtualAccountsListContainer extends ListContainer {
     );
   }
 }
+
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>TThere are no virtual accounts yet!!</div>
+        <div>Start creating new account now.</div>
+      </React.Fragment>
+    }
+  />
+);

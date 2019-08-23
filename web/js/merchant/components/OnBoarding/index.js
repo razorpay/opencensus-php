@@ -41,7 +41,7 @@ export default params => {
 
     componentDidMount() {
       if (typeof window.hj === 'function') {
-        window.hj('trigger', 'onboarding_intro');
+        window.hj('trigger', 'product_onboarding_intro');
         window.hj('tagRecording', [`${FEATURE}_onboarding`]);
       }
     }
