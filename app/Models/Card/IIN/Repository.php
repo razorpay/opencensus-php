@@ -39,7 +39,8 @@ class Repository extends Base\Repository
 
     protected function addQueryOrder($query)
     {
-        ;
+        $query->orderBy(Entity::CREATED_AT, 'desc')
+              ->orderBy(Entity::IIN, 'desc');
     }
 
     public function isMerchantIdRequiredForFetch()

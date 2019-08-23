@@ -67,6 +67,11 @@ class Validator extends Base\Validator
         Entity::FlOW             => 'required|string|in:otp',
     ];
 
+    protected static $iinBatchFileRules = [
+        'file'              => 'required|file',
+        'type'              => 'required|custom',
+    ];
+
     protected function validateCreateNetwork($input)
     {
         $this->validateNetwork($input, $input[Entity::IIN]);
@@ -129,6 +134,7 @@ class Validator extends Base\Validator
                 'Not a valid type name: ' . $input[Entity::TYPE]);
         }
     }
+
 
     protected function validateIssuer($input)
     {
