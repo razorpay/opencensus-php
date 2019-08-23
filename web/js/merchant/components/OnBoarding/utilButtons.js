@@ -2,74 +2,95 @@ import Button from 'component/Button';
 
 import FeatureEnableButton from './FeatureEnableButton';
 
-export const FeatureEnableSliderButton = props => {
-  const { isLocalEnabler, feature, onClick, page } = props;
+class FeatureEnableSliderButton extends React.PureComponent {
+  onClickFeatureEnableSliderButton = (...args) => {
+    const { props } = this;
 
-  const extraProps = {
-    feature,
+    window.rzpAnalytics({
+      eventCategory: `Product Introduction (${props.feature})`,
+      eventAction: `Page ${props.page} - Get Started CTA`,
+    });
+
+    props.onClick && props.onClick(args);
   };
 
-  if (isLocalEnabler) {
-    extraProps.iconAfter = 'arrow-forward';
-    extraProps.isLocalEnabler = true;
+  render() {
+    const { isLocalEnabler, feature } = this.props;
+
+    const extraProps = {
+      feature,
+    };
+
+    if (isLocalEnabler) {
+      extraProps.iconAfter = 'arrow-forward';
+      extraProps.isLocalEnabler = true;
+    }
+
+    return (
+      <FeatureEnableButton.Primary
+        {...extraProps}
+        class="Forward-Button"
+        pendingText="Enabling..."
+        onClick={this.onClickFeatureEnableSliderButton}
+      >
+        Get Started
+      </FeatureEnableButton.Primary>
+    );
   }
+}
 
-  return (
-    <FeatureEnableButton.Primary
-      {...extraProps}
-      class="Forward-Button"
-      pendingText="Enabling..."
-      onClick={(...args) => {
-        window.rzpAnalytics({
-          eventCategory: `Product Introduction (${feature})`,
-          eventAction: `Page ${page} - Get Started CTA`,
-        });
+class NextButton extends React.PureComponent {
+  onClickNext = (...args) => {
+    const { props } = this;
 
-        onClick && onClick(args);
-      }}
-    >
-      Get Started
-    </FeatureEnableButton.Primary>
-  );
-};
+    window.rzpAnalytics({
+      eventCategory: `Product Introduction (${props.feature})`,
+      eventAction: `Page ${props.page} - Next CTA`,
+    });
 
-export const NextButton = ({ feature, onClick, page }) => (
-  <Button.Primary
-    feature={feature}
-    class="Forward-Button"
-    iconAfter="arrow-forward"
-    pendingText="Enabling..."
-    onClick={(...args) => {
-      window.rzpAnalytics({
-        eventCategory: `Product Introduction (${feature})`,
-        eventAction: `Page ${page} - Next CTA`,
-      });
+    props.onClick && props.onClick(args);
+  };
 
-      onClick && onClick(args);
-    }}
-  >
-    Get Started
-  </Button.Primary>
-);
+  render() {
+    return (
+      <Button.Primary
+        feature={props.feature}
+        class="Forward-Button"
+        iconAfter="arrow-forward"
+        pendingText="Enabling..."
+        onClick={this.onClickNext}
+      >
+        Get Started
+      </Button.Primary>
+    );
+  }
+}
 
-export const SkipAndGetStartedButton = ({
-  feature,
-  onClick,
-  page,
-  isLocalEnabler,
-}) => (
-  <FeatureEnableButton.Transparent
-    onClick={(...args) => {
-      window.rzpAnalytics({
-        eventCategory: `Product Introduction (${feature})`,
-        eventAction: `Page ${page} - Skip and Get Started`,
-      });
+class SkipAndGetStartedButton extends React.PureComponent {
+  onClickFeatureEnableButton = (...args) => {
+    const { props } = this;
 
-      onClick && onClick(args);
-    }}
-    feature={feature}
-    isLocalEnabler={isLocalEnabler}
-  >
-    Skip And Get Started
-  </FeatureEnableButton.Transparent>
-);
+    window.rzpAnalytics({
+      eventCategory: `Product Introduction (${props.feature})`,
+      eventAction: `Page ${props.page} - Skip and Get Started`,
+    });
+
+    props.onClick && props.onClick(args);
+  };
+
+  render() {
+    const { props } = this;
+
+    return (
+      <FeatureEnableButton.Transparent
+        feature={props.feature}
+        onClick={this.onClickFeatureEnableButton}
+        isLocalEnabler={props.isLocalEnabler}
+      >
+        {props.isTour ? 'Skip' : 'Skip And Get Started'}
+      </FeatureEnableButton.Transparent>
+    );
+  }
+}
+
+export { NextButton, SkipAndGetStartedButton, FeatureEnableSliderButton };
