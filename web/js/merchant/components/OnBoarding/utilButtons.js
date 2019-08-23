@@ -56,6 +56,7 @@ export const SkipAndGetStartedButton = ({
   feature,
   onClick,
   page,
+  isTour,
   isLocalEnabler,
 }) => (
   <FeatureEnableButton.Transparent
@@ -70,6 +71,6 @@ export const SkipAndGetStartedButton = ({
     feature={feature}
     isLocalEnabler={isLocalEnabler}
   >
-    Skip And Get Started
+    {isTour ? 'Skip' : 'Skip And Get Started'}
   </FeatureEnableButton.Transparent>
 );
