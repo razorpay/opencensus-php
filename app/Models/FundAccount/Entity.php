@@ -51,6 +51,8 @@ class Entity extends Base\PublicEntity
     // when account type is card
     const CARD          = 'card';
 
+    const ACCOUNT_NUMBER = 'account_number';
+
     const IDEMPOTENCY_KEY = 'idempotency_key';
 
     protected $generateIdOnCreate = true;

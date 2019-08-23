@@ -406,4 +406,65 @@ class FundAccountValidationTest extends TestCase
         // and there is not need to retry.
         $this->assertNull($fav['retry_at']);
     }
+
+    public function testFundAccValidationWithAccountNumberAndBankAccount()
+    {
+        $this->enableBusinessBankingForMerchant();
+
+        $this->createMerchantBankingBalance();
+
+        $this->createFAVBankingPricingPlan();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('penny_testing', $fta['purpose']);
+//        $this->assertEquals('fund_account_validation', $fta['source_type']);
+        $this->assertEquals($fav['id'], $fta['source']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+    }
+
+    protected function createFAVBankingPricingPlan()
+    {
+        $pricingPlan = [
+            'plan_name'           => 'FAV Plan',
+            'percent_rate'        => 290,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'product'             => 'banking',
+            "feature"             => 'fund_account_validation',
+            'payment_method'      => 'bank_account',
+            'account_type'        => 'shared'
+        ];
+
+        $this->fixtures->create('pricing', $pricingPlan);
+    }
+
+    protected function createMerchantBankingBalance() {
+        $balance = [
+            'id' => 'xbalance000000',
+            'balance' => 10000,
+            'merchant_id' => '10000000000000',
+            'type' => 'banking',
+            'currency' => 'INR',
+            'account_number' => '2224440041626905',
+        ];
+
+        $this->fixtures->create('balance', $balance);
+    }
+
+    protected function enableBusinessBankingForMerchant() {
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['business_banking' => '1']);
+    }
 }
