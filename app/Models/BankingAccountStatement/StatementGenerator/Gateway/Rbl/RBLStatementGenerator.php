@@ -6,9 +6,11 @@ namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Base;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\Constants as RBLBankConstants;
 use RZP\Models\BankingAccountStatement\Type as StatementType;
+use View;
 
 class RBLStatementGenerator extends Base
 {
+    protected const TEMPLATE_FILE_NAME = 'bank_account_statement.RBL.statement';
 
     protected function accountStatementData()
     {
@@ -96,7 +98,8 @@ class RBLStatementGenerator extends Base
             'effective_balance' => $effective_balance,
             'lien_amount' => $lien_amount,
             'debit_count' => $debit_count,
-            'credit_count' => $credit_count
+            'credit_count' => $credit_count,
+            'statement_generated_date' => '23/05/2019 2:14 PM'
         ];
     }
 
@@ -112,7 +115,7 @@ class RBLStatementGenerator extends Base
                     'transaction_details' => $transaction->description,
                     'cheque_id' => $transaction->bank_instrument_id,
                     'value_date' => $transaction->transaction_date,
-                    'balance' => $transaction->balance
+                    'balance' => $transaction->balance,
                 ]
             );
         }
@@ -123,7 +126,9 @@ class RBLStatementGenerator extends Base
     function pdf()
     {
         $input = $this->accountStatementData();
-        return $input;
+
+        return View::make(self::TEMPLATE_FILE_NAME, $input);
+
         // get the template
         // get the CSS
         // create the HTML
