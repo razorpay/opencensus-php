@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 use View;
+use RZP\Models\FileStore;
 
 class BankingAccountStatementController extends Controller
 {
@@ -22,8 +23,7 @@ class BankingAccountStatementController extends Controller
         // Expected account_number, format, channel
         $input = Request::all();
         $response = $this->service()->generateAccountStatement($input);
-        return $response;
-        return ApiResponse::json($response);
+        return ApiResponse::json($response->getFullFilePath());
 
     }
 }

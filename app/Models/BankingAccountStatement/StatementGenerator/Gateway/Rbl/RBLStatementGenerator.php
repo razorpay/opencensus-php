@@ -3,9 +3,12 @@
 
 namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 
+use mikehaertl\wkhtmlto\Pdf;
+use RZP\Exception;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Base;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\Constants as RBLBankConstants;
 use RZP\Models\BankingAccountStatement\Type as StatementType;
+use RZP\Models\FileStore;
 use View;
 
 class RBLStatementGenerator extends Base
@@ -127,16 +130,51 @@ class RBLStatementGenerator extends Base
     {
         $input = $this->accountStatementData();
 
-        return View::make(self::TEMPLATE_FILE_NAME, $input);
-
-        // get the template
-        // get the CSS
-        // create the HTML
-        // convert to PDF
+        $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $input);
+        $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
+//        Storage::disk('local')->put('lol.pdf', $pdfAccountStatement);
+        $fileStoreHandle = (new FileStore\Creator())
+            ->name('TestPDFAccountStatement')
+            ->content($pdfAccountStatement)
+            ->extension(FileStore\Format::PDF)
+            ->mime('application/pdf')
+            ->store(FileStore\Store::S3)
+            ->type(FileStore\Type::RBL_NETBANKING_CLAIM)
+            ->save()
+            ->getFileInstance();
+//        return $pdfAccountStatement;
+        $x = 1;
+        return $fileStoreHandle;
         // upload to S3
         // send back the file handle
 
     }
+
+    protected function getPdfContent(string $html): string
+    {
+        $options = [
+            'print-media-type',
+            'footer-font-size' => '9',
+            'footer-center' => 'Page [page] of [topage]',
+            'dpi' => 290,
+            'zoom' => 1,
+            'ignoreWarnings' => false,
+            'encoding' => 'UTF-8',
+            'binary' => '/usr/local/bin/wkhtmltopdf',
+        ];
+
+        $pdf = (new Pdf($options))->addPage($html);
+
+        $pdfContent = $pdf->toString();
+
+        if ($pdfContent === false)
+        {
+            throw new Exception\LogicException('Pdf generation failed: ' . $pdf->getError());
+        }
+
+        return $pdfContent;
+    }
+
 
     function csv()
     {
