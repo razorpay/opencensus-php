@@ -370,7 +370,7 @@ class Gateway extends Base\Gateway
             Fields::UNQ_CUST_ID     => $payment['id'],
             Fields::AMOUNT          => $this->formatAmount($payment['amount']),
             Fields::ACCOUNT_NUM     => $input['order']['account_number'],
-            Fields::IFSC_CODE_TPV   => $input['order']['bank'],
+            Fields::IFSC_CODE_TPV   => substr($input['order']['bank'], 0, 4),
             Fields::TXN_DTL         => $this->getPaymentRemark($input),
             Fields::CURRENCY        => Currency::INR,
             Fields::ORDER_ID        => $payment['id'],
