@@ -141,7 +141,7 @@ class Gateway extends Base\Gateway
 
         $gatewayName = $input['payment']['gateway'];
 
-        if ($this->immediateVerifyApplicable($gatewayName) === true)
+        if ($this->immediateVerifyApplicable($input) === true)
         {
             $this->verifyCallback($input);
         }
@@ -156,21 +156,17 @@ class Gateway extends Base\Gateway
         $this->authorize($input);
     }
 
-    public function immediateVerifyApplicable($gatewayName)
+    public function immediateVerifyApplicable($input)
     {
-        $immediateVerificationGateways = [
-            Payment\Gateway::WALLET_PHONEPE,
-            Payment\Gateway::BAJAJFINSERV,
-            Payment\Gateway::NETBANKING_YESB,
-            Payment\Gateway::NETBANKING_SIB,
-            Payment\Gateway::NETBANKING_CUB,
-            Payment\Gateway::NETBANKING_IDBI,
-            Payment\Gateway::NETBANKING_CBI,
-            Payment\Gateway::NETBANKING_CUB,
-            Payment\Gateway::NETBANKING_IBK,
-        ];
+        if ( in_array($input['payment'][Payment\Entity::METHOD], [
+                Payment\Method::NETBANKING,
+                Payment\Method::WALLET,
+            ], true) === true)
+        {
+            return true;
+        }
 
-        return in_array($gatewayName, $immediateVerificationGateways);
+        return false;
     }
 
     public function preProcessServerCallback($input, $gateway = null): array

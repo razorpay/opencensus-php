@@ -811,8 +811,6 @@ class Gateway extends Base\Gateway
     {
         $response = $this->sendGatewayRequestForBilldeskAuthorize($request);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
-
         $crawler = new Crawler($response->body, $request['url']);
 
         $formCrawler = $crawler->filter('form');

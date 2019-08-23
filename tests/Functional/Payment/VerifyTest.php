@@ -1292,6 +1292,11 @@ class VerifyTest extends TestCase
         \Cache::shouldReceive('get')
                 ->andReturn([]);
 
+        // Assertions for call to cache in getCachedTreatment() method.
+        \Cache::shouldReceive('remember')
+                ->zeroOrMoreTimes()
+                ->andReturn("control");
+
         $redisMock->method('get')->will($this->returnValue(''));
     }
 

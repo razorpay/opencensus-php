@@ -952,6 +952,11 @@ trait PaymentTrait
             $content['reverse_all'] = true;
         }
 
+        if (empty($data['notes']) === false)
+        {
+            $content['notes'] = $data['notes'];
+        }
+
         $request = [
             'method'    => 'POST',
             'url'       => '/payments/'.$id.'/refund',

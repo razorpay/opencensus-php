@@ -17,6 +17,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
+use RZP\Models\Merchant\Account;
 use Illuminate\Hashing\BcryptHasher;
 
 class Service extends Base\Service
@@ -299,6 +300,19 @@ class Service extends Base\Service
     public function login(array $input): array
     {
         return (new Core)->login($input);
+    }
+
+    public function checkUserAccess(array $input)
+    {
+        $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($input['merchant_id']);
+
+        $user = $this->auth->getUser();
+
+        $userId = $user->getId();
+
+        $product = $this->auth->getRequestOriginProduct();
+
+        return $this->core()->checkUserAccess($userId, $merchantId, $product);
     }
 
     public function setup2faMobileOnLogin(array $input): array
@@ -735,4 +749,27 @@ class Service extends Base\Service
         return $this->core()->editContactMobile($input, $this->user);
     }
 
+
+    public function updateContactMobile(array $input)
+    {
+        (new Validator)->validateInput('update_contact_mobile', $input);
+
+        $user = $this->repo->user->findOrFailPublic($input[Entity::USER_ID]);
+
+        return $this->core()->updateContactMobile($input, $user);
+    }
+
+    public function accountLockUnlock(string $userId, string $action): array
+    {
+        $accountLockData = [
+            Entity::USER_ID => $userId,
+            Entity::ACTION  => $action,
+        ];
+
+        (new Validator)->validateInput('user_account_lock_unlock', $accountLockData);
+
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        return $this->core()->accountLockUnlock($user, $action);
+    }
 }

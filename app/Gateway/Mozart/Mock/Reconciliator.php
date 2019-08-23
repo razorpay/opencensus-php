@@ -10,6 +10,7 @@ use RZP\Gateway\Mozart\WalletPhonepe;
 use RZP\Gateway\Mozart\NetbankingSib;
 use RZP\Gateway\Mozart\NetbankingCbi;
 use RZP\Gateway\Mozart\NetbankingYesb;
+use RZP\Gateway\Mozart\NetbankingIbk;
 use RZP\Gateway\Mozart\NetbankingCub;
 use RZP\Models\Payment\Gateway as PaymentGateway;
 
@@ -37,7 +38,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         $this->fileToWriteName = 'Recon_' . Carbon::now(Timezone::IST)->format('dmY');
 
-        for ($i = 0; $i < 5; $i++)
+        for ($i = 0; $i < 4; $i++)
         {
             $data[] = [];
         }
@@ -72,6 +73,36 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
 
         return $data;
+    }
+
+    protected function netbanking_ibk($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+        $this->fileToWriteName = 'RAZORPAY_2019May';
+        $data = [];
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d/m/y');
+            $col = [
+                NetbankingIbk\ReconFields::PID                  => $row['payment']['id'],
+                NetbankingIbk\ReconFields::BILLER_NAME          => 'xyz',
+                NetbankingIbk\ReconFields::DATE_TIME            => $date,
+                NetbankingIbk\ReconFields::MERCHANT_REF_NO      => $date,
+                NetbankingIbk\ReconFields::AMOUNT               => $row['payment']['amount'] / 100,
+                NetbankingIbk\ReconFields::CUSTOMER_NO          => $date,
+                NetbankingIbk\ReconFields::DATE_BANK            => $date,
+                NetbankingIbk\ReconFields::BANK_REF_NO          => $this->fetchFieldFromJsonData($row['mozart']['raw'],'bank_payment_id'),
+                NetbankingIbk\ReconFields::JOURNAL_NO           => "900322626",
+                NetbankingIbk\ReconFields::PAID_STATUS          => "Y",
+            ];
+            $this->content($col, 'col_payment_ibk_nb_recon');
+            $data[] = $col;
+        }
+        $formattedData = $this->generateText($data, '^');
+        return $formattedData;
     }
 
     protected function netbanking_sib($input)

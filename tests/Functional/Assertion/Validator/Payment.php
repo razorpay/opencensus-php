@@ -47,7 +47,7 @@ class Payment extends Validator
         Entity::DISPUTED            => 'sometimes|boolean',
         Entity::RECURRING_TYPE      => 'sometimes|nullable|string',
         Entity::AUTH_TYPE           => 'sometimes|nullable|string',
-        Entity::EMI_PLAN            => 'sometimes|',
+        Entity::EMI                 => 'sometimes',
         Entity::EMI_PLAN            => 'sometimes',
         Entity::DISPUTES            => 'sometimes',
         Entity::REFERENCE16         => 'sometimes',

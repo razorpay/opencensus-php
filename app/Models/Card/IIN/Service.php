@@ -188,6 +188,22 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function addOrUpdate($id, $input) : array
+    {
+        $iin = $this->repo->iin->find($id);
+
+        if ($iin === null)
+        {
+            $input['iin'] = $id;
+
+            return $this->addIin($input);
+        }
+        else
+        {
+            return $this->editIin($id, $input);
+        }
+    }
+
     protected function formatEditInput(Entity $iin, array & $input)
     {
         if (isset($input[Entity::FLOWS]) === false)

@@ -23,6 +23,7 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const ATOS                   = 'atos';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -1359,6 +1360,7 @@ class Gateway
      */
     public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
+        IFSC::IDIB => Gateway::NETBANKING_IBK,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::CBIN => Gateway::NETBANKING_CBI,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,

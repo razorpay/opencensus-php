@@ -5,7 +5,6 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
-use RZP\Tests\Functional\Fixtures\Entity\Iin;
 return [
     'testAddIin' => [
         'request' => [

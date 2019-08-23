@@ -1027,6 +1027,8 @@ class Entity extends Base\PublicEntity
 
         $enabledBanks = array_diff($supportedBanks, $disabledBanks);
 
+        $enabledBanks = array_values($enabledBanks);
+
         $this->setAttribute(self::ENABLED_BANKS, $enabledBanks);
     }
 

@@ -15,4 +15,16 @@ class WebhookController extends Controller
 
         return ApiResponse::json([]);
     }
+
+    /**
+     * @see Webhook\Service::webhookStorkMigrate()
+     *
+     * @return mixed
+     */
+    public function webhookStorkMigrate()
+    {
+        $data = $this->service()->webhookStorkMigrate($this->input);
+
+        return ApiResponse::json($data);
+    }
 }

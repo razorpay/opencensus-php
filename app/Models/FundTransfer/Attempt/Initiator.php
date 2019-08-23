@@ -116,6 +116,8 @@ class Initiator extends Base\Core
 
             $limit = $this->getLimitForChannel($channel);
 
+            $unsupportedModeList = $this->getUnsupportedModesForTime($timestamp);
+
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_FETCHING_ENTITIES);
 
             $attempts = $this->repo
@@ -125,6 +127,7 @@ class Initiator extends Base\Core
                                 $purpose,
                                 $sourceType,
                                 $channel,
+                                $unsupportedModeList,
                                 $limit,
                                 ['source']);
 
@@ -531,5 +534,60 @@ class Initiator extends Base\Core
         ];
 
         return $info;
+    }
+
+    // This will return the mode which are unsupported due to being outside of timing window.
+    // The time uses minimum Start Timing of all banks supported for razorpayX payouts and
+    // maximum ending timing. Since Nodal account class for each channel has its own timing
+    // so transfer initiation will get blocked there if the timings are different for that channel.
+    public function getUnsupportedModesForTime(int $currentTime)
+    {
+        $modeList = [];
+
+        if ($this->isOutsideNeftTimings($currentTime) === true)
+        {
+            $modeList[] = TransferMode::NEFT;
+        }
+
+        if ($this->isOutsideRtgsTimings($currentTime) === true)
+        {
+            $modeList[] = TransferMode::RTGS;
+        }
+
+        return $modeList;
+    }
+
+    public function isOutsideNeftTimings(int $currentTime)
+    {
+        $bankingStartTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_START_HOUR)->getTimestamp();
+
+        $bankingEndTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_END_HOUR)
+                                                          ->minute(Constants::NEFT_END_MINUTE)
+                                                          ->getTimestamp();
+
+        if (($currentTime < $bankingStartTime) or
+            ($currentTime > $bankingEndTime))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isOutsideRtgsTimings(int $currentTime)
+    {
+        $bankingStartTimeRtgs = Carbon::today(Timezone::IST)->hour(Constants::RTGS_REVISED_START_HOUR)->getTimestamp();
+
+        $bankingEndTimeRtgs = Carbon::today(Timezone::IST)->hour(Constants::RTGS_REVISED_END_HOUR)
+                                                              ->minute(Constants::RTGS_REVISED_END_MINUTE)
+                                                              ->getTimestamp();
+
+        if (($currentTime < $bankingStartTimeRtgs) or
+            ($currentTime > $bankingEndTimeRtgs))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

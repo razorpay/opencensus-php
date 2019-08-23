@@ -181,8 +181,9 @@ class Core extends Base\Core
             $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
         }
 
-        $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
-        $data[Payment\Method::UPI] = $methods->isUpiEnabled();
+        $data[Payment\Method::WALLET]        = $methods->getEnabledWallets();
+        $data[Payment\Method::UPI]           = $methods->isUpiEnabled();
+        $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
         $data[Payment\Method::CARDLESS_EMI] =
                   $methods->isCardlessEmiEnabled() ? $this->getProviders($merchant, Payment\Method::CARDLESS_EMI) : [];
 
