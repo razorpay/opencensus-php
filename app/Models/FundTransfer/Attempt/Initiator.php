@@ -613,6 +613,7 @@ class Initiator extends Base\Core
             $exception,
             $customProperties);
     }
+    
     // This will return the mode which are unsupported due to being outside of timing window.
     // The time uses minimum Start Timing of all banks supported for razorpayX payouts and
     // maximum ending timing. Since Nodal account class for each channel has its own timing
