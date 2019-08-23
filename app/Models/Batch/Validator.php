@@ -223,6 +223,7 @@ class Validator extends Base\Validator
         ME::AUTO_ENABLE_INTERNATIONAL => 'filled|boolean',
         ME::SKIP_BA_REGISTRATION      => 'filled|boolean',
         ME::CREATE_SUBMERCHANT        => 'filled|boolean',
+        Entity::CONFIG                => 'filled|array',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [

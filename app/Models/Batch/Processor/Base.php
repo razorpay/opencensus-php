@@ -147,11 +147,11 @@ class Base extends BaseModel\Core
         return $this;
     }
 
-    public function getBatchContext(): array
+    public function getBatchContext(array $config): array
     {
         $batchContext                        = [];
         $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
-        $batchContext[Batch\Constants::DATA] = $this->params;
+        $batchContext[Batch\Constants::DATA] = $config;
 
         return $batchContext;
     }
