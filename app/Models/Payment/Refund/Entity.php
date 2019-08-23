@@ -926,6 +926,8 @@ class Entity extends Base\PublicEntity
 
         $currentDate = Carbon::now(Timezone::IST);
 
+        $data[Constants::MERCHANT_ID] = $this->merchant->getPublicId();
+
         $data[Constants::DAYS] = $expectedDate->diffInDays($currentDate, false);
 
         $data[Constants::PRIMARY_MESSAGE]   =

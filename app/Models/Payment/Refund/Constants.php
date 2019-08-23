@@ -34,6 +34,7 @@ class Constants
     const LATE_AUTH         = 'late_auth';
     const REFUND_ID         = 'refund_id';
     const PAYMENT_ID        = 'payment_id';
+    const MERCHANT_ID       = 'merchant_id';
     const MERCHANT_NAME     = 'merchant_name';
     const PRIMARY_MESSAGE   = 'primary_message';
     const TERTIARY_MESSAGE  = 'tertiary_message';

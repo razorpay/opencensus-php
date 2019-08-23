@@ -3281,6 +3281,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             $autoRefundDelayDate = Carbon::createFromTimestamp($this->getAuthorizeTimestamp() + $this->merchant->getAutoRefundDelay(), Timezone::IST);
 
+            $data[Refund\Constants::MERCHANT_ID] = $this->merchant->getPublicId();
+
             $data[Refund\Constants::MERCHANT_NAME] = $this->merchant->getBillingLabel();
 
             $data[Refund\Constants::PRIMARY_MESSAGE] =
