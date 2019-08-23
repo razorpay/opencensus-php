@@ -66,7 +66,7 @@ class RuleFilter extends BaseRuleFilter
         // selected_terminals. If no select rules are present we take the diff
         // of all terminals and rejected terminals
         if ($isSelectRulePresent === false)
-        {
+        {s($terminals, $rejectedTerminals);
             $filteredTerminals = array_diff($terminals, $rejectedTerminals);
         }
 
@@ -75,7 +75,8 @@ class RuleFilter extends BaseRuleFilter
             'rejected' => $rejectedTerminals,
             'final'    => $filteredTerminals,
         ];
-        s($data['final']);
+
+        $terminals = $filteredTerminals;
 
         $this->traceTerminalsForGroup($data, $group, $verbose);
     }
