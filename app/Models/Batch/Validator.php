@@ -219,7 +219,7 @@ class Validator extends Base\Validator
         ME::AUTOFILL_DETAILS          => 'filled|boolean',
         ME::AUTO_ACTIVATE             => 'filled|boolean',
         ME::USE_EMAIL_AS_DUMMY        => 'filled|boolean',
-        ME::PARTNER_ID                => 'required|string|size:14',
+        ME::PARTNER_ID                => 'filled|string|size:14',
         ME::AUTO_ENABLE_INTERNATIONAL => 'filled|boolean',
         ME::SKIP_BA_REGISTRATION      => 'filled|boolean',
         ME::CREATE_SUBMERCHANT        => 'filled|boolean',
@@ -808,8 +808,11 @@ class Validator extends Base\Validator
 
     protected function validateSubMerchantEntries(array & $entries, array $params, ME $merchant)
     {
+
+        $partnerId =  $params[Entity::CONFIG][ME::PARTNER_ID] ?? null;
+
         /** @var Merchant\Entity $partner */
-        $partner = (new Merchant\Repository)->findOrFailPublic($params[ME::PARTNER_ID]);
+        $partner = (new Merchant\Repository)->findOrFailPublic($partnerId);
 
         if ($partner->isNonPurePlatformPartner() === false)
         {
