@@ -1713,16 +1713,6 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($paymentId);
     }
 
-    public function isMerchantIdRequiredForFetch()
-    {
-        if ($this->auth->isMerchantIdRequiredForMultipleFetch() === false)
-        {
-            return false;
-        }
-
-        return parent::isMerchantIdRequiredForFetch();
-    }
-
     /**
      * Overriding newQuery to always have conditions for payment method
      * and bank in case of restricted orgs like SBI. For now this is a

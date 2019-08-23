@@ -1547,7 +1547,10 @@ class Service extends Base\Service
 
         // Since this is a direct auth route - and we do not have the merchant ID
         // we need to allow multiple fetch without merchant ID
-        $this->auth->setMerchantIdRequiredForMultipleFetch(false);
+        $merchantIdRequiredForMultipleFetch = false;
+
+        $this->repo->payment->setMerchantIdRequiredForMultipleFetch($merchantIdRequiredForMultipleFetch);
+        $this->repo->refund->setMerchantIdRequiredForMultipleFetch($merchantIdRequiredForMultipleFetch);
 
         $return = [RefundConstants::PAYMENTS => []];
 

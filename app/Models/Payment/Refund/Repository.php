@@ -1016,16 +1016,6 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function isMerchantIdRequiredForFetch()
-    {
-        if ($this->auth->isMerchantIdRequiredForMultipleFetch() === false)
-        {
-            return false;
-        }
-
-        return parent::isMerchantIdRequiredForFetch();
-    }
-
     public function backfillSpeedProcessed($limit)
     {
         return $this->newQuery()
