@@ -31,4 +31,6 @@ final class Metric
     const CATEGORY_SUCCESS           = 'success';
 
     const REQUEST_TRACE_CODE         = 'request_trace_code';
+
+    const NODAL_RESPONSE_TIME        = 'nodal_response_time';
 }
