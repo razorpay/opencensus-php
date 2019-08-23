@@ -48,8 +48,8 @@ export default class extends React.Component {
     const defaultValue = this.props.defaultValue || 'INR'; // If no value passed, then INR is the displayed option.
 
     /*
-    * Note: it can happen that international is disabled for merchant(by herself / by support team).
-    * And some payments in international currency might exist, hence regardless international enable, currency requested by this components must reflect true entity currency, and not INR.
+    * Note: it can happen that international is manually disabled (by merchant / by support team).
+    * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.
     * */
     Object.keys(window.currencyList).forEach(c => {
       const fullName = window.currencyList[c].name,
@@ -67,7 +67,7 @@ export default class extends React.Component {
       }
 
       // If international then populate dropdown options
-      if (this.props.user.international) {
+      if (this.isInternationalEnabled) {
         if (frequentlyUsedCurrencies.indexOf(c) > -1) {
           currencyList[0].options.push(currencyObj);
         } else {
@@ -112,20 +112,24 @@ export default class extends React.Component {
     );
   };
 
+  // Note: This considers cases where razorX is enabled but international is manually disabled(by merchant / by support team)
+  get isInternationalEnabled() {
+    return this.props.user.isInttCurrenciesEnabled;
+  }
+
   render() {
     const props = this.props;
-
-    const isInternationalEnabled = this.props.user.isInttCurrenciesEnabled;
 
     return (
       <div
         class={classList(
           'Input Input--Currency',
           this.props.fullDisplay && 'Input--Currency--fullDisplay',
-          (!isInternationalEnabled || this.props.disabled) && 'Input--noMargin'
+          (!this.isInternationalEnabled || this.props.disabled) &&
+            'Input--noMargin'
         )}
       >
-        {isInternationalEnabled && !this.props.disabled ? (
+        {this.isInternationalEnabled && !this.props.disabled ? (
           <div class="Input-content">
             <div class="Input-elWrapper">
               <div class="Input-el">
