@@ -47,32 +47,16 @@ import QuickGuide, { getSubscriptionQuickGuideIsClosed } from './QuickGuide';
 )
 export default class SubscriptionsController extends React.Component {
   componentDidMount() {
-    if (this.props.user.isChargeAtWillEnabled) return;
-
     this.initSubscriptions();
-
-    if (this.props.subscriptions.items.length) return;
-
-    if (
-      !this.props.plans.items.loading &&
-      !this.props.plans.items.length &&
-      !this.props.location.pathname.includes('plan')
-    ) {
-      this.props.fetchPlans({ count: 25 });
-    }
   }
 
   componentWillUnmount() {
-    if (this.props.user.isChargeAtWillEnabled) return;
-
     const { subscriptionProductOnBoarding } = this.props;
 
-    if (
-      subscriptionProductOnBoarding.isTour &&
-      !this.props.user.isChargeAtWillEnabled
-    ) {
+    if (subscriptionProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...subscriptionProductOnBoarding,
+        showOnboarding: false,
         isQuickGuideOpen: false,
         isTour: false,
       });
@@ -80,52 +64,64 @@ export default class SubscriptionsController extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.user.isChargeAtWillEnabled) return;
-
-    if (
-      !this.props.user.isChargeAtWillEnabled &&
-      nextProps.subscriptions.loading !== this.props.subscriptions.loading
-    ) {
+    if (nextProps.subscriptions.loading !== this.props.subscriptions.loading) {
       this.initSubscriptions(nextProps);
     }
   }
+
+  fetchDataForOnboarding = () => {
+    if (this.props.user.isChargeAtWillEnabled) return;
+
+    const { subscriptions, plans, location } = this.props;
+
+    if (
+      subscriptions.loading ||
+      subscriptions.items.length ||
+      plans.loading ||
+      plans.items.length ||
+      location.pathname.includes('plan')
+    ) {
+      return;
+    }
+
+    this.props.fetchPlans({ count: 25 });
+  };
 
   initSubscriptions = (props = this.props) => {
     if (props.user.isChargeAtWillEnabled) return;
 
     const { isSubscriptionsEnabled } = props.user;
+
     let showOnboarding = !isSubscriptionsEnabled;
-
-    if (isSubscriptionsEnabled) {
-      showOnboarding = getIsAllowedResetSubscriptionBoarding({
-        plans: props.plans,
-        subscriptions: props.subscriptions,
-      });
-    } else {
-      this.props.handleProductQuickGuide({
-        ...props.subscriptionProductOnBoarding,
-        showOnboarding: true,
-      });
-    }
-
-    let isQuickGuideClosed = getSubscriptionQuickGuideIsClosed(props);
 
     let subscriptionProductOnBoarding = {
       ...props.subscriptionProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen: props.subscriptionProductOnBoarding.isTour
-        ? true
-        : !isQuickGuideClosed,
     };
+
+    if (isSubscriptionsEnabled) {
+      subscriptionProductOnBoarding.showOnboarding = getIsAllowedResetSubscriptionBoarding(
+        {
+          plans: props.plans,
+          subscriptions: props.subscriptions,
+        }
+      );
+    } else {
+      this.props.handleProductQuickGuide(subscriptionProductOnBoarding);
+
+      return;
+    }
+
+    const isQuickGuideClosed = getSubscriptionQuickGuideIsClosed(props);
+
+    subscriptionProductOnBoarding.isQuickGuideOpen =
+      props.subscriptionProductOnBoarding.isTour || isQuickGuideClosed;
 
     this.props.handleProductQuickGuide(subscriptionProductOnBoarding);
   };
 
   render() {
-    if (
-      !this.props.user.isChargeAtWillEnabled &&
-      this.props.subscriptionProductOnBoarding.showOnboarding
-    ) {
+    if (this.props.subscriptionProductOnBoarding.showOnboarding) {
       return <OnBoarding />;
     }
 
