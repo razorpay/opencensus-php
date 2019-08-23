@@ -25,7 +25,7 @@ const contactPhone = {
 
 const actions = {
   title: '',
-  value: user => <Actions user={user} />,
+  value: member => <Actions member={member} />,
 };
 
 @connect(state => ({ ...state.team }), { fetchAll })

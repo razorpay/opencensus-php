@@ -91,7 +91,7 @@ export const updateMember = data => {
   };
 };
 
-export const removeUser = userId => {
+export const removeMember = userId => {
   const team = new Team();
   return {
     type: TEAM_MEMBER_DELETE,
