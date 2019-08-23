@@ -182,32 +182,10 @@ class BeamJob extends Job
             {
                 $this->release($this->retryTimeLines[$this->attempts() - 1]);
 
-                $batchFundTransferId = null;
-
-                $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-                $mailInfo = $this->mailInfo;
-
                 if(isset($mailInfo['batchFundTransferId']) === true)
                 {
-                    $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+                    $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_RETRY);
                 }
-
-                $channel = $mailInfo['channel'];
-
-                $customProperties = [
-                    'timestamp'                         => $timestamp,
-                    'channel'                           => $channel,
-                    'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
-                ];
-
-                $app = App::getFacadeRoot();
-
-                $app['diag']->trackSettlementEvent(
-                    EventCode::BEAM_FILE_PUSH_RETRY,
-                    null,
-                    null,
-                    $customProperties);
 
                 return;
             }
@@ -221,32 +199,12 @@ class BeamJob extends Job
 
         if (in_array($this->response->status_code, self::HTTP_SUCCESS_CODES, true) === true)
         {
-            $batchFundTransferId = null;
-
-            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             $mailInfo = $this->mailInfo;
 
             if(isset($mailInfo['batchFundTransferId']) === true)
             {
-                $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+                $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_SUCCESS);
             }
-
-            $channel = $mailInfo['channel'];
-
-            $customProperties = [
-                'timestamp'                         => $timestamp,
-                'channel'                           => $channel,
-                'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
-            ];
-
-            $app = App::getFacadeRoot();
-
-            $app['diag']->trackSettlementEvent(
-                EventCode::BEAM_FILE_PUSH_SUCCESS,
-                null,
-                null,
-                $customProperties);
 
             $this->delete();
 
@@ -276,30 +234,12 @@ class BeamJob extends Job
         {
             $batchFundTransferId = null;
 
-            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             $mailInfo = $this->mailInfo;
 
             if(isset($mailInfo['batchFundTransferId']) === true)
             {
-                $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+                $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_FAILED);
             }
-
-            $channel = $mailInfo['channel'];
-
-            $customProperties = [
-                'timestamp'                         => $timestamp,
-                'channel'                           => $channel,
-                'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
-            ];
-
-            $app = App::getFacadeRoot();
-
-            $app['diag']->trackSettlementEvent(
-                EventCode::BEAM_FILE_PUSH_FAILED,
-                null,
-                null,
-                $customProperties);
 
             $this->sendEmail();
 
@@ -350,5 +290,32 @@ class BeamJob extends Job
             'subject'   => $this->mailInfo['subject'],
             'recipient' => $this->mailInfo['recipient'],
         ];
+    }
+
+    protected function raiseSettlementBeamJobEvent(array $eventCode)
+    {
+        $mailInfo = $this->mailInfo;
+
+        $channel = null;
+
+        if(isset($mailInfo['channel']))
+        {
+            $channel = $mailInfo['channel'];
+        }
+
+        $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+
+        $customProperties = [
+            'channel'                           => $channel,
+            'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
+        ];
+
+        $app = App::getFacadeRoot();
+
+        $app['diag']->trackSettlementEvent(
+            $eventCode,
+            null,
+            null,
+            $customProperties);
     }
 }

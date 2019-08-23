@@ -154,11 +154,7 @@ abstract class FileProcessor extends Processor
                 $reconcileFile = $this->getFile($input);
             }
 
-            //REVERSE_FEED_RECEIVED
-            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             $customProperties = [
-                'timestamp'   => $timestamp,
                 'channel'     => static::$channel,
                 'file_info'   => $reconcileFile,
             ];

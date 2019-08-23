@@ -124,13 +124,9 @@ abstract class EntityProcessor extends Base\Core
 
         $this->fta->setFailureReason($failureReason);
 
-        //FTA_STATUS_UPDATED
-        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
         $batchFta = $this->fta->batchFundTransfer;
 
         $customProperties = [
-            'timestamp'                         => $timestamp,
             'channel'                           => $this->fta->getChannel(),
             'purpose'                           => $this->fta->getPurpose(),
             'fund_transfer_attempt_id'          => $this->fta->getId(),

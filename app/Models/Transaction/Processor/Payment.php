@@ -42,14 +42,11 @@ class Payment extends Base
 
         $transactionId = $this->txn->getId();
 
-        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
         $customProperties = [
             'type'              => $type,
             'entity_id'         => $entity_id,
             'channel'           => $channel,
             'transaction_id'    => $transactionId,
-            'timestamp'         => $timestamp
         ];
 
         $this->app['diag']->trackSettlementEvent(

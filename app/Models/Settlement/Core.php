@@ -167,12 +167,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($entity);
 
-        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
         $batchFta = $entity->batchFundTransfer;
 
         $customProperties = [
-            'timestamp'                         => $timestamp,
             'channel'                           => $entity->getChannel(),
             'fund_transfer_attempt_id'          => $ftaData['fta_id'],
             'batch_fund_transfer_attempt_id'    => $batchFta->getId(),

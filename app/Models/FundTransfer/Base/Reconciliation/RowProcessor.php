@@ -65,13 +65,9 @@ abstract class RowProcessor extends Base\Core
         {
             $this->fetchEntities();
 
-            //FTA_UTR_UPDATED
-            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             $batchFta = $this->reconEntity->batchFundTransfer;
 
             $customProperties = [
-                'timestamp'                         => $timestamp,
                 'channel'                           => $this->reconEntity->getChannel(),
                 'purpose'                           => $this->reconEntity->getPurpose(),
                 'fund_transfer_attempt_id'          => $this->reconEntity->getId(),
@@ -221,12 +217,9 @@ abstract class RowProcessor extends Base\Core
             'failure_reason'    => $publicErrorMessage,
         ];
 
-        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
         $batchFta = $this->reconEntity->batchFundTransfer;
 
         $customProperties = [
-            'timestamp'                         => $timestamp,
             'channel'                           => $this->reconEntity->getChannel(),
             'purpose'                           => $this->reconEntity->getPurpose(),
             'fund_transfer_attempt_id'          => $this->reconEntity->getId(),

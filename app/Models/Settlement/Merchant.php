@@ -409,10 +409,8 @@ class Merchant
      */
     protected function createSettlementAttemptEntity(int $initiateAt = null, array $merchantSettleToPartner)
     {
-        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $customProperties = [
-            'timestamp'             => $timestamp,
             'channel'               => $this->channel,
             'settlement_id'         => $this->setl->getId(),
             'transaction_count'     => $this->txns ? $this->txns->count() : 0,

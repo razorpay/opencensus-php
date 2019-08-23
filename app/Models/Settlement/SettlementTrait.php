@@ -17,6 +17,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Constants\SettlementChannelMedium as Medium;
 
 trait SettlementTrait
 {
@@ -503,12 +504,9 @@ trait SettlementTrait
 
             if(($setl !== null) and ($bankTransferAtpt !== null))
             {
-                $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
                 $transactionCount = $txns->count();
 
                 $customProperties = [
-                    'timestamp'             => $timestamp,
                     'channel'               => $channel,
                     'settlement_amount'     => $setlAmount,
                     'transaction_count'     => $transactionCount
@@ -520,7 +518,8 @@ trait SettlementTrait
                     null,
                     $customProperties);
 
-                $medium = in_array($channel, Channel::getApiBasedChannels(), true) ? 'API' : 'FILE';
+                $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
+                    Medium::API : Medium::FILE;
 
                 $customProperties += [
                     'fund_transfer_attempt_id'                => $bankTransferAtpt->getId(),
@@ -541,12 +540,9 @@ trait SettlementTrait
         {
             $this->trace->traceException($exception);
 
-            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             $transactionCount = $txns->count();
 
             $customProperties = [
-                'timestamp'             => $timestamp,
                 'channel'               => $channel,
                 'settlement_amount'     => $setlAmount,
                 'transaction_count'     => $transactionCount
@@ -558,7 +554,8 @@ trait SettlementTrait
                 $exception,
                 $customProperties);
 
-            $medium = in_array($channel, Channel::getApiBasedChannels(), true) ? 'API' : 'FILE';
+            $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
+                Medium::API : Medium::FILE;
 
             $customProperties += ['fund_transfer_attempt_medium' => $medium];
 

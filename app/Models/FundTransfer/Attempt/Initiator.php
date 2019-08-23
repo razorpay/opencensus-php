@@ -21,6 +21,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Constants\SettlementChannelMedium as Medium;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
@@ -177,21 +178,19 @@ class Initiator extends Base\Core
 
         $purpose = $attempts->first()->getPurpose();
 
-        $medium = in_array($channel, Channel::getApiBasedChannels(), true) ? 'API' : 'FILE';
+        $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
+            Medium::API : Medium::FILE;
 
         try
         {
-            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             $customProperties = [
-                'timestamp'                     => $timestamp,
                 'channel'                       => $channel,
                 'fund_transfer_attempt_count'   => $count,
                 'purpose'                       => $purpose,
                 'fund_transfer_attempt_medium'  => $medium,
             ];
 
-            $this->app['diag']->trackSettlementEvent(
+            $this->raiseSettlementEvent(
                 EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
                 null,
                 null,
@@ -226,8 +225,6 @@ class Initiator extends Base\Core
                 (new SlackNotification)->send('setl_initiate', $slackData);
             }
 
-            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
 
             $batchFTaId = $batchFundTransfer->getId();
@@ -239,7 +236,6 @@ class Initiator extends Base\Core
             $ftaCountInBatch = $batchFundTransfer->getTotalCount();
 
             $customProperties = [
-                'timestamp'                             => $timestamp,
                 'channel'                               => $channel,
                 'fund_transfer_attempt_count'           => $ftaCountInBatch,
                 'purpose'                               => $purpose,
@@ -249,30 +245,29 @@ class Initiator extends Base\Core
                 'transaction_count'                     => $transactionCount,
             ];
 
-            $this->app['diag']->trackSettlementEvent(
+            $this->raiseSettlementEvent(
                 EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
                 null,
                 null,
-                $customProperties);
+                $customProperties
+            );
 
         }
         catch (\Exception $exception)
         {
-            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             $customProperties = [
-                'timestamp'                     => $timestamp,
                 'channel'                       => $channel,
                 'fund_transfer_attempt_count'   => $count,
                 'purpose'                       => $purpose,
                 'medium'                        => $medium,
             ];
 
-            $this->app['diag']->trackSettlementEvent(
+            $this->raiseSettlementEvent(
                 EventCode::BATCH_FUND_TRANSFER_CREATION_FAILED,
                 null,
-                null,
+                $exception,
                 $customProperties);
+
         }
 
         return $data;
@@ -601,5 +596,18 @@ class Initiator extends Base\Core
         ];
 
         return $info;
+    }
+
+    protected function raiseSettlementEvent(array $eventDetails,
+                                            Settlement\Entity $settlement = null,
+                                            \Throwable $exception = null,
+                                            array $customProperties = [])
+    {
+
+        $this->app['diag']->trackSettlementEvent(
+            $eventDetails,
+            $settlement,
+            $exception,
+            $customProperties);
     }
 }
