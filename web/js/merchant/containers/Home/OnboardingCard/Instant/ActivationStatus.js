@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom';
 
 import { activationDuration } from 'common/data';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
+import track from 'react-tracking';
 
 const initialState = {
   status: null,
   content: null,
   title: 'Account Activation',
 };
-
+@track((state, props, args) => {
+  return window.rzpQ.component('ActivationCard');
+})
 export default class ActivationCard extends Component {
   constructor(props) {
     super(props);
@@ -45,7 +48,12 @@ export default class ActivationCard extends Component {
             <Link
               to="/activation"
               className="btn btn-primary"
-              onClick={() => track.activateAccount()}
+              onClick={e => {
+                track.activateAccount();
+                this.props.tracking.trackEvent(
+                  window.rzpQ.initiated('activation')
+                );
+              }}
             >
               Activate Account
             </Link>

@@ -31,6 +31,7 @@ import { setTrackData } from 'rzp/utils/googleAnalytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import initChat from 'merchant/chat';
+import track from 'react-tracking';
 
 @withRouter
 @connect(
@@ -47,6 +48,18 @@ import initChat from 'merchant/chat';
     ...NotificationActions,
     fetchGST,
     resizeWindow,
+  }
+)
+@track(
+  ({ user: { user } }) => {
+    const u = { email: user.email, id: user.id };
+    return window.rzpQ.component('Home', { user: u });
+  },
+  {
+    dispatch: data => {
+      console.log(data);
+      window.rzpQ.push(data);
+    },
   }
 )
 export default class App extends Component {

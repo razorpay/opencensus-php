@@ -1,17 +1,36 @@
-  <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
+  <!-- <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script> -->
+  <script src="http://127.0.0.1:5500/public/static/analytics/bundle.js"></script>
   <script src="https://cdn.razorpay.com/static/assets/holidays.js"></script>
   <script type="text/javascript">
+    const noop = ()=>{}
+    //Empty Interface for rzpQ
+    window.rzpQ = {
+                rzpQ: {
+                    component: noop, //Track components
+                    initiated: noop, //User starts an activity
+                    dropped: noop, //User drops an activity
+                    success: noop, //Successfully completes activity
+                    failed: noop, //A failure occured
+                    push: noop, //Explicitly push as custom event to the queue
+                    setUser:noop, //Set a user one time
+                }
+                };
     var useAnalytics = true;
-    if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
-        useAnalytics = false;
-    }
-    if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
-         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing'], {
+    // if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
+    //     useAnalytics = false;
+    // }
+    if(true){
+    // if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
+         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','perf'], {
            ga: 'UA-53341507-2',
-           fb: '697927486977350'
+           fb: '697927486977350',
+           lj:'10pYUm55sa39zgTN1gzNwQzNyQjM54Cg',
+           perf:'medash'
          });
         // Init old key as well
-
+        if(undefined!==analytics.createQ){
+            window.rzpQ=analytics.createQ({pollFreq:5000});
+        }
 
 
         ga('create', 'UA-53341507-1', 'auto', 'old');
