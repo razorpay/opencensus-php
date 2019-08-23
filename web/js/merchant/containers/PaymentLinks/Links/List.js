@@ -124,6 +124,7 @@ export default class PaymentLinksContainer extends ListContainer {
   }
 }
 
+// TODO: Update colSpan if no of columns are changes
 const EmptyComponent = () => (
   <EmptyListWithTableRow
     colSpan={8}
