@@ -209,6 +209,8 @@ abstract class ApiProcessor extends NodalAccount
 
         $this->traceRequest();
 
+        $startTime = millitime();
+
         if (($this->config['mock'] === true) or ($this->mode === Mode::TEST))
         {
             $response = $this->sendMockRequest();
@@ -242,6 +244,8 @@ abstract class ApiProcessor extends NodalAccount
             }
         }
 
+        $this->traceResponseTime($response, $startTime);
+
         $response = $this->handleEmptyResponse($response);
 
         $this->traceResponse($response);
@@ -262,6 +266,8 @@ abstract class ApiProcessor extends NodalAccount
     protected function makeRequestOnGateway(): array
     {
         $response = [];
+
+        $startTime = millitime();
 
         if ($this->config['mock'] === true)
         {
@@ -297,6 +303,8 @@ abstract class ApiProcessor extends NodalAccount
                     ]);
             }
         }
+
+        $this->traceResponseTime($response, $startTime);
 
         $this->traceGatewayResponse($response);
 
@@ -337,6 +345,19 @@ abstract class ApiProcessor extends NodalAccount
             'channel'     => $this->channel,
             'status_code' => $response->status_code,
         ]);
+    }
+
+    private function traceResponseTime(\Requests_Response $response, int $startTime)
+    {
+        $duration = millitime() - $startTime;
+
+        $dimensions = [
+            Metric::CHANNEL            => $this->channel,
+            Metric::STATUS_CODE        => $response->status_code,
+            Metric::REQUEST_TRACE_CODE => $this->requestTraceCode
+        ];
+
+        $this->trace->histogram(Metric::NODAL_RESPONSE_TIME, $duration, $dimensions);
     }
 
     private function traceGatewayResponse(array $response)
