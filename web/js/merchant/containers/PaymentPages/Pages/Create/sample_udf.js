@@ -33,20 +33,6 @@ const UISCHEMA = [
     },
   },
   {
-    name: 'amount',
-    type: 'number',
-    title: 'Amount',
-    minimum: '1', // Can be anything (>0) technically
-    maximum: '50000000', // Could be user defined max(technically)/ default for amount that we support
-    pattern: '^[1-9]+(.([0-9]){1,2})?$',
-    options: {
-      // cmp: 'Input' // Default field for any component of type:string/number/integer is Input
-      padded_text: {
-        before: '₹',
-      },
-    },
-  },
-  {
     name: 'field_1',
     type: 'number',
     title: 'Some Counter Field',
