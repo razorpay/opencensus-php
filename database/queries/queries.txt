@@ -5262,3 +5262,6 @@ ALTER TABLE payouts
 
 ALTER TABLE merchants
     ADD COLUMN receipt_email_trigger_event TINYINT(1) UNSIGNED DEFAULT 1 AFTER receipt_email_enabled;
+
+ALTER TABLE merchants
+	ADD COLUMN partnership_url TEXT DEFAULT NULL AFTER dashboard_whitelisted_ips_test;

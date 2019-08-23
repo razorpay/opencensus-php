@@ -78,7 +78,8 @@ class Validator extends Base\Validator
         Entity::DASHBOARD_WHITELISTED_IPS_TEST        => 'sometimes|array|max:20',
         Entity::DASHBOARD_WHITELISTED_IPS_TEST . '.*' => 'distinct|required_with:' .
                                                          Entity::DASHBOARD_WHITELISTED_IPS_TEST . '|ipv4',
-        Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable'
+        Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable',
+        Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000'
     ];
 
     protected static $uniqueEmailRules = [

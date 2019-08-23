@@ -106,6 +106,7 @@ class Entity extends Base\PublicEntity
     const RESTRICTED                     = 'restricted';
     const DASHBOARD_WHITELISTED_IPS_LIVE = 'dashboard_whitelisted_ips_live';
     const DASHBOARD_WHITELISTED_IPS_TEST = 'dashboard_whitelisted_ips_test';
+    const PARTNERSHIP_URL                = 'partnership_url';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -264,6 +265,7 @@ class Entity extends Base\PublicEntity
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
         self::DASHBOARD_WHITELISTED_IPS_TEST,
         self::DEFAULT_REFUND_SPEED,
+        self::PARTNERSHIP_URL,
     ];
 
     const CONFIG_LIST = [
@@ -345,6 +347,7 @@ class Entity extends Base\PublicEntity
         self::SECOND_FACTOR_AUTH,
         self::RESTRICTED,
         self::DEFAULT_REFUND_SPEED,
+        self::PARTNERSHIP_URL,
      ];
 
     protected $defaults = [
@@ -385,6 +388,7 @@ class Entity extends Base\PublicEntity
         self::DASHBOARD_WHITELISTED_IPS_LIVE => [],
         self::RECEIPT_EMAIL_TRIGGER_EVENT    => Event::AUTHORIZED,
         self::DEFAULT_REFUND_SPEED           => RefundSpeed::NORMAL,
+        self::PARTNERSHIP_URL                => null,
     ];
 
     protected $publicSetters = [

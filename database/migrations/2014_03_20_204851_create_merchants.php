@@ -184,6 +184,9 @@ class CreateMerchants extends Migration
             $table->text(Merchant::DASHBOARD_WHITELISTED_IPS_TEST)
                   ->nullable();
 
+            $table->text(Merchant::PARTNERSHIP_URL)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
 
             $table->integer(Merchant::UPDATED_AT);
