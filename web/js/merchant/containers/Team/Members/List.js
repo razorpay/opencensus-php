@@ -4,7 +4,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { role } from 'rzp/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { fetchTeam as fetchAll } from 'merchant/modules/collection';
+import { fetchTeam as fetchAll } from 'merchant/modules/team';
 
 import Actions from './Actions';
 

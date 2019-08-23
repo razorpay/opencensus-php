@@ -61,9 +61,10 @@ import {
   tokensReducer,
   commissionsReducer,
   commissionsAggregateReducer,
-  teamReducer,
   invitationsReducer,
 } from 'merchant/modules/collection';
+
+import { teamReducer } from 'merchant/modules/team';
 
 import {
   subscriptionsReducer,

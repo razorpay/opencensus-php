@@ -1,5 +1,9 @@
 import { set, merge, unshift, remove } from 'rzp/utils/immutable';
 import defaultAjax, { merchantFetch } from 'merchant/utils/ajax';
+import {
+  makeActionCollectionReducer,
+  fetchAll,
+} from 'merchant/modules/collection';
 
 import Team from 'merchant/models/Team';
 
@@ -14,6 +18,7 @@ export const UPDATE_SESSION = 'UPDATE_SESSION';
 
 const TEAM_MEMBER_DELETE = 'TEAM_MEMBER_DELETE';
 const TEAM_MEMBER_UNLOCK = 'TEAM_MEMBER_UNLOCK';
+const TEAM_MEMBER_EDIT = 'TEAM_MEMBER_EDIT';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -124,6 +129,34 @@ let initialState = {
   users: [],
   error: null,
 };
+
+export const fetchTeam = params => fetchAll(params, Team, 'TEAM_MEMBERS');
+export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
+  // since unlock api does not send all the details in the response
+  ['TEAM_MEMBER_UNLOCK::SUCCESS']: (state, action) => {
+    const itemIndex = state.items.findIndex(
+      item => item.id === action.payload.user_id
+    );
+    return set(
+      state,
+      `items.${itemIndex}.account_locked`,
+      action.payload.account_locked
+    );
+  },
+
+  ['TEAM_MEMBER_EDIT::SUCCESS']: (state, action) => ({
+    ...state,
+    items: state.items.map(
+      item =>
+        item.id === action.payload.id
+          ? {
+              ...item,
+              ...action.payload,
+            }
+          : { ...item }
+    ),
+  }),
+});
 
 export default function(state = initialState, action) {
   switch (action.type) {

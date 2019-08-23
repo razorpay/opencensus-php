@@ -1,6 +1,8 @@
 import store from 'merchant/store';
 import GenericEntity from './GenericEntity';
 
+import { pickProps } from 'rzp/utils/rzp-utils';
+
 export default class MerchantUser extends GenericEntity {
   resourceUrl = 'merchants-users';
 
@@ -33,14 +35,50 @@ export default class MerchantUser extends GenericEntity {
     });
   }
 
-  updateMember({ id, ...data }) {
+  updateContact({ id, contact_mobile }) {
+    return this.makeGenericAjaxCall({
+      url: `users/contact`,
+      method: 'PATCH',
+      data: {
+        user_id: id,
+        contact_mobile,
+      },
+    }).then(response => {
+      return { ...pickProps(response.data, 'contact_mobile') };
+    });
+  }
+
+  updateRole({ id, role }) {
     return this.makeGenericAjaxCall({
       url: `users/${id}/update`,
-      method: 'put',
+      method: 'PUT',
       data: {
-        ...data,
+        role,
         mode: 'live',
       },
+    }).then(response => {
+      return { ...pickProps(response.data, 'role') };
+    });
+  }
+
+  updateMember(data) {
+    // 2 API calls because of bad implentation from Backend
+    // They're keeping different API calls for updating contact_mobile and role
+    const apiCalls = [];
+    if (data.contact_mobile) {
+      apiCalls.push(
+        this.updateContact({ ...pickProps(data, ['contact_mobile', 'id']) })
+      );
+    }
+
+    if (data.role) {
+      apiCalls.push(this.updateRole({ ...pickProps(data, ['role', 'id']) }));
+    }
+
+    return Promise.all(apiCalls).then(responses => {
+      return [...responses, { id: data.id, role: data.role }].reduce(
+        (newObject, response) => ({ ...response, ...newObject })
+      );
     });
   }
 

@@ -3,9 +3,15 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { removeMember, updateMember } from 'merchant/modules/team';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+import { pickProps } from 'rzp/utils/rzp-utils';
+
+import ModalHeader from 'rzp/ui/ModalHeader';
+
+import NewInvitation from '../NewInvitation';
 
 @connect(null, {
   removeMember,
@@ -20,7 +26,45 @@ export default class MembersActions extends Component {
   };
 
   update = () => {
-    // code to update member from team
+    const member = this.props.member;
+
+    const visibleFields = {
+      role: true,
+      contactMobile: showWhenUtil({
+        additionalCondition: user =>
+          user.isMerchantRestricted && user.isAllowedEdit('team'),
+      }),
+    };
+
+    const toBePickedFields = [
+      'role',
+      'id',
+      ...(visibleFields.contactMobile ? ['contact_mobile'] : []),
+    ];
+
+    const defaults = pickProps(member, toBePickedFields);
+
+    return this.props.openModal({
+      size: 'small',
+      component: (
+        <>
+          <ModalHeader
+            title="Update Member"
+            onCloseClick={this.props.closeModal}
+          />
+          <div className="modal-body">
+            <NewInvitation
+              visibleFields={visibleFields}
+              defaults={{ ...defaults }}
+              ctaText="Update Member Details"
+              successMsg="Member updated successfully"
+              closeModal={this.props.closeModal}
+              onFormSubmit={this.props.updateMember}
+            />
+          </div>
+        </>
+      ),
+    });
   };
 
   remove = () => {
