@@ -2,7 +2,7 @@ import Button from 'component/Button';
 
 import FeatureEnableButton from './FeatureEnableButton';
 
-export class FeatureEnableSliderButton extends React.PureComponent {
+class FeatureEnableSliderButton extends React.PureComponent {
   onClickFeatureEnableSliderButton = (...args) => {
     const { props } = this;
 
@@ -39,7 +39,7 @@ export class FeatureEnableSliderButton extends React.PureComponent {
   }
 }
 
-export class NextButton extends React.PureComponent {
+class NextButton extends React.PureComponent {
   onClickNext = (...args) => {
     const { props } = this;
 
@@ -50,6 +50,7 @@ export class NextButton extends React.PureComponent {
 
     props.onClick && props.onClick(args);
   };
+
   render() {
     return (
       <Button.Primary
@@ -57,7 +58,7 @@ export class NextButton extends React.PureComponent {
         class="Forward-Button"
         iconAfter="arrow-forward"
         pendingText="Enabling..."
-        onClick={onClickNext(props)}
+        onClick={this.onClickNext}
       >
         Get Started
       </Button.Primary>
@@ -65,7 +66,7 @@ export class NextButton extends React.PureComponent {
   }
 }
 
-export class SkipAndGetStartedButton extends React.PureComponent {
+class SkipAndGetStartedButton extends React.PureComponent {
   onClickFeatureEnableButton = (...args) => {
     const { props } = this;
 
@@ -78,6 +79,8 @@ export class SkipAndGetStartedButton extends React.PureComponent {
   };
 
   render() {
+    const { props } = this;
+
     return (
       <FeatureEnableButton.Transparent
         feature={props.feature}
@@ -89,3 +92,5 @@ export class SkipAndGetStartedButton extends React.PureComponent {
     );
   }
 }
+
+export { NextButton, SkipAndGetStartedButton, FeatureEnableSliderButton };
