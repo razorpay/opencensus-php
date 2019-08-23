@@ -35,7 +35,6 @@ class ConfigKey
 
     const DISABLE_MAGIC                         = self::PREFIX . 'disable_magic';
     const NPCI_UPI_DEMO                         = self::PREFIX . 'npci_upi_demo';
-    const SLA_FOR_PAYOUT                        = self::PREFIX . 'sla_for_payout:';
     const BLOCK_SMART_COLLECT                   = self::PREFIX . 'block_smart_collect';
     const BLOCK_YESBANK                         = self::PREFIX . 'block_yesbank';
     const BLOCK_AADHAAR_REG                     = self::PREFIX . 'block_aadhaar_reg';
@@ -50,6 +49,7 @@ class ConfigKey
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
     const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
     const DOWNTIME_DETECTION                    = self::PREFIX . 'downtime:detection';
+    const RX_SLA_FOR_IMPS_PAYOUT                = self::PREFIX . 'rx_sla_for_imps_payout';
     const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
     const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';

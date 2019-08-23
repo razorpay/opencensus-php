@@ -142,7 +142,7 @@ class FundTransfer extends Job
             $this->logAndDelete($data, $traceCode);
 
             // SLA in minutes
-            $sla = $this->redis->get(ConfigKey::SLA_FOR_PAYOUT);
+            $sla = $this->redis->get(ConfigKey::RX_SLA_FOR_IMPS_PAYOUT);
 
             $currentTime = Carbon::now()->getTimestamp();
 
