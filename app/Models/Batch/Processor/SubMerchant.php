@@ -108,9 +108,9 @@ class SubMerchant extends Base
 
     protected function performPreProcessingActions()
     {
-        $settings = $this->settingsAccessor->all()->toArray();
+        $config = $this->settingsAccessor->all()->toArray();
 
-        $this->settings = array_merge($this->params, $settings);
+        $this->settings = array_merge($this->params, $config);
 
         $this->autoSubmit = (empty($this->settings[ME::AUTO_SUBMIT]) === false);
 
