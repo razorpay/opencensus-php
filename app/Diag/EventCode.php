@@ -317,5 +317,4 @@ class EventCode
         'group' => 'receive',
         'name'  => 'reverse.feed.received'
     ];
-
 }
