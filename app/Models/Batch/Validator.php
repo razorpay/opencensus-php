@@ -211,19 +211,22 @@ class Validator extends Base\Validator
     ];
 
     protected static $subMerchantCreateRules = [
-        Entity::TYPE                  => 'required|in:sub_merchant',
-        Entity::NAME                  => 'filled|string|max:255',
-        Entity::FILE                  => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE   => 'required|in:sub_merchant',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'filled|array',
+    ];
+
+    protected static $subMerchantConfigRules = [
         ME::AUTO_SUBMIT               => 'filled|boolean',
         ME::INSTANTLY_ACTIVATE        => 'filled|boolean',
         ME::AUTOFILL_DETAILS          => 'filled|boolean',
         ME::AUTO_ACTIVATE             => 'filled|boolean',
         ME::USE_EMAIL_AS_DUMMY        => 'filled|boolean',
-        ME::PARTNER_ID                => 'filled|string|size:14',
+        ME::PARTNER_ID                => 'required|string|size:14',
         ME::AUTO_ENABLE_INTERNATIONAL => 'filled|boolean',
         ME::SKIP_BA_REGISTRATION      => 'filled|boolean',
         ME::CREATE_SUBMERCHANT        => 'filled|boolean',
-        Entity::CONFIG                => 'filled|array',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [
@@ -808,8 +811,9 @@ class Validator extends Base\Validator
 
     protected function validateSubMerchantEntries(array & $entries, array $params, ME $merchant)
     {
+        $this->validateInput('subMerchantConfig', $params[Entity::CONFIG] ?? []);
 
-        $partnerId =  $params[Entity::CONFIG][ME::PARTNER_ID] ?? null;
+        $partnerId = $params[Entity::CONFIG][ME::PARTNER_ID] ?? null;
 
         /** @var Merchant\Entity $partner */
         $partner = (new Merchant\Repository)->findOrFailPublic($partnerId);
