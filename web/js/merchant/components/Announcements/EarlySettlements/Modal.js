@@ -140,7 +140,7 @@ export default class RequestEarlyAccessForm extends Component {
           formData.interested_in
         } Early Settlement for <strong>${
           this.props.user.name
-        }</strong>. The pricing agreed to is <strong>${pricing}%.</strong><br><br>We will update you once the changes have been approved.<br><br>Cheers,<br>Team Razorpay</div></div>`,
+        }</strong>. The pricing agreed to is <strong>${pricing}%.</strong> For international payments, it is <strong>1%</strong> more.<br><br>We will update you once the changes have been approved.<br><br>Cheers,<br>Team Razorpay</div></div>`,
         custom_fields: {
           cf_requester_category: 'Merchant',
           cf_requestor_subcategory: 'Account configuration/changes',
