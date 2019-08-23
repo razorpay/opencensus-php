@@ -20,8 +20,6 @@ trait SettlementEvent
 
         $customProperties += ['timestamp' => $timestamp];
 
-        s($customProperties);
-
         $event = new SettlEvent($settlement, $ex, $customProperties);
 
         $properties = $event->getProperties();
