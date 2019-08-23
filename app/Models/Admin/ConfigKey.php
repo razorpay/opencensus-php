@@ -35,6 +35,7 @@ class ConfigKey
 
     const DISABLE_MAGIC                         = self::PREFIX . 'disable_magic';
     const NPCI_UPI_DEMO                         = self::PREFIX . 'npci_upi_demo';
+    const SLA_FOR_PAYOUT                        = self::PREFIX . 'sla_for_payout:';
     const BLOCK_SMART_COLLECT                   = self::PREFIX . 'block_smart_collect';
     const BLOCK_YESBANK                         = self::PREFIX . 'block_yesbank';
     const BLOCK_AADHAAR_REG                     = self::PREFIX . 'block_aadhaar_reg';
