@@ -1,3 +1,4 @@
+import { connect } from 'react-redux';
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
@@ -6,7 +7,14 @@ import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
+import ModalHeader from 'rzp/ui/ModalHeader';
+
+@connect(null, {
+  openModal,
+  closeModal,
+})
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -92,8 +100,41 @@ export default class BaseForm extends React.PureComponent {
     });
   };
 
+  onChangeCurrency = selectedCurrency => {
+    if (this.props.currency !== selectedCurrency.name) {
+      this.props.openModal({
+        size: 'small',
+        component: (
+          <div>
+            <ModalHeader title="Currency change?" />
+
+            <div className="modal-body">
+              <div>
+                You're changing currency from <b>{this.props.currency}</b> to{' '}
+                <b>{selectedCurrency.name}</b>.
+              </div>
+              <div>
+                On saving this item, this currency will apply to all items on
+                this page.
+              </div>
+              <br />
+              <footer>
+                <Button.Primary
+                  class="Button--full-width"
+                  onClick={this.props.closeModal}
+                >
+                  Ok
+                </Button.Primary>
+              </footer>
+            </div>
+          </div>
+        ),
+      });
+    }
+  };
+
   getREP_Amount(isDisabled) {
-    const { currency, field } = this.props;
+    const { field, currency } = this.props;
     const amount = field.item.amount || ''; // Note: If amount is there, then isDisabled = false;
     const placeholder = isDisabled ? 'To be filled by customer' : '0.00';
 
@@ -109,6 +150,7 @@ export default class BaseForm extends React.PureComponent {
             name="currency"
             defaultValue={currency}
             parentQuerySelector=".Modal-container"
+            onChange={this.onChangeCurrency}
           />
 
           <Input
@@ -215,7 +257,6 @@ export default class BaseForm extends React.PureComponent {
       validateSameTitleExists,
       onCloseForm,
       onDeleteField,
-      currency,
     } = this.props;
 
     const {
