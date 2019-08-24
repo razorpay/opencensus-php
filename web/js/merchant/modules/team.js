@@ -80,14 +80,6 @@ export const updateSelfContact = data => {
   };
 };
 
-export const sendInvitation = data => {
-  const team = new Team();
-  return {
-    type: TEAM_MEMBER_CREATE,
-    payload: team.sendInvitation(data),
-  };
-};
-
 export const updateMember = data => {
   const team = new Team();
   return {
@@ -104,6 +96,11 @@ export const removeMember = userId => {
   };
 };
 
+export const unlockMember = memberId => ({
+  type: TEAM_MEMBER_UNLOCK,
+  payload: new Team().unlock(memberId),
+});
+
 export const toggle2FaEnforcement = data => {
   return {
     type: UPDATE_SESSION,
@@ -118,10 +115,6 @@ export const toggle2FaEnforcement = data => {
     }),
   };
 };
-export const unlockMember = memberId => ({
-  type: TEAM_MEMBER_UNLOCK,
-  payload: new Team().unlock(memberId),
-});
 
 let initialState = {
   loading: true,

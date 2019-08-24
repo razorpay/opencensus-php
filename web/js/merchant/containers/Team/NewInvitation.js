@@ -102,7 +102,6 @@ export default class NewInvitation extends Component {
       <div>
         <div class="form-group Form--vertical">
           <label>Member Details</label>
-          {/* this should be configurable from props */}
           {visibleFields.email && (
             <div class="input-container top-rounded">
               <i class="i i-email" />
@@ -124,7 +123,6 @@ export default class NewInvitation extends Component {
               />
             </div>
           )}
-          {/* this also should be configurable using props */}
           {visibleFields.contactMobile && (
             <div
               class={classList('input-container bottom_rounded', {
