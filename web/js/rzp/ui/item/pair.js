@@ -3,6 +3,7 @@ import * as id from './id';
 import { getAmount, getTime } from 'rzp/ui/item';
 import { makeIdLink } from 'rzp/ui/item/id';
 import { getIntervalCycle, subString } from 'rzp/utils/rzp-utils';
+import { RefundStatusLabel } from 'merchant/components/StatusLabel';
 
 export const withClick = onClick => ({ value, ...rest }) => {
   return {
@@ -16,7 +17,7 @@ const textRightClass = 'text-right';
 export const amount = {
   title: 'Amount',
   value: items.amount,
-  columnClass: textRightClass,
+  columnClass: 'text-center',
 };
 export const amountRefunded = {
   title: 'Amount Refunded',
@@ -33,6 +34,10 @@ export const email = { title: 'Email', value: item => item.email };
 export const contact = { title: 'Contact', value: item => item.contact };
 export const currency = { title: 'Currency', value: item => item.currency };
 export const status = { title: 'Status', value: items.status };
+export const public_status = {
+  title: 'Status',
+  value: item => <RefundStatusLabel status={item.public_status} />,
+};
 export const paidCount = {
   title: 'Paid Count',
   value: item => item.paid_count,
@@ -51,6 +56,14 @@ export const paymentId = { title: 'Payment Id', value: id.payment };
 export const orderId = { title: 'Order Id', value: id.order };
 export const rzpOrderId = { title: 'Razorpay Order Id', value: id.rzpOrder };
 export const refundId = { title: 'Refund Id', value: id.refund };
+export const refundMode = {
+  title: 'Mode',
+  value: item => item.mode,
+};
+export const refundStatus = {
+  title: 'Status',
+  value: item => <RefundStatusLabel status={item.status} />,
+};
 export const customerRefundId = {
   title: 'Refund Id',
   value: item => item.customer_refund_id,

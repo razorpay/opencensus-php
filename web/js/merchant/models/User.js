@@ -351,6 +351,10 @@ export default class User {
   get isEnhancedEPOSEnabled() {
     return this.getExpStatus('sellerapp_plus');
   }
+
+  get isPostActivationHotjarSurveyEnabled() {
+    return this.getExpStatus('post_activation_hotjar_survey');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

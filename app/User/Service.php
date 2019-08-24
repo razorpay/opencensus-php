@@ -197,22 +197,19 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $genericUser) = $this->getUserFromApi($user->id);
+        list($error, $data) = $this->checkAccessOfUserOnMerchant($merchantId);
 
         if (empty($error) === true)
         {
-            $currentMerchant = $genericUser->merchants
-                                           ->where('id', $merchantId)
-                                           ->first();
 
-            if ($currentMerchant !== null)
+            if ($data['access'] === true)
             {
-                Session::put('current_merchant_id', $currentMerchant->id);
+                Session::put('current_merchant_id', $merchantId);
 
                 $traceData = [
-                    'id'          => $genericUser->id,
-                    'email'       => $genericUser->email,
-                    'merchant_id' => $currentMerchant->id,
+                    'id'          => $user->id,
+                    'email'       => $user->email,
+                    'merchant_id' => $merchantId,
                 ];
 
                 $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
@@ -466,6 +463,7 @@ class Service extends Base\Service
 
                     $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
                     $data['experiments']['sellerapp_plus'] = $merchantService->getTreatment('sellerapp_plus');
+                    $data['experiments']['post_activation_hotjar_survey'] = $merchantService->getTreatment('post_activation_hotjar_survey');
 
                     $data['current'] = $currentMerchantId;
 
@@ -656,6 +654,19 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUser];
+    }
+
+    protected function checkAccessOfUserOnMerchant($merchantId)
+    {
+        $request = new \App\Admin\ApiRequestAny();
+
+        $queryParams = [
+            'merchant_id'   => $merchantId,
+        ];
+
+        $path = 'users/access';
+
+        return $request->send($path.'?'.http_build_query($queryParams), 'GET');
     }
 
     /**

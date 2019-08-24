@@ -584,11 +584,6 @@ export default class HomeContainer extends Component {
      * we use it to show the banner , if there are no trasaction
      */
     if (user.isActivated && mode === 'live') {
-      // show hotjar if number of payments is greater than 50
-      if (items.length > 50) {
-        document.body.className += ' show-hotjar-poll';
-      }
-
       if (
         this.hasAccessToOnboardingBanner &&
         !this.state.showOnboardingBanner &&
