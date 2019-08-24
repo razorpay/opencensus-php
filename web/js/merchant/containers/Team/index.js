@@ -1,15 +1,27 @@
+import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import HeaderAction from 'rzp/ui/HeaderAction';
+import ModalHeader from 'rzp/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
+
+import { sendInvitation } from 'merchant/modules/invitation';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 import Actions from './Actions';
 import InvitationsList from './Invitations/List';
 import MembersList from './Members/List';
 import Toggle2FA from './Toggle2FA';
+import NewInvitation from './NewInvitation';
 
+@connect(
+  state => ({
+    user: state.session.user.user,
+  }),
+  { sendInvitation, openModal, closeModal }
+)
 export default class ManageTeamContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -82,16 +94,16 @@ export default class ManageTeamContainer extends React.Component {
 
     const defaults = {
       sender_name: this.props.user.name,
+      role: 'manager',
     };
 
     this.props.openModal({
       size: 'small',
       component: (
-        <div>
+        <>
           <ModalHeader
             title="Invite New Member"
             onCloseClick={this.props.closeModal}
-            onSuccess={this.props.closeModal}
           />
           <div class="modal-body">
             <NewInvitation
@@ -105,7 +117,7 @@ export default class ManageTeamContainer extends React.Component {
               ctaText="Send Invitation"
             />
           </div>
-        </div>
+        </>
       ),
     });
   };
