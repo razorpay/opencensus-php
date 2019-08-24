@@ -182,7 +182,9 @@ class BeamJob extends Job
             {
                 $this->release($this->retryTimeLines[$this->attempts() - 1]);
 
-                if(isset($mailInfo['batchFundTransferId']) === true)
+                // Setting this key only when beam job is called
+                // for settlements file push.
+                if(isset($this->mailInfo['batchFundTransferId']) === true)
                 {
                     $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_RETRY);
                 }
@@ -199,9 +201,10 @@ class BeamJob extends Job
 
         if (in_array($this->response->status_code, self::HTTP_SUCCESS_CODES, true) === true)
         {
-            $mailInfo = $this->mailInfo;
 
-            if(isset($mailInfo['batchFundTransferId']) === true)
+            // Setting this key only when beam job is called
+            // for settlements file push.
+            if(isset($this->mailInfo['batchFundTransferId']) === true)
             {
                 $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_SUCCESS);
             }
@@ -234,9 +237,9 @@ class BeamJob extends Job
         {
             $batchFundTransferId = null;
 
-            $mailInfo = $this->mailInfo;
-
-            if(isset($mailInfo['batchFundTransferId']) === true)
+            // Setting this key only when beam job is called
+            // for settlements file push.
+            if(isset($this->mailInfo['batchFundTransferId']) === true)
             {
                 $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_FAILED);
             }
@@ -294,13 +297,12 @@ class BeamJob extends Job
 
     protected function raiseSettlementBeamJobEvent(array $eventCode)
     {
-        $mailInfo = $this->mailInfo;
 
         $channel = null;
 
-        if(isset($mailInfo['channel']))
+        if(isset($this->mailInfo['channel']) === true)
         {
-            $channel = $mailInfo['channel'];
+            $channel = $this->mailInfo['channel'];
         }
 
         $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
@@ -310,9 +312,7 @@ class BeamJob extends Job
             'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
         ];
 
-        $app = App::getFacadeRoot();
-
-        $app['diag']->trackSettlementEvent(
+        app('diag')->trackSettlementEvent(
             $eventCode,
             null,
             null,

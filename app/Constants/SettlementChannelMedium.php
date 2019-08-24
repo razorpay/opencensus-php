@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RZP\Constants;
-
 
 class SettlementChannelMedium
 {

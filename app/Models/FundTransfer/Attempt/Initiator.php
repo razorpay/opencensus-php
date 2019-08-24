@@ -181,7 +181,7 @@ class Initiator extends Base\Core
 
         $purpose = $attempts->first()->getPurpose();
 
-        $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
+        $medium = (in_array($channel, Channel::getApiBasedChannels(), true) === true) ?
             Medium::API : Medium::FILE;
 
         try
