@@ -118,7 +118,7 @@ export const toggle2FaEnforcement = data => {
     }),
   };
 };
-export const unlock = memberId => ({
+export const unlockMember = memberId => ({
   type: TEAM_MEMBER_UNLOCK,
   payload: new Team().unlock(memberId),
 });
