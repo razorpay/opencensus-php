@@ -150,7 +150,7 @@ export default class ManageTeamContainer extends React.Component {
 
   render() {
     return (
-      <div class="content-wrapper content-sm">
+      <div class="content-wrapper content-sm" id="settings-content">
         <Toggle2FA />
         <HeaderAction>
           <div class="btn-toolbar pull-right">
