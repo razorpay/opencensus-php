@@ -64,7 +64,11 @@ export default class ManageTeamContainer extends React.Component {
   render() {
     return (
       <div class="content-wrapper content-sm" id="settings-content">
-        <Toggle2FA />
+        <ShowWhen
+          additionalCondition={user => user.getExpStatus('second_factor_auth')}
+        >
+          <Toggle2FA />
+        </ShowWhen>
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <DocsLink url="https://razorpay.com/docs/team-support/" />
