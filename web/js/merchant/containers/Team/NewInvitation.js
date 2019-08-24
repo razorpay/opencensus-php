@@ -80,10 +80,9 @@ export default class NewInvitation extends Component {
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
         <div>
-          <div class="form-group Form--vertical">
+          <div class="form-group">
             <label>Member Details</label>
-            <div class="input-container top-rounded">
-              <i class="i i-email" />
+            <div class="input-container">
               <Field
                 name="email"
                 component={InputField}
@@ -101,8 +100,7 @@ export default class NewInvitation extends Component {
                 ]}
               />
             </div>
-            <div class="input-container no-top-border bottom-rounded">
-              <i class="i i-phone" />
+            <div class="input-container">
               <Field
                 name="contact_mobile"
                 component={InputField}
@@ -121,7 +119,7 @@ export default class NewInvitation extends Component {
             </div>
           </div>
 
-          <div class="form-group Form--vertical">
+          <div class="form-group">
             <label>Role</label>
             <div class="input-container">
               <Field name="role" component="select" class="form-control">
