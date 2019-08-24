@@ -12,9 +12,7 @@ class SubType
     /**
      * CONSUMER is enabled for all merchant by default
      */
-    const DEFAULT_CARD_SUBTYPE = [
-        self::CONSUMER                    => 1,
-    ];
+    const DEFAULT_CARD_SUBTYPE = 1;
 
     protected static $subTypeBitPosition = [
         self::CONSUMER                    => 1,

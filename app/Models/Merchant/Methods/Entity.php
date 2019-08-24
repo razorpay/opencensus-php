@@ -6,8 +6,6 @@ use RZP\Models\Base;
 use RZP\Models\Bank\Bank;
 use RZP\Models\Card\Network;
 use RZP\Models\Base\QueryCache\Cacheable;
-use RZP\Models\Card\SubType;
-use RZP\Models\Card\Type;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Entity extends Base\PublicEntity
@@ -37,7 +35,6 @@ class Entity extends Base\PublicEntity
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const PREPAID_CARD      = 'prepaid_card';
-    const CARD_SUBTYPE      = 'card_subtype';
     const UPI               = 'upi';
     const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
@@ -80,7 +77,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::PREPAID_CARD,
-        self::CARD_SUBTYPE,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
@@ -113,7 +109,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::PREPAID_CARD,
-        self::CARD_SUBTYPE,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
@@ -146,7 +141,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::PREPAID_CARD,
-        self::CARD_SUBTYPE,
         self::ENTITY,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
@@ -180,7 +174,6 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
         self::PREPAID_CARD   => true,
-        self::CARD_SUBTYPE   => SubType::DEFAULT_CARD_SUBTYPE,
         self::BANK_TRANSFER  => true,
         self::AMAZONPAY      => false,
         self::CARDLESS_EMI   => false,
@@ -336,16 +329,6 @@ class Entity extends Base\PublicEntity
         return ((bool) $this->getCardNetworks()[$network]);
     }
 
-    public function isSubTypeEnabled(string $subtype): bool
-    {
-        if (SubType::isValidSubType($subtype) === false)
-        {
-            return false;
-        }
-
-        return ((bool) $this->getCardSubtypes()[$subtype]);
-    }
-
     public function isAmexEnabled()
     {
         return ((bool) $this->getCardNetworks()[Network::AMEX]);
@@ -450,35 +433,7 @@ class Entity extends Base\PublicEntity
         return $this->$func();
     }
 
-    public function getCardSubtypes(): array
-    {
-        return $this->getAttribute(self::CARD_SUBTYPE);
-    }
-
     // ----------------------- Getters --------------------------------------------
-
-    protected function setCardSubTypeAttribute($subtypes)
-    {
-        $cardSubtypes = $this->getCardSubtypes();
-
-        $subtypes = array_merge($cardSubtypes, $subtypes);
-
-        $value = SubType::getHexValue($subtypes);
-
-        $this->attributes[self::CARD_SUBTYPE] = $value;
-    }
-
-    protected function getCardSubTypeAttribute()
-    {
-        return $this->getEnabledSubTypes();
-    }
-
-    public function getEnabledSubTypes(): array
-    {
-        $subtypes = $this->attributes[self::CARD_SUBTYPE] ?? 0;
-
-        return SubType::getEnabledCardSubTypes($subtypes);
-    }
 
     public function getMerchantId()
     {
@@ -662,17 +617,6 @@ class Entity extends Base\PublicEntity
         $cardNetworks[$network] = $value;
 
         $this->setAttribute(self::CARD_NETWORKS, $cardNetworks);
-    }
-
-    protected function setCardSubType(string $subtype, int $value)
-    {
-        $subTypes = $this->getAttribute(self::CARD_SUBTYPE);
-
-        SubType::checkSubType($subtype);
-
-        $subTypes[$subtype] = $value;
-
-        $this->setAttribute(self::CARD_SUBTYPE, $subTypes);
     }
 
     public function setWallets($wallets)

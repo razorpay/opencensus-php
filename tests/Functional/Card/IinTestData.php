@@ -26,53 +26,6 @@ return [
         ],
     ],
 
-    'testAddIinWithSubType'  => [
-        'request' => [
-            'url' => '/iins',
-            'method' => 'post',
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'RuPay',
-                'type'      => 'debit',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'RuPay',
-                'type'      => 'debit',
-                'sub_type'  => 'consumer',
-                'recurring' => false,
-            ],
-        ],
-    ],
-
-    'testAddIinWithInValidSubType'  => [
-        'request' => [
-            'url' => '/iins',
-            'method' => 'post',
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'RuPay',
-                'sub_type'  => 'abc',
-                'type'      => 'debit',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid sub_type: abc',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ]
-    ],
-
     'testAddIinWithRecurring' => [
         'request' => [
             'url' => '/iins',
@@ -81,7 +34,6 @@ return [
                 'iin'       => 112333,
                 'network'   => 'RuPay',
                 'type'      => 'debit',
-                'sub_type'  => 'consumer',
                 'recurring' => 1,
             ],
         ],
@@ -90,124 +42,9 @@ return [
                 'iin'       => 112333,
                 'network'   => 'RuPay',
                 'type'      => 'debit',
-                'sub_type'  => 'consumer',
                 'recurring' => true,
             ],
         ],
-    ],
-
-    'testAddIinWithCategory' => [
-        'request' => [
-            'url' => '/iins',
-            'method' => 'post',
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'Visa',
-                'type'      => 'credit',
-                'category'  => 'Signature',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'Visa',
-                'type'      => 'credit',
-                'sub_type'  => 'consumer',
-                'category'  => 'Signature',
-            ],
-        ],
-    ],
-
-    'testAddIinWithCategoryAndRuPay' => [
-        'request' => [
-            'url' => '/iins',
-            'method' => 'post',
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'RuPay',
-                'type'      => 'credit',
-                'category'  => 'abc',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'RuPay',
-                'type'      => 'credit',
-                'sub_type'  => 'consumer',
-                'category'  => 'abc',
-            ],
-        ],
-    ],
-
-    'testEditIinWithoutCategory' => [
-        'request' => [
-            'url' => '/iins/112333',
-            'method' => 'put',
-            'content' => [
-                'type'      => 'credit',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'RuPay',
-                'type'      => 'credit',
-                'sub_type'  => 'consumer',
-            ],
-        ],
-    ],
-
-    'testAddIinWithInvalidCategory' => [
-        'request' => [
-            'url' => '/iins',
-            'method' => 'post',
-            'content' => [
-                'iin'       => 112333,
-                'network'   => 'Visa',
-                'type'      => 'credit',
-                'sub_type'  => 'consumer',
-                'category'  => 'abc',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid category: abc',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ]
-    ],
-
-    'testEditIinWithCategoryWithoutNetwork' => [
-        'request' => [
-            'url'     => '/iins/112333',
-            'method'  => 'put',
-            'content' => [
-                'type'      => 'credit',
-                'sub_type'  => 'consumer',
-                'category'  => 'abc',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The network field is required when category is present.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ]
     ],
 
     'testGetPaymentFlows' => [

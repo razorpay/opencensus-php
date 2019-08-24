@@ -5040,40 +5040,9 @@ ALTER TABLE `merchant_banks`
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
-ALTER TABLE virtual_accounts
-    ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
-    ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
-    ADD INDEX virtual_accounts_close_by_index (close_by);
-
-ALTER TABLE `roles`
-    ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
-    ADD INDEX `roles_product_index` (`product`);
-
-ALTER TABLE `iins`
-    ADD COLUMN `sub_type` VARCHAR(255) NOT NULL DEFAULT 'consumer' AFTER `type`;
 
 ALTER TABLE `pricing`
     ADD COLUMN `payment_method_subtype` VARCHAR(255) NULL;
-
-ALTER TABLE `gateway_rules`
-    ADD COLUMN `method_subtype` VARCHAR(255) NULL AFTER `method_type`,
-    ADD INDEX gateway_rules_method_subtype_index (method_subtype);
-
-ALTER TABLE `gateway_rules`
-    ADD COLUMN `card_category` VARCHAR(255) NULL AFTER `method_subtype`,
-    ADD INDEX gateway_card_category_index (card_category);
-
-ALTER TABLE `merchant_banks`
-    ADD COLUMN `card_subtype` INT UNSIGNED NOT NULL DEFAULT 1;
-
-ALTER TABLE `cards`
-    ADD COLUMN `sub_type` VARCHAR(255) DEFAULT NULL AFTER `type`;
-
-ALTER TABLE `cards`
-    ADD COLUMN `category` VARCHAR(255) DEFAULT NULL AFTER `sub_type`;
-
-
-
 
 ALTER TABLE `merchants`
     ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
