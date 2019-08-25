@@ -74,13 +74,20 @@ export default class SubscriptionsController extends React.Component {
 
     const { subscriptions, plans, location } = this.props;
 
+    const isPlanRoute = location.pathname.includes('plan');
+
     if (
       subscriptions.loading ||
       subscriptions.items.length ||
       plans.loading ||
-      plans.items.length ||
-      location.pathname.includes('plan')
+      plans.items.length
     ) {
+      return;
+    }
+
+    if (isPlanRoute) {
+      this.props.fetchSubscriptions({ count: 25 });
+
       return;
     }
 
@@ -90,47 +97,51 @@ export default class SubscriptionsController extends React.Component {
   initSubscriptions = (props = this.props) => {
     if (props.user.isChargeAtWillEnabled) return;
 
-    const { isSubscriptionsEnabled } = props.user;
+    const { subscriptionProductOnBoarding } = props,
+      { isSubscriptionsEnabled } = props.user;
 
     let showOnboarding = !isSubscriptionsEnabled;
 
-    let subscriptionProductOnBoarding = {
-      ...props.subscriptionProductOnBoarding,
-      showOnboarding,
-    };
-
     if (isSubscriptionsEnabled) {
-      subscriptionProductOnBoarding.showOnboarding = getIsAllowedResetSubscriptionBoarding(
-        {
-          plans: props.plans,
-          subscriptions: props.subscriptions,
-        }
-      );
+      showOnboarding = getIsAllowedResetSubscriptionBoarding({
+        plans: props.plans,
+        subscriptions: props.subscriptions,
+      });
     } else {
-      this.props.handleProductQuickGuide(subscriptionProductOnBoarding);
+      this.props.handleProductQuickGuide({
+        ...subscriptionProductOnBoarding,
+        showOnboarding,
+      });
 
       return;
     }
 
-    const isQuickGuideClosed = getSubscriptionQuickGuideIsClosed(props);
+    let isQuickGuideOpen = false;
 
-    subscriptionProductOnBoarding.isQuickGuideOpen =
-      props.subscriptionProductOnBoarding.isTour || isQuickGuideClosed;
+    if (subscriptionProductOnBoarding.isTour) {
+      isQuickGuideOpen = true;
+    } else {
+      isQuickGuideOpen = !getSubscriptionQuickGuideIsClosed(props);
+    }
 
-    this.props.handleProductQuickGuide(subscriptionProductOnBoarding);
+    this.props.handleProductQuickGuide({
+      ...subscriptionProductOnBoarding,
+      showOnboarding,
+      isQuickGuideOpen,
+    });
   };
 
   render() {
-    if (this.props.subscriptionProductOnBoarding.showOnboarding) {
+    const { subscriptionProductOnBoarding } = this.props;
+
+    if (subscriptionProductOnBoarding.showOnboarding) {
       return <OnBoarding />;
     }
 
     return (
       <div class={classList('Subscriptions-Container')}>
         <tabbed-container>
-          {this.props.subscriptionProductOnBoarding.isQuickGuideOpen && (
-            <QuickGuide />
-          )}
+          {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
 
           <header id="subscriptions-header">
             <ShowWhen additionalCondition={user => !user.isChargeAtWillEnabled}>

@@ -82,8 +82,6 @@ export const getSubscriptionQuickGuideIsClosed = props => {
     return false;
   }
 
-  if (props.subscriptions.loading) return true;
-
   let isClosed = getQuickGuideIsClosedFromLocalStorage(
     RZPFeatures.SUBSCRIPTIONS
   );
@@ -123,7 +121,7 @@ const getStatus = ({ plans, subscriptions }) => {
     subscriptionStatus = loading,
     paymentStatus = loading;
 
-  if (!subscriptions.items.length && !plans.items.length && plans.loading) {
+  if (subscriptions.loading && plans.loading) {
     return {
       planStatus,
       subscriptionStatus,
@@ -131,11 +129,13 @@ const getStatus = ({ plans, subscriptions }) => {
     };
   }
 
-  planStatus = subscriptions.items.length
-    ? done
-    : plans.items.length ? done : active;
+  if (subscriptions.items.length || plans.items.length) {
+    planStatus = done;
+  } else {
+    planStatus = active;
+  }
 
-  if (!subscriptions.items.length && subscriptions.loading) {
+  if (subscriptions.loading) {
     return {
       planStatus,
       subscriptionStatus,
@@ -143,38 +143,33 @@ const getStatus = ({ plans, subscriptions }) => {
     };
   }
 
-  (subscriptionStatus = locked), (paymentStatus = locked);
+  subscriptionStatus = locked;
+  paymentStatus = locked;
 
-  if (planStatus === done) {
-    if (subscriptions.items.length) {
-      subscriptionStatus = done;
-    } else {
-      subscriptionStatus = active;
-    }
+  if (subscriptions.items.length) {
+    subscriptionStatus = done;
+    paymentStatus = active;
+  } else {
+    subscriptionStatus = active;
   }
 
+  // Check paymentStatus
   if (subscriptionStatus === done) {
-    if (subscriptions.items.length) {
-      subscriptions.items.forEach(subscription => {
-        if (
-          [
-            SubscriptionsStates.ACTIVE,
-            SubscriptionsStates.PENDING,
-            SubscriptionsStates.AUTHENTICATED,
-            SubscriptionsStates.HALTED,
-            SubscriptionsStates.COMPLETED,
-          ].includes(subscription.status)
-        ) {
-          paymentStatus = done;
+    subscriptions.items.forEach(subscription => {
+      if (
+        [
+          SubscriptionsStates.ACTIVE,
+          SubscriptionsStates.PENDING,
+          SubscriptionsStates.AUTHENTICATED,
+          SubscriptionsStates.HALTED,
+          SubscriptionsStates.COMPLETED,
+        ].includes(subscription.status)
+      ) {
+        paymentStatus = done;
 
-          return false;
-        } else {
-          paymentStatus = active;
-        }
-      });
-    } else {
-      paymentStatus = active;
-    }
+        return false;
+      }
+    });
   }
 
   return {

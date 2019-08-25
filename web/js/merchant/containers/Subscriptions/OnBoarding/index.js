@@ -67,11 +67,9 @@ export default class SubscriptionOnBoarding extends React.Component {
   };
 
   render() {
-    const { active } = this.props;
-
     return (
       <OnBoardingWrapper class="Subscription">
-        <Slider active={active}>
+        <Slider active={this.props.active}>
           {sliderProps => (
             <Landing
               {...sliderProps}
