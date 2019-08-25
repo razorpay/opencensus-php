@@ -1,6 +1,7 @@
 import Button from 'component/Button';
 
 import StepGuide from 'merchant/components/StepGuide';
+import Step from 'merchant/components/StepGuide/Step';
 
 export default function QuickStepGuide(props) {
   return <StepGuide {...props} class={`${props.className} QuickGuide`} />;
@@ -27,7 +28,7 @@ export const QuickGuideCloseBtn = ({ isCompleted, onClick }) => (
   </Button.Transparent>
 );
 
-class StepTitle extends React.Component {
+class QuickGuideStep extends React.Component {
   onClick = () => {
     window.rzpAnalytics({
       eventCategory: `Product QuickGuide (${this.props.feature})`,
@@ -36,8 +37,8 @@ class StepTitle extends React.Component {
   };
 
   render() {
-    return <div onClick={this.onClick}>{this.props.title}</div>;
+    return <Step {...this.props} onStepClick={this.onClick} />;
   }
 }
 
-export { StepTitle };
+export { QuickGuideStep };
