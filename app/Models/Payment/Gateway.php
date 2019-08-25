@@ -1509,6 +1509,10 @@ class Gateway
         CardlessEmi::FLEXMONEY,
     ];
 
+    public static $verifyClientOnS2s = [
+        Gateway::UPI_CITI,
+    ];
+
     public static function isNonTerminalGateway(string $gateway)
     {
         return in_array($gateway, self::$nonTerminalGateways, true);

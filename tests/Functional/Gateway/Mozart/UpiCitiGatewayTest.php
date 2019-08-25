@@ -184,4 +184,27 @@ class UpiCitiGatewayTest extends TestCase
         $this->assertSame('GATEWAY_ERROR', $refund->getErrorCode());
         $this->assertSame('GATEWAY_ERROR_PAYMENT_INVALID_ACTION', $refund->getInternalErrorCode());
     }
+
+    public function testPaymentCallbackFromDisabledIp()
+    {
+        // Changed from 10.10.123.123 to 10.10.123.124
+        config()->set('gateway.mozart.upi_citi.allowed_s2p_client_ips', '127.0.0.1, 10.10.123.124');
+
+        $content = $this->mockServer()->getCallbackRequest([
+            'gateway'       => 'upi_citi',
+            'id'            => 'pay_itsnotrelevant',
+            'amount'        => '100.00',
+            'description'   => 'wrong_ip'
+        ]);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+            {
+                $this->makeRequestAndGetContent($content);
+            },
+            Exception\GatewayErrorException::class,
+            'Payment processing failed due to error at bank or wallet gateway' . PHP_EOL .
+            'Gateway Error Code: ' . PHP_EOL .
+            'Gateway Error Desc: S2S request received from wrong blocked IP');
+
+    }
 }

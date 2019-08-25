@@ -170,6 +170,8 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input, $gateway = null): array
     {
+        $this->validateClientOnServerCallback($gateway);
+
         switch ($gateway)
         {
             case Payment\Gateway::UPI_AIRTEL:
@@ -968,5 +970,34 @@ class Gateway extends Base\Gateway
         return in_array($gateway, [
             Payment\Gateway::UPI_CITI,
         ], true);
+    }
+
+    protected function validateClientOnServerCallback($gateway)
+    {
+        if (in_array($gateway, Payment\Gateway::$verifyClientOnS2s, true))
+        {
+            $allowedIps = explode(',', $this->config[$gateway]['allowed_s2p_client_ips']);
+            $clientIps  = $this->request->getClientIps();
+
+            foreach ($allowedIps as $allowedIp)
+            {
+                if (in_array(trim($allowedIp), $clientIps, true) === true)
+                {
+                    return;
+                }
+            }
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_BLOCKED_IP,
+                null,
+                'S2S request received from wrong blocked IP',
+                [
+                    'gateway'       => $gateway,
+                    'client_ips'    => $clientIps,
+                    'allowed_ips'   => $allowedIps,
+                ]
+            );
+
+        }
     }
 }

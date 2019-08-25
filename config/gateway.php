@@ -788,6 +788,9 @@ return [
                 ],
             ]
         ],
+        'upi_citi' => [
+            'allowed_s2p_client_ips'      => env('UPI_CITI_ALLOWED_S2S_CLIENT_IPS'),
+        ],
     ],
 
     'sharp' => [
