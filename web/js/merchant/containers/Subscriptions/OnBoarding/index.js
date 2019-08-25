@@ -4,6 +4,8 @@ import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
 
+import { getCurrentProductOnBoardingDetails } from 'merchant/modules/onboarding';
+
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';
 import OnBoarding, {
@@ -18,6 +20,10 @@ import { PROS, FEATURES_DATA, FEATURES_LINKS } from './data';
 
 @connect(state => ({
   user: state.session.user,
+  subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
+    state,
+    RZPFeatures.SUBSCRIPTIONS
+  ),
 }))
 @OnBoarding({
   feature: RZPFeatures.SUBSCRIPTIONS,
@@ -45,26 +51,27 @@ export default class SubscriptionOnBoarding extends React.Component {
   };
 
   renderSkipButton = sliderProps => {
-    const props = {
+    const btnProps = {
       feature: RZPFeatures.SUBSCRIPTIONS,
-      onClick: this.props.closeOnboarding,
       page: sliderProps.active,
+      onClick: this.props.closeOnboarding,
+      isTour: this.props.subscriptionProductOnBoarding.isTour,
     };
 
     if (this.props.user.isSubscriptionsEnabled) {
-      props.isLocalEnabler = true;
-      props.onClick = this.closeOnboarding;
+      btnProps.isLocalEnabler = true;
+      btnProps.onClick = this.closeOnboarding;
     }
 
-    return <SkipAndGetStartedButton {...props} />;
+    return <SkipAndGetStartedButton {...btnProps} />;
   };
 
   render() {
-    const { active, onSlideChange } = this.props;
+    const { active } = this.props;
 
     return (
       <OnBoardingWrapper class="Subscription">
-        <Slider active={active} onSlideChange={onSlideChange}>
+        <Slider active={active}>
           {sliderProps => (
             <Landing
               {...sliderProps}

@@ -119,28 +119,31 @@ export const getSubscriptionQuickGuideIsClosed = props => {
 };
 
 const getStatus = ({ plans, subscriptions }) => {
+  let planStatus = loading,
+    subscriptionStatus = loading,
+    paymentStatus = loading;
+
   if (!subscriptions.items.length && !plans.items.length && plans.loading) {
     return {
-      planStatus: loading,
-      subscriptionStatus: loading,
-      paymentStatus: loading,
+      planStatus,
+      subscriptionStatus,
+      paymentStatus,
     };
   }
 
-  const planStatus = subscriptions.items.length
+  planStatus = subscriptions.items.length
     ? done
     : plans.items.length ? done : active;
 
   if (!subscriptions.items.length && subscriptions.loading) {
     return {
-      planStatus: planStatus,
-      subscriptionStatus: loading,
-      paymentStatus: loading,
+      planStatus,
+      subscriptionStatus,
+      paymentStatus,
     };
   }
 
-  let subscriptionStatus = locked,
-    paymentStatus = locked;
+  (subscriptionStatus = locked), (paymentStatus = locked);
 
   if (planStatus === done) {
     if (subscriptions.items.length) {
