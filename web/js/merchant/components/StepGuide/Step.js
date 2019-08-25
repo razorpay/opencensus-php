@@ -19,7 +19,10 @@ export default class Step extends React.Component {
     const isLoading = status === PossibleStatuses.loading;
 
     return (
-      <div className={`StepGuide--Step status-${status}`}>
+      <div
+        className={`StepGuide--Step status-${status}`}
+        onClick={this.props.onStepClick}
+      >
         <div className="Step--Connector">
           <div className="Connector--Content" />
         </div>
