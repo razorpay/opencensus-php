@@ -6,7 +6,7 @@ export default function QuickStepGuide(props) {
   return <StepGuide {...props} class={`${props.className} QuickGuide`} />;
 }
 
-export const QuickGuideTitle = ({ title = 'QUICK GUIDE' }) => (
+export const QuickGuideTitle = ({ title = 'GET STARTED' }) => (
   <React.Fragment>
     {title}
 
@@ -26,3 +26,18 @@ export const QuickGuideCloseBtn = ({ isCompleted, onClick }) => (
     )}
   </Button.Transparent>
 );
+
+class StepTitle extends React.Component {
+  onClick = () => {
+    window.rzpAnalytics({
+      eventCategory: `Product QuickGuide (${this.props.feature})`,
+      eventAction: `${this.props.step} Click`,
+    });
+  };
+
+  render() {
+    return <div onClick={this.onClick}>{this.props.title}</div>;
+  }
+}
+
+export { StepTitle };

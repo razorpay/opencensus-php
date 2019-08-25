@@ -1,12 +1,7 @@
 import { connect } from 'react-redux';
 import { handleProductQuickGuide } from 'merchant/modules/onboarding';
 
-@connect(
-  state => ({
-    onboarding: state.onboarding.products,
-  }),
-  { handleProductQuickGuide }
-)
+@connect(() => ({}), { handleProductQuickGuide })
 export default class TakeATourButton extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -35,8 +30,6 @@ export default class TakeATourButton extends React.Component {
   };
 
   render() {
-    const currentOnboarding = this.props.onboarding[this.props.feature] || {};
-
     return (
       <span class="btn btn-link" onClick={this.onClick}>
         <i class="i i-lightbulb" />
