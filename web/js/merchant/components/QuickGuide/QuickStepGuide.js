@@ -26,3 +26,18 @@ export const QuickGuideCloseBtn = ({ isCompleted, onClick }) => (
     )}
   </Button.Transparent>
 );
+
+class StepTitle extends React.Component {
+  onClick = () => {
+    window.rzpAnalytics({
+      eventCategory: `Product QuickGuide (${this.props.feature})`,
+      eventAction: `${this.props.step} Click`,
+    });
+  };
+
+  render() {
+    return <div onClick={this.onClick}>{this.props.title}</div>;
+  }
+}
+
+export { StepTitle };
