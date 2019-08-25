@@ -7,7 +7,7 @@ export default class OnBoardingFeatures extends React.PureComponent {
       eventAction: `Page ${this.props.active} - Back CTA`,
     });
 
-    prev(args);
+    this.props.prev(args);
   };
 
   render() {
