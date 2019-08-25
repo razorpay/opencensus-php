@@ -150,7 +150,9 @@ const getStatus = ({ plans, subscriptions }) => {
     subscriptionStatus = done;
     paymentStatus = active;
   } else {
-    subscriptionStatus = active;
+    if (planStatus === done) {
+      subscriptionStatus = active;
+    }
   }
 
   // Check paymentStatus
