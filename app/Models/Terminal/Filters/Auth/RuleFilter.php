@@ -66,8 +66,10 @@ class RuleFilter extends BaseRuleFilter
         // selected_terminals. If no select rules are present we take the diff
         // of all terminals and rejected terminals
         if ($isSelectRulePresent === false)
-        {s($terminals, $rejectedTerminals);
-            $filteredTerminals = array_diff($terminals, $rejectedTerminals);
+        {
+            $filteredTerminals = array_udiff($terminals, $rejectedTerminals, function ($a, $b) {
+                return strcmp(implode('', $a), implode('', $b));
+            });
         }
 
         $data = [

@@ -424,28 +424,7 @@ class TerminalAuthenticationTest extends TestCase
 
         $this->fixtures->create('terminal:shared_first_data_terminal');
 
-        $this->fixtures->create('gateway_rule', [
-            'method'        => 'card',
-            'merchant_id'   => '100000Razorpay',
-            'gateway'       => 'first_data',
-            'type'          => 'filter',
-            'filter_type'   => 'select',
-            'group'         => 'authentication',
-            'auth_type'     => '3ds',
-            'step'          => 'authentication',
-            'authentication_gateway' => 'mpi_blade',
-        ]);
-
-        $this->fixtures->create('gateway_rule', [
-            'method'        => 'card',
-            'merchant_id'   => '100000Razorpay',
-            'gateway'       => 'first_data',
-            'type'          => 'sorter',
-            'load'          => 10000,
-            'auth_type'     => '3ds',
-            'step'          => 'authentication',
-            'authentication_gateway' => 'mpi_blade',
-        ]);
+        $this->createGatewayRules($this->testData[__FUNCTION__]);
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5567630000002004';
@@ -463,8 +442,6 @@ class TerminalAuthenticationTest extends TestCase
     public function testAuthenticationGatewayPaysecure()
     {
         TerminalOptions::setTestChance(1000);
-
-        $this->createGatewayRules($this->testData[__FUNCTION__]);
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 

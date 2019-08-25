@@ -80,13 +80,8 @@ class AuthSelector extends Base\Core
         {
             return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
-foreach ($applicableRules as $rule)
-{
-    s($rule->toArray());
-}
-        $applicableTerminals = $this->filterTerminals($applicableTerminals, $applicableRules);
 
-s($applicableTerminals);
+        $applicableTerminals = $this->filterTerminals($applicableTerminals, $applicableRules);
 
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
 
@@ -112,7 +107,6 @@ s($applicableTerminals);
             $filterObj = new $filter($this->input, $this->options, $filterRules);
 
             $filteredTerminals = $filterObj->filter($filteredTerminals, $verbose);
-            s($filteredTerminals);
         }
 
         $this->traceAuthTerminals($terminals, 'Auth terminals after filteration', $verbose);

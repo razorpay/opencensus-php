@@ -4,7 +4,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Constants\Table;
 use RZP\Models\Terminal;
-use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use Illuminate\Database\Seeder;
 use RZP\Models\Merchant\Account;
@@ -1152,60 +1151,6 @@ class DatabaseSeeder extends Seeder
                 'updated_at'    => time()
                 )
             );
-
-        DB::table(Table::GATEWAY_RULE)->insert(
-            array(
-                'id'                        => 'randomrandomid',
-                Rule\Entity::MERCHANT_ID    => Account::SHARED_ACCOUNT,
-                Rule\Entity::TYPE           => 'filter',
-                Rule\Entity::FILTER_TYPE    => 'reject',
-                Rule\Entity::GROUP          => 'rupay_reject_blade',
-                Rule\Entity::METHOD         => 'card',
-                Rule\Entity::STEP           => 'authentication',
-                Rule\Entity::AUTH_TYPE      => '3ds',
-                Rule\Entity::AUTHENTICATION_GATEWAY => 'mpi_blade',
-                Rule\Entity::GATEWAY        => 'hitachi',
-                Rule\Entity::NETWORK        => 'RUPAY',
-                'created_at'    => time(),
-                'updated_at'    => time()
-            )
-        );
-
-        DB::table(Table::GATEWAY_RULE)->insert(
-            array(
-                'id'                        => 'randomrandomi2',
-                Rule\Entity::MERCHANT_ID    => Account::SHARED_ACCOUNT,
-                Rule\Entity::TYPE           => 'filter',
-                Rule\Entity::FILTER_TYPE    => 'reject',
-                Rule\Entity::GROUP          => 'rupay_reject_blade',
-                Rule\Entity::METHOD         => 'card',
-                Rule\Entity::STEP           => 'authentication',
-                Rule\Entity::AUTH_TYPE      => 'otp',
-                Rule\Entity::AUTHENTICATION_GATEWAY => 'mpi_enstage',
-                Rule\Entity::GATEWAY        => 'hitachi',
-                Rule\Entity::NETWORK        => 'RUPAY',
-                'created_at'    => time(),
-                'updated_at'    => time()
-            )
-        );
-
-        DB::table(Table::GATEWAY_RULE)->insert(
-            array(
-                'id'                        => 'randomrandomi3',
-                Rule\Entity::MERCHANT_ID    => Account::SHARED_ACCOUNT,
-                Rule\Entity::TYPE           => 'filter',
-                Rule\Entity::FILTER_TYPE    => 'reject',
-                Rule\Entity::GROUP          => 'rupay_reject_blade',
-                Rule\Entity::METHOD         => 'card',
-                Rule\Entity::STEP           => 'authentication',
-                Rule\Entity::AUTH_TYPE      => 'headless_otp',
-                Rule\Entity::AUTHENTICATION_GATEWAY => 'mpi_blade',
-                Rule\Entity::GATEWAY        => 'hitachi',
-                Rule\Entity::NETWORK        => 'RUPAY',
-                'created_at'    => time(),
-                'updated_at'    => time()
-            )
-        );
 
         $this->createAmexTerminals();
         $this->createCybersourceTerminals();

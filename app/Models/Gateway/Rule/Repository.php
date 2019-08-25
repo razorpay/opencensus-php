@@ -4,7 +4,6 @@ namespace RZP\Models\Gateway\Rule;
 
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
-use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 
@@ -50,11 +49,6 @@ class Repository extends Base\Repository
         $rules = $query->get();
 
         return $rules;
-    }
-
-    public function get()
-    {
-        return $this->newQuery()->get();
     }
 
     public function fetchAuthenticationRulesForSearchCriteria(array $criteria): Base\PublicCollection
