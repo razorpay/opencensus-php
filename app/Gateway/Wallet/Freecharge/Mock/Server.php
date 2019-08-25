@@ -35,7 +35,7 @@ class Server extends Base\Mock\Server
 
         $content['checksum'] = $this->generateHash($content);
 
-        $callbackUrl = $input['callbackUrl'];
+        $callbackUrl = $input['surl'];
 
         $callbackUrl .= '?' . http_build_query($content);
 

@@ -1687,6 +1687,7 @@ trait Authorize
         if (($payment->getGlobalCustomerId() !== null) and
             (Payment\Gateway::isPowerWalletSupported($payment) === true))
         {
+
             $terminalId = $payment->terminal->getId();
             $wallet = $payment->getWallet();
             $token = (New Token\Repository)->getByWalletTerminalAndCustomerId(
@@ -4871,7 +4872,7 @@ trait Authorize
             //
             if ($this->isGatewayTokenInvalid($error) === true)
             {
-                return $this->runOtpPaymentFlow($gatewayInput, $payment);
+                return $this->runOtpPaymentFlow($payment, $gatewayInput);
             }
             // @todo: Refactor it and move it to ApiResponse
             // Return a co-proto request to add funds.

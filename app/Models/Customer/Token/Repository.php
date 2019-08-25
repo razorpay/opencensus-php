@@ -98,8 +98,10 @@ class Repository extends Base\Repository
                     ->where(Token\Entity::WALLET, '=', $wallet)
                     ->where(Token\Entity::TERMINAL_ID, '=', $terminal)
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer)
-                    ->whereNull(Token\Entity::EXPIRED_AT)
-                    ->orWhere(Token\Entity::EXPIRED_AT, '>', time())
+                    ->where(function($query) {
+                        $query->whereNull(Token\Entity::EXPIRED_AT)
+                            ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
+                    })
                     ->orderBy(Token\Entity::CREATED_AT, 'desc')
                     ->first();
     }

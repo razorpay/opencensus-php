@@ -24,6 +24,7 @@ class PowerWalletTest extends TestCase
         $this->fixtures->merchant->enableWallet(Account::TEST_ACCOUNT, Wallet::FREECHARGE);
         $this->ba->publicAuth();
     }
+
     public function testPowerWalletPayment()
     {
         $this->setUpWalletToken();
@@ -46,6 +47,7 @@ class PowerWalletTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
         $this->assertTrue(isset($wallet['reference1']));
     }
+
     public function testUserWalletTokenDoesNotExist()
     {
         $appToken = $this->setUpAppToken();
@@ -58,23 +60,25 @@ class PowerWalletTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
         $this->assertTrue(isset($wallet['reference1']));
     }
-    public function testInSufficientWalletBalance()
-    {
-        $this->setUpWalletToken();
-        $appToken = $this->setUpAppToken();
-        $sessionData = [
-            'test_app_token' => $appToken->getPublicId(),
-        ];
-        $this->mockSession($sessionData);
-        // Mock will return Insufficient Balance
-        $this->setOtp(Otp::INSUFFICIENT_BALANCE);
-        $payment = $this->getDefaultPaymentArray();
-        $payment['amount'] = 100000;
-        $response = $this->doAuthPayment($payment);
-        $wallet = $this->getLastEntity('wallet', true);
-        $this->assertEquals($response['type'], 'topup');
-        $this->assertEquals($wallet['reference1'], null);
-    }
+
+//    public function testInSufficientWalletBalance()
+//    {
+//        $this->setUpWalletToken();
+//        $appToken = $this->setUpAppToken();
+//        $sessionData = [
+//            'test_app_token' => $appToken->getPublicId(),
+//        ];
+//        $this->mockSession($sessionData);
+//        // Mock will return Insufficient Balance
+//        $this->setOtp(Otp::INSUFFICIENT_BALANCE);
+//        $payment = $this->getDefaultPaymentArray();
+//        $payment['amount'] = 100000;
+//        $response = $this->doAuthPayment($payment);
+//        $wallet = $this->getLastEntity('wallet', true);
+//        $this->assertEquals($response['type'], 'topup');
+//        $this->assertEquals($wallet['reference1'], null);
+//    }
+
     public function testUserWalletTokenExpired()
     {
         $now = Carbon::now();
@@ -100,6 +104,7 @@ class PowerWalletTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
         $this->assertTrue(isset($wallet['reference1']));
     }
+
     public function testInvalidGatewayToken()
     {
         $now = Carbon::now();
