@@ -124,6 +124,23 @@ $stepIndicatorSize = 36px
       margin-left: 0
 
 .QuickGuide
+  position: relative
+  overflow: hidden
+
+  &:after
+    content: ''
+    width: 418px
+    height: 158%
+    background: linear-gradient(173.46deg, #FDFDFF 0%, #EDF8FE 100%)
+    position: absolute
+    right: -194px
+    z-index: 1
+    bottom: -8px
+    transform: rotateZ(222deg) rotateY(122deg) rotateX(18deg)
+
+    @media (max-width: 767px)
+      display: none
+
   &:not(.StepGuide-mobile):before
     content: ''
     background-image: url('assets/instant_activations/quickguide.svg')
