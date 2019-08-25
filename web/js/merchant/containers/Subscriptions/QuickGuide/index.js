@@ -4,12 +4,12 @@ import {
   SubscriptionsStates,
 } from 'rzp/utils/constants';
 
-import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
   setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
+  QuickGuideStep,
   QuickGuideTitle,
   QuickGuideCloseBtn,
 } from 'merchant/components/QuickGuide/QuickStepGuide';
@@ -44,6 +44,7 @@ export default class SubscriptionQuickGuide extends React.Component {
     if (planStatus === done) {
       activeStep = 1;
     }
+
     if (subscriptionStatus === done || paymentStatus === done) {
       activeStep = 2;
     }
@@ -56,15 +57,24 @@ export default class SubscriptionQuickGuide extends React.Component {
         activeStep={activeStep}
         status={paymentStatus}
       >
-        <Step status={planStatus} {...getQuickGuideData.Plan(planStatus)} />
+        <QuickGuideStep
+          status={planStatus}
+          step="Plan"
+          feature={RZPFeatures.SUBSCRIPTIONS}
+          {...getQuickGuideData.Plan(planStatus)}
+        />
 
-        <Step
+        <QuickGuideStep
           status={subscriptionStatus}
+          step="Subscription"
+          feature={RZPFeatures.SUBSCRIPTIONS}
           {...getQuickGuideData.Subscription(subscriptionStatus)}
         />
 
-        <Step
+        <QuickGuideStep
           status={paymentStatus}
+          step="Payments"
+          feature={RZPFeatures.SUBSCRIPTIONS}
           {...getQuickGuideData.Payment(paymentStatus)}
         />
       </QuickStepGuide>
