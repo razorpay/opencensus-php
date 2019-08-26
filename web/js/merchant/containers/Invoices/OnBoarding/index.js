@@ -9,8 +9,8 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 
-import Landing from 'merchant/components/OnBoarding/Screens/Landing';
-import Features from 'merchant/components/OnBoarding/Screens/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
 import OnBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
@@ -54,22 +54,18 @@ export default class InvoicesOnBoarding extends React.Component {
     }
 
     this.props.closeOnboarding();
-
-    this.props.handleProductQuickGuide({
-      ...this.props.invoicesProductOnBoarding,
-      showOnboarding: false,
-    });
   };
 
   render() {
-    const { active, onSlideChange } = this.props;
+    const { active, invoicesProductOnBoarding } = this.props;
 
     return (
       <OnBoardingWrapper class="Invoices">
-        <Slider active={active} onSlideChange={onSlideChange}>
+        <Slider active={active}>
           {sliderProps => (
             <Landing
               {...sliderProps}
+              feature={RZPFeatures.INVOICE}
               title="Invoices"
               imageUrl="https://razorpay.com/assets/invoices/banner.svg"
               desc="Create and send GST compliant invoices that your customers can pay online instantly."
@@ -80,6 +76,7 @@ export default class InvoicesOnBoarding extends React.Component {
             <Features
               {...sliderProps}
               title="What makes Invoices great?"
+              feature={RZPFeatures.INVOICE}
               nextBtn={this.getNextBtnProp(sliderProps)}
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
@@ -90,6 +87,7 @@ export default class InvoicesOnBoarding extends React.Component {
             <SliderDots {...sliderProps}>
               <SkipAndGetStartedButton
                 isLocalEnabler
+                isTour={invoicesProductOnBoarding.isTour}
                 feature={RZPFeatures.INVOICE}
                 page={sliderProps.active}
                 onClick={this.closeOnboarding}
