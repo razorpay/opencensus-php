@@ -153,6 +153,38 @@ return [
         ],
     ],
 
+    'testUserAccessWithProductPrimary'    => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+            ],
+        ],
+    ],
+
+    'testUserAccessWithProductBanking'   => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+            ],
+        ],
+    ],
+
+    'testFailedUserAccessAccrossProducts'  => [
+        'response'      => [
+            'content'   => [
+                'access'    => false,
+            ],
+        ],
+    ],
+
+    'testFailedUserAccess'    => [
+        'response'      => [
+            'content'   => [
+                'access'    => false,
+            ],
+        ],
+    ],
+
     'testUserEnable2fa' => [
         'request' => [
             'url'     => '/users/2fa',
@@ -999,6 +1031,73 @@ return [
         ],
     ],
 
+    'testSetAccountLock' => [
+        'request'  => [
+            'url'     => '/users-admin/account/{id}/lock',
+            'method'  => 'PUT',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'account_locked' => true,
+                'user_id'        => '',
+            ],
+        ]
+    ],
+
+    'testSetAccountUnlock' => [
+        'request'  => [
+            'url'     => '/users-admin/account/{id}/unlock',
+            'method'  => 'PUT',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'account_locked' => false,
+                'user_id'        => '',
+            ],
+        ]
+    ],
+
+    'testSetAccountLockByMerchant' => [
+        'request'   => [
+            'url'     => '/users/account/{id}/lock',
+            'method'  => 'PUT',
+            'content' => [
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testSetAccountUnlockByMerchant' => [
+        'request'  => [
+            'url'     => '/users/account/{id}/unlock',
+            'method'  => 'PUT',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'account_locked' => false,
+                'user_id'        => '',
+            ],
+        ]
+    ],
+
     'testResetMerchantUserPassword' => [
         'request'  => [
             'url'     => '/users/MerchantUser01/password',
@@ -1106,12 +1205,97 @@ return [
             'url'     => '/users/MerchantUser01/password',
             'method'  => 'put',
             'content' => [],
-            'server' => [
+            'server'  => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
         ],
         'response' => [
-            'content' => [],
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateContactMobile' => [
+        'request'  => [
+            'url'     => '/users-admin/contact',
+            'method'  => 'patch',
+            'content' => [
+                'user_id'        => '',
+                'contact_mobile' => '999999999'
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditContactMobileByUser' => [
+        'request'   => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED,
+        ],
+    ],
+
+    'testEditContactMobileByUserRestrictedForManagerRole' => [
+        'request'   => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+        ],
+    ],
+
+    'testEditContactMobileByUserAndVerify' => [
+        'request'  => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877',
+                'otp'            => '0007',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
             'status_code' => 200,
         ],
     ],

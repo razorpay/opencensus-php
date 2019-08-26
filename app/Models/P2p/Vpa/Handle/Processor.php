@@ -21,4 +21,24 @@ class Processor extends Base\Processor
 
         return $handles->toArrayPublic();
     }
+
+    public function add(array $input): array
+    {
+        $this->initialize(Action::ADD, $input, true);
+
+        $handle = $this->core->add($this->input->toArray());
+
+        return $handle->toArrayPublic();
+    }
+
+    public function update(array $input): array
+    {
+        $this->initialize(Action::UPDATE, $input, true);
+
+        $handle = $this->core->find($this->input->pull(Entity::CODE));
+
+        $handle = $this->core->update($handle, $this->input->toArray());
+
+        return $handle->toArrayPublic();
+    }
 }

@@ -11,6 +11,7 @@ class Constants
     const DUMMY                           = 'dummy';
     const WEBHOOKS                        = 'webhooks';
     const AGGREGATOR                      = 'aggregator';
+    const TERMINAL_ONBOARDING             = 'terminal_onboarding';
     const TOKENS                          = 'tokens';
     const S2SWALLET                       = 's2swallet';
     const S2SUPI                          = 's2supi';
@@ -366,6 +367,7 @@ class Constants
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
+        self::TERMINAL_ONBOARDING             => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,

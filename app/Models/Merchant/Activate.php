@@ -189,9 +189,12 @@ class Activate extends Base\Core
         // @todo: add a check - should be through an instantly_activated state
         $merchant->getValidator()->validateBeforeKycVerified();
 
-        (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
+        if (Detail\Core::shouldSkipBankAccountRegistration() === false)
+        {
+            (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
 
-        $merchant->getValidator()->validateHasBankAccount();
+            $merchant->getValidator()->validateHasBankAccount();
+        }
 
         $merchant->releaseFunds();
 

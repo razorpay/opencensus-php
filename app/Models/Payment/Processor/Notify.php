@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
+use RZP\Events\Event;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -99,10 +100,16 @@ class Notify
      */
     protected function notifyViaMail(string $event)
     {
-        $mailableClass = $this->getMailableClass($event);
-
         if (Payment\Event::isCustomerEvent($event) === true)
         {
+            $mailableClass = $this->getMailableClass($event);
+
+            // For customer, in case of captured event we are sending mail of authorized template
+            if ($event === Payment\Event::CAPTURED)
+            {
+                $mailableClass = $this->getMailableClass(Payment\Event::AUTHORIZED);
+            }
+
             $mailable = new $mailableClass($this->template);
 
             if ($this->invoice !== null)
@@ -114,7 +121,7 @@ class Notify
                 }
             }
 
-            if ($this->isCustomerMailEnabled($mailable) === true)
+            if ($this->isCustomerMailEnabled($mailable, $event) === true)
             {
                 Mail::queue($mailable);
             }
@@ -122,6 +129,8 @@ class Notify
 
         if (Payment\Event::isMerchantEvent($event) === true)
         {
+            $mailableClass = $this->getMailableClass($event);
+
             $mailable = new $mailableClass($this->template, true);
 
             if ($this->invoice !== null)
@@ -530,7 +539,7 @@ class Notify
      *
      * @return bool
      */
-    protected function isCustomerMailEnabled(PaymentMail\Base $mailable)
+    protected function isCustomerMailEnabled(PaymentMail\Base $mailable, $event)
     {
         // If it is a customer mail and the customer's email address
         // is null or void@razorpay.com don't send email
@@ -545,6 +554,15 @@ class Notify
             ($mailable->isCustomerReceiptEmail() === true))
         {
             return false;
+        }
+
+        if (in_array($event, [Payment\Event::AUTHORIZED, Payment\Event::CAPTURED]))
+        {
+            if (($mailable->isCustomerReceiptEmail() === true) and
+                ($event !== $this->merchant->getReceiptEmailTriggerEvent()))
+            {
+                return false;
+            }
         }
 
         return $this->isEnabled();

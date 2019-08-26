@@ -46,6 +46,26 @@ class Core extends Base\Core
                           ->first();
     }
 
+    public function checkUsernameBlocked(string $username): bool
+    {
+        // If last 10 characters are same as users phone number
+        $phoneNumber = substr($this->context()->getDevice()->getContact(), -10);
+
+        if ($username === $phoneNumber)
+        {
+            return false;
+        }
+
+        // Username should not be other phone
+        if ((strlen($username) > 9) and
+            (is_numeric($username) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function checkLocalAvailability(string $username): bool
     {
         $vpa = $this->repo->findByUsernameHandle($username, $this->context()->handleCode(), true);
@@ -53,14 +73,23 @@ class Core extends Base\Core
         return ($vpa instanceof Entity);
     }
 
-    public function fetchByUsernameHandle(array $input)
+    public function checkForMaxVpaLimit(): bool
     {
-        return $this->repo->fetchByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE]);
+        $vpas = $this->repo->newP2pQuery()->withTrashed()->get();
+
+        $maxLimit = $this->context()->getHandle()->getMaxAllowedVpas($this->context()->getMerchant()->getId());
+
+        return ($vpas->count() >= $maxLimit);
     }
 
-    public function findByUsernameHandle(array $input)
+    public function fetchByUsernameHandle(array $input, bool $trashed = false)
     {
-        return $this->repo->findByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE]);
+        return $this->repo->fetchByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE], $trashed);
+    }
+
+    public function findByUsernameHandle(array $input, bool $trashed = false)
+    {
+        return $this->repo->findByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE], $trashed);
     }
 
     public function create(array $input): Entity

@@ -158,4 +158,17 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     *  Route to create bulk payouts.
+     *  Currently it is used by batch Service
+     */
+    public function createPayoutBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createBulkPayout($input);
+
+        return ApiResponse::json($response);
+    }
 }

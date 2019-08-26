@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
+use Config;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
@@ -17,7 +18,7 @@ class Cbi extends Base
     use FileHandler;
 
     // todo : refund file name
-    const FILE_NAME              = 'CBIRefunds_';
+    const FILE_NAME              = 'CBIRefund_';
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::CBI_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_CBI;
@@ -64,7 +65,7 @@ class Cbi extends Base
 
         $narration_text = str_pad("Debit to Razorpay", 50, " ", STR_PAD_RIGHT);
 
-        $account_number = str_pad($this->getNodalAccountNumber(), 17, "0", STR_PAD_LEFT);
+        $account_number = str_pad(Config::get('gateway.mozart.netbanking_cbi.account_number'), 17, "0", STR_PAD_LEFT);
 
         $formattedData[$index] = [
             RefundFields::TYPE_OF_TRANSACTION  => "51",
@@ -85,18 +86,6 @@ class Cbi extends Base
         $dateTime = Carbon::now(Timezone::IST)->format('dmY');
 
         return static::FILE_NAME . $dateTime;
-    }
-
-    protected function getNodalAccountNumber()
-    {
-        $this->config = $this->app['config'];
-
-        $nodalAccount = $this->config->get('nodal.axis');
-
-        $accountNumber = $nodalAccount['account_number'];
-
-
-        return $accountNumber;
     }
 
     protected function formatDataForMail(array $data)

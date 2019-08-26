@@ -5041,6 +5041,9 @@ ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
+ALTER TABLE `pricing`
+    ADD COLUMN `payment_method_subtype` VARCHAR(255) NULL;
+
 ALTER TABLE `merchants`
     ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
     ADD COLUMN `restricted` BOOLEAN DEFAULT 0 NOT NULL AFTER `second_factor_auth`;
@@ -5219,3 +5222,46 @@ ALTER TABLE `pricing`
     ADD COLUMN `channel` VARCHAR(255) DEFAULT NULL AFTER `account_type`,
     ADD INDEX `pricing_account_type_index` (`account_type`),
     ADD INDEX `pricing_channel_index` (`channel`);
+
+ALTER TABLE payouts
+    ADD COLUMN failed_at INT(11) DEFAULT NULL AFTER `reversed_at`,
+    ADD INDEX payouts_failed_at_index (failed_at);
+
+ALTER TABLE merchants
+    ADD COLUMN dashboard_whitelisted_ips_live text DEFAULT NULL AFTER whitelisted_ips_test,
+    ADD COLUMN dashboard_whitelisted_ips_test text DEFAULT NULL AFTER dashboard_whitelisted_ips_live;
+
+ALTER TABLE payments
+    CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE netbanking
+    ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
+
+ALTER TABLE `merchant_emails`
+    DROP INDEX `merchant_emails_merchant_id_type_email_unique`,
+    DROP INDEX `merchant_emails_email_index`,
+    ADD INDEX `merchant_emails_merchant_id` (`merchant_id`),
+    ADD UNIQUE KEY `merchant_emails_merchant_id_type` (`merchant_id`,`type`),
+    MODIFY `email` TEXT;
+
+ALTER TABLE netbanking
+    ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
+
+ALTER TABLE netbanking
+    ADD INDEX verification_id_index (verification_id);
+
+ALTER TABLE contacts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
+
+ALTER TABLE fund_accounts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
+
+ALTER TABLE payouts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER batch_id;
+
+ALTER TABLE merchants
+    ADD COLUMN receipt_email_trigger_event TINYINT(1) UNSIGNED DEFAULT 1 AFTER receipt_email_enabled;
+
+ALTER TABLE merchants
+	ADD COLUMN partnership_url TEXT DEFAULT NULL AFTER dashboard_whitelisted_ips_test;

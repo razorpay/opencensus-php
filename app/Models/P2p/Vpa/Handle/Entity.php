@@ -32,6 +32,9 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
+        Entity::CODE,
+        Entity::MERCHANT_ID,
+        Entity::BANK,
         Entity::ACQUIRER,
         Entity::ACTIVE,
     ];
@@ -49,6 +52,8 @@ class Entity extends Base\Entity
         Entity::ENTITY,
         Entity::CODE,
         Entity::BANK,
+        Entity::ACTIVE,
+        Entity::CREATED_AT,
     ];
 
     protected $defaults = [
@@ -154,6 +159,13 @@ class Entity extends Base\Entity
     public function isActive()
     {
         return $this->getAttribute(self::ACTIVE);
+    }
+
+    public function getMaxAllowedVpas(string $merchantId): int
+    {
+        // Currently we are hardcoding to 3 for all merchant
+        // Later we need to find a way for separate limit for a handle and merchant
+        return 3;
     }
 
     public function isAllowedToMerchant(string $merchantId): bool

@@ -58,6 +58,9 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::BATCH_ID, Batch\Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payout::IDEMPOTENCY_KEY, Batch\Entity::IDEMPOTENCY_ID_LENGTH)
+                  ->nullable();
+
             $table->string(Payout::PURPOSE, 255);
 
             $table->string(Payout::NARRATION, 255)
@@ -128,6 +131,9 @@ class CreatePayoutsTable extends Migration
             $table->integer(Payout::REVERSED_AT)
                   ->nullable();
 
+            $table->integer(Payout::FAILED_AT)
+                  ->nullable();
+
             $table->integer(Payout::REJECTED_AT)
                   ->nullable();
 
@@ -158,6 +164,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::PENDING_AT);
 
             $table->index(Payout::REVERSED_AT);
+
+            $table->index(Payout::FAILED_AT);
 
             $table->index(Payout::REJECTED_AT);
 

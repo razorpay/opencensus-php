@@ -73,6 +73,33 @@ class BankAccountFailureTest extends TestCase
 
     }
 
+    public function testRetrieveNoAccountFailure()
+    {
+        $this->fixtures->bank_account->setGatewayData([])->saveOrFail();
+
+        $helper = $this->getBankAccountHelper();
+
+        $request = $helper->initiateRetrieve('bank_' . Base\Constants::ARZP_AXIS);
+
+        $this->mockSdkContentFunction(function(& $content)
+        {
+            $content['accounts'] = [];
+        });
+
+        $content = $this->handleSdkRequest($request);
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'BAD_REQUEST_ERROR',
+                'description'   => 'No account found, please try with different bank',
+                'action'        => 'initiateRetrieve'
+            ], $error);
+        });
+
+        $helper->retrieve($request['callback'], $content);
+    }
+
     public function testSetUpiPinFailure()
     {
         $helper = $this->getBankAccountHelper();

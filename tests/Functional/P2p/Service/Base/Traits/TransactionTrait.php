@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\P2p\Service\Base\Traits;
 
+use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Transaction\Mode;
 use RZP\Models\P2p\Transaction\Flow;
@@ -20,6 +21,34 @@ use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
  */
 trait TransactionTrait
 {
+    public function createCompletedPayTransaction(array $attributes = [], array $upi = []): Entity
+    {
+        $defaults = [
+            Entity::STATUS              => Status::COMPLETED,
+            Entity::INTERNAL_STATUS     => Status::COMPLETED,
+        ];
+
+        $upiDefaults = [
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE       => '00',
+        ];
+
+        return $this->createPayTransaction(array_merge($defaults, $attributes), array_merge($upiDefaults, $upi));
+    }
+
+    public function createFailedPayTransaction(array $attributes = [], array $upi = []): Entity
+    {
+        $defaults = [
+            Entity::STATUS              => Status::FAILED,
+            Entity::INTERNAL_STATUS     => Status::FAILED,
+        ];
+
+        $upiDefaults = [
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE   => 'XY',
+        ];
+
+        return $this->createPayTransaction(array_merge($defaults, $attributes), array_merge($upiDefaults, $upi));
+    }
+
     public function createPayTransaction(array $attributes = [], array $upi = []): Entity
     {
         $defaults = [
@@ -113,13 +142,14 @@ trait TransactionTrait
             Entity::PAYEE_TYPE          => Vpa\Entity::VPA,
             Entity::PAYEE_ID            => $this->fixtures->vpa(self::DEVICE_2)->getId(),
             Entity::BANK_ACCOUNT_ID     => $this->fixtures->vpa(self::DEVICE_1)->getBankAccountId(),
-            Entity::STATUS              => Status::CREATED,
-            Entity::INTERNAL_STATUS     => Status::CREATED,
+            Entity::STATUS              => Status::REQUESTED,
+            Entity::INTERNAL_STATUS     => Status::REQUESTED,
+            Entity::EXPIRE_AT           => Carbon::now()->addDays(3)->getTimestamp(),
         ];
 
         $upiDefaults = [
             UpiTransaction\Entity::ACTION                   => Action::INCOMING_COLLECT,
-            UpiTransaction\Entity::STATUS                   => Status::COMPLETED,
+            UpiTransaction\Entity::STATUS                   => Status::CREATED,
             UpiTransaction\Entity::NETWORK_TRANSACTION_ID   => str_random(35),
             UpiTransaction\Entity::RRN                      => random_integer(11),
         ];

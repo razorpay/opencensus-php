@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Exception\LogicException;
 
 class Core extends Base\Core
 {
@@ -66,6 +67,7 @@ class Core extends Base\Core
 
     public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
     {
+        $this->populateAuthLinkParamsFromOrder($tokenRegistrationInput, $order);
         $this->populateInvoiceParamsFromOrder($tokenRegistrationInput, $order);
 
         $invoice = $this->repo->transaction(
@@ -79,6 +81,13 @@ class Core extends Base\Core
             });
 
         return $invoice;
+    }
+
+    private function populateAuthLinkParamsFromOrder(array & $input, Order\Entity $order)
+    {
+        (new Validator)->validateMethodWithOrder($input, $order);
+
+        $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD] = $order->getMethod();
     }
 
     private function populateInvoiceParamsFromOrder(array & $input, Order\Entity $order)
@@ -185,7 +194,7 @@ class Core extends Base\Core
                 $subr->setStatus(Status::COMPLETED);
             }
         }
-        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
+        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::REJECTED)
         {
             $subr->setStatus(Status::COMPLETED);
         }
@@ -325,11 +334,43 @@ class Core extends Base\Core
     {
         $token = $tokenRegistration->token;
 
+        $invoice = $this->repo->invoice->findByMerchantAndTokenRegistration(
+            $tokenRegistration->merchant,
+            $tokenRegistration
+        );
+
+        if (isset($invoice) === false)
+        {
+            throw new LogicException(
+                'invoice can\'t be null',
+                null,
+                [
+                    'token.registration_id' => $tokenRegistration->getPublicId()
+                ]
+            );
+        }
+
+        $previousOrder = $invoice->order;
+
+        if (isset($previousOrder) === false)
+        {
+            throw new LogicException(
+                'order can\'t be null',
+                null,
+                [
+                    'token.registration_id' => $tokenRegistration->getPublicId(),
+                    'invoice_id'            => $invoice->getPublicId(),
+                ]
+            );
+        }
+
         $orderInput = [
             Order\Entity::AMOUNT           => $tokenRegistration->getAmount(),
             Order\Entity::CURRENCY         => $tokenRegistration->getCurrency(),
             Order\Entity::PAYMENT_CAPTURE  => true,
-            Order\Entity::METHOD           => $tokenRegistration->getMethod()
+            Order\Entity::METHOD           => $tokenRegistration->getMethod(),
+            Order\Entity::NOTES            => $previousOrder->getNotes()->toArray(),
+            Order\Entity::RECEIPT          => 'auto_crg_' . Base\UniqueIdEntity::generateUniqueId(),
         ];
 
         $this->trace->info(

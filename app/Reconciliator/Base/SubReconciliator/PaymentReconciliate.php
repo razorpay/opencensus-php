@@ -36,6 +36,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_CBI,
         RequestProcessor\Base::NETBANKING_YESB,
         RequestProcessor\Base::NETBANKING_CUB,
+        RequestProcessor\Base::NETBANKING_IBK,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
@@ -219,7 +220,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         if ($this->reconciled === true)
         {
-            $this->handleAlreadyReconciled($paymentId);
+            $this->handleAlreadyReconciled($paymentId, $this->payment->transaction->getReconciledAt());
 
             //
             // Record gateway fee and service tax for reconciled payments

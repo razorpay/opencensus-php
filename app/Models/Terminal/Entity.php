@@ -177,6 +177,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::ENABLED,
         self::MPAN,
+        self::NOTES,
         self::CREATED_AT
     ];
 
@@ -189,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::CURRENCY,
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
@@ -1024,6 +1026,8 @@ class Entity extends Base\PublicEntity
         $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
 
         $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+        $enabledBanks = array_values($enabledBanks);
 
         $this->setAttribute(self::ENABLED_BANKS, $enabledBanks);
     }

@@ -22,6 +22,11 @@ class Entity extends Base\Entity
     const RESPONSE_DESCRIPTION     = 'response_description';
     const CLOSED_AT                = 'closed_at';
 
+    /***************** Input Keys ****************/
+    const CONCERN                  = 'concern';
+    const CONCERNS                 = 'concerns';
+    const TRANSACTION              = 'transaction';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_concern';
@@ -273,7 +278,7 @@ class Entity extends Base\Entity
 
     public function transaction()
     {
-        return $this->belongsTo(Transaction\Entity::class);
+        return $this->belongsTo(Transaction\Entity::class)->withTrashed();
     }
 
     public function associateTransaction(Transaction\Entity $entity)
