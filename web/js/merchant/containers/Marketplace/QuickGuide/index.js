@@ -2,12 +2,12 @@ import { connect } from 'react-redux';
 
 import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
 
-import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
   setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
+  QuickGuideStep,
   QuickGuideTitle,
   QuickGuideCloseBtn,
 } from 'merchant/components/QuickGuide/QuickStepGuide';
@@ -62,13 +62,17 @@ export default class MarketPlaceQuickGuide extends React.Component {
         title={Title}
         closeBtn={CloseBtn}
       >
-        <Step
+        <QuickGuideStep
           status={accountsStatus}
+          step="Account"
+          feature={RZPFeatures.ROUTE}
           {...getQuickGuideData.LinkedAccount(accountsStatus)}
         />
 
-        <Step
+        <QuickGuideStep
           status={transfersStatus}
+          step="Transfers"
+          feature={RZPFeatures.ROUTE}
           {...getQuickGuideData.Transfers(transfersStatus)}
         />
       </QuickStepGuide>
@@ -79,17 +83,6 @@ export default class MarketPlaceQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getRouteQuickGuideIsClosed = props => {
-  if (
-    props.routeProductOnBoarding &&
-    props.routeProductOnBoarding.isQuickGuideOpen
-  ) {
-    return false;
-  }
-
-  if (props.transfers.loading || props.accounts.loading) {
-    return true;
-  }
-
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.ROUTE);
 
   if (
@@ -106,7 +99,7 @@ export const getRouteQuickGuideIsClosed = props => {
 };
 
 const getStatus = ({ accounts, transfers }) => {
-  if (!transfers.items.length && !accounts.items.length && accounts.loading) {
+  if (transfers.loading && accounts.loading) {
     return {
       accountsStatus: loading,
       transfersStatus: loading,
@@ -117,7 +110,7 @@ const getStatus = ({ accounts, transfers }) => {
     ? done
     : accounts.items.length ? done : active;
 
-  if (!transfers.items.length && transfers.loading) {
+  if (transfers.loading) {
     return {
       accountsStatus: accountsStatus,
       transfersStatus: loading,

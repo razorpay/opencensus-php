@@ -9,9 +9,9 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 
-import Landing from 'merchant/components/OnBoarding/Screens/Landing';
-import Features from 'merchant/components/OnBoarding/Screens/Features';
-import FeatureRequest from 'merchant/components/OnBoarding/Screens/FeatureRequest';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
+import FeatureRequest from 'merchant/components/OnBoarding/Slides/FeatureRequest';
 import OnBoarding, {
   NextButton,
   OnBoardingWrapper,
@@ -26,7 +26,7 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 @connect(
   state => ({
     user: state.session.user,
-    mode: state.session.mode,
+    isTestMode: state.session.mode === 'test',
     routeProductOnBoarding: getCurrentProductOnBoardingDetails(
       state,
       RZPFeatures.ROUTE
@@ -40,18 +40,12 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 export default class MarketPlaceOnBoarding extends React.Component {
   closeOnboarding = () => {
     setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
-    this.props.closeOnboarding();
 
-    if (this.props.user.isMarketplaceEnabled) {
-      this.props.handleProductQuickGuide({
-        ...this.props.routeProductOnBoarding,
-        showOnboarding: false,
-      });
-    }
+    this.props.closeOnboarding();
   };
 
   getNextBtnProp = sliderProps => () => {
-    if (this.props.mode === 'live') {
+    if (!this.props.isTestMode) {
       return (
         <NextButton
           feature={RZPFeatures.ROUTE}
@@ -76,7 +70,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
   };
 
   onClickSkipButton = () => {
-    if (this.props.mode === 'test') {
+    if (this.props.isTestMode) {
       if (this.props.user.isMarketplaceEnabled) {
         this.closeOnboarding();
       }
@@ -89,13 +83,11 @@ export default class MarketPlaceOnBoarding extends React.Component {
   };
 
   render() {
-    const { mode, active, onSlideChange, user } = this.props;
-
-    const isTestMode = mode === 'test';
+    const { isTestMode, active, onSlideChange, user } = this.props;
 
     return (
       <OnBoardingWrapper class="Route">
-        <Slider active={active} onSlideChange={onSlideChange}>
+        <Slider active={active}>
           {sliderProps => (
             <Landing
               {...sliderProps}
