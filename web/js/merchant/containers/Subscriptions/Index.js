@@ -47,32 +47,16 @@ import QuickGuide, { getSubscriptionQuickGuideIsClosed } from './QuickGuide';
 )
 export default class SubscriptionsController extends React.Component {
   componentDidMount() {
-    if (this.props.user.isChargeAtWillEnabled) return;
-
     this.initSubscriptions();
-
-    if (this.props.subscriptions.items.length) return;
-
-    if (
-      !this.props.plans.items.loading &&
-      !this.props.plans.items.length &&
-      !this.props.location.pathname.includes('plan')
-    ) {
-      this.props.fetchPlans({ count: 25 });
-    }
   }
 
   componentWillUnmount() {
-    if (this.props.user.isChargeAtWillEnabled) return;
-
     const { subscriptionProductOnBoarding } = this.props;
 
-    if (
-      subscriptionProductOnBoarding.isTour &&
-      !this.props.user.isChargeAtWillEnabled
-    ) {
+    if (subscriptionProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...subscriptionProductOnBoarding,
+        showOnboarding: false,
         isQuickGuideOpen: false,
         isTour: false,
       });
@@ -80,20 +64,42 @@ export default class SubscriptionsController extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.user.isChargeAtWillEnabled) return;
-
-    if (
-      !this.props.user.isChargeAtWillEnabled &&
-      nextProps.subscriptions.loading !== this.props.subscriptions.loading
-    ) {
+    if (nextProps.subscriptions.loading !== this.props.subscriptions.loading) {
       this.initSubscriptions(nextProps);
     }
   }
 
+  fetchDataForOnboarding = () => {
+    if (this.props.user.isChargeAtWillEnabled) return;
+
+    const { subscriptions, plans, location } = this.props;
+
+    const isPlanRoute = location.pathname.includes('plan');
+
+    if (
+      subscriptions.loading ||
+      subscriptions.items.length ||
+      plans.loading ||
+      plans.items.length
+    ) {
+      return;
+    }
+
+    if (isPlanRoute) {
+      this.props.fetchSubscriptions({ count: 25 });
+
+      return;
+    }
+
+    this.props.fetchPlans({ count: 25 });
+  };
+
   initSubscriptions = (props = this.props) => {
     if (props.user.isChargeAtWillEnabled) return;
 
-    const { isSubscriptionsEnabled } = props.user;
+    const { subscriptionProductOnBoarding } = props,
+      { isSubscriptionsEnabled } = props.user;
+
     let showOnboarding = !isSubscriptionsEnabled;
 
     if (isSubscriptionsEnabled) {
@@ -103,38 +109,39 @@ export default class SubscriptionsController extends React.Component {
       });
     } else {
       this.props.handleProductQuickGuide({
-        ...props.subscriptionProductOnBoarding,
-        showOnboarding: true,
+        ...subscriptionProductOnBoarding,
+        showOnboarding,
       });
+
+      return;
     }
 
-    let isQuickGuideClosed = getSubscriptionQuickGuideIsClosed(props);
+    let isQuickGuideOpen = false;
 
-    let subscriptionProductOnBoarding = {
-      ...props.subscriptionProductOnBoarding,
+    if (subscriptionProductOnBoarding.isTour) {
+      isQuickGuideOpen = true;
+    } else {
+      isQuickGuideOpen = !getSubscriptionQuickGuideIsClosed(props);
+    }
+
+    this.props.handleProductQuickGuide({
+      ...subscriptionProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen: props.subscriptionProductOnBoarding.isTour
-        ? true
-        : !isQuickGuideClosed,
-    };
-
-    this.props.handleProductQuickGuide(subscriptionProductOnBoarding);
+      isQuickGuideOpen,
+    });
   };
 
   render() {
-    if (
-      !this.props.user.isChargeAtWillEnabled &&
-      this.props.subscriptionProductOnBoarding.showOnboarding
-    ) {
+    const { subscriptionProductOnBoarding } = this.props;
+
+    if (subscriptionProductOnBoarding.showOnboarding) {
       return <OnBoarding />;
     }
 
     return (
       <div class={classList('Subscriptions-Container')}>
         <tabbed-container>
-          {this.props.subscriptionProductOnBoarding.isQuickGuideOpen && (
-            <QuickGuide />
-          )}
+          {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
 
           <header id="subscriptions-header">
             <ShowWhen additionalCondition={user => !user.isChargeAtWillEnabled}>
