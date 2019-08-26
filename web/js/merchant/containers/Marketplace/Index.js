@@ -54,7 +54,11 @@ export default class MarketplaceContainer extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.transfers.loading !== this.props.transfers.loading) {
+    if (
+      nextProps.transfers.loading !== this.props.transfers.loading ||
+      nextProps.routeProductOnBoarding.showOnboarding !==
+        this.props.routeProductOnBoarding.showOnboarding
+    ) {
       this.initMarketPlace(nextProps);
     }
   }
@@ -65,6 +69,7 @@ export default class MarketplaceContainer extends React.Component {
     if (routeProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...routeProductOnBoarding,
+        showOnboarding: false,
         isQuickGuideOpen: false,
         isTour: false,
       });
@@ -74,13 +79,11 @@ export default class MarketplaceContainer extends React.Component {
   fetchDataForMarketPlaceOnboarding = () => {
     const { transfers, accounts, fetchAccounts, fetchTransfers } = this.props;
 
-    if (transfers.loading && !transfers.items.length) {
+    if (!transfers.items.length) {
       fetchTransfers({ count: 25 });
-    } else {
-      return;
     }
 
-    if (accounts.loading && !accounts.accounts.length) {
+    if (!transfers.items.length && !accounts.accounts.length) {
       fetchAccounts({ count: 25 });
     }
   };
