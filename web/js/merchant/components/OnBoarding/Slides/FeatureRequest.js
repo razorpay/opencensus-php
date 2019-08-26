@@ -95,6 +95,8 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
     if (props.uploadedFile && this.props.formType === RZPFeatures.ROUTE) {
       file = props.uploadedFile;
       fileName = 'vendor_agreement';
+
+      delete props.uploadedFile;
     }
 
     return this.props
