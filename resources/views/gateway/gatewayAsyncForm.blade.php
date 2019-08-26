@@ -124,8 +124,8 @@
   <div id='content'>
     <div class="banner">
       {{-- Add the merchant logo if it exists --}}
-      @if (isset($data['merchant_logo_url']) === true)
-        <img src="{{$data["merchant_logo_url"]}}" id="merc_logo" style="max-height: 52px; margin: 20px auto; display: block;">
+      @if (isset($data['data']['merchant_logo_url']) === true)
+        <img src="{{$data['data']['merchant_logo_url']}}" id="merc_logo" style="max-height: 52px; margin: 20px auto; display: block;">
       @endif
     </div>
 
