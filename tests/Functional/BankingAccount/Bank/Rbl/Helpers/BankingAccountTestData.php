@@ -131,6 +131,24 @@ return [
         ],
     ],
 
+    'testUpdateBankingAccountToInitiatedWithInternalComments' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS            => BankingAccount\Status::INITIATED,
+                BankingAccount\Entity::INTERNAL_COMMENT  => 'Sending Application to Bank'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
+            ],
+        ],
+    ],
+
     'testUpdateAccountInfoWebhookInternally'  => [
         'request'  => [
             'url'     => '/banking_accounts/internal/webhooks/account_info/rbl',
@@ -568,6 +586,38 @@ return [
             'method'  => 'get',
             'content' => [
                 'account_number' => '1234567808',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountRequests' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForCurrentAccount' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
             ],
         ],
         'response' => [

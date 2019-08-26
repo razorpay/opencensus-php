@@ -58,6 +58,7 @@ class Status
         self::DISCREPANCY,
         self::CLOSED,
         self::CANCELLED,
+        self::HOLD,
     ];
 
     public static function isValid(string $status): bool

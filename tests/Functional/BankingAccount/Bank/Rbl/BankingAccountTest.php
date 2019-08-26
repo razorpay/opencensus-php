@@ -432,6 +432,26 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(RZP\Models\BankingAccount\Status::INITIATED, $bankingAccount->getStatus());
     }
 
+    public function testUpdateBankingAccountToInitiatedWithInternalComments()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::INITIATED, $bankingAccount->getStatus());
+    }
+
     protected function createBankingAccount(array $attributes = [])
     {
         $data = [
@@ -474,6 +494,24 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testBankingAccountFetchForCurrentAccount()
+    {
+        $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchBankingAccountRequests()
+    {
+        $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testBankingAccountFetchForCurrentAccountFailure()
     {
         $response = $this->createBankingAccount();
@@ -485,7 +523,6 @@ class BankingAccountTest extends TestCase
             [
                 'account_type' => 'virtual',
             ]);
-
     }
 
     public function testFetchBankingAccountsOfCreatedStatus()

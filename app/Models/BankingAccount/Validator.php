@@ -86,6 +86,7 @@ class Validator extends Base\Validator
         Entity::USERNAME                        => 'filled|string',
         Entity::PASSWORD                        => 'filled|string',
         Entity::REFERENCE1                      => 'filled|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255'
     ];
 
     protected static $internalEditRules = [
@@ -103,6 +104,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'filled|string',
         Entity::BENEFICIARY_EMAIL               => 'filled|string',
         Entity::BENEFICIARY_NAME                => 'filled|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
     ];
 
     protected static $internalEditValidators = [
@@ -125,6 +127,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'required|string',
         Entity::BENEFICIARY_EMAIL               => 'required|string',
         Entity::BENEFICIARY_NAME                => 'required|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
     ];
 
     protected static $serviceablePincodeRules = [

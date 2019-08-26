@@ -81,6 +81,8 @@ class Entity extends Base\PublicEntity
 
     const ACCOUNT_TYPE                      = 'account_type';
 
+    const INTERNAL_COMMENT                  = 'internal_comment';
+
     const VAULT_NAMESPACE                   = 'banking_accounts_creds';
 
     const PINCODES      = 'pincodes';
@@ -120,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
         self::FTS_FUND_ACCOUNT_ID,
+        self::INTERNAL_COMMENT,
     ];
 
     protected $visible = [
@@ -155,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_ACTIVATION_DATE,
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::MERCHANT,
+        self::INTERNAL_COMMENT,
     ];
 
     protected $public = [
