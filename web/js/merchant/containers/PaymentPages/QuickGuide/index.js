@@ -87,7 +87,14 @@ export const getPaymentPageQuickGuideIsClosed = props => {
     return isClosed;
   }
 
-  setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, true);
+  props.paymentPages.forEach(page => {
+    if (page.times_paid) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, true);
+
+      return false;
+    }
+  });
+
   return true;
 };
 

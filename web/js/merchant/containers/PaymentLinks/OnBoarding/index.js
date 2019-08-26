@@ -67,7 +67,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               {...sliderProps}
               title="Payment Links"
               feature={RZPFeatures.PL}
-              imageUrl="https://razorpay.com/assets/paymentlinks/pl-landing.svg"
+              imageUrl="/dist/css/assets/product_onboarding/payment_link.svg"
               desc="Share payment links via an email, SMS, messenger, chatbot etc. and get paid immediately."
             />
           )}
