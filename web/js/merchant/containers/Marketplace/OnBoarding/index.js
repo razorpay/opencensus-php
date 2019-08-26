@@ -83,7 +83,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
   };
 
   render() {
-    const { isTestMode, active, onSlideChange, user } = this.props;
+    const { isTestMode, active, user, routeProductOnBoarding } = this.props;
 
     return (
       <OnBoardingWrapper class="Route">
@@ -128,7 +128,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
                   feature={RZPFeatures.ROUTE}
                   page={sliderProps.active}
                   onClick={this.onClickSkipButton}
-                  isLocalEnabler={user.isMarketplaceEnabled}
+                  isTour={routeProductOnBoarding.isTour}
                 />
               )}
             </SliderDots>
