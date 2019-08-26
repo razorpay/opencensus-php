@@ -59,7 +59,8 @@ class Initiate extends Job
                 function ()
                 {
                     $input = [
-                        'purpose' => Attempt\Purpose::SETTLEMENT,
+                        'purpose'     => Attempt\Purpose::SETTLEMENT,
+                        'source_type' => Attempt\Type::SETTLEMENT,
                     ];
 
                     (new Attempt\Service)->initiateFundTransfers($input, $this->channel);
