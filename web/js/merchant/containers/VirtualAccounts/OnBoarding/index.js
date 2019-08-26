@@ -83,7 +83,7 @@ export default class InvoicesOnBoarding extends React.Component {
               {...sliderProps}
               feature={RZPFeatures.VA}
               title="Smart Collect"
-              imageUrl="https://razorpay.com/assets/smartcollect/banner.svg"
+              imageUrl="/dist/css/assets/product_onboarding/smart_collect.svg"
               desc="Create and send GST compliant invoices that your customers can pay online instantly."
               pros={PROS}
             />
