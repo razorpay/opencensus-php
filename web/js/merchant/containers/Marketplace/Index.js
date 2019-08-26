@@ -54,11 +54,7 @@ export default class MarketplaceContainer extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.transfers.loading !== this.props.transfers.loading ||
-      nextProps.routeProductOnBoarding.showOnboarding !==
-        this.props.routeProductOnBoarding.showOnboarding
-    ) {
+    if (nextProps.transfers.loading !== this.props.transfers.loading) {
       this.initMarketPlace(nextProps);
     }
   }
@@ -112,18 +108,10 @@ export default class MarketplaceContainer extends React.Component {
       return;
     }
 
-    let isQuickGuideOpen = false;
-
-    if (routeProductOnBoarding.isTour) {
-      isQuickGuideOpen = true;
-    } else {
-      isQuickGuideOpen = !getRouteQuickGuideIsClosed(props);
-    }
-
     this.props.handleProductQuickGuide({
       ...routeProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen,
+      isQuickGuideOpen: !getRouteQuickGuideIsClosed(props),
     });
   };
 
