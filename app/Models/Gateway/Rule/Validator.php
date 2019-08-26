@@ -35,6 +35,7 @@ class Validator extends Base\Validator
         Entity::SHARED_TERMINAL         => 'filled|boolean',
         Entity::METHOD                  => 'required|string|max:30',
         Entity::METHOD_TYPE             => 'filled|string|max:10',
+        Entity::METHOD_SUBTYPE          => 'filled|string|max:10|custom',
         Entity::ISSUER                  => 'filled|string',
         Entity::NETWORK                 => 'sometimes|string|max:10',
         Entity::MIN_AMOUNT              => 'filled|integer|min:0',
@@ -49,6 +50,7 @@ class Validator extends Base\Validator
         Entity::STEP                    => 'sometimes|in:authorization,authentication',
         Entity::AUTH_TYPE               => 'sometimes',
         Entity::AUTHENTICATION_GATEWAY  => 'sometimes',
+        Entity::CARD_CATEGORY           => 'sometimes',
         Entity::CAPABILITY              => 'filled|in:0,1,2',
     ];
 
@@ -198,6 +200,11 @@ class Validator extends Base\Validator
                     'Card Type: ' . $cardType . ' is not supported');
             }
         }
+    }
+
+    protected function validateMethodSubtype(string $attribute, string $subtype)
+    {
+        Card\SubType::checkSubType($subtype);
     }
 
     protected function validateIssuer(array $input)
