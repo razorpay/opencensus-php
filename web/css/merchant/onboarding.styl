@@ -1,95 +1,297 @@
-.Onboarding
-  font-size: 14px
-  text-align: center
 
-  .illustration
-    padding: 130px
-    width: 160px
-    background-repeat: no-repeat
-    background-size: contain
-    background-position: center
-    margin: 20px auto 0
+.OnBoarding
+  padding: 24px
 
-  .description
-    margin: 20px 16px 0
-
-  .form-fields
-    margin: 20px 16px 0
-
-    .Input
-      margin: 0
-
-  .Button
-    margin 20px auto 0
-
-
-.Onboarding--PaymentPages, .Onboarding--Invoices
-  margin: 20px 0 80px
-  color: #58666E
-
-  .Onboarding-heading
-    font-size: 20px
-    margin-bottom: 16px
-
-    span
-      font-weight: 600
-  
-  .Onboarding--content
-    margin-top: 56px
-
-  .step
+  .Slider
+    border-radius: 3px
+    background-color: #FFFFFF
+    box-shadow: 0 0 0 1px rgba(63,63,68,0.05), 0 1px 3px 0 rgba(63,63,68,0.15)
     position: relative
-    text-align: center
-    display: inline-block
-    width: 30%
-    min-width: 240px
-    font-size: 14px
-    padding: 0 8px
-    vertical-align: top
+    height: 70vh
+    max-height: 580px
+    min-height: 540px
+    @media (max-width: 1024px)
+      max-height: 100%
+      height: auto
+      min-height: 70vh
 
-    .img
-      position: relative
+  .SliderDots
+    position: absolute
+    bottom: -80px
+    left: 50%
+    transform: translate(-50%, 0)
 
-      img
-        position: absolute
-        bottom: 0
-        left: 50%
-        transform: translateX(-50%)
+    @media(max-width: 1024px)
+      display: none
 
-    .title
+    .Button
+      color: #528FF0
       font-size: 16px
-      font-weight: 600
-      margin: 16px 0 4px
+      font-weight: bold
+      line-height: 19px
+      margin-top: 8px
 
-    .i
-      position: absolute
-      top: 50%
-      right: -18px
-      transform: translateY(-50%)
-      font-size: 36px
-      font-weight: 600
-      color: #58666E
+  .Button-Container
+    position: absolute
+    bottom: 64px
+    right: 64px
 
-  @media (max-width: 1023px)
+    @media(max-width: 1024px)
+      bottom: 24px
+      right: 24px
 
-    .Onboarding--content  .step
-      display: block
-      margin: 48px auto 0
+    .Button
+      font-size: 16px
+      font-weight: bold
+      height: 50px
+      min-width: 126px
+      line-height: 19px
+      color: rgb(88, 102, 110)
 
-      .i
-        display: none
+      i
+        float: none
+        vertical-align: middle
+        margin-right: 8px
+        margin-left: 0
 
-.Onboarding--PaymentPages
-  .Onboarding--content
-    margin-top: 76px
+      &:last-child
+        margin-right: 0
 
-  .img
-    height: 140px
-  img
+      &.Forward-Button
+        background-color: #3B80EE
+        color: white
+        border-radius: 4px
+        i
+          float: none
+          vertical-align: middle
+          margin-left: 8px
+          margin-right: 0
+
+      @media(max-width: 1024px)
+        height: auto
+
+  .dash
+    border: 1.5px solid #2CCA74
+    height: 0
+    width: 43px
+    display: inline-block
+    margin-right: 8px
+    vertical-align: middle
+
+  .OnBoarding--Slide
+    min-width: 90%
+    margin: 0 auto
     height: 100%
 
-.Onboarding--Invoices
-  .img
-    height: 160px
+.OnBoarding--ImageSlide
+  display: flex
+  align-items: center
 
+  .Landing--Image
+    width: 50%
+    align-self: stretch
+    @media (max-width: 1024px)
+      display: none
 
+  .Product--Details
+    padding: 0 64px
+    margin-top: 120px
+    align-self: flex-start
+
+    @media(max-width: 1024px)
+      padding: 0 24px
+
+    .Details-heading
+      font-weight: bold
+
+    .Details-title
+      font-size: 40px
+      line-height: 48px
+      margin: 16px 0 8px 0
+      font-weight: bold
+      color: #0D2366
+
+      @media(max-width: 1024px)
+        font-size: 28px
+
+    .Details-desc
+      font-size: 18px
+      line-height: 24px
+      margin-bottom: 42px
+
+    .DataList-Item
+      font-size: 16px
+      line-height: 1.25
+      flex: 1
+      min-width: 100px
+      padding-left: 28px
+      border-color: #cfdadd
+
+      @media(max-width: 767px)
+        padding: 0
+        display: block
+
+      b
+        font-size: 20px
+
+      &:first-child
+        padding-left: 0
+
+.OnBoarding--Features
+  padding: 64px
+
+  @media(max-width: 1024px)
+    padding: 24px 24px 75px 24px
+
+  .Header
+    display: flex
+    align-items: center
+    justify-content: space-between
+    flex-wrap: wrap
+
+    .Header-title
+      margin: 0
+      color: #0D2366
+      font-size: 32px
+      line-height: 1.5
+      font-weight: bolder
+
+      @media(max-width: 1024px)
+        font-size: 24px
+        width: 100%
+        line-height: 1
+
+    .Header-external-links
+      color: #528FF0
+      font-weight: bold
+      .external-link
+        margin: 0 5px
+        &:last-child
+          margin-right: 0
+        &:first-child
+          margin-left: 0
+
+      @media(max-width: 1024px)
+        width: 100%
+        margin: 8px 0 24px 0
+
+  .Features
+    display: flex
+    justify-content: space-between
+    position: absolute
+    top: 50%
+    left: 64px
+    right: 64px
+    transform: translate(0, -50%)
+
+    @media(max-width: 1024px)
+      position: relative
+      transform: none
+      display: block
+      left: 0
+      top: 0
+      right: 0
+      overflow: scroll
+
+  .Feature
+    width: calc(100% / 3 - 28px)
+    box-shadow: 0 3px 6px 0 rgba(48,52,62,0.1)
+    padding: 16px
+    border-radius: 4px
+    text-align: left
+    position: relative
+    z-index: 0
+    overflow: hidden
+
+    @media(max-width: 1024px)
+      width: 100%
+      margin: auto
+      margin-bottom: 16px
+
+    &:before, &:after
+      content: ''
+      position: absolute
+      z-index: 2
+      background: #F1F6FD
+      width: 122%
+      height: 150%
+      left: -25%
+      top: -75%
+      transform: rotate(-19deg)
+
+    &:after
+      background: #F7FAFE
+      right: -25%
+      left: 0
+      top: -30%
+      transform: rotate(30deg)
+      z-index: 1
+
+  .Feature-icon
+    width: 46px
+    position: relative
+    z-index: 3
+
+  .Feature-title
+    font-weight: bold
+    font-size: 16px
+    line-height: 24px
+    margin-top: 8px
+    color: #0D2366
+    position: relative
+    z-index: 3
+
+  .Feature-desc
+    font-size: 14px
+    line-height: 20px
+    position: relative
+    z-index: 3
+
+.OnBoarding--FeatureRequest
+  .FeatureRequest
+    padding: 0 64px 64px 64px
+    width: 40%
+
+    .desc
+      color: #8B9498
+      font-size: 14px
+      line-height: 20px
+      margin-bottom: 12px
+
+    .FeatureRequest--Form
+      .form-body
+        .Input:first-child
+          margin-top: 0
+
+.OnBoarding--Subscription
+  .OnBoarding--ImageSlide .Landing--Image
+    overflow: hidden
+    z-index: 2
+    position: relative
+    background-color: #F4FDFF
+
+    img
+      position: relative
+      right: 140px
+      top: 144px
+      transform: translate(0, -25%)
+      width: 110%
+      max-width: 700px
+      min-width: 520px
+
+    &:before
+      content: ''
+      position: absolute
+      right: 72px
+      top: -132px
+      border-radius: 1px
+      z-index: -1
+      height: 640px
+      width: 180%
+      min-width: 400px
+      max-width: 490px
+      color: #40c1bb
+      background: linear-gradient(45deg, #62e3c9, #05c098 50%)
+      box-shadow: 1px 1px 0 #009688, 2px 2px 0 #009688, 3px 3px 0 #009688, 4px 4px 0 #009688
+      transform-origin: 0 0
+      transform: rotateZ(45deg) skewX(-15deg) skewY(-16deg)
