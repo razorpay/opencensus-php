@@ -8,6 +8,7 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
+import { fetchUser } from 'merchant/modules/session';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';
@@ -32,7 +33,10 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
       RZPFeatures.ROUTE
     ),
   }),
-  { handleProductQuickGuide }
+  {
+    fetchUser,
+    handleProductQuickGuide,
+  }
 )
 @OnBoarding({
   feature: RZPFeatures.ROUTE,
@@ -82,8 +86,17 @@ export default class MarketPlaceOnBoarding extends React.Component {
     this.props.goTo(2);
   };
 
+  onSubmitClick = () => {
+    return this.props.fetchUser().then(() => {
+      this.props.handleProductQuickGuide({
+        ...this.props.routeProductOnBoarding,
+        showOnboarding: false,
+      });
+    });
+  };
+
   render() {
-    const { isTestMode, active, user, routeProductOnBoarding } = this.props;
+    const { isTestMode, active, routeProductOnBoarding } = this.props;
 
     return (
       <OnBoardingWrapper class="Route">

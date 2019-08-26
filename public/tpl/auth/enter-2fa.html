@@ -1,0 +1,26 @@
+<div>
+  <div class="auth-heading">
+    2-Step Verification
+  </div>
+  <div class="auth-text m-t-sm">
+    An SMS with 6-digit OTP has been sent to &lt;PhoneNumber&gt;. OTP will expire in 5 mins.
+  </div>
+
+  <form class="auth-form" name="loginForm" ng-submit="sendLoginCredentials(loginForm.$valid)">
+    <label class="form-label auth-subheading" for="otp">Enter the OTP</label>
+    <div ng-include="'tpl/auth/components/otp-input.html'" ></div>
+
+    <div class="auth-text">
+      Didn't receive an SMS?&nbsp;
+      <span class="highlight-clickable-text">
+        Resend
+      </span>
+    </div>
+
+    <button ng-disable="otpSendingInProgress" class="btn btn-primary form-control m-t" type="submit" >
+      Confirm
+    </button>
+    <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
+  </form>
+  <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+</div>

@@ -54,6 +54,8 @@ export default class OnBoardingFeatureRequest extends React.PureComponent {
           isLoading: false,
           submitted: submitted,
         });
+
+        return this.props.onSubmitClick && this.props.onSubmitClick(res);
       })
       .catch(err => {
         this.props.showNotification({

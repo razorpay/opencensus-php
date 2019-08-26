@@ -64,7 +64,11 @@ export default class SubscriptionsController extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.subscriptions.loading !== this.props.subscriptions.loading) {
+    if (
+      nextProps.subscriptions.loading !== this.props.subscriptions.loading ||
+      nextProps.subscriptionProductOnBoarding.showOnboarding !==
+        this.props.subscriptionProductOnBoarding.showOnboarding
+    ) {
       this.initSubscriptions(nextProps);
     }
   }
@@ -76,12 +80,7 @@ export default class SubscriptionsController extends React.Component {
 
     const isPlanRoute = location.pathname.includes('plan');
 
-    if (
-      subscriptions.loading ||
-      subscriptions.items.length ||
-      plans.loading ||
-      plans.items.length
-    ) {
+    if (subscriptions.items.length || plans.items.length) {
       return;
     }
 
