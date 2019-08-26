@@ -64,11 +64,7 @@ export default class SubscriptionsController extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.subscriptions.loading !== this.props.subscriptions.loading ||
-      nextProps.subscriptionProductOnBoarding.showOnboarding !==
-        this.props.subscriptionProductOnBoarding.showOnboarding
-    ) {
+    if (nextProps.subscriptions.loading !== this.props.subscriptions.loading) {
       this.initSubscriptions(nextProps);
     }
   }
@@ -120,18 +116,10 @@ export default class SubscriptionsController extends React.Component {
       return;
     }
 
-    let isQuickGuideOpen = false;
-
-    if (subscriptionProductOnBoarding.isTour) {
-      isQuickGuideOpen = true;
-    } else {
-      isQuickGuideOpen = !getSubscriptionQuickGuideIsClosed(props);
-    }
-
     this.props.handleProductQuickGuide({
       ...subscriptionProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen,
+      isQuickGuideOpen: !getSubscriptionQuickGuideIsClosed(props),
     });
   };
 
