@@ -9,8 +9,8 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 
-import Landing from 'merchant/components/OnBoarding/Screens/Landing';
-import Features from 'merchant/components/OnBoarding/Screens/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
 import OnBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
@@ -53,24 +53,20 @@ export default class PaymentPagesOnBoarding extends React.Component {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, false);
     }
 
-    this.props.handleProductQuickGuide({
-      ...this.props.paymentLinksProductOnBoarding,
-      showOnboarding: false,
-    });
-
     this.props.closeOnboarding();
   };
 
   render() {
-    const { active, onSlideChange } = this.props;
+    const { active, paymentLinksProductOnBoarding } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentLinks">
-        <Slider active={active} onSlideChange={onSlideChange}>
+        <Slider active={active}>
           {sliderProps => (
             <Landing
               {...sliderProps}
               title="Payment Links"
+              feature={RZPFeatures.PL}
               imageUrl="https://razorpay.com/assets/paymentlinks/pl-landing.svg"
               desc="Share payment links via an email, SMS, messenger, chatbot etc. and get paid immediately."
             />
@@ -82,6 +78,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               title="What makes Payment Links great?"
               nextBtn={this.getNextBtnProp(sliderProps)}
               featureLinks={FEATURES_LINKS}
+              feature={RZPFeatures.PL}
               features={FEATURES_DATA}
             />
           )}
@@ -90,7 +87,8 @@ export default class PaymentPagesOnBoarding extends React.Component {
             <SliderDots {...sliderProps}>
               <SkipAndGetStartedButton
                 isLocalEnabler
-                onClick={this.props.closeOnboarding}
+                isTour={paymentLinksProductOnBoarding.isTour}
+                onClick={this.closeOnboarding}
                 feature={RZPFeatures.PL}
                 page={sliderProps.active}
               />

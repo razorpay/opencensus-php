@@ -109,8 +109,7 @@ export default class RequestEarlyAccessForm extends Component {
 
   createFreshdeskTicket() {
     const TSYS_AUTH_TOKEN = '4d482bcf908b56771a86db388bae8ee7639b0f81';
-    const apiUrl =
-      'https://bmwloans.razorpay.com/ticketing/api/fd/ticket/create';
+    const apiUrl = 'https://support-tsa.razorpay.com/api/fd/ticket/create';
     // Sandbox API URL - Bussiness operations group id = 42000097437
     // const apiUrl = 'http://localhost:4000/api/fd/ticket/create';
 

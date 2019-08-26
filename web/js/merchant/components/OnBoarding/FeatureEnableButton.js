@@ -7,27 +7,34 @@ import { classList } from 'common/util';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { updateFeatures } from 'merchant/modules/config';
-import { handleProductQuickGuide } from 'merchant/modules/onboarding';
+import {
+  saveOnboarding,
+  handleProductQuickGuide,
+} from 'merchant/modules/onboarding';
+import { fetchUser } from 'merchant/modules/session';
 
-import { setOnBoardingDataInLocalState } from './index';
+import { setOnBoardingDataInLocalState } from './utils';
 
 @connect(
   state => {
     return {
       user: state.session.user,
+      isTestMode: state.session.mode === 'test',
       onboarding: state.onboarding,
     };
   },
-  { updateFeatures, showNotification, handleProductQuickGuide }
+  {
+    fetchUser,
+    saveOnboarding,
+    updateFeatures,
+    showNotification,
+    handleProductQuickGuide,
+  }
 )
 export default class FeatureEnableButton extends React.Component {
-  constructor(props) {
-    super();
-
-    this.state = {
-      isSuccess: false,
-    };
-  }
+  state = {
+    isSuccess: false,
+  };
 
   handleEnableFeature = () => {
     if (this.props.isLocalEnabler) {
@@ -43,27 +50,33 @@ export default class FeatureEnableButton extends React.Component {
       return;
     }
 
-    const data = {
-      features: {
-        [this.props.feature]: 1,
-      },
-    };
+    let saveOnboarding = null;
 
-    return this.props
-      .updateFeatures(data, this.props.user.current)
+    if (this.props.isTestMode) {
+      saveOnboarding = this.props.updateFeatures(
+        {
+          features: {
+            [this.props.feature]: 1,
+          },
+        },
+        this.props.user.current
+      );
+    } else {
+      saveOnboarding = this.props.saveOnboarding(this.props.feature, {
+        feature: this.props.feature,
+      });
+    }
+
+    return saveOnboarding
+      .then(() => {
+        return this.props.fetchUser();
+      })
       .then(res => {
-        this.props.showNotification({
-          type: 'success',
-          message: `${this.props.feature} has been enabled!`,
-        });
-
         this.setState({
           isSuccess: true,
         });
 
         this.props.onClick && this.props.onClick(res);
-
-        setTimeout(() => location.reload());
       })
       .catch(err => {
         this.props.showNotification({

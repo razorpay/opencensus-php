@@ -19,6 +19,7 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
+import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 @withRouter
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
@@ -119,6 +120,7 @@ export default class PaymentLinksContainer extends ListContainer {
           type="link"
           onCopy={this.onCopy}
           onDuplicate={this.onDuplicate}
+          EmptyList={EmptyComponent}
         />
 
         <Pager
@@ -131,3 +133,16 @@ export default class PaymentLinksContainer extends ListContainer {
     );
   }
 }
+
+// TODO: Update colSpan if no of columns are changes
+const EmptyComponent = () => (
+  <EmptyListWithTableRow
+    colSpan={8}
+    description={
+      <React.Fragment>
+        <div>There are no payment links yet!!</div>
+        <div>Start creating new links now.</div>
+      </React.Fragment>
+    }
+  />
+);

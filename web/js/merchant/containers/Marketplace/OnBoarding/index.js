@@ -8,10 +8,11 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
+import { fetchUser } from 'merchant/modules/session';
 
-import Landing from 'merchant/components/OnBoarding/Screens/Landing';
-import Features from 'merchant/components/OnBoarding/Screens/Features';
-import FeatureRequest from 'merchant/components/OnBoarding/Screens/FeatureRequest';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
+import FeatureRequest from 'merchant/components/OnBoarding/Slides/FeatureRequest';
 import OnBoarding, {
   NextButton,
   OnBoardingWrapper,
@@ -26,13 +27,16 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 @connect(
   state => ({
     user: state.session.user,
-    mode: state.session.mode,
+    isTestMode: state.session.mode === 'test',
     routeProductOnBoarding: getCurrentProductOnBoardingDetails(
       state,
       RZPFeatures.ROUTE
     ),
   }),
-  { handleProductQuickGuide }
+  {
+    fetchUser,
+    handleProductQuickGuide,
+  }
 )
 @OnBoarding({
   feature: RZPFeatures.ROUTE,
@@ -40,18 +44,12 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 export default class MarketPlaceOnBoarding extends React.Component {
   closeOnboarding = () => {
     setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
-    this.props.closeOnboarding();
 
-    if (this.props.user.isMarketplaceEnabled) {
-      this.props.handleProductQuickGuide({
-        ...this.props.routeProductOnBoarding,
-        showOnboarding: false,
-      });
-    }
+    this.props.closeOnboarding();
   };
 
   getNextBtnProp = sliderProps => () => {
-    if (this.props.mode === 'live') {
+    if (!this.props.isTestMode) {
       return (
         <NextButton
           feature={RZPFeatures.ROUTE}
@@ -76,7 +74,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
   };
 
   onClickSkipButton = () => {
-    if (this.props.mode === 'test') {
+    if (this.props.isTestMode) {
       if (this.props.user.isMarketplaceEnabled) {
         this.closeOnboarding();
       }
@@ -88,18 +86,26 @@ export default class MarketPlaceOnBoarding extends React.Component {
     this.props.goTo(2);
   };
 
-  render() {
-    const { mode, active, onSlideChange, user } = this.props;
+  onSubmitClick = () => {
+    return this.props.fetchUser().then(() => {
+      this.props.handleProductQuickGuide({
+        ...this.props.routeProductOnBoarding,
+        showOnboarding: false,
+      });
+    });
+  };
 
-    const isTestMode = mode === 'test';
+  render() {
+    const { isTestMode, active, routeProductOnBoarding, user } = this.props;
 
     return (
       <OnBoardingWrapper class="Route">
-        <Slider active={active} onSlideChange={onSlideChange}>
+        <Slider active={active}>
           {sliderProps => (
             <Landing
               {...sliderProps}
               title="Route"
+              feature={RZPFeatures.ROUTE}
               imageUrl="https://razorpay.com/assets/route/route-landing.svg"
               desc="Easily split payments, make vendor payouts, manage marketplace money flow or automate routing money with complete control over the business logic."
             />
@@ -112,6 +118,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
               nextBtn={this.getNextBtnProp(sliderProps)}
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
+              feature={RZPFeatures.ROUTE}
             />
           )}
 
@@ -136,6 +143,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
                   feature={RZPFeatures.ROUTE}
                   page={sliderProps.active}
                   onClick={this.onClickSkipButton}
+                  isTour={routeProductOnBoarding.isTour}
                   isLocalEnabler={user.isMarketplaceEnabled}
                 />
               )}

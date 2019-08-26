@@ -1,3 +1,88 @@
+.Onboarding
+  font-size: 14px
+  text-align: center
+
+  .illustration
+    padding: 130px
+    width: 160px
+    background-repeat: no-repeat
+    background-size: contain
+    background-position: center
+    margin: 20px auto 0
+
+  .description
+    margin: 20px 16px 0
+
+  .form-fields
+    margin: 20px 16px 0
+
+    .Input
+      margin: 0
+
+  .Button
+    margin 20px auto 0
+
+
+.Onboarding--Invoices
+  margin: 20px 0 80px
+  color: #58666E
+
+  .Onboarding-heading
+    font-size: 20px
+    margin-bottom: 16px
+
+    span
+      font-weight: 600
+  
+  .Onboarding--content
+    margin-top: 56px
+
+  .step
+    position: relative
+    text-align: center
+    display: inline-block
+    width: 30%
+    min-width: 240px
+    font-size: 14px
+    padding: 0 8px
+    vertical-align: top
+
+    .img
+      position: relative
+
+      img
+        position: absolute
+        bottom: 0
+        left: 50%
+        transform: translateX(-50%)
+
+    .title
+      font-size: 16px
+      font-weight: 600
+      margin: 16px 0 4px
+
+    .i
+      position: absolute
+      top: 50%
+      right: -18px
+      transform: translateY(-50%)
+      font-size: 36px
+      font-weight: 600
+      color: #58666E
+
+  @media (max-width: 1023px)
+
+    .Onboarding--content  .step
+      display: block
+      margin: 48px auto 0
+
+      .i
+        display: none
+
+.Onboarding--Invoices
+  .img
+    height: 160px
+
 .OnBoarding
   padding: 24px
 
@@ -6,8 +91,6 @@
     background-color: #FFFFFF
     box-shadow: 0 0 0 1px rgba(63,63,68,0.05), 0 1px 3px 0 rgba(63,63,68,0.15)
     position: relative
-    // height: 100%
-    // min-height: 70vh
     height: 70vh
     max-height: 580px
     min-height: 540px
@@ -21,6 +104,7 @@
     left: 50%
     margin-top: 20px
     transform: translate(-50%, 0)
+
     @media(max-width: 1024px)
       display: none
 
@@ -112,14 +196,14 @@
       margin: 16px 0 8px 0
       font-weight: bold
       color: #0D2366
+
       @media(max-width: 1024px)
         font-size: 28px
 
     .Details-desc
-      font-size: 16px
+      font-size: 18px
       line-height: 24px
       margin-bottom: 42px
-      font-weight: bold
 
     .DataList-Item
       font-size: 16px
@@ -157,6 +241,7 @@
       font-size: 32px
       line-height: 1.5
       font-weight: bolder
+
       @media(max-width: 1024px)
         font-size: 24px
         width: 100%
@@ -184,6 +269,7 @@
     left: 64px
     right: 64px
     transform: translate(0, -50%)
+
     @media(max-width: 1024px)
       position: relative
       transform: none
@@ -202,6 +288,7 @@
     position: relative
     z-index: 0
     overflow: hidden
+
     @media(max-width: 1024px)
       width: 100%
       margin: auto
@@ -211,7 +298,7 @@
       content: ''
       position: absolute
       z-index: 2
-      background: #f1f6fd
+      background: #F1F6FD
       width: 122%
       height: 150%
       left: -25%
@@ -219,7 +306,7 @@
       transform: rotate(-19deg)
 
     &:after
-      background: #f7fafe
+      background: #F7FAFE
       right: -25%
       left: 0
       top: -30%

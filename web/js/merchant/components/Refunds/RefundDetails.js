@@ -5,8 +5,13 @@ import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { Link } from 'react-router-dom';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
+import RefundStatusTimeline from 'merchant/components/Refunds/RefundTimeline';
+import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import RefundUpdate from 'merchant/components/Refunds/RefundUpdate';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 
-export default ({ refund, isLoading, statusMsg }) => {
+export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -32,12 +37,40 @@ export default ({ refund, isLoading, statusMsg }) => {
                   )}
                 />
 
+                {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
+                  <EntityDetailRow
+                    label="Status"
+                    value={() => (
+                      <ContentToggler onToggleClick={viewRefundHistory}>
+                        <span>View History</span>
+                        <RefundStatusTimeline refund={refund} />
+                      </ContentToggler>
+                    )}
+                  />
+                ) : null}
+
                 <EntityDetailRow
                   label="Amount"
                   value={() => (
                     <Amount value={refund.amount} currency={refund.currency} />
                   )}
                 />
+
+                {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
+                  <EntityDetailRow
+                    label="Refund Mode"
+                    value={() => {
+                      return refund.speed_processed !== null ? (
+                        <span>
+                          {refund.speed_processed.charAt(0).toUpperCase() +
+                            refund.speed_processed.slice(1)}
+                        </span>
+                      ) : (
+                        <span>{'Instant'}</span>
+                      );
+                    }}
+                  />
+                ) : null}
 
                 <EntityDetailRow label="Currency" value={refund.currency} />
 

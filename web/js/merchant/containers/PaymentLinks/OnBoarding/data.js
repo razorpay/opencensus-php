@@ -23,10 +23,10 @@ export const FEATURES_DATA = [
 export const FEATURES_LINKS = [
   {
     label: 'Know more',
-    url: 'https://razorpay.com/docs/payment-pages/',
+    url: 'https://razorpay.com/docs/payment-links/',
   },
   {
     label: 'View API Docs',
-    url: 'https://razorpay.com/docs/payment-pages/',
+    url: 'https://razorpay.com/docs/api/payment-links/',
   },
 ];

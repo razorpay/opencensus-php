@@ -50,13 +50,7 @@ export default class MarketplaceContainer extends React.Component {
   componentDidMount() {
     this.initMarketPlace();
 
-    if (this.props.transfers.items.length) {
-      return;
-    }
-
-    this.props.fetchTransfers({ count: 25 });
-
-    this.props.fetchAccounts({ count: 25 });
+    this.fetchDataForMarketPlaceOnboarding();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -71,13 +65,33 @@ export default class MarketplaceContainer extends React.Component {
     if (routeProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...routeProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: false,
         isTour: false,
       });
     }
   }
 
+  fetchDataForMarketPlaceOnboarding = () => {
+    const { transfers, accounts, fetchAccounts, fetchTransfers } = this.props;
+
+    if (!transfers.items.length) {
+      fetchTransfers({ count: 25 });
+    }
+
+    if (!transfers.items.length && !accounts.accounts.length) {
+      fetchAccounts({ count: 25 });
+    }
+  };
+
   initMarketPlace = (props = this.props) => {
-    const { isMarketplaceEnabled } = props.user;
+    const { routeProductOnBoarding } = props,
+      { isMarketplaceEnabled } = props.user;
+
+    if (routeProductOnBoarding.isTour) {
+      return;
+    }
+
     let showOnboarding = !isMarketplaceEnabled;
 
     if (isMarketplaceEnabled) {
@@ -94,17 +108,11 @@ export default class MarketplaceContainer extends React.Component {
       return;
     }
 
-    let isQuickGuideClosed = getRouteQuickGuideIsClosed(props);
-
-    let routeProductOnBoarding = {
-      ...props.routeProductOnBoarding,
+    this.props.handleProductQuickGuide({
+      ...routeProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen: props.routeProductOnBoarding.isTour
-        ? true
-        : !isQuickGuideClosed,
-    };
-
-    this.props.handleProductQuickGuide(routeProductOnBoarding);
+      isQuickGuideOpen: !getRouteQuickGuideIsClosed(props),
+    });
   };
 
   render() {

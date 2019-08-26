@@ -1,32 +1,35 @@
 import { connect } from 'react-redux';
 import { handleProductQuickGuide } from 'merchant/modules/onboarding';
 
-@connect(
-  state => ({
-    onboarding: state.onboarding.products,
-  }),
-  { handleProductQuickGuide }
-)
+@connect(null, { handleProductQuickGuide })
 export default class TakeATourButton extends React.Component {
-  onClick = () => {
-    this.props.handleProductQuickGuide({
-      feature: this.props.feature,
-      showOnboarding: false,
-      isQuickGuideOpen: true,
-      isTour: true,
-    });
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
 
-    window.rzpAnalytics({
-      eventCategory: `Restart Tutorial (${this.props.feature})`,
-      eventAction: `Need help? Take a Tour CTA `,
+  onClick = () => {
+    this.context.confirm({
+      header: 'Restart the Tour?',
+      message: 'This tour will give you a quick guide on this product.',
+      affirmativeLabel: 'Yes',
+      abortLabel: 'No',
+      action: () => {
+        this.props.handleProductQuickGuide({
+          feature: this.props.feature,
+          showOnboarding: true,
+          isQuickGuideOpen: true,
+          isTour: true,
+        });
+
+        window.rzpAnalytics({
+          eventCategory: `Restart Tutorial (${this.props.feature})`,
+          eventAction: `Need help? Take a Tour CTA `,
+        });
+      },
     });
   };
 
   render() {
-    const currentOnboarding = this.props.onboarding[this.props.feature];
-
-    if (currentOnboarding.isQuickGuideOpen) return null;
-
     return (
       <span class="btn btn-link" onClick={this.onClick}>
         <i class="i i-lightbulb" />
