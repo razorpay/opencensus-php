@@ -106,9 +106,13 @@ const getStatus = ({ accounts, transfers }) => {
     };
   }
 
-  const accountsStatus = transfers.items.length
-    ? done
-    : accounts.items.length ? done : active;
+  let accountsStatus = active;
+
+  if (transfers.items.length) {
+    accountsStatus = done;
+  } else {
+    accountsStatus = accounts.items.length ? done : active;
+  }
 
   if (transfers.loading) {
     return {

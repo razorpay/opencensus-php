@@ -50,13 +50,7 @@ export default class MarketplaceContainer extends React.Component {
   componentDidMount() {
     this.initMarketPlace();
 
-    if (this.props.transfers.items.length) {
-      return;
-    }
-
-    this.props.fetchTransfers({ count: 25 });
-
-    this.props.fetchAccounts({ count: 25 });
+    this.fetchDataForMarketPlaceOnboarding();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -71,13 +65,30 @@ export default class MarketplaceContainer extends React.Component {
     if (routeProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...routeProductOnBoarding,
+        isQuickGuideOpen: false,
         isTour: false,
       });
     }
   }
 
+  fetchDataForMarketPlaceOnboarding = () => {
+    const { transfers, accounts, fetchAccounts, fetchTransfers } = this.props;
+
+    if (transfers.loading && !transfers.items.length) {
+      fetchTransfers({ count: 25 });
+    } else {
+      return;
+    }
+
+    if (accounts.loading && !accounts.accounts.length) {
+      fetchAccounts({ count: 25 });
+    }
+  };
+
   initMarketPlace = (props = this.props) => {
-    const { isMarketplaceEnabled } = props.user;
+    const { routeProductOnBoarding } = props,
+      { isMarketplaceEnabled } = props.user;
+
     let showOnboarding = !isMarketplaceEnabled;
 
     if (isMarketplaceEnabled) {
@@ -94,17 +105,19 @@ export default class MarketplaceContainer extends React.Component {
       return;
     }
 
-    let isQuickGuideClosed = getRouteQuickGuideIsClosed(props);
+    let isQuickGuideOpen = false;
 
-    let routeProductOnBoarding = {
-      ...props.routeProductOnBoarding,
+    if (routeProductOnBoarding.isTour) {
+      isQuickGuideOpen = true;
+    } else {
+      isQuickGuideOpen = !getRouteQuickGuideIsClosed(props);
+    }
+
+    this.props.handleProductQuickGuide({
+      ...routeProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen: props.routeProductOnBoarding.isTour
-        ? true
-        : !isQuickGuideClosed,
-    };
-
-    this.props.handleProductQuickGuide(routeProductOnBoarding);
+      isQuickGuideOpen,
+    });
   };
 
   render() {
