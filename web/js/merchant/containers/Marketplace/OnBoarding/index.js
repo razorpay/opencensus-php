@@ -105,6 +105,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
             <Landing
               {...sliderProps}
               title="Route"
+              feature={RZPFeatures.ROUTE}
               imageUrl="https://razorpay.com/assets/route/route-landing.svg"
               desc="Easily split payments, make vendor payouts, manage marketplace money flow or automate routing money with complete control over the business logic."
             />
@@ -117,6 +118,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
               nextBtn={this.getNextBtnProp(sliderProps)}
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
+              feature={RZPFeatures.ROUTE}
             />
           )}
 
