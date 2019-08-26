@@ -3,7 +3,7 @@
 namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 
 
-class Constants
+class RBLBankInformation
 {
     const BRANCH_NAME = 'Lower Parel Mumbai (0088)';
     const BRANCH_ADDRESS = 'TOWER 2B, ONE INDIA BULLS CENTRE, 3RD FLOOR, SENAPAT BAPAT MARG';
