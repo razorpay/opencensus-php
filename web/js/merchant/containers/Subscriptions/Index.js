@@ -80,12 +80,7 @@ export default class SubscriptionsController extends React.Component {
 
     const isPlanRoute = location.pathname.includes('plan');
 
-    if (
-      subscriptions.loading ||
-      subscriptions.items.length ||
-      plans.loading ||
-      plans.items.length
-    ) {
+    if (subscriptions.items.length || plans.items.length) {
       return;
     }
 
