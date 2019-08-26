@@ -9,8 +9,8 @@ export default class TakeATourButton extends React.Component {
 
   onClick = () => {
     this.context.confirm({
-      header: 'Retake the Tour',
-      message: 'Are you sure you want to take tour again?',
+      header: 'Restart the Tour?',
+      message: 'This tour will give you a quick guide on this product.',
       affirmativeLabel: 'Yes',
       abortLabel: 'No',
       action: () => {
