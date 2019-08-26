@@ -64,6 +64,7 @@ export default class InvoicingContainer extends Component {
     if (invoicesProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...invoicesProductOnBoarding,
+        showOnboarding: false,
         isQuickGuideOpen: false,
         isTour: false,
       });
@@ -71,6 +72,10 @@ export default class InvoicingContainer extends Component {
   }
 
   initInvoicesOnboarding = (props = this.props) => {
+    if (props.invoicesProductOnBoarding.isTour) {
+      return false;
+    }
+
     const data = {
       user: props.user,
       invoices: props.invoices,
@@ -92,14 +97,10 @@ export default class InvoicingContainer extends Component {
       return;
     }
 
-    let isQuickGuideClosed = getInvoicesQuickGuideIsClosed(props);
-
     let invoicesProductOnBoarding = {
       ...props.invoicesProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen: props.invoicesProductOnBoarding.isTour
-        ? true
-        : !isQuickGuideClosed,
+      isQuickGuideOpen: !getInvoicesQuickGuideIsClosed(props),
     };
 
     this.props.handleProductQuickGuide(invoicesProductOnBoarding);

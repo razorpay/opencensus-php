@@ -146,12 +146,18 @@ export default class PaymentPagesContainer extends ListContainer {
     if (paymentPageProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...paymentPageProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: false,
         isTour: false,
       });
     }
   }
 
   initPaymentPagesOnboarding = (props = this.props) => {
+    if (props.paymentPageProductOnBoarding.isTour) {
+      return;
+    }
+
     const data = {
       user: props.user,
       paymentPages: props.paymentPages,
@@ -166,14 +172,10 @@ export default class PaymentPagesContainer extends ListContainer {
       showOnboarding = getIsAllowedPaymentPagesResetOnBoarding(data);
     }
 
-    let isQuickGuideClosed = getPaymentPageQuickGuideIsClosed(props);
-
     let paymentPageProductOnBoarding = {
       ...props.paymentPageProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen: props.paymentPageProductOnBoarding.isTour
-        ? true
-        : !isQuickGuideClosed,
+      isQuickGuideOpen: !getPaymentPageQuickGuideIsClosed(props),
     };
 
     this.props.handleProductQuickGuide(paymentPageProductOnBoarding);

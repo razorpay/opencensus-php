@@ -1,6 +1,15 @@
 import Button, { AsyncBtn } from 'component/Button';
 
 export default class OnBoardingFeatures extends React.PureComponent {
+  handleBackButton = (...args) => {
+    window.rzpAnalytics({
+      eventCategory: `Onboarding Card (${this.props.feature})`,
+      eventAction: `Page ${this.props.active} - Back CTA`,
+    });
+
+    this.props.prev(args);
+  };
+
   render() {
     const {
       title,
@@ -52,14 +61,7 @@ export default class OnBoardingFeatures extends React.PureComponent {
         <div class="Button-Container">
           <Button.Transparent
             iconBefore="arrow-back"
-            onClick={(...args) => {
-              window.rzpAnalytics({
-                eventCategory: `Onboarding Card (${feature})`,
-                eventAction: `Page ${active} - Back CTA`,
-              });
-
-              prev(args);
-            }}
+            onClick={this.handleBackButton}
           >
             Back
           </Button.Transparent>

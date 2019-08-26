@@ -42,7 +42,7 @@ export default class PaymentLinksContainer extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.invoices.loading != this.props.invoices.loading) {
+    if (nextProps.invoices.loading !== this.props.invoices.loading) {
       this.initPaymentLinksOnboarding(nextProps);
     }
   }
@@ -53,12 +53,18 @@ export default class PaymentLinksContainer extends React.Component {
     if (paymentLinksProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...paymentLinksProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: false,
         isTour: false,
       });
     }
   }
 
   initPaymentLinksOnboarding = (props = this.props) => {
+    if (props.paymentLinksProductOnBoarding.isTour) {
+      return;
+    }
+
     const data = {
       user: props.user,
       merchantId: props.user.current,
@@ -73,14 +79,10 @@ export default class PaymentLinksContainer extends React.Component {
       showOnboarding = getIsAllowedResetPaymentLinksOnBoarding(data);
     }
 
-    let isQuickGuideClosed = getPaymentLinksQuickGuideIsClosed(props);
-
-    let paymentLinksProductOnBoarding = {
+    const paymentLinksProductOnBoarding = {
       ...props.paymentLinksProductOnBoarding,
       showOnboarding,
-      isQuickGuideOpen: props.paymentLinksProductOnBoarding.isTour
-        ? true
-        : !isQuickGuideClosed,
+      isQuickGuideOpen: !getPaymentLinksQuickGuideIsClosed(props),
     };
 
     this.props.handleProductQuickGuide(paymentLinksProductOnBoarding);

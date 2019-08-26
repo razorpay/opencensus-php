@@ -2,12 +2,12 @@ import { connect } from 'react-redux';
 
 import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
 
-import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
   setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
+  QuickGuideStep,
   QuickGuideTitle,
   QuickGuideCloseBtn,
 } from 'merchant/components/QuickGuide/QuickStepGuide';
@@ -59,13 +59,17 @@ export default class PaymentPagesQuickGuide extends React.Component {
         title={Title}
         closeBtn={CloseBtn}
       >
-        <Step
+        <QuickGuideStep
           status={paymentPageStatus}
+          step="PaymentPage"
+          feature={RZPFeatures.PP}
           {...getQuickGuideData.PaymentPage(paymentPageStatus)}
         />
 
-        <Step
+        <QuickGuideStep
           status={paymentReceiveStatus}
+          step="PaymentReceive"
+          feature={RZPFeatures.PP}
           {...getQuickGuideData.ReceivePayments(paymentReceiveStatus)}
         />
       </QuickStepGuide>
@@ -76,17 +80,6 @@ export default class PaymentPagesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getPaymentPageQuickGuideIsClosed = props => {
-  if (
-    props.paymentPageProductOnBoarding &&
-    props.paymentPageProductOnBoarding.isQuickGuideOpen
-  ) {
-    return false;
-  }
-
-  if (props.invoices.loading) {
-    return true;
-  }
-
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PP);
 
   // Check if transfers non created state count is more then or equal to 2
