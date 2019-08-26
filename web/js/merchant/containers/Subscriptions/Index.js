@@ -94,7 +94,12 @@ export default class SubscriptionsController extends React.Component {
   };
 
   initSubscriptions = (props = this.props) => {
-    if (props.user.isChargeAtWillEnabled) return;
+    if (
+      props.user.isChargeAtWillEnabled ||
+      props.subscriptionProductOnBoarding.isTour
+    ) {
+      return;
+    }
 
     const { subscriptionProductOnBoarding } = props,
       { isSubscriptionsEnabled } = props.user;

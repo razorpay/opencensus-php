@@ -92,6 +92,10 @@ export default class MarketplaceContainer extends React.Component {
     const { routeProductOnBoarding } = props,
       { isMarketplaceEnabled } = props.user;
 
+    if (routeProductOnBoarding.isTour) {
+      return;
+    }
+
     let showOnboarding = !isMarketplaceEnabled;
 
     if (isMarketplaceEnabled) {
