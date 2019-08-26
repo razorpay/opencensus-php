@@ -9,8 +9,8 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 
-import Landing from 'merchant/components/OnBoarding/Screens/Landing';
-import Features from 'merchant/components/OnBoarding/Screens/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
 import OnBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
@@ -55,6 +55,7 @@ export default class InvoicesOnBoarding extends React.Component {
       feature: RZPFeatures.VA,
       onClick: this.props.closeOnboarding,
       page: sliderProps.active,
+      isTour: this.props.VAProductOnBoarding.isTour,
     };
 
     if (this.props.user.isVirtualAccountsEnabled) {
@@ -68,23 +69,19 @@ export default class InvoicesOnBoarding extends React.Component {
   closeOnboarding = () => {
     setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, false);
 
-    this.props.handleProductQuickGuide({
-      ...this.props.VAProductOnBoarding,
-      showOnboarding: false,
-    });
-
     this.props.closeOnboarding();
   };
 
   render() {
-    const { active, onSlideChange, user } = this.props;
+    const { active } = this.props;
 
     return (
       <OnBoardingWrapper class="SmartCollect">
-        <Slider active={active} onSlideChange={onSlideChange}>
+        <Slider active={active}>
           {sliderProps => (
             <Landing
               {...sliderProps}
+              feature={RZPFeatures.VA}
               title="Smart Collect"
               imageUrl="https://razorpay.com/assets/smartcollect/banner.svg"
               desc="Create and send GST compliant invoices that your customers can pay online instantly."
@@ -95,6 +92,7 @@ export default class InvoicesOnBoarding extends React.Component {
           {sliderProps => (
             <Features
               {...sliderProps}
+              feature={RZPFeatures.VA}
               title="What makes Smart Collect great?"
               nextBtn={this.getNextButton(sliderProps)}
               featureLinks={FEATURES_LINKS}

@@ -107,13 +107,6 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
     if (isVirtualAccountsEnabled) {
       showOnboarding = getIsAllowedResetVAOnBoarding(data);
-    } else {
-      this.props.handleProductQuickGuide({
-        ...props.VAProductOnBoarding,
-        showOnboarding: true,
-      });
-
-      return;
     }
 
     let VAProductOnBoarding = {
@@ -250,6 +243,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               paginate={this.paginate}
+              EmptyComponent={EmptyComponent}
               {...this.props}
             />
           </div>

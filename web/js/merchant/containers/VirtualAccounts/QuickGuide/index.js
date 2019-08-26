@@ -1,11 +1,11 @@
 import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
 
-import Step from 'merchant/components/StepGuide/Step';
 import QuickGuide, {
   setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
+  QuickGuideStep,
   QuickGuideTitle,
   QuickGuideCloseBtn,
 } from 'merchant/components/QuickGuide/QuickStepGuide';
@@ -48,13 +48,17 @@ export default class InvoicesQuickGuide extends React.Component {
         title={Title}
         closeBtn={CloseBtn}
       >
-        <Step
+        <QuickGuideStep
           status={virtualAccountsStatus}
+          step="VirtualAccount"
+          feature={RZPFeatures.VA}
           {...getQuickGuideData.PaymentPage(virtualAccountsStatus)}
         />
 
-        <Step
+        <QuickGuideStep
           status={paymentReceiveStatus}
+          step="PaymentReceive"
+          feature={RZPFeatures.VA}
           {...getQuickGuideData.ReceivePayments(paymentReceiveStatus)}
         />
       </QuickStepGuide>
@@ -65,14 +69,6 @@ export default class InvoicesQuickGuide extends React.Component {
 const Title = <QuickGuideTitle />;
 
 export const getVAQuickGuideIsClosed = props => {
-  if (props.VAProductOnBoarding && props.VAProductOnBoarding.isQuickGuideOpen) {
-    return false;
-  }
-
-  if (props.loading) {
-    return true;
-  }
-
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.VA);
 
   // Check if transfers non created state count is more then or equal to 2
@@ -80,7 +76,9 @@ export const getVAQuickGuideIsClosed = props => {
     return isClosed;
   }
 
-  setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, true);
+  if (!props.items.loading) {
+    setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, true);
+  }
 
   return true;
 };
