@@ -193,7 +193,7 @@ class Processor
             'action'    => $this->action,
             'entity'    => $this->getEntity(),
             'gateway'   => $this->getGateway(),
-            'response'  => $response,
+            'response'  => $this->redactForAction($response),
         ]);
 
         return $response;
@@ -275,5 +275,27 @@ class Processor
 
             return $item;
         });
+    }
+
+    /**
+     * Redact the input against a given action
+     * @param array $input
+     * @return array
+     */
+    protected function redactForAction(array $input)
+    {
+        $rules = $this->getNewAction()->getRedactRules($this->action);
+
+        if (empty($rules) === true)
+        {
+            return $input;
+        }
+
+        foreach ($rules as $field => $rule)
+        {
+            array_set($input, $field, '[redacted]');
+        }
+
+        return $input;
     }
 }
