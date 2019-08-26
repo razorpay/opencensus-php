@@ -1,5 +1,6 @@
 import Payment from 'merchant/models/Payment';
 import { set, merge } from 'rzp/utils/immutable';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const PAYMENT_FETCH = 'PAYMENT_FETCH';
 const PAYMENT_FETCH_CARD_DETAILS = 'PAYMENT_FETCH_CARD_DETAILS';
@@ -10,6 +11,8 @@ const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 const PAYMENT_RESET = 'PAYMENT_RESET';
 const PAYMENT_TRANSFER = 'PAYMENT_TRANSFER';
+const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
+const FETCH_REFUND_FEE = 'FETCH_REFUND_FEE';
 
 export const fetchItem = id => {
   let payment = new Payment();
@@ -19,7 +22,10 @@ export const fetchItem = id => {
     payload: payment.fetch(
       id,
       {},
-      { expand: ['card', 'emi_plan', 'disputes'] }
+      {
+        expand: ['card', 'emi_plan', 'disputes'],
+        dashboard_flag: ['instant_refund_support'],
+      }
     ),
   };
 };
@@ -78,6 +84,20 @@ export const resetPayment = () => {
   };
 };
 
+export const fetchCurrentBalance = () => {
+  return {
+    type: CURRENT_BALANCE_FETCH,
+    payload: merchantFetch('balance'),
+  };
+};
+
+export const fetchRefundFee = (payment, amount) => {
+  return {
+    type: FETCH_REFUND_FEE,
+    payload: payment.fetchInstantRefundFee(payment.id, amount),
+  };
+};
+
 let initialState = {
   loading: true,
   payment: {
@@ -91,6 +111,16 @@ let initialState = {
   refunds: {
     loading: false,
     items: [],
+    error: null,
+  },
+  refundFee: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  current_balance: {
+    loading: true,
+    data: {},
     error: null,
   },
   transfers: {
@@ -192,6 +222,27 @@ export default function(state = initialState, action) {
         error: action.payload.errors,
       });
 
+    case `${FETCH_REFUND_FEE}::PENDING`:
+      return set(state, 'refundFee', {
+        loading: true,
+        data: [],
+        error: null,
+      });
+
+    case `${FETCH_REFUND_FEE}::SUCCESS`:
+      return set(state, 'refundFee', {
+        data: action.payload.data,
+        loading: false,
+        error: null,
+      });
+
+    case `${FETCH_REFUND_FEE}::ERROR`:
+      return set(state, 'refundFee', {
+        loading: false,
+        error: action.payload.errors,
+        data: {},
+      });
+
     case `${PAYMENT_FETCH_TRANSFERS}::PENDING`:
       return set(state, 'transfers', {
         loading: true,
@@ -211,6 +262,24 @@ export default function(state = initialState, action) {
         loading: false,
         items: [],
         error: action.payload.errors,
+      });
+
+    case `${CURRENT_BALANCE_FETCH}::PENDING`:
+      return set(state, 'current_balance', initialState.current_balance);
+
+    case `${CURRENT_BALANCE_FETCH}::SUCCESS`:
+      return merge(state, {
+        current_balance: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+    case `${CURRENT_BALANCE_FETCH}::ERROR`:
+      return set(state, 'current_balance', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.current_balance.data,
       });
 
     case `${PAYMENT_RESET}`:

@@ -7,5 +7,5 @@ import { fetchMarketplacePayments as fetchAll } from 'merchant/modules/collectio
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 export default connect(state => state.mpPayments, { fetchAll })(props => (
-  <PaymentsList {...props} quickTourFeature={RZPFeatures.ROUTE} />
+  <PaymentsList {...props} quickTourFeature={RZPFeatures.ROUTE} isRoute />
 ));

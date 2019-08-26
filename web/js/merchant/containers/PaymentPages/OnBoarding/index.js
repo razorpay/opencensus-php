@@ -9,8 +9,8 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 
-import Landing from 'merchant/components/OnBoarding/Screens/Landing';
-import Features from 'merchant/components/OnBoarding/Screens/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
 import OnBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
@@ -56,15 +56,15 @@ export default class PaymentPagesOnBoarding extends React.Component {
     }
 
     this.props.closeOnboarding();
-
-    this.props.handleProductQuickGuide({
-      ...this.props.paymentPageProductOnBoarding,
-      showOnboarding: false,
-    });
   };
 
   render() {
-    const { active, onSlideChange, user } = this.props;
+    const {
+      active,
+      onSlideChange,
+      user,
+      paymentPageProductOnBoarding,
+    } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentPages">
@@ -73,6 +73,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
             <Landing
               {...sliderProps}
               title="Payment Pages"
+              feature={RZPFeatures.PP}
               imageUrl="https://razorpay.com/assets/paymentpages/hero-main.svg"
               desc="Create custom-branded, hosted Payment Pages in a few clicks to accept payments online. Your business can go online with zero integration and tech efforts."
             />
@@ -83,6 +84,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               {...sliderProps}
               title="What makes Payment Pages great?"
               nextBtn={this.getNextBtnProp(sliderProps)}
+              feature={RZPFeatures.PP}
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
             />
@@ -95,6 +97,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
                 onClick={this.closeOnboarding}
                 page={sliderProps.active}
                 isLocalEnabler={user.isPaymentPagesEnabled}
+                isTour={paymentPageProductOnBoarding.isTour}
               />
             </SliderDots>
           )}
