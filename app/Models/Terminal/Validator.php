@@ -134,6 +134,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
     ];
 
+    protected static $upiCitiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_citi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+    ];
+
     protected static $atomTerminalRules = [
         Entity::GATEWAY                    => 'required|in:atom',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -417,6 +427,13 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+    ];
+
+    protected static $upiCitiEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
