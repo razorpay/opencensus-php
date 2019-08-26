@@ -347,6 +347,14 @@ class Beneficiary extends Base\Core
 
         $status = $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
 
+        // add counter for success or failure
+        $this->trace->count(
+            Metric::BENEFICIARY_REGISTER_API_RESPONSE,
+            [
+                'status'  => $status,
+                'channel' => $channel,
+            ]);
+
         if ($status === true)
         {
             $this->removeBeneficiaryRegistrationCacheKey($bankAccount->getId());
