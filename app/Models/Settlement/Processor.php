@@ -772,10 +772,12 @@ class Processor extends Base\Core
         }
 
         // trace metric to get idea on time taken
-        $this->trace->gauge(
+        $this->trace->count(
             Metric::TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT,
-            get_diff_in_millisecond($startTime),
-            $totalCount);
+            [
+                'time_taken'  => get_diff_in_millisecond($startTime),
+                'total_count' => $totalCount,
+            ]);
 
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE,
@@ -835,6 +837,16 @@ class Processor extends Base\Core
         $txns = $this->repo
                      ->transaction
                      ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel);
+
+        // If there are no transactions to settle then return
+        if ($txns->count() === 0)
+        {
+            return [
+                'settlement_count'  => 0,
+                'attempt_count'     => 0,
+                'txn_count'         => 0,
+            ];
+        }
 
         $this->merchants = $this->repo
                                 ->merchant

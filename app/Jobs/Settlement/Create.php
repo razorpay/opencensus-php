@@ -62,8 +62,6 @@ class Create extends Job
 
         try
         {
-            parent::handle();
-
             $this->trace->info(
                 TraceCode::SETTLEMENT_JOB_INIT_FOR_MERCHANT,
                 [
@@ -72,12 +70,15 @@ class Create extends Job
                 ]
             );
 
+            $startTime = microtime(true);
+
             $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement($merchant);
 
             $response = [
                 'merchant_id'   => $this->merchantId,
                 'mode'          => $this->mode,
                 'channel'       => $merchant->getChannel(),
+                'time_taken'    => get_diff_in_millisecond($startTime),
             ] + $setlResponse;
 
             $this->trace->info(

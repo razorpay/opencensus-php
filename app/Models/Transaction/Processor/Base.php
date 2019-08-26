@@ -601,7 +601,6 @@ abstract class Base extends BaseCore
 
         try
         {
-            // Dispatch for bucket creation for settlement
             Bucket::dispatch($this->mode, $merchantId, $settledAt);
         }
         catch (\Throwable $e)

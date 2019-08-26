@@ -52,7 +52,7 @@ final class Metric
     /**
      * Method: Count
      */
-    const SETTLEMENT_CREATED_COUNT                         = 'settlement_created_count';
+    const SETTLEMENT_CREATED_COUNT                          = 'settlement_created_count';
 
     // ------ Histograms ------
 

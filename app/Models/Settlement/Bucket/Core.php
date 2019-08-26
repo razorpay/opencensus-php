@@ -32,10 +32,13 @@ class Core extends Base\Core
         {
             $currentTimestamp = Carbon::now(Timezone::IST);
 
-            $offset = $currentTimestamp->minute - $currentTimestamp->second;
+            $offsetHour = ($currentTimestamp->minute > 0) ? 1 : 0;
 
             // start of the hour will always be bucket timestamp
-            $bucketTimestamp = $currentTimestamp->getTimestamp() - $offset;
+            $bucketTimestamp = $currentTimestamp->addHours($offsetHour)
+                                                ->subMinutes($currentTimestamp->minute)
+                                                ->subSeconds($currentTimestamp->second)
+                                                ->getTimestamp();
         }
 
         $merchantIDs = $this->repo
