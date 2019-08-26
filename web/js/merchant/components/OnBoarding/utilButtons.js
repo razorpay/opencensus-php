@@ -54,7 +54,7 @@ class NextButton extends React.PureComponent {
   render() {
     return (
       <Button.Primary
-        feature={props.feature}
+        feature={this.props.feature}
         class="Forward-Button"
         iconAfter="arrow-forward"
         pendingText="Enabling..."
