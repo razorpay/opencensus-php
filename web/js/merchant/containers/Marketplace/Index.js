@@ -99,13 +99,6 @@ export default class MarketplaceContainer extends React.Component {
         transfers: props.transfers,
         accounts: props.accounts,
       });
-    } else {
-      this.props.handleProductQuickGuide({
-        ...props.routeProductOnBoarding,
-        showOnboarding: true,
-      });
-
-      return;
     }
 
     this.props.handleProductQuickGuide({
