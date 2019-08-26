@@ -162,6 +162,7 @@ final class Route
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
         // TODO: Add rate limiting on this route!
         'refund_fetch_for_customer'                => ['get',      'customer/refund',                                'RefundController@getRefundDetailsForCustomer'                      ],
+        'refunds_fetch_for_customer'               => ['get',      'customer/refunds',                               'RefundController@getRefundsDetailsForCustomer'                     ],
         'card_check_recurring'                     => ['get',      'cards/recurring',                                'PaymentController@getCardRecurring'                                ],
         'card_fetch_by_id'                         => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                      => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
@@ -826,6 +827,7 @@ final class Route
         'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
+        'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
         // Same as user_fetch but for admin
         'user_fetch_admin'                         => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
@@ -1153,8 +1155,9 @@ final class Route
 
         // Governor Proxy APIs - Rule
         'governor_create_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRule'                             ],
-        'governor_create_rule_bulk'               => ['patch',    '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRules'                            ],
-        'governor_update_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@updateRule'                             ],
+        'governor_create_rule_bulk'               => ['post',     '{source}/rule_engine/rule/{namespace}/bulk',                'GovernorController@createRules'                            ],
+        'governor_update_rule'                    => ['put',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@updateRule'                             ],
+        'governor_update_rule_bulk'               => ['put',      '{source}/rule_engine/rule/{namespace}/bulk',                'GovernorController@updateRules'                            ],
         'governor_rule_list'                      => ['get',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@getRules'                               ],
         'governor_get_rule'                       => ['get',      '{source}/rule_engine/rule/{namespace}/{rulename}',          'GovernorController@getRule'                                ],
 
@@ -1566,6 +1569,7 @@ final class Route
         'user_change_password',
         'user_2fa_change_setting',
         'user_confirm_by_data',
+        'user_access',
         'user_fetch',
         'user_login',
         'user_login_2fa_setup_mobile',
@@ -1624,6 +1628,7 @@ final class Route
     // Below routes deal only with user entity without context of merchant.
     public static $userWhitelist = [
         'user_resend_verification',
+        'user_access',
         'user_fetch',
         'user_change_password',
         'user_merchant_upgrade',
@@ -2229,6 +2234,7 @@ final class Route
         'governor_create_rule',
         'governor_create_rule_bulk',
         'governor_update_rule',
+        'governor_update_rule_bulk',
         'governor_rule_list',
         'governor_get_rule',
         'governor_create_rule_chain',
@@ -2682,6 +2688,7 @@ final class Route
         'governor_create_rule'                     => Permission::CREATE_GATEWAY_RULE,
         'governor_create_rule_bulk'                => Permission::CREATE_GATEWAY_RULE,
         'governor_update_rule'                     => Permission::EDIT_GATEWAY_RULE,
+        'governor_update_rule_bulk'                => Permission::EDIT_GATEWAY_RULE,
         'governor_rule_list'                       => Permission::VIEW_GATEWAY_RULE,
         'governor_get_rule'                        => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_chain'               => Permission::CREATE_GATEWAY_RULE,
@@ -2776,6 +2783,7 @@ final class Route
         'gateway_payment_callback_bharatqr',
         'gateway_payment_validate_bharatqr',
         'refund_fetch_for_customer',
+        'refunds_fetch_for_customer',
         'get_merchant_partner_status',
         'payment_redirect_to_authorize',
         'payment_redirect_to_authorize_get',
@@ -2847,6 +2855,7 @@ final class Route
             'user_reset_password_create',
             'user_merchant_upgrade',
             'user_change_password',
+            'user_access',
             'user_2fa_change_setting',
             'user_fetch',
             'invitation_action',

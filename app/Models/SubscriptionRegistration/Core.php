@@ -67,6 +67,7 @@ class Core extends Base\Core
 
     public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
     {
+        $this->populateAuthLinkParamsFromOrder($tokenRegistrationInput, $order);
         $this->populateInvoiceParamsFromOrder($tokenRegistrationInput, $order);
 
         $invoice = $this->repo->transaction(
@@ -80,6 +81,13 @@ class Core extends Base\Core
             });
 
         return $invoice;
+    }
+
+    private function populateAuthLinkParamsFromOrder(array & $input, Order\Entity $order)
+    {
+        (new Validator)->validateMethodWithOrder($input, $order);
+
+        $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD] = $order->getMethod();
     }
 
     private function populateInvoiceParamsFromOrder(array & $input, Order\Entity $order)
@@ -186,7 +194,7 @@ class Core extends Base\Core
                 $subr->setStatus(Status::COMPLETED);
             }
         }
-        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
+        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::REJECTED)
         {
             $subr->setStatus(Status::COMPLETED);
         }
@@ -326,8 +334,8 @@ class Core extends Base\Core
     {
         $token = $tokenRegistration->token;
 
-        $invoice = (new Invoice\Repository)->findByMerchantAndTokenRegistration(
-            $this->merchant,
+        $invoice = $this->repo->invoice->findByMerchantAndTokenRegistration(
+            $tokenRegistration->merchant,
             $tokenRegistration
         );
 

@@ -43,6 +43,11 @@ class Gateway extends Base\Gateway
         return $this->context->getRequestId();
     }
 
+    public function getHandlePrefix()
+    {
+        return $this->context->handlePrefix();
+    }
+
     public function setActionAndInput(string $action, ArrayBag $input)
     {
         $this->action = $action;

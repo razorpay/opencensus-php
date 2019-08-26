@@ -5,6 +5,8 @@ namespace RZP\Models\SubscriptionRegistration;
 use App;
 
 use RZP\Base;
+use RZP\Constants;
+use RZP\Models\Order;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -41,6 +43,20 @@ class Validator extends Base\Validator
                     }
                 }
             }
+        }
+    }
+
+
+
+    public function validateMethodWithOrder(array $input, Order\Entity $order)
+    {
+        if ((empty($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD]) === false) and
+            ($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD] !== $order->getMethod()))
+        {
+            throw new BadRequestValidationFailureException(
+                'order method doesn\'t match with token method',
+                Entity::METHOD
+            );
         }
     }
 }

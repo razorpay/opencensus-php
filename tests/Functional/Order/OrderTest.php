@@ -264,6 +264,20 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testTokenRegistrationOrderWithDifferentMethod()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testTokenRegistrationOrderWithoutMethod()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testEmandateRegistrationOrderWithoutZeroRupee()
     {
         $this->markTestSkipped('No non-zero ruppee flow available');

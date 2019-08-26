@@ -613,7 +613,11 @@ class Selector extends Base\Core
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST,
                 [
-                    'request' => $data
+                    'payment'             => $data['payment'],
+                    'merchant'            => $data['merchant'],
+                    'filtered_terminals'  => $data['filtered_terminals'],
+                    'gateway_downtime'    => $data['gateway_downtime'],
+                    'failed_terminals'    => $data['failed_terminals'],
                 ]);
 
             $response = $this->app->smartRouting->sendPaymentData($data);

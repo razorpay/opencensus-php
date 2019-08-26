@@ -59,6 +59,7 @@ return [
         'paytm',
         'sharp',
         'upi_airtel',
+        'upi_citi',
         'upi_axis',
         'upi_icici',
         'upi_mindgate',
@@ -163,6 +164,7 @@ return [
     'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
+    'mock_upi_citi'               => env('UPI_CITI_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -785,6 +787,9 @@ return [
                     'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER'),
                 ],
             ]
+        ],
+        'upi_citi' => [
+            'allowed_s2p_client_ips'      => env('UPI_CITI_ALLOWED_S2S_CLIENT_IPS'),
         ],
     ],
 

@@ -726,6 +726,7 @@ trait FileHandlerTrait
     protected function parseTextFile(string $file, string $delimiter = '~')
     {
         $rows = $this->getFileLines($file);
+
         $data = [];
 
         $headings = $this->parseFirstRowAndGetHeadings($rows, $delimiter);

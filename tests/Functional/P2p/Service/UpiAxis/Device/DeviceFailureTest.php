@@ -97,7 +97,7 @@ class DeviceFailureTest extends TestCase
         $helper->registerRequestHandler(function(P2pRequest $request)
         {
             $request->server([
-                'HTTP_X_RAZORPAY_VPA_HANDLE' => Fixtures::NORZP_AXIS
+                'HTTP_X_RAZORPAY_VPA_HANDLE' => Fixtures::RZP_AXIS,
             ]);
         });
 
