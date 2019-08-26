@@ -76,7 +76,11 @@ export default class PaymentPagesContainer extends ListContainer {
       }
     }
 
-    if (nextProps.loading !== this.props.loading) {
+    if (
+      nextProps.loading !== this.props.loading ||
+      nextProps.paymentPageProductOnBoarding.showOnboarding !==
+        this.props.paymentPageProductOnBoarding.showOnboarding
+    ) {
       this.initPaymentPagesOnboarding(nextProps);
     }
 
