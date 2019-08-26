@@ -146,6 +146,8 @@ export default class PaymentPagesContainer extends ListContainer {
     if (paymentPageProductOnBoarding.isTour) {
       this.props.handleProductQuickGuide({
         ...paymentPageProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: false,
         isTour: false,
       });
     }
