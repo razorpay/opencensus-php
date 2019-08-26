@@ -32,14 +32,6 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->fund_account_validation;
     }
 
-    /**
-     * @param array $input
-     *
-     * @return array
-     *
-     * @throws Exception\BadRequestException
-     * @throws \Throwable
-     */
     public function create(array $input): array
     {
         $this->processAccountNumber($input);
@@ -49,14 +41,6 @@ class Service extends Base\Service
         return $entity->toArrayPublic();
     }
 
-    /**
-     * @param array $input
-     *
-     * @return array
-     *
-     * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\InvalidArgumentException
-     */
     public function fetchMultiple(array $input): array
     {
         $this->processAccountNumber($input);
@@ -88,13 +72,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    /**
-     * If account number present, inject balance id for RX
-     *
-     * @param array $input
-     *
-     * @throws Exception\BadRequestException
-     */
     protected function processAccountNumber(array & $input)
     {
         if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === true)

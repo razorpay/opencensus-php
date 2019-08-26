@@ -311,7 +311,7 @@ class Core extends Base\Core
 
         if ($validation->hasBalance() === true)
         {
-            $balance = $this->repo->balance->findByPublicIdAndMerchant($validation->getBalanceId(), $merchant);
+            $balance = $this->repo->balance->findByIdAndMerchant($validation->getBalanceId(), $merchant);
         }
         else
         {
@@ -354,7 +354,7 @@ class Core extends Base\Core
         }
         else
         {
-            $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
+            $balance = $this->repo->balance->findByIdAndMerchant($balanceId, $this->merchant);
         }
 
         $fundAccValidation->balance()->associate($balance);

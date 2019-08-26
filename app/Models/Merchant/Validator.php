@@ -1198,13 +1198,9 @@ class Validator extends Base\Validator
             ->validate();
 
         // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
-        $filters = [
-            Balance\Entity::ACCOUNT_NUMBER => array_pull($input, Balance\Entity::ACCOUNT_NUMBER, null),
-            Balance\Entity::ACCOUNT_TYPE   => array_pull($input, Balance\Entity::ACCOUNT_TYPE, null),
-            Balance\Entity::TYPE           => Balance\Type::BANKING,
-        ];
+        $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
 
-        $balanceId = app('repo')->balance->getAuthMerchantBalanceByFiltersOrFail($filters)->getId();
+        $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
 
         $input[Balance\Entity::BALANCE_ID] = $balanceId;
     }
