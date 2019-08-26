@@ -230,6 +230,8 @@ abstract class Base extends BaseCore
     public function setMerchantBalanceLockForUpdate()
     {
         if ($this->merchantBalance !== null) {
+            $this->merchantBalance =  $this->repo->balance->getBalanceByIdLockForUpdate($this->merchantBalance->getId());
+
             return;
         }
 
