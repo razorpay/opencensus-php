@@ -107,6 +107,12 @@ class BeneficiaryVerification extends Job
             {
                 $this->traceData(TraceCode::BENEFICIARY_VERIFY_PROCESS_RETRY);
 
+                $this->trace->count(
+                    TraceCode::BENEFICIARY_VERIFY_PROCESS_RETRY,
+                    [
+                        'channel' => $this->channel,
+                    ]);
+
                 $this->release(self::RETRY_INTERVAL);
 
                 return;
