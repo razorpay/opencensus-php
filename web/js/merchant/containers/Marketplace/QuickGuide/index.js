@@ -93,11 +93,9 @@ export const getRouteQuickGuideIsClosed = props => {
     return isClosed;
   }
 
-  if (props.transfers.loading || props.accounts.loading) {
-    return;
+  if (props.transfers.items.length) {
+    setQuickGuideIsClosedInLocalStorage(RZPFeatures.ROUTE, true);
   }
-
-  setQuickGuideIsClosedInLocalStorage(RZPFeatures.ROUTE, true);
 
   return true;
 };
