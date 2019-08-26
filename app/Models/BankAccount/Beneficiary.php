@@ -353,6 +353,7 @@ class Beneficiary extends Base\Core
             [
                 'status'  => $status,
                 'channel' => $channel,
+                'mode'    => $this->mode,
             ]);
 
         if ($status === true)
@@ -397,6 +398,7 @@ class Beneficiary extends Base\Core
             [
                 'status'  => $status,
                 'channel' => $channel,
+                'mode'    => $this->mode,
             ]);
 
         if ($status === true)

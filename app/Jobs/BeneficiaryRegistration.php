@@ -120,6 +120,7 @@ class BeneficiaryRegistration extends Job
                     TraceCode::BENEFICIARY_REGISTRATION_PROCESS_RETRY,
                     [
                         'channel' => $this->channel,
+                        'mode'    => $this->mode,
                     ]);
 
                 $this->release(self::RETRY_INTERVAL);

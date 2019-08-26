@@ -111,6 +111,7 @@ class BeneficiaryVerification extends Job
                     TraceCode::BENEFICIARY_VERIFY_PROCESS_RETRY,
                     [
                         'channel' => $this->channel,
+                        'mode'    => $this->mode,
                     ]);
 
                 $this->release(self::RETRY_INTERVAL);

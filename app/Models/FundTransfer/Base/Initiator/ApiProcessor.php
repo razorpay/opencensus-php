@@ -354,7 +354,8 @@ abstract class ApiProcessor extends NodalAccount
         $dimensions = [
             Metric::CHANNEL            => $this->channel,
             Metric::STATUS_CODE        => $response->status_code,
-            Metric::REQUEST_TRACE_CODE => $this->requestTraceCode
+            Metric::REQUEST_TRACE_CODE => $this->requestTraceCode,
+            Metric::MODE               => $this->mode,
         ];
 
         $this->trace->histogram(Metric::NODAL_RESPONSE_TIME, $duration, $dimensions);
