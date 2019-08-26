@@ -188,4 +188,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         return true;
     }
+
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return ['merchant_name'];
+    }
 }
