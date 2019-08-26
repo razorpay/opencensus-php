@@ -76,4 +76,29 @@ class FundAccountValidation extends BaseProcessor
                 return $this->fees;
         }
     }
+
+    public function setMerchantBalanceLockForUpdate()
+    {
+        if ($this->merchantBalance !== null) {
+            $this->merchantBalance =  $this->repo->balance->getBalanceByIdLockForUpdate($this->merchantBalance->getId());
+
+            return;
+        }
+
+        $merchantId = $this->txn->getMerchantId();
+
+        $this->merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
+    }
+
+    protected function setMerchantBalance()
+    {
+        if ($this->merchantBalance !== null)
+        {
+            return;
+        }
+
+        $this->merchantBalance = $this->source->relationLoaded('balance') ?
+            $this->source->getRelation('balance') : $this->repo->balance->getMerchantBalance($this->txn->merchant);
+
+    }
 }

@@ -67,7 +67,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::FUND_ACCOUNT_ID,
-        self::BALANCE_ID,
         self::STATUS,
         self::ATTEMPTS,
         self::RETRY_AT,
@@ -99,7 +98,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::RESULTS,
-        self::BALANCE_ID,
     ];
 
     protected $defaults = [

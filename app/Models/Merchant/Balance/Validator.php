@@ -39,22 +39,5 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException('Invalid channel:' . $channel);
         }
     }
-
-    /**
-     *
-     * @param array $input
-     *
-     * @return bool
-     */
-    public function isAccountNumberPresentInArray(array & $input) {
-        $accountNumber = $input[Entity::ACCOUNT_NUMBER] ?? null;
-
-        if (empty($accountNumber) === true) {
-            return false;
-        }
-
-        return true;
-    }
-
 }
 

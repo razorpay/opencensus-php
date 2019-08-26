@@ -309,10 +309,12 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
 
-        if ($validation->hasBalance())
+        if ($validation->hasBalance() === true)
         {
             $balance = $this->repo->balance->findByPublicIdAndMerchant($validation->getBalanceId(), $merchant);
-        } else {
+        }
+        else
+        {
             $balance = $this->repo->balance->getMerchantBalance($merchant);
         }
 

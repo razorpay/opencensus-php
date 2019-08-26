@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Traits;
+use RZP\Models\Merchant\Balance;
 
 class Service extends Base\Service
 {
@@ -60,8 +61,7 @@ class Service extends Base\Service
     {
         $this->processAccountNumber($input);
 
-        $entities = $this->entityRepo
-            ->fetch($input, $this->merchant->getId());
+        $entities = $this->entityRepo->fetch($input, $this->merchant->getId());
 
         return $entities->toArrayPublic();
     }
@@ -97,17 +97,15 @@ class Service extends Base\Service
      */
     protected function processAccountNumber(array & $input)
     {
-        /** @var Merchant\Balance\Validator $merchantBalanceValidator */
-        $merchantBalanceValidator = $this->merchant->balance->getValidator();
+        if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === true)
+        {
+            return;
+        }
 
         /** @var Merchant\Validator $merchantValidator */
         $merchantValidator = $this->merchant->getValidator();
 
-        if ($merchantBalanceValidator->isAccountNumberPresentInArray($input))
-        {
-            $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
-        }
+        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
 
-        return;
     }
 }

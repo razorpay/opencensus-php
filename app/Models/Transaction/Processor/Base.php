@@ -222,19 +222,11 @@ abstract class Base extends BaseCore
             return;
         }
 
-        $this->merchantBalance = $this->source->relationLoaded('balance') ?
-            $this->source->getRelation('balance') : $this->repo->balance->getMerchantBalance($this->txn->merchant);
-
+        $this->merchantBalance = $this->repo->balance->getMerchantBalance($this->txn->merchant);
     }
 
     public function setMerchantBalanceLockForUpdate()
     {
-        if ($this->merchantBalance !== null) {
-            $this->merchantBalance =  $this->repo->balance->getBalanceByIdLockForUpdate($this->merchantBalance->getId());
-
-            return;
-        }
-
         $merchantId = $this->txn->getMerchantId();
 
         $this->merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
