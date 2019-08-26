@@ -64,7 +64,11 @@ export default class SubscriptionsController extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.subscriptions.loading !== this.props.subscriptions.loading) {
+    if (
+      nextProps.subscriptions.loading !== this.props.subscriptions.loading ||
+      nextProps.subscriptionProductOnBoarding.showOnboarding !==
+        this.props.subscriptionProductOnBoarding.showOnboarding
+    ) {
       this.initSubscriptions(nextProps);
     }
   }
