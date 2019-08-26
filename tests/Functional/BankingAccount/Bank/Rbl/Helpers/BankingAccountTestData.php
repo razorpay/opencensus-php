@@ -610,10 +610,9 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'status'        => 'created',
                         'merchant'      => [
                             'merchant_detail' => [
-                                'contact_email' => 'test@razorpay.com'
+                                'contact_email' => 'test@rzp.com'
                             ]
                         ]
                     ],
@@ -634,6 +633,16 @@ return [
             'content' => [
                 'entity' => 'collection',
                 'count'  => 1,
+                'items' => [
+                    [
+                        'status'        => 'created',
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@rzp.com'
+                            ]
+                        ]
+                    ],
+                ]
             ],
         ],
     ],
@@ -652,7 +661,16 @@ return [
                 'entity' => 'collection',
                 'count'  => 0,
                 'admin'  => true,
-                'items'  => [],
+                'items' => [
+                    [
+                        'status'        => 'created',
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@rzp.com'
+                            ]
+                        ]
+                    ],
+                ]
             ],
         ],
     ],
@@ -671,16 +689,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 0,
                 'admin'  => true,
-                'items'  => [
-                    [
-                        'account_type'  => 'current',
-                        'merchant'      => [
-                            'merchant_detail' => [
-                                'contact_email' => 'test@razorpay.com'
-                            ]
-                        ]
-                    ],
-                ],
+                'items'  => [],
             ],
         ],
     ]
