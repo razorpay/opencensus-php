@@ -182,12 +182,7 @@ class BeamJob extends Job
             {
                 $this->release($this->retryTimeLines[$this->attempts() - 1]);
 
-                // Setting this key only when beam job is called
-                // for settlements file push.
-                if(isset($this->mailInfo['batchFundTransferId']) === true)
-                {
-                    $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_RETRY);
-                }
+                $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_RETRY);
 
                 return;
             }
@@ -201,13 +196,7 @@ class BeamJob extends Job
 
         if (in_array($this->response->status_code, self::HTTP_SUCCESS_CODES, true) === true)
         {
-
-            // Setting this key only when beam job is called
-            // for settlements file push.
-            if(isset($this->mailInfo['batchFundTransferId']) === true)
-            {
-                $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_SUCCESS);
-            }
+            $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_SUCCESS);
 
             $this->delete();
 
@@ -237,12 +226,7 @@ class BeamJob extends Job
         {
             $batchFundTransferId = null;
 
-            // Setting this key only when beam job is called
-            // for settlements file push.
-            if(isset($this->mailInfo['batchFundTransferId']) === true)
-            {
-                $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_FAILED);
-            }
+            $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_FAILED);
 
             $this->sendEmail();
 
@@ -282,7 +266,7 @@ class BeamJob extends Job
             array_push($fileList, $fileParam[count($fileParam) - 1]);
         }
 
-        $this->fileList = implode(",", $fileList);
+        $this->fileList = implode(',', $fileList);
 
         $body = 'Hi,\n'. $this->mailInfo['filetype'] .' file send failed through Beam.\n'.
             'Channel  :: ' . $this->mailInfo['channel'] . '\n'.
@@ -297,25 +281,29 @@ class BeamJob extends Job
 
     protected function raiseSettlementBeamJobEvent(array $eventCode)
     {
-
         $channel = null;
 
-        if(isset($this->mailInfo['channel']) === true)
+        // Setting this key only when beam job is called
+        // for settlements file push.
+        if(isset($this->mailInfo['batchFundTransferId']) === true)
         {
-            $channel = $this->mailInfo['channel'];
+            if(isset($this->mailInfo['channel']) === true)
+            {
+                $channel = $this->mailInfo['channel'];
+            }
+
+            $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+
+            $customProperties = [
+                'channel'                           => $channel,
+                'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
+            ];
+
+            app('diag')->trackSettlementEvent(
+                $eventCode,
+                null,
+                null,
+                $customProperties);
         }
-
-        $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
-
-        $customProperties = [
-            'channel'                           => $channel,
-            'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
-        ];
-
-        app('diag')->trackSettlementEvent(
-            $eventCode,
-            null,
-            null,
-            $customProperties);
     }
 }
