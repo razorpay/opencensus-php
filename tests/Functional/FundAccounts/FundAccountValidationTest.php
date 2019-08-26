@@ -415,22 +415,41 @@ class FundAccountValidationTest extends TestCase
 
         $this->createFAVBankingPricingPlan();
 
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
         $this->startTest();
 
+        // get database entities
+        $balance = $this->getEntityById('balance', 'xbalance000000', true);
         $fav = $this->getLastEntity('fund_account_validation', true);
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertEquals('penny_testing', $fta['purpose']);
-//        $this->assertEquals('fund_account_validation', $fta['source_type']);
-        $this->assertEquals($fav['id'], $fta['source']);
-
         $txn = $this->getLastEntity('transaction', true);
-        $this->assertEquals($fav['id'], $txn['entity_id']);
+
+        // validate balance entry in database
+        $this->assertEquals(9997, $balance['balance']);
+
+
+        // validate fund account validation last entry
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals($fav['balance_id'], 'xbalance000000');
+        $this->assertEquals('10000000000000', $fav['merchant_id']);
+        $this->assertEquals('fund_account.validation', $fav['entity']);
+
+        // validate transaction table last entry
         $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals(100, $txn['amount']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals('xbalance000000', $txn['balance_id']);
+
+        // validate fund transfer attempt table last entry
+        $this->assertEquals('penny_testing', $fta['purpose']);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
     }
 
     protected function createFAVBankingPricingPlan()
