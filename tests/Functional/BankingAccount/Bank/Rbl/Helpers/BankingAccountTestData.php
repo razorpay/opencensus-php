@@ -659,7 +659,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 0,
+                'count'  => 1,
                 'admin'  => true,
                 'items' => [
                     [

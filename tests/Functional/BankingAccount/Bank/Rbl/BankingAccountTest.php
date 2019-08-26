@@ -577,7 +577,7 @@ class BankingAccountTest extends TestCase
         $this->fixtures->edit('banking_account',
             $response['id'],
             [
-                'status' => 'initiated',
+                'status' => 'created',
             ]);
 
         $this->startTest();
