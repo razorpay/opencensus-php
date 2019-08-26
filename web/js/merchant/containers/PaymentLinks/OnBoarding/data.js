@@ -27,6 +27,6 @@ export const FEATURES_LINKS = [
   },
   {
     label: 'View API Docs',
-    url: 'https://razorpay.com/docs/payment-pages/',
+    url: 'https://razorpay.com/docs/api/payment-links/',
   },
 ];
