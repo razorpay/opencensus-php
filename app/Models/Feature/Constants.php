@@ -11,6 +11,7 @@ class Constants
     const DUMMY                           = 'dummy';
     const WEBHOOKS                        = 'webhooks';
     const AGGREGATOR                      = 'aggregator';
+    const TERMINAL_ONBOARDING             = 'terminal_onboarding';
     const TOKENS                          = 'tokens';
     const S2SWALLET                       = 's2swallet';
     const S2SUPI                          = 's2supi';
@@ -111,7 +112,6 @@ class Constants
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
     const ALLOW_REVERSALS_FROM_LA         = 'allow_reversals_from_la';
-    const QUEUED_PAYOUTS                  = 'queued_payouts';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
     const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
@@ -119,10 +119,12 @@ class Constants
     const DOWNTIME_ROUTING                = 'downtime_routing';
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
+    const GOOGLE_PAY_OMNICHANNEL          = 'google_pay_omnichannel';
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
-    
-    /**
+    const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
+
+  /**
      * This will control if the bank details will be returned in the fetch token response.
      * Bank details will contain beneficiary_name, account_number, ifsc and account_type
      */
@@ -221,6 +223,7 @@ class Constants
         self::GOOGLE_PAY,
         self::CUSTOMER_ADDRESS,
         self::IRCTC_METHODS,
+        self::GOOGLE_PAY_OMNICHANNEL,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -355,7 +358,6 @@ class Constants
         self::DISPUTE_MAILS_DISABLED          => true,
         self::ALLOW_REVERSALS_FROM_LA         => true,
         self::BLOCK_PL_PAY_POST_EXPIRY        => true,
-        self::QUEUED_PAYOUTS                  => true,
         self::ADHOC_SETTLEMENT                => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
@@ -364,9 +366,12 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::GOOGLE_PAY_OMNICHANNEL          => true,
+        self::TERMINAL_ONBOARDING             => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,
+        self::ASYNC_BALANCE_UPDATE            => true,
     ];
 
     // Entity type constants
@@ -474,11 +479,6 @@ class Constants
         self::ALLOW_REVERSALS_FROM_LA    => [
             'feature'       => self::ALLOW_REVERSALS_FROM_LA,
             'display_name'  => 'Allow Refunds From Linked Accounts',
-            'documentation' => '',
-        ],
-        self::QUEUED_PAYOUTS            => [
-            'feature'       => self::QUEUED_PAYOUTS,
-            'display_name'  => 'Queued payouts',
             'documentation' => '',
         ],
         self::PAYOUT_TO_CARDS           => [

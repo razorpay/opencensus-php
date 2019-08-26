@@ -7,9 +7,15 @@ use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\Transaction;
 use RZP\Http\BasicAuth\BasicAuth;
 
+/**
+ * @property Transaction\Entity $transaction
+ * @property Merchant\Entity    $merchant
+ */
 class PublicEntity extends UniqueIdEntity
 {
     const ENTITY                = 'entity';
@@ -86,6 +92,14 @@ class PublicEntity extends UniqueIdEntity
      * @var array
      */
     protected $publicCustomer      = [];
+
+    /**
+     * This is used to expose only specific fields when `toArrayPublic`
+     * is being called from public auth.
+     *
+     * @var array
+     */
+    protected $publicAuth = [];
 
     /**
      * This is used for displaying payments for certain
@@ -264,7 +278,7 @@ class PublicEntity extends UniqueIdEntity
         return array_only($attributes, $this->hosted);
     }
 
-    public function toArrayPublicCustomer()
+    public function toArrayPublicCustomer(bool $populateMessages = false)
     {
         $attributes = $this->toArrayPublic();
 
@@ -394,7 +408,7 @@ class PublicEntity extends UniqueIdEntity
 
     public function arrangePublicAttributes(array $array)
     {
-        $publicArray = array();
+        $publicArray = [];
 
         foreach ($this->public as $attr)
         {
@@ -412,6 +426,12 @@ class PublicEntity extends UniqueIdEntity
             {
                 unset($publicArray[$attr]);
             }
+        }
+
+        if (($app['basicauth']->isPublicAuth() === true) and
+            (empty($this->publicAuth) === false))
+        {
+            $publicArray = array_only($publicArray, $this->publicAuth);
         }
 
         return $publicArray;

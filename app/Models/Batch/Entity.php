@@ -66,6 +66,11 @@ class Entity extends Base\PublicEntity
     const STATUS_LENGTH             = 20;
 
     /**
+     * Constants used in Batch processing.
+     */
+    const IDEMPOTENCY_ID_LENGTH     = 30;
+
+    /**
      * Additional constants
      */
     const FILE                      = 'file';
@@ -309,6 +314,34 @@ class Entity extends Base\PublicEntity
     public function latestFile()
     {
         return $this->files()->latest()->first();
+    }
+
+    /**
+     * Returns the latest file (of the given type) associated with this batch.
+     *
+     * @param string $type
+     * @return FileStore\Entity
+     */
+    public function latestFileByType(string $type)
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, $type)
+                    ->latest()
+                    ->first();
+    }
+
+    /**
+     * Returns all the files (of the given type) associated with this batch.
+     *
+     * @param string $type
+     * @return FileStore\Entity
+     */
+    public function filesByType(string $type)
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, $type)
+                    ->latest()
+                    ->get();
     }
 
     // ----------------------- Getters -------------------------------

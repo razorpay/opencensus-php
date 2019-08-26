@@ -101,6 +101,11 @@ class Entity extends Base\Entity
         return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSION_MAP);
     }
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
     /**
      * Returns organisation for permission
      **/

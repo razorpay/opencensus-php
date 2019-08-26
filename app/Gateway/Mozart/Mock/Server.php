@@ -60,6 +60,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $verifyRefundObj, 'verify_refund');
     }
 
+    public function intent($input)
+    {
+        $intentObj = new IntentData();
+
+        return $this->processMockResponse($input, $intentObj, 'intent');
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -77,7 +84,7 @@ class Server extends Base\Mock\Server
 
         $entities = $input['entities'];
 
-        $gateway = $entities['payment']['gateway'];
+        $gateway = $this->getGateway($entities);
 
         $response = $actionClass->$gateway($entities);
 
@@ -178,6 +185,17 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function netbanking_cbi($input)
+    {
+        $request = [
+            'url'          => $input['callbackUrl'] . '?encdata=encrypted_data_here',
+            'content'      => [],
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function netbanking_yesb($input)
     {
         $url = $this->route->getUrlWithPublicAuth(
@@ -213,8 +231,101 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function netbanking_ibk($input)
+    {
+
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+    
+    protected function netbanking_idbi($input)
+    {
+
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'random_encrypted_string' => ''
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    public function google_pay($input)
+    {
+        $response = [
+            'code'      => 0,
+            'errorCode' => 000,
+            'messageText' => 'success',
+            'rrn' => '987654321',
+        ];
+    }
+
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');
     }
+
+    protected function getGateway($entities)
+    {
+        if ((isset($entities['gateway']) === true) and ($entities['gateway'] === 'google_pay'))
+        {
+            return $entities['gateway'];
+        }
+
+        return $entities['payment']['gateway'];
+    }
+
+    public function getAsyncCallbackContentWalletPhonepe(array $payment)
+    {
+        $this->action = 'callback';
+
+        $content = $this->callbackResponseContent($payment);
+
+        $this->content($content, 'callback');
+
+        $response = $this->makeIntentResponsePhonepe($content);
+
+        return [
+            'response' => $response
+        ];
+    }
+
+    protected function callbackResponseContent(array $payment)
+    {
+        $response = [
+            'code' => 'PAYMENT_SUCCESS',
+            'success' => true,
+            'data' => [
+                'amount' => $payment['amount'],
+                'merchantId' => 'abc',
+                'transactionId' => ltrim($payment['id'], 'pay_'),
+                'providerReferenceId' => 'PHONEPE1'
+            ]
+        ];
+
+        return $response;
+    }
+
+    protected function makeIntentResponsePhonepe($content)
+    {
+        $data = base64_encode(json_encode($content));
+
+        return $data;
+    }
+
 }

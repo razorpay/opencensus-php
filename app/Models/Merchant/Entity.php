@@ -28,6 +28,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Event;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
@@ -36,6 +37,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 
 /**
  * @property Org\Entity         $org
@@ -51,51 +53,60 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use Cacheable;
 
-    const ID                       = 'id';
-    const ORG_ID                   = 'org_id';
-    const NAME                     = 'name';
-    const EMAIL                    = 'email';
-    const PARENT_ID                = 'parent_id';
-    const ACTIVATED                = 'activated';
-    const ACTIVATED_AT             = 'activated_at';
-    const LIVE                     = 'live';
-    const HOLD_FUNDS               = 'hold_funds';
-    const PRICING_PLAN_ID          = 'pricing_plan_id';
-    const INTERNATIONAL            = 'international';
-    const BILLING_LABEL            = 'billing_label';
-    const DISPLAY_NAME             = 'display_name';
-    const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
-    const RECEIPT_EMAIL_ENABLED    = 'receipt_email_enabled';
-    const CHANNEL                  = 'channel';
-    const WEBSITE                  = 'website';
-    const CATEGORY                 = 'category';
-    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
-    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
-    const CATEGORY2                = 'category2';
-    const INVOICE_CODE             = 'invoice_code';
-    const SCOPE                    = 'scope';
-    const FEE_BEARER               = 'fee_bearer';
-    const FEE_MODEL                = 'fee_model';
-    const REFUND_SOURCE            = 'refund_source';
-    const LINKED_ACCOUNT_KYC       = 'linked_account_kyc';
-    const HAS_KEY_ACCESS           = 'has_key_access';
-    const PARTNER_TYPE             = 'partner_type';
-    const BRAND_COLOR              = 'brand_color';
-    const HANDLE                   = 'handle';
-    const RISK_RATING              = 'risk_rating';
-    const RISK_THRESHOLD           = 'risk_threshold';
-    const LOGO_URL                 = 'logo_url';
-    const INVOICE_LABEL_FIELD      = 'invoice_label_field';
-    const AWS_LOGO_URL             = 'aws_logo_url';
-    const MAX_PAYMENT_AMOUNT       = 'max_payment_amount';
-    const AUTO_REFUND_DELAY        = 'auto_refund_delay';
-    const AUTO_CAPTURE_LATE_AUTH   = 'auto_capture_late_auth';
-    const CONVERT_CURRENCY         = 'convert_currency';
-    const ARCHIVED_AT              = 'archived_at';
-    const SUSPENDED_AT             = 'suspended_at';
-    const NOTES                    = 'notes';
-    const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
-    const PRODUCT                  = 'product';
+    const ID                             = 'id';
+    const ORG_ID                         = 'org_id';
+    const NAME                           = 'name';
+    const EMAIL                          = 'email';
+    const PARENT_ID                      = 'parent_id';
+    const ACTIVATED                      = 'activated';
+    const ACTIVATED_AT                   = 'activated_at';
+    const LIVE                           = 'live';
+    const LIVE_DISABLE_REASON            = 'live_disable_reason';
+    const HOLD_FUNDS                     = 'hold_funds';
+    const HOLD_FUNDS_REASON              = 'hold_funds_reason';
+    const PRICING_PLAN_ID                = 'pricing_plan_id';
+    const INTERNATIONAL                  = 'international';
+    const BILLING_LABEL                  = 'billing_label';
+    const DISPLAY_NAME                   = 'display_name';
+    const TRANSACTION_REPORT_EMAIL       = 'transaction_report_email';
+    const RECEIPT_EMAIL_ENABLED          = 'receipt_email_enabled';
+    const CHANNEL                        = 'channel';
+    const WEBSITE                        = 'website';
+    const CATEGORY                       = 'category';
+    const WHITELISTED_IPS_LIVE           = 'whitelisted_ips_live';
+    const WHITELISTED_IPS_TEST           = 'whitelisted_ips_test';
+    const CATEGORY2                      = 'category2';
+    const INVOICE_CODE                   = 'invoice_code';
+    const SCOPE                          = 'scope';
+    const FEE_BEARER                     = 'fee_bearer';
+    const FEE_MODEL                      = 'fee_model';
+    const REFUND_SOURCE                  = 'refund_source';
+    const LINKED_ACCOUNT_KYC             = 'linked_account_kyc';
+    const HAS_KEY_ACCESS                 = 'has_key_access';
+    const PARTNER_TYPE                   = 'partner_type';
+    const BRAND_COLOR                    = 'brand_color';
+    const HANDLE                         = 'handle';
+    const RISK_RATING                    = 'risk_rating';
+    const RISK_THRESHOLD                 = 'risk_threshold';
+    const ICON_URL                       = 'icon_url';
+    const LOGO_URL                       = 'logo_url';
+    const INVOICE_LABEL_FIELD            = 'invoice_label_field';
+    const AWS_LOGO_URL                   = 'aws_logo_url';
+    const MAX_PAYMENT_AMOUNT             = 'max_payment_amount';
+    const AUTO_REFUND_DELAY              = 'auto_refund_delay';
+    const AUTO_CAPTURE_LATE_AUTH         = 'auto_capture_late_auth';
+    const CONVERT_CURRENCY               = 'convert_currency';
+    const ARCHIVED_AT                    = 'archived_at';
+    const SUSPENDED_AT                   = 'suspended_at';
+    const NOTES                          = 'notes';
+    const FEE_CREDITS_THRESHOLD          = 'fee_credits_threshold';
+    const PRODUCT                        = 'product';
+    const DEFAULT_REFUND_SPEED           = 'default_refund_speed';
+    const SECOND_FACTOR_AUTH             = 'second_factor_auth';
+    const RESTRICTED                     = 'restricted';
+    const DASHBOARD_WHITELISTED_IPS_LIVE = 'dashboard_whitelisted_ips_live';
+    const DASHBOARD_WHITELISTED_IPS_TEST = 'dashboard_whitelisted_ips_test';
+    const PARTNERSHIP_URL                = 'partnership_url';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -104,6 +115,9 @@ class Entity extends Base\PublicEntity
 
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
+
+    // Receipt email to be triggered at payment status
+    const RECEIPT_EMAIL_TRIGGER_EVENT = "receipt_email_trigger_event";
 
     //
     // Followings are derived data indexed in ES and goes to
@@ -181,9 +195,14 @@ class Entity extends Base\PublicEntity
     const AUTO_SUBMIT               = 'auto_submit';
     const AUTOFILL_DETAILS          = 'autofill_details';
     const AUTO_ACTIVATE             = 'auto_activate';
+    const INSTANTLY_ACTIVATE        = 'instantly_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
     const PARTNER_ID                = 'partner_id';
     const BANKING_ACCOUNT           = 'banking_account';
+    const ACCOUNTS                  = 'accounts';
+    const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
+    const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
+    const CREATE_SUBMERCHANT        = 'create_submerchant';
 
     protected $entity = 'merchant';
 
@@ -235,6 +254,7 @@ class Entity extends Base\PublicEntity
         self::INVOICE_LABEL_FIELD,
         self::LINKED_ACCOUNT_KYC,
         self::RECEIPT_EMAIL_ENABLED,
+        self::RECEIPT_EMAIL_TRIGGER_EVENT,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
         self::NOTES,
@@ -242,6 +262,10 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::DASHBOARD_WHITELISTED_IPS_LIVE,
+        self::DASHBOARD_WHITELISTED_IPS_TEST,
+        self::DEFAULT_REFUND_SPEED,
+        self::PARTNERSHIP_URL,
     ];
 
     const CONFIG_LIST = [
@@ -289,6 +313,7 @@ class Entity extends Base\PublicEntity
         self::REFUND_SOURCE,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
+        self::RECEIPT_EMAIL_TRIGGER_EVENT,
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_LABEL_FIELD,
         self::CHANNEL,
@@ -306,6 +331,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::SUSPENDED_AT,
         self::ARCHIVED_AT,
+        self::ICON_URL,
         self::LOGO_URL,
         self::ORG_ID,
         self::GROUPS,
@@ -318,42 +344,51 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_NAME,
         self::ACTIVATION_SOURCE,
         self::BUSINESS_BANKING,
+        self::SECOND_FACTOR_AUTH,
+        self::RESTRICTED,
+        self::DEFAULT_REFUND_SPEED,
+        self::PARTNERSHIP_URL,
      ];
 
     protected $defaults = [
-        self::PARENT_ID              => null,
-        self::CATEGORY2              => null,
-        self::LIVE                   => false,
-        self::ACTIVATED              => false,
-        self::ACTIVATED_AT           => null,
-        self::RECEIPT_EMAIL_ENABLED  => true,
-        self::HOLD_FUNDS             => false,
-        self::FEE_BEARER             => FeeBearer::PLATFORM,
-        self::PARTNER_TYPE           => null,
-        self::BRAND_COLOR            => null,
-        self::HANDLE                 => null,
-        self::RISK_RATING            => 3,
-        self::LINKED_ACCOUNT_KYC     => 0,
-        self::HAS_KEY_ACCESS         => 0,
-        self::RISK_THRESHOLD         => null,
-        self::LOGO_URL               => null,
-        self::MAX_PAYMENT_AMOUNT     => null,
-        self::ORG_ID                 => null,
-        self::AUTO_REFUND_DELAY      => null,
-        self::AUTO_CAPTURE_LATE_AUTH => false,
-        self::FEE_MODEL              => FeeModel::PREPAID,
-        self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::AXIS2,
-        self::CONVERT_CURRENCY       => null,
-        self::ARCHIVED_AT            => null,
-        self::SUSPENDED_AT           => null,
-        self::NOTES                  => [],
-        self::WHITELISTED_IPS_LIVE   => [],
-        self::WHITELISTED_IPS_TEST   => [],
-        self::FEE_CREDITS_THRESHOLD  => null,
-        self::CATEGORY               => 0,
-        self::WEBSITE                => null,
-        self::INTERNATIONAL          => 0,
+        self::PARENT_ID                      => null,
+        self::CATEGORY2                      => null,
+        self::LIVE                           => false,
+        self::ACTIVATED                      => false,
+        self::ACTIVATED_AT                   => null,
+        self::RECEIPT_EMAIL_ENABLED          => true,
+        self::HOLD_FUNDS                     => false,
+        self::FEE_BEARER                     => FeeBearer::PLATFORM,
+        self::PARTNER_TYPE                   => null,
+        self::BRAND_COLOR                    => null,
+        self::HANDLE                         => null,
+        self::RISK_RATING                    => 3,
+        self::LINKED_ACCOUNT_KYC             => 0,
+        self::HAS_KEY_ACCESS                 => 0,
+        self::RISK_THRESHOLD                 => null,
+        self::LOGO_URL                       => null,
+        self::MAX_PAYMENT_AMOUNT             => null,
+        self::ORG_ID                         => null,
+        self::AUTO_REFUND_DELAY              => null,
+        self::AUTO_CAPTURE_LATE_AUTH         => false,
+        self::FEE_MODEL                      => FeeModel::PREPAID,
+        self::REFUND_SOURCE                  => RefundSource::BALANCE,
+        self::CHANNEL                        => Settlement\Channel::AXIS2,
+        self::CONVERT_CURRENCY               => null,
+        self::ARCHIVED_AT                    => null,
+        self::SUSPENDED_AT                   => null,
+        self::NOTES                          => [],
+        self::WHITELISTED_IPS_LIVE           => [],
+        self::WHITELISTED_IPS_TEST           => [],
+        self::FEE_CREDITS_THRESHOLD          => null,
+        self::CATEGORY                       => 0,
+        self::WEBSITE                        => null,
+        self::INTERNATIONAL                  => 0,
+        self::DASHBOARD_WHITELISTED_IPS_TEST => [],
+        self::DASHBOARD_WHITELISTED_IPS_LIVE => [],
+        self::RECEIPT_EMAIL_TRIGGER_EVENT    => Event::AUTHORIZED,
+        self::DEFAULT_REFUND_SPEED           => RefundSpeed::NORMAL,
+        self::PARTNERSHIP_URL                => null,
     ];
 
     protected $publicSetters = [
@@ -363,21 +398,25 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::ACTIVATED              => 'bool',
-        self::LIVE                   => 'bool',
-        self::INTERNATIONAL          => 'bool',
-        self::RECEIPT_EMAIL_ENABLED  => 'bool',
-        self::HOLD_FUNDS             => 'bool',
-        self::LINKED_ACCOUNT_KYC     => 'bool',
-        self::HAS_KEY_ACCESS         => 'bool',
-        self::CATEGORY               => 'string',
-        self::RISK_THRESHOLD         => 'int',
-        self::CONVERT_CURRENCY       => 'bool',
-        self::AUTO_CAPTURE_LATE_AUTH => 'bool',
-        self::WHITELISTED_IPS_LIVE   => 'array',
-        self::WHITELISTED_IPS_TEST   => 'array',
-        self::FEE_CREDITS_THRESHOLD  => 'int',
-        self::BUSINESS_BANKING       => 'bool',
+        self::ACTIVATED                      => 'bool',
+        self::LIVE                           => 'bool',
+        self::INTERNATIONAL                  => 'bool',
+        self::RECEIPT_EMAIL_ENABLED          => 'bool',
+        self::HOLD_FUNDS                     => 'bool',
+        self::LINKED_ACCOUNT_KYC             => 'bool',
+        self::HAS_KEY_ACCESS                 => 'bool',
+        self::CATEGORY                       => 'string',
+        self::RISK_THRESHOLD                 => 'int',
+        self::CONVERT_CURRENCY               => 'bool',
+        self::AUTO_CAPTURE_LATE_AUTH         => 'bool',
+        self::WHITELISTED_IPS_LIVE           => 'array',
+        self::WHITELISTED_IPS_TEST           => 'array',
+        self::FEE_CREDITS_THRESHOLD          => 'int',
+        self::BUSINESS_BANKING               => 'bool',
+        self::SECOND_FACTOR_AUTH             => 'bool',
+        self::RESTRICTED                     => 'bool',
+        self::DASHBOARD_WHITELISTED_IPS_TEST => 'array',
+        self::DASHBOARD_WHITELISTED_IPS_LIVE => 'array',
     ];
 
     protected $eventFields = [
@@ -472,6 +511,32 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATED_AT);
     }
 
+    public function getReceiptEmailTriggerEvent()
+    {
+        return $this->getAttribute(self::RECEIPT_EMAIL_TRIGGER_EVENT);
+    }
+
+    public function isSecondFactorAuth(): bool
+    {
+        return ($this->getAttribute(self::SECOND_FACTOR_AUTH) === true);
+    }
+
+    public function setSecondFactorAuth(bool $enabled)
+    {
+        $this->setAttribute(self::SECOND_FACTOR_AUTH, $enabled);
+    }
+
+    public function getRestricted(): bool
+    {
+        return ($this->getAttribute(self::RESTRICTED) === true);
+    }
+
+      
+    public function setRestricted(bool $restricted)
+    {
+        $this->setAttribute(self::RESTRICTED, $restricted);
+    }
+
     /**
      * Is the merchant a linked-account under Marketplace?
      */
@@ -488,6 +553,16 @@ class Entity extends Base\PublicEntity
     public function isAxisExpressPayEnabled(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::AXIS_EXPRESS_PAY);
+    }
+
+    public function isTerminalOnboardingEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::TERMINAL_ONBOARDING);
+    }
+
+    public function isGooglePayOmnichannelEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_OMNICHANNEL);
     }
 
     public function canHoldPayment(): bool
@@ -518,6 +593,31 @@ class Entity extends Base\PublicEntity
     public function setActivationSource(string $activationSource)
     {
         $this->setAttribute(self::ACTIVATION_SOURCE, $activationSource);
+    }
+
+    protected function setReceiptEmailTriggerEventAttribute($event)
+    {
+        // For now we are allowing only one of the bit to be set to true, ensuring this by allowing one element in
+        // $eventArray and passing initial $hex as 0
+        $hex = 0;
+
+        if ($event !== null)
+        {
+            $eventArray = [$event => '1'];
+
+            $hex = Event::getCustomerEventHexValue($eventArray, $hex);
+        }
+
+        $this->attributes[self::RECEIPT_EMAIL_TRIGGER_EVENT] = $hex;
+    }
+
+    protected function getReceiptEmailTriggerEventAttribute()
+    {
+        $hex = $this->attributes[self::RECEIPT_EMAIL_TRIGGER_EVENT];
+
+        $events =  Event::getCustomerEventsFromHex($hex);
+
+        return $events[0] ?? null;
     }
 
     public function getReferrer()
@@ -927,6 +1027,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
+    public function setBrandColor($brandColor)
+    {
+        $this->setAttribute(self::BRAND_COLOR, $brandColor);
+    }
+
     protected function setBrandColorAttribute($brandColor)
     {
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
@@ -945,6 +1050,11 @@ class Entity extends Base\PublicEntity
     public function setLogoUrl($logoUrl)
     {
         $this->setAttribute(self::LOGO_URL, $logoUrl);
+    }
+
+    public function setIconUrl($iconUrl)
+    {
+        $this->setAttribute(self::ICON_URL, $iconUrl);
     }
 
     public function setCategory2($category)
@@ -1019,7 +1129,7 @@ class Entity extends Base\PublicEntity
         return RefundSource::getRefundSourceStringForValue($this->attributes[self::REFUND_SOURCE]);
     }
 
-    protected function getInternationalAttribute()
+    public function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
@@ -1103,6 +1213,11 @@ class Entity extends Base\PublicEntity
         return $autoRefundDelay;
     }
 
+    public function getDefaultRefundSpeed()
+    {
+        return $this->getAttribute(self::DEFAULT_REFUND_SPEED);
+    }
+
     /**
      * Helper method to fetch the actual display_name for an
      * invoice, based on merchant-defined field preference from merchant_detail:
@@ -1152,6 +1267,16 @@ class Entity extends Base\PublicEntity
     public function getWhitelistedIpsTest()
     {
         return $this->getAttribute(self::WHITELISTED_IPS_TEST);
+    }
+
+    public function getMerchantDashboardWhitelistedIpsLive()
+    {
+        return $this->getAttribute(self::DASHBOARD_WHITELISTED_IPS_LIVE);
+    }
+
+    public function getMerchantDashboardWhitelistedIpsTest()
+    {
+        return $this->getAttribute(self::DASHBOARD_WHITELISTED_IPS_TEST);
     }
 
     public function getOrgId()
@@ -1221,6 +1346,21 @@ class Entity extends Base\PublicEntity
     public function getLogoUrl()
     {
         return $this->getAttribute(self::LOGO_URL);
+    }
+
+    public function getIconUrl()
+    {
+        return $this->getAttribute(self::ICON_URL);
+    }
+
+    public function getDisplayName()
+    {
+        return $this->getAttribute(self::DISPLAY_NAME);
+    }
+
+    public function setDisplayName($displayName)
+    {
+        $this->setAttribute(self::DISPLAY_NAME, $displayName);
     }
 
     public function getFeeBearer()
@@ -1834,6 +1974,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $config;
+    }
+
+    public function getAccountStatus()
+    {
+        return ($this->isSuspended() === true) ? AccountStatus::SUSPENDED : $this->merchantDetail->getActivationStatus();
     }
 
     public function getPaymentFlows(IIN\Entity $iin = null)

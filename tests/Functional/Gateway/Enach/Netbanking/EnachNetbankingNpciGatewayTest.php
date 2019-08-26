@@ -22,6 +22,7 @@ use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 
 class EnachNetbankingNpciGatewayTest extends TestCase
 {
@@ -29,6 +30,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     use DbEntityFetchTrait;
     use AttemptTrait;
     use AttemptReconcileTrait;
+    use PartnerTrait;
 
     public function setUp()
     {
@@ -83,6 +85,27 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('netbanking', $token['auth_type']);
 
         $this->assertEquals('initiated', $token['recurring_status']);
+    }
+
+    public function testPartnerPayment()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $this->doPartnerAuthPayment($payment, $clientId, $submerchantId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame('authorized', $payment['status']);
     }
 
     public function testPaymentRejectResponse()
@@ -346,7 +369,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileGenerationMultipleUtilityCode()
@@ -400,7 +423,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileReconciliation()
@@ -470,6 +493,30 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('Balance insufficient', $enach['error_message']);
 
         $this->assertEquals('REJECTED', $enach['status']);
+    }
+
+    public function testDebitFilePendingResponse()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'PENDING',
+            'error_code' => '98',
+            'error_desc' => 'BANK EXTENDED',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(10));
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('created', $payment['status']);
     }
 
     public function testRegisterReconLateAuth()
@@ -627,8 +674,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             if ($action === 'authorize_get_secure_data')
             {
                 $content['Accptd'] = 'false';
-                $content['ReasonCode'] = '1022';
-                $content['ReasonDesc'] = 'Invalid Authentication';
+                $content['ReasonCode'] = 'AP04';
+                $content['ReasonDesc'] = 'Account Inoperative';
                 $content['RejectBy'] = 'Bank';
             }
         });
@@ -657,6 +704,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 $url, $method, $content);
         }
 
+        $this->ba->publicCallbackAuth();
+
         $response = $this->sendRequest($request);
 
         $this->assertEquals($response->getStatusCode(), '302');
@@ -667,6 +716,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         if (filter_var($data['url'], FILTER_VALIDATE_URL))
         {
+            // Hack: only way to remove IsPartnerAuth from container
+            $this->app['basicauth']->checkAndSetKeyId('');
+
             return $this->submitPaymentCallbackRedirect($data['url']);
         }
 

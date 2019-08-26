@@ -10,6 +10,8 @@ use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Payment\Processor\Netbanking;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -27,6 +29,7 @@ class Entity extends Base\PublicEntity
     const BANK_NAME                     = 'bank_name';
     const ACCOUNT_NUMBER                = 'account_number';
     const BENEFICIARY_NAME              = 'beneficiary_name';
+    const REGISTERED_BENEFICIARY_NAME   = 'registered_beneficiary_name';
     const BENEFICIARY_ADDRESS1          = 'beneficiary_address1';
     const BENEFICIARY_ADDRESS2          = 'beneficiary_address2';
     const BENEFICIARY_ADDRESS3          = 'beneficiary_address3';
@@ -144,6 +147,12 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ACCOUNT_NUMBER,
     ];
 
     protected $appends = [
@@ -264,9 +273,26 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::BENEFICIARY_NAME];
     }
 
-    protected function getRegisteredBeneficiaryNameAttribute()
+    protected function setPublicAccountNumberAttribute(array & $attributes)
     {
-        return $this->attributes[self::REGISTERED_BENEFICIARY_NAME];
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        $accountNumber = $this->getAccountNumber();
+
+        if (($basicAuth->isPublicAuth() === true) and
+            ($this->getType() !== Type::VIRTUAL_ACCOUNT))
+        {
+            //
+            // Since we should not be exposing account_number in public auth ever.
+            // (Except virtual account numbers, of course)
+            //
+            // Note that we should not use toArrayPublic internally to fetch
+            // account_number via bank_account details. We should either directly
+            // fetch the account_number via `getAccountNumber()`, or use `toArray`.
+            //
+            $attributes[self::ACCOUNT_NUMBER] = mask_except_last4($accountNumber);
+        }
     }
 
     public function settlements()
@@ -314,6 +340,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_CITY);
     }
 
+    public function getBeneficiaryPin()
+    {
+        return $this->getAttribute(self::BENEFICIARY_PIN);
+    }
+
     public function getMpin()
     {
         return $this->getAttribute(self::MPIN);
@@ -332,6 +363,21 @@ class Entity extends Base\PublicEntity
     public function getBeneficiaryAddress1()
     {
         return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
+    }
+
+    public function getBeneficiaryAddress2()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS2);
+    }
+
+    public function getBeneficiaryAddress3()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS3);
+    }
+
+    public function getBeneficiaryAddress4()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS4);
     }
 
     public function getAccountType()
@@ -387,11 +433,6 @@ class Entity extends Base\PublicEntity
     protected function setNameAttribute($name)
     {
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
-    }
-
-    public function setRegisteredBeneficiaryName($name)
-    {
-        $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
     }
 
     public function setFtsFundAccountId($ftsFundAccountId)
@@ -505,6 +546,7 @@ class Entity extends Base\PublicEntity
     public function getRedactedAccountNumber()
     {
         $ac = $this->getAccountNumber();
+
         //
         // How many times should we repeat the redacted portion
         // This does not give a precise result,
@@ -519,6 +561,32 @@ class Entity extends Base\PublicEntity
         // repeat this section $repeat times
         // and then just append the original last 4 digits
         return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+    }
+
+    /**
+     * Reutrns the first 4 chars from the IFSC, i.e. the bank code
+     *
+     * SBIN0001234 => SBIN
+     *
+     * @return string|null
+     */
+    public function getBankCode()
+    {
+        $ifsc = $this->getIfscCode();
+        $code = substr($ifsc, 0, 4);
+
+        if ((empty($ifsc) === true) or
+            ($code === false))
+        {
+            return null;
+        }
+
+        if (isset(Netbanking::$defaultInconsistentBankCodesMapping[$code]) === true)
+        {
+            $code = Netbanking::$defaultInconsistentBankCodesMapping[$code];
+        }
+
+        return $code;
     }
 
     public function matches(array $input)
@@ -539,6 +607,17 @@ class Entity extends Base\PublicEntity
         $data[self::BENEFICIARY_EMAIL] = $this->getBeneficiaryEmail();
 
         $data[self::BENEFICIARY_MOBILE] = $this->getBeneficiaryMobile();
+
+        return $data;
+    }
+
+    public function getDataForCheckout()
+    {
+        $data = $this->toArrayHosted();
+
+        unset($data[self::ID]);
+
+        unset($data[self::ENTITY]);
 
         return $data;
     }

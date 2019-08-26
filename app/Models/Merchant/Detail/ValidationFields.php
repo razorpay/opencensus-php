@@ -57,6 +57,12 @@ class ValidationFields
             Entity::PROMOTER_PAN_NAME,
     ];
 
+    const BANK_ACCOUNT_FIELDS = [
+        Entity::BANK_ACCOUNT_NAME,
+        Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BANK_BRANCH_IFSC,
+    ];
+
     /**
      * Fields required when merchant is an NGO
      * for submitting the activation form

@@ -23,6 +23,7 @@ class Authorization
     protected $adminHeaders = [];
     protected $adminProxyHeaders;
     protected $proxyHeaders;
+    protected $merchant;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
     protected $defaultOAuthKey          = 'rzp_test_oauth_TheTestAuthKey';
@@ -670,5 +671,26 @@ class Authorization
     public function getBearerHeader()
     {
         return $this->bearerHeaders;
+    }
+
+    public function ftsAuth($mode = 'test')
+    {
+        $ftsConfig = \Config::get('applications.fts');
+
+        $pwd = $ftsConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
+    public function setMerchant($merchant)
+    {
+        $this->merchant = $merchant;
+
+        return $this;
+    }
+
+    public function addXDashboardIpHeader($hostName)
+    {
+        $this->appHeaders['X-Dashboard-Ip'] = $hostName;
     }
 }

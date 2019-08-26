@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
@@ -41,35 +42,44 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME                        => 'sometimes|string|max:200',
-        Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
-        Entity::WEBSITE                     => 'sometimes|url|max:255|nullable',
-        Entity::CATEGORY                    => 'sometimes|string|digits:4',
-        Entity::CATEGORY2                   => 'sometimes|string|max:30|custom',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
-        Entity::BILLING_LABEL               => 'sometimes|max:255',
-        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
-        Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
-        Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
-        Entity::CHANNEL                     => 'sometimes|string|max:32|custom',
-        Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
-        Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:100',
-        Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
-        Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
-        Entity::REFUND_SOURCE               => 'sometimes|string|max:32|in:balance,credits',
-        Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
+        Entity::NAME                                  => 'sometimes|string|max:200',
+        Entity::HOLD_FUNDS                            => 'sometimes|in:0,1',
+        Entity::WEBSITE                               => 'sometimes|url|max:255|nullable',
+        Entity::CATEGORY                              => 'sometimes|string|digits:4',
+        Entity::CATEGORY2                             => 'sometimes|string|max:30|custom',
+        Entity::INTERNATIONAL                         => 'sometimes|boolean',
+        Entity::BILLING_LABEL                         => 'sometimes|max:255',
+        Entity::TRANSACTION_REPORT_EMAIL              => 'sometimes|array',
+        Entity::RECEIPT_EMAIL_ENABLED                 => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_TRIGGER_EVENT           => 'sometimes|nullable|string|in:authorized,captured',
+        Entity::LINKED_ACCOUNT_KYC                    => 'sometimes|boolean',
+        Entity::CHANNEL                               => 'sometimes|string|max:32|custom',
+        Entity::RISK_RATING                           => 'sometimes|min:0|max:5',
+        Entity::RISK_THRESHOLD                        => 'sometimes|integer|min:0|max:100',
+        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform',
+        Entity::FEE_MODEL                             => 'sometimes|in:prepaid,postpaid',
+        Entity::REFUND_SOURCE                         => 'sometimes|string|max:32|in:balance,credits',
+        Entity::MAX_PAYMENT_AMOUNT                    => 'sometimes|integer',
         // max: 5 days (don't change max value without consult), min:60 minutes
-        Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
-        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
-        Entity::CONVERT_CURRENCY            => 'sometimes|nullable|boolean',
-        Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
-        Entity::GROUPS                      => 'sometimes|array',
-        Entity::ADMINS                      => 'sometimes|array',
-        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:15',
-        Entity::WHITELISTED_IPS_LIVE . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
-        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:15',
-        Entity::WHITELISTED_IPS_TEST . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
-        Entity::FEE_CREDITS_THRESHOLD       => 'sometimes|integer|nullable'
+        Entity::AUTO_REFUND_DELAY                     => 'sometimes|string|custom',
+        Entity::DEFAULT_REFUND_SPEED                  => 'sometimes|filled|string|in:normal,optimum',
+        Entity::AUTO_CAPTURE_LATE_AUTH                => 'sometimes|boolean',
+        Entity::CONVERT_CURRENCY                      => 'sometimes|nullable|boolean',
+        Entity::ORG_ID                                => 'sometimes|alpha_num|size:14',
+        Entity::GROUPS                                => 'sometimes|array',
+        Entity::ADMINS                                => 'sometimes|array',
+        Entity::WHITELISTED_IPS_LIVE                  => 'sometimes|array|max:15',
+        Entity::WHITELISTED_IPS_LIVE . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
+        Entity::WHITELISTED_IPS_TEST                  => 'sometimes|array|max:15',
+        Entity::WHITELISTED_IPS_TEST . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
+        Entity::DASHBOARD_WHITELISTED_IPS_LIVE        => 'sometimes|array|max:20',
+        Entity::DASHBOARD_WHITELISTED_IPS_LIVE . '.*' => 'distinct|required_with:' .
+                                                         Entity::DASHBOARD_WHITELISTED_IPS_LIVE . '|ipv4',
+        Entity::DASHBOARD_WHITELISTED_IPS_TEST        => 'sometimes|array|max:20',
+        Entity::DASHBOARD_WHITELISTED_IPS_TEST . '.*' => 'distinct|required_with:' .
+                                                         Entity::DASHBOARD_WHITELISTED_IPS_TEST . '|ipv4',
+        Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable',
+        Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000'
     ];
 
     protected static $uniqueEmailRules = [
@@ -106,6 +116,11 @@ class Validator extends Base\Validator
 
     protected static $actionRules = [
         Entity::ACTION                      => 'required|custom'
+    ];
+
+    protected static $change2faSettingRules = [
+        User\Entity::PASSWORD         => 'required|between:6,50',
+        Entity::SECOND_FACTOR_AUTH    => 'required|boolean',
     ];
 
     protected static $bulkTagRules = [
@@ -228,6 +243,12 @@ class Validator extends Base\Validator
         Constants::SKIP                  => 'integer',
     ];
 
+    protected static $partnerSubmerchantMapRules = [
+        'partner_type'              => 'required|string',
+        'submerchant_id'            => 'required|string',
+        'partner_merchant_id'       => 'required|string',
+    ];
+
     protected static $merchantPartnerStatusRules = [
         'email' => 'required|email',
     ];
@@ -242,6 +263,11 @@ class Validator extends Base\Validator
 
     protected static $toggleInternationalRules = [
         Entity::INTERNATIONAL => 'required|boolean'
+    ];
+
+    protected static $restrictSettingsMerchantRules = [
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+        Entity::ACTION      => 'required|in:add,remove',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -433,6 +459,27 @@ class Validator extends Base\Validator
                     Entity::ID           => $merchant->getId(),
                     Entity::PARTNER_TYPE => $merchant->getPartnerType(),
                 ]);
+        }
+    }
+
+    /**
+     * @param $email
+     * @param $orgId
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateMerchantEmailUnique($email, $orgId)
+    {
+        $merchants = app('repo')->merchant->fetchByEmailAndOrgId(mb_strtolower($email), $orgId);
+
+        if ($merchants->count() > 0)
+        {
+            // throw exception if merchant by that email already exists
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
+                Entity::EMAIL,
+                $merchants->pluck(Entity::ID)->toArray()
+            );
         }
     }
 
@@ -716,7 +763,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAction($attribute, $action)
+    public function validateAction($attribute, $action)
     {
         if (Action::exists($action) === false)
         {
@@ -832,6 +879,14 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED);
         }
+
+        $plan = app('repo')->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
+
+        if ($plan->hasInternationalPricing() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Pricing not present for international.');
+        }
     }
 
     protected function validateDisableInternational()
@@ -898,6 +953,29 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]
+            );
+        }
+    }
+
+    /**
+     * Validates that the merchant is a partner and an aggregator
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsAggregatorPartner(Entity $merchant)
+    {
+        $this->validateIsPartner($merchant);
+
+        if ($merchant->isAggregatorPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
                 Entity::PARTNER_TYPE,
                 [
                     Entity::PARTNER_TYPE => $merchant->getPartnerType(),

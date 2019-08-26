@@ -1006,6 +1006,206 @@ class WebhookTest extends TestCase
         $this->reconcileEntitiesForChannel($channel);
     }
 
+    public function testRefundSpeedChangedWebhookEventData()
+    {
+        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
+
+        $this->createWebhook(['events' => ['refund.speed_changed' => '1']]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            return true;
+        });
+
+        // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
+        // in which case we have reversal of refund transactions as well
+        $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+    }
+
+    public function testRefundFailedWebhookEventData()
+    {
+        $this->fixtures->merchant->addFeatures(['show_refund_public_status']);
+
+        $this->createWebhook(['events' => ['refund.failed' => '1']]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            return true;
+        });
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
+        // in which case we have reversal of refund transactions as well
+        $refund = $this->refundPayment($payment['id'], 3459);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals('reversed', $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($reversal['entity_type'], 'refund');
+        $this->assertEquals('rfnd_'.$reversal['entity_id'], $refund['id']);
+        $this->assertNotNull($reversal['balance_id']);
+    }
+
+    public function testRefundProcessedInstantWebhookEventData()
+    {
+        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
+
+        $this->createWebhook(['events' => ['refund.processed' => '1']]);
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            return true;
+        });
+
+        // Adding specific amount to refund - this is meant to test processed instant refunds on scrooge -
+        $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+    }
+
+    public function testRefundProcessedNormalWebhookEventData()
+    {
+        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
+
+        $this->createWebhook(['events' => ['refund.processed' => '1']]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            return true;
+        });
+
+        $this->refundPayment($payment['id']);
+    }
+
     protected function createTransferEntity($payment, $account)
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;

@@ -15,8 +15,10 @@ use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\SubscriptionRegistration;
 
 class Repository extends Base\Repository
 {
@@ -141,8 +143,6 @@ class Repository extends Base\Repository
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                     ->findOrFailPublic($invoiceId);
     }
-
-
 
     protected function validateInvoicesCountParams(array $params)
     {
@@ -497,6 +497,19 @@ class Repository extends Base\Repository
         return $this->repo->invoice->fetch($input, $merchantId);
     }
 
+    public function findByMerchantAndTokenRegistration(
+        Merchant\Entity $merchant,
+        SubscriptionRegistration\Entity $tokenRegistration)
+    {
+        $invoice = $this->newQuery()
+                        ->merchantId($merchant->getId())
+                        ->where(Entity::ENTITY_TYPE, E::SUBSCRIPTION_REGISTRATION)
+                        ->where(Entity::ENTITY_ID, $tokenRegistration->getId())
+                        ->first();
+
+        return $invoice;
+    }
+
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
     {
         $this->joinQueryPayment($query);
@@ -565,5 +578,22 @@ class Repository extends Base\Repository
         $operator = ($international === '1') ? '!=' : '=';
 
         $query->where($currencyAttribute, $operator, Currency::INR);
+    }
+
+    /**
+     * Filtering all the subscriptions invoices.
+     *
+     * @param $query
+     * @param $params
+     */
+    protected function addQueryParamSubscriptions($query, $params)
+    {
+        $subscriptionsAttribute = $this->dbColumn(Entity::SUBSCRIPTION_ID);
+
+        $subscriptions = $params[Entity::SUBSCRIPTIONS];
+
+        $operator = ($subscriptions === '1') ? '!=' : '=';
+
+        $query->where($subscriptionsAttribute, $operator, null);
     }
 }

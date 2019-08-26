@@ -137,6 +137,10 @@ return [
         'secret'    => env('YESBANK_SECRET'),
     ],
 
+    'rbl' => [
+        'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
+    ],
+
     'bharatqr' => [
         'secret' => env('BHARAT_QR_SECRET'),
     ],
@@ -256,6 +260,10 @@ return [
         'secret'   => env('RAZORX_SECRET'),
     ],
 
+    'user_2fa' => [
+        'max_incorrect_tries' => env('USER_2FA_MAX_INCORRECT_TRIES', 9),
+    ],
+
     'kubernetes_client' => [
         'mock'              => env('KUBERNETES_MOCK', false),
         'cluster_url'       => 'https://'.env('KUBERNETES_SERVICE_HOST').':'.env('KUBERNETES_PORT_443_TCP_PORT'),
@@ -320,5 +328,22 @@ return [
         'url'               => env('BATCH_SERVICE_URL'),
         'username'          => env('BATCH_USERNAME'),
         'password'          => env('BATCH_PASSWORD'),
+    ],
+
+    'smart_routing' => [
+        'url'       => env('SMART_ROUTING_URL'),
+        'mock'      => env('SMART_ROUTING_MOCK',false),
+        'username'  => env('SMART_ROUTING_USERNAME'),
+        'password'  => env('SMART_ROUTING_PASSWORD')
+    ],
+
+    'non_blocking_http' => [
+        'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
+    ],
+
+    'hubspot' => [
+        'mock'     => env('HUBSPOT_MOCK', false),
+        'url'      => env('HUBSPOT_URL'),
+        'secret'   => env('HUBSPOT_SECRET'),
     ],
 ];

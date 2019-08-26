@@ -24,6 +24,7 @@ class EsRepository extends Base\EsRepository
         Entity::USER_ID,
         Entity::CREATED_AT,
         Entity::ENTITY_TYPE,
+        Entity::SUBSCRIPTION_ID,
     ];
 
     protected $queryFields = [
@@ -99,10 +100,21 @@ class EsRepository extends Base\EsRepository
         }
     }
 
-
     public function buildQueryForUserId(array & $query, string $value)
     {
         $this->addTermFilter($query, Entity::USER_ID, $value);
+    }
+
+    public function buildQueryForSubscriptions(array & $query, $value)
+    {
+        if ($value === '1')
+        {
+            $this->addNotNullFilterForField($query, Entity::SUBSCRIPTION_ID);
+        }
+        else
+        {
+            $this->addNullFilterForField($query, Entity::SUBSCRIPTION_ID);
+        }
     }
 
     public function buildQueryForEntityType(array & $query, $value)

@@ -21,7 +21,8 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::GATEWAY                 => 'sometimes',
-        Entity::MERCHANT_ID             => 'sometimes|alpha_num',
+        Entity::ORG_ID                  => 'sometimes|alpha_num|size:14',
+        Entity::MERCHANT_ID             => 'sometimes|alpha_num|size:14',
         Entity::CARD                    => 'sometimes|boolean',
         Entity::NETBANKING              => 'sometimes|boolean',
         Entity::SHARED                  => 'sometimes|boolean',
@@ -37,8 +38,18 @@ class Repository extends Base\Repository
         Entity::MC_MPAN                 => 'sometimes|string|size:16',
         Entity::VISA_MPAN               => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN              => 'sometimes|string|size:16',
+        Entity::STATUS                  => 'sometimes|string|custom',
         Entity::VPA                     => 'sometimes|string|max:255',
     );
+
+    protected function validateStatus($attribute, $value)
+    {
+        if (Status::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid status '. $value);
+        }
+    }
 
     public function fetchForPayment(Payment\Entity $payment)
     {
@@ -153,8 +164,7 @@ class Repository extends Base\Repository
 
         $cacheTag = Entity::getCacheTag($merchant->getId());
 
-        $query = $this->newQuery()
-                      ->enabled();
+        $query = $this->newQuery();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
@@ -422,7 +432,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::GATEWAY_ACQUIRER, '=', $provider)
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
                     ->where($method, '=', 1)
                     ->enabled()
                     ->firstOrFail();

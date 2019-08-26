@@ -5,12 +5,22 @@ namespace RZP\Models\Payout;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Models\Base;
+use RZP\Models\State;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
+use RZP\Models\Merchant;
+use RZP\Models\Workflow;
+use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
+use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
+use RZP\Models\Workflow\Action;
+use RZP\Models\User\BankingRole;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Workflow\Action\Checker;
 
 class Repository extends Base\Repository
 {
@@ -35,6 +45,36 @@ class Repository extends Base\Repository
                     ->with(['destination', 'fundAccount.account'])
                     ->whereIn(Entity::ID, $ids)
                     ->status(Status::REVERSED)
+                    ->get();
+    }
+
+    public function fetchFromUtr($utr, $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->where(Entity::UTR, $utr)
+                    ->get();
+    }
+
+    public function fetchFromCmsRefNumber($cmsRefNumber, $balanceId)
+    {
+        $ftaTable = $this->repo->fund_transfer_attempt->getTableName();
+
+        $ftaSourceIdColumn = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
+
+        $ftaCmsRefNumColumn = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::CMS_REF_NO);
+
+        $payoutsIdColumn = $this->repo->payout->dbColumn(Entity::ID);
+
+        $payoutsBalanceColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+
+        $payoutAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($payoutAttrs)
+                    ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
+                    ->where($payoutsBalanceColumn, $balanceId)
+                    ->where($ftaCmsRefNumColumn, $cmsRefNumber)
                     ->get();
     }
 
@@ -78,6 +118,29 @@ class Repository extends Base\Repository
                     ->whereNotNull(Entity::UTR)
                     ->merchantId($merchantId)
                     ->get();
+    }
+
+    /**
+     * @param User\Entity     $user
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function fetchSummaryOfPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): array
+    {
+        /** @var BuilderEx $query */
+        $query = $this->newQuery();
+
+        $userRoleIds = $user->roles()->allRelatedIds()->toArray();
+
+        $this->filterByRoleIds($query, $userRoleIds, $user->getId());
+
+        $query->merchantId($merchant->getId());
+
+        return [
+            'count'        => $query->count(),
+            'total_amount' => (int) $query->sum(Entity::AMOUNT),
+        ];
     }
 
     public function updateStatus(Base\PublicCollection $payouts, string $status)
@@ -247,6 +310,82 @@ class Repository extends Base\Repository
         $query->where($contactEmailColumn, $contactEmail);
     }
 
+    protected function addQueryParamPendingOnRoles(BuilderEx $query, array $params)
+    {
+        $pendingOnRoles = $params[Entity::PENDING_ON_ROLES];
+
+        $pendingRoleIds = $this->repo->role->fetchIdsByOrgIdNames(
+            Org\Entity::RAZORPAY_ORG_ID,
+            BankingRole::getNamesForWorkflowRoles($pendingOnRoles));
+
+        $this->filterByRoleIds($query, $pendingRoleIds->pluck('id')->toArray());
+    }
+
+    protected function addQueryParamPendingOnMe(BuilderEx $query, array $params)
+    {
+        $pendingOnMe = (bool) ($params[Entity::PENDING_ON_ME] ?? false);
+
+        if ($pendingOnMe === false)
+        {
+            return;
+        }
+
+        $userRoleIds = $this->auth->getUser()->roles()->allRelatedIds()->toArray();
+
+        $this->filterByRoleIds($query, $userRoleIds);
+    }
+
+    protected function filterByRoleIds(BuilderEx $query, array $roleIds, string $userId = null)
+    {
+        $permissionId = ''; // Resolve from name
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryWorkflowAction($query);
+
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+        $wfActionStateColumn        = $this->repo->workflow_action->dbColumn(Action\Entity::STATE);
+        $wfActionPermissionIdColumn = $this->repo->workflow_action->dbColumn(Action\Entity::PERMISSION_ID);
+        $wfStepRoleIdColumn         = $this->repo->workflow_step->dbColumn(Step\Entity::ROLE_ID);
+
+        $workflowMerchantIdColumn = $this->repo->workflow->dbColumn(Workflow\Entity::MERCHANT_ID);
+
+        $query->where($statusColumn, Status::PENDING)
+              ->where($wfActionStateColumn, State\Name::OPEN)
+              ->where($workflowMerchantIdColumn, $this->merchant->getId())
+            //->where($wfActionPermissionIdColumn, $permissionId)
+              ->whereIn($wfStepRoleIdColumn, $roleIds);
+
+        if ($userId !== null)
+        {
+            $this->filterCompletedCheckerId($query, $userId);
+        }
+    }
+
+    protected function filterCompletedCheckerId(BuilderEx $query, string $checkerId)
+    {
+        $actionCheckerTable = $this->repo->action_checker->getTableName();
+
+        $actionCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::ID);
+
+        $query->leftJoin(
+            $actionCheckerTable,
+            function(JoinClause $join) use ($checkerId)
+                {
+                    $wfActionIdColumn = $this->repo->workflow_action->dbColumn(Step\Entity::ID);
+                    $wfStepIdColumn   = $this->repo->workflow_step->dbColumn(Step\Entity::ID);
+
+                    $actionCheckerStepId    = $this->repo->action_checker->dbColumn(Checker\Entity::STEP_ID);
+                    $actionCheckerActionId  = $this->repo->action_checker->dbColumn(Checker\Entity::ACTION_ID);
+                    $actionCheckerCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::CHECKER_ID);
+
+                    $join->on($wfActionIdColumn, '=', $actionCheckerActionId)
+                         ->on($wfStepIdColumn, '=', $actionCheckerStepId)
+                         ->where($actionCheckerCheckerId, '=', $checkerId);
+
+                })
+              ->whereNull($actionCheckerId);
+    }
+
     protected function joinQueryFundAccount(BuilderEx $query)
     {
         $faTable = $this->repo->fund_account->getTableName();
@@ -290,6 +429,42 @@ class Repository extends Base\Repository
                 $join->on($contactIdColumn, $faSourceIdColumn);
                 $join->where($faSourceTypeColumn, E::CONTACT);
             });
+    }
+
+    protected function joinQueryWorkflowAction(BuilderEx $query)
+    {
+        $wfActionTable = $this->repo->workflow_action->getTableName();
+        $workflowTable = $this->repo->workflow->getTableName();
+
+        if ($query->hasJoin($wfActionTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $wfActionTable,
+            function(JoinClause $join)
+            {
+                $entityIdColumn   = $this->repo->workflow_action->dbColumn(Action\Entity::ENTITY_ID);
+                $entityNameColumn = $this->repo->workflow_action->dbColumn(Action\Entity::ENTITY_NAME);
+
+                $idColumn = $this->dbColumn(Entity::ID);
+
+                $join->on($idColumn, $entityIdColumn)
+                     ->where($entityNameColumn, E::PAYOUT);
+            });
+
+        $query->join(
+            $workflowTable,
+            function(JoinClause $join)
+            {
+                $workflowIdColumn               = $this->repo->workflow->dbColumn(Workflow\Entity::ID);
+                $workflowActionWorkflowIdColumn = $this->repo->workflow_action->dbColumn(Action\Entity::WORKFLOW_ID);
+
+                $join->on($workflowIdColumn, $workflowActionWorkflowIdColumn);
+            });
+
+        $this->repo->workflow_action->joinQueryWorkflowStep($query);
     }
 
     /**
@@ -336,5 +511,16 @@ class Repository extends Base\Repository
         return ((($entity === null) or
                  (optional($entity->fundAccount)->getSourceType() === E::CONTACT)) and
                 (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
+    }
+
+    public function fetchByIdempotentKey(string $idempotentKey,
+                                         string $merchantId,
+                                         string $batchId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::IDEMPOTENCY_KEY, '=', $idempotentKey)
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->merchantId($merchantId)
+                    ->first();
     }
 }

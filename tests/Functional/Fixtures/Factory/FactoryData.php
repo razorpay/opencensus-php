@@ -38,6 +38,22 @@ final class FactoryData
             'activated_at'             => time(),
         ]);
 
+        /**
+         * Entity data type of merchant_email
+         */
+        $factory(\RZP\Models\Merchant\Email\Entity::class, [
+            'id'                       => $faker->uniqueid,
+            'type'                     => 'refund',
+            'email'                    => $faker->email,
+            'phone'                    => '9732097320',
+            'policy'                   => 'tech',
+            'url'                      => $faker->url,
+            'merchant_id'              => '10000000000000',
+            'verified'                 => 0,
+            'created_at'               => $faker->timestamp,
+            'updated_at'               => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Terminal\Entity::class, [
             'id'                        => $faker->uniqueid,
             'merchant_id'               => 'factory:RZP\Models\Merchant\Entity',
@@ -1078,6 +1094,15 @@ final class FactoryData
         $factory(\RZP\Gateway\CardlessEmi\Entity::class, [
             'id'                => $faker->uniqueid,
             'gateway'           => 'cardless_emi',
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\BankingAccount\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'account_number'    => '409000768239',
+            'channel'           => 'rbl',
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);

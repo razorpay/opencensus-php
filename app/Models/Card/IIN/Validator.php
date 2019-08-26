@@ -10,9 +10,10 @@ use RZP\Models\Card;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::IIN            => 'required|numeric|digits:6',
+        Entity::IIN            => 'required|digits:6',
         Entity::NETWORK        => 'required',
         Entity::TYPE           => 'required',
+        Entity::SUBTYPE        => 'filled|string|custom',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
         Entity::CATEGORY       => 'sometimes',
         Entity::ISSUER         => 'sometimes',
@@ -26,8 +27,9 @@ class Validator extends Base\Validator
     );
 
     protected static $editRules = array(
-        Entity::NETWORK        => 'sometimes',
-        Entity::TYPE           => 'sometimes',
+        Entity::NETWORK        => 'required_with:category',
+        Entity::TYPE           => 'required_with:category',
+        Entity::SUBTYPE        => 'filled|string|custom',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
         Entity::CATEGORY       => 'sometimes',
         Entity::ISSUER         => 'sometimes',
@@ -54,12 +56,14 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         'create_network',
         Entity::TYPE,
+        Entity::CATEGORY,
         Entity::ISSUER,
     ];
 
     protected static $editValidators = [
         'edit_network',
         Entity::TYPE,
+        Entity::CATEGORY,
         Entity::ISSUER,
     ];
 
@@ -67,9 +71,36 @@ class Validator extends Base\Validator
         Entity::FlOW             => 'required|string|in:otp',
     ];
 
+    protected static $iinBatchFileRules = [
+        'file'              => 'required|file',
+        'type'              => 'required|custom',
+    ];
+
     protected function validateCreateNetwork($input)
     {
         $this->validateNetwork($input, $input[Entity::IIN]);
+    }
+
+    protected function validateCategory($input)
+    {
+        if (isset($input[Entity::CATEGORY]) === false)
+        {
+            return;
+        }
+
+        $subtype = Card\SubType::CONSUMER;
+
+        if (isset($input[Entity::SUBTYPE]) === true)
+        {
+            $subtype = $input[Entity::SUBTYPE];
+        }
+
+        if (Category::isValidIinCategory($input[Entity::NETWORK], $input[Entity::TYPE], $subtype,
+                $input[Entity::CATEGORY]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid category: ' . $input[Entity::CATEGORY]);
+        }
     }
 
     protected function validateEditNetwork($input)
@@ -79,10 +110,19 @@ class Validator extends Base\Validator
             return;
         }
 
-        $this->validateNetwork($input, $this->entity->getIin());
+        $this->validateNetwork($input, $this->entity->getIin(), true);
     }
 
-    protected function validateNetwork($input, $iin)
+    /**
+     * @param $input
+     * @param $iin
+     * @param bool $skipNetworkRegexValidation - This parameter is for the caller to decide whether an exception
+     *             should be raised in the following situation.
+     *             Situation is when network in input does not match with the network that corresponds to the regexes
+     *             defined in $networkRegexes in Models/Card/Network.php
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateNetwork($input, $iin, $skipNetworkRegexValidation = false)
     {
         $network = $input[Entity::NETWORK];
 
@@ -98,8 +138,12 @@ class Validator extends Base\Validator
         if (($fullName !== 'Unknown') and
             ($fullName !== $network))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Card network given does not match the regex one: ' . $fullName);
+            if ($skipNetworkRegexValidation === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Card network given does not match the regex one: ' . $fullName);
+            }
+
         }
     }
 
@@ -116,6 +160,12 @@ class Validator extends Base\Validator
                 'Not a valid type name: ' . $input[Entity::TYPE]);
         }
     }
+
+    protected function validateSubType($attribute, $subtype)
+    {
+        Card\SubType::checkSubType($subtype);
+    }
+
 
     protected function validateIssuer($input)
     {

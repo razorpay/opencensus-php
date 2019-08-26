@@ -62,6 +62,8 @@ final class Constants
 
     const ACCOUNT_TYPE                  = 'account_type';
 
+    const PREFERRED_MODE                = 'preferred_mode';
+
     const STATUS_CREATED                = 'created';
 
     const ACCOUNT_NUMBER                = 'account_number';
@@ -111,4 +113,8 @@ final class Constants
     const INTERNAL_ERROR                = 'internal_error';
 
     const CODE                          = 'code';
+
+    const PREFERRED_SOURCE_ACCOUNT_ID   = 'preferred_source_account_id';
+
+  const CHANNEL                       = 'channel';
 }

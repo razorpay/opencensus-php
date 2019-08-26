@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Payout\Processor;
 
-use RZP\Exception\BadRequestException;
 use RZP\Models\Payout;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class FundAccountPayout extends Base
 {
@@ -18,11 +19,10 @@ class FundAccountPayout extends Base
         $payout = parent::createPayout($input);
 
         //
-        // In case of queued payouts, we don't create the transaction.
-        // We just mark the payout as queued and move on. This event will
-        // be dispatched later when we are actually processing the queued payout.
+        // In case of payouts with status=(queued, payouts), we don't create the transaction yet.
+        // This event will be dispatched later when we are actually processing the payout.
         //
-        if ($payout->isStatusQueued() === false)
+        if ($payout->isStatusBeforeCreate() === false)
         {
             //
             // Ideally, this should be done as part of downstream processor,
@@ -30,7 +30,11 @@ class FundAccountPayout extends Base
             // payout creation flow fails for any reason after downstream processor runs.
             //
 
-            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            if (($payout->isStatusBeforeCreate() === false) and
+                ($payout->balance->getAccountType() !== AccountType::DIRECT))
+            {
+                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            }
         }
 
         return $payout;

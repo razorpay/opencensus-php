@@ -5,8 +5,14 @@ namespace RZP\Models\Merchant\Balance;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
 
+/**
+ * Class Entity
+ *
+ * @property BankingAccount\Entity $bankingAccount
+ */
 class Entity extends Base\PublicEntity
 {
     const ID             = 'id';
@@ -28,10 +34,14 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER = 'account_number';
 
     //
-    // These attributes are populated for all non-primary balance accounts
+    // account_type can be shared (for Virtual Accounts) or direct (for Current Accounts)
     //
-    const ACCOUNT_TYPE     = 'account_type';
-    const ACCOUNT_PROVIDER = 'account_provider';
+    const ACCOUNT_TYPE         = 'account_type';
+    //
+    // channel which provides the account, eg: rbl, yesbank
+    // would be null for account_type=shared and for primary balance accounts
+    //
+    const CHANNEL              = 'channel';
 
     // Additional input keys
     const BALANCE_ID     = 'balance_id';
@@ -40,6 +50,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TYPE,
         self::CURRENCY,
+        self::ACCOUNT_TYPE,
+        self::CHANNEL,
     ];
 
     protected $defaults = [
@@ -59,6 +71,9 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS,
         self::REFUND_CREDITS,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
+        self::CHANNEL,
+        self::UPDATED_AT,
     ];
 
     protected $entity = 'balance';
@@ -158,9 +173,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function bankingAccount()
+    {
+        return $this->hasOne(BankingAccount\Entity::class);
     }
 
     public static function buildFromMerchant($merchant)
@@ -271,6 +301,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
     }
 
+    public function setAccountType(string $type)
+    {
+        $this->setAttribute(self::ACCOUNT_TYPE, $type);
+    }
+
+    public function setChannel(string $channel = null)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
     public function save(array $options = array())
     {
         $this->validateBalance();
@@ -290,9 +330,11 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Applies where clause on MERCHANT_ID and TYPE. For TYPE defaults to PRIMARY.
-     * @param  BuilderEx $query
-     * @param  string    $merchantId
+     * Applies a WHERE clause on merchant_id and type. type defaults to 'primary'
+     *
+     * @param BuilderEx $query
+     * @param string    $merchantId
+     * @param string    $type
      */
     public function scopeMerchantIdAndType(BuilderEx $query, string $merchantId, string $type = Type::PRIMARY)
     {

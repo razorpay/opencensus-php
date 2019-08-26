@@ -167,6 +167,32 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_cbi($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            ['gateway' => 'netbanking_cbi', 'callbackUrl' => $entities['callbackUrl']]);
+
+        $response = [
+            'data'              => [],
+            'error'             => null,
+            'success'           => true,
+            'next'              => [
+                'redirect' => [
+                    'method'  => 'post',
+                    'url'     => $url,
+                    'content' => [
+                        'QS' => 'random_encrypted_string',
+                    ],
+                ]
+            ],
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
     public function netbanking_cub($entities)
     {
         $url = $this->route->getUrlWithPublicAuth(
@@ -186,6 +212,71 @@ class PayInitData extends Base\Mock\Server
                     ],
                 ]
             ],
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
+    public function netbanking_ibk($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            ['gateway' => 'netbanking_ibk', 'callbackUrl' => $entities['callbackUrl']]);
+            $response = [
+                'data'              => [],
+                'error'             => null,
+                'success'           => true,
+                'next'              => [
+                    'redirect' => [
+                        'method'  => 'post',
+                        'url'     => $url,
+                        'content' => [
+                            'encparam'     => 'random_encrypted_string',
+                            'merchantcode' => 'Test Account',
+                        ],
+                        ]
+                ],
+                'mozart_id'         => 'DUMMY_MOZART_ID',
+                'external_trace_id' => 'DUMMY_REQUEST_ID',
+            ];
+        
+        return $response;
+    }
+
+    public function netbanking_idbi($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            ['gateway' => 'netbanking_idbi','callbackUrl' => $entities['callbackUrl']]);
+
+        $response = [
+            'data'              => [],
+            'error'             => null,
+            'success'           => true,
+            'next'              => [
+                'redirect' => [
+                    'method'  => 'post',
+                    'url'     => $url,
+                    'content' => [
+                        'encdata' => 'random_encrypted_string',
+                    ],
+                ]
+            ],
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
+    public function google_pay($entities)
+    {
+        $response = [
+            'data'              => [],
+            'error'             => null,
+            'success'           => true,
             'mozart_id'         => 'DUMMY_MOZART_ID',
             'external_trace_id' => 'DUMMY_REQUEST_ID',
         ];

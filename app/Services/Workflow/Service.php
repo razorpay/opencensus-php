@@ -4,12 +4,16 @@ namespace RZP\Services\Workflow;
 
 use RZP\Exception;
 use RZP\Models\State;
+use RZP\Models\Payout;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Workflow\Action\MakerType;
+use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Workflow\Action\Differ\EntityValidator;
 
@@ -264,8 +268,19 @@ class Service
             return false;
         }
 
+        $merchantId = null;
+
+        //
+        // For merchant app permissions, maker=merchant, we send the merchant ID for fetching
+        // only workflows defined for the merchant
+        //
+        if (Permission\Name::isMerchantPermission($permission) === true)
+        {
+            $merchantId = $maker->getId();
+        }
+
         $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
-            $permission, $maker->getOrgId());
+            $permission, $maker->getOrgId(), $merchantId);
 
         return $permissionHasWorkflow;
     }
@@ -359,6 +374,17 @@ class Service
             }
         }
 
+        // Custom code for payout workflow handling here
+        if ($this->getPermission() === Permission\Name::CREATE_PAYOUT)
+        {
+            $shouldProcess = $this->shouldProcessPayoutWorkflow($dirtyDataArray, $this->getWorkflowMaker());
+
+            if ($shouldProcess === false)
+            {
+                return;
+            }
+        }
+
         // Calculate diff
         $diff = $differCore->createDiff(
             $originalDataArray, $dirtyDataArray);
@@ -387,7 +413,7 @@ class Service
 
         $this->setDiff($diff);
 
-        // Trigger the entite maker/checker (workflow) flow
+        // Trigger the entity maker/checker (workflow) flow
         $workflowAction = $this->trigger();
 
         $workflowAction = json_encode($workflowAction);
@@ -470,5 +496,28 @@ class Service
         $this->skipWorkflow = false;
 
         return $result;
+    }
+
+    private function shouldProcessPayoutWorkflow(array $input, Merchant\Entity $merchant): bool
+    {
+        //
+        // If the code reaches here, there was atleast one workflow defined for the create_payout
+        // permission.
+        // We now need to check specific amount rules via workflow_payout_amount_rules.
+        // There may be cases where no workflow has been defined for a certain amount range,
+        // and hence, we should not trigger any workflow.
+        //
+
+        // The amount param will always exist here, Payout validators ensure this before reaching here.
+        $amount = $input[Payout\Entity::AMOUNT];
+
+        $workflow = (new PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($amount, $merchant);
+
+        if ($workflow === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

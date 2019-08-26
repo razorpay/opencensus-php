@@ -150,6 +150,137 @@ class PaymentDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentDowntimeForAllGatewayAndSingleGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'issuer'      => 'SVCB',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => strval(Carbon::now()->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'billdesk';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testPaymentDowntimeForSingleGatewayAndAllGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'billdesk',
+                'issuer'      => 'SVCB',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => strval(Carbon::now()->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'ALL';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testPaymentDowntimeForFewSupportingGateways()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'billdesk',
+                'issuer'      => 'SBIN',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => strval(Carbon::now()->timestamp),
+                'end'       => strval(Carbon::now()->addMinutes(60)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'atom';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testPaymentDowntimeForAllSupportingGateways()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'billdesk',
+                'issuer'      => 'SBIN',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => strval(Carbon::now()->timestamp),
+                'end'       => strval(Carbon::now()->addMinutes(60)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'atom';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'netbanking_sbi';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(40)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(45));
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
     public function testActivateDowntimes()
     {
         $this->testGetUpiDowntimeForAllGateways();
@@ -236,7 +367,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime['method'], 'netbanking');
         $this->assertEquals($downtime['issuer'], 'SBIN');
-        $this->assertEquals($downtime['status'], 'scheduled');
+        $this->assertEquals($downtime['status'], 'started');
 
         // 90 minutes elapsed
         Carbon::setTestNow(Carbon::now()->addMinutes(90));
@@ -255,7 +386,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtimes['items'][0]['method'], 'netbanking');
         $this->assertEquals($downtimes['items'][0]['instrument']['bank'], 'ALLA');
-        $this->assertEquals($downtimes['items'][0]['status'], 'scheduled');
+        $this->assertEquals($downtimes['items'][0]['status'], 'started');
     }
 
     public function testGetCardDowntimeForSingleNetworkHdfcGateway()
@@ -351,7 +482,7 @@ class PaymentDowntimeTest extends TestCase
         $downtime = $this->getLastEntity('payment.downtime', true);
 
         $this->assertEquals($downtime['method'], 'card');
-        $this->assertEquals($downtime['status'], 'scheduled');
+        $this->assertEquals($downtime['status'], 'started');
     }
 
     public function testGatewayDowntimeIndividualCardAllGateway()
@@ -378,7 +509,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime['method'], 'card');
         $this->assertEquals($downtime['network'], 'MC');
-        $this->assertEquals($downtime['status'], 'scheduled');
+        $this->assertEquals($downtime['status'], 'started');
 
         // 90 minutes elapsed
         Carbon::setTestNow(Carbon::now()->addMinutes(90));
@@ -397,7 +528,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtimes['items'][0]['method'], 'card');
         $this->assertEquals($downtimes['items'][0]['instrument']['network'], 'VISA');
-        $this->assertEquals($downtimes['items'][0]['status'], 'scheduled');
+        $this->assertEquals($downtimes['items'][0]['status'], 'started');
     }
 
     public function testGetNoCardDowntimeForSingleGateway()
@@ -470,7 +601,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime['method'], 'wallet');
         $this->assertEquals($downtime['issuer'], 'olamoney');
-        $this->assertEquals($downtime['status'], 'scheduled');
+        $this->assertEquals($downtime['status'], 'started');
 
         // 90 minutes elapsed
         Carbon::setTestNow(Carbon::now()->addMinutes(90));
@@ -489,7 +620,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtimes['items'][0]['method'], 'wallet');
         $this->assertEquals($downtimes['items'][0]['instrument']['wallet'], 'payumoney');
-        $this->assertEquals($downtimes['items'][0]['status'], 'scheduled');
+        $this->assertEquals($downtimes['items'][0]['status'], 'started');
     }
 
     public function testGetWalletDowntimeWithEndTime()
@@ -543,7 +674,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime['method'], 'netbanking');
         $this->assertEquals($downtime['issuer'], 'SBIN');
-        $this->assertEquals($downtime['status'], 'scheduled');
+        $this->assertEquals($downtime['status'], 'started');
 
         $this->setInfernoExpectations(['testPaymentDowntimeStartedWebhook']);
 
@@ -579,7 +710,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime['method'], 'netbanking');
         $this->assertEquals($downtime['issuer'], 'SBIN');
-        $this->assertEquals($downtime['status'], 'scheduled');
+        $this->assertEquals($downtime['status'], 'started');
 
         $this->activateDowntimes('started');
 
@@ -589,6 +720,15 @@ class PaymentDowntimeTest extends TestCase
         Carbon::setTestNow(Carbon::now()->addMinutes(90));
 
         $this->activateDowntimes('resolved');
+    }
+
+    public function testGetCheckoutPreferencesWithPaymentDowntime()
+    {
+        $this->createNetbankingAllGatewayDowntime();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
     }
 
     protected function createUpiAllGatewayDowntime()

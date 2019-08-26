@@ -14,7 +14,7 @@ class Metric extends Base\Metric
 
         return [
             Metric::DIMENSION_GATEWAY              => $gateway,
-            Metric::DIMENSION_PAYMENT_METHOD       => 'cardless_emi',
+            Metric::DIMENSION_PAYMENT_METHOD       => $gateway,
             Metric::DIMENSION_ACTION               => $action,
             Metric::DIMENSION_CARD_TYPE            => 'none',
             Metric::DIMENSION_CARD_NETWORK         => 'none',

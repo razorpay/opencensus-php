@@ -20,7 +20,9 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::GATEWAY                 => 'required_if:type,sorter|string|max:50|custom',
-        Entity::MERCHANT_ID             => 'required|alpha_num|size:14',
+        Entity::ORG_ID                  => 'sometimes|public_id',
+        Entity::MERCHANT_ID             => 'required_without:org_id|alpha_num|size:14',
+        Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::TYPE                    => 'required|in:sorter,filter',
         Entity::GROUP                   => 'filled|string|max:50',
         Entity::FILTER_TYPE             => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
@@ -28,10 +30,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACQUIRER        => 'sometimes|string|max:30',
         Entity::INTERNATIONAL           => 'filled|boolean',
         Entity::NETWORK_CATEGORY        => 'sometimes_if:type,filter|string|max:30',
+        Entity::CATEGORY                => 'sometimes_if:type,filter|string|numeric|digits:4',
         Entity::CATEGORY2               => 'sometimes_if:type,filter|string|max:30|custom',
         Entity::SHARED_TERMINAL         => 'filled|boolean',
         Entity::METHOD                  => 'required|string|max:30',
         Entity::METHOD_TYPE             => 'filled|string|max:10',
+        Entity::METHOD_SUBTYPE          => 'filled|string|max:10|custom',
         Entity::ISSUER                  => 'filled|string',
         Entity::NETWORK                 => 'sometimes|string|max:10',
         Entity::MIN_AMOUNT              => 'filled|integer|min:0',
@@ -46,6 +50,7 @@ class Validator extends Base\Validator
         Entity::STEP                    => 'sometimes|in:authorization,authentication',
         Entity::AUTH_TYPE               => 'sometimes',
         Entity::AUTHENTICATION_GATEWAY  => 'sometimes',
+        Entity::CARD_CATEGORY           => 'sometimes',
         Entity::CAPABILITY              => 'filled|in:0,1,2',
     ];
 
@@ -195,6 +200,11 @@ class Validator extends Base\Validator
                     'Card Type: ' . $cardType . ' is not supported');
             }
         }
+    }
+
+    protected function validateMethodSubtype(string $attribute, string $subtype)
+    {
+        Card\SubType::checkSubType($subtype);
     }
 
     protected function validateIssuer(array $input)

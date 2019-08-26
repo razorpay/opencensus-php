@@ -35,6 +35,8 @@ final class Constants
     const INTERVAL                                 = 'interval';
     const RECORDS_PROCESSED                        = 'records_processed';
 
+    const REMOVE                                  = 'remove';
+
     public static $partnerTypes = [
         self::BANK,
         self::RESELLER,

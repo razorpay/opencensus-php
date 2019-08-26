@@ -7,6 +7,7 @@ use Requests_Hooks;
 use SimpleXMLElement;
 use RZP\Constants\Timezone;
 
+use RZP\Diag\EventCode;
 use RZP\Error;
 use RZP\Constants;
 use RZP\Exception;
@@ -97,7 +98,12 @@ class Gateway extends Base\Gateway
 
         if ($this->isSecondRecurringPayment($input) === true)
         {
-            return $this->secondRecurring($input);
+            return $this->secondRecurringOrMoto($input);
+        }
+
+        if ($this->isMotoTransactionRequest($input) === true)
+        {
+            return $this->secondRecurringOrMoto($input);
         }
 
         // this is a check to decide which flow to go from, once new s2s flow will be merged and tested
@@ -128,7 +134,11 @@ class Gateway extends Base\Gateway
                     return $this->authorizeNotEnrolled($input, $authorizeRequest);
 
                 default:
+                    parent::action($input, Action::AUTHENTICATE);
+
                     $response = $this->enroll($input);
+
+                    parent::authorize($input);
 
                     return $this->decideStepAfterEnroll($response, $input);
 
@@ -172,7 +182,7 @@ class Gateway extends Base\Gateway
         return $authenticationGateway;
     }
 
-    protected function secondRecurring(array $input)
+    protected function secondRecurringOrMoto(array $input)
     {
         parent::action($input, Action::PURCHASE);
 
@@ -188,6 +198,8 @@ class Gateway extends Base\Gateway
         $gatewayEntity = $this->createGatewayPaymentEntity($gatewayPayment, $input);
 
         $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $traceContent);
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $response = $this->getSoapResponse($requestContent);
 
@@ -1155,7 +1167,11 @@ class Gateway extends Base\Gateway
                                                                            ->TransactionState,
                 Entity::AUTH_CODE           => (string) $verifyAuthResponse->children('ipgapi', true)
                                                                            ->IPGApiOrderResponse
-                                                                           ->ProcessorApprovalCode
+                                                                           ->ProcessorApprovalCode,
+
+                Entity::APPROVAL_CODE       => (string) $verifyAuthResponse->children('ipgapi', true)
+                                                                           ->IPGApiOrderResponse
+                                                                           ->ApprovalCode,
             ];
 
             if ($this->shouldUpdatePaymentInternalErrorCode($input['payment']) === true)
@@ -1320,6 +1336,11 @@ class Gateway extends Base\Gateway
         {
             $this->traceAndHandleRequestErrorIfApplicable($e);
 
+            if ($this->action === Action::AUTHENTICATE)
+            {
+                $e->markSafeRetryTrue();
+            }
+
             throw $e;
         }
 
@@ -1334,7 +1355,14 @@ class Gateway extends Base\Gateway
 
         if (empty($response->body) === true)
         {
-            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+            $ex = new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+
+            if ($this->action === Action::AUTHENTICATE)
+            {
+                $ex->markSafeRetryTrue();
+            }
+
+            throw $ex;
         }
 
         $xml = simplexml_load_string(trim($response->body));
@@ -1497,7 +1525,7 @@ class Gateway extends Base\Gateway
         // To support both the flows, we are using s2sFlowFlag, whose value will depend on card network,
         // whether merchant has s2s feature enabled and whether it is a recurring payment.
         if (($this->s2sFlowFlag === true) and
-            ($this->action === Action::AUTHORIZE))
+            (($this->action === Action::AUTHENTICATE) or ($this->action === Action::AUTHORIZE)))
         {
             $component = Component::API;
         }
@@ -2242,6 +2270,8 @@ class Gateway extends Base\Gateway
     {
         $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->postSoapRequest($authorizeRequest, ApiRequestFields::ORDER_REQUEST);
 
         $responseArray = $this->parseOrderResponse($response);
@@ -2254,6 +2284,8 @@ class Gateway extends Base\Gateway
     protected function authorizeEnrolled(array $input, $gatewayPayment, $authorizeRequest)
     {
         $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $response = $this->postSoapRequest($authorizeRequest, ApiRequestFields::ORDER_REQUEST);
 
@@ -2460,6 +2492,10 @@ class Gateway extends Base\Gateway
 
     protected function enroll($input)
     {
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+            $input);
+
         $request = $this->getEnrollRequest($input);
 
         $this->traceGatewayEnrollRequest($request, $input);
@@ -2467,6 +2503,16 @@ class Gateway extends Base\Gateway
         $this->getCardCacheKey($input);
 
         $response = $this->postSoapRequest($request, ApiRequestFields::ORDER_REQUEST);
+
+        $enrolled = isset($response[ApiResponseFields::SOAP_ENV_BODY][ApiResponseFields::IPGAPI_ORDER_RESPONSE]) ? 'Y' : 'N';
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+            $input,
+            null,
+            [
+                'enrolled' => $enrolled
+            ]);
 
         return $response;
     }
@@ -2523,7 +2569,7 @@ class Gateway extends Base\Gateway
     {
         $cvv = $input['card']['cvv'];
 
-        $key = $this->getCacheKey($input['payment']['id']);
+        $key = $this->getCacheKey($input);
 
         $data = [
             'cvv' => $this->app['encrypter']->encrypt($cvv),

@@ -381,6 +381,16 @@ class Entity extends Base\Entity
         $this->updatePasswordChangedAt();
     }
 
+    protected function setLockedAttribute($locked)
+    {
+        $this->attributes[self::LOCKED] = $locked;
+
+        if (empty($locked) === true)
+        {
+            $this->setAttribute(self::FAILED_ATTEMPTS, 0);
+        }
+    }
+
     protected function updatePasswordChangedAt()
     {
         $this->setAttribute(self::PASSWORD_CHANGED_AT, Carbon::now()->getTimestamp());

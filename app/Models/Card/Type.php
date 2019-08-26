@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Card;
 
+use RZP\Exception;
+
 class Type
 {
     const CREDIT      = 'credit';
     const DEBIT       = 'debit';
+    const PREPAID     = 'prepaid';
     const UNKNOWN     = 'unknown';
 
     public static function getType($type, $network = null)
@@ -34,7 +37,7 @@ class Type
     {
         if (self::isValidType($type) === false)
         {
-            throw new \InvalidArgumentException('Not a valid type: ' . $type);
+            throw new Exception\BadRequestValidationFailureException('Not a valid type: ' . $type);
         }
     }
 

@@ -15,6 +15,7 @@ $custom_labels                  = $data['custom_labels'];
 <html>
 <head>
     <title>{{{ $invoice_data['merchant_label'] }}} - Payment Link</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
@@ -113,7 +114,7 @@ $custom_labels                  = $data['custom_labels'];
 
                 if (desc.length < descLength) {
                     desc += '...';
-                    
+
                     button = document.createElement('button');
                     button.className ="btn-link showmore";
                     button.onclick = function() { toggleTrimDescription(false); }
@@ -287,7 +288,11 @@ $custom_labels                  = $data['custom_labels'];
 
                                 @if($invoice_expire_by and in_array($invoice_status, array('paid', 'partially_paid')) === false)
                                     <div class="info">
-                                        {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
+                                        @if($invoice_status === 'expired')
+                                            EXPIRED ON
+                                        @else
+                                            {{isset($custom_labels['expire_by']) ? $custom_labels['expire_by'] : 'EXPIRES ON'}}
+                                        @endif
                                         <div class="val">
                                             {{epoch_format($invoice_expire_by)}}
                                         </div>
@@ -367,7 +372,9 @@ $custom_labels                  = $data['custom_labels'];
                                 @if (isset($data['merchant']))
                                     <div id="merchant">
                                         <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                                        <div id="merchant-desc">Invoice #{{$invoice_data['id']}}</div>
+                                        @if(isset($data['checkout_options']['description']))
+                                            <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
+                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -424,7 +431,9 @@ $custom_labels                  = $data['custom_labels'];
                     @if (isset($data['merchant']))
                         <div id="merchant">
                             <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                            <div id="merchant-desc">Invoice #{{$invoice_data['id']}}</div>
+                            @if(isset($data['checkout_options']['description']))
+                                <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -485,7 +494,11 @@ $custom_labels                  = $data['custom_labels'];
 
                         @if($invoice_expire_by and in_array($invoice_status, array('paid', 'partially_paid')) === false)
                             <div class="info">
-                                {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
+                                @if($invoice_status === 'expired')
+                                    EXPIRED ON
+                                @else
+                                    {{isset($custom_labels['expire_by']) ? $custom_labels['expire_by'] : 'EXPIRES ON'}}
+                                @endif
                                 <div class="val">{{epoch_format($invoice_expire_by)}} </div>
                             </div>
                         @endif
@@ -666,13 +679,13 @@ $custom_labels                  = $data['custom_labels'];
 
             var invoiceObj = data.invoice;
             var merchant = data.merchant;
+            var checkoutOptions = data.checkout_options;
 
             var options = {
                 key: data.key_id,
                 invoice_id: invoiceObj.id,
                 amount: invoiceObj.amount,
                 // parent: '#chkout-box',
-                description: '#' + invoiceObj.id,
                 handler: function(response) {
                     if (globalScope.hasRedirect()) {
 
@@ -709,6 +722,10 @@ $custom_labels                  = $data['custom_labels'];
                     escape: false
                 }
             };
+
+            if (checkoutOptions['description']) {
+                options.description = checkoutOptions['description'];
+            }
 
             options.name = invoiceObj.merchant_label;
 

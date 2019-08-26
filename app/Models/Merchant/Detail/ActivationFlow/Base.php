@@ -11,6 +11,8 @@ class Base
      */
     protected $trace;
 
+    protected $app;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();

@@ -19,6 +19,7 @@ use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Mozart as Mozart;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
+use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
@@ -55,11 +56,6 @@ class GatewayController extends Controller
         $response = $service->getExternalApiHealth($input);
 
         return ApiResponse::json($response, $response['http_status']);
-    }
-
-    public function callbackAxis()
-    {
-        $this->callbackGateway('axis');
     }
 
     public function callbackUpiAirtel()
@@ -195,6 +191,7 @@ class GatewayController extends Controller
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
             case Gateway::UPI_AIRTEL:
+            case Gateway::WALLET_PHONEPE:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
@@ -443,9 +440,7 @@ class GatewayController extends Controller
 
         $payment = $this->app['repo']->payment->findOrFail($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $publicPaymentId = $payment->getPublicId();
 
@@ -494,9 +489,7 @@ class GatewayController extends Controller
 
         $publicPaymentId = $payment->getPublicId();
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -522,14 +515,17 @@ class GatewayController extends Controller
                 ]);
         }
 
+        $gateway = $this->app['gateway']->gateway(Gateway::WALLET_AMAZONPAY);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
         $this->app['trace']->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'gateway' => Gateway::WALLET_AMAZONPAY,
                 'input'   => $input,
+                'match'   => ($paymentId === $input[AmazonResponse::SELLER_ORDER_ID])
             ]);
-
-        $paymentId = $input[AmazonResponse::SELLER_ORDER_ID];
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
@@ -575,21 +571,22 @@ class GatewayController extends Controller
     {
         $app = $this->app;
 
+        /** @var Repository $repo */
         $repo = $app['repo']->netbanking;
 
-        $mode = 'test';
+        $mode = 'live';
 
         $app['config']->set('database.default', $mode);
 
-        $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
+        $nb = $repo->findByVerificationIdAndAction($traceId, Action::AUTHORIZE);
 
         if ($nb === null)
         {
-            $mode = 'live';
+            $mode = 'test';
 
             $app['config']->set('database.default', $mode);
 
-            $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
+            $nb = $repo->findByVerificationIdAndAction($traceId, Action::AUTHORIZE);
         }
 
         return ['nb' => $nb, 'mode' => $mode];

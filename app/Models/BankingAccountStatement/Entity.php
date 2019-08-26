@@ -8,15 +8,18 @@ use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
 
+/**
+ * @property Merchant\Entity     $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     const CHANNEL               = 'channel';
     const MERCHANT_ID           = 'merchant_id';
     const ACCOUNT_NUMBER        = 'account_number';
     const BANK_TRANSACTION_ID   = 'bank_transaction_id';
-    const AMOUNT                = 'transaction_amount';
-    const CURRENCY              = 'transaction_currency';
-    const TYPE                  = 'transaction_type';
+    const AMOUNT                = 'amount';
+    const CURRENCY              = 'currency';
+    const TYPE                  = 'type';
     const DESCRIPTION           = 'description';
     const CATEGORY              = 'category';
     /**
@@ -39,9 +42,11 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE                = 'source';
 
-    protected static $sign = 'bas';
+    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
 
-    protected $generateIdOnCreate = true;
+    const DEBIT_REGEX = '/^(.*?)-/';
+
+    protected static $sign = 'bas';
 
     protected $entity = 'banking_account_statement';
 
@@ -97,6 +102,8 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT            => 'int',
         self::BALANCE           => 'int',
+        self::POSTED_DATE       => 'int',
+        self::TRANSACTION_DATE  => 'int',
     ];
 
     protected $defaults = [
@@ -104,7 +111,11 @@ class Entity extends Base\PublicEntity
         self::BALANCE_CURRENCY  => Currency::INR,
     ];
 
-    // Relations
+    protected static $generators = [
+        self::ID,
+    ];
+
+    // --------------------------- Relations ---------------------------------- //
 
     public function merchant()
     {
@@ -126,7 +137,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(BankingAccount\Entity::class);
     }
 
-    // Setters and Getters
+    // ---------------------------- Setters ----------------------------------- //
 
     public function setAccountNumber(string $accountNumber)
     {
@@ -204,6 +215,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRANSACTION_DATE, $date);
     }
 
+    // -------------------------- Getters ------------------------------------ //
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -252,5 +265,52 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function isTypeCredit()
+    {
+        return ($this->getType() === Type::CREDIT);
+    }
+
+    public function isTypeDebit()
+    {
+        return ($this->getType() === Type::DEBIT);
+    }
+
+    public function getUtrFromDescription()
+    {
+        $description = $this->getDescription();
+
+        $regex = self::DEBIT_REGEX;
+
+        if ($this->isTypeCredit() === true)
+        {
+            $regex = self::CREDIT_REGEX;
+        }
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            $match = $matches[1];
+        }
+
+        // Could be an empty string match
+        if (empty($match) === false)
+        {
+            return $match;
+        }
+
+        return null;
     }
 }

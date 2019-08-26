@@ -30,6 +30,11 @@ class Validator extends Base\Validator
         'failed_response'       => 'sometimes|int'
     ];
 
+    protected static $ftaControlRules = [
+        Entity::CHANNEL => 'required|string|custom',
+        'action'        => 'required|in:enable,disable',
+    ];
+
     protected static $bulkReconcileRules = [
         'from' => 'required_with:to|epoch|date_format:U',
         'to'   => 'required_with:from|epoch|date_format:U',
@@ -51,11 +56,10 @@ class Validator extends Base\Validator
         Entity::SOURCE_TYPE    => 'required_with:source_id|string',
         Entity::FAILURE_REASON => 'sometimes|string',
         Entity::MODE           => 'sometimes|string',
-        'beneficiary_name'     => 'sometimes|string',
-        'internal_error'       => 'sometimes|boolean',
         'bank_processed_time'  => 'sometimes|string',
         'fund_transfer_id'     => 'required|int',
-        'extra_info'           => 'sometimes|string',
+        'extra_info'           => 'sometimes',
+        'extra_info.*'         => 'sometimes',
     ];
 
     protected function validateStatus($attribute, $value)
@@ -76,7 +80,7 @@ class Validator extends Base\Validator
      */
     public function validateChannel(string $attribute, string $value)
     {
-        $channels = [Channel::AXIS, Channel::ICICI, Channel::YESBANK];
+        $channels = [Channel::AXIS, Channel::ICICI, Channel::YESBANK, Channel::AXIS2, Channel::RBL, Channel::HDFC];
 
         if (in_array($value, $channels, true) !== true)
         {
@@ -126,11 +130,11 @@ class Validator extends Base\Validator
         // If we want to support for other channels, we need to make changes in the channel specific classes
         // for mode related initiations, allowed/not allowed, cron timings, settlement times, etc
         if (($destinationType === Constants\Entity::BANK_ACCOUNT) and
-            ($channel !== Channel::YESBANK))
+            (in_array($channel, Channel::getPreferredModeSupportedChannels(), true) === false))
         {
             throw new LogicException(
-                'Mode should be sent only for Yesbank',
-                ErrorCode::SERVER_ERROR_FTA_MODE_SENT_NON_YESBANK,
+                'Mode preference not allowed',
+                ErrorCode::SERVER_ERROR_FTA_PREFERRED_MODE_UNSUPPORTED,
                 [
                     'attempt_id'    => $attempt->getId(),
                     'mode'          => $mode,
@@ -142,7 +146,7 @@ class Validator extends Base\Validator
 
         $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
         $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
-        $maxUpiAmount = FundAccount\Validator::MAX_UPI_AMOUNT;
+        $maxUpiAmount  = FundAccount\Validator::MAX_UPI_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
             (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or

@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
+use RZP\Gateway\Base\Mock\GatewayTrait;
 
 class Shared
 {
@@ -27,6 +28,8 @@ class Shared
     const NETBANKING_VIJAYA_TERMINAL         = '100NbVijbTrmnl';
     const NETBANKING_CORPORATION_TERMINAL    = '100NbCorpTrmnl';
     const NETBANKING_CUB_TERMINAL            = '1000NbCubTrmnl';
+    const NETBANKING_IBK_TERMINAL            = '1000NbIbkTrmnl';
+    const NETBANKING_IDBI_TERMINAL           = '100NbIdbiTrmnl';
     const NETBANKING_KOTAK_TERMINAL          = '100NbKotakTmnl';
     const NETBANKING_ICICI_TERMINAL          = '100NbIciciTmnl';
     const NETBANKING_ICICI_CRP_TERMINAL      = '100NbIcicCrpTl';
@@ -50,8 +53,11 @@ class Shared
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
     const NETBANKING_SIB_TERMINAL            = '1000NbSibTrmnl';
+    const NETBANKING_CBI_TERMINAL            = '1000NbCbiTrmnl';
+    const NETBANKING_SIB_TPV_TERMINAL        = '1000NbSibTpvTl';
     const NETBANKING_SBI_TERMINAL            = '100NbSbinTrmnl';
     const NETBANKING_YESB_TERMINAL           = '100NbYesbTrmnl';
+    const NETBANKING_YESB_TPV_TERMINAL       = '100NbYesbTpvTl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
@@ -61,6 +67,7 @@ class Shared
     const FREECHARGE_RAZORPAY_TERMINAL       = '100FrchrgeTmnl';
     const SHARP_RAZORPAY_TERMINAL            = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL          = '1000CybrsTrmnl';
+    const CYBERSOURCE_HDFC_TERMINAL_WITHOUT_SECRET2  = '1000CybesTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL          = '1000CybAxTrmnl';
     const HITACHI_TERMINAL                   = '100HitachiTmnl';
     const HITACHI_DIRECT_TERMINAL            = '100HitaDirTmnl';
@@ -102,6 +109,7 @@ class Shared
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
     const UPI_AIRTEL_RAZORPAY_TERMINAL       = '100UPIArtlTmnl';
+    const WORLDLINE_TERMINAL                 = '1000WldlineTml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -160,6 +168,7 @@ class Shared
         self::ENSTAGE_TERMINAL,
         self::CARDLESS_EMI_RAZORPAY_TERMINAL,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL,
+        self::WORLDLINE_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -221,6 +230,7 @@ class Shared
         self::CARDLESS_EMI_RAZORPAY_TERMINAL     => Gateway::CARDLESS_EMI,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL    => Gateway::CARDLESS_EMI,
         self::PAYLATER_EPAYLATER_TERMINAL        => Gateway::PAYLATER,
+        self::WORLDLINE_TERMINAL                 => Gateway::WORLDLINE,
     ];
 
     public static function getSharedTerminalMapping()

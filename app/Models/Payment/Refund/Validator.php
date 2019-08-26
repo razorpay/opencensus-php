@@ -29,7 +29,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NOTES => 'sometimes|notes'
+        Entity::NOTES => 'sometimes|notes',
     ];
 
     protected static $directRules = [
@@ -54,24 +54,23 @@ class Validator extends Base\Validator
         'vpa.address'                       => 'required_with:vpa|filled|string',
         'card_transfer'                     => 'sometimes|associative_array',
         'card_transfer.card_id'             => 'required_with:card_transfer|filled|unsigned_id',
-
     ];
 
     protected static $createValidators = [
         'paymentStatus',
         'paymentRefundStatus',
         'refundAmount',
-        'minRefundAmount'
+        'minRefundAmount',
     ];
 
     protected static $retryBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id'
+        'refund_ids.*'  => 'required|public_id',
     ];
 
     protected static $directRetryBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id'
+        'refund_ids.*'  => 'required|public_id',
     ];
 
     protected static $markProcessedBulkRules = [
@@ -83,6 +82,15 @@ class Validator extends Base\Validator
         'refund_id'         => 'required_without_all:payment_id,reservation_id|public_id',
         'payment_id'        => 'required_without_all:refund_id,reservation_id|public_id',
         'reservation_id'    => 'required_without_all:payment_id,refund_id|string|max:50',
+        'mode'              => 'sometimes|in:live,test',
+        'captcha'           => 'required|string|custom',
+    ];
+
+    protected static $customerRefundsDetailsRules = [
+        'refund_id'         => 'required_without_all:payment_id,order_id,id|public_id',
+        'payment_id'        => 'required_without_all:refund_id,order_id,id|public_id',
+        'order_id'          => 'required_without_all:payment_id,refund_id,id|public_id',
+        'id'                => 'required_without_all:payment_id,refund_id,order_id',
         'mode'              => 'sometimes|in:live,test',
         'captcha'           => 'required|string|custom',
     ];
@@ -120,12 +128,17 @@ class Validator extends Base\Validator
         'fta_data.vpa.address'                      => 'required_with:vpa|filled|string',
         'fta_data.card_transfer'                    => 'sometimes|associative_array',
         'fta_data.card_transfer.card_id'            => 'required_with:card_transfer|filled|unsigned_id',
-        'is_fta'                                    => 'sometimes|bool'
+        'is_fta'                                    => 'sometimes|bool',
     ];
 
     protected static $createScroogeRefundBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id'
+        'refund_ids.*'  => 'required|public_id',
+    ];
+
+    protected static $getFeeRules = [
+        'payment_id'    => 'required|public_id',
+        'amount'        => 'required|integer|min:0',
     ];
 
     protected $payment;

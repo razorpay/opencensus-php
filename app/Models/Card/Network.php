@@ -3,6 +3,7 @@
 namespace RZP\Models\Card;
 
 use RZP\Exception;
+use RZP\Models\Card;
 
 class Network
 {
@@ -83,10 +84,10 @@ class Network
         self::MC    => '/^(5[1-5,9][0-9]{3}|222[1-8][0-9]{1}|2229[0-8]|22299|22[3-9][0-9]{2}|2[3-6][0-9]{3}|27[01][0-9]{2}|2720[0-8]|27209)[0-9]{1,}$/',
         self::VISA  => '/^4[0-9]{5,}$/',
         self::AMEX  => '/^3[47][0-9]{4,}$/',
-        self::JCB   => '/^((?!353800)(?:2131|1800|35[0-9]{2}))[0-9]{2,}$/',
+        self::JCB   => '/^((?!35380[0,2])(?:2131|1800|35[0-9]{2}))[0-9]{2,}$/',
         self::DICL  => '/^3(?:0[0-5]|[68][0-9])[0-9]{3,}$/',
         self::UNP   => '/^62[0-9]{4,}$/',
-        self::RUPAY => '/^(508[5-9]|6(069(8[5-9]|9)|07([0-8]|9([0-7]|8[0-4]))|08([0-4]|500)|52([2-9]|1[5-9])|53(0|1[0-4]))|353800)/',
+        self::RUPAY => '/^(508[5-9]|6(069(8[5-9]|9)|07([0-8]|9([0-7]|8[0-4]))|08([0-4]|500)|52([2-9]|1[5-9])|53(0|1[0-4]))|35380[0,2])/',
         self::MAES  => '/^(50[1-7,9]|508[0-4]|63|66|6[8-9]|600[0-9]|6010|601[2-9]|60[2-5]|6060|609|61|620|621|6220|6221[0-1])[0-9]{1,}$/',
         self::DISC  => '/^6(?:011|5[0-9]{2})[0-9]{2,}$/',
     ];
@@ -110,11 +111,26 @@ class Network
         self::AMEX => 4
     ];
 
-    /**
-     * Detects network on basis of iin.
-     *
-     */
-    public static function detectNetwork($iin)
+    private static function detectNetworkFromDatabase($iin)
+    {
+        $iinDetails = (new Card\Repository)->retrieveIinDetails($iin);
+
+        if ($iinDetails === null)
+        {
+            return null;
+        }
+
+        $cardNetwork = $iinDetails->getNetworkCode();
+
+        if (strtoupper($cardNetwork) === self::UNKNOWN)
+        {
+            return null;
+        }
+
+        return $cardNetwork;
+    }
+
+    private static function detectNetworkFromRegex($iin)
     {
         $cardNetwork = null;
 
@@ -133,6 +149,19 @@ class Network
         }
 
         return $cardNetwork;
+    }
+
+    /**
+     * The source of truth regarding card network is as follows
+     * First, we try to detect network from the iin table in database.
+     * If not found in above step, we fall back on regex based matching of networks
+     * If network detection fails in both the steps, we return UNKNOWN network
+     *
+     * @iin Detects network code on basis of iin.
+     */
+    public static function detectNetwork($iin)
+    {
+        return static::detectNetworkFromDatabase($iin) ?? static::detectNetworkFromRegex($iin) ?? self::UNKNOWN;
     }
 
     public static function checkNetwork($iin, $network)

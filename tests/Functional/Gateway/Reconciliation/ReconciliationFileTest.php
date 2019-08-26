@@ -1372,6 +1372,19 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideHdfcNonInrPayment(array $payment, array $forceOverride = [], $gateway = 'fss')
+    {
+        $facade = $this->testData['facades']['hdfc_non_inr'];
+
+        $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = $payment['payment_id'];
+
+        $facade[HDFCPaymentRecon::COLUMN_AUTH_CODE]  = "'" . random_integer(6);
+
+        $facade[HDFCPaymentRecon::COLUMN_ARN]        = "'" . str_random(24);
+
+        return $facade;
+    }
+
     private function overrideBilldeskRefund(array $refund)
     {
         $facade = $this->testData['facades']['billdesk'];
@@ -1533,6 +1546,60 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testHitachiUnexpectedPaymentCreateViaRecon()
+    {
+        // Using Live because by default mode is live (when gateway != sharp
+        // Refer :  function determineAndSetModeForQr()
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $reconRow = $this->testData['facades']['hitachi_unexpected_payment_create'];
+
+        $this->fixtures->on('live')->create('terminal', [
+            'gateway_merchant_id'   => $reconRow['merchant_id'],
+            'gateway'               => 'hitachi',
+        ]);
+
+        $this->fixtures->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'activated'         => 1,
+                'live'              => 1,
+                'pricing_plan_id'   => '1hDYlICobzOCYt'
+            ]);
+
+        $entries[] = $reconRow;
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $this->assertEquals($payment['id'], $bharatQr['payment_id']);
+
+        $this->assertEquals($reconRow['retr_ref_nr'], $bharatQr['provider_reference_id']);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $payment['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $payment['reference2']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction', 'live');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertTrue($payment['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testHitachiForceAuthorizeFailedPayment()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1689,6 +1756,43 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($updatedRefund[Refund\Entity::REFERENCE1], $updatedGatewayRefund['arn_no']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testHdfcFssReconNonInrPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment1 = $this->doAuthAndCapturePayment($payment);
+
+        $this->fixtures->edit('payment',
+            $payment1['id'],
+            [
+                'convert_currency' => false,
+            ]);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
+
+        $entries[] = $this->overrideHdfcNonInrPayment($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment1['reference2']);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $updatedTransaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus();
     }
 
     /**

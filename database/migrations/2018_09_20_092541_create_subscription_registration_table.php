@@ -39,11 +39,26 @@ class CreateSubscriptionRegistrationTable extends Migration
             $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Entity::STATUS, 16)
+                  ->nullable();
+
             $table->string(Entity::RECURRING_STATUS,255)
                   ->nullable();
 
             $table->string(Entity::FAILURE_REASON,255)
                   ->nullable();
+
+            $table->bigInteger(Entity::AMOUNT)
+                  ->default(0)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Entity::ATTEMPTS)
+                  ->default(0);
+
+            $table->char(Entity::CURRENCY, 3)
+                  ->nullable()
+                  ->default('INR');
 
             $table->bigInteger(Entity::MAX_AMOUNT)
                   ->nullable();

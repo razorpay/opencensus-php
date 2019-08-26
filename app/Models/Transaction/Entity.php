@@ -641,6 +641,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::REFUND);
     }
 
+    public function isTypeReversal()
+    {
+        return ($this->getType() === Type::REVERSAL);
+    }
+
     public function isTypeSettlement()
     {
         return ($this->getType() === Type::SETTLEMENT);
@@ -698,7 +703,7 @@ class Entity extends Base\PublicEntity
 
     public function isBalanceUpdated(): bool
     {
-        return $this->getAttribute(self::BALANCE_UPDATED);
+        return ($this->getAttribute(self::BALANCE_UPDATED) === true);
     }
 
     public function isFeeBearerCustomer()

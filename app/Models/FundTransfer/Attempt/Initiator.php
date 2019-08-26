@@ -3,12 +3,14 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use Carbon\Carbon;
-
 use Monolog\Logger;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\FundTransfer;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
@@ -17,7 +19,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
-use \RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
@@ -114,6 +116,8 @@ class Initiator extends Base\Core
 
             $limit = $this->getLimitForChannel($channel);
 
+            $unsupportedModeList = $this->getUnsupportedModesForTime($timestamp);
+
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_FETCHING_ENTITIES);
 
             $attempts = $this->repo
@@ -123,6 +127,7 @@ class Initiator extends Base\Core
                                 $purpose,
                                 $sourceType,
                                 $channel,
+                                $unsupportedModeList,
                                 $limit,
                                 ['source']);
 
@@ -137,14 +142,27 @@ class Initiator extends Base\Core
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_ENTITIES_FETCHED);
 
-            $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
+            $data[$channel] = [];
+
+            // Since yesbank fund transfer with purpose settlement need Beneficiary
+            // Registration and verification, they will go via queue.
+            if (($channel === Channel::YESBANK) and ($purpose == Type::SETTLEMENT))
+            {
+                $response = $this->dispatchTransfers($channel, $attempts);
+            }
+            else
+            {
+                $response = $this->processFundTransferAttempts($channel, $attempts);
+            }
+
+            $data[$channel]  = $response;
 
             return $data;
         });
     }
 
     public function processFundTransferAttempts(
-        string $purpose, string $channel, Base\PublicCollection $attempts): array
+        string $channel, Base\PublicCollection $attempts): array
     {
         $count = $attempts->count();
 
@@ -158,6 +176,8 @@ class Initiator extends Base\Core
 
             return $data;
         }
+
+        $purpose = $attempts->first()->getPurpose();
 
         list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
             $attempts,
@@ -182,7 +202,11 @@ class Initiator extends Base\Core
 
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        (new SlackNotification)->send('setl_initiate', $slackData);
+        //reducing slack alerts for API based channels
+        if (in_array($channel, $allowedChannels, true) === false)
+        {
+            (new SlackNotification)->send('setl_initiate', $slackData);
+        }
 
         return $data;
     }
@@ -401,7 +425,7 @@ class Initiator extends Base\Core
 
         $attempts = (new PublicCollection)->push($fta);
 
-        $response = $this->processFundTransferAttempts($fta->getPurpose(), $channel, $attempts);
+        $response = $this->processFundTransferAttempts($channel, $attempts);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
     }
@@ -451,5 +475,119 @@ class Initiator extends Base\Core
         }
 
         return [true, null];
+    }
+
+    /**
+     * Takes a list of attempt ids and dispatches to the queue
+     * @param string $channel
+     * @param PublicCollection $attempts
+     * @return array
+     */
+    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts): array
+    {
+        $attemptIds = $attempts->pluck(Entity::ID);
+
+        $info = [
+            'channel' => $channel,
+            'count' => $attempts->count()
+        ];
+
+        $successCount = 0;
+
+        $failureCount = 0;
+
+        foreach ($attemptIds as $id)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT,
+                    [
+                        'fta_id'  => $id,
+                        'data'    => $info
+                    ]);
+
+                FundTransfer::dispatch($this->mode, $id);
+
+                $successCount ++;
+
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_DISPATCHED,
+                    [
+                        'fta_id'  => $id,
+                        'data'    => $info
+                    ]);
+            }
+            catch (\Exception $exception)
+            {
+                $failureCount++;
+
+                $this->trace->traceException(
+                    $exception,
+                    Trace::CRITICAL,
+                    TraceCode::FTA_TRANSFER_DISPATCH_FAILED
+                );
+            }
+        }
+
+        $info += [
+            "success" => $successCount,
+            "failed"  => $failureCount,
+        ];
+
+        return $info;
+    }
+
+    // This will return the mode which are unsupported due to being outside of timing window.
+    // The time uses minimum Start Timing of all banks supported for razorpayX payouts and
+    // maximum ending timing. Since Nodal account class for each channel has its own timing
+    // so transfer initiation will get blocked there if the timings are different for that channel.
+    public function getUnsupportedModesForTime(int $currentTime)
+    {
+        $modeList = [];
+
+        if ($this->isOutsideNeftTimings($currentTime) === true)
+        {
+            $modeList[] = TransferMode::NEFT;
+        }
+
+        if ($this->isOutsideRtgsTimings($currentTime) === true)
+        {
+            $modeList[] = TransferMode::RTGS;
+        }
+
+        return $modeList;
+    }
+
+    public function isOutsideNeftTimings(int $currentTime)
+    {
+        $bankingStartTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_START_HOUR)->getTimestamp();
+
+        $bankingEndTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_END_HOUR)
+                                                          ->minute(Constants::NEFT_END_MINUTE)
+                                                          ->getTimestamp();
+
+        if (($currentTime < $bankingStartTime) or
+            ($currentTime > $bankingEndTime))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isOutsideRtgsTimings(int $currentTime)
+    {
+        $bankingStartTimeRtgs = Carbon::today(Timezone::IST)->hour(Constants::RTGS_REVISED_START_HOUR)->getTimestamp();
+
+        $bankingEndTimeRtgs = Carbon::today(Timezone::IST)->hour(Constants::RTGS_REVISED_END_HOUR)
+                                                              ->minute(Constants::RTGS_REVISED_END_MINUTE)
+                                                              ->getTimestamp();
+
+        if (($currentTime < $bankingStartTimeRtgs) or
+            ($currentTime > $bankingEndTimeRtgs))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

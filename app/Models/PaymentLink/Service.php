@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
@@ -108,5 +109,22 @@ class Service extends Base\Service
         (new Validator)->validateInput('uploadImages', $input);
 
         return $this->core->upload($input, $this->merchant);
+    }
+
+    public function appendAmountIfPossible(string $id, array $input, array & $payload)
+    {
+        if (isset($input['razorpay_payment_id']) === true)
+        {
+            $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+
+            $paymentId = Payment\Entity::verifyIdAndStripSign($input['razorpay_payment_id']);
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+            if ($paymentLink->getId() === $payment->getPaymentLinkId())
+            {
+                $payload[Entity::REQUEST_PARAMS][Entity::AMOUNT] = $payment->getAmount();
+            }
+        }
     }
 }

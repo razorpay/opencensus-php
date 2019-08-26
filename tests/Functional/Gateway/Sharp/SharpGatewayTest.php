@@ -67,6 +67,14 @@ class SharpGatewayTest extends TestCase
 
         $this->assertNotNull($payment['acquirer_data']['rrn']);
 
+        $this->assertNotNull($payment['reference16']);
+
+        $this->assertNotNull($payment['reference1']);
+
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
+
+        $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
+
         $this->assertNotEmpty($payment['vpa']);
     }
 
@@ -204,7 +212,7 @@ class SharpGatewayTest extends TestCase
         $this->fixtures->merchant->enableEmandate('10000000000000');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $payment = $this->getEmandatePaymentArray('SBIN', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('VIJB', 'aadhaar', 0);
 
         $payment['aadhaar']['number'] = '123456789012';
         $payment['bank_account'] = [

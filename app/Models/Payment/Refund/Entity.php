@@ -4,7 +4,9 @@ namespace RZP\Models\Payment\Refund;
 
 use App;
 use ApiResponse;
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -13,12 +15,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Models\Reversal;
 use RZP\Models\Transaction;
+use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
@@ -90,11 +91,14 @@ class Entity extends Base\PublicEntity
     // Table Attributes created for Instant refunds
     const SPEED_REQUESTED        = 'speed_requested';
     const SPEED_PROCESSED        = 'speed_processed';
+    const SPEED_DECISIONED       = 'speed_decisioned';
     const FEE                    = 'fee';
     const TAX                    = 'tax';
 
     const MODE                   = 'mode';
     const SPEED                  = 'speed';
+
+    const PUBLIC_STATUS = 'public_status';
 
     protected static $sign = 'rfnd';
 
@@ -142,6 +146,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::SPEED_REQUESTED,
+        self::SPEED_DECISIONED,
         self::SPEED_PROCESSED,
         self::FEE,
         self::TAX,
@@ -176,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::ACQUIRER_DATA,
         self::CREATED_AT,
+        self::CURRENCY,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
@@ -184,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::STATUS            => Status::CREATED,
         self::SPEED_REQUESTED   => Speed::NORMAL,
+        self::SPEED_DECISIONED  => Speed::NORMAL,
         self::SPEED_PROCESSED   => null,
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
@@ -428,6 +435,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SPEED_REQUESTED);
     }
 
+    public function getSpeedDecisioned()
+    {
+        return $this->getAttribute(self::SPEED_DECISIONED);
+    }
+
     public function getSpeedProcessed()
     {
         return $this->getAttribute(self::SPEED_PROCESSED);
@@ -525,6 +537,18 @@ class Entity extends Base\PublicEntity
                     self::UTR   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
+
+            case Payment\Method::CARDLESS_EMI:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::PAYLATER:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         return (new Dictionary($acquirerData));
@@ -575,6 +599,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SPEED_REQUESTED, $speedRequested);
     }
 
+    public function setSpeedDecisioned(string $speedDecisioned)
+    {
+        $this->setAttribute(self::SPEED_DECISIONED, $speedDecisioned);
+    }
+
     public function setSpeedProcessed(string $speedProcessed)
     {
         $this->setAttribute(self::SPEED_PROCESSED, $speedProcessed);
@@ -589,6 +618,17 @@ class Entity extends Base\PublicEntity
     {
         if (($this->payment->hasTerminal() === true) and
             ($this->payment->terminal->isDirectSettlementWithRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isDirectSettlementWithoutRefund(): bool
+    {
+        if (($this->payment->hasTerminal() === true) and
+            ($this->payment->terminal->isDirectSettlementWithoutRefund() === true))
         {
             return true;
         }
@@ -784,13 +824,23 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * This is required for checking if a refund's requested speed is an instant (that is charged) speed
+     *
+     * @return bool
+     */
+    public function isRefundRequestedSpeedInstant(): bool
+    {
+        return (in_array($this->getSpeedRequested(), Speed::REFUND_INSTANT_SPEEDS, true) === true);
+    }
+
+    /**
      * This is required for checking if a refund is being processed with instant (that is charged) speed
      *
      * @return bool
      */
     public function isRefundSpeedInstant(): bool
     {
-        return (in_array($this->getSpeedRequested(), Speed::REFUND_INSTANT_SPEEDS) === true);
+        return (in_array($this->getSpeedDecisioned(), Speed::REFUND_INSTANT_SPEEDS, true) === true);
     }
 
     public function getGateway()
@@ -846,13 +896,63 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    public function toArrayPublicCustomer(): array
+    public function toArrayPublicCustomer(bool $populateMessages = false): array
     {
         $data = parent::toArrayPublicCustomer();
 
         $data['merchant_name'] = $this->merchant->getBillingLabel();
 
         $data[self::STATUS] = (($this->isProcessed() === true) ? Status::PROCESSED : Status::INITIATED);
+
+        if ($populateMessages === true)
+        {
+            $this->populateMessages($data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    private function populateMessages(array &$data): array
+    {
+        $transactionTrackerMessages = new TransactionTrackerMessages();
+
+        $createdAtDate = Carbon::createFromTimestamp($this->getCreatedAt(), Timezone::IST);
+
+        $expectedDate = Holidays::getNthWorkingDayFrom($createdAtDate, $transactionTrackerMessages::REFUND_SLA_DAYS, true);
+
+        $currentDate = Carbon::now(Timezone::IST);
+
+        $data[Constants::MERCHANT_ID] = $this->merchant->getPublicId();
+
+        $data[Constants::DAYS] = $expectedDate->diffInDays($currentDate, false);
+
+        $data[Constants::PRIMARY_MESSAGE]   =
+            $this->getMessageForTransactionTracker(
+                $transactionTrackerMessages,
+                $data[Constants::DAYS],
+                $expectedDate,
+                TransactionTrackerMessages::PRIMARY
+            );
+
+        $data[Constants::SECONDARY_MESSAGE] =
+            $this->getMessageForTransactionTracker(
+                $transactionTrackerMessages,
+                $data[Constants::DAYS],
+                $expectedDate,
+                TransactionTrackerMessages::SECONDARY
+            );
+
+        $data[Constants::TERTIARY_MESSAGE]  =
+            $this->getMessageForTransactionTracker(
+                $transactionTrackerMessages,
+                $data[Constants::DAYS],
+                $expectedDate,
+                TransactionTrackerMessages::TERTIARY
+            );
 
         return $data;
     }
@@ -891,6 +991,48 @@ class Entity extends Base\PublicEntity
         return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
     }
 
+    /**
+     * @param TransactionTrackerMessages $transactionTrackerMessages
+     * @param int $days
+     * @param Carbon $expectedDate
+     * @param $messageType
+     * @return string
+     */
+    private function getMessageForTransactionTracker(TransactionTrackerMessages $transactionTrackerMessages, int $days, Carbon $expectedDate, $messageType): string
+    {
+        $messageLateAuth = null;
+        $messageEntity = Constants::REFUND;
+        $messageSlaDone = ($days < 0 === true) ? false : true;
+        $messageStatus = ($this->isProcessed() === true) ? Status::PROCESSED: Status::INITIATED;
+
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+
+        return $this->populateTransactionTrackerMessages($message, $expectedDate);
+    }
+
+    /**
+     * @param $message
+     * @param Carbon $expectedDate
+     * @return mixed
+     */
+    private function populateTransactionTrackerMessages($message, Carbon $expectedDate)
+    {
+        $populatedMessage = $message;
+
+        $replacer = [
+            TransactionTrackerMessages::MESSAGE_AMOUNT        => $this->getFormattedAmount(),
+            TransactionTrackerMessages::MESSAGE_MERCHANT_NAME => $this->merchant->getBillingLabel(),
+            TransactionTrackerMessages::MESSAGE_EXPECTED_DATE => $expectedDate->toFormattedDateString(),
+        ];
+
+        foreach ($replacer as $key => $value)
+        {
+            $populatedMessage = str_replace($key, $value, $populatedMessage);
+        }
+
+        return $populatedMessage;
+    }
+
     protected function pushMetricsForProcessedStatusChange(array $dimensions)
     {
         if ($this->isProcessed() === false)
@@ -919,7 +1061,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getPublicStatus($response, $publicStatusFeatureEnabled = false)
+    protected function getPublicStatus($response, $publicStatusFeatureEnabled = false, $cardTransferFeatureEnabled = false)
     {
         $refundStatus = $this->getStatus();
 
@@ -930,29 +1072,75 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
+        $callScroogeForSpeed = false;
+
+        if ($cardTransferFeatureEnabled === true)
+        {
+            // Adding speed and other related params only for Card Transfer Feature enabled merchants
+            $callScroogeForSpeed = true;
+
+            // If speed_processed is already populated in the refund entity - we need not call scrooge
+            if (empty($this->getSpeedProcessed()) === false)
+            {
+                $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
+
+                $callScroogeForSpeed = false;
+            }
+            // Populating default values in case scrooge does not return proper response
+            else if ($this->isRefundSpeedInstant() === true)
+            {
+                $response[self::SPEED_PROCESSED] = Speed::INSTANT;
+            }
+            else
+            {
+                $response[self::SPEED_PROCESSED] = Speed::NORMAL;
+            }
+
+            $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
+        }
+
         $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
 
-        if (($response[self::STATUS] === Status::PENDING) and
-            ($isScrooge === true) and
-            ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
-             ($publicStatusFeatureEnabled === true)))
+        $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
+
+        $callScroogeForStatus = ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
+                                 ($publicStatusFeatureEnabled === true));
+
+        if (($eligibleForScroogeCall === true) and
+            (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
         {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
 
+            $queryParams = [
+                self::SPEED  => (int) $callScroogeForSpeed,
+                self::STATUS => (int) $callScroogeForStatus,
+            ];
+
             try
             {
-                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID]);
+                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID], $queryParams);
 
                 $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
-                    $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
+                    $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
+
+                    $scroogeStatus =
+                        (empty($scroogeResponseBody[self::STATUS]) === false) ? $scroogeResponseBody[self::STATUS] : '';
+
+                    $scroogeSpeed =
+                        (empty($scroogeResponseBody[self::SPEED]) === false) ? $scroogeResponseBody[self::SPEED] : '';
 
                     if (empty($scroogeStatus) === false)
                     {
                         $response[self::STATUS] = $scroogeStatus;
+                    }
+
+                    if (empty($scroogeSpeed) === false)
+                    {
+                        $response[self::SPEED_PROCESSED] = $scroogeSpeed;
                     }
                 }
             }
@@ -966,6 +1154,12 @@ class Entity extends Base\PublicEntity
                         'refund_id' => $response[self::ID],
                     ]);
             }
+        }
+
+        if ((empty($response[self::SPEED_PROCESSED]) === false) and
+            ($response[self::SPEED_PROCESSED] === Speed::NORMAL))
+        {
+            $response[self::STATUS] = Status::PROCESSED;
         }
 
         return $response;
@@ -983,13 +1177,13 @@ class Entity extends Base\PublicEntity
         $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
         $publicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
-        $cardTransferRefundFeatureEnabled = $this->isRefundSpeedInstant();
+        $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
 
         if (($displayRefundPublicStatus === true) or
             ($publicStatusFeatureEnabled === true) or
             ($cardTransferRefundFeatureEnabled === true))
         {
-            $scroogeResponse = $this->getPublicStatus($response, $publicStatusFeatureEnabled);
+            $scroogeResponse = $this->getPublicStatus($response, $publicStatusFeatureEnabled, $cardTransferRefundFeatureEnabled);
 
             return $scroogeResponse;
         }

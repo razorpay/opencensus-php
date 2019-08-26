@@ -99,6 +99,7 @@ class Name
     const ASSIGN_MERCHANT_BANKS               = 'assign_merchant_banks';
     const ADD_MERCHANT_ADJUSTMENT             = 'add_merchant_adjustment';
     const EDIT_MERCHANT_EMAIL                 = 'edit_merchant_email';
+    const EDIT_MERCHANT_ADDITIONAL_EMAIL      = 'edit_merchant_additional_email';
     const MERCHANT_AUTOFILL_FORM              = 'merchant_autofill_form';
     const EDIT_MERCHANT_MARK_REFERRED         = 'edit_merchant_mark_referred';
     const VIEW_AS_ENTITY                      = 'view_as_entity';
@@ -236,12 +237,21 @@ class Name
     const EDIT_THROTTLE_SETTINGS              = 'edit_throttle_settings';
     const ACCESS_EXCEL_STORE                  = 'access_excel_store';
     const CANCEL_BATCH                        = 'cancel_batch';
+    const PAYMENT_CAPTURE_BULK                = 'payment_capture_bulk';
+    const MERCHANT_RESTRICT                   = 'merchant_restrict';
+    const USER_ACCOUNT_LOCK_UNLOCK            = 'user_account_lock_unlock';
+    const UPDATE_USER_CONTACT_MOBILE          = 'update_user_contact_mobile';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
 
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';
+
+    // Perform write operations around stork integration e.g. webhook migrations etc
+    const STORK_WRITE_OPERATION               = 'stork_write_operation';
+    // Permissions for P2P Service
+    const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
@@ -259,4 +269,18 @@ class Name
         Merchant\Action::DISABLE_INTERNATIONAL  => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
         Merchant\Action::FORCE_ACTIVATE         => self::EDIT_MERCHANT_FORCE_ACTIVATION,
     ];
+
+    /**
+     * Permissions that are exposed on the merchant side.
+     *
+     * @var array
+     */
+    public static $merchantPermissions = [
+        self::CREATE_PAYOUT,
+    ];
+
+    public static function isMerchantPermission(string $name): bool
+    {
+        return (in_array($name, self::$merchantPermissions, true) === true);
+    }
 }

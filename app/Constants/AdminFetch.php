@@ -6,6 +6,7 @@ use RZP\Base\Fetch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\FundTransfer;
+use RZP\Models\BankingAccount;
 use RZP\Models\Partner\Config;
 use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
@@ -417,6 +418,41 @@ class AdminFetch
                 ],
             ],
 
+            Entity::BANKING_ACCOUNT => [
+                'merchant_id'     => Fetch::FIELD_MERCHANT_ID,
+                'account_number'  => [
+                    Fetch::LABEL  => 'Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => BankingAccount\Status::getAll(),
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => BankingAccount\Channel::getAll(),
+                ],
+                'bank_internal_status' => [
+                    Fetch::LABEL  => 'Bank Internal Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => BankingAccount\Gateway\Rbl\Status::getAll(),
+                ],
+                'balance_id'  => [
+                    Fetch::LABEL  => 'Balance Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'bank_reference_number'  => [
+                    Fetch::LABEL  => 'Bank Reference Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'fts_fund_account_id'  => [
+                    Fetch::LABEL  => 'FTS Fund Account Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::BANK_TRANSFER => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'balance_id' => Fetch::FIELD_BALANCE_ID,
@@ -499,6 +535,7 @@ class AdminFetch
                         'emandate',
                         'reconciliation',
                         'irctc_refund',
+                        'irctc_delta_refund',
                         'irctc_settlement',
                         'linked_account',
                         'virtual_bank_account',

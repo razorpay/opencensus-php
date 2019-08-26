@@ -4,28 +4,36 @@ namespace RZP\Models\Merchant\Email;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
-    const TYPE       = 'type';
-    const EMAIL      = 'email';
-    const VERIFIED   = 'verified';
+    use HardDeletes;
+
+    const TYPE     = 'type';
+    const EMAIL    = 'email';
+    const VERIFIED = 'verified';
+    const PHONE    = 'phone';
+    const POLICY   = 'policy';
+    const URL      = 'url';
 
     protected $entity = 'merchant_email';
 
     protected $fillable = [
         self::TYPE,
         self::EMAIL,
+        self::PHONE,
+        self::POLICY,
+        self::URL,
     ];
 
-    protected $visible = [
+    protected $public = [
         self::ID,
         self::TYPE,
         self::EMAIL,
-        self::VERIFIED,
-        self::CREATED_AT,
-        self::UPDATED_AT,
-        self::MERCHANT_ID,
+        self::PHONE,
+        self::POLICY,
+        self::URL,
     ];
 
     protected $dates = [
@@ -42,5 +50,10 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 }

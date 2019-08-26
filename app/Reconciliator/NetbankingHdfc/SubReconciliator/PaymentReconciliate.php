@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
+use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Reconciliator\NetbankingHdfc\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -21,7 +22,16 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        return $row[Constants::COLUMN_PAYMENT_ID] ?? null;
+        /** @var Entity $gatewayPayment */
+        $this->gatewayPayment = $this->repo->netbanking->findByGatewayPaymentIdAndAction($row[Constants::BANK_PAYMENT_ID],
+                                                                                    Action::AUTHORIZE);
+
+        if ($this->gatewayPayment === null)
+        {
+            return $row[Constants::COLUMN_PAYMENT_ID] ?? null;
+        }
+
+        return $this->gatewayPayment->getPaymentId() ?? null;
     }
 
      protected function getReferenceNumber($row)
@@ -76,7 +86,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return true;
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[Constants::COLUMN_PAYMENT_AMOUNT]);
     }

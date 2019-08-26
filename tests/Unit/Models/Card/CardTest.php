@@ -4,7 +4,7 @@ namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
 use RZP\Models\Card;
-use RZP\Tests\TestCase;
+use RZP\Tests\Functional\TestCase;
 
 class ValidationTest extends TestCase
 {
@@ -72,15 +72,34 @@ class ValidationTest extends TestCase
     {
         $this->app['rzp.mode'] = 'test';
 
+        /*
+         *  Understanding the need for this fixture:
+         *  First, please read the PHP doc comment for detectNetwork function in Models/Card/Network.php
+         *  This test is to ensure that if an Iin exist in the database, we must not fall back on regex matching
+         *  for that Iin, whatsoever.
+         *
+         *  Even though Iin  "556763" belongs to MasterCard network, for the sake of this test we assign
+         *  it to Visa and insert in the Iin table.
+         */
+        $this->fixtures->create('iin', [
+            'iin' => 556763,
+            'network' => 'Visa',
+            'type' => 'credit',
+            'country' => 'US'
+        ]);
+
         $core = new Card\Core;
 
         $map = array(
+            ['5567639700004947', '888', 'Visa', 'credit'],
             ['6073849700004947', '888', 'RuPay', 'credit'],
             ['341111111111111', '8888', 'American Express', 'credit'],
             ['5010000000000007', '888', 'Maestro', 'debit'],
             ['3538105814111110',  '888', 'JCB',  'credit'],
             ['2131005964111147',  '888', 'JCB',  'credit'],
             ['3538001111111111',  '888', 'RuPay',  'credit'],
+            ['3538010000000004',  '888', 'JCB',  'credit'],
+            ['3538020000000003',  '888', 'RuPay',  'credit'],
             ['2030400000121212',  '888', 'Bajaj Finserv',  'credit'],
             ['5900006817596627', '888', 'MasterCard', 'credit'],
             ['2720992121212123', '888', 'MasterCard', 'credit'],

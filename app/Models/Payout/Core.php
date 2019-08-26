@@ -12,11 +12,14 @@ use RZP\Models\Customer;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Workflow;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Jobs\QueuedPayouts;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
@@ -115,15 +118,17 @@ class Core extends Base\Core
      * SOURCE: Merchant Balance (PG/Banking)
      * TO: Fund Account (BankAccount/VPA/Card etc) (fund_account_id)
      *
-     * @param array           $input
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param Batch\Entity    $batch
+     * @param Batch\Entity $batch
+     * @param string|null $batchId
      *
      * @return Entity
      */
     public function createPayoutToFundAccount(array $input,
                                               Merchant\Entity $merchant,
-                                              Batch\Entity $batch = null): Entity
+                                              Batch\Entity $batch = null,
+                                              string $batchId = null): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
@@ -131,9 +136,24 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->payout->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
+                                                                $merchant->getId(),
+                                                                $batchId);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
+
+        // TODO: remove batch entity handling once ramped to 100%
+        $batchIdOrBatch = $batchId === null ? $batch : $batchId;
+
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
-                       ->setBatch($batch)
+                       ->setBatch($batchIdOrBatch)
                        ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);
@@ -152,6 +172,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function createPayoutFromCustomerWallet(
         array $input,
@@ -197,6 +218,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function createPayoutFromPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant): Entity
     {
@@ -260,18 +282,26 @@ class Core extends Base\Core
 
     public function updateStatusAfterFtaRecon(Entity $payout, array $ftaData)
     {
-        switch ($ftaData[Attempt\Constants::FTA_STATUS])
+        $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS];
+
+        $status = Status::getPayoutStatusFromFtaStatus($payout, $ftaStatus);
+
+        switch ($status)
         {
-            case Attempt\Status::PROCESSED:
-                $this->handleFtaProcessed($payout);
+            case Status::PROCESSED:
+                $this->handlePayoutProcessed($payout);
                 break;
 
-            case Attempt\Status::FAILED:
-                $this->handleFtaFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+            case Status::REVERSED:
+                $this->handlePayoutReversed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
-            case Attempt\Status::CREATED:
-            case Attempt\Status::INITIATED:
+            case Status::FAILED:
+                $this->handlePayoutFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+                break;
+
+            case Status::CREATED:
+            case Status::INITIATED:
                 break;
 
             default:
@@ -406,22 +436,110 @@ class Core extends Base\Core
 
     public function approvePayout(Entity $payout): Entity
     {
-        //
-        // TODO: mark the workflow as approved
-        // get workflow action id and send payload as approved is true
-        //
+        $payout = $this->processWorkflowActionOnPayout($payout, true);
 
         return $payout;
     }
 
     public function rejectPayout(Entity $payout): Entity
     {
-        //
-        // TODO: mark the workflow as rejected
-        // get workflow action id and send payload as approved is false
-        //
+        $payout = $this->processWorkflowActionOnPayout($payout, false);
 
         return $payout;
+    }
+
+    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve): Entity
+    {
+        /** @var Workflow\Action\Entity|null $workflowAction */
+        $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
+
+        $action = ($approve === true) ? 'approve' : 'reject';
+
+        if ($workflowAction === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'No further actions can be performed on this payout',
+                null,
+                ['action' => $action, 'payout_id' => $payout->getId()]);
+        }
+
+        $payout = $this->repo->transaction(
+            function() use ($payout, $workflowAction, $approve, $action)
+            {
+                $actionCheckerCreateParams = [
+                    Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
+                    Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
+                ];
+
+                $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
+
+                if (empty($actionChecker) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                        null,
+                        [
+                            'create_params'       => $actionCheckerCreateParams,
+                            'payout_id'           => $payout->getId(),
+                            'workflows_action_id' => $workflowAction->getId(),
+                            'action'              => $action,
+                        ]);
+                }
+
+                //
+                // Reload the workflow_action entity. Changes from the previous function calls
+                // may not have been sync'd
+                //
+                $workflowAction->reload();
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
+                    [
+                        'workflow_action' => $workflowAction,
+                        'action'          => $action,
+                        'payout_id'       => $payout->getId(),
+                    ]);
+
+                if (($approve === true) and
+                    ($workflowAction->getApproved() === true))
+                {
+                    $payout = $this->processPendingPayout($payout);
+                }
+                else if (($approve === false) and
+                        ($workflowAction->isRejected() === true))
+                {
+                    $payout = $this->processRejectPayout($payout);
+                }
+
+                return $payout;
+            });
+
+        return $payout;
+    }
+
+    protected function getOpenWorkflowActionForPayout(Entity $payout)
+    {
+        $workflowActions = (new Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
+                                $payout->getId(),
+                                $payout->getEntity(),
+                                Permission\Name::CREATE_PAYOUT,
+                                Org\Entity::RAZORPAY_ORG_ID);
+
+        //
+        // There can only be 0 or 1 open workflow actions on a payout
+        // If there are more, it could be due to a bug, and we'd need to debug this
+        // This check can be removed once the code is stable
+        //
+        if ($workflowActions->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'More than 1 open workflow actions found for payout',
+                null,
+                ['payout_id' => $payout->getId(), 'workflow_actions' => $workflowActions->toArray()]);
+        }
+
+        // Returns the single workflow action for the payout, else null if none exist
+        return $workflowActions->first();
     }
 
     protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)
@@ -549,7 +667,7 @@ class Core extends Base\Core
         return $payoutInput;
     }
 
-    protected function handleFtaProcessed(Entity $payout)
+    protected function handlePayoutProcessed(Entity $payout)
     {
         if ($payout->isStatusReversed() === true)
         {
@@ -568,11 +686,40 @@ class Core extends Base\Core
         $this->app->events->fire('api.payout.processed', [$payout]);
     }
 
-    protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
+    protected function handlePayoutReversed(Entity $payout, string $ftaFailureReason = null)
     {
         $this->reversePayout($payout, $ftaFailureReason);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
+    }
+
+    protected function handlePayoutFailed(Entity $payout, string $ftaFailureReason = null)
+    {
+        if ($payout->hasTransaction() === true)
+        {
+            throw new Exception\LogicException(
+                'A Payout with transaction can not be moved to failed state, it should be reversed',
+                null,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'failure_reason' => $ftaFailureReason,
+                ]);
+        }
+
+        $currentStatus = $payout->getStatus();
+
+        //
+        // Payout can go to failed state from initiated or created state only
+        //
+        Status::validatePreviousToCurrentMapping($currentStatus, Status::FAILED);
+
+        $payout->setStatus(Status::FAILED);
+
+        $payout->setFailureReason($ftaFailureReason);
+
+        $this->repo->saveOrFail($payout);
+
+        $this->app->events->fire('api.payout.failed', [$payout]);
     }
 
     protected function reversePayout(Entity $payout, string $reverseReason = null): Reversal\Entity
@@ -695,10 +842,18 @@ class Core extends Base\Core
     protected function dispatchFtaInitiate(Entity $payout)
     {
         //
-        // When we queue a payout, we don't create any transaction or FTA.
-        // We do it later when we actually process that queued payout.
+        // For payouts with status=(queued, pending), we don't create any transaction or FTA.
+        // We do it later when we actually process that payout.
         //
-        if ($payout->isStatusQueued() === true)
+        if ($payout->isStatusBeforeCreate() === true)
+        {
+            return;
+        }
+
+        // After FTA creation the fund account source internally dispatches Fund transfer to FTS
+        $isFts = $payout->fundTransferAttempts->first()->getIsFts();
+
+        if ($isFts === true)
         {
             return;
         }
@@ -741,5 +896,59 @@ class Core extends Base\Core
         $entity->setFTSTransferId($ftsTransferId);
 
         $this->repo->saveOrFail($entity);
+    }
+
+    protected function processPendingPayout(Entity $payout): Entity
+    {
+        $payoutId = $payout->getId();
+
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                /** @var Validator $payoutValidator */
+                $payoutValidator = $payout->getValidator();
+
+                $payoutValidator->validateProcessingPendingPayout();
+
+                $payout = $this->getProcessor('fund_account_payout')
+                               ->setMerchant($payout->merchant)
+                               ->processPendingPayout($payout);
+
+                $this->dispatchFtaInitiate($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    protected function processRejectPayout(Entity $payout): Entity
+    {
+        $payoutId = $payout->getId();
+
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                /** @var Validator $payoutValidator */
+                $payoutValidator = $payout->getValidator();
+
+                $payoutValidator->validateRejectPayout();
+
+                $payout->setStatus(Status::REJECTED);
+
+                $this->repo->saveOrFail($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 }

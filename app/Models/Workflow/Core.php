@@ -16,15 +16,22 @@ class Core extends Base\Core
     {
         $workflow = (new Entity)->generateId();
 
+        $orgId       = $input[Entity::ORG_ID];
+        $permissions = $input[Entity::PERMISSIONS];
+
         // Check if the permissions given are enabled to have workflows
-        $workflow->getValidator()->validatePermissionsForOrg(
-            $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
+        $workflow->getValidator()->validatePermissionsForOrg($orgId, $permissions);
 
+        //
         // Check if passed permissions already have a workflow assigned to them
-        $workflow->getValidator()->validatePermissionHasOneWorkflow(
-            $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
+        // create_payout can have multiple workflows though, skip the validation for that.
+        //
+        if ($this->requestHasCreatePayoutPermission($permissions, $orgId) === false)
+        {
+            $workflow->getValidator()->validatePermissionHasOneWorkflow($orgId, $permissions);
+        }
 
-        $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
+        $org = $this->repo->org->findOrFailPublic($orgId);
 
         $workflow->org()->associate($org);
 
@@ -77,22 +84,33 @@ class Core extends Base\Core
 
     public function update(Entity $workflow, array $input)
     {
-        $validator = $workflow->getValidator();
-
         if ($this->workflowHasOpenActions($workflow) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED);
+                ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED,
+                null,
+                ['input' => $input, 'id' => $workflow->getId()]);
         }
 
+        /** @var Validator $validator */
+        $validator = $workflow->getValidator();
+
+        $orgId = $workflow->getOrgId();
+
+        //
         // Check if selected permissions have workflows enabled
         // for them in the current org
-        $validator->validatePermissionsForOrg(
-            $workflow->getOrgId(), $input[Entity::PERMISSIONS]);
+        //
+        $validator->validatePermissionsForOrg($orgId, $input[Entity::PERMISSIONS]);
 
+        //
         // Check if passed permissions already have a workflow assigned to them
-        $workflow->getValidator()->validatePermissionHasOneWorkflow(
-            $workflow->getOrgId(), $input[Entity::PERMISSIONS], $workflow->getId());
+        // create_payout can have multiple workflows though, skip the validation for that.
+        //
+        if ($this->requestHasCreatePayoutPermission($input[Entity::PERMISSIONS], $orgId) === false)
+        {
+            $validator->validatePermissionHasOneWorkflow($orgId, $input[Entity::PERMISSIONS], $workflow->getId());
+        }
 
         $workflow->edit($input);
 
@@ -113,7 +131,7 @@ class Core extends Base\Core
 
             // If levels are passed to the edit function, delete the old steps
             // and create the new ones. Dashboard finds it harder to update the
-            // existing entitites
+            // existing entities
             if (empty($input[Entity::LEVELS]) === false)
             {
                 $currentWorkflowSteps = $workflow->load(['steps', 'steps.checkers'])->steps;
@@ -197,5 +215,15 @@ class Core extends Base\Core
                         ->toArray();
 
         return (empty($actions) === true);
+    }
+
+    protected function requestHasCreatePayoutPermission(array $permissions, string $orgId): bool
+    {
+        $createPayoutPerm = $this->repo
+                                 ->permission
+                                 ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, $orgId)
+                                 ->first();
+
+        return (in_array($createPayoutPerm, $permissions, true) === true);
     }
 }

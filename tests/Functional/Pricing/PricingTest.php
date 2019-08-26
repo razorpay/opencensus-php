@@ -86,6 +86,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanRuleWithProcurer()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testDuplicateReceiverRule()
     {
         $content = $this->createPricingPlan(['receiver_type' => 'qr_code']);
@@ -599,7 +608,7 @@ class PricingTest extends TestCase
                 'plan_id' => '1ycviEdCgurrFY'
             ],
             [
-                'X-Cross-Org-Id' => "org_" . Org::SBIN_ORG
+                'X-Cross-Org-Id' => 'org_' . Org::SBIN_ORG
             ]
         );
 
@@ -1030,19 +1039,21 @@ class PricingTest extends TestCase
         return $plan;
     }
 
-    protected function addPricingPlanRule($id)
+    protected function addPricingPlanRule($id, $rule = [])
     {
-        $rule = array(
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
-                'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-        );
+        $defaultRule = [
+            'payment_method' => 'card',
+            'payment_method_type'  => 'credit',
+            'payment_network' => 'MAES',
+            'payment_issuer' => 'HDFC',
+            'percent_rate' => 1000,
+            'international' => 0,
+            'amount_range_active' => '0',
+            'amount_range_min' => null,
+            'amount_range_max' => null,
+        ];
+
+        $rule = array_merge($defaultRule, $rule);
 
         $request = array(
             'method' => 'POST',
@@ -1053,7 +1064,6 @@ class PricingTest extends TestCase
 
         return $content;
     }
-
 
     protected function createPricingPlan2(array $pricingPlanData = [], array $adminHeaders = null)
     {
@@ -1106,8 +1116,7 @@ class PricingTest extends TestCase
 
         $this->ba->adminAuth();
 
-
-        if($adminHeaders !=null)
+        if ($adminHeaders != null)
         {
             $this->ba->setAdminHeaders($adminHeaders);
         }
@@ -1249,5 +1258,343 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBankingPayoutWithoutAccountType()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBankingPayoutWithoutChannel()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBankingPayoutWithInvalidChannel()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForPrimaryPayoutWithAccountType()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testCreatePaymentCardTypePrepaidWithPrepaidPricing()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin' => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'prepaid'
+        ]);
+
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'prepaid',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'payment_network'     => 'VISA',
+            'payment_issuer'      => 'SBI',
+            'org_id'              => '10000000000000',
+            'type'                => 'pricing',
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('5000', $paymentObj['fee']);
+
+    }
+
+    public function testCreatePaymentCardTypePrepaidWithNoPrepaidPricing()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin' => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'prepaid'
+        ]);
+
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'percent_rate'        => 2000,
+            'fixed_rate'          => 0,
+            'payment_network'     => 'VISA',
+            'payment_issuer'      => 'SBI',
+            'org_id'              => '10000000000000',
+            'type'                => 'pricing',
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('10000', $paymentObj['fee']);
+
+    }
+
+    public function testCreatePaymentCardWithProcurer()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockCardVault();
+
+        $merchantPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'procurer'            => 'merchant',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 20,
+            'type'                => 'pricing',
+            'international'       => 0,
+            'amount_range_active' => '0',
+            'amount_range_min'    => null,
+            'amount_range_max'    => null,
+        ];
+
+        $razorpayPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'procurer'            => 'razorpay',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 10,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'international'       => 0,
+            'amount_range_active' => '0',
+            'amount_range_min'    => null,
+            'amount_range_max'    => null,
+        ];
+
+        $planId = $this->createPricingPlan($razorpayPricingPlan)['id'];
+
+        $this->addPricingPlanRule($planId, $merchantPricingPlan);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin' => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'credit'
+        ]);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $planId]);
+
+        $this->fixtures->terminal->createDisableDefaultHdfcTerminal();
+        $this->fixtures->terminal->createSharedHdfcTerminal(['id' => '1HDFCProRazorP', 'procurer' => 'razorpay']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('10', $paymentObj['fee']);
+
+        $this->fixtures->terminal->disableTerminal('1HDFCProRazorP');
+        $this->fixtures->terminal->createSharedHdfcTerminal(['id' => '1HDFCProMercht', 'procurer' => 'merchant']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('20', $paymentObj['fee']);
+    }
+
+    public function testCreatePaymentCardWithDefaultTerminalProcurer()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockCardVault();
+
+        $merchantPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'procurer'            => 'merchant',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 20,
+            'type'                => 'pricing',
+            'international'       => 0,
+            'amount_range_active' => '0',
+            'amount_range_min'    => null,
+            'amount_range_max'    => null,
+        ];
+
+        $razorpayPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'procurer'            => 'razorpay',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 10,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'international'       => 0,
+            'amount_range_active' => '0',
+            'amount_range_min'    => null,
+            'amount_range_max'    => null,
+        ];
+
+        $planId = $this->createPricingPlan($razorpayPricingPlan)['id'];
+
+        $this->addPricingPlanRule($planId, $merchantPricingPlan);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin' => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'credit'
+        ]);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $planId]);
+
+        $this->fixtures->terminal->createDisableDefaultHdfcTerminal();
+        $this->fixtures->terminal->createSharedHdfcTerminal(['id' => '1HDFCProRazorP']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('10', $paymentObj['fee']);
+    }
+
+    public function testCreatePaymentCardWithDefaultPricingAndMerchantPricing()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockCardVault();
+
+        $merchantPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 20,
+            'type'                => 'pricing',
+            'international'       => 0,
+            'amount_range_active' => '0',
+            'amount_range_min'    => null,
+            'amount_range_max'    => null,
+        ];
+
+        $razorpayPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'procurer'            => 'merchant',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 10,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'international'       => 0,
+            'amount_range_active' => '0',
+            'amount_range_min'    => null,
+            'amount_range_max'    => null,
+        ];
+
+        $planId = $this->createPricingPlan($razorpayPricingPlan)['id'];
+
+        $this->addPricingPlanRule($planId, $merchantPricingPlan);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin' => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'credit'
+        ]);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $planId]);
+
+        $this->fixtures->terminal->createDisableDefaultHdfcTerminal();
+        $this->fixtures->terminal->createSharedHdfcTerminal(['id' => '1HDFCProRazorP']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('20', $paymentObj['fee']);
     }
 }

@@ -12,7 +12,9 @@ use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
@@ -404,7 +406,7 @@ class Merchant extends Base
 
     public function disableCard($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['debit_card' => false, 'credit_card' => false]);
+        return $this->fixtures->edit('methods', $id, ['debit_card' => false, 'credit_card' => false, 'prepaid_card' => false]);
     }
 
     public function disableCreditCard($id = '10000000000000')
@@ -435,6 +437,16 @@ class Merchant extends Base
     public function disableNetbanking($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['netbanking' => false]);
+    }
+
+    public function enablePrepaidCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['prepaid_card' => true]);
+    }
+
+    public function disablePrepaidCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['prepaid_card' => false]);
     }
 
     public function enableEmi($id = '10000000000000')
@@ -492,14 +504,20 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['disabled_banks' => $disabledBanks]);
     }
 
-    public function createBalanceOfBankingType(int $balance = 0, string $merchantId = '10000000000000')
+    public function createBalanceOfBankingType(
+        int $balance = 0,
+        string $merchantId = '10000000000000',
+        string $accountType = AccountType::SHARED,
+        $channel = Channel::YESBANK)
     {
         return $this->fixtures->create(
             'balance',
             [
-                'type' => 'banking',
-                'merchant_id' => $merchantId,
-                'balance' => $balance
+                'type'             => 'banking',
+                'merchant_id'      => $merchantId,
+                'balance'          => $balance,
+                'account_type'     => $accountType,
+                'channel'          => $channel,
             ]);
     }
 
@@ -603,6 +621,11 @@ class Merchant extends Base
         return $this->edit($id, ['auto_refund_delay' => $delay]);
     }
 
+    public function editDefaultRefundSpeed($defaultRefundSpeed, $id = '10000000000000')
+    {
+        return $this->edit($id, ['default_refund_speed' => $defaultRefundSpeed]);
+    }
+
     public function editLateAuthAutoCapture($autoCapture, $id = '10000000000000')
     {
         return $this->edit($id, ['auto_capture_late_auth' => $autoCapture]);
@@ -621,6 +644,11 @@ class Merchant extends Base
     public function setHasKeyAccess(bool $hasKeyAccess, string $id = '10000000000000')
     {
         return $this->edit($id, ['has_key_access' => $hasKeyAccess]);
+    }
+
+    public function setRestricted(bool $restricted, string $id = '10000000000000')
+    {
+        return $this->edit($id, ['restricted' => $restricted]);
     }
 
     public function editPricingPlanId($planId, $id = '10000000000000')

@@ -35,6 +35,7 @@ class ErrorMap
     ];
 
     public static $pendingErrors = [
+        'RB',
         'BT',
         '01',
     ];

@@ -167,6 +167,32 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testFindWithEmiAsExpandsForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $emiPlan = $this->fixtures->create('emi_plan', ['bank' => 'HDFC', 'duration' => '6', 'rate' => '1399']);
+
+        $payment = $this->fixtures->create('payment', ['emi_plan_id' => $emiPlan->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testFindWithEmiPlanAsExpandsForProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $emiPlan = $this->fixtures->create('emi_plan', ['bank' => 'HDFC', 'duration' => '6', 'rate' => '1399']);
+
+        $payment = $this->fixtures->create('payment', ['emi_plan_id' => $emiPlan->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testFetchWithExpandsTransfer()
     {
         $this->ba->proxyAuth();

@@ -69,8 +69,8 @@ class Gateway extends Base\Gateway
                 [
                     'payment_id'            => $input['payment']['id'],
                     'gateway'               => $this->gateway,
-                    'decrypted checksum'    => $decryptedChecksum,
-                    'mandate response data' => $xmlData,
+                    'decrypted_checksum'    => $decryptedChecksum,
+                    'mandate_response_data' => $xmlData,
                 ]);
 
             $this->validateCallbackChecksum(
@@ -90,7 +90,7 @@ class Gateway extends Base\Gateway
                 [
                     'payment_id'            => $input['payment']['id'],
                     'gateway'               => $this->gateway,
-                    'mandate response data' => $xmlData,
+                    'mandate_response_data' => $xmlData,
                 ]);
 
             $attributes = $this->getErrorResponseGatewayAttributes($xmlData);
@@ -110,10 +110,12 @@ class Gateway extends Base\Gateway
 
         if ($recurringData[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::REJECTED)
         {
+            $errorCode = ErrorCodes\NetbankingErrorCodes::getInternalErrorCode($gatewayPayment->getErrorCode());
+
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_FAILED,
-                null,
-                null,
+                $errorCode,
+                $gatewayPayment->getErrorCode(),
+                $gatewayPayment->getErrorMessage(),
                 $recurringData
             );
         }

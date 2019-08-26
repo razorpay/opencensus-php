@@ -54,9 +54,9 @@ class Repository extends Base\Repository
     /**
      * @param string $bankAccountId
      * @param string $channel
-     * @return Entity
+     * @return mixed
      */
-    public function fetchActivatedBeneficiaryDetailsForChannel(string $bankAccountId, string $channel): Entity
+    public function fetchActivatedBeneficiaryDetailsForChannel(string $bankAccountId, string $channel)
     {
         return $this->newQuery()
                     ->where(Entity::BANK_ACCOUNT_ID, $bankAccountId)

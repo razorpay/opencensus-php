@@ -2,10 +2,15 @@
 
 namespace RZP\Models\Workflow\Action;
 
+use Illuminate\Database\Query\JoinClause;
+
+use RZP\Base\BuilderEx;
 use RZP\Models\State;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\Step;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Workflow\Constants;
 use RZP\Models\Workflow\Action\Checker;
 
@@ -133,6 +138,57 @@ class Repository extends Base\Repository
               ->whereIn('workflow_steps.role_id', $adminRoleIds);
     }
 
+    public function getPendingActionsOnRoleIds(string $userId, PublicEntity $entity, string $permissionId, array $roleIds = [])
+    {
+        $workflowStepTable  = $this->repo->workflow_step->getTableName();
+        $actionCheckerTable = $this->repo->action_checker->getTableName();
+
+        $idColumn     = $this->dbColumn(Entity::ID);
+        $stateColumn  = $this->dbColumn(Entity::STATE);
+        $workflowId   = $this->dbColumn(Entity::WORKFLOW_ID);
+        $currentLevel = $this->dbColumn(Entity::CURRENT_LEVEL);
+
+        $wfStepIdColumn         = $this->repo->workflow_step->dbColumn(Step\Entity::ID);
+        $wfStepLevelColumn      = $this->repo->workflow_step->dbColumn(Step\Entity::LEVEL);
+        $wfStepRoleIdColumn     = $this->repo->workflow_step->dbColumn(Step\Entity::ROLE_ID);
+        $wfStepWorkflowIdColumn = $this->repo->workflow_step->dbColumn(Step\Entity::WORKFLOW_ID);
+
+        /** @var BuilderEx $query */
+        $query = $this->newQuery()
+                        ->where(Entity::ENTITY_ID, $entity->getId())
+                        ->where(Entity::ENTITY_NAME, $entity->getEntity())
+                        ->where($stateColumn, State\Name::OPEN)
+                        ->where(Entity::PERMISSION_ID, $permissionId);
+
+        $query->join(
+            $workflowStepTable,
+            function(JoinClause $join) use ($wfStepWorkflowIdColumn, $wfStepLevelColumn, $currentLevel, $workflowId)
+                {
+                    $join->on($workflowId, '=', $wfStepWorkflowIdColumn)
+                         ->on($currentLevel, '=', $wfStepLevelColumn);
+                })
+              ->whereIn($wfStepRoleIdColumn, $roleIds);
+
+        $actionCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::ID);
+
+        $query->leftJoin(
+            $actionCheckerTable,
+            function (JoinClause $join) use ($idColumn, $wfStepIdColumn, $userId)
+            {
+                $actionCheckerStepId    = $this->repo->action_checker->dbColumn(Checker\Entity::STEP_ID);
+                $actionCheckerActionId  = $this->repo->action_checker->dbColumn(Checker\Entity::ACTION_ID);
+                $actionCheckerCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::CHECKER_ID);
+
+                $join->on($idColumn, '=', $actionCheckerActionId)
+                     ->on($wfStepIdColumn, '=', $actionCheckerStepId)
+                     ->where($actionCheckerCheckerId, '=', $userId);
+
+            })
+              ->whereNull($actionCheckerId);
+
+        return $query->get();
+    }
+
     public function addQueryParamActionsChecked($query, $params)
     {
         $adminId = $this->auth->getAdmin()->getId();
@@ -151,6 +207,30 @@ class Repository extends Base\Repository
         $query->select($attributes)
               ->join($checkerTable, $aId, '=', $cActionId)
               ->where($cAdminId, '=', $adminId);
+    }
+
+    public function joinQueryWorkflowStep(BuilderEx $query)
+    {
+        $workflowStepTable = $this->repo->workflow_step->getTableName();
+
+        if ($query->hasJoin($workflowStepTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $workflowStepTable,
+            function(JoinClause $join)
+            {
+                $workflowId           = $this->dbColumn(Entity::WORKFLOW_ID);
+                $currentLevel         = $this->dbColumn(Entity::CURRENT_LEVEL);
+
+                $wfStepLevelColumn      = $this->repo->workflow_step->dbColumn(Step\Entity::LEVEL);
+                $wfStepWorkflowIdColumn = $this->repo->workflow_step->dbColumn(Step\Entity::WORKFLOW_ID);
+
+                $join->on($workflowId, '=', $wfStepWorkflowIdColumn)
+                     ->on($currentLevel, '=', $wfStepLevelColumn);
+            });
     }
 
     /**
@@ -210,15 +290,61 @@ class Repository extends Base\Repository
                     $query->withTrashed();
                 }
             },
-            'stateChanger' => function ($query)
+            'stateChanger' => function ($query) use ($actionEntity)
             {
-                $query->withTrashed();
+                // Since only Admin uses soft deletes
+                if ($actionEntity->getMakerType() === MakerType::ADMIN)
+                {
+                    $query->withTrashed();
+                }
             },
             'stateChangerRole' => function ($query)
             {
                 $query->withTrashed();
             },
             'permission'
+        ];
+
+        return $action->with($relations)
+                      ->get();
+    }
+
+    public function getActionDetailsPublic(string $id, string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $action = $this->newQuery()
+                       ->orgId($orgId)
+                       ->where(Entity::ID, '=', $id);
+
+        $actionEntity = $action->first();
+
+        // If no entity is returned then return
+        // the query builder object which will be handled
+        // aptly in the service
+        if (empty($actionEntity) === true)
+        {
+            return $action;
+        }
+
+        $relations = [
+            'workflow',
+            'workflow.steps' => function ($query) use ($actionEntity)
+            {
+                $query->withTrashed()
+                      ->where(Entity::CREATED_AT, '<=', $actionEntity->getCreatedAt())
+                      ->where(function ($query) use ($actionEntity)
+                      {
+                          $query->where(Entity::DELETED_AT, '>=', $actionEntity->getCreatedAt())
+                                ->orWhereNull(Entity::DELETED_AT);
+                      });
+            },
+            'workflow.steps.role',
+            'workflow.steps.checkers' => function ($query) use ($actionEntity)
+            {
+                $query->where(Entity::ACTION_ID, $actionEntity->getId());
+            },
+            'workflow.steps.checkers.checker',
         ];
 
         return $action->with($relations)

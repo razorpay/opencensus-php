@@ -94,6 +94,12 @@ class Server extends Base\Mock\Server
         $payment = (new Netbanking\Base\Repository)->findByTraceIdAndAction(
             $id, Base\Action::AUTHORIZE);
 
+        if ($payment === null)
+        {
+            $payment = (new Netbanking\Base\Repository)->findByVerificationIdAndAction(
+                $id, Base\Action::AUTHORIZE);
+        }
+
         $content = array(
             'MessageCode'         => $input['MessageCode'],
             'DateTimeInGMT'       => $input['DateTimeInGMT'],

@@ -48,6 +48,7 @@ class Validator extends Base\Validator
         'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
+        'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
         'contact'                       => 'sometimes|nullable|contact_syntax',
         'signature'                     => 'sometimes|nullable|string',
         'notes'                         => 'sometimes|notes',
@@ -92,7 +93,6 @@ class Validator extends Base\Validator
 
     protected static $editAcquirerRules = [
         Entity::VPA                  => 'sometimes|string|max:100',
-        Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
         Entity::REFERENCE16          => 'sometimes|nullable|string',
@@ -374,6 +374,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $method);
+        }
+    }
+
+    protected function validateUpiProvider($attribute, $upiProvider)
+    {
+        if (UpiProvider::isValidOmnichannelProvider($upiProvider) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid upi provider given: ' . $upiProvider);
         }
     }
 
@@ -728,7 +737,7 @@ class Validator extends Base\Validator
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
-            (empty($input[Entity::CONTACT]) === true))
+            ((empty($input[Entity::CONTACT]) === true) and (empty($input[Entity::UPI_PROVIDER]) === true)))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The contact field is required.', Entity::CONTACT);

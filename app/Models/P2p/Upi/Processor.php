@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Upi;
 
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Transaction;
 use RZP\Models\P2p\Transaction\UpiTransaction;
 
@@ -54,6 +55,14 @@ class Processor extends Base\Processor
         {
             case Transaction\Entity::TRANSACTION:
                 $this->resolveContextFromTransaction($context[Base\Entity::ACTION]);
+                break;
+
+            case Transaction\Entity::CONCERNS:
+                $this->resolveContextFromConcerns($context[Base\Entity::ACTION]);
+                break;
+
+            default:
+                throw $this->logicException(ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT);
         }
     }
 
@@ -96,23 +105,66 @@ class Processor extends Base\Processor
         $this->context()->setDevice($device);
     }
 
-    protected function resolveDeviceFromVpa(array $input)
+    public function resolveContextFromConcerns(string $action)
     {
-        $vpa = (new Vpa\Core)->findByUsernameHandle($input);
+        $context =$this->input->get(Base\Entity::CONTEXT);
+
+        switch ($context[Base\Entity::ACTION])
+        {
+            case Transaction\Action::CONCERN_STATUS_SUCCESS:
+
+                $concern = $this->input->get(Transaction\Entity::CONCERNS)[0];
+
+                $this->context()->setHandleAndMode($concern[Transaction\Entity::HANDLE]);
+
+                $device = $this->resolveDeviceFromConcern($concern);
+        }
+
+        $this->context()->setMerchant($device->merchant);
+        $this->context()->setDevice($device);
+    }
+
+    public function resolveDeviceFromVpa(array $input)
+    {
+        $vpa = (new Vpa\Core)->findByUsernameHandle($input, true);
 
         return $vpa->device;
     }
 
-    protected function resolveDeviceFromUpi(array $input)
+    public function resolveDeviceFromUpi(array $input)
     {
         $upis = (new Transaction\Core)->findAllUpi($input);
 
         if ($upis->count() === 1)
         {
+            $transaction = $this->input->get(Transaction\Entity::TRANSACTION);
+            $upi         = $this->input->get(Transaction\Entity::UPI);
+
+            if (isset($transaction[Transaction\Entity::ID]) === false)
+            {
+                $transaction[Transaction\Entity::ID]        = $upis->first()->getTransactionId();
+                $upi[UpiTransaction\Entity::TRANSACTION_ID] = $upis->first()->getTransactionId();
+
+                $this->input->put(Transaction\Entity::TRANSACTION, $transaction);
+                $this->input->put(Transaction\Entity::UPI, $upi);
+            }
+
             return $upis->first()->device;
         }
 
         throw $this->logicException('Count of UPI should be exactly one', $input);
+    }
+
+    public function resolveDeviceFromConcern(array $input)
+    {
+        $concern = (new Transaction\Concern\Core)->find($input[Transaction\Concern\Entity::ID]);
+
+        if ($concern->getGatewayReferenceId() !== $input[Transaction\Concern\Entity::GATEWAY_REFERENCE_ID])
+        {
+            throw $this->logicException('Gateway reference id should be same');
+        }
+
+        return $concern->device;
     }
 
     public function fetchVpaFromTransaction(string $type)

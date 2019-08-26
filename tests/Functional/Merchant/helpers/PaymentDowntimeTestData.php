@@ -56,7 +56,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'upi',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -81,7 +81,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'upi',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -120,11 +120,103 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
                             'bank' => 'SVCB'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPaymentDowntimeForAllGatewayAndSingleGateway' => [
+        'request' => [
+            'url' => '/payments/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'netbanking',
+                        'end'        => null,
+                        'status'     => 'started',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'bank' => 'SVCB'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPaymentDowntimeForSingleGatewayAndAllGateway' => [
+        'request' => [
+            'url' => '/payments/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'netbanking',
+                        'end'        => null,
+                        'status'     => 'started',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'bank' => 'SVCB'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPaymentDowntimeForFewSupportingGateways' => [
+        'request' => [
+            'url' => '/payments/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [
+                ],
+            ],
+        ],
+    ],
+
+    'testPaymentDowntimeForAllSupportingGateways' => [
+        'request' => [
+            'url' => '/payments/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'netbanking',
+                        'status'     => 'started',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'bank' => 'SBIN'
                         ],
                     ],
                 ],
@@ -146,7 +238,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -172,7 +264,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -212,7 +304,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'card',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -238,7 +330,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'card',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -322,7 +414,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'wallet',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -332,5 +424,24 @@ return [
                 ],
             ],
         ],
+    ],
+
+    'testGetCheckoutPreferencesWithPaymentDowntime' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'payment_downtime' => [
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'method' => 'netbanking',
+                        ],
+                    ],
+                ],
+            ],
+        ]
     ],
 ];

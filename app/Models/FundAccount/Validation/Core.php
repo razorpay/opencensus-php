@@ -277,8 +277,6 @@ class Core extends Base\Core
             'validation_status' => $validation->getStatus(),
         ]);
 
-        assertTrue(Attempt\Status::INITIATED === $input['fta_status']);
-
         $processor = Processor\Factory::get($validation);
 
         $processor->updateWithDetailsBeforeFtaRecon($input);

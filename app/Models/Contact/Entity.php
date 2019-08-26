@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
+use RZP\Models\FundAccount;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
@@ -22,11 +24,13 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     // Attributes
-    const NAME         = 'name';
-    const CONTACT      = 'contact';
-    const EMAIL        = 'email';
-    const TYPE         = 'type';
-    const BATCH_ID     = 'batch_id';
+    const NAME          = 'name';
+    const CONTACT       = 'contact';
+    const EMAIL         = 'email';
+    const TYPE          = 'type';
+    const BATCH_ID      = 'batch_id';
+
+    const FUND_ACCOUNTS = 'fund_accounts';
 
     //
     // Reference ID is metadata set by the merchant, this does not
@@ -39,6 +43,7 @@ class Entity extends Base\PublicEntity
     // Additional input & output attributes
     const ACCOUNT_NUMBER  = 'account_number';
     const FUND_ACCOUNT_ID = 'fund_account_id';
+    const IDEMPOTENCY_KEY = 'idempotency_key';
 
     protected $generateIdOnCreate = true;
 
@@ -50,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_ID,
         self::ACTIVE,
         self::NOTES,
+        self::IDEMPOTENCY_KEY
     ];
 
     protected $public = [
@@ -63,16 +69,18 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID,
         self::ACTIVE,
         self::NOTES,
-        self::CREATED_AT,
+        self::FUND_ACCOUNTS,
+        self::CREATED_AT
     ];
 
     protected $defaults = [
-        self::CONTACT      => null,
-        self::EMAIL        => null,
-        self::TYPE         => null,
-        self::REFERENCE_ID => null,
-        self::NOTES        => [],
-        self::ACTIVE       => true,
+        self::CONTACT           => null,
+        self::EMAIL             => null,
+        self::TYPE              => null,
+        self::REFERENCE_ID      => null,
+        self::NOTES             => [],
+        self::ACTIVE            => true,
+        self::IDEMPOTENCY_KEY   => null
     ];
 
     protected $casts = [
@@ -89,6 +97,22 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::BATCH_ID,
+        self::FUND_ACCOUNTS,
+    ];
+
+    protected $publicAuth = [
+        self::ID,
+        self::NAME,
+        self::FUND_ACCOUNTS,
+    ];
+
+    /**
+     * Mainly used for `expands`
+     *
+     * @var array
+     */
+    protected $embeddedRelations = [
+        self::FUND_ACCOUNTS,
     ];
 
     protected static $sign = 'cont';
@@ -152,6 +176,33 @@ class Entity extends Base\PublicEntity
         $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
     }
 
+    public function setPublicFundAccountsAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        //
+        // For other auths (private, proxy,etc), fund_accounts of a contact can be retrieved
+        // by `expands`. Currently, `expands` doesn't work for `public` auth. Until that is
+        // fixed, this is a temporary solution / hack.
+        //
+        // Currently, we don't want to add `fund_accounts` in default expands. If and when we
+        // decide to add in default expands, we can remove the public setter for public auth.
+        //
+        if ($basicAuth->isPublicAuth() === true)
+        {
+            $attributes[self::FUND_ACCOUNTS] = $this->fundAccounts()
+                                                    ->where(FundAccount\Entity::ACTIVE, 1)
+                                                    ->getResults()
+                                                    ->toArrayPublicEmbedded();
+        }
+    }
+
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
+    }
+
     // --------- End Public Setters ----------
 
     // --------------- Helpers ---------------
@@ -173,6 +224,11 @@ class Entity extends Base\PublicEntity
     public function batch()
     {
         return $this->belongsTo(Batch\Entity::class);
+    }
+
+    public function fundAccounts()
+    {
+        return $this->hasMany(FundAccount\Entity::class, FundAccount\Entity::SOURCE_ID);
     }
 
     // ------------ End Relations ------------

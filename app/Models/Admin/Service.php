@@ -496,6 +496,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fetchHourlyReconciliationSummary(array $input)
+    {
+        $data = (new DailyReconStatusSummary)->generateReconSummaryByGateway($input);
+
+        return $data;
+    }
+
     public function createBatch(array $input)
     {
         $batchCore = new Batch\Core;

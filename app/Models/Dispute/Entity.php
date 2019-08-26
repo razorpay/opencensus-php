@@ -58,6 +58,8 @@ class Entity extends Base\PublicEntity
     // For expands
     const PAYMENT                 = 'payment';
 
+    const SKIP_DEDUCTION          = 'skip_deduction';
+
     protected static $sign = 'disp';
 
     protected $entity = 'dispute';
@@ -224,6 +226,11 @@ class Entity extends Base\PublicEntity
         $attributes[self::RESPOND_BY] = (int) $this->getExpiresOn();
     }
 
+    public function setComments(string $comments = null)
+    {
+        $this->setAttribute(self::COMMENTS, $comments);
+    }
+
     public function setPublicReasonDescriptionAttribute(array & $attributes)
     {
         $app = App::getFacadeRoot();
@@ -307,6 +314,11 @@ class Entity extends Base\PublicEntity
     public function isChildDispute(): bool
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
+    }
+
+    public function getComments()
+    {
+        return $this->getAttribute(self::COMMENTS);
     }
 
     // ----------------------- Getters Ends-------------------------------------

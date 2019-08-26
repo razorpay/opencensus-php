@@ -454,11 +454,25 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
+      - api-sqs-merchant-balance-update-test
+      - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
+      - api-sqs-scrooge-test
+      - api-sqs-scrooge-live
+      - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: func
     tag:
@@ -498,11 +512,25 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
+      - api-sqs-merchant-balance-update-test
+      - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
+      - api-sqs-scrooge-test
+      - api-sqs-scrooge-live
+      - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: beta
     tag:
@@ -591,11 +619,25 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
+      - api-sqs-merchant-balance-update-test
+      - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
+      - api-sqs-scrooge-test
+      - api-sqs-scrooge-live
+      - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: echo
     tag:
@@ -658,11 +700,25 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
+      - api-sqs-merchant-balance-update-test
+      - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
+      - api-sqs-scrooge-test
+      - api-sqs-scrooge-live
+      - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: delta
     tag:
@@ -725,11 +781,25 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
+      - api-sqs-merchant-balance-update-test
+      - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
+      - api-sqs-scrooge-test
+      - api-sqs-scrooge-live
+      - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: charlie
     tag:
@@ -769,11 +839,25 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-beneficiary-test
+        - api-sqs-beneficiary-live
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
         - api-sqs-cps-sync-test
         - api-sqs-cps-sync-live
+        - api-sqs-merchant-balance-update-test
+        - api-sqs-merchant-balance-update-live
+        - api-sqs-irctc-batch
+        - api-sqs-gateway-file
+        - api-sqs-beam-live
+        - api-sqs-beam-test
+        - api-sqs-scrooge-test
+        - api-sqs-scrooge-live
+        - api-sqs-refund
+        - api-sqs-payment-batch
+        - api-sqs-capture-test
+        - api-sqs-capture-live
       repo: razorpay/api
       namespace: api
       tag:
@@ -814,11 +898,25 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-beneficiary-test
+        - api-sqs-beneficiary-live
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
         - api-sqs-cps-sync-test
         - api-sqs-cps-sync-live
+        - api-sqs-merchant-balance-update-test
+        - api-sqs-merchant-balance-update-live
+        - api-sqs-irctc-batch
+        - api-sqs-gateway-file
+        - api-sqs-beam-live
+        - api-sqs-beam-test
+        - api-sqs-scrooge-test
+        - api-sqs-scrooge-live
+        - api-sqs-refund
+        - api-sqs-payment-batch
+        - api-sqs-capture-test
+        - api-sqs-capture-live
       repo: razorpay/api
       namespace: api
       tag:
@@ -938,11 +1036,25 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-beneficiary-test
+      - api-sqs-beneficiary-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
+      - api-sqs-merchant-balance-update-test
+      - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
+      - api-sqs-scrooge-test
+      - api-sqs-scrooge-live
+      - api-sqs-refund
+      - api-sqs-payment-batch
+      - api-sqs-capture-test
+      - api-sqs-capture-live
     repo: razorpay/api
     namespace: zeta
     tag:

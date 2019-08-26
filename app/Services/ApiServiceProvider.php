@@ -23,6 +23,7 @@ use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\External;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
@@ -128,6 +129,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RazorXClient($app);
         });
 
+        $this->app->singleton('hubspot', function($app)
+        {
+            return new HubspotClient($app);
+        });
+
         $this->app->singleton('card.cardVault', function($app)
         {
             $cardVaultMock = $app['config']->get('applications.card_vault.mock');
@@ -203,6 +209,10 @@ class ApiServiceProvider extends BaseServiceProvider
             return new DiagClient($app);
         });
 
+        $this->app->singleton('gateway_downtime_metric', function($app)
+        {
+            return new DowntimeMetric();
+        });
 
         $this->app->singleton('eventManager', function($app)
         {
@@ -261,6 +271,10 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMaxMind();
 
         $this->registerRaven();
+
+        $this->registerNonBlockingHttp();
+
+        $this->registerSmartRouting();
 
         $this->registerBatchService();
 
@@ -340,8 +354,11 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_create_account',
             'fts_register_account',
             'fts_fund_transfer',
+            'nonBlockingHttp',
+            'smartRouting',
             'diag',
             'mozart',
+            'hubspot',
         ];
     }
 
@@ -367,6 +384,31 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\Raven::class : Raven::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerNonBlockingHttp()
+    {
+        $this->app->bind('nonBlockingHttp', function($app)
+        {
+            $implementation = NonBlockingHttp::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerSmartRouting()
+    {
+        $this->app->bind('smartRouting', function($app)
+        {
+            $smartRoutingtMock = $app['config']->get('applications.smart_routing.mock');
+
+            if ($smartRoutingtMock === true)
+            {
+                return new Mock\SmartRouting($app);
+            }
+
+            return new SmartRouting($app);
         });
     }
 
@@ -525,6 +567,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'transaction'               => Transaction\Entity::class,
             'fund_account_validation'   => FundAccount\Validation\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
+            'external'                  => External\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
             'vpa'                       => Vpa\Entity::class,

@@ -28,11 +28,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::GATEWAY_DISPUTE_STATUS  => 'sometimes|string',
-        Entity::STATUS                  => 'sometimes|string|custom',
-        Entity::ACCEPTED_AMOUNT         => 'sometimes|integer|min:100',
-        Entity::EXPIRES_ON              => 'sometimes|epoch',
-        Entity::PARENT_ID               => 'sometimes|alpha_num|size:14',
+        Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
+        Entity::STATUS                 => 'sometimes|string|custom',
+        Entity::ACCEPTED_AMOUNT        => 'sometimes|integer|min:100',
+        Entity::EXPIRES_ON             => 'sometimes|epoch',
+        Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
+        Entity::SKIP_DEDUCTION         => 'sometimes|boolean',
+        Entity::COMMENTS               => 'sometimes|string|min:5|max:255|utf8',
     ];
 
     protected static $createValidators = [

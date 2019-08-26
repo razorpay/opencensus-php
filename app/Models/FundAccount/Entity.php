@@ -51,10 +51,13 @@ class Entity extends Base\PublicEntity
     // when account type is card
     const CARD          = 'card';
 
+    const IDEMPOTENCY_KEY = 'idempotency_key';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
         self::ACTIVE,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $public = [
@@ -72,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::ACTIVE,
         self::CREATED_AT,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $publicSetters = [
@@ -83,8 +87,17 @@ class Entity extends Base\PublicEntity
         self::DETAILS,
     ];
 
+    protected $publicAuth = [
+        self::ID,
+        self::ACCOUNT_TYPE,
+        self::CARD,
+        self::VPA,
+        self::BANK_ACCOUNT,
+    ];
+
     protected $defaults = [
         self::ACTIVE => true,
+        self::IDEMPOTENCY_KEY   => null,
     ];
 
     protected $casts = [
@@ -229,6 +242,11 @@ class Entity extends Base\PublicEntity
         $batchId = $this->getAttribute(self::BATCH_ID);
 
         $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
+    }
+
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
     }
 
     // ------------- End Setters -------------

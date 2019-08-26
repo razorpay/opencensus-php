@@ -11,13 +11,10 @@ use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
-use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class CombinedReconciliate extends Base\Foundation\SubReconciliate
 {
     const NA = 'not_applicable';
-
-    protected $messenger;
 
     protected $app;
     protected $repo;
@@ -34,8 +31,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
     public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
         parent::__construct($gateway);
-
-        $this->messenger = new Messenger();
 
         $this->messenger->batch = $batch;
     }
@@ -149,6 +144,19 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                         //
                         $this->successes[] = $row;
 
+                        $this->skippedRows[] = $row;
+
+                        //
+                        // Just keep it in the output file, so that
+                        // batch output file have all the txn rows.
+                        //
+                        $this->insertRowInOutputFile($row);
+
+                        $this->setRowReconStatusAndError(
+                            Base\InfoCode::RECON_UNPROCESSED_SUCCESS,
+                            Base\InfoCode::RECON_UNABLE_TO_IDENTIFY_RECON_TYPE
+                        );
+
                         continue;
                     }
 
@@ -158,11 +166,11 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
                         $this->messenger->raiseReconAlert(
                             [
-                                'trace_code' => TraceCode::RECON_PARSE_ERROR,
-                                'message' => $message,
-                                'row_details' => $row,
+                                'trace_code'    => TraceCode::RECON_PARSE_ERROR,
+                                'message'       => $message,
+                                'row_details'   => $row,
                                 'extra_details' => $extraDetails,
-                                'gateway' => $this->gateway
+                                'gateway'       => $this->gateway
                             ]);
 
                         //
@@ -214,6 +222,27 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
         }
         finally
         {
+            if (count($this->skippedRows) > 0)
+            {
+                //
+                // This trace helps in debugging/alerting when a wrong format
+                // file is uploaded and batch summary shows that all rows
+                // processed But still txns remain in unrecon state.
+                //
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'info_code'     => Base\InfoCode::RECON_SKIPPED_ROWS,
+                        'skipped_rows'  => count($this->skippedRows),
+                        'total_rows'    => count($fileContents),
+                        'gateway'       => $this->gateway,
+                        'batch_id'      => $batch->getId(),
+                    ]
+                );
+            }
+
+            $this->setReconOutputData($batchProcessor);
+
             if (count(static::$scroogeReconciliate) > 0)
             {
                 //

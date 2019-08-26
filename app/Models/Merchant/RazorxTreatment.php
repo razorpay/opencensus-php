@@ -10,6 +10,9 @@ final class RazorxTreatment
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 
+    // Decide if recon batch to use k8s batch upload job instead of queue worker processing
+    const K8S_RECON_BATCH_TREATMENT = 'k8s_recon_batch_upload';
+
     // Decide whom to send new design mailers
     const MJML_BASED_MAILERS = 'mjml_based_mailers';
 
@@ -25,11 +28,14 @@ final class RazorxTreatment
     // Razorx treatment constant for which batch validation needs to skip or not.
     const BATCH_SERVICE_SKIP_VALIDATION = 'batch_service_skip_validation';
 
-    // Razorx treatment constant whether batchService be called or not.
-    const BATCH_SERVICE_BE_CALLED = 'batch_service_be_called';
-
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 
     const CHANGE_QUEUE_BATCH_INVOICE = 'change_queue_batch_invoice';
+
+    // Decides if api's webhook event should be dispatched via stork.
+    const WEBHOOK_EVENT_VIA_STORK = 'webhook_event_via_stork';
+
+    const SECOND_FACTOR_AUTH_PROJECT_EXP   = 'second_factor_auth_project';
+    const SECOND_FACTOR_AUTH_LOGIN_EXP     = 'second_factor_auth_login';
 }

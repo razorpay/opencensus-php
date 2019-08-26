@@ -25,6 +25,7 @@
 namespace RZP\Gateway\Hdfc;
 
 use App;
+use RZP\Diag\EventCode;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -339,7 +340,7 @@ class Gateway extends Base\Gateway
 
     /**
      * Hdfc data storage repository instance
-     * @var Gateway\Hdfc\Repository
+     * @var Hdfc\Repository
      */
     protected $repo;
 
@@ -568,6 +569,10 @@ class Gateway extends Base\Gateway
             $this->validateCallbackGatewayFields($input, $network);
 
             $this->validateParesAndPersistEci($input);
+
+            $this->app['diag']->trackGatewayPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
+                $input);
 
             $this->id = $input['payment']['id'];
 

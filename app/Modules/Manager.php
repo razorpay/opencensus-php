@@ -24,4 +24,11 @@ class Manager extends SupportManager
 
         return $driverFactoryClass::get();
     }
+
+    protected function createSecondFactorAuthDriver()
+    {
+        $driverFactoryClass = __NAMESPACE__ . '\\' . 'SecondFactorAuth' . '\\' . 'Factory';
+
+        return $driverFactoryClass;
+    }
 }

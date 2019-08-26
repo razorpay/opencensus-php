@@ -28,6 +28,15 @@ class CreateMerchantEmailsTable extends Migration
 
             $table->string(Entity::EMAIL, 255);
 
+            $table->string(Entity::PHONE)
+                  ->nullable();
+
+            $table->string(Entity::POLICY)
+                  ->nullable();
+
+            $table->string(Entity::URL)
+                  ->nullable();
+
             $table->char(Entity::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->tinyInteger(Entity::VERIFIED)
@@ -36,9 +45,9 @@ class CreateMerchantEmailsTable extends Migration
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
-            $table->unique([Entity::MERCHANT_ID, Entity::TYPE, Entity::EMAIL]);
+            $table->unique([Entity::MERCHANT_ID, Entity::TYPE]);
 
-            $table->index(Entity::EMAIL);
+            $table->index(Entity::MERCHANT_ID);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
         });

@@ -15,6 +15,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Metric;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Feature\Constants as Features;
@@ -36,6 +37,11 @@ class Base extends BaseCore
      * @var Batch\Entity
      */
     protected $batch;
+
+    /**
+     * @var string
+     */
+    protected $batchId;
 
     /**
      * @var Customer\Entity
@@ -64,6 +70,11 @@ class Base extends BaseCore
     protected $balance;
 
     /**
+     * @var bool
+     */
+    protected $workflowActivated = false;
+
+    /**
      * @var BankAccount\Entity|Vpa\Entity|Card\Entity
      */
     protected $fundTransferDestination;
@@ -74,10 +85,18 @@ class Base extends BaseCore
 
         $this->setPayoutBalance($input);
 
+        /** @var Payout\Entity $payout */
         $payout = $this->repo->transaction(function () use ($input)
         {
-            // Create a payout entity
-            $payout = $this->createPayoutEntity($input);
+            $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
+            {
+                return $this->createPayoutEntity($input);
+            });
+
+            if ($this->workflowActivated === true)
+            {
+                return $payout;
+            }
 
             $payoutType = $this->getPayoutType();
 
@@ -101,16 +120,7 @@ class Base extends BaseCore
             return $payout;
         });
 
-        if ($payout->isStatusQueued() === true)
-        {
-            $this->app->events->fire('api.payout.queued', [$payout]);
-        }
-        else
-        {
-            // api.payout.created to be removed after merchants have migrated.
-            $this->app->events->fire('api.payout.created', [$payout]);
-            $this->app->events->fire('api.payout.initiated', [$payout]);
-        }
+        $this->fireEventForPayoutStatus($payout);
 
         return $payout;
     }
@@ -169,6 +179,66 @@ class Base extends BaseCore
         return $payout;
     }
 
+    public function processPendingPayout(Payout\Entity $payout): Payout\Entity
+    {
+        /** @var Payout\Entity $payout */
+        $payout = $this->repo->transaction(
+            function () use ($payout)
+            {
+                //
+                // TODO: Later, we will have to handle active / inactive stuff also here.
+                // Refer the function `fetchAndAssociatePayoutAccount`
+                //
+                $this->fundTransferDestination = $payout->fundAccount->account;
+
+                $payoutType = $this->getPayoutType();
+
+                //
+                // We're setting the queued flag to true since Queued Payouts is always enabled
+                // alongside Payout Workflows. Hence, we want to enabled the queued payout logic in
+                // DownstreamProcessor
+                //
+                $payout->setQueueFlag(true);
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->fundTransferDestination);
+
+                $downstreamProcessor->process();
+
+                //
+                // Downstream processor can set the status to queued in some cases (low balance)
+                // If set, we want the payout to remain in queued so it can be processed separately.
+                // Hence, payout status is set to created only if it's not already queued.
+                //
+                if ($payout->isStatusQueued() === false)
+                {
+                    $payout->setStatus(Payout\Status::CREATED);
+                }
+
+                $this->repo->saveOrFail($payout);
+
+                $this->trace->info(
+                    TraceCode::PENDING_PAYOUT_CREATED,
+                    [
+                        'payout_id'      => $payout->getId(),
+                        'transaction_id' => $payout->getTransactionId(),
+                        'payout_status'  => $payout->getStatus(),
+                    ]);
+
+                return $payout;
+            });
+
+        $this->fireEventForPayoutStatus($payout);
+
+        if ($payout->isStatusCreated() === true)
+        {
+            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        }
+
+        return $payout;
+    }
+
     /**
      * Set the merchant context, always required.
      *
@@ -183,11 +253,98 @@ class Base extends BaseCore
         return $this;
     }
 
-    public function setBatch(Batch\Entity $batch = null): self
+    public function setBatch($batchIdOrBatch): self
     {
-        $this->batch = $batch;
+        // TODO: remove batch entity handling once ramped to 100%
+        if (($batchIdOrBatch instanceof Batch\Entity) === true)
+        {
+            $this->batch = $batchIdOrBatch;
+        }
+        else if (is_string($batchIdOrBatch) === true)
+        {
+            $this->batchId = $batchIdOrBatch;
+        }
 
         return $this;
+    }
+
+    /**
+     * @param callable $createPayoutCallback The callable is expected to create and return a payout entity.
+     *
+     * @return Payout\Entity|null
+     * @throws Exception\BadRequestException
+     */
+    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
+    {
+        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        if ($areWorkflowsEnabled === false)
+        {
+            //
+            // Workflows feature was not enabled.
+            // The callback will create a payout entity, which we return back from here,
+            // which will progressed on to DownstreamProcessor
+            //
+            return $createPayoutCallback();
+        }
+
+        //
+        // Workflows module works on org and requires org details to be set in basicauth
+        // The current flows set and override org details at multiple places. We're setting
+        // this here explicitly to avoid bugs and missed flows. Not ideal, but not harmful either.
+        //
+        app('basicauth')->setOrgDetails($this->merchant->org);
+
+        //
+        // Call the create Payout callback that will return a base Payout entity,
+        // which we further work with.
+        //
+        /** @var Payout\Entity $payout */
+        $payout = $createPayoutCallback();
+
+        try
+        {
+            //
+            // Initiate the workflow process. If a workflow is triggered successfully,
+            // this function will thrown an EarlyWorkflowResponse exception.
+            //
+            $this->app['workflow']
+                 ->setEntityAndId($payout->getEntity(), $payout->getId())
+                 ->setPermission(Permission\Name::CREATE_PAYOUT)
+                 ->handle((new \stdClass), $payout);
+        }
+        catch (Exception\EarlyWorkflowResponse $ex)
+        {
+            $this->trace->info(TraceCode::PAYOUT_WORKFLOW_TRIGGERED, ['payout' => $payout->toArray()]);
+
+            if ($payout === null)
+            {
+                $this->trace->critical(TraceCode::PAYOUT_WORKFLOW_ACTION_EXCEPTION);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
+                    null,
+                    ['payout_id' => $payout->getId()]);
+            }
+
+            // Set payout to pending and move on
+            $payout->setStatus(Payout\Status::PENDING);
+
+            $this->repo->saveOrFail($payout);
+
+            $this->workflowActivated = true;
+        }
+        catch (\Throwable $t)
+        {
+            $this->trace->traceException($t);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
+                null,
+                ['payout_id' => optional($payout)->getId()]);
+        }
+
+        return $payout;
     }
 
     /**
@@ -271,7 +428,7 @@ class Base extends BaseCore
         //
         $this->associateUserIfApplicable($payout);
 
-        $payout->batch()->associate($this->batch);
+        $this->batchId ? ($payout->setBatchId($this->batchId)) : ($payout->batch()->associate($this->batch));
 
         //
         // Doing this after all the associations since
@@ -329,6 +486,24 @@ class Base extends BaseCore
         else
         {
             $this->balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
+        }
+    }
+
+    protected function fireEventForPayoutStatus(Payout\Entity $payout)
+    {
+        if ($payout->isStatusQueued() === true)
+        {
+            $this->app->events->fire('api.payout.queued', [$payout]);
+        }
+        else if ($payout->isStatusPending() === true)
+        {
+            // TODO:: Add pending webhook trigger here
+        }
+        else
+        {
+            // api.payout.created to be removed after merchants have migrated.
+            $this->app->events->fire('api.payout.created', [$payout]);
+            $this->app->events->fire('api.payout.initiated', [$payout]);
         }
     }
 

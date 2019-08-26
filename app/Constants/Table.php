@@ -168,6 +168,7 @@ class Table
     const PAYSECURE             = 'paysecure';
     const CARDLESS_EMI          = 'cardless_emi';
     const MOZART                = 'mozart';
+    const WORLDLINE             = 'worldline';
 
     // Sessions table
     const SESSION               = 'sessions';
@@ -198,6 +199,7 @@ class Table
     const SETTING               = 'settings';
 
     // Banking Accounts Tables
+    const EXTERNAL                        = 'external';
     const BANKING_ACCOUNT                 = 'banking_accounts';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
 

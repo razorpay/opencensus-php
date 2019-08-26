@@ -8,12 +8,10 @@ use RZP\Exception\GatewayErrorException;
 class DebitFileStatus
 {
     const ACCEPTED = 'accepted';
-    const PENDING  = 'pending';
     const REJECTED = 'rejected';
 
     const DEBIT_STATUS = [
         self::ACCEPTED,
-        self::PENDING,
         self::REJECTED
     ];
 

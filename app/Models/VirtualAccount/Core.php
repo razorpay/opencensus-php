@@ -116,7 +116,7 @@ class Core extends Base\Core
         return $this->create($input, $merchant, null, null, $merchant->bankingBalance);
     }
 
-    public function createOrFetchBankingVirtualAccount(Merchant $merchant, $balance): Entity
+    public function createOrFetchBankingVirtualAccount(Merchant $merchant, Balance\Entity $balance): Entity
     {
         $virtualAccount = $this->repo->virtual_account->getActiveVirtualAccountFromBalanceId($balance->getId());
 
@@ -156,6 +156,8 @@ class Core extends Base\Core
 
             return $virtualAccount;
         });
+
+        $this->repo->reload($virtualAccount);
 
         $this->eventVirtualAccountCreated($virtualAccount);
 
@@ -331,6 +333,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($virtualAccount);
 
+        $this->eventVirtualAccountClosed($virtualAccount);
+
         return $virtualAccount;
     }
 
@@ -390,5 +394,14 @@ class Core extends Base\Core
         }
 
         return $defaultMerchantId;
+    }
+
+    public function eventVirtualAccountClosed(Entity $virtualAccount)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $virtualAccount
+        ];
+
+        $this->app['events']->fire('api.virtual_account.closed', $eventPayload);
     }
 }

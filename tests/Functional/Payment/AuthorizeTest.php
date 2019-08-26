@@ -503,7 +503,7 @@ class AuthorizeTest extends TestCase
         // Should timeout
         $payment4 = $this->fixtures->create('payment:status_created',
             [
-                'created_at'        => time() - (60 * 60 * 24 * 11),
+                'created_at'        => time() - (PaymentModel\Entity::PAYMENT_TIMEOUT_FILE_BASED_DEBIT + 24 * 60 * 6),
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
                 'token_id'          => $tokenId,

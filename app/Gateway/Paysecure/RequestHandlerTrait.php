@@ -8,6 +8,7 @@ use SoapHeader;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Redis;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -19,15 +20,26 @@ use Razorpay\Trace\Logger as Trace;
 
 trait RequestHandlerTrait
 {
-
     //-------------- Check BIN2 request ------------------------------------
     protected function checkBin2()
     {
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+            $this->input);
+
         $requestArray = $this->getCheckBin2RequestArray();
 
         $command = Command::CHECKBIN2;
 
         $response = $this->sendRequest($command, $requestArray);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+            $this->input,
+            null,
+            [
+                'enrolled' => ($response[Fields::STATUS] === StatusCode::SUCCESS) ? 'Y' : 'F',
+            ]);
 
         return $response;
     }
@@ -274,6 +286,8 @@ trait RequestHandlerTrait
      */
     protected function sendRequest($command, $params)
     {
+        $this->wasGatewayHit = true;
+
         $this->traceGatewayPaymentRequest(
             [
                 'command'    => $command,
@@ -360,7 +374,14 @@ trait RequestHandlerTrait
             }
             else
             {
-                throw $sf;
+                $ex = new Exception\GatewayRequestException($sf->getMessage(), $sf);
+
+                if ($command !== Command::AUTHORIZE)
+                {
+                    $ex->markSafeRetryTrue();
+                }
+
+                throw $ex;
             }
         }
         finally
@@ -374,7 +395,7 @@ trait RequestHandlerTrait
                 /**
                  * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
                  */
-                $metricsDriver->histogram('gateway_request_total_time_ms',
+                $metricsDriver->histogram(\RZP\Gateway\Base\Metric::GATEWAY_REQUEST_TIME,
                     ($completed - $startTime) * 1000,
                     [
                         'gateway' => 'paysecure',

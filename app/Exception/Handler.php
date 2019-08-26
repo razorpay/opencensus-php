@@ -10,25 +10,25 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Contracts\Container\Container;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
-use RZP\Exception\EarlyWorkflowResponse;
 
 class Handler extends ExceptionHandler
 {
     protected $throwExceptionInTesting = true;
 
     /**
-     * A list of the exception types that should not be reported.
+     * A list of the exception types that should not be reported to Sentry
      *
      * @var array
      */
     protected $dontReport = [
-        HttpException::class,
-        ValidationException::class,
+        RecoverableException::class,
+        MethodNotAllowedHttpException::class,
+        ThrottleException::class,
+        EarlyWorkflowResponse::class,
+        \Razorpay\OAuth\Exception\BadRequestException::class,
     ];
 
     public function __construct(Container $container)
@@ -44,6 +44,12 @@ class Handler extends ExceptionHandler
         $this->route = $this->app['api.route'];
 
         $this->ba = $this->app['basicauth'];
+
+        if (($this->app['config']['sentry.mock'] === false) and
+            ($this->app->bound('sentry') === true))
+        {
+            $this->sentry = $this->app['sentry'];
+        }
     }
 
     /**
@@ -56,7 +62,12 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $e)
     {
-        // Nothing to do here.
+        if ($this->shouldntReport($e) === true)
+        {
+            return;
+        }
+
+        $this->logExceptionInSentry($e);
     }
 
     /**
@@ -185,6 +196,24 @@ class Handler extends ExceptionHandler
         $this->ifTestingThenRethrowException($exception);
 
         return $this->generateServerErrorResponse($this->isDebug(), $exception);
+    }
+
+    protected function logExceptionInSentry($exception)
+    {
+        // Sentry is mocked
+        if (isset($this->sentry) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $this->sentry->captureException($exception);
+        }
+        catch (\Throwable $e)
+        {
+            $this->traceException($e);
+        }
     }
 
     protected function throttleExceptionHandler(ThrottleException $exception)

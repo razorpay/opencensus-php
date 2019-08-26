@@ -76,6 +76,16 @@ class CreateBankingAccountStatementTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            // Constraints
+
+            $table->unique([
+                Entity::BANK_TRANSACTION_ID,
+                Entity::BANK_SERIAL_NUMBER,
+                Entity::ACCOUNT_NUMBER,
+                Entity::TRANSACTION_DATE,
+                Entity::CHANNEL
+            ], 'banking_account_statement_bank_txn_id_srl_no_unique');
+
             // Indexes
 
             $table->index(Entity::ACCOUNT_NUMBER);
@@ -93,6 +103,18 @@ class CreateBankingAccountStatementTable extends Migration
             $table->index(Entity::TRANSACTION_ID);
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
+
+            // Foreign keys
+
+            $table->foreign(Entity::MERCHANT_ID)
+                ->references(Merchant\Entity::ID)
+                ->on(Table::MERCHANT)
+                ->on_delete('restrict');
+
+            $table->foreign(Entity::TRANSACTION_ID)
+                ->references(Transaction\Entity::ID)
+                ->on(Table::TRANSACTION)
+                ->on_delete('restrict');
         });
     }
 
@@ -103,6 +125,13 @@ class CreateBankingAccountStatementTable extends Migration
      */
     public function down()
     {
+        Schema::table(Table::BANKING_ACCOUNT_STATEMENT, function($table)
+        {
+            $table->dropForeign(Table::BANKING_ACCOUNT_STATEMENT . '_' . Entity::MERCHANT_ID . '_foreign');
+
+            $table->dropForeign(Table::BANKING_ACCOUNT_STATEMENT . '_' . Entity::TRANSACTION_ID . '_foreign');
+        });
+
         Schema::dropIfExists(Table::BANKING_ACCOUNT_STATEMENT);
     }
 }
