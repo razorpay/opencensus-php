@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { handleProductQuickGuide } from 'merchant/modules/onboarding';
 
-@connect(() => ({}), { handleProductQuickGuide })
+@connect(null, { handleProductQuickGuide })
 export default class TakeATourButton extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
