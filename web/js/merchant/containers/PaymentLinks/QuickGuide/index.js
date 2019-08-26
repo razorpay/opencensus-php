@@ -80,10 +80,6 @@ export const getPaymentLinksQuickGuideIsClosed = props => {
     return isClosed;
   }
 
-  if (props.invoices.loading) {
-    return false;
-  }
-
   props.invoices.invoices.forEach(page => {
     if (page.status === 'paid' || page.status === 'partially_paid') {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, true);
