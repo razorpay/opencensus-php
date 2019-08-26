@@ -608,6 +608,16 @@ return [
             'content' => [
                 'entity' => 'collection',
                 'count'  => 1,
+                'items'  => [
+                    [
+                        'status'        => 'created',
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@razorpay.com'
+                            ]
+                        ]
+                    ],
+                ],
             ],
         ],
     ],
@@ -661,7 +671,16 @@ return [
                 'entity' => 'collection',
                 'count'  => 0,
                 'admin'  => true,
-                'items'  => [],
+                'items'  => [
+                    [
+                        'account_type'  => 'current',
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@razorpay.com'
+                            ]
+                        ]
+                    ],
+                ],
             ],
         ],
     ]
