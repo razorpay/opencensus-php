@@ -1162,7 +1162,7 @@ final class Route
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
-        'banking_account_statement_pdf'       =>     ['get',      'banking_account_statement/pdf',                             'BankingAccountStatementController@pdf'],
+        'banking_account_statement_pdf'       =>     ['get',      'banking_account_statement/generate_statement',              'BankingAccountStatementController@generateStatement'                    ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],

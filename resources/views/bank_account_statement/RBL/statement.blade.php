@@ -18,6 +18,7 @@
     .w-75 {
         width: 75%;
     }
+
     .w-100 {
         width: 100%;
     }
@@ -31,7 +32,9 @@
     }
     .box-header{
         padding: 20px;
-        background-color: darkgrey;
+        background-color: #616161;
+        font-weight: bold;
+        color: white;
     }
     main{
         padding: 20px;
@@ -62,7 +65,8 @@
     }
 
     .transactions-table{
-        border-spacing: unset;
+        border-collapse: collapse;
+        border-spacing: 0;
     }
 
     .details-table td:nth-child(1) {
@@ -145,13 +149,13 @@
                     <span>Email Id: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['customer_mobile']}}</strong>
+                    <strong>{{$account_owner_info['customer_email']}}</strong>
                 </td>
                 <td>
                     <span>Sanction Limit: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['sanction_limit']}} </strong>
+                    <strong>{{$account_owner_info['currency']}} {{$account_owner_info['sanction_limit']}} </strong>
                 </td>
             </tr>
             <tr>
@@ -165,7 +169,7 @@
                     <span>Drawing Power: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['drawing_power']}} </strong>
+                    <strong>{{$account_owner_info['currency']}} {{$account_owner_info['drawing_power']}} </strong>
                 </td>
             </tr>
             <tr>
@@ -277,22 +281,22 @@
                     {{ $transaction['transaction_date'] }}
                 </td>
                 <td>
-                    NEFT/000077972351/Invalid CPIN
+                    {{ $transaction['transaction_details'] }}
                 </td>
                 <td>
-                    1234567RYYTY
+                    {{ $transaction['cheque_id'] }}
                 </td>
                 <td>
-                    21/05/2019
+                    {{ $transaction['value_date'] }}
                 </td>
                 <td>
-                    1.00
+                    {{ $transaction['withdrawal_amount'] }}
                 </td>
                 <td>
-                    0
+                    {{ $transaction['deposit_amount'] }}
                 </td>
                 <td>
-                    1276532.11
+                    {{ $transaction['balance'] }}
                 </td>
             </tr>
             @endforeach
@@ -301,7 +305,7 @@
     </div>
 
     <div class="box">
-        <div class="box-header">
+        <div class="box-header summary">
             Statement Summary
         </div>
         <table class="w-100 details-table">
@@ -358,7 +362,7 @@
     </div>
 
     <div class="box">
-        <div class="box-header">
+        <div class="box-header summary">
             Important Information
         </div>
         <div class="p-20">

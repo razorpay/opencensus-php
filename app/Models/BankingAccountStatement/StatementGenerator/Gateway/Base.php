@@ -19,20 +19,6 @@ abstract class Base extends BaseCore
         $this->channel = $channel;
     }
 
-//    public function generate($format, $data)
-//    {
-//        switch ($format) {
-//            case "PDF":
-//                return $this->pdf($data);
-//                break;
-//            case "CSV":
-//                return $this->csv($data);
-//                break;
-//            case "XLSX":
-//                return $this->xlsx($data);
-//                break;
-//        }
-//    }
 
     abstract function pdf();
 

@@ -3,10 +3,12 @@
 
 namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 
+use Carbon\Carbon;
 use mikehaertl\wkhtmlto\Pdf;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Base;
-use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\Constants as RBLBankConstants;
+use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\RBLBankInformation as RBLBankConstants;
 use RZP\Models\BankingAccountStatement\Type as StatementType;
 use RZP\Models\FileStore;
 use View;
@@ -27,6 +29,9 @@ class RBLStatementGenerator extends Base
         $merchant = $this->repo->merchant->find($merchantId);
         $merchantDetails = $merchant->merchantDetail;
 
+        $account_opening_date = Carbon::createFromTimestamp($bankingAccount->account_activation_date, Timezone::IST)
+            ->format('d/m/Y');
+
         $accountOwnerInfo = [
             'account_name' => $merchant->name,
             'customer_address' => $merchantDetails->business_operation_address,
@@ -38,7 +43,7 @@ class RBLStatementGenerator extends Base
             'customer_email' => $merchantDetails->contact_email,
             'customer_cif_id' => $bankingAccount->bank_internal_reference_number,
             'currency' => 'INR',
-            'account_opening_date' => $bankingAccount->account_activation_date,
+            'account_opening_date' => $account_opening_date,
             'account_type' => $bankingAccount->account_type,
             'account_status' => $bankingAccount->status,
             'account_number' => $bankingAccount->account_number,
@@ -96,13 +101,14 @@ class RBLStatementGenerator extends Base
         }
 
         return [
-            'opening_balance' => $opening_balance,
-            'closing_balance' => $closing_balance,
-            'effective_balance' => $effective_balance,
-            'lien_amount' => $lien_amount,
-            'debit_count' => $debit_count,
+            'opening_balance' => (float) $opening_balance / 100,
+            'closing_balance' => (float) $closing_balance / 100,
+            'effective_balance' => (float) $effective_balance / 100,
+            'lien_amount' => (float) $lien_amount / 100,
+            'debit_count' => (float) $debit_count,
             'credit_count' => $credit_count,
-            'statement_generated_date' => '23/05/2019 2:14 PM'
+            'statement_generated_date' => Carbon::createFromTimestamp(time(), Timezone::IST)->format('d/m/Y H:i')
+
         ];
     }
 
@@ -111,16 +117,27 @@ class RBLStatementGenerator extends Base
         $transactions = [];
         foreach ($bank_account_statements as $transaction)
         {
-            array_push(
-                $transactions,
-                [
-                    'transaction_date' => $transaction->transaction_date,
-                    'transaction_details' => $transaction->description,
-                    'cheque_id' => $transaction->bank_instrument_id,
-                    'value_date' => $transaction->transaction_date,
-                    'balance' => $transaction->balance,
-                ]
-            );
+            $line_item = [
+                'transaction_date' => Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
+                    ->format('d/m/Y'),
+                'transaction_details' => $transaction->description,
+                'cheque_id' => $transaction->bank_instrument_id,
+                'value_date' => Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
+                    ->format('d/m/Y'),
+                'balance' => (float) $transaction->balance / 100,
+            ];
+
+            if ($transaction->type == 'credit')
+            {
+                $line_item['withdrawal_amount'] = (float) $transaction->amount / 100;
+                $line_item['deposit_amount'] = null;
+            } else if ($transaction->type == 'debit')
+            {
+                $line_item['deposit_amount'] = (float) $transaction->amount / 100;
+                $line_item['withdrawal_amount'] = null;
+            }
+
+            array_push($transactions, $line_item);
         }
         return $transactions;
     }
@@ -129,10 +146,9 @@ class RBLStatementGenerator extends Base
     function pdf()
     {
         $input = $this->accountStatementData();
-
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $input);
+//        return $htmlAccountStatement;
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
-//        Storage::disk('local')->put('lol.pdf', $pdfAccountStatement);
         $fileStoreHandle = (new FileStore\Creator())
             ->name('TestPDFAccountStatement')
             ->content($pdfAccountStatement)
@@ -142,11 +158,7 @@ class RBLStatementGenerator extends Base
             ->type(FileStore\Type::RBL_NETBANKING_CLAIM)
             ->save()
             ->getFileInstance();
-//        return $pdfAccountStatement;
-        $x = 1;
         return $fileStoreHandle;
-        // upload to S3
-        // send back the file handle
 
     }
 
@@ -155,7 +167,9 @@ class RBLStatementGenerator extends Base
         $options = [
             'print-media-type',
             'footer-font-size' => '9',
-            'footer-center' => 'Page [page] of [topage]',
+            'footer-right' => 'Page [page] of [topage]',
+            'footer-left' => 'Date and Time: ' . Carbon::createFromTimestamp(time(), Timezone::IST)
+                    ->format('d/m/Y h:i A'),
             'dpi' => 290,
             'zoom' => 1,
             'ignoreWarnings' => false,

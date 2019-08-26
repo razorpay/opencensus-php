@@ -18,12 +18,20 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function pdf()
+    /***
+     * Expected Input:
+     * 'format' : pdf/xlsx/csv
+     * 'send_email'  : true/false
+     * 'account_number' : '<account_number>',
+     * 'channel'        : '<channel>',
+     * from_date        : '2019-01-01'
+     * to_date          : '2019-04-01'
+     * @return mixed
+     */
+    public function generateStatement()
     {
-        // Expected account_number, format, channel
         $input = Request::all();
         $response = $this->service()->generateAccountStatement($input);
-        return ApiResponse::json($response->getFullFilePath());
-
+        return ApiResponse::json($response);
     }
 }

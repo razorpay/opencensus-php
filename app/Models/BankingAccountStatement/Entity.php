@@ -41,6 +41,9 @@ class Entity extends Base\PublicEntity
 
     // Used to find out which format the banking account statement is to be generated
     const FORMAT                = 'format';
+    const SEND_EMAIL            = 'send_email';
+    const FROM_DATE             = 'from_date';
+    const TO_DATE               = 'to_date';
 
     // Relation names/attributes
     const SOURCE                = 'source';

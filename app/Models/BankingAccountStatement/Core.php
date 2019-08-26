@@ -2,10 +2,11 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use InvalidArgumentException;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\BankingAccount;
-use RZP\Models\BankingAccountStatement\StatementGenerator\Factory as StatementGeneratorFactory;
+use RZP\Models\BankingAccountStatement\StatementGenerator\Formats;
 use RZP\Models\Base;
 use RZP\Models\External;
 use RZP\Models\Merchant;
@@ -66,17 +67,61 @@ class Core extends Base\Core
      * @param channel channel name
      * @param account_number
      * @param format
+     * @return mixed
      *
      * Then this would call create all the data that is required to be created
      * And then call the StatementGenerator
      * Which will give you back the file handle, based on the data and the channel
      * Which this guy will return
      */
-    public function generateBankAccountStatementPdf($accountNumber, $channel)
+    public function generateBankAccountStatement($input)
     {
-        $statementGenerator = StatementGeneratorFactory::getStatementGenerator($accountNumber, $channel);
+        $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+        $channel = array_pull($input, Entity::CHANNEL);
+        $fromDate = array_pull($input, Entity::FROM_DATE);
+        $toDate = array_pull($input, Entity::TO_DATE);
+        $format = array_pull($input, Entity::FORMAT);
 
-        return $statementGenerator->pdf();
+        $sendEmail = array_pull($input, Entity::SEND_EMAIL);
+        $sendEmail = filter_var($sendEmail, FILTER_VALIDATE_BOOLEAN);
+
+        if (!Formats::isFormatSupported($format))
+        {
+            throw new InvalidArgumentException('Account Statement with ' . $format . ' is not supported');
+        }
+
+        $statementGenerator = $this->getStatementGenerator($accountNumber, $channel);
+        $statement = null;
+        switch ($format)
+        {
+            case Formats::PDF:
+                $statement = $statementGenerator->pdf();
+                break;
+            case Formats::CSV:
+                $statement = $statementGenerator->csv();
+                break;
+            case Formats::XLSX:
+                $statement = $statementGenerator->xlsx();
+                break;
+        }
+
+        if ($sendEmail)
+        {
+            // code for sending this file via an email
+            return ['message' => 'Email Sent'];
+        } else
+        {
+            return ['message' => 'File Generated', 'file_path' => $statement->getFullFilePath()];
+        }
+
+    }
+
+    protected function getStatementGenerator($accountNUmber, $channel)
+    {
+        $statementGeneratorNamespace = __NAMESPACE__ . '\\' . 'StatementGenerator\\Gateway\\' . studly_case($channel);
+        $statementGenerator = $statementGeneratorNamespace . '\\' . studly_case($channel) . 'StatementGenerator';
+        return new $statementGenerator($accountNUmber, $channel);
+
     }
 
     protected function getProcessor(string $channel, string $accountNumber): Processor\Base
@@ -88,14 +133,6 @@ class Core extends Base\Core
         return new $processor($channel, $accountNumber);
     }
 
-    protected function getStatementGeneratorProcessor(string $channel, string $accountNumber): Processor\Base
-    {
-        $processor = __NAMESPACE__ . '\\' . 'Processor';
-
-        $processor .= '\\' . studly_case($channel) . '\\' . 'Gateway';
-
-        return new $processor($channel, $accountNumber);
-    }
 
     protected function processAccountStatement(
         array $bankTransactions,

@@ -16,4 +16,5 @@ class Factory
                 return new RBLStatementGenerator($accountNumber, $channel);
         }
     }
+
 }

@@ -17,11 +17,8 @@ class Service extends Base\Service
 
     public function generateAccountStatement(array $input)
     {
-        $account_number = array_pull($input, Entity::ACCOUNT_NUMBER);
-        $channel = array_pull($input, Entity::CHANNEL);
-        $format = array_pull($input, Entity::FORMAT);
-        $file_handle = $this->core()->generateBankAccountStatementPdf($account_number, $channel, $format);
-        return $file_handle;
+        $response = $this->core()->generateBankAccountStatement($input);
+        return $response;
 
     }
 
