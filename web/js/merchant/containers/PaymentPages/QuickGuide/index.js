@@ -87,11 +87,14 @@ export const getPaymentPageQuickGuideIsClosed = props => {
     return isClosed;
   }
 
-  if (props.invoices.loading) {
-    return;
-  }
+  props.paymentPages.forEach(page => {
+    if (page.times_paid) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, true);
 
-  setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, true);
+      return false;
+    }
+  });
+
   return true;
 };
 
