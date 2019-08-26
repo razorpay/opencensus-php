@@ -136,7 +136,9 @@ class Processor extends Base\Core
 
         if ($shouldProcess === true)
         {
-            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel);
+            // TODO: remove channel option form URI and from here post 100% rollout
+            //  Make sure these 2 are not running parallel till then
+            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel ?? '');
 
             $data = $this->mutex->acquireAndRelease(
                 $mutexResource,
