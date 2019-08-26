@@ -103,7 +103,10 @@ class Repository extends Base\Repository
         if ((in_array($channel, Channel::getFTASupportedPayoutChannels(), true) === true) and
             (empty($unsupportedModeList) === false))
         {
-            $query->whereNotIn(Entity::MODE, $unsupportedModeList)->orWhereNull(Entity::MODE);
+            $query->where(function($query) use ($unsupportedModeList)
+            {
+                $query->whereNotIn(Entity::MODE, $unsupportedModeList)->orWhereNull(Entity::MODE);
+            });
         }
 
         if ($type !== null)
