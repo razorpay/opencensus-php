@@ -80,7 +80,17 @@ export const getPaymentLinksQuickGuideIsClosed = props => {
     return isClosed;
   }
 
-  setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, true);
+  if (props.invoices.loading) {
+    return false;
+  }
+
+  props.invoices.invoices.forEach(page => {
+    if (page.status === 'paid' || page.status === 'partially_paid') {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, true);
+      return false;
+    }
+  });
+
   return true;
 };
 
