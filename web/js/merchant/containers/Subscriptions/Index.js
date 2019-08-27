@@ -48,6 +48,7 @@ import QuickGuide, { getSubscriptionQuickGuideIsClosed } from './QuickGuide';
 export default class SubscriptionsController extends React.Component {
   componentDidMount() {
     this.initSubscriptions();
+    this.fetchDataForOnboarding();
   }
 
   componentWillUnmount() {
@@ -64,7 +65,10 @@ export default class SubscriptionsController extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.subscriptions.loading !== this.props.subscriptions.loading) {
+    if (
+      nextProps.subscriptions.loading !== this.props.subscriptions.loading ||
+      nextProps.subscriptions.loading != this.props.subscriptions.loading
+    ) {
       this.initSubscriptions(nextProps);
     }
   }

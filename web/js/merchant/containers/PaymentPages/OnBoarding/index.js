@@ -51,7 +51,10 @@ export default class PaymentPagesOnBoarding extends React.Component {
   };
 
   closeOnboarding = () => {
-    if (this.props.user.isPaymentPagesEnabled) {
+    if (
+      this.props.user.isPaymentPagesEnabled &&
+      !this.props.paymentPageProductOnBoarding.isTour
+    ) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, false);
     }
 
