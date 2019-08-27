@@ -718,6 +718,8 @@ class Selector extends Base\Core
         $merchantData['international']     = $merchant->isInternational();
         $merchantData['has_key_access']    = $merchant->getHasKeyAccess();
         $merchantData['features']          = $merchant->getEnabledFeatures();
+        $merchantData['fee_bearer']        = $merchant->getFeeBearer();
+        $merchantData['org_id']            = $merchant->getOrgId();
 
         $subMerchantIds = [];
 
