@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Base;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\RBLBankInformation as RBLBankConstants;
+use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\BankingAccountStatement\Type as StatementType;
 use RZP\Models\FileStore;
 use View;
@@ -25,48 +26,53 @@ class RBLStatementGenerator extends Base
         $merchantId = $bankingAccount->merchant_id;
         $all_bank_account_transactions = $this->repo
             ->banking_account_statement
-            ->findByAccountNumberWithInPeriod($this->accountNumber);
+            ->findByAccountNumberWithInPeriod($this->accountNumber, $this->fromDate, $this->toDate);
         $merchant = $this->repo->merchant->find($merchantId);
         $merchantDetails = $merchant->merchantDetail;
 
         $account_opening_date = Carbon::createFromTimestamp($bankingAccount->account_activation_date, Timezone::IST)
             ->format('d/m/Y');
 
+        $fromDateReadable = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)
+            ->format('d/m/Y');
+        $toDateReadable = Carbon::createFromTimestamp($this->toDate, Timezone::IST)
+            ->format('d/m/Y');
+        $statementPeriod = $fromDateReadable . ' - ' . $toDateReadable;
         $accountOwnerInfo = [
-            'account_name' => $merchant->name,
-            'customer_address' => $merchantDetails->business_operation_address,
-            'customer_address_l2' => $merchantDetails->business_registered_address_l2,
-            'customer_city' => $merchantDetails->business_operation_city,
-            'customer_state' => $merchantDetails->business_operation_state,
-            'customer_address_pin' => $merchantDetails->business_operation_pin,
-            'customer_mobile' => $merchantDetails->contact_mobile,
-            'customer_email' => $merchantDetails->contact_email,
-            'customer_cif_id' => $bankingAccount->bank_internal_reference_number,
-            'currency' => 'INR',
-            'account_opening_date' => $account_opening_date,
-            'account_type' => $bankingAccount->account_type,
-            'account_status' => $bankingAccount->status,
-            'account_number' => $bankingAccount->account_number,
-            'statement_period' => 'To be done',
-            'home_branch_name' => RBLBankConstants::BRANCH_NAME,
-            'home_branch_address' => RBLBankConstants::BRANCH_ADDRESS,
-            'ifsc_code' => RBLBankConstants::IFSC_CODE,
-            'sanction_limit' => RBLBankConstants::SANCTION_LIMIT,
-            'drawing_power' => RBLBankConstants::DRAWING_POWER,
-            'branch_timings' => RBLBankConstants::BRANCH_TIMINGS,
-            'call_center' => RBLBankConstants::CALL_CENTER_NUMBER,
-            'branch_phone_number' => RBLBankConstants::BRANCH_PHONE_NUMBER,
-            'branch_city' => RBLBankConstants::BRANCH_CITY,
-            'branch_state' => RBLBankConstants::BRANCH_STATE,
-            'branch_pincode' => RBLBankConstants::BRANCH_PINCODE
+            AccountOwnerInfo::ACCOUNT_NAME => $merchant->name,
+            AccountOwnerInfo::CUSTOMER_ADDRESS => $merchantDetails->business_operation_address,
+            AccountOwnerInfo::CUSTOMER_ADDRESS_L2 => $merchantDetails->business_registered_address_l2,
+            AccountOwnerInfo::CUSTOMER_CITY => $merchantDetails->business_operation_city,
+            AccountOwnerInfo::CUSTOMER_STATE => $merchantDetails->business_operation_state,
+            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $merchantDetails->business_operation_pin,
+            AccountOwnerInfo::CUSTOMER_MOBILE => $merchantDetails->contact_mobile,
+            AccountOwnerInfo::CUSTOMER_EMAIL => $merchantDetails->contact_email,
+            AccountOwnerInfo::CUSTOMER_CIF_ID => $bankingAccount->bank_internal_reference_number,
+            AccountOwnerInfo::CURRENCY => AccountOwnerInfo::INR,
+            AccountOwnerInfo::ACCOUNT_OPENING_DATE => $account_opening_date,
+            AccountOwnerInfo::ACCOUNT_TYPE => $bankingAccount->account_type,
+            AccountOwnerInfo::ACCOUNT_STATUS => $bankingAccount->status,
+            AccountOwnerInfo::ACCOUNT_NUMBER => $bankingAccount->account_number,
+            AccountOwnerInfo::STATEMENT_PERIOD => $statementPeriod,
+            AccountOwnerInfo::HOME_BRANCH_NAME => RBLBankConstants::BRANCH_NAME,
+            AccountOwnerInfo::HOME_BRANCH_ADDRESS => RBLBankConstants::BRANCH_ADDRESS,
+            AccountOwnerInfo::IFSC_CODE => RBLBankConstants::IFSC_CODE,
+            AccountOwnerInfo::SANCTION_LIMIT => RBLBankConstants::SANCTION_LIMIT,
+            AccountOwnerInfo::DRAWING_POWER => RBLBankConstants::DRAWING_POWER,
+            AccountOwnerInfo::BRANCH_TIMINGS => RBLBankConstants::BRANCH_TIMINGS,
+            AccountOwnerInfo::CALL_CENTER => RBLBankConstants::CALL_CENTER_NUMBER,
+            AccountOwnerInfo::BRANCH_PHONE_NUMBER => RBLBankConstants::BRANCH_PHONE_NUMBER,
+            AccountOwnerInfo::BRANCH_CITY => RBLBankConstants::BRANCH_CITY,
+            AccountOwnerInfo::BRANCH_STATE => RBLBankConstants::BRANCH_STATE,
+            AccountOwnerInfo::BRANCH_PINCODE => RBLBankConstants::BRANCH_PINCODE
         ];
 
         $transactions = $this->serializeTransactions($all_bank_account_transactions);
         $statementSummary = $this->getAccountStatementSummary($all_bank_account_transactions);
         return [
-            'account_owner_info' => $accountOwnerInfo,
-            'transactions' => $transactions,
-            'statement_summary' => $statementSummary
+            Response::ACCOUNT_OWNER_INFO => $accountOwnerInfo,
+            Response::TRANSACTIONS => $transactions,
+            Response::STATEMENT_SUMMARY => $statementSummary
         ];
     }
 
@@ -79,7 +85,7 @@ class RBLStatementGenerator extends Base
         $debit_count = 0;
         $credit_count = 0;
 
-        if (!empty($bank_account_statements))
+        if ($bank_account_statements->count())
         {
 
             $opening_balance = $bank_account_statements[0]->balance;
@@ -101,13 +107,14 @@ class RBLStatementGenerator extends Base
         }
 
         return [
-            'opening_balance' => (float) $opening_balance / 100,
-            'closing_balance' => (float) $closing_balance / 100,
-            'effective_balance' => (float) $effective_balance / 100,
-            'lien_amount' => (float) $lien_amount / 100,
-            'debit_count' => (float) $debit_count,
-            'credit_count' => $credit_count,
-            'statement_generated_date' => Carbon::createFromTimestamp(time(), Timezone::IST)->format('d/m/Y H:i')
+            StatementSummary::OPENING_BALANCE => (float) $opening_balance / 100,
+            StatementSummary::CLOSING_BALANCE => (float) $closing_balance / 100,
+            StatementSummary::EFFECTIVE_BALANCE => (float) $effective_balance / 100,
+            StatementSummary::LIEN_AMOUNT => (float) $lien_amount / 100,
+            StatementSummary::DEBIT_COUNT => (float) $debit_count,
+            StatementSummary::CREDIT_COUNT => $credit_count,
+            StatementSummary::STATEMENT_GENERATED_DATE => Carbon::createFromTimestamp(time(), Timezone::IST)
+                ->format(StatementSummary::STATEMENT_GENERATED_DATE_FORMAT)
 
         ];
     }
@@ -118,23 +125,25 @@ class RBLStatementGenerator extends Base
         foreach ($bank_account_statements as $transaction)
         {
             $line_item = [
-                'transaction_date' => Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
-                    ->format('d/m/Y'),
-                'transaction_details' => $transaction->description,
-                'cheque_id' => $transaction->bank_instrument_id,
-                'value_date' => Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
-                    ->format('d/m/Y'),
-                'balance' => (float) $transaction->balance / 100,
+                TransactionLineItem::TRANSACTION_DATE =>
+                    Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
+                    ->format(TransactionLineItem::ITEM_DATE_FORMAT),
+                TransactionLineItem::TRANSACTION_DETAILS => $transaction->description,
+                TransactionLineItem::CHEQUE_ID => $transaction->bank_instrument_id,
+                TransactionLineItem::VALUE_DATE =>
+                                    Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
+                                    ->format(TransactionLineItem::ITEM_DATE_FORMAT),
+                TransactionLineItem::BALANCE => (float) $transaction->balance / 100
             ];
 
-            if ($transaction->type == 'credit')
+            if ($transaction->type == Type::CREDIT)
             {
-                $line_item['withdrawal_amount'] = (float) $transaction->amount / 100;
-                $line_item['deposit_amount'] = null;
-            } else if ($transaction->type == 'debit')
+                $line_item[TransactionLineItem::WITHDRAWAL_AMOUNT] = (float) $transaction->amount / 100;
+                $line_item[TransactionLineItem::DEPOSIT_AMOUNT] = null;
+            } else if ($transaction->type == Type::DEBIT)
             {
-                $line_item['deposit_amount'] = (float) $transaction->amount / 100;
-                $line_item['withdrawal_amount'] = null;
+                $line_item[TransactionLineItem::DEPOSIT_AMOUNT] = (float) $transaction->amount / 100;
+                $line_item[TransactionLineItem::WITHDRAWAL_AMOUNT] = null;
             }
 
             array_push($transactions, $line_item);
@@ -147,10 +156,10 @@ class RBLStatementGenerator extends Base
     {
         $input = $this->accountStatementData();
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $input);
-//        return $htmlAccountStatement;
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
+        $fileName = $this->accountNumber;
         $fileStoreHandle = (new FileStore\Creator())
-            ->name('TestPDFAccountStatement')
+            ->name($fileName)
             ->content($pdfAccountStatement)
             ->extension(FileStore\Format::PDF)
             ->mime('application/pdf')
@@ -159,14 +168,13 @@ class RBLStatementGenerator extends Base
             ->save()
             ->getFileInstance();
         return $fileStoreHandle;
-
     }
 
     protected function getPdfContent(string $html): string
     {
         $options = [
             'print-media-type',
-            'footer-font-size' => '9',
+            'footer-font-size' => '6',
             'footer-right' => 'Page [page] of [topage]',
             'footer-left' => 'Date and Time: ' . Carbon::createFromTimestamp(time(), Timezone::IST)
                     ->format('d/m/Y h:i A'),

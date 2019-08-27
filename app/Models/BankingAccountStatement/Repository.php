@@ -30,8 +30,10 @@ class Repository extends Base\Repository
 
     public function findByAccountNumberWithInPeriod($accountNumber, $fromDate = null, $toDate = null)
     {
-        # TODO: Fix this query, to incorporate fromDate and toDate
-        return $this->newQuery()
-            ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)->get();
+        $res = $this->newQuery()
+            ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+            ->whereBetween(Entity::TRANSACTION_DATE, [$fromDate, $toDate])
+            ->get();
+        return $res;
     }
 }

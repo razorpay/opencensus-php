@@ -90,7 +90,7 @@ class Core extends Base\Core
             throw new InvalidArgumentException('Account Statement with ' . $format . ' is not supported');
         }
 
-        $statementGenerator = $this->getStatementGenerator($accountNumber, $channel);
+        $statementGenerator = $this->getStatementGenerator($accountNumber, $channel, $fromDate, $toDate);
         $statement = null;
         switch ($format)
         {
@@ -111,16 +111,17 @@ class Core extends Base\Core
             return ['message' => 'Email Sent'];
         } else
         {
+//            return $statement;
             return ['message' => 'File Generated', 'file_path' => $statement->getFullFilePath()];
         }
 
     }
 
-    protected function getStatementGenerator($accountNUmber, $channel)
+    protected function getStatementGenerator($accountNUmber, $channel, $fromDate, $toDate)
     {
         $statementGeneratorNamespace = __NAMESPACE__ . '\\' . 'StatementGenerator\\Gateway\\' . studly_case($channel);
         $statementGenerator = $statementGeneratorNamespace . '\\' . studly_case($channel) . 'StatementGenerator';
-        return new $statementGenerator($accountNUmber, $channel);
+        return new $statementGenerator($accountNUmber, $channel, $fromDate, $toDate);
 
     }
 
