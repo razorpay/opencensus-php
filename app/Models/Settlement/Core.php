@@ -162,6 +162,8 @@ class Core extends Base\Core
 
         $entity->setStatus($status);
 
+        $entity->setUtr($ftaData[Attempt\Constants::UTR]);
+
         $entity->setFailureReason($attemptFailureReason);
 
         $this->repo->saveOrFail($entity);
