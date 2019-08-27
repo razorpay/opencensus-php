@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional\FundAccount;
 
 use \RZP\Constants;
-use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
