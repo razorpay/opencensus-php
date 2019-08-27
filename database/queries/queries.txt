@@ -5265,3 +5265,6 @@ ALTER TABLE merchants
 
 ALTER TABLE merchants
 	ADD COLUMN partnership_url TEXT DEFAULT NULL AFTER dashboard_whitelisted_ips_test;
+
+ALTER TABLE banking_accounts
+    ADD COLUMN internal_comment VARCHAR(255) DEFAULT NULL AFTER account_type;
