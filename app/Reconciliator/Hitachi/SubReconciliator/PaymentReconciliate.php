@@ -498,9 +498,4 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             Hitachi\Entity::MERCHANT_REFERENCE  => $this->payment->getId(),
         ];
     }
-
-    public function getBlackListedColumnHeadersForOutputFile()
-    {
-        return ['merchant_name'];
-    }
 }
