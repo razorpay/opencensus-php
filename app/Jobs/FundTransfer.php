@@ -31,8 +31,6 @@ class FundTransfer extends Job
      */
     protected $queueConfigKey = 'instant_fund_transfer';
 
-    protected $redis = null;
-
     /**
      * @var string
      */
@@ -41,10 +39,6 @@ class FundTransfer extends Job
     public function __construct(string $mode, string $ftaId)
     {
         parent::__construct($mode);
-
-        $app = App::getFacadeRoot();
-
-        $this->redis = $app['redis']->connection();
 
         $this->ftaId = $ftaId;
     }
