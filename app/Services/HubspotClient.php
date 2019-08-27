@@ -24,6 +24,12 @@ class HubspotClient
         'update_contact_properties_by_email' => 'contacts/v1/contact/createOrUpdate/email/',
     ];
 
+    protected $prefix_events = [
+        'signup' => 'signup_',
+        'l1'     => 'l1_',
+        'l2'     => 'l2_'
+    ];
+
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -51,13 +57,21 @@ class HubspotClient
     {
         $payloadData = $input;
 
-        $this->addMerchantContext($payloadData, $merchant);
-
         $this->mapSignupValues($payloadData);
+
+        $this->appendPrefixToArray($payloadData, $this->prefix_events['signup']);
+
+        $this->addMerchantContext($payloadData, $merchant);
 
         $this->dispatchRequestJob($payloadData);
     }
 
+    /**
+     * Calls appropriate Mapping function of
+     * Business_Type, Transaction_Volume and Department
+     *
+     * @param array $input
+     */
     protected function mapSignupValues(array & $input)
     {
         $mappingKeys = [
@@ -88,14 +102,8 @@ class HubspotClient
 
         $this->mapSignupValues($payloadData);
 
-        // prefixing keys of the input array with level1
-        $payloadData = array_combine(array_map(function($key) {
-
-            $prefixKey = 'level1_';
-
-            return $prefixKey . $key;
-
-        }, array_keys($payloadData)), $payloadData);
+        // prefixing keys of the input array with l1_
+        $this->appendPrefixToArray($payloadData, $this->prefix_events['l1']);
 
         $this->addMerchantContext($payloadData, $merchant);
 
@@ -112,17 +120,26 @@ class HubspotClient
 
         $this->mapSignupValues($payloadData);
 
-        $payloadData = array_combine(array_map(function($key) {
-
-            $prefixKey = 'level2_';
-
-            return $prefixKey . $key;
-
-        }, array_keys($payloadData)), $payloadData);
+        $this->appendPrefixToArray($payloadData, $this->prefix_events['l2']);
 
         $this->addMerchantContext($payloadData, $merchant);
 
         $this->dispatchRequestJob($payloadData);
+    }
+
+    protected function appendPrefixToArray(array & $payloadData, $prefix)
+    {
+        $prefix_array = array_fill(0, count($payloadData), $prefix);
+
+        $prefix_key_array = array_map(function($key, $prefix) {
+
+            $prefixKey = $prefix;
+
+            return $prefixKey . $key;
+
+        }, array_keys($payloadData), $prefix_array);
+
+        $payloadData = array_combine($prefix_key_array, $payloadData);
     }
 
     protected function addMerchantContext(array & $payloadData, Merchant\Entity $merchant)
