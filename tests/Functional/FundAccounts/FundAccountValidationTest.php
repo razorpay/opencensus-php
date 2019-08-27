@@ -2,10 +2,13 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
+use \RZP\Constants;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
@@ -19,6 +22,7 @@ class FundAccountValidationTest extends TestCase
     use MocksDnsTrait;
     use FundAccountTrait;
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
     use AttemptReconcileTrait;
     use FundAccountValidationTrait;
 
@@ -409,9 +413,7 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWithAccountNumberAndBankAccount()
     {
-        $this->enableBusinessBankingForMerchant();
-
-        $this->createMerchantBankingBalance();
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         $this->createFAVBankingPricingPlan();
 
@@ -424,68 +426,29 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
 
         // get database entities
-        $balance = $this->getEntityById('balance', 'xbalance000000', true);
+        $balance = $this->getLastEntity('balance', true);
         $fav = $this->getLastEntity('fund_account_validation', true);
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
         $txn = $this->getLastEntity('transaction', true);
 
         // validate balance entry in database
-        $this->assertEquals(9997, $balance['balance']);
+        $this->assertEquals(9999997, $balance['balance']);
 
 
         // validate fund account validation last entry
-        $this->assertEquals($fav['id'], $fta['source']);
-        $this->assertEquals($fav['balance_id'], 'xbalance000000');
+        $this->assertEquals($balance['id'], $fav['balance_id']);
         $this->assertEquals('10000000000000', $fav['merchant_id']);
-        $this->assertEquals('fund_account.validation', $fav['entity']);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav['entity']);
 
         // validate transaction table last entry
-        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals(Constants\Entity::FUND_ACCOUNT_VALIDATION, $txn['type']);
         $this->assertEquals($fav['id'], $txn['entity_id']);
         $this->assertEquals(100, $txn['amount']);
         $this->assertEquals(3, $txn['fee']);
-        $this->assertEquals('xbalance000000', $txn['balance_id']);
+        $this->assertEquals($balance['id'], $txn['balance_id']);
 
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
-
-        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
-    }
-
-    protected function createFAVBankingPricingPlan()
-    {
-        $pricingPlan = [
-            'plan_name'           => 'FAV Plan',
-            'percent_rate'        => 290,
-            'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay',
-            'type'                => 'pricing',
-            'plan_id'             => '1hDYlICobzOCYt',
-            'product'             => 'banking',
-            "feature"             => 'fund_account_validation',
-            'payment_method'      => 'bank_account',
-            'account_type'        => 'shared'
-        ];
-
-        $this->fixtures->create('pricing', $pricingPlan);
-    }
-
-    protected function createMerchantBankingBalance()
-    {
-        $balance = [
-            'id' => 'xbalance000000',
-            'balance' => 10000,
-            'merchant_id' => '10000000000000',
-            'type' => 'banking',
-            'currency' => 'INR',
-            'account_number' => '2224440041626905',
-        ];
-
-        $this->fixtures->create('balance', $balance);
-    }
-
-    protected function enableBusinessBankingForMerchant()
-    {
-        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['business_banking' => '1']);
+        $this->assertEquals($fav['id'], $fta['source']);
     }
 }
