@@ -64,6 +64,10 @@ class CreateExternalTable extends Migration
 
             $table->index(Entity::UPDATED_AT);
 
+            $table->index(Entity::CHANNEL);
+
+            $table->index(Entity::TRANSACTION_ID);
+
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
             // Foreign Key relations
