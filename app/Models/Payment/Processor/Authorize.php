@@ -5146,6 +5146,8 @@ trait Authorize
                 'number');
         }
 
+        $this->checkAndValidateIfSubTypeDisabled($merchantMethods, $card);
+
         $this->checkAndValidateIfCardNetworkDisabled($merchantMethods, $card);
     }
 
@@ -5261,6 +5263,27 @@ trait Authorize
                 [
                     'network' => $network,
                     'iin'     => $card->getIin()
+                ]);
+        }
+    }
+
+    protected function checkAndValidateIfSubTypeDisabled($methods, $card)
+    {
+        $subtype = $card->getSubType();
+
+        if (empty($subtype) === true)
+        {
+            return;
+        }
+
+        if ($methods->isSubTypeEnabled($subtype) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED,
+                null,
+                [
+                    'sub_type' => $subtype,
+                    'iin'      => $card->getIin()
                 ]);
         }
     }
