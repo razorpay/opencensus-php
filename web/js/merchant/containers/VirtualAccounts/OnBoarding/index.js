@@ -67,7 +67,9 @@ export default class InvoicesOnBoarding extends React.Component {
   };
 
   closeOnboarding = () => {
-    setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, false);
+    if (!this.props.VAProductOnBoarding.isTour) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.VA, false);
+    }
 
     this.props.closeOnboarding();
   };
