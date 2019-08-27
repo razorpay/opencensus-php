@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Card;
 
+use RZP\Exception;
+
 class Type
 {
     const CREDIT      = 'credit';
@@ -35,7 +37,7 @@ class Type
     {
         if (self::isValidType($type) === false)
         {
-            throw new \InvalidArgumentException('Not a valid type: ' . $type);
+            throw new Exception\BadRequestValidationFailureException('Not a valid type: ' . $type);
         }
     }
 

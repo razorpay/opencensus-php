@@ -33,6 +33,8 @@ class Entity extends Base\PublicEntity
     // Payment properties
     const METHOD           = 'method';
     const METHOD_TYPE      = 'method_type';
+    const METHOD_SUBTYPE   = 'method_subtype';
+    const CARD_CATEGORY    = 'card_category';
     const NETWORK          = 'network';
     const ISSUER           = 'issuer';
     const MIN_AMOUNT       = 'min_amount';
@@ -117,6 +119,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::PROCURER,
         self::METHOD_TYPE,
+        self::METHOD_SUBTYPE,
+        self::CARD_CATEGORY,
         self::NETWORK,
         self::ISSUER,
         self::MAX_AMOUNT,
@@ -259,6 +263,8 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
+        self::METHOD_SUBTYPE,
+        self::CARD_CATEGORY,
         self::NETWORK,
         self::ISSUER,
         self::MIN_AMOUNT,
@@ -294,6 +300,8 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
+        self::METHOD_SUBTYPE,
+        self::CARD_CATEGORY,
         self::NETWORK,
         self::ISSUER,
         self::MIN_AMOUNT,
@@ -335,6 +343,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT => 0,
         self::STEP       => self::AUTHORIZATION,
         self::CAPABILITY => null,
+        self::CARD_CATEGORY => null,
     ];
 
     public function merchant()
@@ -399,6 +408,16 @@ class Entity extends Base\PublicEntity
     public function getMethodType()
     {
         return $this->getAttribute(self::METHOD_TYPE);
+    }
+
+    public function getMethodSubType()
+    {
+        return $this->getAttribute(self::METHOD_SUBTYPE);
+    }
+
+    public function getCardCategory()
+    {
+        return $this->getAttribute(self::CARD_CATEGORY);
     }
 
     public function getNetwork()

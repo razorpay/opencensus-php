@@ -80,6 +80,11 @@ class SubMerchant extends Base
      */
     protected $useMerchantEmailAsDummy = true;
 
+    /**
+     *  This variables contain all the config passed to the batch
+     */
+    protected $settings = [];
+
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
@@ -103,22 +108,26 @@ class SubMerchant extends Base
 
     protected function performPreProcessingActions()
     {
-        $this->autoSubmit = (empty($this->params[ME::AUTO_SUBMIT]) === false);
+        $config = $this->settingsAccessor->all()->toArray();
 
-        $this->autofillDetails = (empty($this->params[ME::AUTOFILL_DETAILS]) === false);
+        $this->settings = array_merge($this->params, $config);
 
-        $this->autoActivate = (empty($this->params[ME::AUTO_ACTIVATE]) === false);
+        $this->autoSubmit = (empty($this->settings[ME::AUTO_SUBMIT]) === false);
 
-        $this->instantlyActivate = (empty($this->params[ME::INSTANTLY_ACTIVATE]) === false);
+        $this->autofillDetails = (empty($this->settings[ME::AUTOFILL_DETAILS]) === false);
+
+        $this->autoActivate = (empty($this->settings[ME::AUTO_ACTIVATE]) === false);
+
+        $this->instantlyActivate = (empty($this->settings[ME::INSTANTLY_ACTIVATE]) === false);
 
         //
         // This is true by default and needs to be overridden only when an input
         // is set to False explicitly, it should not be overridden by null. Hence
         // the following explicitly check for isset.
         //
-        if (isset($this->params[ME::USE_EMAIL_AS_DUMMY]) === true)
+        if (isset($this->settings[ME::USE_EMAIL_AS_DUMMY]) === true)
         {
-            $this->useMerchantEmailAsDummy = (bool) $this->params[ME::USE_EMAIL_AS_DUMMY];
+            $this->useMerchantEmailAsDummy = (bool) $this->settings[ME::USE_EMAIL_AS_DUMMY];
         }
 
         //
@@ -126,14 +135,14 @@ class SubMerchant extends Base
         // once dashboard changes are done for supporting these two fields we can remove default values of these fields
         //
 
-        $this->params[ME::AUTO_ENABLE_INTERNATIONAL] = (bool) ($this->params[ME::AUTO_ENABLE_INTERNATIONAL] ?? false);
-        $this->params[ME::SKIP_BA_REGISTRATION]      = (bool) ($this->params[ME::SKIP_BA_REGISTRATION] ?? true);
+        $this->settings[ME::AUTO_ENABLE_INTERNATIONAL] = (bool) ($this->settings[ME::AUTO_ENABLE_INTERNATIONAL] ?? false);
+        $this->settings[ME::SKIP_BA_REGISTRATION]      = (bool) ($this->settings[ME::SKIP_BA_REGISTRATION] ?? true);
 
         // This parameter is for data back filling. when we don't want to create new MID but want to update existing MIDS
         // mids will be fetched using email provided in file 
-        $this->params[ME::CREATE_SUBMERCHANT] = (bool) ($this->params[ME::CREATE_SUBMERCHANT] ?? true);
+        $this->settings[ME::CREATE_SUBMERCHANT] = (bool) ($this->settings[ME::CREATE_SUBMERCHANT] ?? true);
 
-        $this->partner = $this->repo->merchant->findOrFailPublic($this->params[ME::PARTNER_ID]);
+        $this->partner = $this->repo->merchant->findOrFailPublic($this->settings[ME::PARTNER_ID]);
 
         $this->updateAuthDetails($this->partner);
 
@@ -146,13 +155,14 @@ class SubMerchant extends Base
      * updates merchant information into auth,
      * this is being used to set org id and merchant info
      *
-     * @param Merchant $merchant
+     * @param ME    $merchant
+     * @param array $config
      */
     private function updateAuthDetails(ME $merchant)
     {
         $this->app['basicauth']->setMerchant($merchant);
 
-        $this->app['basicauth']->setBatchContext($this->getBatchContext());
+        $this->app['basicauth']->setBatchContext($this->getBatchContext($this->settings));
     }
 
     /**
@@ -167,7 +177,7 @@ class SubMerchant extends Base
 
         $subMerchant = null;
 
-        if (($this->params[ME::CREATE_SUBMERCHANT]) === true)
+        if (($this->settings[ME::CREATE_SUBMERCHANT]) === true)
         {
             $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner);
 

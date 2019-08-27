@@ -999,6 +999,11 @@ trait PaymentTrait
             $input['is_fta'] = true;
         }
 
+        if (isset($data['fta_data']) === true)
+        {
+            $input['fta_data'] = $data['fta_data'];
+        }
+
         $this->ba->scroogeAuth();
 
         $request = array(
