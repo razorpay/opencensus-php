@@ -1182,6 +1182,15 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+
+        // Excel Store Proxy APIs
+        'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
+        'excel_store_create_page'                 => ['post',     'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
+        'excel_store_update_page'                 => ['put',      'excel-store/pages/{id}',                                    'ExcelStoreController@dummy'                                  ],
+        'excel_store_get_records'                 => ['get',      'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_update_records'              => ['post',     'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_delete_records'              => ['delete',   'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_page_by_url'                 => ['get',      'excel-store/pages/{url}',                                   'ExcelStoreController@dummy'                                  ],
         'banking_account_yesb_bulk_create'        => ['post',     'banking_accounts/bulk/create/yesbank',                      'BankingAccountController@bulkCreateBankingAccountsForYesbank' ],
 
         // P2P Admin and Internal Routes
@@ -2249,6 +2258,16 @@ final class Route
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
+
+        // Excel Store routes
+        'excel_store_list_pages',
+        'excel_store_create_page',
+        'excel_store_update_page',
+        'excel_store_get_records',
+        'excel_store_update_records',
+        'excel_store_delete_records',
+        'excel_store_page_by_url',
+
         'offer_create_bulk',
         'banking_account_yesb_bulk_create',
 
@@ -2711,6 +2730,13 @@ final class Route
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
 
+        'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_update_page'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_get_records'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_update_records'               => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_delete_records'               => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_page_by_url'                  => Permission::ACCESS_EXCEL_STORE,
         'webhook_stork_migrate'                    => Permission::STORK_WRITE_OPERATION,
 
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
@@ -3300,6 +3326,16 @@ final class Route
         'subscription_fetch_hosted_live',
     ];
 
+    const EXCEL_STORE_PROXY_ROUTES = [
+        'excel_store_list_pages',
+        'excel_store_create_page',
+        'excel_store_update_page',
+        'excel_store_get_records',
+        'excel_store_update_records',
+        'excel_store_delete_records',
+        'excel_store_page_by_url',
+    ];
+
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
@@ -3598,6 +3634,11 @@ final class Route
         if (in_array($name, self::SUBSCRIPTION_PROXY_ROUTES, true) === true)
         {
             $route->middleware('subscription_proxy');
+        }
+
+        if (in_array($name, self::EXCEL_STORE_PROXY_ROUTES, true) === true)
+        {
+            $route->middleware('excel_store_proxy');
         }
     }
 

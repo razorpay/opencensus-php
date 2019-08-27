@@ -1989,6 +1989,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPTURE_VERIFY_ONHOLD_ACTION                          = 'CAPTURE_VERIFY_ONHOLD_ACTION';
     const CAPTURE_VERIFY_FAILED_PAYMENT                         = 'CAPTURE_VERIFY_FAILED_PAYMENT';
 
+    // Excel Store
+    const EXCEL_STORE_REQUEST                                   = 'EXCEL_STORE_REQUEST';
+    const EXCEL_STORE_RESPONSE                                  = 'EXCEL_STORE_RESPONSE';
+
     // Mozart Service
     const MOZART_SERVICE_UNEXPECTED_RESPONSE                    = 'MOZART_SERVICE_UNEXPECTED_RESPONSE';
     const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
