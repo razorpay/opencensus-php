@@ -548,6 +548,19 @@ class Notifier extends Base\Core
                     'expiry_date'    => $expireBy ?? '',
                 ];
 
+                break;
+
+            case Preferences::MID_RBL_PL_NON_DEL_CUST:
+                $sender = 'RBLBNK';
+                $template = 'sms.custom_invoice.rbl_pl_non_del_cust';
+                $params = [
+                    'invoice_link'  => $invoiceLink,
+                    'receipt'       => $receipt,
+                    'expiry_date'   => $expireBy ?? '',
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
