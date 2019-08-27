@@ -2,10 +2,10 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
-use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Balance;
 
