@@ -231,6 +231,8 @@ abstract class ApiProcessor extends NodalAccount
                     $this->body,
                     $this->method,
                     $this->options);
+
+                $this->traceResponseTime($response, $startTime);
             }
             catch (\Throwable $e)
             {
@@ -243,8 +245,6 @@ abstract class ApiProcessor extends NodalAccount
                     ]);
             }
         }
-
-        $this->traceResponseTime($response, $startTime);
 
         $response = $this->handleEmptyResponse($response);
 
@@ -291,6 +291,8 @@ abstract class ApiProcessor extends NodalAccount
                     $action,
                     $requestInput,
                     $this->mode);
+
+                $this->traceResponseTime($response, $startTime);
             }
             catch (\Throwable $e)
             {
@@ -303,8 +305,6 @@ abstract class ApiProcessor extends NodalAccount
                     ]);
             }
         }
-
-        $this->traceResponseTime($response, $startTime);
 
         $this->traceGatewayResponse($response);
 
