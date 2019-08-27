@@ -53,7 +53,10 @@ export default class InvoicingContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.invoices.loading != this.props.invoices.loading) {
+    if (
+      nextProps.invoices.loading != this.props.invoices.loading ||
+      nextProps.items.loading != this.props.items.loading
+    ) {
       this.initInvoicesOnboarding(nextProps);
     }
   }
@@ -88,13 +91,6 @@ export default class InvoicingContainer extends Component {
 
     if (isInvoicesEnabled) {
       showOnboarding = getIsAllowedResetInvoicesOnBoarding(data);
-    } else {
-      this.props.handleProductQuickGuide({
-        ...props.invoicesProductOnBoarding,
-        showOnboarding: true,
-      });
-
-      return;
     }
 
     let invoicesProductOnBoarding = {
