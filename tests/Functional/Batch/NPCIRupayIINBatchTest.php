@@ -1,0 +1,69 @@
+<?php
+
+namespace RZP\Tests\Functional\Batch;
+
+use Illuminate\Support\Facades\Queue;
+
+use RZP\Models\Batch;
+use RZP\Jobs\Batch as BatchJob;
+use RZP\Models\Terminal;
+use RZP\Tests\Functional\TestCase;
+
+class NPCIRupayIINBatchTest extends TestCase
+{
+    use BatchTestTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/NPCIRupayIINBatchTestData.php';
+
+        parent::setUp();
+
+        $this->ba->adminAuth();
+    }
+
+    public function testBulkIinUpdate()
+    {
+        $text = $this->getFileText();
+
+        $this->createAndPutTxtFileInRequest('file.dat', $text, __FUNCTION__);
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(11, $batch['processed_count']);
+        $this->assertEquals(11, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals('processed', $batch['status']);
+    }
+
+    protected function getFileText()
+    {
+        $data = [
+            "HDR19052701.00",
+            "ABHY065000160726100060726199916S010101E&M01D356IN140513000000N",
+            "ABHY065000160822900060822999916S010103EMV01D356IN170904000000N",
+            "ABPB769000160739700060739799916D010101EMV01D356IN180202000000N",
+            "ALLA010000160701600060701699916S010101EMV01D356IN190206000000N",
+            "ALLA010000160711700060711799916S010101MAG01D356IN190206000000N",
+            "ALLA010000160713700060713799916S010122EMV01D356IN190206000000N",
+            "ALLA010000160735200060735299916S010101EMV01D356IN171031000000N",
+            "ALLA010000160810200060810299916S010101EMV01D356IN190206000000N",
+            "ALLA010000160817100060817199916S010101EMV01D356IN190206000000N",
+            "ALLA010000160821800060821899916D010101EMV01D356IN190514000000N",
+            "TRL02956301.00"
+        ];
+
+        $txt = "";
+
+        foreach ($data as $row)
+        {
+            $txt = $txt . $row . PHP_EOL;
+        }
+
+        return $txt;
+    }
+}

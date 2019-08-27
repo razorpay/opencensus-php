@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
 
 class PayVerifyData extends Base\Mock\Server
 {
@@ -23,6 +24,37 @@ class PayVerifyData extends Base\Mock\Server
                 ],
             'error'             => null,
             'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        $this->content($response, 'callback');
+
+        return $response;
+    }
+
+    public function upi_citi($entities)
+    {
+        $data = $entities['gateway']['redirect']['PushNotificationToSSG'];
+
+        $errors = [
+            'ZA' => [
+                'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+                'gateway_error_code'        => 'ZA',
+                'gateway_error_description' => 'TRANSACTION DECLINED BY CUSTOMER',
+            ],
+        ];
+
+        $response = [
+            'data' =>
+                [
+                    'NPCITxnId' => $data['NPCITxnId'] ?? null,
+                    'paymentId' => $entities['payment']['id'],
+                    'amount'    => intval(floatval($data['SettlementAmount']) * 100),
+                    '_raw' => '',
+                ],
+            'error'             => $errors[$data['RespCode']] ?? null,
+            'success'           => $data['RespCode'] === '00',
             'mozart_id'         => '',
             'external_trace_id' => '',
         ];

@@ -2725,6 +2725,26 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiCitiTerminal(array $attributes)
+    {
+        $defaultValues = [
+            TerminalEntity::ID                          => Shared::UPI_AIRTEL_RAZORPAY_TERMINAL,
+            TerminalEntity::MERCHANT_ID                 => '100000Razorpay',
+            TerminalEntity::GATEWAY                     => 'upi_citi',
+            TerminalEntity::GATEWAY_MERCHANT_ID         => 'citi-client-id',
+            TerminalEntity::GATEWAY_MERCHANT_ID2        => 'razorpay@citi',
+            TerminalEntity::GATEWAY_TERMINAL_PASSWORD   => 'citi-secret-key',
+            TerminalEntity::UPI                         => 1,
+            TerminalEntity::VPA                         => 'razorpay@citi',
+            TerminalEntity::ACCOUNT_NUMBER              => '9876543210',
+
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiMindgateIntentTerminal(array $override)
     {
         $attributes = [

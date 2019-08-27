@@ -124,6 +124,13 @@ class Constants
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
 
+    /**
+     * Feature flag to enable to create new customer if contact and email both are null,
+     * this functionality will be there by default for new merchants , flag need to be enabled if
+     * needed for older merchants
+     */
+    const CUST_CONTACT_EMAIL_NULL         = 'cust_contact_email_null';
+
   /**
      * This will control if the bank details will be returned in the fetch token response.
      * Bank details will contain beneficiary_name, account_number, ifsc and account_type
@@ -372,6 +379,7 @@ class Constants
         self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,
         self::ASYNC_BALANCE_UPDATE            => true,
+        self::CUST_CONTACT_EMAIL_NULL         => true,
     ];
 
     // Entity type constants

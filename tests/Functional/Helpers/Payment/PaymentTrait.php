@@ -952,6 +952,11 @@ trait PaymentTrait
             $content['reverse_all'] = true;
         }
 
+        if (empty($data['notes']) === false)
+        {
+            $content['notes'] = $data['notes'];
+        }
+
         $request = [
             'method'    => 'POST',
             'url'       => '/payments/'.$id.'/refund',
@@ -992,6 +997,11 @@ trait PaymentTrait
         {
             $input['fta_data'] = $data;
             $input['is_fta'] = true;
+        }
+
+        if (isset($data['fta_data']) === true)
+        {
+            $input['fta_data'] = $data['fta_data'];
         }
 
         $this->ba->scroogeAuth();

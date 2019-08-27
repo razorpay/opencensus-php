@@ -556,9 +556,13 @@ class Reconciliate extends Base\Core
             }
         }
 
+        $fileName = basename($batch->latestFileByType(FileStore\Type::RECONCILIATION_BATCH_INPUT)->location);
+
+        $originalFileName = str_replace('_' . $batch->getId(), '', $fileName);
+
         $summary = [
             'info'              => 'Processed Batch Summary',
-            'file'              => basename($batch->latestFileByType(FileStore\Type::RECONCILIATION_BATCH_INPUT)->location),
+            'file'              => $originalFileName,
             'output_file_id'    => $outputFileIds,
             'total_count'       => $batch->getTotalCount(),
             'success_count'     => $batch->getSuccessCount(),

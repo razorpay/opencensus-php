@@ -32,6 +32,35 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function upi_citi($entities)
+    {
+        $error = null;
+
+        switch ($entities['payment']['description'])
+        {
+            case 'verifyNotFound':
+                $error = [
+                    'internal_error_code'       => 'GATEWAY_ERROR_TRANSACTION_NOT_PRESENT',
+                    'gateway_error_code'        => '601',
+                    'gateway_error_description' => 'transaction number does not exist',
+                ];
+                break;
+        }
+
+        $response = [
+            'data' =>
+                [
+                    '_raw' => '{"TxnStatusRs": {"APIHeader": {"ClientId": "client_id","TxnRefNo": "UPI","TimeStamp": "2019-07-16T14:03:01+05:30","CountryCode": "IN"},"APIBody": {"RespCode": "601","StatusDesc": "Payment not found in citibank","RefNo": "UPI","StatusCode": "6"}}}',
+                ],
+            'error'             => $error,
+            'success'           => empty($error),
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
+
     public function netbanking_yesb($entities)
     {
         $response = [

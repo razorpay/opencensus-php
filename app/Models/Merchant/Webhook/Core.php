@@ -8,6 +8,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 
@@ -166,6 +167,13 @@ class Core extends Base\Core
             }
         }
 
-        return compact('successfulIds', 'failedIds');
+        $summary = [
+            'last_successful_id' => end($successfulIds),
+            'failed_ids'         => $failedIds,
+        ];
+
+        $this->trace->info(TraceCode::STORK_WEBHOOK_MIGRATE_SUMMARY, $summary);
+
+        return $summary;
     }
 }

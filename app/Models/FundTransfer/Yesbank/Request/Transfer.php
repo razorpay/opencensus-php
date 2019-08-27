@@ -723,8 +723,12 @@ class Transfer extends Base
 
     protected function mockGenerateFailedResponseForGateway(): array
     {
-        // TODO: Return stuff
-        return [];
+        return [
+            Constants::UPI_REQUEST_REFERENCE_NUMBER => $this->entity->getId(),
+            Constants::UPI_UNIQUE_RESPONSE_NUMBER   => PublicEntity::generateUniqueId(),
+            Constants::UPI_RESPONSE_CODE            => GatewayStatus::E99,
+            Constants::UPI_STATUS_CODE              => GatewayStatus::STATUS_CODE_FAILURE,
+        ];
     }
 
     protected function fetchCardInfoAndPurposeData()

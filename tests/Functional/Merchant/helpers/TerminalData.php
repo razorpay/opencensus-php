@@ -983,6 +983,28 @@ return [
         ]
     ],
 
+    'testCreateUpiCitiTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_citi',
+                'gateway_merchant_id'       => 'CITI0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl',
+                'type'                      => [
+                    'collect'               => 1,
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'CITI0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
@@ -2198,7 +2220,7 @@ return [
             'content'  => [
                 'count'   => 2,
                 'entity'  => 'collection',
-                'items'   => [  
+                'items'   => [
                     [
                         'entity'  => "terminal",
                         'status'  => "activated",

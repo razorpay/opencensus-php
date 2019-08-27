@@ -28,6 +28,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Event;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
@@ -105,6 +106,7 @@ class Entity extends Base\PublicEntity
     const RESTRICTED                     = 'restricted';
     const DASHBOARD_WHITELISTED_IPS_LIVE = 'dashboard_whitelisted_ips_live';
     const DASHBOARD_WHITELISTED_IPS_TEST = 'dashboard_whitelisted_ips_test';
+    const PARTNERSHIP_URL                = 'partnership_url';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -113,6 +115,9 @@ class Entity extends Base\PublicEntity
 
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
+
+    // Receipt email to be triggered at payment status
+    const RECEIPT_EMAIL_TRIGGER_EVENT = "receipt_email_trigger_event";
 
     //
     // Followings are derived data indexed in ES and goes to
@@ -249,6 +254,7 @@ class Entity extends Base\PublicEntity
         self::INVOICE_LABEL_FIELD,
         self::LINKED_ACCOUNT_KYC,
         self::RECEIPT_EMAIL_ENABLED,
+        self::RECEIPT_EMAIL_TRIGGER_EVENT,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
         self::NOTES,
@@ -259,6 +265,7 @@ class Entity extends Base\PublicEntity
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
         self::DASHBOARD_WHITELISTED_IPS_TEST,
         self::DEFAULT_REFUND_SPEED,
+        self::PARTNERSHIP_URL,
     ];
 
     const CONFIG_LIST = [
@@ -306,6 +313,7 @@ class Entity extends Base\PublicEntity
         self::REFUND_SOURCE,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
+        self::RECEIPT_EMAIL_TRIGGER_EVENT,
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_LABEL_FIELD,
         self::CHANNEL,
@@ -339,6 +347,7 @@ class Entity extends Base\PublicEntity
         self::SECOND_FACTOR_AUTH,
         self::RESTRICTED,
         self::DEFAULT_REFUND_SPEED,
+        self::PARTNERSHIP_URL,
      ];
 
     protected $defaults = [
@@ -377,7 +386,9 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL                  => 0,
         self::DASHBOARD_WHITELISTED_IPS_TEST => [],
         self::DASHBOARD_WHITELISTED_IPS_LIVE => [],
+        self::RECEIPT_EMAIL_TRIGGER_EVENT    => Event::AUTHORIZED,
         self::DEFAULT_REFUND_SPEED           => RefundSpeed::NORMAL,
+        self::PARTNERSHIP_URL                => null,
     ];
 
     protected $publicSetters = [
@@ -500,6 +511,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATED_AT);
     }
 
+    public function getReceiptEmailTriggerEvent()
+    {
+        return $this->getAttribute(self::RECEIPT_EMAIL_TRIGGER_EVENT);
+    }
+
     public function isSecondFactorAuth(): bool
     {
         return ($this->getAttribute(self::SECOND_FACTOR_AUTH) === true);
@@ -515,6 +531,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
 
+      
     public function setRestricted(bool $restricted)
     {
         $this->setAttribute(self::RESTRICTED, $restricted);
@@ -576,6 +593,31 @@ class Entity extends Base\PublicEntity
     public function setActivationSource(string $activationSource)
     {
         $this->setAttribute(self::ACTIVATION_SOURCE, $activationSource);
+    }
+
+    protected function setReceiptEmailTriggerEventAttribute($event)
+    {
+        // For now we are allowing only one of the bit to be set to true, ensuring this by allowing one element in
+        // $eventArray and passing initial $hex as 0
+        $hex = 0;
+
+        if ($event !== null)
+        {
+            $eventArray = [$event => '1'];
+
+            $hex = Event::getCustomerEventHexValue($eventArray, $hex);
+        }
+
+        $this->attributes[self::RECEIPT_EMAIL_TRIGGER_EVENT] = $hex;
+    }
+
+    protected function getReceiptEmailTriggerEventAttribute()
+    {
+        $hex = $this->attributes[self::RECEIPT_EMAIL_TRIGGER_EVENT];
+
+        $events =  Event::getCustomerEventsFromHex($hex);
+
+        return $events[0] ?? null;
     }
 
     public function getReferrer()
@@ -1460,6 +1502,12 @@ class Entity extends Base\PublicEntity
     public function hasOptionalSubmerchantEmailFeature(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
+    }
+
+    public function createCustomerOnContactEmailNull(): bool
+    {
+        return (($this->isFeatureEnabled(Feature\Constants::CUST_CONTACT_EMAIL_NULL) === false) and
+            ($this->getCreatedAt() < 1566478483));
     }
 
     public function isOptionalEmailAllowedAggregator(): bool

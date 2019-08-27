@@ -51,6 +51,7 @@ class Validator extends Base\Validator
         Entity::BILLING_LABEL                         => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL              => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED                 => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_TRIGGER_EVENT           => 'sometimes|nullable|string|in:authorized,captured',
         Entity::LINKED_ACCOUNT_KYC                    => 'sometimes|boolean',
         Entity::CHANNEL                               => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                           => 'sometimes|min:0|max:5',
@@ -77,7 +78,8 @@ class Validator extends Base\Validator
         Entity::DASHBOARD_WHITELISTED_IPS_TEST        => 'sometimes|array|max:20',
         Entity::DASHBOARD_WHITELISTED_IPS_TEST . '.*' => 'distinct|required_with:' .
                                                          Entity::DASHBOARD_WHITELISTED_IPS_TEST . '|ipv4',
-        Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable'
+        Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable',
+        Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000'
     ];
 
     protected static $uniqueEmailRules = [

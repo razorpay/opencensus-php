@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
 
 class CorePaymentService
 {
@@ -43,6 +44,10 @@ class CorePaymentService
 
     protected $action;
 
+    protected $gateway;
+
+    protected $input;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -73,6 +78,10 @@ class CorePaymentService
     public function action(string $gateway, string $action, array $input)
     {
         $this->action = $action;
+
+        $this->gateway = $gateway;
+
+        $this->input = $input;
 
         if (empty($input[Entity::TERMINAL]) === false)
         {
@@ -227,12 +236,58 @@ class CorePaymentService
 
         if ($this->isSuccessResponse($code, $responseBody))
         {
+            if ($this->action === Action::VERIFY)
+            {
+                return $this->processVerifyResponse($responseBody);
+            }
+
             return $responseBody[self::DATA];
         }
         else
         {
             $this->checkForErrors($responseBody);
         }
+    }
+
+    protected function processVerifyResponse($responseBody)
+    {
+        $errorCode = $responseBody[self::ERROR]['internal_error_code'] ?? null;
+
+        $verify = $this->getVerifyObject($responseBody[self::DATA]);
+
+        if ($errorCode === ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+        else if ($errorCode === ErrorCode::SERVER_ERROR_RUNTIME_ERROR)
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment_id' => $this->input[Entity::PAYMENT]['id'],
+                    'gateway'    => $this->gateway
+                ]
+            );
+        }
+
+        return $responseBody[self::DATA];
+    }
+
+    protected function getVerifyObject(array $attributes)
+    {
+        $verify = new Verify($this->gateway, []);
+
+        $verify->apiSuccess = $attributes['apiSuccess'];
+
+        $verify->gatewaySuccess = $attributes['gatewaySuccess'];
+
+        $verify->amountMismatch = $attributes['amountMismatch'];
+
+        $verify->status = $attributes['status'];
+
+        return $verify;
     }
 
     protected function isSuccessResponse($code, $responseBody)

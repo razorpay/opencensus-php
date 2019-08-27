@@ -8,7 +8,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Core as TerminalCore;
 use RZP\Models\Terminal\Onboarding\Processor\FreechargeTerminalOnboardingProcessor;
-use RZP\Models\Terminal\Onboarding\Validator;
 
 class Service extends Base\Service
 {
@@ -35,8 +34,6 @@ class Service extends Base\Service
             ]);
     
         $this->verifyPartnerTerminalOnboardingAccess();
-
-        (new Validator)->validateInput('freecharge_input', $input);                
                       
         return (new FreechargeTerminalOnboardingProcessor)->process($input, $submerchantId);
     }

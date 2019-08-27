@@ -37,6 +37,8 @@ class Validator extends Base\Validator
         Entity::EMI                => 'sometimes|boolean',
         Entity::CREDIT_CARD        => 'sometimes|boolean',
         Entity::DEBIT_CARD         => 'sometimes|boolean',
+        Entity::CARD_SUBTYPE       => 'sometimes|array',
+        Entity::CARD_SUBTYPE.'.*'  => 'sometimes|boolean',
         Entity::PREPAID_CARD       => 'sometimes|boolean',
         Entity::UPI                => 'sometimes|boolean',
         Entity::AEPS               => 'sometimes|boolean',

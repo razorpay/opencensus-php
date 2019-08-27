@@ -159,6 +159,28 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function upi_citi($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'StatusCode' => '2',
+                    'StatusDesc' => 'Accepted - Processing In Progress',
+                    'RespCode' => '201',
+                    'rrn' => '987654321',
+                    'TxnRefNo' => $entities['payment']['id'],
+                    '_raw' => '{"CollectionInitAck":{"APIHeader":{"ClientId":"ClientId","TxnRefNo":"UPI","TimeStamp":"2019-07-16T14:03:01+05:30","CountryCode":"IN"},"APIBody":{"TxnRefNo":"UPI","FPSTxnId":"Random_id","StatusCode":"2","RespCode":"201","StatusDesc":"Accepted - Processing In Progress"}}}',
+                    'status' => 'collect_inititated',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
     public function netbanking_yesb($entities)
     {
         $url = $this->route->getUrlWithPublicAuth(
