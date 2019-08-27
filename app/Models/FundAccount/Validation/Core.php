@@ -311,7 +311,7 @@ class Core extends Base\Core
 
         if ($validation->hasBalance() === true)
         {
-            $balance = $this->repo->balance->findByIdAndMerchant($validation->getBalanceId(), $merchant);
+            $balance = $validation->balance;
         }
         else
         {
