@@ -43,7 +43,9 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 })
 export default class MarketPlaceOnBoarding extends React.Component {
   closeOnboarding = () => {
-    setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
+    if (!this.props.routeProductOnBoarding.isTour) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
+    }
 
     this.props.closeOnboarding();
   };
