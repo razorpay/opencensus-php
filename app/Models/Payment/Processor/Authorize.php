@@ -3750,8 +3750,6 @@ trait Authorize
 
         $this->postPaymentAuthorizePaymentLinkProcessing($payment);
 
-        $this->postPaymentAuthorizeSubscriptionRegistrationProcessing($payment);
-
         return $this->processAuthorizeResponse($payment);
     }
 
@@ -3842,32 +3840,6 @@ trait Authorize
         {
             (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
         }
-    }
-
-    protected function postPaymentAuthorizeSubscriptionRegistrationProcessing(Payment\Entity $payment)
-    {
-        if ($payment->hasInvoice() === false)
-        {
-            return;
-        }
-
-        $invoice = $payment->invoice;
-
-        if ($invoice->getEntityType() === null)
-        {
-            return;
-        }
-
-        if ($invoice->isTypeOfSubscriptionRegistration() == false)
-        {
-            return;
-        }
-
-        $subscriptionRegistration = $invoice->entity;
-
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        (new SubscriptionRegistration\Core)->authenticateWithToken($subscriptionRegistration, $token);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
