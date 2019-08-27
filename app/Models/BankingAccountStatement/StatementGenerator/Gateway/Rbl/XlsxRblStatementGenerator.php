@@ -4,6 +4,7 @@
 namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class XlsxRblStatementGenerator extends RBLStatementGenerator
@@ -66,17 +67,17 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         AccountOwnerInfo::BRANCH_CITY => 'D9',
         AccountOwnerInfo::BRANCH_STATE => 'D11',
         AccountOwnerInfo::BRANCH_PINCODE => 'D13',
-
     ];
 
-//    const TRANSACTION_HEADERS = [
-//        XLSXHeaders::TRANSACTION_DETAILS => 'A30',
-//        XLSXHeaders::CHEQUE_ID => 'B30',
-//        XLSXHeaders::VALUE_DATE => 'C30',
-//        XLSXHeaders::WITHDRAWL_AMT => 'D30',
-//        XLSXHeaders::DEPOSIT_AMT => 'E30',
-//        XLSXHeaders::BALANCE => 'F30',
-//    ];
+    const LOGO_CELL = 'A1';
+    const LOGO_CELL_RANGE = 'A1:E1';
+    const HEADER_CELL_RANGE = 'A2:E2';
+    const WORKING_COLUMN_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    const TRANSACTION_TITLE_CELL = 'A29';
+    const TRANSACTION_START_ROW = 'A40';
+    const TRANSACTION_HEADER_CELL_RANGE = 'A30:G30';
+    const TRANSACTION_CELL_FILL_COLOR = 'b19cd9';
+
 
     function getStatement()
     {
@@ -93,24 +94,12 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        # add the logo
         $this->addLogo($sheet);
         $this->addHeaders($sheet);
         $this->addBasicData($sheet);
-        $this->addTransactionHeader($sheet);
+        $this->addTransactionTitle($sheet);
+        $this->addTransactions($sheet);
         $this->addStyling($sheet);
-
-        # add home branch name
-        # add customer address
-        # add bank address
-        # add phone
-        # add ifsc code
-        # add email id
-        #add CIF ID
-        # add sancation limit
-        # addAC Currency
-        # addBranch Timings
-        #
 
         return $spreadsheet;
     }
@@ -132,25 +121,33 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         }
     }
 
-    protected function addTransactionHeader(&$sheet)
+    protected function addTransactionTitle(&$sheet)
     {
         $basicInfo = $this->data[AccountStatementData::ACCOUNT_OWNER_INFO];
         # Ex: Transactions List - INTERNETBA (INR) - 409000000083
-        $transactionHeader = 'Transactions List - ' .
-            $basicInfo[AccountOwnerInfo::ACCOUNT_NAME] . ' - ' .
-            $basicInfo[AccountOwnerInfo::ACCOUNT_NUMBER];
-
-        $sheet->setCellValue('A29', $transactionHeader);
+        $transactionTitle = 'Transactions List - ' .
+            "{$basicInfo[AccountOwnerInfo::ACCOUNT_NAME]} ({$basicInfo[AccountOwnerInfo::CURRENCY]})" .
+            "{$basicInfo[AccountOwnerInfo::ACCOUNT_NUMBER]}";
+        $sheet->setCellValue(self::TRANSACTION_TITLE_CELL, $transactionTitle);
     }
 
 
     protected function addLogo(&$sheet)
     {
-        $sheet->mergeCells('A1:E1');
-        $sheet->setCellValue('A1', 'Here there will be a logo');
+        $sheet->mergeCells(self::LOGO_CELL_RANGE);
+        $sheet->setCellValue(self::LOGO_CELL, 'Here there will be a logo');
         # have to add an image here
     }
 
+    protected function addTransactions(&$sheet)
+    {
+        # loop over the statements and put in the transactions
+        $transactions = $this->data[AccountStatementData::TRANSACTIONS];
+        foreach ($transactions as $lineItem)
+        {
+            $x = 1;
+        }
+    }
 
     protected function addStyling(&$sheet)
     {
@@ -162,10 +159,10 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         }
 
         # merge the 5 cells for logo
-        $sheet->mergeCells('A1:E1');
+        $sheet->mergeCells(self::LOGO_CELL_RANGE);
 
         # merge the 5 cells for header
-        $sheet->mergeCells('A2:E2');
+        $sheet->mergeCells(self::HEADER_CELL_RANGE);
 
         # make header bold
         $sheet->getStyle(self::HEADERS[XLSXHeaders::HEADER])->getFont()->setBold(1);
@@ -174,18 +171,17 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         $sheet->getStyle(self::HEADERS[XLSXHeaders::SUB_HEADER])->getFont()->setBold(1);
 
         # make transaction title bold
-        $sheet->getStyle('A29')->getFont()->setBold(1);
+        $sheet->getStyle(self::TRANSACTION_TITLE_CELL)->getFont()->setBold(1);
 
         # make the default width of all the columns a bit wider
-        $columns = ['A','B', 'C', 'D', 'E', 'F', 'G'];
-        foreach($columns as $col)
+        foreach (self::WORKING_COLUMN_LIST as $col)
         {
             $sheet->getColumnDimension($col)->setWidth(30);
         }
 
         # give light-blue fill color to the transaction header
-        $sheet->getStyle('A30:G30')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-              ->getStartColor()->setRGB('b19cd9');
+        $sheet->getStyle(self::TRANSACTION_HEADER_CELL_RANGE)->getFill()->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB(self::TRANSACTION_CELL_FILL_COLOR);
 
         # give all the cells of the transaction table blue border
 

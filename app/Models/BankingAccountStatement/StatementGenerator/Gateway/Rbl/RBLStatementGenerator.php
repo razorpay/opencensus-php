@@ -129,7 +129,7 @@ abstract class RBLStatementGenerator extends Base
         $transactions = [];
         foreach ($bank_account_statements as $transaction)
         {
-            $line_item = [
+            $lineItem = [
                 TransactionLineItem::TRANSACTION_DATE =>
                     Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
                     ->format(TransactionLineItem::ITEM_DATE_FORMAT),
@@ -143,15 +143,15 @@ abstract class RBLStatementGenerator extends Base
 
             if ($transaction->type == Type::CREDIT)
             {
-                $line_item[TransactionLineItem::WITHDRAWAL_AMOUNT] = (float) $transaction->amount / 100;
-                $line_item[TransactionLineItem::DEPOSIT_AMOUNT] = null;
+                $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = (float) $transaction->amount / 100;
+                $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = null;
             } else if ($transaction->type == Type::DEBIT)
             {
-                $line_item[TransactionLineItem::DEPOSIT_AMOUNT] = (float) $transaction->amount / 100;
-                $line_item[TransactionLineItem::WITHDRAWAL_AMOUNT] = null;
+                $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = (float) $transaction->amount / 100;
+                $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = null;
             }
 
-            array_push($transactions, $line_item);
+            array_push($transactions, $lineItem);
         }
         return $transactions;
     }
