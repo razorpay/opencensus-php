@@ -41,12 +41,6 @@ class Repository extends Base\Repository
                                       ->firstOrFail();
     }
 
-    public function getBalanceByIdLockForUpdate($id) {
-        assertTrue ($this->isTransactionActive());
-
-        return Entity::lockForUpdate()->newQuery()->find($id);
-    }
-
     // not in use
     public function getMerchantBalanceLockForUpdate($merchant)
     {

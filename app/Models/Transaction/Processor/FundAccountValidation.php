@@ -79,26 +79,14 @@ class FundAccountValidation extends BaseProcessor
 
     public function setMerchantBalanceLockForUpdate()
     {
-        if ($this->merchantBalance !== null) {
-            $this->merchantBalance =  $this->repo->balance->getBalanceByIdLockForUpdate($this->merchantBalance->getId());
+        $this->merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
 
-            return;
-        }
-
-        $merchantId = $this->txn->getMerchantId();
-
-        $this->merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
+        $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
     }
 
     protected function setMerchantBalance()
     {
-        if ($this->merchantBalance !== null)
-        {
-            return;
-        }
-
-        $this->merchantBalance = $this->source->relationLoaded('balance') ?
-            $this->source->getRelation('balance') : $this->repo->balance->getMerchantBalance($this->txn->merchant);
-
+        $this->merchantBalance = $this->source->balance ??
+            $this->repo->balance->getMerchantBalance($this->txn->merchant);
     }
 }

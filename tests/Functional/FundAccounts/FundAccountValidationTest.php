@@ -470,7 +470,8 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->create('pricing', $pricingPlan);
     }
 
-    protected function createMerchantBankingBalance() {
+    protected function createMerchantBankingBalance()
+    {
         $balance = [
             'id' => 'xbalance000000',
             'balance' => 10000,
@@ -483,7 +484,8 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->create('balance', $balance);
     }
 
-    protected function enableBusinessBankingForMerchant() {
+    protected function enableBusinessBankingForMerchant()
+    {
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['business_banking' => '1']);
     }
 }
