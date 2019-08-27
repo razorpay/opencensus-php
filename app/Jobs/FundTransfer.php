@@ -3,7 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
-
+use Cache;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -142,11 +142,11 @@ class FundTransfer extends Job
             $this->logAndDelete($data, $traceCode);
 
             // SLA in minutes
-            $sla = $this->redis->get(ConfigKey::RX_SLA_FOR_IMPS_PAYOUT);
+            $sla = Cache::get(ConfigKey::RX_SLA_FOR_IMPS_PAYOUT);
 
             $currentTime = Carbon::now()->getTimestamp();
 
-            $duration = ($fta->getCreatedAt() - $currentTime) / 60;
+            $duration = ($currentTime - $fta->getCreatedAt()) / 60;
 
             if (($sla != null) and
                 ($fta->getSourceType() === Attempt\Type::PAYOUT) and
