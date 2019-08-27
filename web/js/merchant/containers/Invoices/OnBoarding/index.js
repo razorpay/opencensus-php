@@ -49,7 +49,10 @@ export default class InvoicesOnBoarding extends React.Component {
   };
 
   closeOnboarding = () => {
-    if (this.props.user.isInvoicesEnabled) {
+    if (
+      this.props.user.isInvoicesEnabled &&
+      !this.props.invoicesProductOnBoarding.isTour
+    ) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.INVOICE, false);
     }
 
