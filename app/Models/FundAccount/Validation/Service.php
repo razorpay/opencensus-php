@@ -83,6 +83,5 @@ class Service extends Base\Service
         $merchantValidator = $this->merchant->getValidator();
 
         $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
-
     }
 }

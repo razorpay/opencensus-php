@@ -434,7 +434,6 @@ class FundAccountValidationTest extends TestCase
         // validate balance entry in database
         $this->assertEquals(9999997, $balance['balance']);
 
-
         // validate fund account validation last entry
         $this->assertEquals($balance['id'], $fav['balance_id']);
         $this->assertEquals('10000000000000', $fav['merchant_id']);
@@ -446,6 +445,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(100, $txn['amount']);
         $this->assertEquals(3, $txn['fee']);
         $this->assertEquals($balance['id'], $txn['balance_id']);
+        $this->assertEquals(9999997, $txn['balance']);
 
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
