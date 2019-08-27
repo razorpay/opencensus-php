@@ -1346,6 +1346,7 @@ class Gateway
         IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::SBIN         => Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1355,23 +1356,24 @@ class Gateway
      * @var array
      */
     public static $refundFileNetbankingGateways = [
-        IFSC::ICIC => Gateway::NETBANKING_ICICI,
-        IFSC::IDIB => Gateway::NETBANKING_IBK,
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::CBIN => Gateway::NETBANKING_CBI,
-        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
-        IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-        IFSC::ALLA => Gateway::NETBANKING_ALLAHABAD,
-        IFSC::CNRB => Gateway::NETBANKING_CANARA,
-        IFSC::IDFB => Gateway::NETBANKING_IDFC,
-        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
-        IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
-        Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
-        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::ICIC          => Gateway::NETBANKING_ICICI,
+        IFSC::IDIB          => Gateway::NETBANKING_IBK,
+        IFSC::HDFC          => Gateway::NETBANKING_HDFC,
+        IFSC::CBIN          => Gateway::NETBANKING_CBI,
+        IFSC::CORP          => Gateway::NETBANKING_CORPORATION,
+        IFSC::KKBK          => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB          => Gateway::NETBANKING_AXIS,
+        IFSC::FDRL          => Gateway::NETBANKING_FEDERAL,
+        IFSC::RATN          => Gateway::NETBANKING_RBL,
+        IFSC::INDB          => Gateway::NETBANKING_INDUSIND,
+        IFSC::ALLA          => Gateway::NETBANKING_ALLAHABAD,
+        IFSC::CNRB          => Gateway::NETBANKING_CANARA,
+        IFSC::IDFB          => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB          => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB          => Gateway::NETBANKING_VIJAYA,
+        Netbanking::PUNB_R  => Gateway::NETBANKING_PNB,
+        Netbanking::BARB_R  => Gateway::NETBANKING_BOB,
+        IFSC::SBIN          => Gateway::NETBANKING_SBI,
     ];
 
     /**
