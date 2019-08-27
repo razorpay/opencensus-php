@@ -30,7 +30,9 @@ import { PROS, FEATURES_DATA, FEATURES_LINKS } from './data';
 })
 export default class SubscriptionOnBoarding extends React.Component {
   closeOnboarding = () => {
-    setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
+    if (!this.props.subscriptionProductOnBoarding.isTour) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
+    }
 
     this.props.closeOnboarding();
   };
