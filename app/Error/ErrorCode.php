@@ -1306,6 +1306,7 @@ class ErrorCode
 
     // excel store error
     const SERVER_ERROR_EXCEL_STORE_FAILURE                                          = 'SERVER_ERROR_EXCEL_STORE_FAILURE';
+    const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'BAD_REQUEST_EXCEL_STORE_FILE_PARAM';
 
     // Instant Refunds Error Codes
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED';

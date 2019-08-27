@@ -878,4 +878,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
+
+    // Excel Store
+    const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
 }

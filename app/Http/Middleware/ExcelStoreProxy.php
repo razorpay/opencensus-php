@@ -29,7 +29,7 @@ class ExcelStoreProxy
 
       $this->config = config('services.excel_store');
 
-      $this->requestToExcelStore = $this->initRequestToExcelStore();
+      $this->requestToExcelStore = new Guzzle();
 
       $this->options = [
         'headers' => $this->getDefaultHeaders($this->config)
@@ -45,13 +45,6 @@ class ExcelStoreProxy
         'Accept'            => 'application/json',
         'Authorization'     => 'Bearer ' . $excelStoreAuthToken,
       ];
-    }
-
-    protected function initRequestToExcelStore(): Guzzle
-    {
-
-      return new Guzzle();
-
     }
 
   /**
@@ -82,13 +75,19 @@ class ExcelStoreProxy
 
         $requestUrl = $this->getRequestUrl($path);
 
-        $this->options['headers']['Content-Type'] = $this->getContentType($request);
+        $incomingRequestContentType = $request->header('Content-Type');
+
+        $outgoingRequestContentType = $this->getOutgoingRequestContentType(
+          $incomingRequestContentType
+        );
+
+        $this->options['headers']['Content-Type'] = $outgoingRequestContentType;
 
         $input = $request->all();
 
         $this->options = array_merge(
           $this->options,
-          $this->insertInputIntoOptions($input)
+          $this->insertInputIntoOptions($input, $outgoingRequestContentType)
         );
 
         $method = $request->method();
@@ -108,11 +107,10 @@ class ExcelStoreProxy
       return $requestUrl;
     }
 
-    protected function getContentType($request)
+    protected function getOutgoingRequestContentType($incomingRequestContentType)
     {
-        $requestContentType = $request->header('Content-Type');
 
-        if(strpos($requestContentType, self::CONTENT_TYPE_MULTIPART) !== false)
+        if(strpos($incomingRequestContentType, self::CONTENT_TYPE_MULTIPART) !== false)
         {
             return self::CONTENT_TYPE_EXCEL;
         }
@@ -120,11 +118,9 @@ class ExcelStoreProxy
         return self::CONTENT_TYPE_JSON;
     }
 
-    protected function insertInputIntoOptions($input)
+    protected function insertInputIntoOptions($input, $outgoingRequestContentType)
     {
-        $contentTypeToBeForwarded = $this->options['headers']['Content-Type'];
-
-        switch($contentTypeToBeForwarded)
+        switch($outgoingRequestContentType)
         {
             case self::CONTENT_TYPE_JSON:
               return $this->processJsonInput($input);
@@ -147,7 +143,9 @@ class ExcelStoreProxy
 
       if (!($file instanceof \SplFileInfo))
       {
-          // need to raise an exception
+          throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_EXCEL_STORE_FILE_PARAM
+          );
       }
 
       $filePath = $file->getRealPath();
