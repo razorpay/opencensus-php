@@ -656,6 +656,11 @@ class Merchant extends Base
         return $this->edit($id, ['pricing_plan_id' => $planId]);
     }
 
+    public function editCreatedAt($createdAt, $id = '10000000000000')
+    {
+        return $this->edit($id, ['created_at' => $createdAt]);
+    }
+
     public function enableMagic($id = '10000000000000')
     {
         $this->addFeatures(['magic'], $id);
