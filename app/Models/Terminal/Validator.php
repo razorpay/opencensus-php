@@ -76,6 +76,7 @@ class Validator extends Base\Validator
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::UPI_CITI,
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,

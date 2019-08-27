@@ -612,6 +612,22 @@ class TerminalTest extends TestCase
         $this->assertEquals(true, $terminal->reload()->upi);
     }
 
+    public function testEditUpiCitiTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_upi_citi_terminal', ['used' => true, 'upi' => 0]);
+
+        $data = [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ];
+
+        $content = $this->editTerminal($terminal['id'], $data);
+
+        $this->assertTrue($terminal->refresh()->isNonRecurring());
+    }
+
     public function testToggleTerminal()
     {
         $terminal = $this->fixtures->create(
