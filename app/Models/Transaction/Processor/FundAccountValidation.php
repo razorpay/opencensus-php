@@ -86,7 +86,6 @@ class FundAccountValidation extends BaseProcessor
 
     protected function setMerchantBalance()
     {
-        $this->merchantBalance = $this->source->balance ??
-            $this->repo->balance->getMerchantBalance($this->txn->merchant);
+        $this->merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
     }
 }
