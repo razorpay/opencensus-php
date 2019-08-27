@@ -111,7 +111,7 @@ class Core extends Base\Core
             return ['message' => 'Email Sent'];
         } else
         {
-//            return $statement;
+            return $statement;
             return ['message' => 'File Generated', 'file_path' => $statement->getFullFilePath()];
         }
 

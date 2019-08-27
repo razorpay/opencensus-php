@@ -15,6 +15,15 @@ abstract class RBLStatementGenerator extends Base
 {
     abstract function getStatement();
 
+    # This will be set during class initialization, and will be available to all the Child Classes
+    protected $data = null;
+
+    public function __construct($accountNumber, $channel, $fromDate, $toDate)
+    {
+        parent::__construct($accountNumber, $channel, $fromDate, $toDate);
+        $this->data = $this->accountStatementData();
+    }
+
     protected function accountStatementData()
     {
         $bankingAccount = $this->repo
@@ -67,9 +76,9 @@ abstract class RBLStatementGenerator extends Base
         $transactions = $this->serializeTransactions($all_bank_account_transactions);
         $statementSummary = $this->getAccountStatementSummary($all_bank_account_transactions);
         return [
-            Response::ACCOUNT_OWNER_INFO => $accountOwnerInfo,
-            Response::TRANSACTIONS => $transactions,
-            Response::STATEMENT_SUMMARY => $statementSummary
+            AccountStatementData::ACCOUNT_OWNER_INFO => $accountOwnerInfo,
+            AccountStatementData::TRANSACTIONS => $transactions,
+            AccountStatementData::STATEMENT_SUMMARY => $statementSummary
         ];
     }
 
@@ -84,7 +93,6 @@ abstract class RBLStatementGenerator extends Base
 
         if ($bank_account_statements->count())
         {
-
             $opening_balance = $bank_account_statements[0]->balance;
             $closing_balance = $bank_account_statements[count($bank_account_statements) - 1]->balance;
             $effective_balance = $closing_balance;

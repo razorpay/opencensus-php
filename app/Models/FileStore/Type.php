@@ -45,6 +45,8 @@ class Type
 
     const EQUITAS_NETBANKING_REFUND         = 'equitas_netbanking_refund';
 
+    const RBL_STATEMENT                     = 'rbl_statement';
+
     const ISG_REFUND                        = 'isg_refund';
     const ISG_SUMMARY                       = 'isg_summary';
 
@@ -174,7 +176,7 @@ class Type
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
-    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . "." . FeatureConstants::VENDOR_AGREEMENT;
+    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . '.' . FeatureConstants::VENDOR_AGREEMENT;
 
     /**
      * Map of types allowed for each entity.
@@ -254,6 +256,7 @@ class Type
             self::GATEWAY_FAILED_REFUNDS,
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,
+            self::RBL_STATEMENT,
             self::ISG_SUMMARY,
         ],
 
@@ -375,6 +378,7 @@ class Type
         self::OBC_NETBANKING_REFUND,
         self::EQUITAS_NETBANKING_REFUND,
         self::ISG_REFUND,
+        self::RBL_STATEMENT,
         self::ISG_SUMMARY,
     ];
 
