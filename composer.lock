@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a462c7f382ed7a995adbe8eaf34c45d3",
+    "content-hash": "f32afe2d4cddca524ea91057d222c397",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -557,7 +557,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Datadog",
+                    "name": "DataDog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -2229,7 +2229,7 @@
             "time": "2017-06-27T06:30:13+00:00"
         },
         {
-            "name": "jeremeamia/SuperClosure",
+            "name": "jeremeamia/superclosure",
             "version": "2.3.0",
             "source": {
                 "type": "git",
@@ -3632,7 +3632,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -4347,26 +4347,29 @@
         },
         {
             "name": "php-http/discovery",
-            "version": "1.3.0",
+            "version": "1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/discovery.git",
-                "reference": "7b50ab4d6c9fdaa1ed53ae310c955900af6e3372"
+                "reference": "e822f86a6983790aa17ab13aa7e69631e86806b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/discovery/zipball/7b50ab4d6c9fdaa1ed53ae310c955900af6e3372",
-                "reference": "7b50ab4d6c9fdaa1ed53ae310c955900af6e3372",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/e822f86a6983790aa17ab13aa7e69631e86806b6",
+                "reference": "e822f86a6983790aa17ab13aa7e69631e86806b6",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.5 || ^7.0"
+                "php": "^7.1"
+            },
+            "conflict": {
+                "nyholm/psr7": "<1.0"
             },
             "require-dev": {
-                "henrikbjorn/phpspec-code-coverage": "^2.0.2",
-                "php-http/httplug": "^1.0",
+                "akeneo/phpspec-skip-example-extension": "^4.0",
+                "php-http/httplug": "^1.0 || ^2.0",
                 "php-http/message-factory": "^1.0",
-                "phpspec/phpspec": "^2.4",
+                "phpspec/phpspec": "^5.1",
                 "puli/composer-plugin": "1.0.0-beta10"
             },
             "suggest": {
@@ -4376,7 +4379,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.3-dev"
+                    "dev-master": "1.7-dev"
                 }
             },
             "autoload": {
@@ -4405,7 +4408,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2017-08-03T10:12:53+00:00"
+            "time": "2019-06-30T09:04:27+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -5793,31 +5796,30 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.3",
+            "version": "1.4.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "01e6b7cf986c91271b9a38607eb6bf27a3aa20b9"
+                "reference": "c467d64489353d341bb9e47475d9c6b84d564008"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/01e6b7cf986c91271b9a38607eb6bf27a3aa20b9",
-                "reference": "01e6b7cf986c91271b9a38607eb6bf27a3aa20b9",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/c467d64489353d341bb9e47475d9c6b84d564008",
+                "reference": "c467d64489353d341bb9e47475d9c6b84d564008",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.0",
+                "php": "^7.1",
                 "php-http/client-implementation": "^1.0",
-                "php-http/discovery": "^1.0",
-                "php-http/httplug": "^1.0",
+                "php-http/discovery": "^1.6",
                 "php-http/message-factory": "^1.0",
                 "psr/http-message": "^1.0"
             },
             "require-dev": {
                 "guzzlehttp/psr7": "^1.3",
-                "php-http/message": "^1.0",
-                "php-http/mock-client": "^0.3",
-                "phpunit/phpunit": "^6.0"
+                "php-http/message": "^1.7",
+                "php-http/mock-client": "^0.3 || ^1.0",
+                "phpunit/phpunit": "^6.0 || ^8.0"
             },
             "type": "library",
             "autoload": {
@@ -5836,7 +5838,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2019-05-21T14:40:32+00:00"
+            "time": "2019-07-17T06:19:58+00:00"
         },
         {
             "name": "razorpay/metrics-php",
@@ -10441,6 +10443,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
+        "php": ">=7.1",
         "ext-gmp": "*"
     },
     "platform-dev": []
