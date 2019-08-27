@@ -146,6 +146,17 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
                         $this->skippedRows[] = $row;
 
+                        //
+                        // Just keep it in the output file, so that
+                        // batch output file have all the txn rows.
+                        //
+                        $this->insertRowInOutputFile($row);
+
+                        $this->setRowReconStatusAndError(
+                            Base\InfoCode::RECON_UNPROCESSED_SUCCESS,
+                            Base\InfoCode::RECON_UNABLE_TO_IDENTIFY_RECON_TYPE
+                        );
+
                         continue;
                     }
 

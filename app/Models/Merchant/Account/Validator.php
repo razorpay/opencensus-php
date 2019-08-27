@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Base\Fetch;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity as CE;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Merchant\Validator
 {
@@ -31,7 +33,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $createAccountRules = [
-        Constants::ENTITY          => 'required|string',
+        Constants::ENTITY          => 'required|string|in:'.CE::ACCOUNT,
         Constants::BUSINESS_ENTITY => 'sometimes|string',
         Constants::MANAGED         => 'sometimes|boolean',
         Constants::EMAIL           => 'required|email',
@@ -53,7 +55,7 @@ class Validator extends Merchant\Validator
         Constants::ADDRESSES         => 'required|array|max:2',
         Constants::NAME              => 'required|string',
         Constants::DESCRIPTION       => 'sometimes|string',
-        Constants::BUSINESS_MODEL    => 'sometimes|string',
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
         Constants::MCC               => 'required|numeric',
         Constants::BRAND             => 'sometimes|array',
         Constants::DASHBOARD_DISPLAY => 'sometimes|string',
@@ -71,7 +73,7 @@ class Validator extends Merchant\Validator
         Constants::ADDRESSES         => 'sometimes|array|max:2',
         Constants::NAME              => 'filled|string',
         Constants::DESCRIPTION       => 'sometimes|string',
-        Constants::BUSINESS_MODEL    => 'sometimes|string',
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
         Constants::MCC               => 'filled|numeric',
         Constants::BRAND             => 'sometimes|array',
         Constants::DASHBOARD_DISPLAY => 'sometimes|string|nullable',
@@ -172,7 +174,7 @@ class Validator extends Merchant\Validator
 
         $this->validateInput('edit_profile', $profileInput);
 
-        if (isset($profileInput[Constants::ADDRESSES]) === false)
+        if (isset($profileInput[Constants::ADDRESSES]) === true)
         {
             $this->validateAddresses($profileInput, 'edit');
         }
@@ -268,5 +270,13 @@ class Validator extends Merchant\Validator
     protected function validateDocumentType($attribute, $value)
     {
         DocumentType::validate($value);
+    }
+
+    protected function validateBusinessModel($attribute, $value)
+    {
+        if (in_array($value, Constants::$validBusinessModels, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid business model: ' . $value);
+        }
     }
 }

@@ -76,6 +76,11 @@ trait ApplicationTrait
                 ($this->environment() === Environment::PRODUCTION));
     }
 
+    protected function isUnitTest()
+    {
+        return $this->app->runningUnitTests();
+    }
+
     protected function repo(): RepositoryManager
     {
         return $this->app['repo'];

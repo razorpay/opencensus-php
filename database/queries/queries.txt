@@ -5040,9 +5040,40 @@ ALTER TABLE `merchant_banks`
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+ALTER TABLE virtual_accounts
+    ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
+    ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
+    ADD INDEX virtual_accounts_close_by_index (close_by);
+
+ALTER TABLE `roles`
+    ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
+    ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE `iins`
+    ADD COLUMN `sub_type` VARCHAR(255) NOT NULL DEFAULT 'consumer' AFTER `type`;
 
 ALTER TABLE `pricing`
     ADD COLUMN `payment_method_subtype` VARCHAR(255) NULL;
+
+ALTER TABLE `gateway_rules`
+    ADD COLUMN `method_subtype` VARCHAR(255) NULL AFTER `method_type`,
+    ADD INDEX gateway_rules_method_subtype_index (method_subtype);
+
+ALTER TABLE `gateway_rules`
+    ADD COLUMN `card_category` VARCHAR(255) NULL AFTER `method_subtype`,
+    ADD INDEX gateway_card_category_index (card_category);
+
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `card_subtype` INT UNSIGNED NOT NULL DEFAULT 1;
+
+ALTER TABLE `cards`
+    ADD COLUMN `sub_type` VARCHAR(255) DEFAULT NULL AFTER `type`;
+
+ALTER TABLE `cards`
+    ADD COLUMN `category` VARCHAR(255) DEFAULT NULL AFTER `sub_type`;
+
+
+
 
 ALTER TABLE `merchants`
     ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
@@ -5235,7 +5266,6 @@ ALTER TABLE payments
     CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
 
-<<<<<<< HEAD
 ALTER TABLE netbanking
     ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
 
@@ -5248,3 +5278,21 @@ ALTER TABLE `merchant_emails`
 
 ALTER TABLE netbanking
     ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
+
+ALTER TABLE netbanking
+    ADD INDEX verification_id_index (verification_id);
+
+ALTER TABLE contacts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
+
+ALTER TABLE fund_accounts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
+
+ALTER TABLE payouts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER batch_id;
+
+ALTER TABLE merchants
+    ADD COLUMN receipt_email_trigger_event TINYINT(1) UNSIGNED DEFAULT 1 AFTER receipt_email_enabled;
+
+ALTER TABLE merchants
+	ADD COLUMN partnership_url TEXT DEFAULT NULL AFTER dashboard_whitelisted_ips_test;

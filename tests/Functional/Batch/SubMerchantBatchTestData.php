@@ -8,17 +8,19 @@ use RZP\Error\PublicErrorDescription;
 return [
 
     'testCreateSubMerchantBatchAggregator' => [
-        'request' => [
+        'request'   => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 1,
-                'partner_id'  => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit' => 1,
+                    'partner_id'  => '10000000000000',
+                ]
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT,
@@ -27,22 +29,24 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testProcessSubMerchantBatchPartnerNotDummyAllSteps' => [
-        'request' => [
+        'request'  => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'               => 'sub_merchant',
-                'auto_submit'        => 1,
-                'autofill_details'   => 1,
-                'use_email_as_dummy' => 0,
-                'auto_activate'      => 1,
-                'partner_id'         => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit'        => 1,
+                    'autofill_details'   => 1,
+                    'use_email_as_dummy' => 0,
+                    'auto_activate'      => 1,
+                    'partner_id'         => '10000000000000',
+                ]
             ],
         ],
         'response' => [
@@ -61,17 +65,19 @@ return [
     ],
 
     'testSkipBankAccountRegistration' => [
-        'request' => [
+        'request'  => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'                 => 'sub_merchant',
-                'auto_submit'          => 1,
-                'autofill_details'     => 1,
-                'use_email_as_dummy'   => 0,
-                'auto_activate'        => 1,
-                'skip_ba_registration' => 1,
-                'partner_id'           => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit'          => 1,
+                    'autofill_details'     => 1,
+                    'use_email_as_dummy'   => 0,
+                    'auto_activate'        => 1,
+                    'skip_ba_registration' => 1,
+                    'partner_id'           => '10000000000000',
+                ]
             ],
         ],
         'response' => [
@@ -90,16 +96,18 @@ return [
     ],
 
     'testProcessSubMerchantBatchPartnerNotDummySubmit' => [
-        'request' => [
+        'request'  => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'               => 'sub_merchant',
-                'auto_submit'        => 1,
-                'autofill_details'   => 1,
-                'use_email_as_dummy' => 0,
-                'auto_activate'      => 0,
-                'partner_id'         => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit'        => 1,
+                    'autofill_details'   => 1,
+                    'use_email_as_dummy' => 0,
+                    'auto_activate'      => 0,
+                    'partner_id'         => '10000000000000',
+                ]
             ],
         ],
         'response' => [
@@ -118,14 +126,16 @@ return [
     ],
 
     'testProcessSubMerchantBatchPartnerDummyEmailAllSteps' => [
-        'request' => [
+        'request'  => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'             => 'sub_merchant',
-                'auto_submit'      => 1,
-                'autofill_details' => 1,
-                'partner_id'       => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit'      => 1,
+                    'autofill_details' => 1,
+                    'partner_id'       => '10000000000000',
+                ]
             ],
         ],
         'response' => [
@@ -144,14 +154,16 @@ return [
     ],
 
     'testProcessSubMerchantBatchPartnerDummyEmailCreate' => [
-        'request' => [
+        'request'  => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'             => 'sub_merchant',
-                'auto_submit'      => 0,
-                'autofill_details' => 0,
-                'partner_id'       => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit'      => 0,
+                    'autofill_details' => 0,
+                    'partner_id'       => '10000000000000',
+                ]
             ],
         ],
         'response' => [
@@ -170,14 +182,16 @@ return [
     ],
 
     'testProcessSubMerchantBatchPartnerInvalidFileEntriesForActivate' => [
-        'request' => [
+        'request'  => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'             => 'sub_merchant',
-                'auto_submit'      => 1,
-                'autofill_details' => 1,
-                'partner_id'       => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit'      => 1,
+                    'autofill_details' => 1,
+                    'partner_id'       => '10000000000000',
+                ]
             ],
         ],
         'response' => [
@@ -196,18 +210,20 @@ return [
     ],
 
     'testProcessSubMerchantBatchPartnerInvalidInput' => [
-        'request' => [
+        'request'   => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'             => 'sub_merchant',
-                'auto_submit'      => 1,
-                'autofill_details' => 'blah',
-                'partner_id'       => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit'      => 1,
+                    'autofill_details' => 'blah',
+                    'partner_id'       => '10000000000000',
+                ]
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The autofill details field must be true or false.',
@@ -216,19 +232,21 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testCreateSubMerchantBatchPartner' => [
-        'request' => [
+        'request'  => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 1,
-                'partner_id'  => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit' => 1,
+                    'partner_id'  => '10000000000000',
+                ]
             ],
         ],
         'response' => [
@@ -247,17 +265,19 @@ return [
     ],
 
     'testCreateSubMerchantBatchInvalidHeaders' => [
-        'request' => [
+        'request'   => [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 1,
-                'partner_id'  => '10000000000000',
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'auto_submit' => 1,
+                    'partner_id'  => '10000000000000',
+                ]
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The uploaded file has invalid headers',
@@ -266,7 +286,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
         ],
     ],
@@ -276,11 +296,13 @@ return [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'                      => 'sub_merchant',
-                'instantly_activate'        => 1,
-                'partner_id'                => '10000000000000',
-                'use_email_as_dummy'        => 0,
-                'auto_enable_international' => 1,
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'instantly_activate'        => 1,
+                    'partner_id'                => '10000000000000',
+                    'use_email_as_dummy'        => 0,
+                    'auto_enable_international' => 1,
+                ]
             ],
         ],
         'response' => [
@@ -303,12 +325,14 @@ return [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'                      => 'sub_merchant',
-                'partner_id'                => '10000000000000',
-                'use_email_as_dummy'        => 0,
-                'auto_submit'               => 1,
-                'auto_activate'             => 1,
-                'autofill_details'          => 1,
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'partner_id'         => '10000000000000',
+                    'use_email_as_dummy' => 0,
+                    'auto_submit'        => 1,
+                    'auto_activate'      => 1,
+                    'autofill_details'   => 1,
+                ]
             ],
         ],
         'response' => [
@@ -331,13 +355,15 @@ return [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'                      => 'sub_merchant',
-                'partner_id'                => '10000000000000',
-                'use_email_as_dummy'        => 0,
-                'auto_submit'               => 1,
-                'auto_activate'             => 1,
-                'autofill_details'          => 1,
-                'auto_enable_international' => 1,
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'partner_id'                => '10000000000000',
+                    'use_email_as_dummy'        => 0,
+                    'auto_submit'               => 1,
+                    'auto_activate'             => 1,
+                    'autofill_details'          => 1,
+                    'auto_enable_international' => 1,
+                ]
             ],
         ],
         'response' => [
@@ -360,11 +386,13 @@ return [
             'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'                      => 'sub_merchant',
-                'partner_id'                => '10000000000000',
-                'use_email_as_dummy'        => 0,
-                'autofill_details'          => 1,
-                'instantly_activate'        => 1,
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'partner_id'         => '10000000000000',
+                    'use_email_as_dummy' => 0,
+                    'autofill_details'   => 1,
+                    'instantly_activate' => 1,
+                ]
             ],
         ],
         'response' => [

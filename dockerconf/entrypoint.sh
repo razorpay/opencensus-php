@@ -49,6 +49,11 @@ configure_dark(){
     echo "SCROOGE_URL=\"https://scrooge-dark.razorpay.com/v1/\"" >> ./environment/.env.production
 }
 
+run_migration_job(){
+    cd /app
+    php artisan migrate --database=live_migration --force && php artisan migrate --database=test_migration --force
+}
+
 start_apache(){
   trap term_to_winch SIGTERM
   echo "$(date) Starting Apache"
@@ -90,6 +95,9 @@ main() {
     configure_dark
     echo "Starting web app"
     start_apache
+  elif [[ "${app_type}" == "migrations-job" ]]; then
+    echo "Starting db migration job"
+    run_migration_job
   elif [[ "${app_type}" == "batch-job" ]]; then
     echo "Starting K8s Job"
     command=$2

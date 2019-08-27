@@ -403,6 +403,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateUpiCitiTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
@@ -1193,7 +1202,7 @@ class TerminalTest extends TestCase
             'rupay_mpan' => '1234123412341234',
             'notes'     => 'some notes'
         ]);
-        
+
         $url = '/terminals/'.$terminal['id'].'/enable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
@@ -1256,15 +1265,15 @@ class TerminalTest extends TestCase
         $terminal1 = (new TerminalFixture)->createBharatQrTerminal();
 
         $terminal1['merchant_id'] = $subMerchantId;
-        
+
         $terminal1->save();
 
         $terminal2 = (new TerminalFixture)->createBharatQrIsgTerminal();
-        
+
         $terminal2['merchant_id'] = $subMerchantId;
-        
+
         $terminal2->save();
- 
+
         $this->startTest();
     }
 
@@ -1275,7 +1284,7 @@ class TerminalTest extends TestCase
         $url = '/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
- 
+
         $this->startTest();
     }
 
@@ -1284,6 +1293,19 @@ class TerminalTest extends TestCase
         $this->ba->privateAuth();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/terminals';
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingCreateTerminal()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/accounts/'.$subMerchantId.'/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }

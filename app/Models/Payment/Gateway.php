@@ -23,6 +23,7 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const ATOS                   = 'atos';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -82,6 +83,7 @@ class Gateway
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
+    const UPI_CITI               = 'upi_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -832,6 +834,7 @@ class Gateway
         self::UPI_RBL,
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
+        self::UPI_CITI,
     ];
 
     public static $headless = [
@@ -1261,6 +1264,7 @@ class Gateway
         Gateway::UPI_YESBANK,
         Gateway::UPI_AIRTEL,
         Gateway::WALLET_PHONEPE,
+        Gateway::UPI_CITI,
     ];
 
     /**
@@ -1503,6 +1507,10 @@ class Gateway
 
     public static $cardlessEmiRedirectFlowProvider = [
         CardlessEmi::FLEXMONEY,
+    ];
+
+    public static $verifyClientOnS2s = [
+        Gateway::UPI_CITI,
     ];
 
     public static function isNonTerminalGateway(string $gateway)

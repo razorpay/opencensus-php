@@ -17,10 +17,20 @@ class Event
 
     const CUSTOMER_EVENTS = [
         self::AUTHORIZED,
+        self::CAPTURED,
         self::REFUNDED,
         self::FAILED_TO_AUTHORIZED,
         self::CARD_SAVED,
         self::INVOICE_PAYMENT_AUTHORIZED,
+    ];
+
+    protected static $customerEventBitPosition = [
+        self::AUTHORIZED                 => 1,
+        self::CAPTURED                   => 2,
+        self::REFUNDED                   => 3,
+        self::FAILED_TO_AUTHORIZED       => 4,
+        self::CARD_SAVED                 => 5,
+        self::INVOICE_PAYMENT_AUTHORIZED => 6
     ];
 
     const MERCHANT_EVENTS = [
@@ -107,5 +117,52 @@ class Event
     public static function getMailTag(string $event)
     {
         return self::MAIL_TAG_MAP[$event] ?? MailTags::PAYMENT_SUCCESSFUL;
+    }
+
+
+    /**
+     * Set corresponding bit for the events passed in array, if $events has ['authorised'=> '1' and 'refunded' => '1'],
+     * and initial $hex 0, final hex returned will be 5, which in binary is 101, as for authorised and refunded
+     * bitposition is 1 and 3 respectively.
+     * @param $events
+     * @param $hex
+     * @return int
+     */
+    public static function getCustomerEventHexValue($events, $hex)
+    {
+        foreach ($events as $event => $value)
+        {
+            $pos = self::getCustomerEventBitPosition($event);
+
+            $value = ($value === '1') ? 1 : 0;
+
+            // Sets the bit value for the current type.
+            $hex ^= ((-1 * $value) ^ $hex) & (1 << ($pos - 1));
+        }
+
+        return $hex;
+    }
+
+    public static function getCustomerEventBitPosition($event)
+    {
+        return self::$customerEventBitPosition[$event];
+    }
+
+    public static function getCustomerEventsFromHex($hex)
+    {
+        $events = [];
+
+        foreach (self::CUSTOMER_EVENTS as $event)
+        {
+            $pos = self::$customerEventBitPosition[$event];
+
+            $value = ($hex >> ($pos - 1)) & 1;
+
+            if ($value)
+            {
+                array_push($events, $event);
+            }
+        }
+        return $events;
     }
 }

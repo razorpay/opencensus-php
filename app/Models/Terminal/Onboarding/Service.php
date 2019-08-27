@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Core as TerminalCore;
+use RZP\Models\Terminal\Onboarding\Processor\FreechargeTerminalOnboardingProcessor;
 
 class Service extends Base\Service
 {
@@ -19,6 +20,22 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    public function create(string $submerchantId, array $input)
+    {
+        $this->trace->info(
+            TraceCode::TERMINAL_ONBOARDING_REQUEST,
+            [
+                'merchant_id'    => $this->merchant->getId(),
+                'partner_id'     => $this->app['basicauth']->getPartnerMerchantId(),
+                'submerchant_id' => $submerchantId,
+                'input'          => $input,
+            ]);
+    
+        $this->verifyPartnerTerminalOnboardingAccess();
+                      
+        return (new FreechargeTerminalOnboardingProcessor)->process($input, $submerchantId);
     }
 
     public function enableTerminal(string $id)

@@ -157,4 +157,15 @@ class Repository extends Base\Repository
                 $join->on($baIdAttr, $faAccountIdAttr);
             });
     }
+
+    public function fetchByIdempotentKey(string $idempotentKey,
+                                         string $merchantId,
+                                         string $batchId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::IDEMPOTENCY_KEY, $idempotentKey)
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->merchantId($merchantId)
+                    ->first();
+    }
 }

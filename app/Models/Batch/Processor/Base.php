@@ -147,11 +147,11 @@ class Base extends BaseModel\Core
         return $this;
     }
 
-    public function getBatchContext(): array
+    public function getBatchContext(array $config): array
     {
         $batchContext                        = [];
         $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
-        $batchContext[Batch\Constants::DATA] = $this->params;
+        $batchContext[Batch\Constants::DATA] = $config;
 
         return $batchContext;
     }
@@ -825,13 +825,16 @@ class Base extends BaseModel\Core
 
         $mailerClass = "\\RZP\\Mail\\Batch\\$type";
 
-        $mail = new $mailerClass(
-                        $this->batch->toArray(),
-                        $this->merchant->toArray(),
-                        $this->outputFileLocalPath,
-                        $this->settingsAccessor->all()->toArray());
+        if (class_exists($mailerClass))
+        {
+            $mail = new $mailerClass(
+                            $this->batch->toArray(),
+                            $this->merchant->toArray(),
+                            $this->outputFileLocalPath,
+                            $this->settingsAccessor->all()->toArray());
 
-        Mail::send($mail);
+            Mail::send($mail);
+        }
     }
 
     protected function deleteLocalFiles()
@@ -920,6 +923,7 @@ class Base extends BaseModel\Core
                 return $this->parseExcelSheets($filePath);
 
             case FileStore\Format::TXT:
+            case FileStore\Format::DAT:
                 //
                 // We use standard separator | for txt, if needs this
                 // can be made configurable. But for now it's ok.

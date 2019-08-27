@@ -153,6 +153,38 @@ return [
         ],
     ],
 
+    'testUserAccessWithProductPrimary'    => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+            ],
+        ],
+    ],
+
+    'testUserAccessWithProductBanking'   => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+            ],
+        ],
+    ],
+
+    'testFailedUserAccessAccrossProducts'  => [
+        'response'      => [
+            'content'   => [
+                'access'    => false,
+            ],
+        ],
+    ],
+
+    'testFailedUserAccess'    => [
+        'response'      => [
+            'content'   => [
+                'access'    => false,
+            ],
+        ],
+    ],
+
     'testUserEnable2fa' => [
         'request' => [
             'url'     => '/users/2fa',
