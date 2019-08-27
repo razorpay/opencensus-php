@@ -90,20 +90,20 @@ class Core extends Base\Core
             throw new InvalidArgumentException('Account Statement with ' . $format . ' is not supported');
         }
 
-        $statementGenerator = $this->getStatementGenerator($accountNumber, $channel, $fromDate, $toDate);
-        $statement = null;
-        switch ($format)
-        {
-            case Formats::PDF:
-                $statement = $statementGenerator->pdf();
-                break;
-            case Formats::CSV:
-                $statement = $statementGenerator->csv();
-                break;
-            case Formats::XLSX:
-                $statement = $statementGenerator->xlsx();
-                break;
-        }
+        $statementGenerator = $this->getStatementGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
+        $statement = $statementGenerator->getStatement();
+//        switch ($format)
+//        {
+//            case Formats::PDF:
+//                $statement = $statementGenerator->pdf();
+//                break;
+//            case Formats::CSV:
+//                $statement = $statementGenerator->csv();
+//                break;
+//            case Formats::XLSX:
+//                $statement = $statementGenerator->xlsx();
+//                break;
+//        }
 
         if ($sendEmail)
         {
@@ -117,10 +117,11 @@ class Core extends Base\Core
 
     }
 
-    protected function getStatementGenerator($accountNUmber, $channel, $fromDate, $toDate)
+    protected function getStatementGenerator($accountNUmber, $channel, $format, $fromDate, $toDate)
     {
         $statementGeneratorNamespace = __NAMESPACE__ . '\\' . 'StatementGenerator\\Gateway\\' . studly_case($channel);
-        $statementGenerator = $statementGeneratorNamespace . '\\' . studly_case($channel) . 'StatementGenerator';
+        $statementGenerator = $statementGeneratorNamespace . '\\' .
+            studly_case($format) . studly_case($channel) . 'StatementGenerator';
         return new $statementGenerator($accountNUmber, $channel, $fromDate, $toDate);
 
     }

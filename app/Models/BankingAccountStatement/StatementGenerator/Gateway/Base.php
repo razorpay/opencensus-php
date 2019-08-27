@@ -22,13 +22,4 @@ abstract class Base extends BaseCore
         $this->fromDate = $fromDate;
         $this->toDate = $toDate;
     }
-
-
-    abstract function pdf();
-
-    abstract function csv();
-
-    abstract function xlsx();
-
-
 }
