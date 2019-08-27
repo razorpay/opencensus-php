@@ -22,7 +22,6 @@ class Fetch extends BaseFetch
         ],
         BasicAuth\Type::PRIVILEGE_AUTH => [
             self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail',
-            Entity::MERCHANT_ID           => 'sometimes|unsigned_id',
         ]
     ];
 
@@ -39,18 +38,6 @@ class Fetch extends BaseFetch
             Entity::ACCOUNT_TYPE ,
             self::EXPAND_EACH,
         ],
-    ];
-
-    const COMMON_FIELDS = [
-        Entity::MERCHANT_ID,
-        Entity::STATUS,
-        Entity::ACCOUNT_NUMBER,
-        Entity::CHANNEL,
-        Entity::BANK_INTERNAL_STATUS,
-        Entity::BALANCE_ID,
-        Entity::BANK_REFERENCE_NUMBER,
-        Entity::FTS_FUND_ACCOUNT_ID,
-        Entity::ACCOUNT_TYPE,
     ];
 
     public function validateStatus(string $attribute, string $status)
