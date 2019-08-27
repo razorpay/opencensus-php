@@ -211,6 +211,7 @@ class Gateway
         self::PAYTM             => self::PAYTM,
         self::UPI_AXIS          => self::AXIS,
         self::UPI_MINDGATE      => self::HDFC,
+        self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
     ];
 
     /**
