@@ -150,7 +150,7 @@ class Create extends Job
         {
             if ($count !== 0)
             {
-                $this->dispatchForSettlementInitiate($redis, $channel, $count);
+                $this->dispatchForSettlementInitiate($redis, $ch, $count);
             }
         }
     }
