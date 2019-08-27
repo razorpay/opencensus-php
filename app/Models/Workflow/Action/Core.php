@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use App;
 use Request;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 use RZP\Models\State;
 use RZP\Models\Merchant;
@@ -21,7 +22,6 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
 
 use RZP\Constants\Entity as E;
-use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -132,10 +132,11 @@ class Core extends Base\Core
             ['input' => $input, 'merchant' => $merchant->getId()]);
 
         //
-        // The amount attribute will definitely exist in the request payload at this point
-        // If it doesn't, Payout validators will fail before the code reaches the workflow layer
+        // The amount attribute will definitely exist in the "new" attributes of the workflows diff
+        // at this point. If it doesn't, Payout validators will fail before the code reaches the workflow
+        // layer
         //
-        $amount = $input[Differ\Entity::PAYLOAD]['amount'];
+        $amount = $input[Differ\Entity::DIFF]['new']['amount'];
 
         $workflow = (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($amount, $merchant);
 
