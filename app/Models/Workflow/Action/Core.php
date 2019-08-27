@@ -7,6 +7,7 @@ use Request;
 use RZP\Exception;
 
 use RZP\Models\State;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
@@ -20,6 +21,7 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
 
 use RZP\Constants\Entity as E;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -122,7 +124,12 @@ class Core extends Base\Core
             return null;
         }
 
+        /** @var Merchant\Entity $merchant */
         $merchant = app('basicauth')->getMerchant();
+
+        $this->trace->info(
+            TraceCode::PAYOUT_WORKFLOW_EVALUATION_INPUT,
+            ['input' => $input, 'merchant' => $merchant->getId()]);
 
         //
         // The amount attribute will definitely exist in the request payload at this point
@@ -130,7 +137,11 @@ class Core extends Base\Core
         //
         $amount = $input[Differ\Entity::PAYLOAD]['amount'];
 
-        return (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($amount, $merchant);
+        $workflow = (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($amount, $merchant);
+
+        $this->trace->info(TraceCode::PAYOUT_WORKFLOW_EVALUATION_RESULT, ['workflow_id' => optional($workflow)->getId()]);
+
+        return $workflow;
     }
 
     /*

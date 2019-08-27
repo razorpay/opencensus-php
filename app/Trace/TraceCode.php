@@ -1000,6 +1000,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_WORKFLOW_ACTION_INFO                           = 'PAYOUT_WORKFLOW_ACTION_INFO';
     const PAYOUT_WORKFLOW_TRIGGERED                             = 'PAYOUT_WORKFLOW_TRIGGERED';
     const PAYOUT_WORKFLOW_ACTION_EXCEPTION                      = 'PAYOUT_WORKFLOW_ACTION_EXCEPTION';
+    const PAYOUT_WORKFLOW_EVALUATION_INPUT                      = 'PAYOUT_WORKFLOW_EVALUATION_INPUT';
+    const PAYOUT_WORKFLOW_EVALUATION_RESULT                     = 'PAYOUT_WORKFLOW_EVALUATION_RESULT';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
