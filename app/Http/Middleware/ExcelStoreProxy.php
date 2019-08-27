@@ -29,7 +29,7 @@ class ExcelStoreProxy
 
       $this->config = config('services.excel_store');
 
-      $this->request = $this->initRequest();
+      $this->requestToExcelStore = $this->initRequestToExcelStore();
 
       $this->options = [
         'headers' => $this->getDefaultHeaders($this->config)
@@ -47,14 +47,10 @@ class ExcelStoreProxy
       ];
     }
 
-    protected function initRequest(): Guzzle
+    protected function initRequestToExcelStore(): Guzzle
     {
 
-      $excelStoreUrl = $this->config['base_url'];
-
-      $request = new Guzzle();
-
-      return $request;
+      return new Guzzle();
 
     }
 
@@ -65,7 +61,7 @@ class ExcelStoreProxy
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle($request)
     {
         $this->trace->info(TraceCode::EXCEL_STORE_REQUEST, [
           'request'       => $request->path(),
@@ -84,16 +80,32 @@ class ExcelStoreProxy
         // removing /v1/excel-store/ from path
         $path = str_replace('v1/excel-store/', '', $request->path());
 
+        $requestUrl = $this->getRequestUrl($path);
+
         $this->options['headers']['Content-Type'] = $this->getContentType($request);
 
-        $this->processInput($request);
+        $input = $request->all();
+
+        $this->options = array_merge(
+          $this->options,
+          $this->insertInputIntoOptions($input)
+        );
 
         $method = $request->method();
 
-        $response = $this->sendRequestAndParseResponse($path, $method);
+        $response = $this->sendRequestAndParseResponse($requestUrl, $method);
 
         return $response;
 
+    }
+
+    protected function getRequestUrl($path)
+    {
+      $excelStoreUrl = $this->config['base_url'];
+
+      $requestUrl = $excelStoreUrl . $path;
+
+      return $requestUrl;
     }
 
     protected function getContentType($request)
@@ -108,47 +120,52 @@ class ExcelStoreProxy
         return self::CONTENT_TYPE_JSON;
     }
 
-    protected function processInput($request)
+    protected function insertInputIntoOptions($input)
     {
         $contentTypeToBeForwarded = $this->options['headers']['Content-Type'];
-
-        $input = $request->all();
 
         switch($contentTypeToBeForwarded)
         {
             case self::CONTENT_TYPE_JSON:
-                $this->options['json'] = $input;
-
-                break;
+              return $this->processJsonInput($input);
 
             case self::CONTENT_TYPE_EXCEL:
-                $file = $input['file'];
-
-                if(!($file instanceof \SplFileInfo))
-                {
-                    // need to raise an exception
-                }
-
-                $filePath = $file->getRealPath();
-
-                $this->options['body'] = fopen($filePath, 'r');
-
-                break;
+              return $this->processFileInput($input);
         }
+    }
+
+    protected function processJsonInput($input)
+    {
+      return [
+        'json'    => $input,
+      ];
+    }
+
+    protected function processFileInput($input)
+    {
+      $file = $input['file'];
+
+      if (!($file instanceof \SplFileInfo))
+      {
+          // need to raise an exception
+      }
+
+      $filePath = $file->getRealPath();
+
+      return [
+        'body'    => fopen($filePath, 'r'),
+      ];
 
     }
 
     protected function sendRequestAndParseResponse(
-      $path,
+      $requestUrl,
       $method)
     {
-        $excelStoreUrl = $this->config['base_url'];
-
-        $requestUrl = $excelStoreUrl . $path;
 
         try
         {
-            $response = $this->request
+            $response = $this->requestToExcelStore
                              ->request($method, $requestUrl, $this->options);
 
             return $this->parseResponse($response);
@@ -174,6 +191,9 @@ class ExcelStoreProxy
 
         $data = $body;
 
+        // excel store does not send response in items array
+        // according to standard practise reponse containing collecitons
+        // are sent in [items] key
         if(is_associative_array($body) === false)
         {
             $data = ['items' => $body];
