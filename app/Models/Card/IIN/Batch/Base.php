@@ -19,13 +19,13 @@ abstract class Base extends BaseCore
         parent::__construct();
 
         $this->iinService = new IIN\Service;
-
-        $this->input = [];
     }
 
     public function preprocess(array $entry)
     {
         $this->entry = $entry;
+
+        $this->input = [];
     }
 
     public function process()
