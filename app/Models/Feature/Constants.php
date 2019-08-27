@@ -20,6 +20,7 @@ class Constants
     const NOFLASHCHECKOUT                 = 'noflashcheckout';
     const RECURRING                       = 'recurring';
     const S2S                             = 's2s';
+    const S2S_JSON                        = 's2s_json';
     const INVOICE                         = 'invoice';
     const NOZEROPRICING                   = 'nozeropricing';
     const REVERSE                         = 'reverse';
@@ -353,6 +354,7 @@ class Constants
         self::REPORTING_GENRERIC_NOTES        => true,
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
+        self::S2S_JSON                        => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
         self::DISABLE_CARD_REFUNDS            => true,
