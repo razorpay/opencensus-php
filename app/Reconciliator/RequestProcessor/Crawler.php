@@ -1,0 +1,169 @@
+<?php
+
+namespace RZP\Reconciliator\RequestProcessor;
+
+use Symfony\Component\HttpFoundation\File\File;
+
+use Config;
+use RZP\Exception;
+use RZP\Models\FileStore\Utility;
+use RZP\Reconciliator\FileProcessor;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+
+class Lambda extends Base
+{
+    use FileHandlerTrait;
+
+    public function process(array $input): array
+    {
+        $key = $input[self::KEY] ?? null;
+
+        if (blank($key) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'File key not present in request',
+                self::KEY,
+                $input);
+        }
+
+        $this->setGatewayFromInputOrKey($input, $key);
+
+        $this->setGatewayReconciliatorObject();
+
+        $file = $this->downloadFileFromAws($key);
+
+        //
+        // For lambda request since there will only be one file always, we form
+        // the input request like below to preserve consistency between different
+        // types of inputs.
+        //
+        $input = [
+            self::ATTACHMENT_HYPHEN_ONE => $file
+        ];
+
+        $inputDetails = [
+            self::ATTACHMENT_COUNT => 1,
+            self::GATEWAY          => $this->gateway,
+            self::SOURCE           => self::LAMBDA,
+        ];
+
+        $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input, FileProcessor::STORAGE);
+
+        return [
+            self::FILE_DETAILS  => $allFilesDetails,
+            self::INPUT_DETAILS => $inputDetails,
+        ];
+    }
+
+    /**
+     * Parses the key to get the gateway. The top directory name in the path denotes
+     * the gateway. For e.g the key will be like below
+     * key => FirstData/some_file.xls
+     *
+     * @param $input
+     * @param string $key
+     *
+     * @throws Exception\ReconciliationException
+     */
+    protected function setGatewayFromInputOrKey($input, string $key)
+    {
+        //
+        // In case the file is stored in a way that does not conform to the key format requirements
+        // then it would not be possible to get the gateway from the key.
+        // In such cases retrieving gateway from input
+        //
+        if (isset($input[self::GATEWAY]) === true)
+        {
+            $this->gateway = $input[self::GATEWAY];
+        }
+        else
+        {
+            //
+            // key will be something like : 'icici/recon/NetbankingIcici/Abc.txt'
+            // for stage env              : 'icici/recon/stage/NetbankingIcici/Abc.txt'
+            //
+            $directoryPath = pathinfo($key, PATHINFO_DIRNAME);
+
+            $explodedArray = explode('/', $directoryPath);
+
+            $this->gateway = end($explodedArray);
+        }
+
+        if (array_key_exists($this->gateway, self::GATEWAY_SENDER_MAPPING) === false)
+        {
+            throw new Exception\ReconciliationException(
+                'Invalid gateway param. Not in the allowed list of gateway params.',
+                [
+                    'gateway' => $this->gateway,
+                    'key' => $key
+                ]);
+        }
+    }
+
+    /**
+     * Downloads the file from s3 to a local file
+     * path and converts that to a File object
+     *
+     * @param  string $key s3 key
+     *
+     * @return File
+     */
+    protected function downloadFileFromAws(string $key): File
+    {
+        $filePath = storage_path('files/filestore') . '/' . $key;
+
+        $dir = dirname($filePath);
+
+        if (file_exists($dir) === false)
+        {
+            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
+        }
+
+        // check if this is AWS S3 mock
+        $config = \Config::get('aws');
+
+        $awsS3Mock = $config['mock'];
+
+        if ($awsS3Mock === true)
+        {
+            //
+            // For testcases, file gets created in storage/files/filestore/
+            // directory and not in the subfolder named on gateway, so set
+            // the path accordingly here (i.e. remove gateway from filepath)
+            //
+            $fileName = explode('/', $key)[1];
+
+            $filePath = storage_path('files/filestore') . '/'  . $fileName;
+        }
+        else
+        {
+            $filePath = $this->getFileFromAws(
+                $key,
+                $filePath,
+                self::BUCKET_CONFIG_KEY,
+                self::REGION);
+
+        }
+
+        return new File($filePath);
+    }
+
+    /**
+     * Once the file has been downloaded and processed we delete the file from the
+     * bucket. We suppress any exception here, as we don't want processing to fail
+     * if file delete fails.
+     *
+     * @param   string  $key
+     */
+    public function deleteFromAws(string $key)
+    {
+        try
+        {
+            $this->deleteFileFromAws($key, self::BUCKET_CONFIG_KEY, self::REGION);
+        }
+        catch(\Throwable $e)
+        {
+            return;
+        }
+    }
+}

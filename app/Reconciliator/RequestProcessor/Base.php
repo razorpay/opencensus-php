@@ -30,6 +30,7 @@ class Base extends Core
     const LAMBDA                  = 'lambda';
     const MAILGUN                 = 'mailgun';
     const MANUAL                  = 'manual';
+    const CRAWLER                 = 'crawler';
 
     const FILE_DETAILS            = 'file_details';
     const INPUT_DETAILS           = 'input_details';
