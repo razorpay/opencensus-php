@@ -87,6 +87,7 @@ class ConfigKey
         self::HITACHI_NEW_URL_ENABLED,
         self::PAYSECURE_BLACKLISTED_MCCS,
         self::DOWNTIME_THROTTLE,
+        self::RX_SLA_FOR_IMPS_PAYOUT,
     ];
 
     public static function isSensitive(string $key)

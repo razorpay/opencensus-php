@@ -2,9 +2,8 @@
 
 namespace RZP\Jobs;
 
-use App;
-use Cache;
 use Carbon\Carbon;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
@@ -116,7 +115,7 @@ class FundTransfer extends Job
     /**
      * @param array $data
      * @param string $traceCode
-     * @param RZP\Models\FundTransfer\Entity $fta
+     * @param Attempt\Entity $fta
      */
     public function checkRetryOrDelete(array $data, $traceCode, Attempt\Entity $fta)
     {
@@ -135,34 +134,12 @@ class FundTransfer extends Job
         {
             $this->logAndDelete($data, $traceCode);
 
-            // SLA in minutes
-            $sla = Cache::get(ConfigKey::RX_SLA_FOR_IMPS_PAYOUT);
-
-            $currentTime = Carbon::now()->getTimestamp();
-
-            $duration = ($currentTime - $fta->getCreatedAt()) / 60;
-
-            if (($sla != null) and
-                ($fta->getSourceType() === Attempt\Type::PAYOUT) and
-                (((int) $sla) < $duration) and
-                ($fta->getMode() === FTA\Mode::IMPS))
-            {
-                $this->trace->info(
-                    TraceCode::FTA_SLA_EXPIRED,
-                    [
-                        'fta_id'   => $this->ftaId,
-                        'mode'     => $this->mode,
-                        'sla'      => $sla,
-                        'duration' => $duration,
-                    ]);
-
-                return false;
-            }
-
             (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure',
                                           $data,
                                           null,
                                           1);
+
+            return $this->isFtaSlaBreached($fta);
         }
 
         return true;
@@ -252,5 +229,34 @@ class FundTransfer extends Job
                     'mode' => $this->mode
                 ]);
         }
+    }
+
+    private function isFtaSlaBreached(Attempt\Entity $fta): bool
+    {
+        // SLA in minutes
+        $sla = (new Admin\Service)->getConfigKey(['key' => ConfigKey::RX_SLA_FOR_IMPS_PAYOUT]);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $duration = ($currentTime - $fta->getCreatedAt()) / 60;
+
+        if (($sla != null) and
+            ($fta->getSourceType() === Attempt\Type::PAYOUT) and
+            (((int) $sla) < $duration) and
+            ($fta->getMode() === FTA\Mode::IMPS))
+        {
+            $this->trace->info(
+                TraceCode::FTA_SLA_EXPIRED,
+                [
+                    'fta_id'   => $this->ftaId,
+                    'mode'     => $this->mode,
+                    'sla'      => $sla,
+                    'duration' => $duration,
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

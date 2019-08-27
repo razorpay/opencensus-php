@@ -373,7 +373,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function getConfigKey($input): array
+    public function getConfigKey($input)
     {
         (new Validator)->validateInput('get_config_key', $input);
 
