@@ -44,7 +44,7 @@ export const getQuickGuideData = {
     return {
       title: '3. Receive Payments',
       content:
-        'Share the link of subscription with your customers to recieve payments.',
+        'Share the link of a subscription with your customers to receive payments.',
     };
   },
 };
