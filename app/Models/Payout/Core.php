@@ -118,15 +118,17 @@ class Core extends Base\Core
      * SOURCE: Merchant Balance (PG/Banking)
      * TO: Fund Account (BankAccount/VPA/Card etc) (fund_account_id)
      *
-     * @param array           $input
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param Batch\Entity    $batch
+     * @param Batch\Entity $batch
+     * @param string|null $batchId
      *
      * @return Entity
      */
     public function createPayoutToFundAccount(array $input,
                                               Merchant\Entity $merchant,
-                                              Batch\Entity $batch = null): Entity
+                                              Batch\Entity $batch = null,
+                                              string $batchId = null): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
@@ -134,9 +136,24 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->payout->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
+                                                                $merchant->getId(),
+                                                                $batchId);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
+
+        // TODO: remove batch entity handling once ramped to 100%
+        $batchIdOrBatch = $batchId === null ? $batch : $batchId;
+
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
-                       ->setBatch($batch)
+                       ->setBatch($batchIdOrBatch)
                        ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);

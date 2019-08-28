@@ -439,6 +439,8 @@ class PaymentRetrieveTest extends TestCase
 
     public function testSearchEsForNotesPrivateAuth()
     {
+        $this->markTestSkipped('Notes on ES has been allowed on private auth - transaction tracker');
+
         $this->ba->privateAuth();
 
         $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);

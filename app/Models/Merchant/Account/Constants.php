@@ -81,4 +81,15 @@ class Constants
 
     // defaults
     const DEFAULT_ACCOUNT_COUNT = 20;
+
+    // business model values
+    const B2B  = 'B2B';
+    const B2C  = 'B2C';
+    const B2BC = 'B2B+B2C';
+
+    public static $validBusinessModels = [
+        self::B2B,
+        self::B2C,
+        self::B2BC,
+    ];
 }

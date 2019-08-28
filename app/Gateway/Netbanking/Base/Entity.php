@@ -21,6 +21,7 @@ class Entity extends Base\Entity
     const DATE                  = 'date';
     const REFUND_ID             = 'refund_id';
     const REFERENCE1            = 'reference1';
+    const VERIFICATION_ID       = 'verification_id';
     const ACCOUNT_NUMBER        = 'account_number';
     const ACCOUNT_TYPE          = 'account_type';
     const ACCOUNT_SUBTYPE       = 'account_subtype';
@@ -82,6 +83,7 @@ class Entity extends Base\Entity
         self::STATUS,
         self::REFUND_ID,
         self::REFERENCE1,
+        self::VERIFICATION_ID,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
         self::ACCOUNT_SUBTYPE,
@@ -209,6 +211,11 @@ class Entity extends Base\Entity
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getVerificationId()
+    {
+        return $this->getAttribute(self::VERIFICATION_ID);
     }
 
     public function getReceived()

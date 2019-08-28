@@ -662,6 +662,9 @@ class Header
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // NPCI RUPAY IIN Batch
+    const IIN_NPCI_RUPAY_ROW                     = 'row';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -2104,6 +2107,17 @@ class Header
                 self::STATUS,
                 self::FAILURE_REASON,
             ]
+        ],
+
+        Type::IIN_NPCI_RUPAY => [
+            self::INPUT => [
+            ],
+            self::OUTPUT => [
+                self::IIN_NPCI_RUPAY_ROW,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
         ]
     ];
 
@@ -2126,7 +2140,7 @@ class Header
      */
     public static function validate(string $type, array $actualHeaders)
     {
-        $expectedHeaders = self::HEADER_MAP[$type][self::INPUT];
+        $expectedHeaders = Header::getInputHeadersForType($type);
 
         //
         // Notes is optional header in file. Currently optional headers are not supported and so this quick workaround
@@ -2152,6 +2166,12 @@ class Header
             ((in_array(self::CURRENCY, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::CURRENCY;
+        }
+
+        if ($type === Type::IIN_NPCI_RUPAY)
+        {
+            // header is dynamic for these dat files, adding hack to ignore
+            $actualHeaders = [];
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);

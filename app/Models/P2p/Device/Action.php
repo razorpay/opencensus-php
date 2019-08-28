@@ -41,4 +41,10 @@ class Action extends Base\Action
         self::GET_TOKEN                        => Requests::P2P_CUSTOMER_GET_TOKEN,
         self::GET_TOKEN_SUCCESS                => Requests::P2P_CUSTOMER_GET_TOKEN,
     ];
+
+    protected $redactRules = [
+        self::VERIFICATION_SUCCESS            => [
+            Entity::AUTH_TOKEN                => 'default',
+        ],
+    ];
 }

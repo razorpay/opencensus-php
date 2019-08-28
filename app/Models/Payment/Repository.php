@@ -670,7 +670,7 @@ class Repository extends Base\Repository
 
         $tTablename = $terminalRepo->getTableName();
 
-        $pGateway = $terminalRepo->dbColumn(Terminal\Entity::GATEWAY);
+        $pGateway = $this->dbColumn(Entity::GATEWAY);
 
         $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
 

@@ -682,9 +682,18 @@ class Core extends Base\Core
 
         $this->sourceReconByFta($fta->source, $ftaData);
 
-        if (($fta->getSourceType() == Type::PAYOUT) and
+        if (($fta->getSourceType() === Type::PAYOUT) and
             (in_array($fta->getChannel(), Settlement\Channel::getNonTransactionChannels(), true) === true))
         {
+            return;
+        }
+
+        if (($fta->getSourceType() === Type::REFUND) and ($fta->getStatus() !== Status::PROCESSED))
+        {
+            //
+            // For refund fta, not updating transaction entity if fta is not processed.
+            // Do not want to set recon details of transaction entity for non-processed refunds
+            //
             return;
         }
 

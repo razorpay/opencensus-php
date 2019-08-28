@@ -32,6 +32,7 @@ class CreateQuboleBankingAccountsView extends Migration
             BankingAccount::BENEFICIARY_STATE,
             BankingAccount::BENEFICIARY_COUNTRY,
             BankingAccount::BANK_REFERENCE_NUMBER,
+            BankingAccount::ACCOUNT_ACTIVATION_DATE,
             BankingAccount::REFERENCE1,
             BankingAccount::ACCOUNT_TYPE,
             BankingAccount::CREATED_AT,

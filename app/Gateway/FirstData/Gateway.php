@@ -134,8 +134,11 @@ class Gateway extends Base\Gateway
                     return $this->authorizeNotEnrolled($input, $authorizeRequest);
 
                 default:
+                    parent::action($input, Action::AUTHENTICATE);
 
                     $response = $this->enroll($input);
+
+                    parent::authorize($input);
 
                     return $this->decideStepAfterEnroll($response, $input);
 
@@ -1333,6 +1336,11 @@ class Gateway extends Base\Gateway
         {
             $this->traceAndHandleRequestErrorIfApplicable($e);
 
+            if ($this->action === Action::AUTHENTICATE)
+            {
+                $e->markSafeRetryTrue();
+            }
+
             throw $e;
         }
 
@@ -1347,7 +1355,14 @@ class Gateway extends Base\Gateway
 
         if (empty($response->body) === true)
         {
-            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+            $ex = new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+
+            if ($this->action === Action::AUTHENTICATE)
+            {
+                $ex->markSafeRetryTrue();
+            }
+
+            throw $ex;
         }
 
         $xml = simplexml_load_string(trim($response->body));
@@ -1510,7 +1525,7 @@ class Gateway extends Base\Gateway
         // To support both the flows, we are using s2sFlowFlag, whose value will depend on card network,
         // whether merchant has s2s feature enabled and whether it is a recurring payment.
         if (($this->s2sFlowFlag === true) and
-            ($this->action === Action::AUTHORIZE))
+            (($this->action === Action::AUTHENTICATE) or ($this->action === Action::AUTHORIZE)))
         {
             $component = Component::API;
         }

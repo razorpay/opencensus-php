@@ -278,7 +278,7 @@ class PublicEntity extends UniqueIdEntity
         return array_only($attributes, $this->hosted);
     }
 
-    public function toArrayPublicCustomer()
+    public function toArrayPublicCustomer(bool $populateMessages = false)
     {
         $attributes = $this->toArrayPublic();
 

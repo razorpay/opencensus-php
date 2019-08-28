@@ -122,6 +122,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                  = 'Contact number should not be greater than 15 digits, including country code';
     const BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED                       = 'Contact number needs to be Indian.';
     const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported';
+    const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED                        = 'Corporate card is not allowed for this payment';
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';
@@ -325,6 +326,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CARD_PAYMENT_DECLINED_MODE_NOT_SUPPORTED                  = 'Payment declined by issuer. Issuer does not support this mode of transaction.';
     const BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS                            = 'Payments Blocked by cardholder on this card.';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
+    const BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST                             = 'Merchant email type does not Exist';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -620,6 +622,8 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT                          = 'User doesn\'t belong to the current merchant';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
+    const BAD_REQUEST_INVITATION_CREATE_FAILED                                  = 'Invitation create failed either due to user invited is restricted or merchant is restricted';
+    const BAD_REQUEST_INVITATION_ACCEPT_FAILED                                  = 'Invitation accept failed either due to user invited is restricted or merchant is restricted';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
     const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                              = 'Self-Invitation not allowed';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                              = 'SuperAdmin Role is not editable';
@@ -875,4 +879,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
+
+    // Excel Store
+    const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
 }

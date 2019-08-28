@@ -18,6 +18,7 @@ class Entity extends Base\Entity
 
     /****************** Input Keys ***************/
     const BANK_NAME    = 'bank_name';
+    const TXN_PREFIX   = 'txn_prefix';
 
     /************** Entity Properties ************/
 
@@ -32,6 +33,9 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
+        Entity::CODE,
+        Entity::MERCHANT_ID,
+        Entity::BANK,
         Entity::ACQUIRER,
         Entity::ACTIVE,
     ];
@@ -49,6 +53,8 @@ class Entity extends Base\Entity
         Entity::ENTITY,
         Entity::CODE,
         Entity::BANK,
+        Entity::ACTIVE,
+        Entity::CREATED_AT,
     ];
 
     protected $defaults = [
@@ -154,6 +160,22 @@ class Entity extends Base\Entity
     public function isActive()
     {
         return $this->getAttribute(self::ACTIVE);
+    }
+
+    public function getTxnPrefix(string $merchantId)
+    {
+        // Currently hardcoding for the map we have
+        // Later we need to find a way for separate prefix for a handle and merchant
+        $map = [
+            // Test Cases
+            'razoraxis' => 'RRA',
+            // Stage
+            'bajaj'     => 'BJJ',
+            // Prod
+            'abfspay'   => 'BJJ',
+        ];
+
+        return array_get($map, $this->getCode(), 'TST');
     }
 
     public function getMaxAllowedVpas(string $merchantId): int

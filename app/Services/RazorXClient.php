@@ -6,6 +6,7 @@ use Cache;
 use Request;
 use Requests;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class RazorXClient
 {
@@ -36,7 +37,7 @@ class RazorXClient
     const DEFAULT_CASE      = 'control';
 
     const CACHED_TREATMENT_PREFIX = "razorx:";
-    const CACHED_TREATMENT_TTL = 15; // In minutes.
+    const CACHED_TREATMENT_TTL = 1; // In minutes.
 
     protected $baseUrl;
 
@@ -207,8 +208,6 @@ class RazorXClient
 
         $request = $this->getRequestParams($url, $method, $data);
 
-        $this->traceRequest($request);
-
         try
         {
             $response = Requests::request(
@@ -218,17 +217,25 @@ class RazorXClient
                 $request['method'],
                 $request['options']);
 
-            return $this->parseAndReturnResponse($response);
+            return $this->parseAndReturnResponse($response, $request);
         }
         catch(\Throwable $e)
         {
-            $this->trace->error(TraceCode::RAZORX_REQUEST_FAILED, ['error' => 'Server error occurred']);
+            unset($request['options']['auth']);
+
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::RAZORX_REQUEST_FAILED,
+                [
+                    'request'   => $request,
+                ]);
 
             return self::DEFAULT_CASE;
         }
     }
 
-    protected function parseAndReturnResponse($res)
+    protected function parseAndReturnResponse($res, $req = null)
     {
         $code = $res->status_code;
 
@@ -240,7 +247,12 @@ class RazorXClient
         }
         else
         {
-            $this->trace->error(TraceCode::RAZORX_REQUEST_FAILED, json_decode($res->body, true));
+            unset($req['options']['auth']);
+
+            $this->trace->error(TraceCode::RAZORX_REQUEST_FAILED, [
+                'request'   => $req,
+                'response'  => json_decode($res->body, true),
+            ]);
         }
 
         return self::DEFAULT_CASE;
@@ -272,14 +284,6 @@ class RazorXClient
             'options' => $options,
             'content' => $data,
         ];
-    }
-
-    // TODO: Remove this trace once stable
-    protected function traceRequest(array $request)
-    {
-        unset($request['options']['auth']);
-
-        $this->trace->info(TraceCode::RAZORX_REQUEST, $request);
     }
 
     protected function storeVariant($variant)

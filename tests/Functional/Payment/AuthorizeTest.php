@@ -6,6 +6,7 @@ use Mail;
 use Cache;
 use Redis;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
@@ -1440,6 +1441,48 @@ class AuthorizeTest extends TestCase
             {
                 $this->doAuthPayment($payment);
             });
+    }
+
+    public function testAuthorizeWithSubTypeDisabled()
+    {
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'US',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'sub_type'=> 'business',
+        ]);
+        $this->ba->publicLiveAuth();
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->merchant->disableCardSubType('10000000000000', 'business');
+
+        $data = $this->testData['testAuthorizeWithSubTypeDisabled'];
+
+        $payment['card']['number'] = '555555555555558';
+        $payment['card']['cvv']    = '880';
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $request = [
+                'method'  => 'POST',
+                'url'     => '/payments',
+                'content' => $payment
+            ];
+
+            $this->ba->publicLiveAuth();
+
+            $this->makeRequestAndGetContent($request);
+        });
+
     }
 
 }
