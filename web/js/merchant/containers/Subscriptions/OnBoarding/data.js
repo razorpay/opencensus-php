@@ -4,18 +4,18 @@ export const FEATURES_DATA = [
     icon: '/dist/css/assets/product_onboarding/without_coding.svg',
     title: 'Subscription Links',
     desc:
-      'Share unique links and onboard users for your Subscription packages instantly! No API integration necessary.',
+      'Share unique links to onboard your customers on your Subscription plans instantly! Zero coding, Zero integration.',
   },
   {
     icon: '/dist/css/assets/product_onboarding/partial_payments.svg',
     title: 'Multi-currency Support',
     desc:
-      'Accept recurring payments from customers in India and abroad via Razorpay Subscriptions. 100 currencies including supported!',
+      'Accept recurring payments from customers in India and abroad via Razorpay Subscriptions. 100 currencies supported!',
   },
   {
     icon: '/dist/css/assets/product_onboarding/alter_native_payment_option.svg',
-    title: 'Multiple payment modes',
-    desc: `Offer your customers a variety of payment methods. All payment modes offering recurring are compliant with RBI's regulations.`,
+    title: 'Multiple Payment methods',
+    desc: `Offer your customers a wide variety of payment methods. All payment methods which support recurring payments are compliant with RBI regulations.`,
   },
 ];
 
