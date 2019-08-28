@@ -359,6 +359,12 @@ export default class User {
   get isPostActivationHotjarSurveyEnabled() {
     return this.getExpStatus('post_activation_hotjar_survey');
   }
+
+  get isAllowedTeamManagement() {
+    return this.isMerchantRestricted
+      ? this.isAllowedView('team')
+      : this.isAllowedEdit('team');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

@@ -35,15 +35,17 @@ export default class InvitationsListContainer extends ListContainer {
       <DataTable
         title="Invitations"
         panelHeading={
-          !loading && {
-            title: (
-              <>
-                Pending Invitations (<small class="text-muted">
-                  {items.length}
-                </small>)
-              </>
-            ),
-          }
+          !loading && items.length
+            ? {
+                title: (
+                  <>
+                    Pending Invitations (<small class="text-muted">
+                      {items.length}
+                    </small>)
+                  </>
+                ),
+              }
+            : undefined
         }
         columns={[email, role, this.actions]}
         {...this.props}

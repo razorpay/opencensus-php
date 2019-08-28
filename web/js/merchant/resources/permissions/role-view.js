@@ -143,6 +143,7 @@ export default {
   activation: ['owner', 'admin', 'manager'],
   referrals: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
   team: ['owner', 'admin', 'rbl_supervisor'],
+  invitations: ['owner', 'rbl_supervisor'],
   webhooks: ['owner', 'admin', 'manager'],
   configuration: ['owner', 'admin', 'manager'],
   applications: ['owner'],

@@ -80,7 +80,11 @@ export default class ManageTeamContainer extends React.Component {
           </div>
         </HeaderAction>
         <div class="ManageTeam--list">
-          <InvitationsList {...this.props} />
+          <ShowWhen
+            additionalCondition={user => user.isAllowedView('invitations')}
+          >
+            <InvitationsList {...this.props} />
+          </ShowWhen>
 
           <div class="m-t" />
 

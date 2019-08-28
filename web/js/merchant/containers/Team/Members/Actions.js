@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import { removeMember, updateMember } from 'merchant/modules/team';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
@@ -29,18 +29,16 @@ export default class MembersActions extends Component {
     const member = this.props.member;
 
     const visibleFields = {
-      role: true,
-      contactMobile: showWhenUtil({
+      role: showWhenUtil({
         additionalCondition: user =>
           user.isMerchantRestricted && user.isAllowedEdit('team'),
       }),
+      contactMobile: showWhenUtil({
+        additionalCondition: user => user.isMerchantRestricted,
+      }),
     };
 
-    const toBePickedFields = [
-      'role',
-      'id',
-      ...(visibleFields.contactMobile ? ['contact_mobile'] : []),
-    ];
+    const toBePickedFields = getToBePickedUpFields(visibleFields, ['id']);
 
     const defaults = pickProps(member, toBePickedFields);
 
@@ -104,19 +102,42 @@ export default class MembersActions extends Component {
   };
 
   render() {
-    return (
-      <>
-        <button class="btn btn-primary m-r" onClick={this.update}>
-          Update
-        </button>
+    const member = this.props.member;
 
-        <AsyncButton
-          class="btn btn-default"
-          text="Remove"
-          pendingText="Removing..."
-          onClick={this.remove}
-        />
-      </>
+    return (
+      !isOwner(member) && (
+        <>
+          <button class="btn btn-primary m-r" onClick={this.update}>
+            Update
+          </button>
+
+          <ShowWhen additionalCondition={user => user.isAllowedEdit('team')}>
+            <AsyncButton
+              class="btn btn-default"
+              text="Remove"
+              pendingText="Removing..."
+              onClick={this.remove}
+            />
+          </ShowWhen>
+        </>
+      )
     );
   }
+}
+
+function isOwner(member) {
+  return member.role === 'owner';
+}
+
+function getToBePickedUpFields(visibleFields, alwaysPickedUpFields) {
+  const toBePickedFields = [...alwaysPickedUpFields];
+  if (visibleFields.role) {
+    toBePickedFields.push('role');
+  }
+
+  if (visibleFields.contactMobile) {
+    toBePickedFields.push('contact_mobile');
+  }
+
+  return toBePickedFields;
 }
