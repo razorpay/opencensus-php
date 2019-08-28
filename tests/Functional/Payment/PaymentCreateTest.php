@@ -1767,7 +1767,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1817,7 +1817,7 @@ class PaymentCreateTest extends TestCase
 
         $payment['method'] = 'netbanking';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1872,7 +1872,7 @@ class PaymentCreateTest extends TestCase
         $payment['save'] = true;
         $payment['recurring'] = 'preferred';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1928,7 +1928,7 @@ class PaymentCreateTest extends TestCase
             'ifsc'              => 'UTIB0002766'
         ];
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
 
         $request = [
