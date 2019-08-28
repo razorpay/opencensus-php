@@ -27,6 +27,7 @@ class Core extends Base\Core
 
     public function __construct()
     {
+
         parent::__construct();
 
         $this->mutex     = $this->app['api.mutex'];
@@ -35,6 +36,7 @@ class Core extends Base\Core
 
     public function shouldForceUpdateArnAfterScroogeRecon($input)
     {
+
         //
         // When we run local tests, then after post request, (bool) TRUE converts
         // to (string) "1", and false converts to string "0".
@@ -57,6 +59,7 @@ class Core extends Base\Core
      */
     public function checkAndCreateIfRefundTransactionMissing(Refund\Entity $refund): Refund\Entity
     {
+
         $refundTransaction = $refund->transaction;
 
         if ($refundTransaction === null)
@@ -67,11 +70,11 @@ class Core extends Base\Core
             {
                 $this->messenger->raiseReconAlert(
                     [
-                        'trace_code'    => TraceCode::RECON_MISMATCH,
-                        'message'       => 'Refund transaction not found in DB',
-                        'refund_id'     => $refund->getId(),
-                        'amount'        => $refund->getAmount(),
-                        'gateway'       => $refund->getGateway(),
+                        'trace_code' => TraceCode::RECON_MISMATCH,
+                        'message'    => 'Refund transaction not found in DB',
+                        'refund_id'  => $refund->getId(),
+                        'amount'     => $refund->getAmount(),
+                        'gateway'    => $refund->getGateway(),
                     ]);
             }
             else
@@ -87,6 +90,7 @@ class Core extends Base\Core
 
     public function attemptToCreateMissingRefundTransaction(Refund\Entity $refund)
     {
+
         $paymentTransaction = $refund->payment->transaction;
 
         if ($paymentTransaction === null)
@@ -104,16 +108,15 @@ class Core extends Base\Core
             }
 
             return true;
-        }
-        catch (\Exception $ex)
+        } catch (\Exception $ex)
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::REFUND_TRANSACTION_CREATE_FAILED,
-                    'message'       => 'Refund transaction create failed with -> ' . $ex->getMessage(),
-                    'payment_id'    => $refund->payment->getId(),
-                    'refund_id'     => $refund->getId(),
-                    'gateway'       => $refund->getGateway(),
+                    'trace_code' => TraceCode::REFUND_TRANSACTION_CREATE_FAILED,
+                    'message'    => 'Refund transaction create failed with -> ' . $ex->getMessage(),
+                    'payment_id' => $refund->payment->getId(),
+                    'refund_id'  => $refund->getId(),
+                    'gateway'    => $refund->getGateway(),
                 ]);
 
             $this->trace->traceException($ex);
@@ -124,14 +127,15 @@ class Core extends Base\Core
 
     protected function createMissingRefundTransaction(Refund\Entity $refund)
     {
+
         assertTrue($refund->transaction === null);
 
         $this->trace->info(
             TraceCode::REFUND_TRANSACTION_CREATE_RECON,
             [
-                'payment_id'    => $refund->payment->getId(),
-                'refund_id'     => $refund->getId(),
-                'gateway'       => $refund->getGateway()
+                'payment_id' => $refund->payment->getId(),
+                'refund_id'  => $refund->getId(),
+                'gateway'    => $refund->getGateway()
             ]);
 
         $processor = new Payment\Processor\Processor($refund->merchant);
@@ -154,6 +158,7 @@ class Core extends Base\Core
      */
     public function persistReconciledAtAfterScroogeRecon(Refund\Entity $refund, $data, $source)
     {
+
         $apiReconciledAt = $refund->transaction->getReconciledAt();
 
         $scroogeReconciledAt = $data[Transaction\Entity::RECONCILED_AT];
@@ -181,6 +186,7 @@ class Core extends Base\Core
 
     public function updateScroogeBatchSummary(string $batchId, int $totalSuccessCount, int $totalFailureCount)
     {
+
         $batch = $this->repo->batch->findOrFail($batchId);
         //
         // Since we might get multiple scrooge responses (due to chunks) containing
@@ -191,6 +197,7 @@ class Core extends Base\Core
             $batchId,
             function () use ($batch, $totalSuccessCount, $totalFailureCount)
             {
+
                 $batch->reload();
 
                 $batch->incrementFailureCount($totalFailureCount);
@@ -218,6 +225,7 @@ class Core extends Base\Core
      */
     protected function setStatusAndProcessingFlagIfApplicable($batch)
     {
+
         if (($batch->getSuccessCount() + $batch->getFailureCount()) === $batch->getProcessedCount())
         {
             $reconBatchProcessor = new Batch\Processor\Reconciliation($batch);
@@ -260,6 +268,7 @@ class Core extends Base\Core
 
     public function pushSuccessPaymentReconMetrics(Payment\Entity $payment, $source)
     {
+
         $this->trace->histogram(
             Metric::RECON_PAYMENT_CREATE_TO_RECONCILED_TIME_MINUTES,
             $payment->transaction->getReconTimeFromTransactionCreationInMinutes(),
@@ -269,6 +278,7 @@ class Core extends Base\Core
 
     public function pushRefundProcessedMetric(Refund\Entity $refund, $source)
     {
+
         $this->trace->histogram(
             Metric::RECON_REFUND_CREATED_TO_PROCESSED_TIME_MINUTES,
             $refund->getTimeFromCreatedInMinutes(),
@@ -277,6 +287,7 @@ class Core extends Base\Core
 
     public function pushSuccessRefundReconMetrics(Refund\Entity $refund, $source)
     {
+
         $this->trace->histogram(
             Metric::RECON_REFUND_CREATE_TO_RECONCILED_TIME_MINUTES,
             $refund->transaction->getReconTimeFromTransactionCreationInMinutes(),
