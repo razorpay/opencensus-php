@@ -2249,7 +2249,7 @@ trait Authorize
             }
 
             // mcc is supported only for card payments and wallet paypal.
-            if ($payment->isCard() === false and $payment->getWallet() !== "paypal")
+            if ($payment->isMccSupported() === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -2277,14 +2277,7 @@ trait Authorize
 
         $amount = $payment->getAmount();
 
-        if($payment->getWallet() === "paypal")
-        {
-            $baseAmount = $amount;
-        }
-        else
-        {
-            $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
-        }
+        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use 1 percentage lower
