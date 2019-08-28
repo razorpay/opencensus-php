@@ -249,11 +249,12 @@ class Reconciliate extends Base\Core
      */
     protected function generateReconOutputFile(Batch\Processor\Reconciliation $batchProcessor, array $extraDetails)
     {
-        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData());
 
         $batch = $batchProcessor->batch;
 
         $batchId = $batch->getId();
+
+        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData(), $batchId);
 
         $sheetName = null;
 
@@ -365,7 +366,7 @@ class Reconciliate extends Base\Core
      * removes blacklisted columns if present. otherwise adds processed_at column for each row.
      */
 
-    protected function getOutputWithRemovedBlackListedColumns($reconOutputData)
+    protected function getOutputWithRemovedBlackListedColumns($reconOutputData, $batchId)
     {
         $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
 
@@ -376,6 +377,8 @@ class Reconciliate extends Base\Core
             $row = array_diff_key($row, array_flip($blackListedColumns));
 
             $row['processed_at'] = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+
+            $row['batch_id'] = $batchId;
 
             array_push($updatedData, $row);
         }
