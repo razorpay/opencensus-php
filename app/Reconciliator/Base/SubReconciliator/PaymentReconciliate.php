@@ -139,6 +139,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
 
+        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+
         try
         {
             //

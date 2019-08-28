@@ -79,6 +79,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             return $this->handleUnprocessedRow($row);
         }
 
+        $this->setMerchantIdInOutput($this->refund->getMerchantId());
+
         $refundId = $rowDetails[BaseReconciliate::REFUND_ID];
 
         try

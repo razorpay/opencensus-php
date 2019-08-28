@@ -32,6 +32,7 @@ class SubReconciliate extends Base\Core
     const RECON_TYPE        = 'recon_type';
     const RECON_STATUS      = 'recon_status';
     const RECON_ERROR_MSG   = 'recon_error_msg';
+    const MERCHANT_ID       = 'merchant_id';
 
     /**
      * The list of payments/refunds attempted to reconcile.
@@ -245,6 +246,7 @@ class SubReconciliate extends Base\Core
         $row[self::RECON_TYPE]      = $reconType;
         $row[self::RECON_STATUS]    = '';
         $row[self::RECON_ERROR_MSG] = '';
+        $row[self::MERCHANT_ID]     = '';
 
         static::$reconOutputData[] = $row;
 
@@ -512,6 +514,15 @@ class SubReconciliate extends Base\Core
 
             static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorMsg;
         }
+    }
+
+    /**
+     * sets merchantId for the current row in progress
+     * @param string $merchantId
+     */
+    protected function setMerchantIdInOutput(string $merchantId)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::MERCHANT_ID] = $merchantId;
     }
 
     /**
