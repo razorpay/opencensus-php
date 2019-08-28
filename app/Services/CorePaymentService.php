@@ -122,6 +122,33 @@ class CorePaymentService
         return $response;
     }
 
+    public function syncCron(array $data = [])
+    {
+        $count = $data['count'] ?? 100;
+
+        $request = [
+            'url'     => 'sync',
+            'method'  => 'GET',
+            'content' => [
+                'count' => $count,
+            ],
+            'headers' => [
+                self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
+                self::X_REQUEST_ID             => $this->app['request']->getId(),
+            ],
+        ];
+
+        $this->traceRequest($request);
+
+        $response = $this->sendRawRequest($request);
+
+        $response = $this->processResponse($response);
+
+        $this->traceResponse($response);
+
+        return $response;
+    }
+
     protected function sendRawRequest($request)
     {
         $retryCount = 0;
@@ -130,10 +157,17 @@ class CorePaymentService
         {
             try
             {
+                $content = $request['content'];
+
+                if ($request['method'] === 'POST')
+                {
+                    $content = json_encode($request['content']);
+                }
+
                 $response = $this->request->request(
                     $request['url'],
                     $request['headers'],
-                    json_encode($request['content']),
+                    $content,
                     $request['method']);
 
                 break;

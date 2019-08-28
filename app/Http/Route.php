@@ -1197,6 +1197,9 @@ final class Route
         'p2p_admin_add_handle'                    => ['post',     'p2p/handles',                                               'P2p\VpaController@createHandle'],
         'p2p_admin_update_handle'                 => ['put',      'p2p/handles/{code}',                                        'P2p\VpaController@updateHandle'],
         'p2p_admin_manage_banks'                  => ['post',     'p2p/banks/bulk/manage',                                     'P2p\BankAccountController@manageBulkBanks'],
+
+        // Core Payment Service Routes
+        'cps_sync_gateway_entities_cron'          => ['post',     'cps/sync_gateway_entities',                                 'CpsController@syncGatewayEntities'                        ],
     ];
 
     public static $public = [
@@ -1630,6 +1633,7 @@ final class Route
         'subscription_registration_auto_charge',
         'partner_submerchant_map',
         'refund_speed_processed_backfill',
+        'cps_sync_gateway_entities_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2986,6 +2990,7 @@ final class Route
             'gateway_downtime_detection_purge_keys',
             'subscription_registration_auto_charge',
             'refund_speed_processed_backfill',
+            'cps_sync_gateway_entities_cron',
         ],
 
         'subscriptions' => [
