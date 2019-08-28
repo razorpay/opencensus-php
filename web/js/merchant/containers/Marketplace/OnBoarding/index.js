@@ -134,6 +134,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
                   title="What makes Route great?"
                   desc="We'd require the following details to enable Razorpay Route on your account."
                   imageUrl="https://razorpay.com/assets/route/route-landing.svg"
+                  onSubmitClick={this.onSubmitClick}
                 />
               )
             : null}
