@@ -4857,12 +4857,8 @@ trait Authorize
             ($this->isPreferredRecurring($input) === false) and
             ($this->payment->isMoto() === false))
         {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
 
-            if (strtolower($response) === 'on')
-            {
-                $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
-            }
+            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
         }
 
         if (isset($cardInput[Card\Entity::VAULT]) === true)
