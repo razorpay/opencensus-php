@@ -31,7 +31,7 @@ import { setTrackData } from 'rzp/utils/googleAnalytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import initChat from 'merchant/chat';
-import track from 'react-tracking';
+import RTracking from 'react-tracking';
 
 @withRouter
 @connect(
@@ -50,7 +50,7 @@ import track from 'react-tracking';
     resizeWindow,
   }
 )
-@track(
+@RTracking(
   ({ user, mode }) => {
     const u = { email: user.user.email, id: user.user.id, mid: user.current };
     let utm = null;

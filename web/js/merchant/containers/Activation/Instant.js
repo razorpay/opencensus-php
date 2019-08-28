@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
+import RTracking from 'react-tracking';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Collapsible from 'merchant/components/Collapsible';
@@ -63,9 +64,18 @@ function defaultFieldProps(f) {
   }
 }
 
+function getLabelFromBusinessTypeOption(val) {
+  const numVal = Number(val);
+  const label = (
+    BUSINESS_TYPE_OPTIONS.find(option => option.name === numVal) || {}
+  ).label;
+  return label;
+}
+
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 1;
 
+@RTracking(() => window.rzpQ.component('ActivationWizard'))
 @withRouter
 @connect(
   state => ({
@@ -206,83 +216,84 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
+  @RTracking(() => window.rzpQ.initiated('act.submit_form'))
   submitForm = () => {
     const data = this.formData;
+    console.log('formData', data);
+    // return merchantFetch({
+    //   url: 'merchant/instant_activation',
+    //   method: 'POST',
+    //   mode: 'live',
+    //   data: data,
+    //   accountId: this.props.accountId,
+    // })
+    //   .then(response => {
+    //     if (this.onActivationSuccess) {
+    //       return this.onActivationSuccess(response);
+    //     }
 
-    return merchantFetch({
-      url: 'merchant/instant_activation',
-      method: 'POST',
-      mode: 'live',
-      data: data,
-      accountId: this.props.accountId,
-    })
-      .then(response => {
-        if (this.onActivationSuccess) {
-          return this.onActivationSuccess(response);
-        }
+    //     this.updateSession(response.data); // Updating % activation_progress (side bar)
 
-        this.updateSession(response.data); // Updating % activation_progress (side bar)
+    //     trackL1FormSuccess(this.user.activation_flow);
 
-        trackL1FormSuccess(this.user.activation_flow);
+    //     // updating contact propteries of hubspot contact
+    //     updateHubSpotContactsProperties({
+    //       ...data,
+    //       activation_flow: this.user.activation_flow,
+    //       completed: true,
+    //     });
 
-        // updating contact propteries of hubspot contact
-        updateHubSpotContactsProperties({
-          ...data,
-          activation_flow: this.user.activation_flow,
-          completed: true,
-        });
+    //     const {
+    //       isWhitelistFlow,
+    //       isBlacklistFlow,
+    //       isGraylistFlow,
+    //     } = this.user.instantActivation;
 
-        const {
-          isWhitelistFlow,
-          isBlacklistFlow,
-          isGraylistFlow,
-        } = this.user.instantActivation;
+    //     if (isWhitelistFlow) {
+    //       this.props.showInstantActivationSuccessModal();
+    //       fireAnalyticsEvents({ fbData: 'activation_complete_success' });
+    //     } else if (isGraylistFlow) {
+    //       this.props.showKYCDetailsModal();
+    //     }
 
-        if (isWhitelistFlow) {
-          this.props.showInstantActivationSuccessModal();
-          fireAnalyticsEvents({ fbData: 'activation_complete_success' });
-        } else if (isGraylistFlow) {
-          this.props.showKYCDetailsModal();
-        }
+    //     let data = new BingDataObj('activationform', 'complete', 'success', 1);
+    //     fireAnalyticsEvents({
+    //       bingData: data,
+    //       liData: 987404,
+    //       twiData: 'o1ua0',
+    //     }); //fb = false, bing, linkedin, twitter
 
-        let data = new BingDataObj('activationform', 'complete', 'success', 1);
-        fireAnalyticsEvents({
-          bingData: data,
-          liData: 987404,
-          twiData: 'o1ua0',
-        }); //fb = false, bing, linkedin, twitter
+    //     return this.props.history.replace(`/`);
+    //   })
+    //   .catch(err => {
+    //     if (err.errors.length && err.errors[0]) {
+    //       this.props.showNotification({
+    //         type: 'error',
+    //         message: err.errors,
+    //       });
+    //     }
 
-        return this.props.history.replace(`/`);
-      })
-      .catch(err => {
-        if (err.errors.length && err.errors[0]) {
-          this.props.showNotification({
-            type: 'error',
-            message: err.errors,
-          });
-        }
+    //     trackL1FormError();
 
-        trackL1FormError();
+    //     let dataError = new BingDataObj(
+    //       'activationform',
+    //       'complete',
+    //       'error',
+    //       1
+    //     );
+    //     fireAnalyticsEvents({
+    //       fbData: 'activation_complete_error',
+    //       bingData: dataError,
+    //       liData: 987412,
+    //       twiData: 'o1ua2',
+    //     });
 
-        let dataError = new BingDataObj(
-          'activationform',
-          'complete',
-          'error',
-          1
-        );
-        fireAnalyticsEvents({
-          fbData: 'activation_complete_error',
-          bingData: dataError,
-          liData: 987412,
-          twiData: 'o1ua2',
-        });
+    //     if (this.onActivationSuccess) {
+    //       this.onActivationSuccess({ success: false });
+    //     }
 
-        if (this.onActivationSuccess) {
-          this.onActivationSuccess({ success: false });
-        }
-
-        return err;
-      });
+    //     return err;
+    //   });
   };
 
   onChange = ({ target }) => {
@@ -364,6 +375,26 @@ export default class ActivationWizard extends React.Component {
     return this.props.handleUIUpdate && this.props.handleUIUpdate();
   }
 
+  trackField = e => {
+    const { name, value, type } = e.target;
+    const { tracking } = this.props;
+    let newVal,
+      eventName = name;
+    newVal =
+      eventName === 'business_type'
+        ? getLabelFromBusinessTypeOption(value)
+        : value;
+    if (type === 'checkbox' || type === 'radio') {
+      newVal = value;
+      eventName = e.target.getAttribute('data-name');
+    }
+    tracking.trackEvent(
+      window.rzpQ.initiated(`act.provide_act_details.${eventName}`, {
+        value: newVal,
+      })
+    );
+  };
+
   componentDidMount() {
     this.handleUIUpdate();
 
@@ -384,6 +415,7 @@ export default class ActivationWizard extends React.Component {
 
   render() {
     const isFormLocked = !!this.props.data.locked;
+    const { tracking } = this.props;
 
     const content = FORM_TABS.map((field, i) => {
       if (Array.isArray(field)) {
@@ -391,7 +423,14 @@ export default class ActivationWizard extends React.Component {
           return (
             <Collapsible
               title={collapsibleOpen => (
-                <span class="text-primary">
+                <span
+                  class="text-primary"
+                  onClick={() => {
+                    tracking.trackEvent(
+                      window.rzpQ.initiated('act.view_signup_fields')
+                    );
+                  }}
+                >
                   {collapsibleOpen ? 'Hide' : 'Show'} previously filled details
                 </span>
               )}
@@ -526,6 +565,7 @@ function ActivationField(field) {
       autoRender={_autoRenderImpure}
       required={typeof required === 'function' ? required(this) : required}
       {...rest}
+      onBlur={this.trackField}
     />
   );
 }
@@ -569,9 +609,9 @@ function updateHubSpotContactsProperties(data) {
   delete hbsData.l1_business_model;
 
   if (data.business_type) {
-    hbsData.l1_business_type = (
-      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
-    ).label;
+    hbsData.l1_business_type = getLabelFromBusinessTypeOption(
+      data.business_type
+    );
   }
 
   if (hbsData.l1_promoter_pan) {

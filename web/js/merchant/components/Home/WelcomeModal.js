@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
-export default ({ onActivate, onClose }) => (
+const WelcomeModal = ({ onActivate, onClose, tracking }) => (
   <div className="welcome-modal-content">
     <h1 className="welcome-title">Welcome to your</h1>
     <h1 className="welcome-title welcome-subtitle">Razorpay Dashboard</h1>
@@ -12,7 +13,14 @@ export default ({ onActivate, onClose }) => (
       details.
     </p>
     <div className="welcome-modal-actions">
-      <Link to="/activation" onClick={onActivate} className="btn btn-primary">
+      <Link
+        to="/activation"
+        onClick={() => {
+          onActivate();
+          tracking.trackEvent(window.rzpQ.initiated('act.form_fill'));
+        }}
+        className="btn btn-primary"
+      >
         Activate your account
       </Link>
       <span className="btn-link m-l cursor-pointer" onClick={onClose}>
@@ -21,3 +29,7 @@ export default ({ onActivate, onClose }) => (
     </div>
   </div>
 );
+
+export default RTracking(() => {
+  window.rzpQ.component('WelcomeModal');
+})(WelcomeModal);

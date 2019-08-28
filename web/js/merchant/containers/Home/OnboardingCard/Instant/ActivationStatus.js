@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 
 import { activationDuration } from 'common/data';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
-import track from 'react-tracking';
+import RTracking from 'react-tracking';
 
 const initialState = {
   status: null,
   content: null,
   title: 'Account Activation',
 };
-@track((state, props, args) => {
+@RTracking(() => {
   return window.rzpQ.component('ActivationCard');
 })
 export default class ActivationCard extends Component {
@@ -20,6 +20,7 @@ export default class ActivationCard extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    const { tracking } = this.props;
     const {
         instantActivation,
         isSubmitted,
@@ -50,8 +51,10 @@ export default class ActivationCard extends Component {
               className="btn btn-primary"
               onClick={e => {
                 track.activateAccount();
-                this.props.tracking.trackEvent(
-                  window.rzpQ.initiated('activation')
+                tracking.trackEvent(
+                  window.rzpQ.initiated('act.form_fill', {
+                    clickSource: 'Dashboard CTA',
+                  })
                 );
               }}
             >
@@ -105,7 +108,14 @@ export default class ActivationCard extends Component {
           <Link
             to="/activation"
             className="btn-link"
-            onClick={() => track.refillActivationForm()}
+            onClick={() => {
+              track.refillActivationForm();
+              tracking.trackEvent(
+                window.rzpQ.initiated('act.form_fill', {
+                  clickSource: 'Modify Business Category',
+                })
+              );
+            }}
           >
             here
           </Link>
