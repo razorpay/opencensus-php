@@ -232,7 +232,6 @@ abstract class ApiProcessor extends NodalAccount
                     $this->method,
                     $this->options);
 
-                $this->traceResponseTime($response, $startTime);
             }
             catch (\Throwable $e)
             {
@@ -247,6 +246,8 @@ abstract class ApiProcessor extends NodalAccount
         }
 
         $response = $this->handleEmptyResponse($response);
+
+        $this->traceResponseTime($response->status_code, $startTime);
 
         $this->traceResponse($response);
 
@@ -292,7 +293,6 @@ abstract class ApiProcessor extends NodalAccount
                     $requestInput,
                     $this->mode);
 
-                $this->traceResponseTime($response, $startTime);
             }
             catch (\Throwable $e)
             {
@@ -305,6 +305,8 @@ abstract class ApiProcessor extends NodalAccount
                     ]);
             }
         }
+
+        $this->traceResponseTime($response[Metric::STATUS_CODE], $startTime);
 
         $this->traceGatewayResponse($response);
 
@@ -347,13 +349,13 @@ abstract class ApiProcessor extends NodalAccount
         ]);
     }
 
-    private function traceResponseTime(\Requests_Response $response, int $startTime)
+    private function traceResponseTime($status_code, int $startTime)
     {
         $duration = millitime() - $startTime;
 
         $dimensions = [
             Metric::CHANNEL            => $this->channel,
-            Metric::STATUS_CODE        => $response->status_code,
+            Metric::STATUS_CODE        => $status_code,
             Metric::REQUEST_TRACE_CODE => $this->requestTraceCode,
             Metric::MODE               => $this->mode,
         ];
