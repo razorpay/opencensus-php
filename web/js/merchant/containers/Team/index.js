@@ -10,6 +10,7 @@ import { removeUser, cancelInvitation, unlock } from 'merchant/modules/team';
 import Actions from './Actions';
 import InvitationsList from './Invitations/List';
 import MembersList from './Members/List';
+import Toggle2FA from './Toggle2FA';
 
 export default class ManageTeamContainer extends React.Component {
   static contextTypes = {
@@ -99,6 +100,11 @@ export default class ManageTeamContainer extends React.Component {
   render() {
     return (
       <div class="content-wrapper content-sm">
+        <ShowWhen
+          additionalCondition={user => user.getExpStatus('second_factor_auth')}
+        >
+          <Toggle2FA />
+        </ShowWhen>
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <DocsLink url="https://razorpay.com/docs/team-support/" />
