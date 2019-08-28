@@ -358,7 +358,6 @@ class Core extends Base\Core
             Entity::GATEWAY => $gateways,
             Entity::PARTIAL => false,
             Entity::BEGIN   => $now,
-            Entity::END     => $now,
         ];
 
         switch ($payment->getMethod())
