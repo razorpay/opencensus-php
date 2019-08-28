@@ -2382,8 +2382,8 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED,
                                                     null,
                                                     [
-                                                        'total_users' => count($userIds),
-                                                        'users'       => $userIds,
+                                                        'count_users_with_multiple_merchants' => count($userIds),
+                                                        'users_with_mutiple_merchants'        => $userIds,
                                                     ]);
         }
     }

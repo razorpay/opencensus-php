@@ -613,7 +613,7 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_2FA_ENFORCED                                         = 'Second factor authentication is mandated by one (or more) merchants';
     const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                           = 'Operation is only allowed by the owner of the merchant.';
     const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                 = 'Owner 2FA setup should already be done to perform this action';
-    const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                  = 'Merchant Restricted Settings failed to apply';
+    const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                  = 'Merchant Restricted Settings failed to apply because users of merchant are associated with multiple merchants';
     const BAD_REQUEST_USER_OTP_REQUIRED                                         = 'OTP is required';
     const BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION                     = 'Restricted user cannot perform action';
 
