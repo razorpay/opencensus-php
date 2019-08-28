@@ -483,11 +483,11 @@ class Gateway extends Base\Gateway
             ],
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
-                Action::PAY_VERIFY => null,
-                Action::REFUND => Action::PAY_VERIFY,
-                Action::VERIFY_REFUND => Action::REFUND,
-                Action::VERIFY => Action::PAY_INIT,
+                Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::CAPTURE => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_INIT,
+                Action::REFUND => Action::CAPTURE,
+                Action::VERIFY_REFUND => Action::REFUND,
             ],
             Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT   => null,
@@ -577,7 +577,7 @@ class Gateway extends Base\Gateway
 
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
-                Action::PAY_VERIFY => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::CAPTURE => Action::AUTHORIZE,
                 Action::REFUND => Action::CAPTURE,
                 Action::VERIFY_REFUND => Action::REFUND,

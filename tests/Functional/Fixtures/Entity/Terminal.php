@@ -3047,6 +3047,7 @@ class Terminal extends Base
     public function createSharedPaypalTerminal(array $attributes = [])
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
         $defaultValues = [
             'id'                        => '100000Razorpay',
             'merchant_id'               => $sharedMerchantAccount,
@@ -3055,6 +3056,7 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'RazorpayPaypal',
             'gateway_terminal_password' => 'terminal_password',
             'gateway_terminal_password2'=> 'terminal_password2',
+            'mode'                      => '1',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

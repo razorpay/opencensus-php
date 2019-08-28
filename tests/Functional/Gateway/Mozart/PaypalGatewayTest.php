@@ -53,6 +53,26 @@ class PaypalGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testCapturePayment()
+    {
+        $payment = $this->payment;
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+        $this->assertEquals('100000Razorpay', $payment['terminal_id']);
+
+        $mozartEntity = $this->getLastEntity('mozart', true);
+
+        $this->assertTestResponse($mozartEntity, 'testPaymentMozartEntity');
+
+        $capturedPayment = $this->capturePayment($payment['id'], $payment['amount'], $payment['currency']);
+
+        $this->assertEquals('captured', $capturedPayment['status']);
+    }
+
     public function testRefundPayment()
     {
         $payment = $this->testPayment();
