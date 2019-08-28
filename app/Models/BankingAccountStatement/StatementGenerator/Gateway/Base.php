@@ -4,7 +4,6 @@ namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway;
 
 use RZP\Models\Base\Core as BaseCore;
 
-
 abstract class Base extends BaseCore
 {
 

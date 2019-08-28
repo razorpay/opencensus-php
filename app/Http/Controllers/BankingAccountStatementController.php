@@ -2,15 +2,15 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
-use Request;
 use View;
-use RZP\Models\FileStore;
+use Request;
+use ApiResponse;
 
 class BankingAccountStatementController extends Controller
 {
     public function fetchStatementForAccount()
     {
+
         $input = Request::all();
 
         $response = $this->service()->fetchStatementForAccount($input);
@@ -30,9 +30,13 @@ class BankingAccountStatementController extends Controller
      */
     public function generateStatement()
     {
-        $input = Request::all();
+
+        $input    = Request::all();
+
         $response = $this->service()->generateAccountStatement($input);
+
         return $response;
+
         return ApiResponse::json($response);
     }
 }

@@ -2,18 +2,17 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
-use InvalidArgumentException;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\BankingAccount;
-use RZP\Models\BankingAccountStatement\StatementGenerator\Formats;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\External;
 use RZP\Models\Merchant;
-use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
-
+use InvalidArgumentException;
+use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccountStatement\StatementGenerator\Formats;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
 {
