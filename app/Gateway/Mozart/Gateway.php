@@ -13,7 +13,6 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 
-
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
@@ -171,10 +170,14 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input, $gateway = null): array
     {
+        $this->validateClientOnServerCallback($gateway);
+
         switch ($gateway)
         {
             case Payment\Gateway::UPI_AIRTEL:
                 return json_decode($input[0], true);
+            case Payment\Gateway::UPI_CITI:
+                return $input;
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
             case Payment\Gateway::WALLET_PHONEPE:
@@ -191,6 +194,8 @@ class Gateway extends Base\Gateway
         {
             case 'upi_airtel':
                 return $response[UpiAirtelResponseFields::PAYMENT_ID];
+            case 'upi_citi':
+                return $response[UpiCiti\Fields::PUSH_NOTIFICATION_TO_SSG][UpiCiti\Fields::ORDER_NO];
             case Payment\Gateway::NETBANKING_YESB:
                 return $response['data']['paymentId'];
             case Payment\Gateway::WALLET_PHONEPE:
@@ -208,6 +213,13 @@ class Gateway extends Base\Gateway
         if ($this->isFileBasedRefund($input['payment']['gateway']) === true)
         {
             return;
+        }
+
+        if ($this->isRefundDisableOnMozart($input['payment']['gateway']) === true)
+        {
+            throw new Exception\LogicException(
+                'Refund not available on mozart',
+                ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION);
         }
 
         $request = $this->getMozartRequestArray($input);
@@ -489,6 +501,13 @@ class Gateway extends Base\Gateway
                 Action::REFUND        => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+            Payment\Gateway::UPI_CITI => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => Action::PAY_VERIFY,
+                Action::REFUND => Action::PAY_VERIFY,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
             Payment\Gateway::NETBANKING_SIB => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -573,6 +592,14 @@ class Gateway extends Base\Gateway
 
             Payment\Gateway::GOOGLE_PAY => [
                 Action::PAY_INIT => null,
+            ],
+
+            Payment\Gateway::UPI_CITI => [
+                Action::PAY_INIT        => null,
+                Action::PAY_VERIFY      => null,
+                Action::VERIFY          => Action::AUTHORIZE,
+                Action::REFUND          => Action::AUTHORIZE,
+                Action::VERIFY_REFUND   => Action::REFUND,
             ],
         ];
 
@@ -801,6 +828,7 @@ class Gateway extends Base\Gateway
     {
         $validationGateways = [
             Payment\Gateway::UPI_AIRTEL,
+            Payment\Gateway::UPI_CITI,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
@@ -935,5 +963,41 @@ class Gateway extends Base\Gateway
         }
 
         return $gatewayInput;
+    }
+
+    protected function isRefundDisableOnMozart($gateway)
+    {
+        return in_array($gateway, [
+            Payment\Gateway::UPI_CITI,
+        ], true);
+    }
+
+    protected function validateClientOnServerCallback($gateway)
+    {
+        if (in_array($gateway, Payment\Gateway::$verifyClientOnS2s, true))
+        {
+            $allowedIps = explode(',', $this->config[$gateway]['allowed_s2p_client_ips']);
+            $clientIps  = $this->request->getClientIps();
+
+            foreach ($allowedIps as $allowedIp)
+            {
+                if (in_array(trim($allowedIp), $clientIps, true) === true)
+                {
+                    return;
+                }
+            }
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_BLOCKED_IP,
+                null,
+                'S2S request received from wrong blocked IP',
+                [
+                    'gateway'       => $gateway,
+                    'client_ips'    => $clientIps,
+                    'allowed_ips'   => $allowedIps,
+                ]
+            );
+
+        }
     }
 }

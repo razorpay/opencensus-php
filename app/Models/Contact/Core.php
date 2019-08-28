@@ -14,15 +14,31 @@ use RZP\Trace\TraceCode;
  */
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant\Entity $merchant, Batch\Entity $batch = null): Entity
+    public function create(
+        array $input,
+        Merchant\Entity $merchant,
+        Batch\Entity $batch = null,
+        string $batchId = null): Entity
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
+
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->contact->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
+                                                                 $merchant->getId(),
+                                                                 $batchId);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
 
         $contact = (new Entity)->build($input);
 
         $contact->merchant()->associate($merchant);
 
-        $contact->batch()->associate($batch);
+        $batchId ? ($contact->setBatchId($batchId)) : ($contact->batch()->associate($batch));
 
         $this->setTypeIfApplicable($contact, $input);
 

@@ -191,15 +191,6 @@ trait HeadlessOtp
                 true);
         }
 
-        if ((isset($response['error']['reason']) === true) and
-            (array_key_exists($response['error']['reason'], self::$elfErrorCodeMapping) === true))
-        {
-            $errorCode = self::$elfErrorCodeMapping[$response['error']['reason']];
-
-            throw new Exception\GatewayErrorException(
-                $errorCode
-            );
-        }
 
         if ($this->isS2SJsonRoute === true)
         {
@@ -282,12 +273,8 @@ trait HeadlessOtp
 
         $this->handleFailedResponse($response, $payment, $traceInput);
 
-        $reason = $response['error']['reason'] ?? '';
-
-        $errorCode = self::$elfErrorCodeMapping[$reason] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-
         throw new Exception\GatewayErrorException(
-            $errorCode
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         );
     }
 
@@ -356,6 +343,17 @@ trait HeadlessOtp
                     ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
                     null,
                     false);
+            }
+
+            if (array_key_exists($response['error']['reason'], self::$elfErrorCodeMapping) === true)
+            {
+                $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
+
+                $errorCode = self::$elfErrorCodeMapping[$response['error']['reason']];
+
+                throw new Exception\GatewayErrorException(
+                    $errorCode
+                );
             }
         }
 

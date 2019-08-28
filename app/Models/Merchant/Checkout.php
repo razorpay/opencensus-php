@@ -682,6 +682,8 @@ class Checkout
 
         $enabledWallets = $data['methods'][Payment\Method::WALLET];
 
+        $recurringData = $data['methods']['recurring'] ?? null;
+
         $data['methods'] = [
             'entity' => 'methods'
         ];
@@ -736,6 +738,11 @@ class Checkout
                 $data['methods'][$offerMethod] = true;
 
                 break;
+        }
+
+        if (isset($recurringData) === true)
+        {
+            $data['methods']['recurring'] = $recurringData;
         }
     }
 

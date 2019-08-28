@@ -309,7 +309,14 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
 
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        if ($validation->hasBalance() === true)
+        {
+            $balance = $validation->balance;
+        }
+        else
+        {
+            $balance = $this->repo->balance->getMerchantBalance($merchant);
+        }
 
         if ($balance->getFeeCredits() >= $fee)
         {
@@ -347,7 +354,7 @@ class Core extends Base\Core
         }
         else
         {
-            $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
+            $balance = $this->repo->balance->findByIdAndMerchant($balanceId, $this->merchant);
         }
 
         $fundAccValidation->balance()->associate($balance);

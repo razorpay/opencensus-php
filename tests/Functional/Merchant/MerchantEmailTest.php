@@ -1,0 +1,159 @@
+<?php
+
+namespace RZP\Tests\Functional\Merchant;
+
+use DB;
+use Event;
+use Mail;
+use RZP\Models\Merchant\Email\Type;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Partner\Constants;
+use RZP\Tests\Functional\TestCase;
+
+
+class MerchantEmailTest extends TestCase
+{
+    use PaymentTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/MerchantEmailTestData.php';
+
+        parent::setUp();
+
+        $this->ba->adminAuth();
+    }
+
+    /**
+     * Return the json data
+     * @param array $attributes
+     *
+     * @return array
+     */
+    public function get_data(array $attributes = array())
+    {
+        $defaultValues = [
+            'type'   => 'refund',
+            'email'  => 'cvhg@gmail.com,abc@gmail.com',
+            'phone'  => '9732097320',
+            'policy' => 'tech',
+            'url'    => 'rzp.com/123SD'
+        ];
+
+        $newAttributes = array_merge($defaultValues,$attributes);
+
+        return $newAttributes;
+    }
+
+    /**
+     * Asserts that the function returns the expected array same as given input
+     *
+     */
+    public function testCreateMerchantEmails()
+    {
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $testData   = &$this->testData[__FUNCTION__];
+
+        $this->ba->adminAuth();
+
+        $testData['request']['url'] = "/merchants/{$merchantId}/additionalemail";
+
+        $this->startTest();
+    }
+
+    /**
+     * Asserts that the function returns the expected array  of different type of emails  for a particular merchant
+     * stored in database
+     *
+     */
+    public function testFetchMerchantEmails()
+    {
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->create(
+            'merchant_email', $this->get_data(['type' => 'chargeback'])
+        );
+
+        $this->fixtures->create(
+            'merchant_email', $this->get_data()
+        );
+
+
+        $testData                   = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/{$merchantId}/additionalemail";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+
+    /**
+     * Asserts that the function deletes the type of email for a Given Merchant
+     *
+     */
+    public function testDeleteMerchantEmails()
+    {
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $type       = Type::REFUND;
+
+        $this->fixtures->create(
+            'merchant_email', $this->get_data()
+
+        );
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/{$merchantId}/additionalemail/{$type}";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Asserts that the function fetches the type of email for a Given Merchant
+     *
+     */
+    public function testFetchMerchantEmailsByType()
+    {
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $type       = Type::REFUND;
+
+        $this->fixtures->create(
+            'merchant_email', $this->get_data()
+        );
+
+        $testData                   = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/{$merchantId}/additionalemail/{$type}";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Asserts that the function throws error for a Given Merchant and Type if it do not exist
+     *
+     */
+    public function testFetchEmailAndTypeNotExists()
+    {
+        $merchantId                 = Constants::DEFAULT_MERCHANT_ID;
+
+        $type                       = Type::REFUND;
+
+        $testData                   = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/{$merchantId}/additionalemail/{$type}";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+}
