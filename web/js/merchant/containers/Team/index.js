@@ -1,103 +1,115 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
-import { Redirect } from 'react-router-dom';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import { fetchTeamDetails } from 'merchant/modules/team';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import NewInvitation from './NewInvitation';
-import Invitation from './Invitation';
-import User from './User';
-import ShowWhen from 'merchant/components/ShowWhen';
+import AsyncButton from 'react-async-button';
+import PropTypes from 'prop-types';
 
-@connect(
-  state => {
-    return {
-      invitations: state.team.invitations,
-      users: state.team.users,
-      merchant: state.session.user,
-    };
-  },
-  {
-    fetchTeamDetails,
-    ...NotificationsActions,
-  }
-)
-export default class TeamContainer extends Component {
-  componentWillMount() {
-    this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
-  }
+import HeaderAction from 'rzp/ui/HeaderAction';
+import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
+
+import { removeUser, cancelInvitation, unlock } from 'merchant/modules/team';
+
+import Actions from './Actions';
+import InvitationsList from './Invitations/List';
+import MembersList from './Members/List';
+
+export default class ManageTeamContainer extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
+  unlock = member => () => {
+    return this.context.confirm({
+      header: 'Unblock the account?',
+      message: (
+        <>
+          <p>
+            Account of <strong>{member.name || member.email}</strong> has been
+            blocked due to multiple wrong OTP attempts.
+          </p>
+          <p>Are you sure you want to unblock this account?</p>
+        </>
+      ),
+      affirmativeLabel: 'Yes, Unblock',
+      affirmativePendingLabel: 'Unblocking...',
+      abortLabel: "No, Don't",
+      action: () => {
+        return this.props
+          .unlock(member.id)
+          .then(response => {
+            if (response) {
+              this.props.showNotification({
+                type: 'success',
+                message: 'User is successfully unblocked',
+              });
+            }
+          })
+          .catch(({ errors }) => {
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+            });
+          });
+      },
+    });
+  };
+
+  actions = {
+    title: 'Actions',
+    columnClass: 'text-right',
+    value: item => (
+      <Actions
+        item={item}
+        removeUser={this.props.removeUser}
+        cancelInvitation={this.props.cancelInvitation}
+        onRemove={() => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Team member has been removed successfully',
+          });
+        }}
+      />
+    ),
+  };
+
+  nameColumn = {
+    title: 'Member',
+    value: user => (
+      <div>
+        {user.name && <p>{user.name}</p>}
+        <p className="text-muted no-margin">{user.email}</p>
+        {user.account_locked && (
+          <ShowWhen
+            myRole="owner admin"
+            additionalCondition={user => user.isMerchantRestricted}
+          >
+            <span class="status-label label-pale-warning">
+              <i class="i i-info-circle text-warning" /> Account blocked due to
+              multiple wrong login attempts{' '}
+              <AsyncButton
+                text="Unlock"
+                onClick={this.unlock(user)}
+                class="btn-link text-warning"
+              />
+            </span>
+          </ShowWhen>
+        )}
+      </div>
+    ),
+  };
 
   render() {
-    let invitations = this.props.invitations;
-    let users = this.props.users;
-    let otherUsers = users.filter(
-      user => user.email !== this.props.merchant.user.email
-    );
-
     return (
-      <div>
+      <div class="content-wrapper content-sm">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
-            >
-              <a
-                class="btn btn-link"
-                href="https://razorpay.com/docs/team-support/"
-                target="_blank"
-              >
-                Documentation &nbsp;
-                <i class="icon icon-external-link" />
-              </a>
-            </ShowWhen>
+            <DocsLink url="https://razorpay.com/docs/team-support/" />
           </div>
         </HeaderAction>
+        <div class="ManageTeam--list">
+          <InvitationsList {...this.props} />
 
-        <div class="content-wrapper content-sm">
-          <NewInvitation />
+          <div class="m-t" />
 
-          {otherUsers.length ? (
-            <div>
-              <div class="panel-heading">
-                <b>Team Members</b>
-              </div>
-              <table class="table table-noborder" style={{ margin: '0 12px' }}>
-                <tbody>
-                  {otherUsers.map(user => (
-                    <User
-                      key={user.id}
-                      user={user}
-                      form={`editUser_${user.id}`}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
-
-          {!!otherUsers.length && <div class="section-divide" />}
-
-          {invitations.length ? (
-            <div>
-              <div class="panel-heading">
-                <b>Pending Invitations</b>
-              </div>
-              <table class="table table-noborder" style={{ margin: '0 12px' }}>
-                <tbody>
-                  {invitations.map(invite => (
-                    <Invitation
-                      key={invite.id}
-                      invite={invite}
-                      form={`editInvitation_${invite.id}`}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
+          <MembersList {...this.props} />
         </div>
       </div>
     );

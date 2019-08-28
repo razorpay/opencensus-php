@@ -11,6 +11,8 @@ import Dispute from 'merchant/models/Dispute';
 import Submerchant from 'merchant/models/Submerchant';
 import Token from 'merchant/models/Token';
 import Commission from 'merchant/models/Commission';
+import Team from 'merchant/models/Team';
+import Invitation from 'merchant/models/Invitation';
 
 import AuthLink from 'merchant/models/AuthLink';
 
@@ -173,3 +175,23 @@ export const commissionsReducer = makeActionCollectionReducer('COMMISSIONS');
 export const commissionsAggregateReducer = makeCollectionReducer(
   'COMMISSION_AGGREGATE'
 );
+
+export const fetchTeam = params => fetchAll(params, Team, 'TEAM_MEMBERS');
+export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
+  // since unlock api does not send all the details in the response
+  ['TEAM_MEMBER_UNLOCK::SUCCESS']: (state, action) => {
+    const itemIndex = state.items.findIndex(
+      item => item.id === action.payload.user_id
+    );
+    return set(
+      state,
+      `items.${itemIndex}.account_locked`,
+      action.payload.account_locked
+    );
+  },
+});
+
+// Invitations
+export const fetchInvitations = params =>
+  fetchAll(params, Invitation, 'INVITATIONS');
+export const invitationsReducer = makeActionCollectionReducer('INVITATIONS');
