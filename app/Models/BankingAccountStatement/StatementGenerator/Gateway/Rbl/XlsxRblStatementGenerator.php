@@ -6,6 +6,8 @@ namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use \PhpOffice\PhpSpreadsheet\Style\Border;
+use \PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class XlsxRblStatementGenerator extends RBLStatementGenerator
 {
@@ -94,6 +96,17 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
             StatementSummary::LIEN_AMOUNT => '',
         ];
 
+    const TRANSACTION_DATA_TO_COLUMN =
+        [
+            TransactionLineItem::TRANSACTION_DATE => 'A',
+            TransactionLineItem::TRANSACTION_DETAILS => 'B',
+            TransactionLineItem::CHEQUE_ID => 'C',
+            TransactionLineItem::VALUE_DATE => 'D',
+            TransactionLineItem::WITHDRAWAL_AMOUNT => 'E',
+            TransactionLineItem::DEPOSIT_AMOUNT => 'F',
+            TransactionLineItem::BALANCE => 'G',
+        ];
+
 
     const LOGO_CELL = 'A1';
     const LOGO_CELL_RANGE = 'A1:E1';
@@ -114,40 +127,40 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
 
     protected function calculateStatementSummaryCellValues()
     {
-        $transaction = $this->data[AccountStatementData::TRANSACTIONS];
-        $t_count = count($transaction);
+
+        $tCount = $this->getTotalTransactionCount();
 
         $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_SUMMARY] =
-            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
         $this->SUMMARY_KEY_MAP[XLSXHeaders::OPENING_BALANCE] =
-            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 1);
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
         $this->SUMMARY_KEY_MAP[XLSXHeaders::CLOSING_BALANCE] =
-            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 2);
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 2);
         $this->SUMMARY_KEY_MAP[XLSXHeaders::EFFECTIVE_BALANCE] =
-            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 3);
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 3);
         $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_GENERATED_DATE] =
-            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 4);
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 4);
         $this->SUMMARY_KEY_MAP[XLSXHeaders::DEBIT_COUNT] =
-            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
         $this->SUMMARY_KEY_MAP[XLSXHeaders::CREDIT_COUNT] =
-            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
         $this->SUMMARY_KEY_MAP[XLSXHeaders::LIEN_AMOUNT] =
-            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
         $this->SUMMARY_DATA_MAP[StatementSummary::OPENING_BALANCE] =
-            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 1);
+            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
         $this->SUMMARY_DATA_MAP[StatementSummary::CLOSING_BALANCE] =
-            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 2);
+            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 2);
         $this->SUMMARY_DATA_MAP[StatementSummary::EFFECTIVE_BALANCE] =
-            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 3);
+            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 3);
         $this->SUMMARY_DATA_MAP[StatementSummary::STATEMENT_GENERATED_DATE] =
-            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 4);
+            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 4);
         $this->SUMMARY_DATA_MAP[StatementSummary::DEBIT_COUNT] =
-            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
         $this->SUMMARY_DATA_MAP[StatementSummary::CREDIT_COUNT] =
-            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
         $this->SUMMARY_DATA_MAP[StatementSummary::LIEN_AMOUNT] =
-            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
     }
 
@@ -222,21 +235,12 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
 
     protected function addLogo(&$sheet)
     {
-        $sheet->mergeCells(self::LOGO_CELL_RANGE);
-        $sheet->setCellValue(self::LOGO_CELL, 'Here there will be a logo');
-        # have to add an image here
+        $drawing = new Drawing();
+        $drawing->setPath(resource_path('views/bank_account_statement/RBL/rbllogo.png'));
+        $drawing->setCoordinates('E1');
+//        $drawing->setOffsetX(110);
+        $drawing->setWorksheet($sheet);
     }
-
-    const TRANSACTION_DATA_TO_COLUMN =
-        [
-            TransactionLineItem::TRANSACTION_DATE => 'A',
-            TransactionLineItem::TRANSACTION_DETAILS => 'B',
-            TransactionLineItem::CHEQUE_ID => 'C',
-            TransactionLineItem::VALUE_DATE => 'D',
-            TransactionLineItem::WITHDRAWAL_AMOUNT => 'E',
-            TransactionLineItem::DEPOSIT_AMOUNT => 'F',
-            TransactionLineItem::BALANCE => 'G',
-        ];
 
     protected function addTransactions(&$sheet)
     {
@@ -247,7 +251,7 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         {
             foreach ($lineItem as $transactionKey => $transactionValue)
             {
-                $cell =  self::TRANSACTION_DATA_TO_COLUMN[$transactionKey] . (string) $currentRow;
+                $cell = self::TRANSACTION_DATA_TO_COLUMN[$transactionKey] . (string) $currentRow;
                 $sheet->setCellValue($cell, $transactionValue);
             }
             $currentRow++;
@@ -271,12 +275,35 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
             $sheet->getColumnDimension($col)->setWidth(30);
         }
 
+        $sheet->getRowDimension('1')->setRowHeight(60);
+
         # give light-blue fill color to the transaction header
         $sheet->getStyle(self::TRANSACTION_HEADER_CELL_RANGE)->getFill()->setFillType(Fill::FILL_SOLID)
             ->getStartColor()->setRGB(self::TRANSACTION_CELL_FILL_COLOR);
 
         # give all the cells of the transaction table blue border
+        $lastTransactionIndex = 'G' . (string) (self::TRANSACTION_DATA_START_ROW +
+                $this->getTotalTransactionCount() - 1);
+        $transactionRange = 'A' . (string) self::TRANSACTION_DATA_START_ROW . ':'
+            . $lastTransactionIndex;
+        $sheet->getStyle($transactionRange)->getBorders()
+                ->applyFromArray(
+                    [
+                        'allBorders' =>
+                            [
+                                'borderStyle' => Border::BORDER_MEDIUM, 'color' =>
+                                [
+                                    'rgb' => self::TRANSACTION_CELL_FILL_COLOR
+                                ]
+                            ]
+                    ]);
 
+    }
+
+    protected function getTotalTransactionCount(): int
+    {
+        $transaction = $this->data[AccountStatementData::TRANSACTIONS];
+        return count($transaction);
     }
 
     protected function makeCellsBold(&$sheet)
@@ -296,7 +323,6 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
             $sheet->getStyle($column)->getFont()->setBold(1);
         }
     }
-
 
 }
 
