@@ -178,11 +178,18 @@ class Core extends Base\Core
     }
 
     // Associate
-    public function authenticateWithToken(Entity $subr,  Customer\Token\Entity $token)
+    public function associateToken(Entity $subr,  Customer\Token\Entity $token)
     {
         $this->repo->reload($subr);
 
         $subr->token()->associate($token);
+
+        $this->repo->saveOrFail($subr);
+    }
+
+    public function authenticate(Entity $subr, Customer\Token\Entity $token)
+    {
+        $this->repo->reload($subr);
 
         if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
         {
