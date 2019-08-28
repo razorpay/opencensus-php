@@ -240,7 +240,7 @@ class FundTransfer extends Job
 
         $duration = ($currentTime - $fta->getCreatedAt()) / 60;
 
-        if (($sla != null) and
+        if ((empty($sla) === false) and
             ($fta->getSourceType() === Attempt\Type::PAYOUT) and
             (((int) $sla) < $duration) and
             ($fta->getMode() === FTA\Mode::IMPS))

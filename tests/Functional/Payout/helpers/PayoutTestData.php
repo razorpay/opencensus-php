@@ -1273,5 +1273,40 @@ return [
                 ]
             ],
         ],
-    ]
+    ],
+
+    'testRxPayoutForSlaExpiry' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 200000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'King',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 200000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'King',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
 ];
