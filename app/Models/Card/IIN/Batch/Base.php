@@ -32,7 +32,9 @@ abstract class Base extends BaseCore
     {
         $this->parseEntry();
 
-        return $this->iinService->addOrUpdate($this->iin, $this->input);
+        $data = $this->iinService->addOrUpdate($this->iin, $this->input);
+
+        return $data;
     }
 
     protected function parseEntry()

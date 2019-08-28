@@ -31,12 +31,12 @@ class IinNpciRupay extends BaseProcessor
         {
             $this->processor->preprocess($entry);
 
+            unset($entry[$header]);
+
+            $entry[Batch\Header::IIN_NPCI_RUPAY_ROW] = $row;
+
             $this->processor->process();
         }
-
-        unset($entry[$header]);
-
-        $entry[Batch\Header::IIN_NPCI_RUPAY_ROW] = $row;
 
         $entry[Batch\Header::STATUS]  = Batch\Status::SUCCESS;
     }
