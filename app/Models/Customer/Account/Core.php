@@ -573,13 +573,16 @@ class Core extends Base\Core
 
     protected function verifyUniqueCustomer(Customer\Entity $customer, $failOnDuplicate = true)
     {
+        $existingCustomer = null;
         if ($customer->merchant->isShared() === true)
         {
             $existingCustomer = $this->repo->customer->findByContactAndMerchant(
                 $customer->getContact(),
                 $customer->merchant);
         }
-        else
+        else if(($customer->getEmail() !== null) or
+            ($customer->getContact() !== null) or
+            ($customer->merchant->createCustomerOnContactEmailNull() === true))
         {
             $existingCustomer = $this->repo->customer->findByContactEmailAndMerchant(
                 $customer->getContact(),

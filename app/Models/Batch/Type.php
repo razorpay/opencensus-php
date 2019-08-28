@@ -221,7 +221,9 @@ class Type
      * @var array
      */
     public static $batchTypeMigrationCompleted = [
-        self::PAYMENT_LINK
+        self::PAYMENT_LINK,
+        self::PAYOUT,
+        self::FUND_ACCOUNT
     ];
 
     public static function exists(string $type)

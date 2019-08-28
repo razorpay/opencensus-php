@@ -122,6 +122,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                  = 'Contact number should not be greater than 15 digits, including country code';
     const BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED                       = 'Contact number needs to be Indian.';
     const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported';
+    const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED                        = 'Corporate card is not allowed for this payment';
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';
@@ -878,4 +879,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
+
+    // Excel Store
+    const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
 }

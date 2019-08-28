@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Jobs;
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Diag\EventCode;
@@ -20,6 +21,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\SubscriptionRegistration;
 
 trait Capture
 {
@@ -606,6 +608,8 @@ trait Capture
 
             $this->createPartnerCommission($payment);
 
+            $this->postPaymentCaptureSubscriptionRegistrationProcessing($payment);
+
             if ($payment->isLateBalanceUpdate() === true)
             {
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
@@ -1140,6 +1144,27 @@ trait Capture
         $this->trace->count(Invoice\Metric::INVOICE_PAID_TOTAL, $dimensions);
 
         $this->repo->saveOrFail($invoice);
+    }
+
+    protected function postPaymentCaptureSubscriptionRegistrationProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasInvoice() === false)
+        {
+            return;
+        }
+
+        $invoice = $payment->invoice;
+
+        if ($invoice->getEntityType() !== Constants\Entity::SUBSCRIPTION_REGISTRATION)
+        {
+            return;
+        }
+
+        $subscriptionRegistration = $invoice->entity;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        (new SubscriptionRegistration\Core)->authenticateWithToken($subscriptionRegistration, $token);
     }
 
     public function calculateAndSetMdrFeeIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)

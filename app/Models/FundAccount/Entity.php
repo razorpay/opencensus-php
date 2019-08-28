@@ -53,6 +53,9 @@ class Entity extends Base\PublicEntity
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
 
+    // input key
+    const ACCOUNT_NUMBER = 'account_number';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [

@@ -30,7 +30,7 @@ class Reconciliation extends Job
 
     protected $queueConfigKey = 'reconciliation_batch';
 
-    const MAX_KUBERNETES_JOB_COUNT = 8;
+    const MAX_KUBERNETES_JOB_COUNT = 16;
 
     const KUBERNETES_RECON_JOB_LIST = 'kubernetes_recon_job_list';
 

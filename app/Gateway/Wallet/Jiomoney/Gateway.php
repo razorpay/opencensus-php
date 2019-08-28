@@ -246,6 +246,23 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            $scroogeResponse = new GatewayBase\ScroogeResponse();
+
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            $scroogeResponse = new GatewayBase\ScroogeResponse();
+
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
+        }
+
         $request = $this->getVerifyRefundRequest($input);
 
         $response = $this->sendGatewayRequest($request);

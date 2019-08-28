@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use Mail;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Pricing;
@@ -99,7 +100,8 @@ trait Refund
     public function isInstantRefundSupported(Payment\Entity $payment)
     {
         // This will keep changing as we add more coverage
-        return (($payment->isCard() === true) and
+        return ((($payment->isUpi() === true) or
+                 ($payment->isCard() === true)) and
                 ($this->isCapturedPaymentAndFeatureEnabled($payment) === true));
     }
 
@@ -1888,14 +1890,20 @@ trait Refund
         {
             $scroogeData['fta_data']['vpa'] = $input['vpa'];
         }
-        else if (($refund->isRefundSpeedInstant() === true) and
-                 ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true))
+        else if ($refund->isRefundSpeedInstant() === true)
         {
-            $cardInput = $this->getCardIdInput($payment, $input);
-
-            if (empty($cardInput) === false)
+            if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true)
             {
-                $scroogeData['fta_data']['card_transfer'] = $cardInput;
+                $cardInput = $this->getCardIdInput($payment, $input);
+
+                if (empty($cardInput) === false)
+                {
+                    $scroogeData['fta_data']['card_transfer'] = $cardInput;
+                }
+            }
+            else if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
             }
         }
         else
@@ -2338,9 +2346,11 @@ trait Refund
     protected function isInstantRefundsSupportedRefund(Payment\Entity $payment, RefundEntity $refund): bool
     {
         return (($refund->isRefundRequestedSpeedInstant() === true) and
-                ($payment->getMethod() === Payment\Method::CARD) and
                 ($payment->hasBeenCaptured() === true) and
-                ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true));
+                (in_array($payment->getGateway(), Payment\Gateway::$scroogeGateways, true) === true) and
+                ((in_array($payment->getMethod(), [Payment\Method::CARD, Payment\Method::UPI], true) === true) and
+                 (($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true) or
+                  ($this->isPaymentUpiAndCardTransferRefund($refund, $payment) === true))));
     }
 
     /**
@@ -2397,6 +2407,50 @@ trait Refund
                     return true;
                 }
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checking if a upi payment is valid to be refunded by VPA instantly.
+     * If card_transfer_refund feature is present for the merchant,
+     * refund will be made on VPA.
+     * Payment should be gateway captured, if it isn't, it should not be refunded directly via FTA.
+     *
+     * @param RefundEntity $refund
+     * @param Payment\Entity $payment
+     * @param bool $ignoreFeatureFlag
+     * @return bool
+     * @throws \Exception
+     */
+    protected function isPaymentUpiAndCardTransferRefund(
+        RefundEntity $refund,
+        Payment\Entity $payment,
+        bool $ignoreFeatureFlag = false): bool
+    {
+        //
+        // Check if any upi FTA already exists, not allowing upi fta if any previous upi fta exists
+        //
+        foreach ($refund->fundTransferAttempts as $fundTransferAttempt)
+        {
+            if (empty($fundTransferAttempt->getVpaId()) === false)
+            {
+                return false;
+            }
+        }
+
+        if (($payment->getMethod() === Payment\Method::UPI) and
+            (empty($payment->getVpa()) === false) and
+            ($payment->isGatewayCaptured() === true))
+        {
+            if (($ignoreFeatureFlag === false) and
+                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         return false;
@@ -2514,7 +2568,7 @@ trait Refund
 
     protected function createAndAssociateVpa(array $vpaInput)
     {
-        $vpa = (new Core)->createVpa($vpaInput);
+        $vpa = (new Vpa\Core)->createForSource($vpaInput, $this->refund);
 
         $this->refund->vpa()->associate($vpa);
 

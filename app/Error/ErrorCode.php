@@ -480,6 +480,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                      = 'BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG';
     const BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED                           = 'BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED';
     const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                            = 'BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED';
+    const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED                            = 'BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED';
     const BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID                                     = 'BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID';
     const BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN                         = 'BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN';
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                             = 'BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE';
@@ -1303,6 +1304,10 @@ class ErrorCode
     const GATEWAY_ERROR_AUTHORIZATION_FAILED                                        = 'GATEWAY_ERROR_AUTHORIZATION_FAILED';
     const GATEWAY_ERROR_INVALID_REQUEST_BODY                                        = 'GATEWAY_ERROR_INVALID_REQUEST_BODY';
     const GATEWAY_ERROR_REFUND_TIMED_OUT                                            = 'GATEWAY_ERROR_REFUND_TIMED_OUT';
+
+    // excel store error
+    const SERVER_ERROR_EXCEL_STORE_FAILURE                                          = 'SERVER_ERROR_EXCEL_STORE_FAILURE';
+    const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'BAD_REQUEST_EXCEL_STORE_FILE_PARAM';
 
     // Instant Refunds Error Codes
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED';

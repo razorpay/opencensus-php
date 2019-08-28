@@ -340,6 +340,8 @@ trait RequestHandlerTrait
         }
         catch (SoapFault $sf)
         {
+            error_clear_last();
+
             if (Utility::checkSoapTimeout($sf))
             {
                 // If Soap request times out on auth request, we need to verify using transaction status and

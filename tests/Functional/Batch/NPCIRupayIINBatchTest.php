@@ -26,7 +26,7 @@ class NPCIRupayIINBatchTest extends TestCase
     {
         $text = $this->getFileText();
 
-        $this->createAndPutTxtFileInRequest($text, __FUNCTION__);
+        $this->createAndPutTxtFileInRequest('file.dat', $text, __FUNCTION__);
 
         $this->ba->adminAuth();
 

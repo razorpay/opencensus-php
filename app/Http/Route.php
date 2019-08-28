@@ -1155,8 +1155,9 @@ final class Route
 
         // Governor Proxy APIs - Rule
         'governor_create_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRule'                             ],
-        'governor_create_rule_bulk'               => ['patch',    '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRules'                            ],
-        'governor_update_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@updateRule'                             ],
+        'governor_create_rule_bulk'               => ['post',     '{source}/rule_engine/rule/{namespace}/bulk',                'GovernorController@createRules'                            ],
+        'governor_update_rule'                    => ['put',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@updateRule'                             ],
+        'governor_update_rule_bulk'               => ['put',      '{source}/rule_engine/rule/{namespace}/bulk',                'GovernorController@updateRules'                            ],
         'governor_rule_list'                      => ['get',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@getRules'                               ],
         'governor_get_rule'                       => ['get',      '{source}/rule_engine/rule/{namespace}/{rulename}',          'GovernorController@getRule'                                ],
 
@@ -1181,6 +1182,15 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+
+        // Excel Store Proxy APIs
+        'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
+        'excel_store_create_page'                 => ['post',     'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
+        'excel_store_update_page'                 => ['put',      'excel-store/pages/{id}',                                    'ExcelStoreController@dummy'                                  ],
+        'excel_store_get_records'                 => ['get',      'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_update_records'              => ['post',     'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_delete_records'              => ['delete',   'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_page_by_url'                 => ['get',      'excel-store/pages/{url}',                                   'ExcelStoreController@dummy'                                  ],
         'banking_account_yesb_bulk_create'        => ['post',     'banking_accounts/bulk/create/yesbank',                      'BankingAccountController@bulkCreateBankingAccountsForYesbank' ],
 
         // P2P Admin and Internal Routes
@@ -2233,6 +2243,7 @@ final class Route
         'governor_create_rule',
         'governor_create_rule_bulk',
         'governor_update_rule',
+        'governor_update_rule_bulk',
         'governor_rule_list',
         'governor_get_rule',
         'governor_create_rule_chain',
@@ -2247,6 +2258,16 @@ final class Route
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
+
+        // Excel Store routes
+        'excel_store_list_pages',
+        'excel_store_create_page',
+        'excel_store_update_page',
+        'excel_store_get_records',
+        'excel_store_update_records',
+        'excel_store_delete_records',
+        'excel_store_page_by_url',
+
         'offer_create_bulk',
         'banking_account_yesb_bulk_create',
 
@@ -2686,6 +2707,7 @@ final class Route
         'governor_create_rule'                     => Permission::CREATE_GATEWAY_RULE,
         'governor_create_rule_bulk'                => Permission::CREATE_GATEWAY_RULE,
         'governor_update_rule'                     => Permission::EDIT_GATEWAY_RULE,
+        'governor_update_rule_bulk'                => Permission::EDIT_GATEWAY_RULE,
         'governor_rule_list'                       => Permission::VIEW_GATEWAY_RULE,
         'governor_get_rule'                        => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_chain'               => Permission::CREATE_GATEWAY_RULE,
@@ -2708,6 +2730,13 @@ final class Route
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
 
+        'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_update_page'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_get_records'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_update_records'               => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_delete_records'               => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_page_by_url'                  => Permission::ACCESS_EXCEL_STORE,
         'webhook_stork_migrate'                    => Permission::STORK_WRITE_OPERATION,
 
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
@@ -3297,6 +3326,16 @@ final class Route
         'subscription_fetch_hosted_live',
     ];
 
+    const EXCEL_STORE_PROXY_ROUTES = [
+        'excel_store_list_pages',
+        'excel_store_create_page',
+        'excel_store_update_page',
+        'excel_store_get_records',
+        'excel_store_update_records',
+        'excel_store_delete_records',
+        'excel_store_page_by_url',
+    ];
+
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
@@ -3595,6 +3634,11 @@ final class Route
         if (in_array($name, self::SUBSCRIPTION_PROXY_ROUTES, true) === true)
         {
             $route->middleware('subscription_proxy');
+        }
+
+        if (in_array($name, self::EXCEL_STORE_PROXY_ROUTES, true) === true)
+        {
+            $route->middleware('excel_store_proxy');
         }
     }
 

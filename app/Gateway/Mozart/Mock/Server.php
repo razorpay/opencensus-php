@@ -97,6 +97,52 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function getCallbackRequest(array $payment)
+    {
+        $url = '/callback/' . $payment['gateway'];
+        $method = 'post';
+        $server = [
+            'CONTENT_TYPE' => 'application/json'
+        ];
+
+        switch ($payment['gateway'])
+        {
+            case 'upi_citi':
+                $content = [
+                    'TxnRefNo'             => '700000135-100000001120',
+                    'OrderNo'              => $payment['id'],
+                    'NPCITxnId'            => 'CITI7FA2285C01AC932AE05392BCBBA925A',
+                    'TimeStamp'            => '2019-01-17T15:42:44+05:30',
+                    'TranAuthDate'         => '2019-01-17T00:00:00',
+                    'StatusCode'           => '1',
+                    'StatusDesc'           => 'NPCI Success - Pending Posting',
+                    'RespCode'             => '00',
+                    'SettlementAmount'     => amount_format_IN($payment['amount']),
+                    'SettlementCurrency'   => 'INR'
+                ];
+
+                switch ($payment['description'])
+                {
+                    case 'toBeRejected':
+                        $content['StatusCode'] = '3';
+                        $content['RespCode']   = 'ZA';
+                        break;
+
+                    case 'callbackAmountMismatch':
+                        $content['SettlementAmount'] = amount_format_IN($payment['amount'] - 1);
+                }
+
+                $raw = json_encode(['PushNotificationToSSG' => $content]);
+        }
+
+        return [
+            'url'       => $url,
+            'method'    => $method,
+            'raw'       => $raw,
+            'server'    => $server,
+        ];;
+    }
+
     public function getAsyncCallbackContent(array $payment)
     {
         $response = [
