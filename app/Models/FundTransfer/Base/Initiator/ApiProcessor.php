@@ -231,7 +231,6 @@ abstract class ApiProcessor extends NodalAccount
                     $this->body,
                     $this->method,
                     $this->options);
-
             }
             catch (\Throwable $e)
             {
@@ -292,7 +291,6 @@ abstract class ApiProcessor extends NodalAccount
                     $action,
                     $requestInput,
                     $this->mode);
-
             }
             catch (\Throwable $e)
             {
@@ -306,7 +304,7 @@ abstract class ApiProcessor extends NodalAccount
             }
         }
 
-        $this->traceResponseTime($response[Metric::STATUS_CODE], $startTime);
+        $this->traceResponseTime($response[Metric::STATUS_CODE] ?? null, $startTime);
 
         $this->traceGatewayResponse($response);
 
