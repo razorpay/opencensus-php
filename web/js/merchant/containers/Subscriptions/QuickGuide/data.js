@@ -23,28 +23,28 @@ export const getQuickGuideData = {
       return {
         title: '2. Subscription Created',
         content:
-          'Create subscriptions of the plans to receive recurring payments from your customers.',
+          'Create subscriptions for your customers to receive recurring payments',
       };
     }
 
     return {
       title: '2. Create Subscription',
       content:
-        'Create subscriptions of the plans to receive recurring payments from your customers.',
+        'Create subscriptions for your customers to receive recurring payments',
     };
   },
   Payment: status => {
     if (status === done) {
       return {
         title: '3. Payments Received',
-        content: 'You can check the payments you receive in the transactions.',
+        content: 'Check payments received under Transactions tab.',
       };
     }
 
     return {
       title: '3. Receive Payments',
       content:
-        'Share the link of a subscription with your customers to receive payments.',
+        'Share subscription link with your customers to receive recurring payments.',
     };
   },
 };
