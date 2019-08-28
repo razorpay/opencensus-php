@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -428,6 +429,19 @@ class Processor extends Base\Core
         foreach ($groupedTxns as $merchantId => $txns)
         {
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START);
+
+            $transactionCount = $txns->count();
+
+            $customProperties = [
+                'channel'               => $channel,
+                'transaction_count'     => $transactionCount,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::SETTLEMENT_CREATION_INITIATED,
+                null,
+                null,
+                $customProperties);
 
             list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner);
 
