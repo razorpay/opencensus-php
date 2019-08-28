@@ -1,5 +1,9 @@
 import { set, merge, unshift, remove } from 'rzp/utils/immutable';
 import defaultAjax, { merchantFetch } from 'merchant/utils/ajax';
+import {
+  makeActionCollectionReducer,
+  fetchAll,
+} from 'merchant/modules/collection';
 
 import Team from 'merchant/models/Team';
 
@@ -14,6 +18,7 @@ export const UPDATE_SESSION = 'UPDATE_SESSION';
 
 const TEAM_MEMBER_DELETE = 'TEAM_MEMBER_DELETE';
 const TEAM_MEMBER_UNLOCK = 'TEAM_MEMBER_UNLOCK';
+const TEAM_MEMBER_EDIT = 'TEAM_MEMBER_EDIT';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -39,18 +44,6 @@ export const fetchTeamDetails = params => {
   };
 };
 
-export const sendInvitation = data => {
-  return {
-    type: INVITATION_SEND,
-    payload: merchantFetch({
-      url: 'invitations',
-      method: 'post',
-      mode: 'live',
-      data,
-    }),
-  };
-};
-
 export const resendInvitation = (inviteId, data) => {
   return {
     type: INVITATION_RESEND,
@@ -59,18 +52,6 @@ export const resendInvitation = (inviteId, data) => {
       method: 'put',
       mode: 'live',
       data,
-    }),
-  };
-};
-
-export const updateInvitation = (inviteId, data) => {
-  return {
-    type: INVITATION_UPDATE,
-    payload: merchantFetch({
-      url: `invitations/${inviteId}`,
-      method: 'patch',
-      data,
-      mode: 'live',
     }),
   };
 };
@@ -99,21 +80,26 @@ export const updateSelfContact = data => {
   };
 };
 
-export const cancelInvitation = inviteId => {
+export const updateMember = data => {
   const team = new Team();
   return {
-    type: TEAM_MEMBER_DELETE,
-    payload: team.cancelInvitation(inviteId),
+    type: TEAM_MEMBER_EDIT,
+    payload: team.updateMember(data),
   };
 };
 
-export const removeUser = userId => {
+export const removeMember = userId => {
   const team = new Team();
   return {
     type: TEAM_MEMBER_DELETE,
     payload: team.deleteMember(userId),
   };
 };
+
+export const unlockMember = memberId => ({
+  type: TEAM_MEMBER_UNLOCK,
+  payload: new Team().unlock(memberId),
+});
 
 export const toggle2FaEnforcement = data => {
   return {
@@ -129,10 +115,6 @@ export const toggle2FaEnforcement = data => {
     }),
   };
 };
-export const unlockMember = memberId => ({
-  type: TEAM_MEMBER_UNLOCK,
-  payload: new Team().unlock(memberId),
-});
 
 let initialState = {
   loading: true,
@@ -140,6 +122,34 @@ let initialState = {
   users: [],
   error: null,
 };
+
+export const fetchTeam = params => fetchAll(params, Team, 'TEAM_MEMBERS');
+export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
+  // since unlock api does not send all the details in the response
+  ['TEAM_MEMBER_UNLOCK::SUCCESS']: (state, action) => {
+    const itemIndex = state.items.findIndex(
+      item => item.id === action.payload.user_id
+    );
+    return set(
+      state,
+      `items.${itemIndex}.account_locked`,
+      action.payload.account_locked
+    );
+  },
+
+  ['TEAM_MEMBER_EDIT::SUCCESS']: (state, action) => ({
+    ...state,
+    items: state.items.map(
+      item =>
+        item.id === action.payload.id
+          ? {
+              ...item,
+              ...action.payload,
+            }
+          : { ...item }
+    ),
+  }),
+});
 
 export default function(state = initialState, action) {
   switch (action.type) {

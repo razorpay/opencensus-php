@@ -5,7 +5,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { role } from 'rzp/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { fetchTeam as fetchAll } from 'merchant/modules/collection';
+import { fetchTeam as fetchAll } from 'merchant/modules/team';
 import { unlockMember } from 'merchant/modules/team';
 
 import Actions from './Actions';
@@ -18,7 +18,7 @@ const contactPhone = {
 const actions = {
   title: '',
   columnClass: 'text-right',
-  value: user => <Actions user={user} />,
+  value: member => <Actions member={member} />,
 };
 
 @connect(state => ({ ...state.team }), { fetchAll, unlockMember })

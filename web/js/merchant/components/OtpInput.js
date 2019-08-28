@@ -107,7 +107,7 @@ export class OtpInput extends Component {
             if (i === '-') {
               return (
                 <div class="seprator" key="seprator">
-                  <div class="_dash"></div>
+                  <div class="_dash" />
                 </div>
               );
             } else {
@@ -125,7 +125,7 @@ export class OtpInput extends Component {
                     pos={i.key}
                     setCurPos={this.setCurPos}
                     handleInput={this.handleInput}
-                  ></DigitField>
+                  />
                 </div>
               );
             }
