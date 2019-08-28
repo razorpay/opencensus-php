@@ -184,6 +184,7 @@ class Holidays
                 17 => 'Parsi New Year',
             ],
             9 => [
+                2  => 'Ganesh Chaturthi',
                 10 => 'Muharram',
             ],
             10 => [
