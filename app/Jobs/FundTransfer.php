@@ -242,7 +242,7 @@ class FundTransfer extends Job
 
         if ((empty($sla) === false) and
             ($fta->getSourceType() === Attempt\Type::PAYOUT) and
-            (((int) $sla) < $duration) and
+            (((int) $sla) <= $duration) and
             ($fta->getMode() === FTA\Mode::IMPS))
         {
             $this->trace->info(
