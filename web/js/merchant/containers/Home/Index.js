@@ -45,6 +45,7 @@ import Banner from 'rzp/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';
+import RTrack from 'react-tracking';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -101,6 +102,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
   trafficSectionTitle = 'Traffic split on platforms',
   recentActivityTitle = 'Recent Activity';
 
+@RTrack({ page: 'Actions' })
 @connect(
   state => {
     return {
@@ -618,7 +620,7 @@ export default class HomeContainer extends Component {
       current_balance,
       tabsMeta,
       user,
-
+      tracking,
       // following three props will be sent by admin analytics
       // - web/pokedex.js
       isAdmin,
@@ -774,10 +776,16 @@ export default class HomeContainer extends Component {
           <InstantActivationSuccess
             onClose={() => {
               iaActivations.trackClose(activation_flow);
+              tracking.trackEvent(
+                window.rzpQ.dropped('whitelist_popup_action')
+              );
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
             }}
             onGoToDashboard={() => {
+              tracking.trackEvent(
+                window.rzpQ.initiated('whitelist_popup_action')
+              );
               iaActivations.trackGoToDashboard();
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
@@ -803,10 +811,14 @@ export default class HomeContainer extends Component {
           <KycDetailsModal
             onClose={() => {
               iaActivations.trackCloseKYCDetails();
+              tracking.trackEvent(window.rzpQ.dropped('greylist_popup_action'));
               hideKYCDetailsModal();
             }}
             onGiveDetails={() => {
               iaActivations.trackGiveKYCDetails();
+              tracking.trackEvent(
+                window.rzpQ.initiated('greylist_popup_action')
+              );
               hideKYCDetailsModal();
             }}
           />

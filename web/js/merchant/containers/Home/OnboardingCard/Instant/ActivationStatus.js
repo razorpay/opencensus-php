@@ -45,6 +45,7 @@ export default class ActivationCard extends Component {
         onActive,
         track,
         international,
+        tracking,
       } = nextProps,
       {
         isL1Submitted,
@@ -96,7 +97,9 @@ export default class ActivationCard extends Component {
             <Link
               to="/activation"
               className="btn btn-primary"
-              onClick={() => track.fillKyc()}
+              onClick={() => {
+                track.fillKyc();
+              }}
             >
               Fill KYC Form
             </Link>
