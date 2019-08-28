@@ -9,9 +9,9 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class XlsxRblStatementGenerator extends RBLStatementGenerator
 {
-    const HEADERS = [
-        XLSXHeaders::HEADER => 'A2',
-        XLSXHeaders::SUB_HEADER => 'A3',
+    const HEADER_TO_CELL_MAP = [
+        XLSXHeaders::SHEET_TITLE => 'A2',
+        XLSXHeaders::SHEET_SUB_TITLE => 'A3',
         XLSXHeaders::ACCOUNT_NAME => 'A4',
         XLSXHeaders::HOME_BRANCH_NAME => 'C4',
         XLSXHeaders::CUSTOMER_ADDRESS => 'A5',
@@ -40,44 +40,116 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         XLSXHeaders::BALANCE => 'G30',
     ];
 
-    const DATA_COLUMNS = [
-        AccountOwnerInfo::ACCOUNT_NAME => 'B4',
-        AccountOwnerInfo::CUSTOMER_ADDRESS => 'B5',
-        AccountOwnerInfo::CUSTOMER_ADDRESS_L2 => 'B7',
-        AccountOwnerInfo::CUSTOMER_CITY => 'B9',
-        AccountOwnerInfo::CUSTOMER_STATE => 'B11',
-        AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => 'B13',
-        AccountOwnerInfo::CUSTOMER_MOBILE => 'B18',
-        AccountOwnerInfo::CUSTOMER_EMAIL => 'B19',
-        AccountOwnerInfo::CUSTOMER_CIF_ID => 'B21',
-        AccountOwnerInfo::CURRENCY => 'B22',
-        AccountOwnerInfo::ACCOUNT_OPENING_DATE => 'B24',
-        AccountOwnerInfo::ACCOUNT_TYPE => 'B25',
-        AccountOwnerInfo::ACCOUNT_STATUS => 'B26',
-        AccountOwnerInfo::ACCOUNT_NUMBER => 'B27',
-        AccountOwnerInfo::STATEMENT_PERIOD => 'B28',
-        AccountOwnerInfo::HOME_BRANCH_NAME => 'D4',
-        AccountOwnerInfo::HOME_BRANCH_ADDRESS => 'D5',
-        AccountOwnerInfo::IFSC_CODE => 'D17',
-        AccountOwnerInfo::SANCTION_LIMIT => 'D20',
-        AccountOwnerInfo::DRAWING_POWER => 'D21',
-        AccountOwnerInfo::BRANCH_TIMINGS => 'D22',
-        AccountOwnerInfo::CALL_CENTER => 'D25',
-        AccountOwnerInfo::BRANCH_PHONE_NUMBER => 'D26',
-        AccountOwnerInfo::BRANCH_CITY => 'D9',
-        AccountOwnerInfo::BRANCH_STATE => 'D11',
-        AccountOwnerInfo::BRANCH_PINCODE => 'D13',
-    ];
+    const ACCOUNT_OWNER_INFO_CELL_MAP =
+        [
+            AccountOwnerInfo::ACCOUNT_NAME => 'B4',
+            AccountOwnerInfo::CUSTOMER_ADDRESS => 'B5',
+            AccountOwnerInfo::CUSTOMER_ADDRESS_L2 => 'B7',
+            AccountOwnerInfo::CUSTOMER_CITY => 'B9',
+            AccountOwnerInfo::CUSTOMER_STATE => 'B11',
+            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => 'B13',
+            AccountOwnerInfo::CUSTOMER_MOBILE => 'B18',
+            AccountOwnerInfo::CUSTOMER_EMAIL => 'B19',
+            AccountOwnerInfo::CUSTOMER_CIF_ID => 'B21',
+            AccountOwnerInfo::CURRENCY => 'B22',
+            AccountOwnerInfo::ACCOUNT_OPENING_DATE => 'B24',
+            AccountOwnerInfo::ACCOUNT_TYPE => 'B25',
+            AccountOwnerInfo::ACCOUNT_STATUS => 'B26',
+            AccountOwnerInfo::ACCOUNT_NUMBER => 'B27',
+            AccountOwnerInfo::STATEMENT_PERIOD => 'B28',
+            AccountOwnerInfo::HOME_BRANCH_NAME => 'D4',
+            AccountOwnerInfo::HOME_BRANCH_ADDRESS => 'D5',
+            AccountOwnerInfo::IFSC_CODE => 'D17',
+            AccountOwnerInfo::SANCTION_LIMIT => 'D20',
+            AccountOwnerInfo::DRAWING_POWER => 'D21',
+            AccountOwnerInfo::BRANCH_TIMINGS => 'D22',
+            AccountOwnerInfo::CALL_CENTER => 'D25',
+            AccountOwnerInfo::BRANCH_PHONE_NUMBER => 'D26',
+            AccountOwnerInfo::BRANCH_CITY => 'D9',
+            AccountOwnerInfo::BRANCH_STATE => 'D11',
+            AccountOwnerInfo::BRANCH_PINCODE => 'D13',
+        ];
+
+    # this will be determined after we know the transaction counts
+    protected $SUMMARY_KEY_MAP =
+        [
+            XLSXHeaders::STATEMENT_SUMMARY => '',
+            XLSXHeaders::OPENING_BALANCE => '',
+            XLSXHeaders::CLOSING_BALANCE => '',
+            XLSXHeaders::EFFECTIVE_BALANCE => '',
+            XLSXHeaders::STATEMENT_GENERATED_DATE => '',
+            XLSXHeaders::DEBIT_COUNT => '',
+            XLSXHeaders::CREDIT_COUNT => '',
+            XLSXHeaders::LIEN_AMOUNT => '',
+        ];
+
+    protected $SUMMARY_DATA_MAP =
+        [
+            StatementSummary::OPENING_BALANCE => '',
+            StatementSummary::CLOSING_BALANCE => '',
+            StatementSummary::EFFECTIVE_BALANCE => '',
+            StatementSummary::STATEMENT_GENERATED_DATE => '',
+            StatementSummary::DEBIT_COUNT => '',
+            StatementSummary::CREDIT_COUNT => '',
+            StatementSummary::LIEN_AMOUNT => '',
+        ];
+
 
     const LOGO_CELL = 'A1';
     const LOGO_CELL_RANGE = 'A1:E1';
     const HEADER_CELL_RANGE = 'A2:E2';
     const WORKING_COLUMN_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
     const TRANSACTION_TITLE_CELL = 'A29';
-    const TRANSACTION_START_ROW = 'A40';
     const TRANSACTION_HEADER_CELL_RANGE = 'A30:G30';
     const TRANSACTION_CELL_FILL_COLOR = 'b19cd9';
+    const TRANSACTION_DATA_START_ROW = 31;
 
+
+    public function __construct($accountNumber, $channel, $fromDate, $toDate)
+    {
+        parent::__construct($accountNumber, $channel, $fromDate, $toDate);
+
+        $this->calculateStatementSummaryCellValues();
+    }
+
+    protected function calculateStatementSummaryCellValues()
+    {
+        $transaction = $this->data[AccountStatementData::TRANSACTIONS];
+        $t_count = count($transaction);
+
+        $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_SUMMARY] =
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+        $this->SUMMARY_KEY_MAP[XLSXHeaders::OPENING_BALANCE] =
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 1);
+        $this->SUMMARY_KEY_MAP[XLSXHeaders::CLOSING_BALANCE] =
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 2);
+        $this->SUMMARY_KEY_MAP[XLSXHeaders::EFFECTIVE_BALANCE] =
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 3);
+        $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_GENERATED_DATE] =
+            'A' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 4);
+        $this->SUMMARY_KEY_MAP[XLSXHeaders::DEBIT_COUNT] =
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+        $this->SUMMARY_KEY_MAP[XLSXHeaders::CREDIT_COUNT] =
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+        $this->SUMMARY_KEY_MAP[XLSXHeaders::LIEN_AMOUNT] =
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+
+        $this->SUMMARY_DATA_MAP[StatementSummary::OPENING_BALANCE] =
+            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 1);
+        $this->SUMMARY_DATA_MAP[StatementSummary::CLOSING_BALANCE] =
+            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 2);
+        $this->SUMMARY_DATA_MAP[StatementSummary::EFFECTIVE_BALANCE] =
+            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 3);
+        $this->SUMMARY_DATA_MAP[StatementSummary::STATEMENT_GENERATED_DATE] =
+            'B' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count + 4);
+        $this->SUMMARY_DATA_MAP[StatementSummary::DEBIT_COUNT] =
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+        $this->SUMMARY_DATA_MAP[StatementSummary::CREDIT_COUNT] =
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+        $this->SUMMARY_DATA_MAP[StatementSummary::LIEN_AMOUNT] =
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $t_count);
+
+    }
 
     function getStatement()
     {
@@ -96,7 +168,8 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
 
         $this->addLogo($sheet);
         $this->addHeaders($sheet);
-        $this->addBasicData($sheet);
+        $this->addOwnerInfo($sheet);
+        $this->addStatementSummary($sheet);
         $this->addTransactionTitle($sheet);
         $this->addTransactions($sheet);
         $this->addStyling($sheet);
@@ -106,16 +179,31 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
 
     protected function addHeaders(&$sheet)
     {
-        foreach (self::HEADERS as $header => $columnNumber)
+        foreach (self::HEADER_TO_CELL_MAP as $header => $columnNumber)
+        {
+            $sheet->setCellValue($columnNumber, $header);
+        }
+
+        foreach ($this->SUMMARY_KEY_MAP as $header => $columnNumber)
         {
             $sheet->setCellValue($columnNumber, $header);
         }
     }
 
-    protected function addBasicData(&$sheet)
+    protected function addStatementSummary(&$sheet)
+    {
+
+        $statementSummary = $this->data[AccountStatementData::STATEMENT_SUMMARY];
+        foreach ($this->SUMMARY_DATA_MAP as $dataPoint => $columnNumber)
+        {
+            $sheet->setCellValue($columnNumber, $statementSummary[$dataPoint]);
+        }
+    }
+
+    protected function addOwnerInfo(&$sheet)
     {
         $basicInfo = $this->data[AccountStatementData::ACCOUNT_OWNER_INFO];
-        foreach (self::DATA_COLUMNS as $dataPoint => $columnNumber)
+        foreach (self::ACCOUNT_OWNER_INFO_CELL_MAP as $dataPoint => $columnNumber)
         {
             $sheet->setCellValue($columnNumber, $basicInfo[$dataPoint]);
         }
@@ -139,39 +227,43 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         # have to add an image here
     }
 
+    const TRANSACTION_DATA_TO_COLUMN =
+        [
+            TransactionLineItem::TRANSACTION_DATE => 'A',
+            TransactionLineItem::TRANSACTION_DETAILS => 'B',
+            TransactionLineItem::CHEQUE_ID => 'C',
+            TransactionLineItem::VALUE_DATE => 'D',
+            TransactionLineItem::WITHDRAWAL_AMOUNT => 'E',
+            TransactionLineItem::DEPOSIT_AMOUNT => 'F',
+            TransactionLineItem::BALANCE => 'G',
+        ];
+
     protected function addTransactions(&$sheet)
     {
         # loop over the statements and put in the transactions
         $transactions = $this->data[AccountStatementData::TRANSACTIONS];
+        $currentRow = self::TRANSACTION_DATA_START_ROW;
         foreach ($transactions as $lineItem)
         {
-            $x = 1;
+            foreach ($lineItem as $transactionKey => $transactionValue)
+            {
+                $cell =  self::TRANSACTION_DATA_TO_COLUMN[$transactionKey] . (string) $currentRow;
+                $sheet->setCellValue($cell, $transactionValue);
+            }
+            $currentRow++;
         }
     }
 
     protected function addStyling(&$sheet)
     {
-        # make all the Basic Info columns as bold
-        $dataColumns = array_values(self::DATA_COLUMNS);
-        foreach ($dataColumns as $column)
-        {
-            $sheet->getStyle($column)->getFont()->setBold(1);
-        }
+
+        $this->makeCellsBold($sheet);
 
         # merge the 5 cells for logo
         $sheet->mergeCells(self::LOGO_CELL_RANGE);
 
         # merge the 5 cells for header
         $sheet->mergeCells(self::HEADER_CELL_RANGE);
-
-        # make header bold
-        $sheet->getStyle(self::HEADERS[XLSXHeaders::HEADER])->getFont()->setBold(1);
-
-        # make sub-header bold
-        $sheet->getStyle(self::HEADERS[XLSXHeaders::SUB_HEADER])->getFont()->setBold(1);
-
-        # make transaction title bold
-        $sheet->getStyle(self::TRANSACTION_TITLE_CELL)->getFont()->setBold(1);
 
         # make the default width of all the columns a bit wider
         foreach (self::WORKING_COLUMN_LIST as $col)
@@ -186,6 +278,25 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         # give all the cells of the transaction table blue border
 
     }
+
+    protected function makeCellsBold(&$sheet)
+    {
+        $columnsToBold = array_merge(
+            array_values(self::ACCOUNT_OWNER_INFO_CELL_MAP),
+            array_values($this->SUMMARY_DATA_MAP)
+        );
+
+        array_push($columnsToBold, self::HEADER_TO_CELL_MAP[XLSXHeaders::SHEET_TITLE]);
+        array_push($columnsToBold, self::HEADER_TO_CELL_MAP[XLSXHeaders::SHEET_SUB_TITLE]);
+        array_push($columnsToBold, self::TRANSACTION_TITLE_CELL);
+        array_push($columnsToBold, $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_SUMMARY]);
+
+        foreach ($columnsToBold as $column)
+        {
+            $sheet->getStyle($column)->getFont()->setBold(1);
+        }
+    }
+
 
 }
 

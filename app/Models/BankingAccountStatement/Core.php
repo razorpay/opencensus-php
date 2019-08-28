@@ -92,18 +92,6 @@ class Core extends Base\Core
 
         $statementGenerator = $this->getStatementGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
         $statement = $statementGenerator->getStatement();
-//        switch ($format)
-//        {
-//            case Formats::PDF:
-//                $statement = $statementGenerator->pdf();
-//                break;
-//            case Formats::CSV:
-//                $statement = $statementGenerator->csv();
-//                break;
-//            case Formats::XLSX:
-//                $statement = $statementGenerator->xlsx();
-//                break;
-//        }
 
         if ($sendEmail)
         {

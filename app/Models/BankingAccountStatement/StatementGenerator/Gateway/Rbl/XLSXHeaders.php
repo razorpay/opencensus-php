@@ -4,8 +4,8 @@ namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 
 class XLSXHeaders
 {
-    const HEADER = 'ACCOUNT DETAILS';
-    const SUB_HEADER = 'General Details';
+    const SHEET_TITLE = 'ACCOUNT DETAILS';
+    const SHEET_SUB_TITLE = 'General Details';
     const ACCOUNT_NAME = 'Account Name:';
     const HOME_BRANCH_NAME = 'Home Branch:';
     const CUSTOMER_ADDRESS = 'Customer Address:';
@@ -32,6 +32,14 @@ class XLSXHeaders
     const WITHDRAWL_AMT = 'Withdrawl Amt';
     const DEPOSIT_AMT = 'Deposit Amt';
     const BALANCE = 'Balance (INR)';
+    const STATEMENT_SUMMARY = 'Statement Summary';
+    const OPENING_BALANCE = 'Opening Balance:';
+    const CLOSING_BALANCE = 'Closing Balance:';
+    const EFFECTIVE_BALANCE = 'Eff Avail Bal:';
+    const STATEMENT_GENERATED_DATE = 'As On:';
+    const DEBIT_COUNT = 'Count Of Debit:';
+    const CREDIT_COUNT = 'Count Of Credit:';
+    const LIEN_AMOUNT = 'Lien Amt:';
 
 }
 
