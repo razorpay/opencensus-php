@@ -250,7 +250,22 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_CAPTURE_REQUEST);
+
         $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_CAPTURE_RESPONSE);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->createGatewayPaymentEntity($attributes, $input, Action::CAPTURE);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
@@ -472,6 +487,7 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
                 Action::VERIFY => Action::PAY_INIT,
+                Action::CAPTURE => Action::PAY_INIT,
             ],
             Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT   => null,
@@ -562,7 +578,8 @@ class Gateway extends Base\Gateway
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
-                Action::REFUND => Action::AUTHORIZE,
+                Action::CAPTURE => Action::AUTHORIZE,
+                Action::REFUND => Action::CAPTURE,
                 Action::VERIFY_REFUND => Action::REFUND,
                 Action::VERIFY => Action::AUTHORIZE,
             ],
