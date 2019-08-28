@@ -109,8 +109,7 @@ export default class RequestEarlyAccessForm extends Component {
 
   createFreshdeskTicket() {
     const TSYS_AUTH_TOKEN = '4d482bcf908b56771a86db388bae8ee7639b0f81';
-    const apiUrl =
-      'https://bmwloans.razorpay.com/ticketing/api/fd/ticket/create';
+    const apiUrl = 'https://support-tsa.razorpay.com/api/fd/ticket/create';
     // Sandbox API URL - Bussiness operations group id = 42000097437
     // const apiUrl = 'http://localhost:4000/api/fd/ticket/create';
 
@@ -140,7 +139,7 @@ export default class RequestEarlyAccessForm extends Component {
           formData.interested_in
         } Early Settlement for <strong>${
           this.props.user.name
-        }</strong>. The pricing agreed to is <strong>${pricing}%.</strong><br><br>We will update you once the changes have been approved.<br><br>Cheers,<br>Team Razorpay</div></div>`,
+        }</strong>. The pricing agreed to is <strong>${pricing}%.</strong> For international payments, it is <strong>1%</strong> more.<br><br>We will update you once the changes have been approved.<br><br>Cheers,<br>Team Razorpay</div></div>`,
         custom_fields: {
           cf_requester_category: 'Merchant',
           cf_requestor_subcategory: 'Account configuration/changes',

@@ -101,9 +101,14 @@ class ApiRequestAny
 
         $originDomain = ApiUrl::getRequestOriginUrl();
 
+        $requestedClientIPS = \Request::ips();
+
+        $clientIp = end($requestedClientIPS);
+
         $defaultHeaders = [
             'X-Dashboard'       => 'true',
             'X-User-Agent'      => Request::header('User-Agent'),
+            'X-Dashboard-Ip'    => $clientIp,
             'X-IP-Address'      => Request::ip(),
             'X-Org-Hostname'    => $domain,
             'X-Request-Origin'  => $originDomain,
@@ -414,7 +419,12 @@ class ApiRequestAny
                 (empty($json['error']['data'][self::INTERNAL_ERROR_CODE]) === false) and
                 (in_array($json['error']['data'][self::INTERNAL_ERROR_CODE], self::INTERNAL_ERROR_CODES) === true))
             {
-                $errors['data'] = $json['error']['data'];
+                $errors = [
+                    self::INTERNAL_ERROR_CODE => $json['error'][self::INTERNAL_ERROR_CODE],
+                    'description'             => $json['error']['description'],
+                    'status_code'             => $json['error']['http_status_code'],
+                    'code'                    => $json['error']['code'],
+                ];
             }
         }
         catch(\GuzzleHttp\Exception\ServerException $e)
