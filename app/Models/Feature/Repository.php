@@ -177,4 +177,21 @@ class Repository extends BaseRepository
 
         $this->syncToEs($modeEntity, EsRepository::CREATE, null, $mode);
     }
+
+    /***
+     * @param array $entityIds
+     * @param string $featureName
+     * @return mixed
+     * This query is run to get the EntityId which are not in $entityId and have
+     * Feature as passed by the $featureName
+     * and Entity type is 'merchant'
+     */
+    public function findMerchantNotInEntityIdHavingFeature(array $entityIds, string $featureName)
+    {
+        return $this->newQuery()
+                    ->whereNotIn(Entity::ENTITY_ID, $entityIds)
+                    ->where(Entity::NAME, $featureName)
+                    ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                    ->get();
+    }
 }

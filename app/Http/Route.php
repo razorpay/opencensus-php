@@ -404,6 +404,7 @@ final class Route
         'nodal_initiate_transfer'                  => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
         'nodal_initiate_transfer_admin'            => ['post',     'nodal/transfer/admin',                           'SettlementController@postInitiateTransfer'                         ],
         'nodal_add_beneficiary'                    => ['post',     'nodal/beneficiary/{channel}',                    'SettlementController@addBeneficiary'                               ],
+        'get_setl_amount'                          => ['get',      'settlement/amount',                              'SettlementController@getSettlementAmount'                          ],
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                  => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -1634,6 +1635,7 @@ final class Route
         'subscription_registration_auto_charge',
         'partner_submerchant_map',
         'refund_speed_processed_backfill',
+        'get_setl_amount',
         'cps_sync_gateway_entities_cron',
         'scrooge_refund_reference1_bulk_update',
     ];
@@ -2284,7 +2286,6 @@ final class Route
         'get_channel_action',
         'setl_initiate_action',
         'fund_transfer_attempt_initiate_action',
-
         'merchant_restrict',
         'user_update_contact_admin',
         'user_account_lock_unlock_admin',
@@ -2991,6 +2992,7 @@ final class Route
             'gateway_downtime_detection_purge_keys',
             'subscription_registration_auto_charge',
             'refund_speed_processed_backfill',
+            'get_setl_amount',
             'cps_sync_gateway_entities_cron',
         ],
 
