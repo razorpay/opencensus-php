@@ -3,6 +3,13 @@ import * as id from './id';
 import { getAmount, getTime } from 'rzp/ui/item';
 import { makeIdLink } from 'rzp/ui/item/id';
 import { getIntervalCycle, subString } from 'rzp/utils/rzp-utils';
+import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
+
+const allRoles = {
+  ...roles,
+  agentRole,
+  RBLRoles,
+};
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
 
 export const withClick = onClick => ({ value, ...rest }) => {
@@ -151,4 +158,9 @@ export const planBillingCycle = {
 export const batchName = {
   title: 'Batch Name',
   value: item => subString(item.name, 50),
+};
+
+export const role = {
+  title: 'Role',
+  value: item => (allRoles[item.role] || {}).label,
 };
