@@ -293,7 +293,7 @@ trait Authorize
                     'terminal_id' => $payment->getTerminalId(),
                     'gateway'     => $payment->getGateway(),
                     'shared'      => $currentTerminal->isShared()
-                ] + ($gatewayInput['authenticate'] ?? []));
+                ] + ($terminalGatewayInput['authenticate'] ?? []));
 
             try
             {
