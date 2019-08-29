@@ -587,13 +587,6 @@ class BankingAccountTest extends TestCase
     {
         $bankingAccount = $this->createBankingAccount();
 
-        $this->fixtures->edit('banking_account',
-            $bankingAccount->getId(),
-            [
-                'status' => 'activated',
-            ]);
-
-
         $dataToReplace = [
             'request'  => [
                 'url'     => '/banking_accounts/' . $bankingAccount['id'],
@@ -635,40 +628,6 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::REJECTED, $bankingAccount->getStatus());
-    }
-
-    public function testUpdateBeneDetailsAfterStatusIsActivated()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
-
-        $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
-
-        $this->testCreateBankingAccount();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->fixtures->edit('banking_account',
-            $bankingAccount->getId(),
-            [
-                'status' => 'activated',
-            ]);
-
-        $dataToReplace = [
-            'request'  => [
-                'url'     => '/banking_accounts/' . 'bacc_' . $bankingAccount->getId(),
-                'method'  => 'PATCH',
-            ],
-        ];
-
-        $this->ba->adminAuth();
-
-        $this->startTest($dataToReplace);
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals(RZP\Models\BankingAccount\Status::ACTIVATED, $bankingAccount->getStatus());
     }
 
     protected function setMozartMockResponse($mockedResponse)

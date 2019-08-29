@@ -165,35 +165,6 @@ return [
         ],
     ],
 
-    'testUpdateBeneDetailsAfterStatusIsActivated' => [
-        'request'  => [
-            'url'     => '/banking_account',
-            'method'  => 'PATCH',
-            'content' => [
-                BankingAccount\Entity::STATUS                           => BankingAccount\Status::ACTIVATED,
-                BankingAccount\Entity::BENEFICIARY_NAME                 => 'INTERNET BANKING CA',
-                BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER   => 'random',
-                BankingAccount\Entity::BENEFICIARY_ADDRESS1             => 'RAM NAGAR',
-                BankingAccount\Entity::BENEFICIARY_ADDRESS2             => 'ADARSHA LANE',
-                BankingAccount\Entity::BENEFICIARY_ADDRESS3             => '.',
-                BankingAccount\Entity::BENEFICIARY_CITY                 => 'MUMBAI',
-                BankingAccount\Entity::BENEFICIARY_STATE                => 'MAHARASH',
-                BankingAccount\Entity::BENEFICIARY_COUNTRY              => 'INDIA',
-                BankingAccount\Entity::BENEFICIARY_MOBILE               => '9899807189',
-                BankingAccount\Entity::BENEFICIARY_EMAIL                => 'test1@gmail.com',
-                BankingAccount\Entity::BENEFICIARY_PIN                  => '560039',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'channel'     => 'rbl',
-                BankingAccount\Entity::STATUS => BankingAccount\Status::ACTIVATED,
-                BankingAccount\Entity::BENEFICIARY_EMAIL => 'test1@gmail.com'
-
-            ],
-        ],
-    ],
-
     'testUpdateBankingAccountToInitiatedWithInternalComments' => [
         'request'  => [
             'url'     => '/banking_account',

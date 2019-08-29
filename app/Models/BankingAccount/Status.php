@@ -66,7 +66,6 @@ class Status
         self::UNSERVICEABLE => [],
         self::CANCELLED => [],
         self::REJECTED  => [],
-        self::ACTIVATED => [],
     ];
 
     public static $internallyEditStatuses = [
@@ -76,7 +75,6 @@ class Status
       self::UNSERVICEABLE,
       self::REJECTED,
       self::CANCELLED,
-      self::ACTIVATED
     ];
 
     public static function isValidStatus(string $status = null)
