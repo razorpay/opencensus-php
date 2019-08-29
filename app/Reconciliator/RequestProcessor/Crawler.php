@@ -10,7 +10,7 @@ use RZP\Models\FileStore\Utility;
 use RZP\Reconciliator\FileProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
-class Lambda extends Base
+class Crawler extends Base
 {
     use FileHandlerTrait;
 
