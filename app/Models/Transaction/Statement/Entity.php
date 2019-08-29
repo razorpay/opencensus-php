@@ -151,6 +151,7 @@ class Entity extends Transaction\Entity
             [
                 FundAccount\Validation\Entity::ID,
                 FundAccount\Validation\Entity::ENTITY,
+                FundAccount\Validation\Entity::FUND_ACCOUNT_ID,
                 FundAccount\Validation\Entity::FUND_ACCOUNT,
                 FundAccount\Validation\Entity::AMOUNT,
                 FundAccount\Validation\Entity::FEES,
