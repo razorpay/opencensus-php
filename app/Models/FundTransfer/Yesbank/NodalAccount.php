@@ -69,6 +69,17 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
+            //if BA is not present for attempt
+            // marking FTA and settlement as failed, if source is settlement
+            if($attempt->hasBaForSettlement() === false)
+            {
+                $failureReason = 'Bank Account not found for FTA';
+
+                $this->markAttemptAsFailed($attempt, $failureReason);
+
+                continue;
+            }
+
             $gateway = $attempt->shouldUseGateway();
 
             $this->doRequiredChecks($gateway);

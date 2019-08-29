@@ -88,28 +88,4 @@ abstract class FileProcessor extends NodalAccount
             $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $attempt->getSourceType());
         }
     }
-
-    protected function markAttemptAsFailed(Attempt\Entity $entity, $failureReason)
-    {
-        $status = Attempt\Status::FAILED;
-
-        $entity->setFailureReason($failureReason);
-
-        $entity->setStatus($status);
-
-        $this -> markSettlementAsFailed($entity->source, $failureReason);
-
-        $this->repo->saveOrFail($entity);
-    }
-
-    public function markSettlementAsFailed(Entity $entity, $failureReason)
-    {
-        $status = Settlement\Status::FAILED;
-
-        $entity->setStatus($status);
-
-        $entity->setFailureReason($failureReason);
-
-        $this->repo->saveOrFail($entity);
-    }
 }

@@ -257,6 +257,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
+    const FTA_MARKED_AS_FAILED                                  = 'FTA_MARKED_AS_FAILED';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 

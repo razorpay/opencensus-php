@@ -172,6 +172,17 @@ class NodalAccount extends NodalBase\FileProcessor
 
         foreach ($entities as $entity)
         {
+            //if BA is not present for attempt
+            // marking FTA and settlement as failed, if source is settlement
+            if($entity->hasBaForSettlement() === false)
+            {
+                $failureReason = 'Bank Account not found for FTA';
+
+                $this->markAttemptAsFailed($entity, $failureReason);
+
+                continue;
+            }
+
             $source = $entity->source;
 
             $amount = ($source->getAmount() / 100);

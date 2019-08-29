@@ -8,8 +8,6 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Encryption\Type;
-use RZP\Constants\Entity as EntityConstansts;
-use RZP\Models\FundTransfer\Attempt\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
@@ -110,6 +108,17 @@ class NodalAccount extends NodalBase\FileProcessor
 
         foreach ($entities as $entity)
         {
+            //if BA is not present for attempt
+            // marking FTA and settlement as failed, if source is settlement
+            if($entity->hasBaForSettlement() === false)
+            {
+                $failureReason = 'Bank Account not found for FTA';
+
+                $this->markAttemptAsFailed($entity, $failureReason);
+
+                continue;
+            }
+
             $record   = $this->emptyRow;
 
             $source   = $entity->source;
@@ -117,17 +126,6 @@ class NodalAccount extends NodalBase\FileProcessor
             $amount   = ($source->getAmount() / 100);
 
             $ba       = $entity->bankAccount;
-
-            //If bank account does not exist mark FTA and Settlement as Failed
-            if(empty($ba) === true and $source->getEntity() === EntityConstansts::SETTLEMENT)
-            {
-                $failureReason = 'Bank account not found';
-
-                $this->markAttemptAsFailed($entity, $failureReason);
-
-                continue;
-            }
-
             $mode     = $this->getPaymentType($amount, $ba);
 
             $entity->setMode($mode);

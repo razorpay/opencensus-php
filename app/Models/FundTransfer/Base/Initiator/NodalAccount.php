@@ -461,4 +461,34 @@ abstract class NodalAccount extends Base\Core
 
         return Mode::NEFT;
     }
+
+    protected function markAttemptAsFailed(Attempt\Entity $entity, $failureReason)
+    {
+        $status = Attempt\Status::FAILED;
+
+        $entity->setFailureReason($failureReason);
+
+        $entity->setStatus($status);
+
+        $this -> markSettlementAsFailed($entity->source, $failureReason);
+
+        $this->repo->saveOrFail($entity);
+
+        $this->trace->info(TraceCode::FTA_MARKED_AS_FAILED,
+            [
+                'fta_id'            => $entity->getId(),
+                'failure_reason'    => $failureReason
+            ]);
+    }
+
+    protected function markSettlementAsFailed(Settlement\Entity $entity, $failureReason)
+    {
+        $status = Settlement\Status::FAILED;
+
+        $entity->setStatus($status);
+
+        $entity->setFailureReason($failureReason);
+
+        $this->repo->saveOrFail($entity);
+    }
 }
