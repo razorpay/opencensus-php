@@ -30,8 +30,7 @@ export default class MembersActions extends Component {
 
     const visibleFields = {
       role: showWhenUtil({
-        additionalCondition: user =>
-          user.isMerchantRestricted && user.isAllowedEdit('team'),
+        additionalCondition: user => user.isAllowedEdit('team'),
       }),
       contactMobile: showWhenUtil({
         additionalCondition: user => user.isMerchantRestricted,
