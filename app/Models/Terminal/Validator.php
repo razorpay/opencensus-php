@@ -90,6 +90,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::NETBANKING_YESB,
+        Payment\Gateway::NETBANKING_SIB,
         Payment\Gateway::NETBANKING_FEDERAL,
         Payment\Gateway::NETBANKING_CUB,
         Payment\Gateway::EMI_SBI,
@@ -717,6 +718,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
+    protected static $netbankingSibEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_sib',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingFederalTerminalRules = [
