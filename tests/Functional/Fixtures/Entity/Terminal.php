@@ -3044,4 +3044,24 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedPaypalTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => '100000Razorpay',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'wallet_paypal',
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'RazorpayPaypal',
+            'gateway_terminal_password' => 'terminal_password',
+            'gateway_terminal_password2'=> 'terminal_password2',
+            'mode'                      => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
 }

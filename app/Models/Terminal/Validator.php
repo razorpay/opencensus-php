@@ -97,6 +97,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
         Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
@@ -482,6 +483,26 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+    ];
+
+    protected static $walletPaypalTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_paypal',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::MODE                       => 'sometimes',
+    ];
+
+    protected static $walletPaypalEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_paypal',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::MODE                       => 'sometimes',
     ];
 
     protected static $walletPhonepeEditTerminalRules = [
