@@ -2,9 +2,10 @@
 
 namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
 
+use RZP\Models\FileStore;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
@@ -97,7 +98,7 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         ];
 
     const TRANSACTION_DATA_TO_COLUMN
-        = [
+                                        = [
             TransactionLineItem::TRANSACTION_DATE    => 'A',
             TransactionLineItem::TRANSACTION_DETAILS => 'B',
             TransactionLineItem::CHEQUE_ID           => 'C',
@@ -107,14 +108,25 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
             TransactionLineItem::BALANCE             => 'G',
         ];
 
-    const LOGO_CELL                     = 'A1';
     const LOGO_CELL_RANGE               = 'A1:E1';
+
+    const LOGO_PATH                     = 'views/bank_account_statement/RBL/rbllogo.png';
+
+    const LOGO_POSTITION                = 'E1';
+
     const HEADER_CELL_RANGE             = 'A2:E2';
+
     const WORKING_COLUMN_LIST           = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+
     const TRANSACTION_TITLE_CELL        = 'A29';
+
     const TRANSACTION_HEADER_CELL_RANGE = 'A30:G30';
+
     const TRANSACTION_CELL_FILL_COLOR   = 'b19cd9';
+
     const TRANSACTION_DATA_START_ROW    = 31;
+
+    const DEFAULT_XLSX_FORMAT           = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
     public function __construct($accountNumber, $channel, $fromDate, $toDate)
     {
@@ -169,8 +181,19 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         $statementData = $this->accountStatementData();
         $spreadsheet   = $this->createTableView($statementData);
 
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('/Users/anubhavshrivastava/code/api/storage/files/filestore/lol.xlsx');
+        $tmpFileName     = $this->accountNumber;
+        $tmpFileFullPath = storage_path('tmp/' . $tmpFileName);
+        $writer          = new Xlsx($spreadsheet);
+        $writer->save($tmpFileFullPath);
+        $fileStoreHandle = (new FileStore\Creator())->localFilePath($tmpFileFullPath)
+                                                    ->name($tmpFileName)
+                                                    ->mime(self::DEFAULT_XLSX_FORMAT)
+                                                    ->extension(FileStore\Format::XLSX)
+                                                    ->type(FileStore\Type::RBL_STATEMENT)
+                                                    ->save()
+                                                    ->getFileInstance();
+
+        return $fileStoreHandle;
 
         return 'Excel File Written';
     }
@@ -220,6 +243,7 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
     {
 
         $basicInfo = $this->data[AccountStatementData::ACCOUNT_OWNER_INFO];
+
         foreach (self::ACCOUNT_OWNER_INFO_CELL_MAP as $dataPoint => $columnNumber)
         {
             $sheet->setCellValue($columnNumber, $basicInfo[$dataPoint]);
@@ -230,10 +254,12 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
     {
 
         $basicInfo = $this->data[AccountStatementData::ACCOUNT_OWNER_INFO];
-        # Ex: Transactions List - INTERNETBA (INR) - 409000000083
+
+        # Ex: Transactions List - INTERNET BANK (INR) - 409000000083
         $transactionTitle = 'Transactions List - ' .
                             "{$basicInfo[AccountOwnerInfo::ACCOUNT_NAME]} ({$basicInfo[AccountOwnerInfo::CURRENCY]})" .
                             "{$basicInfo[AccountOwnerInfo::ACCOUNT_NUMBER]}";
+
         $sheet->setCellValue(self::TRANSACTION_TITLE_CELL, $transactionTitle);
     }
 
@@ -241,9 +267,11 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
     {
 
         $drawing = new Drawing();
-        $drawing->setPath(resource_path('views/bank_account_statement/RBL/rbllogo.png'));
-        $drawing->setCoordinates('E1');
-        //        $drawing->setOffsetX(110);
+
+        $drawing->setPath(resource_path(self::LOGO_PATH));
+
+        $drawing->setCoordinates(self::LOGO_POSTITION);
+
         $drawing->setWorksheet($sheet);
     }
 
@@ -252,6 +280,7 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
 
         # loop over the statements and put in the transactions
         $transactions = $this->data[AccountStatementData::TRANSACTIONS];
+
         $currentRow   = self::TRANSACTION_DATA_START_ROW;
         foreach ($transactions as $lineItem)
         {
@@ -324,8 +353,11 @@ class XlsxRblStatementGenerator extends RBLStatementGenerator
         );
 
         array_push($columnsToBold, self::HEADER_TO_CELL_MAP[XLSXHeaders::SHEET_TITLE]);
+
         array_push($columnsToBold, self::HEADER_TO_CELL_MAP[XLSXHeaders::SHEET_SUB_TITLE]);
+
         array_push($columnsToBold, self::TRANSACTION_TITLE_CELL);
+
         array_push($columnsToBold, $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_SUMMARY]);
 
         foreach ($columnsToBold as $column)

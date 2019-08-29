@@ -13,12 +13,13 @@ class PdfRblStatementGenerator extends RBLStatementGenerator
 {
     protected const TEMPLATE_FILE_NAME = 'bank_account_statement.RBL.statement';
 
+    protected const PDF_MIME_TYPE      = 'application/pdf';
+
     public function getStatement()
     {
 
         $input = $this->accountStatementData();
 
-        return $input;
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $input);
         $pdfAccountStatement  = $this->getPdfContent($htmlAccountStatement);
         $fileName             = $this->accountNumber;
@@ -26,7 +27,7 @@ class PdfRblStatementGenerator extends RBLStatementGenerator
             ->name($fileName)
             ->content($pdfAccountStatement)
             ->extension(FileStore\Format::PDF)
-            ->mime('application/pdf')
+            ->mime(self::PDF_MIME_TYPE)
             ->store(FileStore\Store::S3)
             ->type(FileStore\Type::RBL_STATEMENT)
             ->save()
