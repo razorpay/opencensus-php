@@ -12,7 +12,8 @@ import Button, { AsyncBtn } from 'component/Button';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { showNotification } from 'rzp/modules/notifications';
-import { autoPrefixUrls, pickProps } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { trackFormFields } from 'rzp/utils/track-utils';
 import { classList, addPrefixToObjectKeys } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
@@ -74,25 +75,6 @@ function getLabelFromBusinessTypeOption(val) {
 
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 1;
-
-function trackFormFields(oldValues, newValues) {
-  const changedFields = Object.keys(newValues);
-  const existingValues = pickProps(oldValues, changedFields);
-  console.log({ existingValues });
-  const fieldEvents = Object.keys(newValues).map(key => {
-    const newValue = newValues[key],
-      oldValue = existingValues[key] || '';
-    const modified = oldValue !== '' && oldValue !== newValue;
-    const eventProps = {
-      name: key,
-      newValue,
-      oldValue,
-      modified,
-    };
-    return eventProps;
-  });
-  return fieldEvents;
-}
 
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
 @withRouter
@@ -248,6 +230,7 @@ export default class ActivationWizard extends React.Component {
   })
   submitForm = () => {
     const data = this.formData;
+    const { tracking } = this.props;
     return merchantFetch({
       url: 'merchant/instant_activation',
       method: 'POST',
@@ -263,6 +246,7 @@ export default class ActivationWizard extends React.Component {
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
         trackL1FormSuccess(this.user.activation_flow);
+        tracking.trackEvent(window.rzpQ.initiated('act.submit_form'));
 
         // updating contact propteries of hubspot contact
         updateHubSpotContactsProperties({
