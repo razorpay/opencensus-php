@@ -630,8 +630,6 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(RZP\Models\BankingAccount\Status::REJECTED, $bankingAccount->getStatus());
     }
 
-<<<<<<< HEAD
-=======
     public function testUpdateBeneDetailsAfterStatusIsActivated()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -666,7 +664,6 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(RZP\Models\BankingAccount\Status::ACTIVATED, $bankingAccount->getStatus());
     }
 
->>>>>>> e91a394a67de73a7d309fc3833dc662aaf4e92af
     protected function setMozartMockResponse($mockedResponse)
     {
         $mock = Mockery::mock(Mozart::class)->makePartial();
