@@ -110,6 +110,7 @@ export default function(state = initialState, action) {
     case 'PP_FETCH':
       return merge(state, {
         paymentPages: action.payload.data.items,
+        loading: false,
       });
 
     case `${INVOICE_EDIT}::SUCCESS`:
