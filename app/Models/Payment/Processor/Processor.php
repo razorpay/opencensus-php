@@ -459,6 +459,14 @@ class Processor
             return;
         }
 
+        $payment = $this->createPaymentEntity($input, $payment);
+
+        $payment->setBaseAmount($payment->getAmount());
+
+        $payment->saveOrFail();
+
+        $input['payment_id'] = $payment->getPublicId();
+
         if ((empty($input['emi_duration']) === false) and
             (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
         {
@@ -486,6 +494,8 @@ class Processor
 
             $coproto['missing'][] = 'contact';
 
+            $coproto['payment_id'] = $payment->getPublicId();
+
             unset($coproto['request']['content']['contact']);
 
             return $coproto;
@@ -496,16 +506,45 @@ class Processor
                          ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::CARDLESS_EMI);
+        try
+        {
+            $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+        }
+        catch (Exception\GatewayErrorException $exception)
+        {
+            $this->payment->setStatus(Payment\Status::FAILED);
 
-        $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+            $error = $exception->getError();
+
+            if ($error === null)
+            {
+                $this->payment->setError(null, null, null);
+            }
+            else
+            {
+                $errorCode = $error->getGatewayErrorCode();
+
+                $errorDescription = $error->getDescription();
+
+                $internalErrorCode = $error->getInternalErrorCode();
+
+                $this->payment->setError($errorCode, $errorDescription, $internalErrorCode);
+            }
+
+
+            $this->payment->saveOrFail();
+
+            throw $exception;
+        }
 
         $coproto = [
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                    'method'   => 'cardless_emi',
-                    'provider' => $input['provider']
+                    'method'     => 'cardless_emi',
+                    'provider'   => $input['provider'],
+                    'payment_id' => $input['payment_id'],
                 ]),
                 'method'  => 'POST',
                 'content' => $input,
@@ -532,6 +571,8 @@ class Processor
 
             $coproto['resend_url'] = $this->route->getUrlWithPublicAuth('otp_post');
         }
+
+        $coproto['payment_id'] = $payment->getPublicId();
 
         return $coproto;
     }
@@ -806,7 +847,7 @@ class Processor
         }
 
         $host = $this->route->getHost();
-        
+
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -1861,6 +1902,15 @@ class Processor
     protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
     {
         $this->tracePaymentNewRequest($input);
+
+        if (($input['method'] === Payment\Method::CARDLESS_EMI) === true)
+        {
+            if ((isset($input['ott']) === true) and
+                (isset($input['payment_id']) === true))
+            {
+                $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
+            }
+        }
 
         if ($payment == null)
         {
