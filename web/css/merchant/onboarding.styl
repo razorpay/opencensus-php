@@ -23,7 +23,7 @@
     margin 20px auto 0
 
 
-.Onboarding--PaymentPages, .Onboarding--Invoices
+.Onboarding--Invoices
   margin: 20px 0 80px
   color: #58666E
 
@@ -78,15 +78,6 @@
 
       .i
         display: none
-
-.Onboarding--PaymentPages
-  .Onboarding--content
-    margin-top: 76px
-
-  .img
-    height: 140px
-  img
-    height: 100%
 
 .Onboarding--Invoices
   .img
@@ -343,7 +334,8 @@
     z-index: 3
 
 .OnBoarding--Subscription,
-.OnBoarding--Route
+.OnBoarding--Route,
+.OnBoarding--PaymentPages
   .Landing--Image
     overflow: hidden
     z-index: 2
@@ -384,5 +376,15 @@
       box-shadow: 1px 1px 0 #11c0fa, 2px 2px 0 #11c0fa, 3px 3px 0 #11c0fa, 4px 4px 0 #11c0fa
       background: linear-gradient(0deg, #0f6eed 0%, #00d4ff 100%)
     
+    img
+      transform: translate(0, -25%)  rotateY(-180deg)
+
+.OnBoarding--PaymentPages
+  .Landing--Image
+    &:before
+      color: #7a47c2;
+      background: linear-gradient(0deg, #7a47c2 0%,#9d91d2 100%);
+      box-shadow: 1px 1px 0 #9d91d2, 2px 2px 0 #9d91d2, 3px 3px 0 #9d91d2, 4px 4px 0 #9d91d2;
+
     img
       transform: translate(0, -25%)  rotateY(-180deg)
