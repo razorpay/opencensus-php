@@ -5,7 +5,6 @@
     const noop = ()=>{}
     //Empty Interface for rzpQ
     window.rzpQ = {
-                rzpQ: {
                     component: noop, //Track components
                     initiated: noop, //User starts an activity
                     dropped: noop, //User drops an activity
@@ -13,25 +12,28 @@
                     failed: noop, //A failure occured
                     push: noop, //Explicitly push as custom event to the queue
                     setUser:noop, //Set a user one time
-                }
+                    //Any modifiers
+                    onbr:()=>window.rzpQ,
                 };
-    var useAnalytics = true;
-    // if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
-    //     useAnalytics = false;
-    // }
-    if(true){
-    // if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
-         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','perf'], {
+    //Above code doesn't perform any function, can avoid application breakage if the library is
+    //removed, not loaded or library code breaks anytime.
+    var isLocal = undefined; //Maintaining this for legacy reason, shall clear soon.
+    var disableEventEmitters = true; //If true events will not be emitted to LJ and PROM
+    var appEnvironment = window.location.hostname=="dashboard.razorpay.com" ? 'prod' : 'stage';
+    if(analytics){
+        analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','perf'], {
            ga: 'UA-53341507-2',
            fb: '697927486977350',
            lj:'10pYUm55sa39zgTN1gzNwQzNyQjM54Cg',
            perf:'medash'
-         });
+         },isLocal,appEnvironment,disableEventEmitters);
         // Init old key as well
         if(undefined!==analytics.createQ){
-            window.rzpQ=analytics.createQ({pollFreq:5000});
+            window.rzpQ=analytics.createQ({pollFreq:500});
         }
-
+        window.rzpQ.defineEventModifiers({
+            'onbr':[{propertyName:'event_type',value:'onboarding-events'},{propertyName:'event_group',value:'onboarding'}],
+        })
 
         ga('create', 'UA-53341507-1', 'auto', 'old');
 

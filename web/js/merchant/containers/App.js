@@ -51,13 +51,12 @@ import track from 'react-tracking';
   }
 )
 @track(
-  ({ user: { user } }) => {
-    const u = { email: user.email, id: user.id };
-    return window.rzpQ.component('Home', { user: u });
+  ({ user, mode }) => {
+    const u = { email: user.user.email, id: user.user.id, mid: user.current };
+    return window.rzpQ.component('Home', { user: u, mode: mode });
   },
   {
     dispatch: data => {
-      console.log(data);
       window.rzpQ.push(data);
     },
   }
