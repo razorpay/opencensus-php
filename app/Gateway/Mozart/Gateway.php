@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mozart;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -250,7 +251,22 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_CAPTURE_REQUEST);
+
         $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_CAPTURE_RESPONSE);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->createGatewayPaymentEntity($attributes, $input, Action::CAPTURE);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
@@ -466,6 +482,14 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+            Payment\Gateway::WALLET_PAYPAL => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::CAPTURE => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_INIT,
+                Action::REFUND => Action::CAPTURE,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
             Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -550,6 +574,15 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => null,
                 Action::REFUND => null,
                 Action::VERIFY_REFUND => null,
+            ],
+
+            Payment\Gateway::WALLET_PAYPAL => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::CAPTURE => Action::AUTHORIZE,
+                Action::REFUND => Action::CAPTURE,
+                Action::VERIFY_REFUND => Action::REFUND,
+                Action::VERIFY => Action::AUTHORIZE,
             ],
 
             Payment\Gateway::UPI_AIRTEL => [
@@ -671,6 +704,7 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayRefundEntity($attributes, $input, $action)
     {
+
         $redactedRaw = $this->getRedactedData($attributes['raw']);
         $attributes['raw'] = json_encode($redactedRaw);
 
@@ -730,7 +764,7 @@ class Gateway extends Base\Gateway
 
     public function syncGatewayTransaction(array $gatewayTransaction, array $input)
     {
-        $paymentId = $gatewayTransaction[Entity::PAYMENT_ID];
+        $paymentId = $input[E::PAYMENT][Entity::ID];
 
         $action = $input[Entity::ACTION];
 
@@ -830,6 +864,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::UPI_CITI,
             Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,

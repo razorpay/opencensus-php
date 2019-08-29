@@ -1000,6 +1000,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_WORKFLOW_ACTION_INFO                           = 'PAYOUT_WORKFLOW_ACTION_INFO';
     const PAYOUT_WORKFLOW_TRIGGERED                             = 'PAYOUT_WORKFLOW_TRIGGERED';
     const PAYOUT_WORKFLOW_ACTION_EXCEPTION                      = 'PAYOUT_WORKFLOW_ACTION_EXCEPTION';
+    const PAYOUT_WORKFLOW_EVALUATION_INPUT                      = 'PAYOUT_WORKFLOW_EVALUATION_INPUT';
+    const PAYOUT_WORKFLOW_EVALUATION_RESULT                     = 'PAYOUT_WORKFLOW_EVALUATION_RESULT';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -2029,6 +2031,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SET_CHANNEL_STATE_FAILED                              = 'SET_CHANNEL_STATE_FAILED';
     const GET_CHANNEL_STATE_FAILED                              = 'GET_CHANNEL_STATE_FAILED';
+
+    const SETTLEMENT_AMOUNT_RETRIEVE_FAILED                     = 'SETTLEMENT_AMOUNT_RETRIEVE_FAILED';
 
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
 

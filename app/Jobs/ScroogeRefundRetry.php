@@ -22,7 +22,7 @@ class ScroogeRefundRetry extends Job
     // Make sure that this is below 900 (seconds) because
     // SQS doesn't support delay over 15 minutes.
     //
-    public $delay = 100;
+    public $delay = 5;
 
     protected $trace;
 

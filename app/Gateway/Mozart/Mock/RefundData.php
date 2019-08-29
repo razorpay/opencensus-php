@@ -61,6 +61,36 @@ class RefundData extends Base\Mock\Server
         return $response;
     }
 
+    public static function wallet_paypal($entities)
+    {
+        $response = [
+            'data' => [
+                "_raw"=> "{\"body\":\"{\\\"id\\\":\\\"78027727TF804050W\\\",\\\"status\\\":\\\"COMPLETED\\\",\\\"links\\\":[{\\\"href\\\":\\\"https://api.sandbox.paypal.com/v2/payments/refunds/78027727TF804050W\\\",\\\"rel\\\":\\\"self\\\",\\\"method\\\":\\\"GET\\\"},{\\\"href\\\":\\\"https://api.sandbox.paypal.com/v2/payments/captures/8DS61651XA862144J\\\",\\\"rel\\\":\\\"up\\\",\\\"method\\\":\\\"GET\\\"}]}\",\"header\":{\"Date\":[\"Tue, 30 Jul 2019 12:21:15 GMT\"],\"Http_x_pp_az_locator\":[\"sandbox.slc\"],\"Set-Cookie\":[\"X-PP-SILOVER=name%3DSANDBOX3.API.1%26silo_version%3D1880%26app%3Dapiplatformproxyserv%26TIME%3D993411165%26HTTP_X_PP_AZ_LOCATOR%3Dsandbox.slc; Expires=Tue, 30 Jul 2019 12:51:17 GMT; domain=.paypal.com; path=/; Secure; HttpOnly\",\"X-PP-SILOVER=; Expires=Thu, 01 Jan 1970 00:00:01 GMT\"],\"Vary\":[\"Authorization\"],\"Content-Length\":[\"272\"],\"Server\":[\"Apache\"],\"Paypal-Debug-Id\":[\"e6ed55aa186fc\",\"e6ed55aa186fc\"],\"Content-Type\":[\"application/json\"]},\"status\":201}",
+                'id' => '09188073PT4749456',
+                'links' => [
+                    [
+                        "href" => "https://api.sandbox.paypal.com/v2/payments/refunds/09188073PT4749456",
+                        "method" => "GET",
+                        "rel" => "self",
+                    ],
+                    [
+                        "href" => "https://api.sandbox.paypal.com/v2/payments/captures/6TH801614C6688932",
+                        "method" => "GET",
+                        "rel" => "up",
+                    ],
+                ],
+                'status' => 'refund_successfull',
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [],
+            'success' => true,
+        ];
+
+        return $response;
+    }
+
     public static function bajajfinserv($entities)
     {
         $response = [

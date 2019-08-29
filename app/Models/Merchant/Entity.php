@@ -2063,6 +2063,7 @@ class Entity extends Base\PublicEntity
             self::DISPLAY_NAME   => $this->getAttribute(self::DISPLAY_NAME),
             self::REFUND_SOURCE  => $this->getAttribute(self::REFUND_SOURCE),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
+            self::RESTRICTED     => $this->getAttribute(self::RESTRICTED),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
         ];

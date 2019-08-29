@@ -38,6 +38,10 @@ class NPCIRupayIINBatchTest extends TestCase
         $this->assertEquals(11, $batch['success_count']);
         $this->assertEquals(0, $batch['failure_count']);
         $this->assertEquals('processed', $batch['status']);
+
+        $iin = $this->getEntityById('iin', '360001', true);
+
+        $this->assertEquals(null, $iin['issuer']);
     }
 
     protected function getFileText()
@@ -53,7 +57,7 @@ class NPCIRupayIINBatchTest extends TestCase
             "ALLA010000160735200060735299916S010101EMV01D356IN171031000000N",
             "ALLA010000160810200060810299916S010101EMV01D356IN190206000000N",
             "ALLA010000160817100060817199916S010101EMV01D356IN190206000000N",
-            "ALLA010000160821800060821899916D010101EMV01D356IN190514000000N",
+            "NDCI500000136000100036000199914D020511DEF04I558NI020330000000N",
             "TRL02956301.00"
         ];
 

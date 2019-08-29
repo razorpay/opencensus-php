@@ -293,7 +293,7 @@ trait Authorize
                     'terminal_id' => $payment->getTerminalId(),
                     'gateway'     => $payment->getGateway(),
                     'shared'      => $currentTerminal->isShared()
-                ] + ($gatewayInput['authenticate'] ?? []));
+                ] + ($terminalGatewayInput['authenticate'] ?? []));
 
             try
             {
@@ -2248,8 +2248,8 @@ trait Authorize
                     ]);
             }
 
-            // mcc is supported only for card payments
-            if ($payment->isCard() === false)
+            // mcc is supported only for card payments and wallet paypal.
+            if ($payment->isMccSupported() === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -3750,6 +3750,8 @@ trait Authorize
 
         $this->postPaymentAuthorizePaymentLinkProcessing($payment);
 
+        $this->postPaymentAuthorizeSubscriptionRegistrationProcessing($payment);
+
         return $this->processAuthorizeResponse($payment);
     }
 
@@ -3840,6 +3842,27 @@ trait Authorize
         {
             (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
         }
+    }
+
+    protected function postPaymentAuthorizeSubscriptionRegistrationProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasInvoice() === false)
+        {
+            return;
+        }
+
+        $invoice = $payment->invoice;
+
+        if ($invoice->getEntityType() !== Entity::SUBSCRIPTION_REGISTRATION)
+        {
+            return;
+        }
+
+        $subscriptionRegistration = $invoice->entity;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
@@ -4857,12 +4880,8 @@ trait Authorize
             ($this->isPreferredRecurring($input) === false) and
             ($this->payment->isMoto() === false))
         {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
 
-            if (strtolower($response) === 'on')
-            {
-                $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
-            }
+            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
         }
 
         if (isset($cardInput[Card\Entity::VAULT]) === true)

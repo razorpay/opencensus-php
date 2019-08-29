@@ -177,6 +177,16 @@ class ViewDataSerializer extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBL_PL_NON_DEL_CUST:
+                $customLabels = [
+                    'receipt_number'            =>  'LOAN ACCOUNT NUMBER',
+                    'amount'                    =>  'TOTAL PAYABLE AMOUNT',
+                    'expire_by'                 =>  'EMI DUE DATE',
+                    'first_payment_min_amount'  =>  'EMI AMOUNT',
+                ];
+
+                break;
+
         }
 
         return $customLabels;

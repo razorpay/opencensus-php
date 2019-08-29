@@ -1164,7 +1164,7 @@ trait Capture
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        (new SubscriptionRegistration\Core)->authenticateWithToken($subscriptionRegistration, $token);
+        (new SubscriptionRegistration\Core)->authenticate($subscriptionRegistration, $token);
     }
 
     public function calculateAndSetMdrFeeIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
