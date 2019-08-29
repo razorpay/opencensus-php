@@ -215,7 +215,6 @@ trait Authorize
 
         $this->runShieldCheck($payment);
 
-
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -345,7 +344,6 @@ trait Authorize
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
                 if ($retryOnSameGateway === true)
-
                 {
                     continue;
                 }
@@ -510,7 +508,7 @@ trait Authorize
     {
         if (($payment->getGlobalTokenId() !== null) and
             (Payment\Gateway::isPowerWalletSupported($payment) === true) and
-            (isset($request['type'])===true) and ($request['type']==='first'))
+            (isset($request['type']) === true) and ($request['type'] === 'first'))
         {
             return $request;
         }
@@ -1687,12 +1685,13 @@ trait Authorize
         if (($payment->getGlobalCustomerId() !== null) and
             (Payment\Gateway::isPowerWalletSupported($payment) === true))
         {
-
-            $terminalId = $payment->terminal->getId();
+            $terminalId = $payment->getTerminalId();
             $wallet = $payment->getWallet();
-            $token = (New Token\Repository)->getByWalletTerminalAndCustomerId(
-                $wallet, $terminalId, $payment->globalCustomer->getId());
-            if ($token !== null and ($token->getExpiredAt() > time()))
+            $customerId = $payment->getGlobalCustomerId();
+
+            $token = (new Token\Repository)->getByWalletTerminalAndCustomerId($wallet, $terminalId, $customerId);
+
+            if (($token !== null) and ($token->getExpiredAt() > time()))
             {
                 $payment->globalToken()->associate($token);
             }
@@ -5867,7 +5866,6 @@ trait Authorize
 
             $payload['track_id'] = $trackId;
             $payload['request'] = $data;
-
 
             $this->trace->info(
                 TraceCode::PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW,
