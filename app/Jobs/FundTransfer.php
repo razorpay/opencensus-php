@@ -233,12 +233,12 @@ class FundTransfer extends Job
 
     private function isFtaSlaBreached(Attempt\Entity $fta): bool
     {
-        // SLA in minutes
+        // SLA in seconds
         $sla = (new Admin\Service)->getConfigKey(['key' => ConfigKey::RX_SLA_FOR_IMPS_PAYOUT]);
 
         $currentTime = Carbon::now()->getTimestamp();
 
-        $duration = ($currentTime - $fta->getCreatedAt()) / 60;
+        $duration = $currentTime - $fta->getCreatedAt();
 
         if ((empty($sla) === false) and
             ($fta->getSourceType() === Attempt\Type::PAYOUT) and
