@@ -5,7 +5,6 @@ namespace RZP\Models\Transaction\Statement;
 use RZP\Models\Payout;
 use RZP\Models\External;
 use RZP\Models\Transaction;
-use RZP\Models\FundAccount;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
