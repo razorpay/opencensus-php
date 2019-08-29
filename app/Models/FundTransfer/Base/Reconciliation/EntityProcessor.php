@@ -128,6 +128,7 @@ abstract class EntityProcessor extends Base\Core
 
         $batchFtaId = null;
 
+        //BatchFTA can be null in test mode
         if (empty($batchFta) === false)
         {
             $batchFtaId = $batchFta->getId();

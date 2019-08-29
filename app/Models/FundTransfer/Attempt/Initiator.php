@@ -230,13 +230,24 @@ class Initiator extends Base\Core
 
             $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
 
-            $batchFTaId = $batchFundTransfer->getId();
+            $batchFTaId = null;
 
-            $batchAmount = $batchFundTransfer->getAmount();
+            $batchAmount = null;
 
-            $transactionCount = $batchFundTransfer->getTransactionCount();
+            $transactionCount = null;
 
-            $ftaCountInBatch = $batchFundTransfer->getTotalCount();
+            $ftaCountInBatch = null;
+
+            if(empty($batchFundTransfer) === false)
+            {
+                $batchFTaId = $batchFundTransfer->getId();
+
+                $batchAmount = $batchFundTransfer->getAmount();
+
+                $transactionCount = $batchFundTransfer->getTransactionCount();
+
+                $ftaCountInBatch = $batchFundTransfer->getTotalCount();
+            }
 
             $customProperties = [
                 'channel'                               => $channel,
