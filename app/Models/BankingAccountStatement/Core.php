@@ -11,6 +11,7 @@ use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
 use InvalidArgumentException;
 use RZP\Models\BankingAccount;
+use RZP\Models\FileStore\Accessor;
 use RZP\Models\BankingAccountStatement\StatementGenerator\Formats;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -38,14 +39,15 @@ class Core extends Base\Core
      */
     public function processStatementForAccount(array $input)
     {
-        $channel        = array_pull($input, Entity::CHANNEL);
-        $accountNumber  = array_pull($input, Entity::ACCOUNT_NUMBER);
+
+        $channel       = array_pull($input, Entity::CHANNEL);
+        $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
             [
-                'channel'           => $channel,
-                'account_number'    => $accountNumber,
+                'channel'        => $channel,
+                'account_number' => $accountNumber,
             ]);
 
         $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
@@ -75,11 +77,12 @@ class Core extends Base\Core
      */
     public function generateBankAccountStatement($input)
     {
+
         $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
-        $channel = array_pull($input, Entity::CHANNEL);
-        $fromDate = array_pull($input, Entity::FROM_DATE);
-        $toDate = array_pull($input, Entity::TO_DATE);
-        $format = array_pull($input, Entity::FORMAT);
+        $channel       = array_pull($input, Entity::CHANNEL);
+        $fromDate      = array_pull($input, Entity::FROM_DATE);
+        $toDate        = array_pull($input, Entity::TO_DATE);
+        $format        = array_pull($input, Entity::FORMAT);
 
         $sendEmail = array_pull($input, Entity::SEND_EMAIL);
         $sendEmail = filter_var($sendEmail, FILTER_VALIDATE_BOOLEAN);
@@ -90,31 +93,35 @@ class Core extends Base\Core
         }
 
         $statementGenerator = $this->getStatementGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
-        $statement = $statementGenerator->getStatement();
+        $statementFile      = $statementGenerator->getStatement();
+        $fileURL            = (new Accessor())->getSignedUrlOfFile($statementFile);
 
         if ($sendEmail)
         {
             // code for sending this file via an email
             return ['message' => 'Email Sent'];
-        } else
+        }
+        else
         {
-            return $statement;
-            return ['message' => 'File Generated', 'file_path' => $statement->getFullFilePath()];
+            return ['message' => 'File Generated', 'file_path' => $fileURL];
         }
 
     }
 
     protected function getStatementGenerator($accountNUmber, $channel, $format, $fromDate, $toDate)
     {
+
         $statementGeneratorNamespace = __NAMESPACE__ . '\\' . 'StatementGenerator\\Gateway\\' . studly_case($channel);
-        $statementGenerator = $statementGeneratorNamespace . '\\' .
-            studly_case($format) . studly_case($channel) . 'StatementGenerator';
+        $statementGenerator          = $statementGeneratorNamespace . '\\' .
+                                       studly_case($format) . studly_case($channel) . 'StatementGenerator';
+
         return new $statementGenerator($accountNUmber, $channel, $fromDate, $toDate);
 
     }
 
     protected function getProcessor(string $channel, string $accountNumber): Processor\Base
     {
+
         $processor = __NAMESPACE__ . '\\' . 'Processor';
 
         $processor .= '\\' . studly_case($channel) . '\\' . 'Gateway';
@@ -122,12 +129,12 @@ class Core extends Base\Core
         return new $processor($channel, $accountNumber);
     }
 
-
     protected function processAccountStatement(
         array $bankTransactions,
         string $accountNumber,
         Merchant\Entity $merchant)
     {
+
         $bankTxnCount = count($bankTransactions);
         $skippedCount = 0;
 
