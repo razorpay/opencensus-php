@@ -132,7 +132,6 @@ class Core extends Base\Core
         $generator = $generatorNamespace . '\\' . studly_case($channel) . 'Generator';
 
         return new $generator($accountNUmber, $channel, $fromDate, $toDate);
-
     }
 
     protected function getProcessor(string $channel, string $accountNumber): Processor\Base

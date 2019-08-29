@@ -6,7 +6,6 @@ use RZP\Models\Base\Core as BaseCore;
 
 abstract class Base extends BaseCore
 {
-
     protected $accountNumber;
 
     protected $channel;
