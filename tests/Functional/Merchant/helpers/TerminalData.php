@@ -2022,6 +2022,24 @@ return [
         ]
     ],
 
+    'testCreateWalletPaypalTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_terminal_password2'=> 'terminal_password2',
+                'gateway_terminal_password' => 'terminal_password',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingSibTerminal'  => [
         'request' => [
             'content' => [

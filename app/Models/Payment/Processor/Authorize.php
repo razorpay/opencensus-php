@@ -293,7 +293,7 @@ trait Authorize
                     'terminal_id' => $payment->getTerminalId(),
                     'gateway'     => $payment->getGateway(),
                     'shared'      => $currentTerminal->isShared()
-                ] + ($gatewayInput['authenticate'] ?? []));
+                ] + ($terminalGatewayInput['authenticate'] ?? []));
 
             try
             {
@@ -2248,8 +2248,8 @@ trait Authorize
                     ]);
             }
 
-            // mcc is supported only for card payments
-            if ($payment->isCard() === false)
+            // mcc is supported only for card payments and wallet paypal.
+            if ($payment->isMccSupported() === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,

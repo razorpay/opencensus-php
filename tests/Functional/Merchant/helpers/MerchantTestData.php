@@ -4654,7 +4654,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Merchant Restricted Settings failed to apply',
+                    'description' => 'Merchant Restricted Settings failed to apply because users of merchant are associated with multiple merchants',
                 ],
             ],
             'status_code' => 400,
