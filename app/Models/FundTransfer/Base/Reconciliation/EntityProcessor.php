@@ -126,11 +126,18 @@ abstract class EntityProcessor extends Base\Core
 
         $batchFta = $this->fta->batchFundTransfer;
 
+        $batchFtaId = null;
+
+        if (empty($batchFta) === false)
+        {
+            $batchFtaId = $batchFta->getId();
+        }
+
         $customProperties = [
             'channel'                           => $this->fta->getChannel(),
             'purpose'                           => $this->fta->getPurpose(),
             'fund_transfer_attempt_id'          => $this->fta->getId(),
-            'batch_fund_transfer_attempt_id'    => $batchFta->getId(),
+            'batch_fund_transfer_attempt_id'    => $batchFtaId,
             'utr'                               => $this->fta->getUtr(),
             'source_type'                       => $this->fta->getSourceType(),
             'fund_transfer_attempt_mode'        => $this->fta->getMode(),
