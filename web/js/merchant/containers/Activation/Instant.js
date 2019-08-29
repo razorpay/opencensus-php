@@ -12,7 +12,7 @@ import Button, { AsyncBtn } from 'component/Button';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { showNotification } from 'rzp/modules/notifications';
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls, pickProps } from 'rzp/utils/rzp-utils';
 import { classList, addPrefixToObjectKeys } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
@@ -74,6 +74,25 @@ function getLabelFromBusinessTypeOption(val) {
 
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 1;
+
+function trackFormFields(oldValues, newValues) {
+  const changedFields = Object.keys(newValues);
+  const existingValues = pickProps(oldValues, changedFields);
+  console.log({ existingValues });
+  const fieldEvents = Object.keys(newValues).map(key => {
+    const newValue = newValues[key],
+      oldValue = existingValues[key] || '';
+    const modified = oldValue !== '' && oldValue !== newValue;
+    const eventProps = {
+      name: key,
+      newValue,
+      oldValue,
+      modified,
+    };
+    return eventProps;
+  });
+  return fieldEvents;
+}
 
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
 @withRouter
@@ -216,84 +235,93 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
-  @RTracking(() => window.rzpQ.initiated('act.submit_form'))
+  @RTracking((props, state) => {
+    const { tracking } = props;
+    const events = trackFormFields(props.data, state.dirty);
+    return events.forEach(event =>
+      tracking.trackEvent(
+        window.rzpQ.initiated('act.provide_act_details', {
+          ...event,
+        })
+      )
+    );
+  })
   submitForm = () => {
     const data = this.formData;
-    console.log('formData', data);
-    // return merchantFetch({
-    //   url: 'merchant/instant_activation',
-    //   method: 'POST',
-    //   mode: 'live',
-    //   data: data,
-    //   accountId: this.props.accountId,
-    // })
-    //   .then(response => {
-    //     if (this.onActivationSuccess) {
-    //       return this.onActivationSuccess(response);
-    //     }
+    return merchantFetch({
+      url: 'merchant/instant_activation',
+      method: 'POST',
+      mode: 'live',
+      data: data,
+      accountId: this.props.accountId,
+    })
+      .then(response => {
+        if (this.onActivationSuccess) {
+          return this.onActivationSuccess(response);
+        }
 
-    //     this.updateSession(response.data); // Updating % activation_progress (side bar)
+        this.updateSession(response.data); // Updating % activation_progress (side bar)
 
-    //     trackL1FormSuccess(this.user.activation_flow);
+        trackL1FormSuccess(this.user.activation_flow);
 
-    //     // updating contact propteries of hubspot contact
-    //     updateHubSpotContactsProperties({
-    //       ...data,
-    //       activation_flow: this.user.activation_flow,
-    //       completed: true,
-    //     });
+        // updating contact propteries of hubspot contact
+        updateHubSpotContactsProperties({
+          ...data,
+          activation_flow: this.user.activation_flow,
+          completed: true,
+        });
 
-    //     const {
-    //       isWhitelistFlow,
-    //       isBlacklistFlow,
-    //       isGraylistFlow,
-    //     } = this.user.instantActivation;
+        const {
+          isWhitelistFlow,
+          isBlacklistFlow,
+          isGraylistFlow,
+        } = this.user.instantActivation;
 
-    //     if (isWhitelistFlow) {
-    //       this.props.showInstantActivationSuccessModal();
-    //       fireAnalyticsEvents({ fbData: 'activation_complete_success' });
-    //     } else if (isGraylistFlow) {
-    //       this.props.showKYCDetailsModal();
-    //     }
+        if (isWhitelistFlow) {
+          this.props.showInstantActivationSuccessModal();
+          fireAnalyticsEvents({ fbData: 'activation_complete_success' });
+        } else if (isGraylistFlow) {
+          this.props.showKYCDetailsModal();
+        }
 
-    //     let data = new BingDataObj('activationform', 'complete', 'success', 1);
-    //     fireAnalyticsEvents({
-    //       bingData: data,
-    //       liData: 987404,
-    //       twiData: 'o1ua0',
-    //     }); //fb = false, bing, linkedin, twitter
+        let data = new BingDataObj('activationform', 'complete', 'success', 1);
+        fireAnalyticsEvents({
+          bingData: data,
+          liData: 987404,
+          twiData: 'o1ua0',
+        }); //fb = false, bing, linkedin, twitter
 
-    //     return this.props.history.replace(`/`);
-    //   })
-    //   .catch(err => {
-    //     if (err.errors.length && err.errors[0]) {
-    //       this.props.showNotification({
-    //         type: 'error',
-    //         message: err.errors,
-    //       });
-    //     }
+        return this.props.history.replace(`/`);
+      })
+      .catch(err => {
+        if (err.errors.length && err.errors[0]) {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+        }
 
-    //     trackL1FormError();
+        trackL1FormError();
 
-    //     let dataError = new BingDataObj(
-    //       'activationform',
-    //       'complete',
-    //       'error',
-    //       1
-    //     );
-    //     fireAnalyticsEvents({
-    //       fbData: 'activation_complete_error',
-    //       bingData: dataError,
-    //       liData: 987412,
-    //       twiData: 'o1ua2',
-    //     });
+        let dataError = new BingDataObj(
+          'activationform',
+          'complete',
+          'error',
+          1
+        );
+        fireAnalyticsEvents({
+          fbData: 'activation_complete_error',
+          bingData: dataError,
+          liData: 987412,
+          twiData: 'o1ua2',
+        });
 
-    //     if (this.onActivationSuccess) {
-    //       this.onActivationSuccess({ success: false });
-    //     }
+        if (this.onActivationSuccess) {
+          this.onActivationSuccess({ success: false });
+        }
 
-    //     return err;
-    //   });
+        return err;
+      });
   };
 
   onChange = ({ target }) => {
@@ -374,26 +402,6 @@ export default class ActivationWizard extends React.Component {
   handleUIUpdate() {
     return this.props.handleUIUpdate && this.props.handleUIUpdate();
   }
-
-  trackField = e => {
-    const { name, value, type } = e.target;
-    const { tracking } = this.props;
-    let newVal,
-      eventName = name;
-    newVal =
-      eventName === 'business_type'
-        ? getLabelFromBusinessTypeOption(value)
-        : value;
-    if (type === 'checkbox' || type === 'radio') {
-      newVal = value;
-      eventName = e.target.getAttribute('data-name');
-    }
-    tracking.trackEvent(
-      window.rzpQ.initiated(`act.provide_act_details.${eventName}`, {
-        value: newVal,
-      })
-    );
-  };
 
   componentDidMount() {
     this.handleUIUpdate();
@@ -565,7 +573,6 @@ function ActivationField(field) {
       autoRender={_autoRenderImpure}
       required={typeof required === 'function' ? required(this) : required}
       {...rest}
-      onBlur={this.trackField}
     />
   );
 }
