@@ -662,6 +662,9 @@ class Header
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // NPCI RUPAY IIN Batch
+    const IIN_NPCI_RUPAY_ROW                     = 'row';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -2103,6 +2106,17 @@ class Header
                 self::TERMINAL_ID,
                 self::STATUS,
                 self::FAILURE_REASON,
+            ]
+        ],
+
+        Type::IIN_NPCI_RUPAY => [
+            self::INPUT => [
+            ],
+            self::OUTPUT => [
+                self::IIN_NPCI_RUPAY_ROW,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ]
         ]
     ];

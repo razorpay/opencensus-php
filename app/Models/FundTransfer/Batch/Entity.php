@@ -137,6 +137,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOTAL_COUNT);
     }
 
+    public function getTransactionCount()
+    {
+        return $this->getAttribute(self::TRANSACTION_COUNT);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
     public function getUrls()
     {
         return $this->getAttribute(self::URLS);

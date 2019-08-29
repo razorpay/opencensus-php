@@ -17,6 +17,7 @@ class Fetch extends Base\Fetch
             Entity::FUND_ACCOUNT_ID     => 'sometimes|string',
             Entity::MERCHANT_ID         => 'sometimes|string',
             Entity::STATUS              => 'sometimes|string',
+            Entity::BALANCE_ID          => 'sometimes|unsigned_id',
         ],
     ];
 
@@ -28,6 +29,7 @@ class Fetch extends Base\Fetch
     const ACCESSES = [
         self::DEFAULTS           => [
             Entity::STATUS,
+            Entity::BALANCE_ID,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::FUND_ACCOUNT_ID,

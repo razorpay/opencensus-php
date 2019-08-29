@@ -2081,52 +2081,6 @@ trait PaymentTrait
         });
     }
 
-    protected function mockCardVault($callable = null)
-    {
-        $app = App::getFacadeRoot();
-
-        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
-
-        $this->app->instance('card.cardVault', $cardVault);
-
-        $callable = $callable ?: function ($route, $method, $input)
-        {
-            $response = [
-                'error' => '',
-                'success' => true,
-            ];
-
-            switch ($route)
-            {
-                case 'tokenize':
-                    $response['token'] = base64_encode($input['secret']);
-                    break;
-
-                case 'detokenize':
-                    $response['value'] = base64_decode($input['token']);
-                    break;
-
-                case 'validate':
-                    if ($input['token'] === 'fail')
-                    {
-                        $response['success'] = false;
-                    }
-                    break;
-
-                case 'delete':
-                    break;
-            }
-
-            return $response;
-        };
-
-        $cardVault->shouldReceive('sendRequest')
-                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-                  ->andReturnUsing($callable);
-
-        $this->app->instance('card.cardVault', $cardVault);
-    }
-
     protected function mockShield()
     {
         $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();

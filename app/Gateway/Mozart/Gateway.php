@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mozart;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -730,7 +731,7 @@ class Gateway extends Base\Gateway
 
     public function syncGatewayTransaction(array $gatewayTransaction, array $input)
     {
-        $paymentId = $gatewayTransaction[Entity::PAYMENT_ID];
+        $paymentId = $input[E::PAYMENT][Entity::ID];
 
         $action = $input[Entity::ACTION];
 

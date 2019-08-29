@@ -3853,12 +3853,7 @@ trait Authorize
 
         $invoice = $payment->invoice;
 
-        if ($invoice->getEntityType() === null)
-        {
-            return;
-        }
-
-        if ($invoice->isTypeOfSubscriptionRegistration() == false)
+        if ($invoice->getEntityType() !== Entity::SUBSCRIPTION_REGISTRATION)
         {
             return;
         }
@@ -3867,7 +3862,7 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        (new SubscriptionRegistration\Core)->authenticateWithToken($subscriptionRegistration, $token);
+        (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
@@ -4885,12 +4880,8 @@ trait Authorize
             ($this->isPreferredRecurring($input) === false) and
             ($this->payment->isMoto() === false))
         {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
 
-            if (strtolower($response) === 'on')
-            {
-                $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
-            }
+            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
         }
 
         if (isset($cardInput[Card\Entity::VAULT]) === true)
@@ -5146,6 +5137,8 @@ trait Authorize
                 'number');
         }
 
+        $this->checkAndValidateIfSubTypeDisabled($merchantMethods, $card);
+
         $this->checkAndValidateIfCardNetworkDisabled($merchantMethods, $card);
     }
 
@@ -5261,6 +5254,27 @@ trait Authorize
                 [
                     'network' => $network,
                     'iin'     => $card->getIin()
+                ]);
+        }
+    }
+
+    protected function checkAndValidateIfSubTypeDisabled($methods, $card)
+    {
+        $subtype = $card->getSubType();
+
+        if (empty($subtype) === true)
+        {
+            return;
+        }
+
+        if ($methods->isSubTypeEnabled($subtype) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED,
+                null,
+                [
+                    'sub_type' => $subtype,
+                    'iin'      => $card->getIin()
                 ]);
         }
     }

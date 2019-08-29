@@ -1504,6 +1504,12 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
     }
 
+    public function createCustomerOnContactEmailNull(): bool
+    {
+        return (($this->isFeatureEnabled(Feature\Constants::CUST_CONTACT_EMAIL_NULL) === false) and
+            ($this->getCreatedAt() < 1566478483));
+    }
+
     public function isOptionalEmailAllowedAggregator(): bool
     {
         return (($this->isAggregatorPartner() === true) and ($this->hasOptionalSubmerchantEmailFeature() === true));
@@ -2057,6 +2063,7 @@ class Entity extends Base\PublicEntity
             self::DISPLAY_NAME   => $this->getAttribute(self::DISPLAY_NAME),
             self::REFUND_SOURCE  => $this->getAttribute(self::REFUND_SOURCE),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
+            self::RESTRICTED     => $this->getAttribute(self::RESTRICTED),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
         ];

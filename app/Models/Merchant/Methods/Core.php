@@ -153,6 +153,7 @@ class Core extends Base\Core
             Entity::CREDIT_CARD          => true,
             Entity::PREPAID_CARD         => true,
             Entity::CARD_NETWORKS        => [],
+            Entity::CARD_SUBTYPE         => [],
             Payment\Gateway::AMEX        => false,
             Payment\Method::NETBANKING   => [],
             Payment\Method::WALLET       => [],
@@ -169,6 +170,7 @@ class Core extends Base\Core
         $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
         $data[Entity::PREPAID_CARD]  = $methods->isPrepaidCardEnabled();
         $data[Entity::CARD_NETWORKS] = $methods->getCardNetworks();
+        $data[Entity::CARD_SUBTYPE]  = $methods->getCardSubtypes();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled           = $methods->isNetbankingEnabled();
 

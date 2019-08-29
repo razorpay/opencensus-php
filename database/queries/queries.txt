@@ -5296,3 +5296,10 @@ ALTER TABLE merchants
 
 ALTER TABLE merchants
 	ADD COLUMN partnership_url TEXT DEFAULT NULL AFTER dashboard_whitelisted_ips_test;
+
+ALTER TABLE `external`
+    DROP INDEX `external_balance_id_foreign`,
+    DROP INDEX `external_transaction_id_foreign`,
+    ADD INDEX `external_channel_index` (`channel`),
+    ADD INDEX `external_balance_id_index` (`balance_id`),
+    ADD INDEX `external_transaction_id_index` (`transaction_id`);

@@ -165,8 +165,7 @@ class Validator extends Base\Validator
     {
         Card\SubType::checkSubType($subtype);
     }
-
-
+  
     protected function validateIssuer($input)
     {
         if (isset($input[Entity::ISSUER]) === false)

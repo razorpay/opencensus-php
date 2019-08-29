@@ -261,6 +261,17 @@ class Reconciliate extends Base\Core
 
         $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
 
+        $attempt = $batch->getAttempts();
+
+        if ($attempt > 1)
+        {
+            //
+            // After each retry, the output file is generated again. Need to append
+            // attempt count, so as to avoid file overwrite in s3 bucket.
+            //
+            $fileName .= '_' . $attempt;
+        }
+
         $this->trace->info(
             TraceCode::RECON_INFO,
             [
