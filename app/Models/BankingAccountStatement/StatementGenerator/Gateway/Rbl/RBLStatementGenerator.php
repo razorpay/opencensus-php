@@ -15,7 +15,7 @@ use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\RBLBankInf
 
 class RBLStatementGenerator extends Base
 {
-    protected const TEMPLATE_FILE_NAME = 'bank_account_statement.RBL.statement';
+    const TEMPLATE_FILE_NAME = 'bank_account_statement.RBL.statement';
 
     protected function accountStatementData()
     {
