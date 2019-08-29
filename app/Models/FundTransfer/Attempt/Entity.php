@@ -573,7 +573,6 @@ class Entity extends Base\PublicEntity
 
         if(empty($ba) === true and $source->getEntity() === EntityConstants::SETTLEMENT)
         {
-
             return false;
         }
 
