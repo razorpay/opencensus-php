@@ -131,6 +131,20 @@ class Validator extends Base\Validator
         Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
     ];
 
+    protected static $activatedStatusRules = [
+        Entity::BENEFICIARY_PIN                 => 'sometimes|string',
+        Entity::BENEFICIARY_CITY                => 'sometimes|string',
+        Entity::BENEFICIARY_COUNTRY             => 'sometimes|string',
+        Entity::BENEFICIARY_STATE               => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS1            => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'sometimes|string',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|string',
+        Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
+        Entity::BENEFICIARY_NAME                => 'sometimes|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
+    ];
+
     protected static $serviceablePincodeRules = [
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',

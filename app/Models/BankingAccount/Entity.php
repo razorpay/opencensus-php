@@ -215,6 +215,11 @@ class Entity extends Base\PublicEntity
         {
             (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $this->toArray());
         }
+
+        if ($newStatus === Status::ACTIVATED)
+        {
+            (new Validator)->setStrictFalse()->validateInput(Validator::ACTIVATED_STATUS, $this->toArray());
+        }
     }
 
     public function setBankReferenceNumber(string $number)
