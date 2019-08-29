@@ -228,7 +228,7 @@ export default class View extends React.PureComponent {
             validateSameTitleExists={this.validateSameTitleExists}
           />
 
-          <div class="Field" style={{ margin: '32px 0 -21px' }}>
+          <div class="Field" style={{ margin: '32px 0 0' }}>
             <div class="Field-label" style={{ opacity: 0.6 }}>
               Add new
             </div>
