@@ -1467,6 +1467,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CONTACT_UPDATE_REQUEST                                = 'CONTACT_UPDATE_REQUEST';
     const CONTACT_DELETE_REQUEST                                = 'CONTACT_DELETE_REQUEST';
 
+    //trace codes for merchant document CRUD
+    const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
+    const DOCUMENT_DELETE_REQUEST                               = 'DOCUMENT_DELETE_REQUEST';
+
     const FUND_ACCOUNT_CREATE_REQUEST                           = 'FUND_ACCOUNT_CREATE_REQUEST';
     const FUND_ACCOUNT_UPDATE_REQUEST                           = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                           = 'FUND_ACCOUNT_DELETE_REQUEST';

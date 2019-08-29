@@ -1186,6 +1186,10 @@ final class Route
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
 
+        //merchant document related routes
+        'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
+
+
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
         'excel_store_create_page'                 => ['post',     'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -1674,6 +1678,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'merchant_document_delete',
         'get_es_pricing_merchant',
         'merchant_edit_config_la',
         'merchant_fetch_users',

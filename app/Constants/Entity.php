@@ -122,6 +122,7 @@ class Entity
     const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
     const BANKING_ACCOUNT_STATEMENT = 'banking_account_statement';
+    const MERCHANT_DOCUMENT         = 'merchant_document';
 
     // heimdall
     const ORG                   = 'org';
@@ -414,6 +415,7 @@ class Entity
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
+        self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
