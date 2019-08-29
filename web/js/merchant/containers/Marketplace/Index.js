@@ -1,122 +1,137 @@
 import { connect } from 'react-redux';
-import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
+
+import { RZPFeatures } from 'rzp/utils/constants';
 
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+import { updateFeatures } from 'merchant/modules/config';
+import { fetchTransfers } from 'merchant/modules/collection';
+import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
+
+import TestModeBanner from 'merchant/containers/TestModeBanner';
+
 import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
-import ActivationBanner from 'merchant/components/ActivationBanner';
-import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
-import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
 import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
-import { updateFeatures } from 'merchant/modules/config';
 
-const heading =
-  'Automate your payment transfers for Marketplaces, Vendor, payouts, Regional splits, etc. and manage the complete payment cycle with Razorpay Route.';
+import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
+import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
+
 @connect(
   state => {
     return {
       user: state.session.user,
       mode: state.session.mode,
+      transfers: state.transfers,
+      accounts: state.accounts,
+      routeProductOnBoarding: getCurrentProductOnBoardingDetails(
+        state,
+        RZPFeatures.ROUTE
+      ),
     };
   },
-  { updateFeatures, showNotification, ...ModalActions }
+  {
+    ...ModalActions,
+    fetchAccounts,
+    updateFeatures,
+    showNotification,
+    fetchTransfers,
+    handleProductQuickGuide,
+  }
 )
-export default class MarketplaceContainer extends Component {
-  constructor(props) {
-    super(props);
+export default class MarketplaceContainer extends React.Component {
+  componentDidMount() {
+    this.initMarketPlace();
 
-    this.prefix = '';
-    if (props.user.isOrgRZP) {
-      this.prefix = 'Razorpay ';
+    this.fetchDataForMarketPlaceOnboarding();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.transfers.loading !== this.props.transfers.loading) {
+      this.initMarketPlace(nextProps);
     }
   }
 
-  enableFeature = () => {
-    var data = {
-      features: {
-        marketplace: 1,
-      },
-    };
+  componentWillUnmount() {
+    const { routeProductOnBoarding } = this.props;
 
-    return this.props
-      .updateFeatures(data, this.props.user.current)
-      .then(res => {
-        this.props.showNotification({
-          type: 'success',
-          message: `${this.prefix}Route has been enabled!`,
-        });
-        setTimeout(() => location.reload());
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
+    if (routeProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...routeProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: false,
+        isTour: false,
       });
+    }
+  }
+
+  fetchDataForMarketPlaceOnboarding = () => {
+    const { transfers, accounts, fetchAccounts, fetchTransfers } = this.props;
+
+    if (!transfers.items.length) {
+      fetchTransfers({ count: 25 });
+    }
+
+    if (!transfers.items.length && !accounts.accounts.length) {
+      fetchAccounts({ count: 25 });
+    }
   };
 
-  openActivationModal = () => {
-    this.props.openModal({
-      component: (
-        <FeatureOnboardingModal
-          onClose={this.props.closeModal}
-          heading={`${this.prefix}Route`}
-          description={heading}
-          formType="marketplace"
-          isTestMode={false}
-        />
-      ),
-      size: 'large',
+  initMarketPlace = (props = this.props) => {
+    const { routeProductOnBoarding } = props,
+      { isMarketplaceEnabled } = props.user;
+
+    if (routeProductOnBoarding.isTour) {
+      return;
+    }
+
+    let showOnboarding = !isMarketplaceEnabled;
+
+    if (isMarketplaceEnabled) {
+      showOnboarding = getIsAllowedResetRouteBoarding({
+        transfers: props.transfers,
+        accounts: props.accounts,
+      });
+    }
+
+    this.props.handleProductQuickGuide({
+      ...routeProductOnBoarding,
+      showOnboarding,
+      isQuickGuideOpen: !getRouteQuickGuideIsClosed(props),
     });
   };
 
   render() {
-    let featureEnabled = this.props.user.isMarketplaceEnabled;
+    const {
+      isQuickGuideOpen,
+      showOnboarding,
+    } = this.props.routeProductOnBoarding;
 
-    if (!featureEnabled) {
-      return (
-        <FeatureOnboarding
-          heading={`${this.prefix}Route`}
-          description={heading}
-          formType="marketplace"
-          isTestMode={this.props.mode === 'test'}
-          enableFeatureInTestMode={this.enableFeature}
-        />
-      );
+    if (showOnboarding) {
+      return <OnBoarding />;
     }
 
-    let ClonedPaymentsList = (props) => (
-      <PaymentsList
-        docUrl='https://razorpay.com/docs/route'
-        {...props}
-      />      
-    )
-    
-
     return (
-      <div>
-        {this.props.mode === 'test' && (
-          <ActivationBanner
-            productName={`${this.prefix}Route`}
-            productDocs="https://razorpay.com/docs/route"
-            feature="marketplace"
-            symbol="route"
-            onActivate={this.openActivationModal}
-          />
-        )}
+      <div class="Marketplace-Container">
         <tabbed-container>
+          {isQuickGuideOpen && <QuickGuide />}
+
           <header id="marketplace-header">
             <NavLink to="/route/payments">Payments</NavLink>
             <NavLink to="/route/transfers">Transfers</NavLink>
             <NavLink to="/route/reversals">Reversals</NavLink>
             <NavLink to="/route/accounts">Accounts</NavLink>
           </header>
+
           <TestModeBanner />
+
           <content>
             <Switch>
               <Route path="/route/payments" render={ClonedPaymentsList} />
@@ -130,3 +145,7 @@ export default class MarketplaceContainer extends Component {
     );
   }
 }
+
+const ClonedPaymentsList = props => (
+  <PaymentsList docUrl="https://razorpay.com/docs/route" {...props} />
+);

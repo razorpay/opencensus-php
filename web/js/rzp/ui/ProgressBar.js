@@ -24,3 +24,49 @@ ProgressBar.defaultProps = {
 };
 
 export default ProgressBar;
+
+export class TimedProgressBar extends React.PureComponent {
+  static defaultProps = {
+    min: 0,
+    type: 'success',
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.progressBarRef = React.createRef();
+
+    this.state = {
+      width: 0,
+    };
+  }
+
+  componentDidMount() {
+    const node = this.progressBarRef.current;
+
+    this.setState({
+      width: node.offsetWidth,
+    });
+  }
+
+  render() {
+    const { width } = this.state,
+      { type, className, children, duration } = this.props;
+
+    const style = {
+      width,
+      transition: `width ${duration}s`,
+    };
+
+    return (
+      <div
+        ref={this.progressBarRef}
+        class={`progress timed-progress ${className}`}
+      >
+        <div class={`progress-bar progress-bar-${type}`} style={style}>
+          {children}
+        </div>
+      </div>
+    );
+  }
+}

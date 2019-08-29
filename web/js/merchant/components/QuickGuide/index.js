@@ -17,7 +17,11 @@ import {
 */
 
 export default params => {
-  const { feature: FEATURE, data_points: DATA_POINTS } = params;
+  const {
+    feature: FEATURE,
+    data_points: DATA_POINTS,
+    dataTransformer = _dataTransformer,
+  } = params;
 
   let _WrappedComponent;
 
@@ -26,7 +30,7 @@ export default params => {
       let newState = {};
 
       DATA_POINTS.forEach(key => {
-        newState[key] = state[key];
+        newState[key] = dataTransformer(key, state);
       });
 
       return {
@@ -76,6 +80,16 @@ export default params => {
         };
       }, {});
     };
+
+    componentWillUnMount() {
+      if (this.props.currentOnboarding.isTour) {
+        const newState = this.getInitState();
+
+        this.setState({
+          ...newState,
+        });
+      }
+    }
 
     componentWillReceiveProps(nextProps) {
       if (!this.props.currentOnboarding.isTour) return;
@@ -157,3 +171,5 @@ export {
   getQuickGuideLocalStorageKey,
   setQuickGuideIsClosedInLocalStorage,
 };
+
+const _dataTransformer = (key, state) => state[key];
