@@ -62,9 +62,7 @@ export default class FeatureEnableButton extends React.Component {
         this.props.user.current
       );
     } else {
-      saveOnboarding = this.props.saveOnboarding(this.props.feature, {
-        feature: this.props.feature,
-      });
+      saveOnboarding = this.props.saveOnboarding(this.props.feature);
     }
 
     return saveOnboarding
@@ -83,8 +81,6 @@ export default class FeatureEnableButton extends React.Component {
           type: 'error',
           message: err.errors,
         });
-
-        this.props.onClick && this.props.onClick(err);
       });
   };
 

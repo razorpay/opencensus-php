@@ -221,6 +221,10 @@ export default class User {
     return this.findTag('Charge_at_will');
   }
 
+  get isMerchantRestricted() {
+    return this.restricted;
+  }
+
   get isAgentRole() {
     return this.findTag('enable_agent_role');
   }
@@ -354,6 +358,12 @@ export default class User {
 
   get isPostActivationHotjarSurveyEnabled() {
     return this.getExpStatus('post_activation_hotjar_survey');
+  }
+
+  get isAllowedTeamManagement() {
+    return this.isMerchantRestricted
+      ? this.isAllowedView('team')
+      : this.isAllowedEdit('team');
   }
 }
 
