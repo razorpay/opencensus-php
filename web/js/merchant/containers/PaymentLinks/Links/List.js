@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
+import { withRouter, NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -12,6 +12,8 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
+import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
+@withRouter
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
 })
@@ -63,6 +65,10 @@ export default class PaymentLinksContainer extends ListContainer {
     });
   };
 
+  onDuplicate = invoiceId => {
+    this.props.history.push(`/paymentlinks/new?duplicate_id=${invoiceId}`);
+  };
+
   render() {
     let { loading, invoices, user, mode } = this.props;
     let status = this.state.status;
@@ -103,6 +109,8 @@ export default class PaymentLinksContainer extends ListContainer {
           isLoading={loading}
           type="link"
           onCopy={this.onCopy}
+          onDuplicate={this.onDuplicate}
+          EmptyList={EmptyComponent}
         />
 
         <Pager
@@ -115,3 +123,16 @@ export default class PaymentLinksContainer extends ListContainer {
     );
   }
 }
+
+// TODO: Update colSpan if no of columns are changes
+const EmptyComponent = () => (
+  <EmptyListWithTableRow
+    colSpan={8}
+    description={
+      <React.Fragment>
+        <div>There are no payment links yet!!</div>
+        <div>Start creating new links now.</div>
+      </React.Fragment>
+    }
+  />
+);

@@ -17,6 +17,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 
 import OnboardingInvoices from './OnboardingInvoices';
 
+@withRouter
 @connect(
   state => {
     return { ...state.invoices, ...state.session };
@@ -46,6 +47,10 @@ export default class InvoicesListContainer extends ListContainer {
 
     return this.props.fetchInvoices(params);
   }
+
+  onDuplicate = invoiceId => {
+    this.props.history.push(`/invoices/new?duplicate_id=${invoiceId}`);
+  };
 
   /* Fetch all payment pages list to find whether first-time user */
   fetchAllEntityList() {
@@ -141,6 +146,7 @@ export default class InvoicesListContainer extends ListContainer {
                 eventLabel: `invoice_id=${invoiceId}`,
               });
             }}
+            onDuplicate={this.onDuplicate}
           />
 
           <Pager

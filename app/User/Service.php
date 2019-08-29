@@ -133,10 +133,10 @@ class Service extends Base\Service
     {
         if (empty($error) === false)
         {
-            if ((array_key_exists('data', $error) === true) and
-                (empty($error['data']) === false))
+            if ((array_key_exists('internal_error_code', $error) === true) and
+                (empty($error['internal_error_code']) === false))
             {
-                return [['Email or password is invalid.', ['internal_error' => $error]], null];
+                return [[$error], null];
             }
 
             return [['Email or password is invalid.'], null];
@@ -197,22 +197,19 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $genericUser) = $this->getUserFromApi($user->id);
+        list($error, $data) = $this->checkAccessOfUserOnMerchant($merchantId);
 
         if (empty($error) === true)
         {
-            $currentMerchant = $genericUser->merchants
-                                           ->where('id', $merchantId)
-                                           ->first();
 
-            if ($currentMerchant !== null)
+            if ($data['access'] === true)
             {
-                Session::put('current_merchant_id', $currentMerchant->id);
+                Session::put('current_merchant_id', $merchantId);
 
                 $traceData = [
-                    'id'          => $genericUser->id,
-                    'email'       => $genericUser->email,
-                    'merchant_id' => $currentMerchant->id,
+                    'id'          => $user->id,
+                    'email'       => $user->email,
+                    'merchant_id' => $merchantId,
                 ];
 
                 $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
@@ -462,8 +459,11 @@ class Service extends Base\Service
                     $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
                     $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
                     $data['experiments']['report_date_range'] = $merchantService->getTreatment('report_date_range');
+                    $data['experiments']['show_extra_fields_in_pp'] = $merchantService->getTreatment('show_extra_fields_in_pp');
 
                     $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
+                    $data['experiments']['sellerapp_plus'] = $merchantService->getTreatment('sellerapp_plus');
+                    $data['experiments']['post_activation_hotjar_survey'] = $merchantService->getTreatment('post_activation_hotjar_survey');
 
                     $data['current'] = $currentMerchantId;
 
@@ -654,6 +654,19 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUser];
+    }
+
+    protected function checkAccessOfUserOnMerchant($merchantId)
+    {
+        $request = new \App\Admin\ApiRequestAny();
+
+        $queryParams = [
+            'merchant_id'   => $merchantId,
+        ];
+
+        $path = 'users/access';
+
+        return $request->send($path.'?'.http_build_query($queryParams), 'GET');
     }
 
     /**

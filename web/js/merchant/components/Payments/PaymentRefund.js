@@ -6,8 +6,14 @@ import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
-
+import {
+  refundId,
+  amount,
+  createdAt,
+  refundMode,
+  refundStatus,
+} from 'rzp/ui/item/pair';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 /*
@@ -39,25 +45,29 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 };
 
 const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
-  const refundsHeading = {
-    title: 'Refund Details',
-    subTitle: <NumRefunds refunds={refunds} titleCase={true} />,
-  };
+  const columns = [refundId, amount];
+  if (showWhenUtil({ featureEnabled: 'card_transfer_refund' })) {
+    columns.splice(1, 0, refundMode);
+    columns.push(refundStatus);
+  }
 
   return (
-    <ContentToggler onToggleClick={onToggleClick}>
+    <ContentToggler
+      onToggleClick={() => {
+        onToggleClick(refunds.items[0].speed_requested);
+      }}
+    >
       <span>Refund Details</span>
       <div className="full-width-item sub-entity-list">
         <DataTable
           customClass="refunds-table"
           progressLoader={true}
           title="Refunds"
-          columns={[refundId, amount, createdAtWithStyle]}
+          columns={columns}
           items={refunds.items}
           loading={refunds.loading}
-          showHeaders={false}
+          showHeaders={true}
           noStripe={true}
-          panelHeading={refundsHeading}
         />
       </div>
     </ContentToggler>
@@ -190,8 +200,8 @@ export default ({
           {
             <RefundsList
               refunds={refunds}
-              onToggleClick={() => {
-                onToggleClick(payment);
+              onToggleClick={speedRequested => {
+                onToggleClick(payment, speedRequested);
               }}
             />
           }

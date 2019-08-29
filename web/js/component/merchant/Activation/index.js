@@ -7,6 +7,7 @@ import Alert from 'component/Alert';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { classList, addPrefixToObjectKeys } from 'common/util';
 import { activationDuration } from 'common/data';
 import {
@@ -30,6 +31,7 @@ import accountFormTabsContent, {
 } from './AccountActivationFormMap';
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 /*
 *             Main-form        LA-form
 * Submited      E F ~S        ~E ~F ~S
@@ -676,6 +678,13 @@ export default class ActivationWizard extends React.Component {
             type: true,
             activationFlow: data.data && data.data.activation_flow,
           });
+
+        const shouldShowHotjarNPSSurvey = showWhenUtil({
+          additionalCondition: user => user.isPostActivationHotjarSurveyEnabled,
+        });
+
+        if (shouldShowHotjarNPSSurvey)
+          window.hj && window.hj('trigger', 'L0_NPS_Post_KYC');
       }
     });
   };
@@ -1403,37 +1412,78 @@ class SubmitForm extends React.Component {
             {/* Primary copy */}
             <p>
               I have read and understood the{' '}
-              <a
-                href="https://razorpay.com/terms/"
-                target="_blank"
-                class="highlight"
-                onClick={() =>
-                  onAction && onAction.trackLinkClick('Terms of use')
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                Terms & Conditions
-              </a>,{' '}
-              <a
-                href="https://razorpay.com/agreement/"
-                target="_blank"
-                class="highlight"
-                onClick={() =>
-                  onAction && onAction.trackLinkClick('Merchant Agreement')
+                <a
+                  href="https://razorpay.com/terms/"
+                  target="_blank"
+                  class="highlight"
+                  onClick={() =>
+                    onAction && onAction.trackLinkClick('Terms of use')
+                  }
+                >
+                  Terms & Conditions
+                </a>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={user =>
+                  !user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                Merchant Agreement
-              </a>{' '}
+                <span class="highlight">Terms & Conditions</span>
+              </ShowWhen>
+              ,{' '}
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <a
+                  href="https://razorpay.com/agreement/"
+                  target="_blank"
+                  class="highlight"
+                  onClick={() =>
+                    onAction && onAction.trackLinkClick('Merchant Agreement')
+                  }
+                >
+                  Merchant Agreement
+                </a>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={user =>
+                  !user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <span class="highlight">Merchant Agreement</span>
+              </ShowWhen>{' '}
               and the{' '}
-              <a
-                href="https://razorpay.com/privacy/"
-                target="_blank"
-                class="highlight"
-                onClick={() =>
-                  onAction && onAction.trackLinkClick('Privacy Policy')
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                Privacy Policy
-              </a>. By submitting the form, I agree to abide by the rules at all
+                <a
+                  href="https://razorpay.com/privacy/"
+                  target="_blank"
+                  class="highlight"
+                  onClick={() =>
+                    onAction && onAction.trackLinkClick('Privacy Policy')
+                  }
+                >
+                  Privacy Policy
+                </a>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={user =>
+                  !user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <span class="highlight">Privacy Policy</span>
+              </ShowWhen>
+              . By submitting the form, I agree to abide by the rules at all
               times.
             </p>
           </div>

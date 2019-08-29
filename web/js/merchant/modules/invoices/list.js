@@ -14,13 +14,18 @@ export const fetchInvoices = params => {
   };
 };
 
-export const saveInvoice = (params, headers = {}) => {
+export const saveInvoice = (params, headers = {}, isIntentDuplicate) => {
   let invoice = new Invoice(params);
+
   return {
     type: invoice.isNew ? INVOICE_CREATE : INVOICE_EDIT,
-    payload: invoice.save(null, {
-      headers,
-    }),
+    payload: invoice.save(
+      null,
+      {
+        headers,
+      },
+      isIntentDuplicate
+    ),
   };
 };
 

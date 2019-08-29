@@ -38,6 +38,7 @@ import commissionReducer, {
 import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
 import tokenReducer from 'merchant/modules/token';
+import onboardingReducer from 'merchant/modules/onboarding';
 
 import authLinkReducer from 'merchant/modules/auth_link';
 
@@ -136,4 +137,5 @@ export default combineReducers({
   tokens: tokensReducer,
   token: tokenReducer,
   batches: batchesReducer,
+  onboarding: onboardingReducer,
 });
