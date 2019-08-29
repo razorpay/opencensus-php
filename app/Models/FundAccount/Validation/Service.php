@@ -37,6 +37,7 @@ class Service extends Base\Service
     {
         if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === false)
         {
+            // mandates account number and converts to balance id
             $this->processAccountNumber($input);
         }
 
@@ -49,6 +50,7 @@ class Service extends Base\Service
     {
         if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === false)
         {
+            // mandates account number and converts to balance id
             $this->processAccountNumber($input);
         }
 
