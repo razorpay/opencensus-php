@@ -12,6 +12,7 @@ use RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl\RBLBankInf
 
 abstract class RBLStatementGenerator extends Base
 {
+
     abstract function getStatement();
 
     # This will be set during class initialization, and will be available to all the Child Classes
