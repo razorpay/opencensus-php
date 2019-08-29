@@ -10,7 +10,6 @@ class BankingAccountStatementController extends Controller
 {
     public function fetchStatementForAccount()
     {
-
         $input = Request::all();
 
         $response = $this->service()->fetchStatementForAccount($input);
@@ -28,10 +27,9 @@ class BankingAccountStatementController extends Controller
      * to_date          : '2019-04-01'
      * @return mixed
      */
-    public function generateStatement()
+    public function generate()
     {
-
-        $input    = Request::all();
+        $input = Request::all();
 
         $response = $this->service()->generateAccountStatement($input);
 

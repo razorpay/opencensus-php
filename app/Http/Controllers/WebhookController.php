@@ -9,7 +9,6 @@ class WebhookController extends Controller
 {
     public function processWebhook(String $event)
     {
-
         $input = Request::all();
 
         $this->service()->processWebhook($event, $input);

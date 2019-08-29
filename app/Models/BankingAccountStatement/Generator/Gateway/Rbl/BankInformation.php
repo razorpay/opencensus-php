@@ -1,8 +1,14 @@
 <?php
 
-namespace RZP\Models\BankingAccountStatement\StatementGenerator\Gateway\Rbl;
+namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 
-class RBLBankInformation
+/**
+ * Class BankInformation
+ * @package RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl
+ * Some of the below contents will be taken from IFSC Service
+ * Rest will remain hardcoded in this file and used for Statement Generation
+ */
+class BankInformation
 {
     const BRANCH_NAME         = 'Lower Parel Mumbai (0088)';
     const BRANCH_ADDRESS      = 'TOWER 2B, ONE INDIA BULLS CENTRE, 3RD FLOOR, SENAPAT BAPAT MARG';
@@ -16,6 +22,3 @@ class RBLBankInformation
     const BRANCH_PHONE_NUMBER = '02243020600/43020603';
     const IFSC_CODE           = 'RATN0000088';
 }
-
-
-

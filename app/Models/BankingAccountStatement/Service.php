@@ -5,7 +5,6 @@ namespace RZP\Models\BankingAccountStatement;
 use Cache;
 use RZP\Models\Base;
 
-
 class Service extends Base\Service
 {
     public function fetchStatementForAccount(array $input): array
@@ -18,8 +17,8 @@ class Service extends Base\Service
     public function generateAccountStatement(array $input)
     {
         $response = $this->core()->generateBankAccountStatement($input);
-        return $response;
 
+        return $response;
     }
 
 }
