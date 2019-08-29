@@ -140,6 +140,7 @@ export default class ActivationWizard extends React.Component {
   }
 
   prepareTabs(props) {
+    const { tracking } = props;
     if (this.isLinkedAccountForm) {
       // Activation form for linked account
 
@@ -197,6 +198,12 @@ export default class ActivationWizard extends React.Component {
             updateHubSpotContactsProperties({
               [a.name]: true,
             });
+
+            tracking.trackEvent(
+              window.rzpQ.initiated('kyc.upload_document', {
+                name: a.name,
+              })
+            );
 
             this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
           });
