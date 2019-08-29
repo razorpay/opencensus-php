@@ -101,6 +101,7 @@ class Reconciliate extends Base\Core
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::UPI_HDFC,
     ];
 
     /*********************
