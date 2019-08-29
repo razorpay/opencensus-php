@@ -24,7 +24,7 @@ import { setOnBoardingDataInLocalState } from './utils';
     };
   },
   {
-    fetchUser,
+    fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
     saveOnboarding,
     updateFeatures,
     showNotification,
@@ -68,7 +68,7 @@ export default class FeatureEnableButton extends React.Component {
     }
 
     return saveOnboarding
-      .then(() => {
+      .then(res => {
         return this.props.fetchUser();
       })
       .then(res => {
