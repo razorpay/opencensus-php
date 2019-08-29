@@ -5,11 +5,11 @@ namespace RZP\Models\Transaction\Statement;
 use RZP\Models\Payout;
 use RZP\Models\External;
 use RZP\Models\Transaction;
+use RZP\Models\FundAccount;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
-use RZP\Models\FundAccount;
 
 /**
  * Class Entity
@@ -101,7 +101,7 @@ class Entity extends Transaction\Entity
                 break;
 
             case E::FUND_ACCOUNT_VALIDATION:
-                $this->setPublicSourceAttributeForFAV($array);
+                // Do nothing special for fund account validations
                 break;
 
             default:
@@ -141,23 +141,6 @@ class Entity extends Transaction\Entity
                 External\Entity::AMOUNT,
                 External\Entity::UTR,
                 External\Entity::CREATED_AT,
-            ]);
-    }
-
-    protected function setPublicSourceAttributeForFAV(array & $array)
-    {
-        $array[self::SOURCE] = array_only(
-            $array[self::SOURCE],
-            [
-                FundAccount\Validation\Entity::ID,
-                FundAccount\Validation\Entity::ENTITY,
-                FundAccount\Validation\Entity::FUND_ACCOUNT_ID,
-                FundAccount\Validation\Entity::FUND_ACCOUNT,
-                FundAccount\Validation\Entity::AMOUNT,
-                FundAccount\Validation\Entity::FEES,
-                FundAccount\Validation\Entity::TAX,
-                FundAccount\Validation\Entity::NOTES,
-                FundAccount\Validation\Entity::CREATED_AT,
             ]);
     }
 
