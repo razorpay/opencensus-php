@@ -4408,6 +4408,11 @@ trait Authorize
         $data['razorpay_invoice_status']  = $invoice->getStatus();
         $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
 
+        if ($invoice->isTypeOfSubscriptionRegistration() === true)
+        {
+            $data['razorpay_order_id']        = $invoice->order->getPublicId();
+        }
+
         $this->fillReturnDataWithSignatureIfApplicable($data);
     }
 
