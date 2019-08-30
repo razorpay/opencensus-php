@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
+import RTracking from 'react-tracking';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { reduxForm, Field } from 'redux-form';
 import { required } from 'rzp/utils/validators';
@@ -10,6 +11,7 @@ import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
 @connect(null, { updatePassword, closeModal, showNotification })
+@RTracking(() => window.rzpQ.component('PasswordForm'))
 @reduxForm({
   form: 'updatePasswordChangeForm',
 })
@@ -18,11 +20,17 @@ export default class PasswordForm extends PureComponent {
     return this.props
       .updatePassword(props)
       .then(() => {
-        this.props.showNotification({
+        const { showNotification, closeModal, tracking } = this.props;
+        showNotification({
           type: 'success',
           message: 'Password changed successfully.',
         });
-        this.props.closeModal();
+        tracking.trackEvent(
+          window.rzpQ.initiated('dash.my_account_actions', {
+            action: 'Change password successful',
+          })
+        );
+        closeModal();
       })
       .catch(err => {
         this.props.showNotification({
