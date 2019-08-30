@@ -62,7 +62,9 @@ export default class FeatureEnableButton extends React.Component {
         this.props.user.current
       );
     } else {
-      saveOnboarding = this.props.saveOnboarding(this.props.feature);
+      saveOnboarding = this.props.saveOnboarding(this.props.feature, {
+        business_model: '',
+      });
     }
 
     return saveOnboarding
