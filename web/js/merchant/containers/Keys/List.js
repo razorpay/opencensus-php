@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Alert from 'rzp/ui/Forms/Alert';
+import RTracking from 'react-tracking';
 // import Role from 'merchant/components/Role'
 import KeysList from 'merchant/components/Keys/KeysList';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -19,6 +20,7 @@ import NewKey from './NewKey';
   },
   { ...KeyActions, ...ModalActions, ...NotificationsActions }
 )
+@RTracking(() => window.rzpQ.component('KeysListContainer'))
 export default class KeysListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchKeys(
@@ -47,6 +49,12 @@ export default class KeysListContainer extends ListContainer {
   };
 
   generateKey = params => {
+    const { tracking } = this.props;
+    tracking.trackEvent(
+      window.rzpQ.initiated('dash.settings_action', {
+        action: 'Initiate API key gen',
+      })
+    );
     return this.props.generateKey(params).then(response => {
       var key = response.new || response;
 

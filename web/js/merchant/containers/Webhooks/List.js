@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Alert from 'rzp/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -19,12 +20,19 @@ import DocsLink from 'merchant/components/DocsLink';
   },
   { ...WebhookActions, ...ModalActions, luminateRow }
 )
+@RTracking(() => window.rzpQ.component('WebhooksContainer'))
 export default class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchWebhooks(params);
   }
 
   showWebhookModal = (webhook = null) => {
+    const { tracking } = this.props;
+    tracking.trackEvent(
+      window.rzpQ.initiated('dash.settings_action', {
+        action: 'Initiate webhook setup',
+      })
+    );
     this.props.openModal({
       component: (
         <WebhookCreation webhook={webhook} onSave={this.highlightRowAndClose} />
@@ -33,6 +41,12 @@ export default class WebhooksContainer extends ListContainer {
   };
 
   highlightRowAndClose = webhook => {
+    const { tracking } = this.props;
+    tracking.trackEvent(
+      window.rzpQ.initiated('dash.settings_action', {
+        action: 'Submit webhook details',
+      })
+    );
     this.props.luminateRow(webhook.id);
     this.props.closeModal();
   };
@@ -46,7 +60,7 @@ export default class WebhooksContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/webhooks/"/>
+            <DocsLink url="https://razorpay.com/docs/webhooks/" />
           </div>
         </HeaderAction>
 

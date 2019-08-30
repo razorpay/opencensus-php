@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
@@ -17,12 +18,14 @@ const analyticsGoTo = name => {
 };
 
 @withRouter
+@RTracking(() => window.rzpQ.component('Settings'))
 export default class Settings extends Component {
   componentDidMount() {
     analyticsGoTo('Settings');
   }
 
   render() {
+    const { tracking } = this.props;
     return (
       <tabbed-container>
         <header id="settings-header">
@@ -31,7 +34,14 @@ export default class Settings extends Component {
           >
             <NavLink
               to="/config"
-              onClick={() => analyticsGoTo('Configuration')}
+              onClick={() => {
+                analyticsGoTo('Configuration');
+                tracking.trackEvent(
+                  window.rzpQ.initiated('dash.settings_action', {
+                    action: 'View configurations',
+                  })
+                );
+              }}
             >
               Configuration
             </NavLink>
@@ -40,7 +50,17 @@ export default class Settings extends Component {
           <ShowWhen
             additionalCondition={user => user.isAllowedView('webhooks')}
           >
-            <NavLink to="/webhooks" onClick={() => analyticsGoTo('Webhooks')}>
+            <NavLink
+              to="/webhooks"
+              onClick={() => {
+                analyticsGoTo('Webhooks');
+                tracking.trackEvent(
+                  window.rzpQ.initiated('dash.settings_action', {
+                    action: 'View webhook tab',
+                  })
+                );
+              }}
+            >
               Webhooks
             </NavLink>
           </ShowWhen>
@@ -48,7 +68,17 @@ export default class Settings extends Component {
           <ShowWhen
             additionalCondition={user => user.isAllowedView('api_keys')}
           >
-            <NavLink to="/keys" onClick={() => analyticsGoTo('API Keys')}>
+            <NavLink
+              to="/keys"
+              onClick={() => {
+                analyticsGoTo('API Keys');
+                tracking.trackEvent(
+                  window.rzpQ.initiated('dash.settings_action', {
+                    action: 'View API key tab',
+                  })
+                );
+              }}
+            >
               API Keys
             </NavLink>
           </ShowWhen>

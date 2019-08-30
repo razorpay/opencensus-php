@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
+import RTracking from 'react-tracking';
 
 import { showNotification } from 'rzp/modules/notifications';
 import { customRangeText } from 'rzp/ui/DateRangePicker';
@@ -120,6 +121,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     fetchPayments,
   }
 )
+@RTracking(() => window.rzpQ.component('HomeContainer'))
 export default class HomeContainer extends Component {
   constructor(props) {
     super(props);
@@ -626,6 +628,7 @@ export default class HomeContainer extends Component {
       showKYCActivationSuccess,
       showKYCDetails,
       hideKYCDetailsModal,
+      tracking,
     } = this.props;
 
     const { activation_flow } = user;
@@ -744,6 +747,11 @@ export default class HomeContainer extends Component {
                   trackIAClose();
                   this.closeOnboardingStep();
                   onFirstStepClose();
+                  tracking.trackEvent(
+                    window.rzpQ.initiated('login.first_login_modal.success', {
+                      action: 'Close popup',
+                    })
+                  );
                 }}
               >
                 <ModalContent>

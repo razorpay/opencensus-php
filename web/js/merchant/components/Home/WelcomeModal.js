@@ -18,12 +18,27 @@ const WelcomeModal = ({ onActivate, onClose, tracking }) => (
         onClick={() => {
           onActivate();
           tracking.trackEvent(window.rzpQ.initiated('act.form_fill'));
+          tracking.trackEvent(
+            window.rzpQ.initiated('login.first_login_modal.success', {
+              action: 'Activate Account',
+            })
+          );
         }}
         className="btn btn-primary"
       >
         Activate your account
       </Link>
-      <span className="btn-link m-l cursor-pointer" onClick={onClose}>
+      <span
+        className="btn-link m-l cursor-pointer"
+        onClick={() => {
+          onClose();
+          tracking.trackEvent(
+            window.rzpQ.initiated('login.first_login_modal.success', {
+              action: 'Try Dashboard',
+            })
+          );
+        }}
+      >
         Try out the Dashboard
       </span>
     </div>
