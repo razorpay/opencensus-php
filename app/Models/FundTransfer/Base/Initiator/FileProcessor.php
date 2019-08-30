@@ -8,8 +8,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\Settlement;
-use RZP\Models\FundTransfer\Attempt;
 
 abstract class FileProcessor extends NodalAccount
 {
