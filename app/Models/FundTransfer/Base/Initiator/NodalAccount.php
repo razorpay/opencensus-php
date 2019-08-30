@@ -486,4 +486,20 @@ abstract class NodalAccount extends Base\Core
                 'failure_reason'    => $remarks
             ]);
     }
+
+    protected function markFailedIfBaNotExists(Attempt\Entity $entity) : bool
+    {
+        if($entity->hasBankAccount() === true)
+        {
+            if(empty($entity->bankAccount) === true)
+            {
+                $remarks = 'Bank Account not found for FTA';
+
+                $this->markAttemptAsFailed($entity, $remarks);
+
+                return true;
+            }
+        }
+        return false;
+    }
 }

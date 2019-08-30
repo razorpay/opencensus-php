@@ -54,12 +54,8 @@ class NodalAccount extends NodalBase\FileProcessor
         {
             //if BA is not present for attempt
             // marking FTA as failed, if source is settlement
-            if(empty($entity->bankAccount) === true)
+            if($this->markFailedIfBaNotExists($entity) === true)
             {
-                $remarks = 'Bank Account not found for FTA';
-
-                $this->markAttemptAsFailed($entity, $remarks);
-
                 continue;
             }
 
