@@ -2449,7 +2449,13 @@ class Processor
             return false;
         }
 
-        if ($payment->isDirectSettlement() === true)
+        //
+        // We do an auto capture direct settlement payment only if payment is not associated with an order.
+        //
+        // Later we are checking if the payment is associated with order and order status is paid then don't
+        // capture this late auth payment since order is fullfilled by some other payment made for this order.
+        if (($payment->isDirectSettlement() === true) and
+            ($payment->hasOrder() === false))
         {
             return true;
         }
@@ -2599,6 +2605,13 @@ class Processor
         // An order must not have more than one captured payment.
         //
         $this->repo->reload($order);
+
+        // If order status is not paid yet and if the payment is direct settlement then capture
+        if (($order->isPaid() === false) and
+            ($payment->isDirectSettlement()))
+        {
+            return true;
+        }
 
         if (($order->isPaid() === true) or
             ($order->getPaymentCapture() === false))
