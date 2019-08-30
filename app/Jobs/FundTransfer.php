@@ -254,6 +254,12 @@ class FundTransfer extends Job
                     'duration' => $duration,
                 ]);
 
+            $this->trace->count(
+                Attempt\Metric::FTA_SLA_EXPIRED,
+                [
+                    Attempt\Metric::SLA => $sla,
+                ]);
+
             return false;
         }
 
