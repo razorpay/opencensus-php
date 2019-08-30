@@ -48,13 +48,12 @@ export default class KeysListContainer extends ListContainer {
     });
   };
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.settings_action', {
+      action: 'Initiate API key gen',
+    })
+  )
   generateKey = params => {
-    const { tracking } = this.props;
-    tracking.trackEvent(
-      window.rzpQ.initiated('dash.settings_action', {
-        action: 'Initiate API key gen',
-      })
-    );
     return this.props.generateKey(params).then(response => {
       var key = response.new || response;
 

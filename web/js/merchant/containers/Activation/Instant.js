@@ -222,7 +222,7 @@ export default class ActivationWizard extends React.Component {
     const events = trackFormFields(props.data, state.dirty);
     return events.forEach(event =>
       tracking.trackEvent(
-        window.rzpQ.initiated('act.provide_act_details', {
+        window.rzpQ.onbr().initiated('act.provide_act_details', {
           ...event,
         })
       )
@@ -246,7 +246,7 @@ export default class ActivationWizard extends React.Component {
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
         trackL1FormSuccess(this.user.activation_flow);
-        tracking.trackEvent(window.rzpQ.initiated('act.submit_form'));
+        tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
 
         // updating contact propteries of hubspot contact
         updateHubSpotContactsProperties({
@@ -419,7 +419,7 @@ export default class ActivationWizard extends React.Component {
                   class="text-primary"
                   onClick={() => {
                     tracking.trackEvent(
-                      window.rzpQ.initiated('act.view_signup_fields')
+                      window.rzpQ.onbr().initiated('act.view_signup_fields')
                     );
                   }}
                 >

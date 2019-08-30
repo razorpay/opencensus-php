@@ -124,7 +124,7 @@ export default class ActivationContainer extends Component {
   }
 
   handleCloseActivationForm = e => {
-    this.props.tracking.trackEvent(window.rzpQ.dropped('act.form_fill'));
+    this.props.tracking.trackEvent(window.rzpQ.onbr().dropped('act.form_fill'));
   };
 
   componentWillMount() {

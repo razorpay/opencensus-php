@@ -52,7 +52,7 @@ export default class ActivationCard extends Component {
               onClick={e => {
                 track.activateAccount();
                 tracking.trackEvent(
-                  window.rzpQ.initiated('act.form_fill', {
+                  window.rzpQ.onbr().initiated('act.form_fill', {
                     clickSource: 'Dashboard CTA',
                   })
                 );
@@ -111,7 +111,7 @@ export default class ActivationCard extends Component {
             onClick={() => {
               track.refillActivationForm();
               tracking.trackEvent(
-                window.rzpQ.initiated('act.form_fill', {
+                window.rzpQ.onbr().initiated('act.form_fill', {
                   clickSource: 'Modify Business Category',
                 })
               );

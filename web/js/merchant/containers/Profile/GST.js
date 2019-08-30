@@ -17,7 +17,7 @@ export default class GSTDetails extends Component {
   }
 
   @RTracking(() =>
-    window.rzpQ.initiated('dash.my_account_actions', {
+    window.rzpQ.onbr().initiated('dash.my_account_actions', {
       action: 'Add GSTIN initiated',
     })
   )

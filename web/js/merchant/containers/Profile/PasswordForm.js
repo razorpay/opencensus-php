@@ -26,7 +26,7 @@ export default class PasswordForm extends PureComponent {
           message: 'Password changed successfully.',
         });
         tracking.trackEvent(
-          window.rzpQ.initiated('dash.my_account_actions', {
+          window.rzpQ.onbr().initiated('dash.my_account_actions', {
             action: 'Change password successful',
           })
         );

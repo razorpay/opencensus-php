@@ -200,7 +200,7 @@ export default class ActivationWizard extends React.Component {
             });
 
             tracking.trackEvent(
-              window.rzpQ.initiated('kyc.upload_document', {
+              window.rzpQ.onbr().initiated('kyc.upload_document', {
                 name: a.name,
               })
             );
@@ -358,7 +358,7 @@ export default class ActivationWizard extends React.Component {
     const events = trackFormFields(props.data, state.dirty);
     return events.forEach(event =>
       tracking.trackEvent(
-        window.rzpQ.initiated('kyc.provide_details', {
+        window.rzpQ.onbr().initiated('kyc.provide_details', {
           ...event,
         })
       )

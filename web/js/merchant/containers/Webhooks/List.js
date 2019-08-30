@@ -26,13 +26,12 @@ export default class WebhooksContainer extends ListContainer {
     return this.props.fetchWebhooks(params);
   }
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.settings_action', {
+      action: 'Initiate webhook setup',
+    })
+  )
   showWebhookModal = (webhook = null) => {
-    const { tracking } = this.props;
-    tracking.trackEvent(
-      window.rzpQ.initiated('dash.settings_action', {
-        action: 'Initiate webhook setup',
-      })
-    );
     this.props.openModal({
       component: (
         <WebhookCreation webhook={webhook} onSave={this.highlightRowAndClose} />
@@ -40,13 +39,12 @@ export default class WebhooksContainer extends ListContainer {
     });
   };
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.settings_action', {
+      action: 'Submit webhook details',
+    })
+  )
   highlightRowAndClose = webhook => {
-    const { tracking } = this.props;
-    tracking.trackEvent(
-      window.rzpQ.initiated('dash.settings_action', {
-        action: 'Submit webhook details',
-      })
-    );
     this.props.luminateRow(webhook.id);
     this.props.closeModal();
   };
