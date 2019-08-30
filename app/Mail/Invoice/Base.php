@@ -6,6 +6,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
+use RZP\Models\Merchant\Preferences;
 
 class Base extends Mailable
 {
@@ -112,6 +113,8 @@ class Base extends Mailable
      */
     protected function getSubjectByInvoiceType(): string
     {
+        $merchantId = $this->data['merchant']['id'];
+
         $type = $this->data['invoice']['type'];
 
         $template = static::SUBJECT_TEMPLATES[$type];
@@ -128,6 +131,24 @@ class Base extends Mailable
                 $this->data['invoice']['currency'],
                 $this->data['invoice']['amount_formatted'],
             ];
+        }
+
+        switch ($merchantId)
+        {
+            case Preferences::MID_RBL_RETAIL_ASSETS:
+
+                if (empty(static::SUBJECT_TEMPLATES[$merchantId]) === false)
+                {
+                    $template = static::SUBJECT_TEMPLATES[$merchantId];
+
+                    $args = [];
+                }
+
+                break;
+
+            default:
+
+                break;
         }
 
         return sprintf($template, ...$args);

@@ -582,6 +582,11 @@ class Notifier extends Base\Core
 
         $receipt = $this->invoice->getReceipt();
 
+        if ($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS)
+        {
+            $receipt = $this->invoice->getNotes()['loan_number'] ?? $receipt;
+        }
+
         $invoiceLink = $this->invoice->getShortUrl();
 
         $notes = $this->invoice->getNotes();

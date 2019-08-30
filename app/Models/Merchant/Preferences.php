@@ -109,7 +109,8 @@ class Preferences
     const MID_BFL_CARD              = 'Cya3FzbrKbxMGg';
     const MID_RBL_LAPOD             = 'CzQAGjwnr3RSqw';
     const MID_RBL_PL_NON_DEL_CUST   = 'DAeLo1KdwN2BTW';
-    const MID_RBL_RETAIL_ASSETS     = 'D83Pk7NqU6URGe';
+    const MID_RBL_RETAIL_ASSETS     = 'AtgdEIzM6qtWmS';
+    const MID_RBL_INTERIM_PROCESS   = 'D83Pk7NqU6URGe';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';
