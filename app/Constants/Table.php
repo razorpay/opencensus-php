@@ -202,6 +202,7 @@ class Table
     const EXTERNAL                        = 'external';
     const BANKING_ACCOUNT                 = 'banking_accounts';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
+    const BANKING_ACCOUNT_STATE           = 'banking_account_state';
 
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';

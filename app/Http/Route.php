@@ -1178,6 +1178,9 @@ final class Route
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
+        'banking_account_activation_status_'
+        . 'change_log'                            => ['get',      'banking_accounts/activation/{id}/status_change_log',        'BankingAccountController@getActivationStatusChangeLog'   ],
+
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
@@ -2258,6 +2261,7 @@ final class Route
         'banking_serviceable_pincodes',
         'banking_account_update',
         'banking_account_webhook_account_info_internal',
+        'banking_account_activation_status_change_log',
 
         // throttle settings routes
         'fetch_throttle_settings',
@@ -2744,6 +2748,8 @@ final class Route
         'webhook_stork_migrate'                    => Permission::STORK_WRITE_OPERATION,
 
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
+        'banking_account_activation_status_'
+        . 'change_log'                             => Permission::BANKING_ACCOUNT_VIEW_ACTIVATION_FORM,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 

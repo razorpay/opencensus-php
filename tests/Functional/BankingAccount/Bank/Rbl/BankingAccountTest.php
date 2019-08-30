@@ -111,7 +111,23 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
-        return $this->startTest($dataToReplace);
+        $response = $this->startTest($dataToReplace);
+
+        $changeLogRequest  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($changeLogRequest);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('processed', $logs['items'][1]['status']);
+        $this->assertEquals('closed', $logs['items'][1]['bank_status']);
+
+        return $response;
     }
 
     public function testAccountInfoWebhookWithIncorrectAndThenCorrectDetails()
@@ -210,7 +226,7 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
-           'account_number'         => '1234567890',
+            'account_number'        => '1234567890',
             'beneficiary_state'     => 'karnataka',
             'beneficiary_country'   => 'india',
         ]);
@@ -252,6 +268,19 @@ class BankingAccountTest extends TestCase
                             $bankingAccount[RZP\Models\BankingAccount\Entity::BALANCE_ID]);
 
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $request  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('activated', $logs['items'][1]['status']);
     }
 
     public function testStoreMerchantCredentialsFailedDueToVaultFailure()
@@ -301,6 +330,19 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
+
+        $request  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('processed', $logs['items'][1]['status']);
     }
 
     public function testUpdateBankingAccountStatusAsProcessed()
@@ -467,5 +509,4 @@ class BankingAccountTest extends TestCase
     {
         return $this->testData[$key];
     }
-
 }

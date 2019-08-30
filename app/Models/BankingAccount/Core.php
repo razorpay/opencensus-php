@@ -145,6 +145,19 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($bankingAccount);
 
+        $stateCore = new State\Core;
+
+        $content = [Entity::STATUS => $bankContent[Entity::STATUS]];
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+            [
+                'id'    => $bankingAccount->getId(),
+                'input' => $content,
+            ]);
+
+        $stateCore->createForMakerAndEntity($content, $merchant, $bankingAccount);
+
         return $bankingAccount;
     }
 
@@ -181,7 +194,7 @@ class Core extends Base\Core
                         'channel'   => $channel,
                     ]);
 
-                $this->updateBankingAccount($bankingAccount, $attributes);
+                $this->updateBankingAccount($bankingAccount, $attributes, $bankingAccount->merchant);
             }
 
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::PROCESSED);
@@ -203,7 +216,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function updateBankingAccount(Entity $bankingAccount, array $input)
+    public function updateBankingAccount(Entity $bankingAccount, array $input, Base\PublicEntity $entity = null)
     {
         $channel = $bankingAccount->getChannel();
 
@@ -232,37 +245,24 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($bankingAccount);
 
-        return $bankingAccount;
-    }
+        if (empty($input[Entity::STATUS]) === false)
+        {
+            $stateCore = new State\Core;
 
-    protected function createYesbankBankingAccount(
-        array $input,
-        Merchant\Entity $merchant,
-        Merchant\Balance\Entity $balance): Entity
-    {
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_CREATE,
-            [
-                'channel' => Channel::YESBANK,
-                'input'   => $input,
-            ]);
+            $content = [
+                Entity::STATUS              => $bankingAccount->getStatus(),
+                State\Entity::BANK_STATUS   => $bankingAccount->getBankInternalStatus()
+            ];
 
-        (new Validator)->validateInput(Validator::YESBANK_CREATE, $input);
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+                [
+                    'id'    => $bankingAccount->getId(),
+                    'input' => $content,
+                ]);
 
-        $input[Entity::CHANNEL] = Channel::YESBANK;
-
-        $bankingAccount = new Entity;
-
-        $bankingAccount->build($input);
-
-        $bankingAccount->merchant()->associate($merchant);
-
-        $bankingAccount->balance()->associate($balance);
-
-        // Yesbank accounts are always created in the processed state
-        $bankingAccount->setStatus(Status::ACTIVATED);
-
-        $this->repo->saveOrFail($bankingAccount);
+            $stateCore->createForMakerAndEntity($content, $entity, $bankingAccount);
+        }
 
         return $bankingAccount;
     }
@@ -418,6 +418,21 @@ class Core extends Base\Core
             $bankingAccount->balance()->associate($balance);
 
             $this->repo->saveOrFail($bankingAccount);
+
+            $stateCore = new State\Core;
+
+            $content = [
+                Entity::STATUS              => Status::ACTIVATED,
+            ];
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+                [
+                    'id'    => $bankingAccount->getId(),
+                    'input' => $content,
+                ]);
+
+            $stateCore->createForMakerAndEntity($content, $bankingAccount->merchant, $bankingAccount);
         });
     }
 
@@ -592,6 +607,11 @@ class Core extends Base\Core
         }
     }
 
+    public function getActivationStatusChangeLog(Entity $bankingAccount)
+    {
+        return $bankingAccount->getActivationStatusChangeLog();
+    }
+
     protected function checkSourceAccountResponseForError(array $response)
     {
         if (((isset($response[FTS\Constants::BODY][FTS\Constants::MESSAGE]) === true) and
@@ -653,6 +673,38 @@ class Core extends Base\Core
                     ]);
             }
         }
+    }
+
+    protected function createYesbankBankingAccount(
+        array $input,
+        Merchant\Entity $merchant,
+        Merchant\Balance\Entity $balance): Entity
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_CREATE,
+            [
+                'channel' => Channel::YESBANK,
+                'input'   => $input,
+            ]);
+
+        (new Validator)->validateInput(Validator::YESBANK_CREATE, $input);
+
+        $input[Entity::CHANNEL] = Channel::YESBANK;
+
+        $bankingAccount = new Entity;
+
+        $bankingAccount->build($input);
+
+        $bankingAccount->merchant()->associate($merchant);
+
+        $bankingAccount->balance()->associate($balance);
+
+        // Yesbank accounts are always created in the processed state
+        $bankingAccount->setStatus(Status::ACTIVATED);
+
+        $this->repo->saveOrFail($bankingAccount);
+
+        return $bankingAccount;
     }
 
     protected function getProcessor(string $channel): Gateway\Processor

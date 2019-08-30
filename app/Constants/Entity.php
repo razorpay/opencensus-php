@@ -122,6 +122,7 @@ class Entity
     const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
     const BANKING_ACCOUNT_STATEMENT = 'banking_account_statement';
+    const BANKING_ACCOUNT_STATE     = 'banking_account_state';
 
     // heimdall
     const ORG                   = 'org';
@@ -387,6 +388,7 @@ class Entity
         self::MERCHANT_DETAIL           => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION           => \RZP\Models\Terminal\Action::class,
         self::BANKING_ACCOUNT           => \RZP\Models\BankingAccount::class,
+        self::BANKING_ACCOUNT_STATE     => \RZP\Models\BankingAccount\State::class,
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,
@@ -597,6 +599,7 @@ class Entity
         self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
 
         self::PAYMENT_DOWNTIME       => \RZP\Models\Payment\Downtime::class,
+        self::BANKING_ACCOUNT_STATE  => \RZP\Models\BankingAccount\State::class,
     ];
 
     protected static $externalServiceClass = [
