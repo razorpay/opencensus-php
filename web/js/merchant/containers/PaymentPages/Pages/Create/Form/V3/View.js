@@ -260,10 +260,12 @@ export default class View extends React.PureComponent {
 
 const FormFooter = ({ amountToPay }) => (
   <div id="form-footer">
-    <img
-      id="fin-logo"
-      alt="pay-methods"
-      src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
-    />
+    <div class="form-footer-payment">
+      <img
+        id="fin-logo"
+        alt="pay-methods"
+        src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
+      />
+    </div>
   </div>
 );

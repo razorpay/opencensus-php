@@ -104,11 +104,13 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
 export const FormFooter = ({ amountToPay }) => (
   <div id="form-footer">
-    <img
-      id="fin-logo"
-      alt="pay-methods"
-      src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
-    />
+    <div className="form-footer-payment">
+      <img
+        id="fin-logo"
+        alt="pay-methods"
+        src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
+      />
+    </div>
   </div>
 );
 
