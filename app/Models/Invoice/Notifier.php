@@ -584,6 +584,8 @@ class Notifier extends Base\Core
 
         $invoiceLink = $this->invoice->getShortUrl();
 
+        $notes = $this->invoice->getNotes();
+
         switch ($merchant->getId())
         {
             case Preferences::MID_DMI_FINANCE:
@@ -603,6 +605,21 @@ class Notifier extends Base\Core
                 $params   = [
                     'receipt'      => $receipt,
                     'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_RETAIL_ASSETS:
+
+                $template = 'sms.custom_invoice.rbl_retail_assets';
+
+                $sender = 'RBLBNK';
+
+                $params   = [
+                    'receipt'          => $receipt,
+                    'invoice_link'     => $invoiceLink,
+                    'rejection_reason' => $notes['rejection_reason'] ?? '',
+                    'rejection_date'   => $notes['rejection_date'] ?? '',
                 ];
 
                 break;
