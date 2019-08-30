@@ -562,7 +562,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_RBLCARD:
-                $sender = 'RBLBNK';
+                $sender = 'RBLCRD';
                 $template = 'sms.custom_invoice.rbl_card_new';
                 $params = [
                     'receipt'        => $receipt,
