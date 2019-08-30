@@ -480,11 +480,6 @@ abstract class NodalAccount extends Base\Core
 
         $this->repo->saveOrFail($entity);
 
-        $this->trace->info(TraceCode::FTA_MARKED_AS_FAILED,
-            [
-                'fta_id'            => $entity->getId(),
-                'failure_reason'    => $remarks
-            ]);
     }
 
     protected function markFailedIfBaNotExists(Attempt\Entity $entity) : bool
@@ -496,6 +491,12 @@ abstract class NodalAccount extends Base\Core
                 $remarks = 'Bank Account not found for FTA';
 
                 $this->markAttemptAsFailed($entity, $remarks);
+
+                $this->trace->info(TraceCode::FTA_BANK_ACCOUNT_EMPTY,
+                    [
+                        'fta_id'            => $entity->getId(),
+                        'remarks'           => $remarks
+                    ]);
 
                 return true;
             }
