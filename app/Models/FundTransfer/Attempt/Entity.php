@@ -564,18 +564,4 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
-
-    public function hasBaForSettlement() : bool
-    {
-        $ba = $this->bankAccount;
-
-        $source = $this->source;
-
-        if(empty($ba) === true and $source->getEntity() === EntityConstants::SETTLEMENT)
-        {
-            return false;
-        }
-
-        return true;
-    }
 }
