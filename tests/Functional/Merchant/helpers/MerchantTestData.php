@@ -1738,6 +1738,20 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithPartnerLogo' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'options' => [
+                    'partnership_logo' => 'https://cdn.razorpay.com/logos/lalalala.png'
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesForMerchantDisabledBanks' => [
         'request' => [
             'url' => '/preferences',
