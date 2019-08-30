@@ -60,7 +60,7 @@ class NodalAccount extends NodalBase\FileProcessor
         {
             //if BA is not present for attempt
             // marking FTA as failed, if source is settlement
-            if($this->markFailedIfBaNotExists($attempt) === true)
+            if($this->markFailedIfBANotExists($attempt) === true)
             {
                 continue;
             }

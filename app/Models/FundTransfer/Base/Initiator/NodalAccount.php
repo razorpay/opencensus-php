@@ -462,7 +462,7 @@ abstract class NodalAccount extends Base\Core
         return Mode::NEFT;
     }
 
-    protected function markAttemptAsFailed(Attempt\Entity $entity, $remarks)
+    protected function markAttemptAsFailed(Attempt\Entity $entity, $remarks, $failureReason)
     {
         $attemptCore = new Attempt\Core;
 
@@ -478,19 +478,22 @@ abstract class NodalAccount extends Base\Core
 
         $entity->setRemarks($remarks);
 
-        $this->repo->saveOrFail($entity);
+        $entity->setFailureReason($failureReason);
 
+        $this->repo->saveOrFail($entity);
     }
 
-    protected function markFailedIfBaNotExists(Attempt\Entity $entity) : bool
+    protected function markFailedIfBANotExists(Attempt\Entity $entity) : bool
     {
         if($entity->hasBankAccount() === true)
         {
             if(empty($entity->bankAccount) === true)
             {
-                $remarks = 'Bank Account not found for FTA';
+                $remarks = 'Associated Bank Account is not active.';
 
-                $this->markAttemptAsFailed($entity, $remarks);
+                $failureReason = 'Associated Bank Account is not active.';
+
+                $this->markAttemptAsFailed($entity, $remarks, $failureReason);
 
                 $this->trace->info(TraceCode::FTA_BANK_ACCOUNT_EMPTY,
                     [
