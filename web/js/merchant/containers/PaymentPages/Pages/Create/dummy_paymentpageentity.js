@@ -99,7 +99,6 @@ const paymentpage_data = {
       id: 'ppi_D2D7GpbxDsPIbC',
       item: {
         title: 'Min purchase with Limited Stock',
-        name: 'amount_field_1',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -117,7 +116,6 @@ const paymentpage_data = {
       id: 'ppi_D2D7GpbxDsPIbE',
       item: {
         title: 'Min-Max purchase with Limited Stock',
-        name: 'amount_field_2',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -135,7 +133,6 @@ const paymentpage_data = {
       id: 'ppi_D2D7GpbxDsPIbK',
       item: {
         title: 'Min purchase + Unlimited Stock',
-        name: 'amount_field_5',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -153,7 +150,6 @@ const paymentpage_data = {
       id: 'ppi_D2D7GpbxDsPIbM',
       item: {
         title: 'Min-Max purchase + Unlimited Stock',
-        name: 'amount_field_6',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -172,7 +168,6 @@ const paymentpage_data = {
       id: 'ppi_D2D7GpbxDsPIbO',
       item: {
         title: 'Item with user defined amount (Min + Max)',
-        name: 'amount_field_7',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -191,7 +186,6 @@ const paymentpage_data = {
       id: 'ppi_D2D7GpbxDsPIbO',
       item: {
         title: 'Item with user defined amount (No Min + Max)',
-        name: 'amount_field_7',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -210,7 +204,6 @@ const paymentpage_data = {
       id: 'ppi_D2D7GpbxDsPIbO',
       item: {
         title: 'Item with user defined amount (Min + No Max)',
-        name: 'amount_field_7',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -229,7 +222,6 @@ const paymentpage_data = {
       id: 'ppi_D2D7GpbxDsPIbO',
       item: {
         title: 'Item with user defined amount (No Min + No Max)',
-        name: 'amount_field_7',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',

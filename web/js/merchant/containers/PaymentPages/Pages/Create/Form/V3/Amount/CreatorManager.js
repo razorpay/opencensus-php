@@ -119,6 +119,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           <_WrappedDisplayFieldComponent
             field={field}
             openBaseForm={this.openBaseForm}
+            currency={currency}
             {...restProps}
           />
           {isBaseFormOpened && (

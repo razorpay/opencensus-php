@@ -53,7 +53,6 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                               </button>
                               <input
                                 class="Field-el counter-value"
-                                name="field_1"
                                 defaultValue="1"
                                 disabled
                               />

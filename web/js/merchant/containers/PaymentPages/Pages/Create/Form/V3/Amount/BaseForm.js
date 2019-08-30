@@ -180,9 +180,9 @@ export default class BaseForm extends React.PureComponent {
         return (
           <React.Fragment>
             {this.getREP_Amount()}
-            {/* Add dummy Checkbox */}
+            {/* Dummy Checkbox for optional field */}
             <div class="Input-checkboxTooltip">
-              <Input.Check disabled checked />
+              <Input.Check disabled />
 
               <Popover
                 align="top"
@@ -217,8 +217,7 @@ export default class BaseForm extends React.PureComponent {
                     -
                   </button>
                   <input
-                    className="Field-el counter-value"
-                    name="field_1"
+                    class="Field-el counter-value"
                     value={field.min_purchase}
                     disabled
                   />
@@ -300,7 +299,7 @@ export default class BaseForm extends React.PureComponent {
             )}
           >
             <span class="mirror-title">{mirrorDisplayTitle}</span>
-            {mirrorDisplayTitle && <span className="symbol--red">*</span>}
+            {mirrorDisplayTitle && <span class="symbol--red">*</span>}
           </div>
         </Input.TextareaAutoResize>
 
