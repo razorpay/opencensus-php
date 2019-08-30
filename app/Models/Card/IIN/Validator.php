@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::IIN            => 'required|digits:6',
         Entity::NETWORK        => 'required',
         Entity::TYPE           => 'required',
+        Entity::SUBTYPE        => 'filled|string|custom',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
         Entity::CATEGORY       => 'sometimes',
         Entity::ISSUER         => 'sometimes',
@@ -26,8 +27,9 @@ class Validator extends Base\Validator
     );
 
     protected static $editRules = array(
-        Entity::NETWORK        => 'sometimes',
-        Entity::TYPE           => 'sometimes',
+        Entity::NETWORK        => 'required_with:category',
+        Entity::TYPE           => 'required_with:category',
+        Entity::SUBTYPE        => 'filled|string|custom',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
         Entity::CATEGORY       => 'sometimes',
         Entity::ISSUER         => 'sometimes',
@@ -54,12 +56,14 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         'create_network',
         Entity::TYPE,
+        Entity::CATEGORY,
         Entity::ISSUER,
     ];
 
     protected static $editValidators = [
         'edit_network',
         Entity::TYPE,
+        Entity::CATEGORY,
         Entity::ISSUER,
     ];
 
@@ -75,6 +79,28 @@ class Validator extends Base\Validator
     protected function validateCreateNetwork($input)
     {
         $this->validateNetwork($input, $input[Entity::IIN]);
+    }
+
+    protected function validateCategory($input)
+    {
+        if (isset($input[Entity::CATEGORY]) === false)
+        {
+            return;
+        }
+
+        $subtype = Card\SubType::CONSUMER;
+
+        if (isset($input[Entity::SUBTYPE]) === true)
+        {
+            $subtype = $input[Entity::SUBTYPE];
+        }
+
+        if (Category::isValidIinCategory($input[Entity::NETWORK], $input[Entity::TYPE], $subtype,
+                $input[Entity::CATEGORY]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid category: ' . $input[Entity::CATEGORY]);
+        }
     }
 
     protected function validateEditNetwork($input)
@@ -135,7 +161,11 @@ class Validator extends Base\Validator
         }
     }
 
-
+    protected function validateSubType($attribute, $subtype)
+    {
+        Card\SubType::checkSubType($subtype);
+    }
+  
     protected function validateIssuer($input)
     {
         if (isset($input[Entity::ISSUER]) === false)

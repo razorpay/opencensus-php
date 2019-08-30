@@ -3,13 +3,15 @@
 namespace RZP\Mail\Invoice;
 
 use RZP\Models\Invoice\Type;
+use RZP\Models\Merchant\Preferences;
 
 class Issued extends Base
 {
     const SUBJECT_TEMPLATES = [
-        Type::LINK    => ' Requesting payment of %s %s (via Razorpay)',
-        Type::ECOD    => ' Requesting payment of %s %s (via Razorpay)',
-        Type::INVOICE => ' Invoice from %s',
+        Type::LINK                         => ' Requesting payment of %s %s (via Razorpay)',
+        Type::ECOD                         => ' Requesting payment of %s %s (via Razorpay)',
+        Type::INVOICE                      => ' Invoice from %s',
+        Preferences::MID_RBL_RETAIL_ASSETS => ' Mandate registration link from RBL Bank',
     ];
 
     protected $fileData;
@@ -23,7 +25,23 @@ class Issued extends Base
 
     protected function addHtmlView()
     {
-        $this->view('emails.invoice.customer.notification');
+        $merchantId = $this->data['merchant']['id'];
+
+        switch ($merchantId)
+        {
+            case Preferences::MID_RBL_RETAIL_ASSETS:
+
+                $this->view('emails.invoice.customer.custom.rbl_retail_assets');
+
+                break;
+
+            default:
+
+                $this->view('emails.invoice.customer.notification');
+
+                break;
+
+        }
 
         return $this;
     }

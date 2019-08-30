@@ -983,6 +983,28 @@ return [
         ]
     ],
 
+    'testCreateUpiCitiTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_citi',
+                'gateway_merchant_id'       => 'CITI0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl',
+                'type'                      => [
+                    'collect'               => 1,
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'CITI0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
@@ -2000,6 +2022,27 @@ return [
         ]
     ],
 
+    'testCreateWalletPaypalTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_terminal_password2'=> 'terminal_password2',
+                'gateway_terminal_password' => 'terminal_password',
+                'type'                      => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingSibTerminal'  => [
         'request' => [
             'content' => [
@@ -2180,7 +2223,7 @@ return [
             'content'  => [
                 'count'   => 2,
                 'entity'  => 'collection',
-                'items'   => [  
+                'items'   => [
                     [
                         'entity'  => "terminal",
                         'status'  => "activated",

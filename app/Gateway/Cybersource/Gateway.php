@@ -1192,9 +1192,14 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
         $paymentId = $input['payment']['id'];
-        $amount    = $input['payment']['amount'];
-        $currency  = $input['payment']['currency'];
-        $acquirer  = $input['terminal']['gateway_acquirer'];
+
+        $paymentRepo = $this->repo->repo->payment;
+
+        $payment = $paymentRepo->findOrFail($paymentId);
+
+        $amount    = $input['payment']['amount'] ?? $payment->getAmount();
+        $currency  = $input['payment']['currency'] ?? $payment->getCurrency();
+        $acquirer  = $input['terminal']['gateway_acquirer'] ?? $payment->terminal->getGatewayAcquirer();
 
         $gatewayPayment->setPaymentId($paymentId);
 

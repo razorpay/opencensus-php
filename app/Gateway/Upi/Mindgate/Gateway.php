@@ -1036,7 +1036,7 @@ class Gateway extends Base\Gateway
         }
 
         // 'MPIN Captured and Pay Request Initiated' in 'status_description' is a pending state, should be verified again
-        if (($content[ResponseFields::STATUS] === Status::REFUND_FAILED) and
+        if ((in_array($content[ResponseFields::STATUS], [Status::REFUND_FAILED, Status::PENDING], true) === true) and
             ($content[ResponseFields::STATUS_DESCRIPTION] === StatusDescription::MPIN_CAPTURED_AND_PAY_REQUEST_INITIATED))
         {
             return $scroogeResponse->setSuccess(false)

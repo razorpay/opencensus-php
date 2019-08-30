@@ -198,4 +198,22 @@ trait TestsBusinessBanking
                 'account_number' => '111000',
             ]);
     }
+
+    protected function createFAVBankingPricingPlan()
+    {
+        $pricingPlan = [
+            'plan_name'           => 'FAV Plan',
+            'percent_rate'        => 290,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'product'             => 'banking',
+            "feature"             => 'fund_account_validation',
+            'payment_method'      => 'bank_account',
+            'account_type'        => 'shared'
+        ];
+
+        $this->fixtures->create('pricing', $pricingPlan);
+    }
 }

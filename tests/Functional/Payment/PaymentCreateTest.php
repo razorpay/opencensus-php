@@ -1473,6 +1473,130 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
     }
 
+    public function testCreatePaymentSubTypeWithDefaultRule()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('rule_filter');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->create('terminal:axis_genius_terminal');
+
+        $ruleAttributes = [
+            'method'      => 'card',
+            'merchant_id' => '10000000000000',
+            'step'        => 'authorization',
+            'gateway'     => 'hdfc',
+            'type'        => 'filter',
+            'filter_type' => 'select',
+            'group'       => 'A',
+        ];
+
+        $this->fixtures->create('gateway_rule', $ruleAttributes);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'sub_type'=> 'business',
+        ]);
+        $this->doAuthPayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('hdfc', $paymentObj['gateway']);
+    }
+
+    public function testCreatePaymentWithSubTypeRule()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('rule_filter');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->create('terminal:axis_genius_terminal');
+
+        $ruleAttributes = [
+            'method'            => 'card',
+            'merchant_id'       => '10000000000000',
+            'step'              => 'authorization',
+            'method_subtype'    => 'business',
+            'gateway'           => 'axis_genius',
+            'type'              => 'filter',
+            'filter_type'       => 'select',
+            'group'             => 'A',
+        ];
+
+        $this->fixtures->create('gateway_rule', $ruleAttributes);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'sub_type'=> 'business',
+        ]);
+        $this->doAuthPayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('axis_genius', $paymentObj['gateway']);
+    }
+
+    public function testCreatePaymentWithCategoryRule()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('rule_filter');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->create('terminal:axis_genius_terminal');
+
+        $ruleAttributes = [
+            'method' => 'card',
+            'merchant_id' => '10000000000000',
+            'step' => 'authorization',
+            'method_subtype' => 'business',
+            'card_category' => 'Commercial Standard',
+            'gateway' => 'axis_genius',
+            'type' => 'filter',
+            'filter_type' => 'select',
+            'group' => 'A',
+        ];
+
+        $this->fixtures->create('gateway_rule', $ruleAttributes);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type' => 'credit',
+            'sub_type' => 'business',
+            'category' => 'Commercial Standard'
+        ]);
+        $this->doAuthPayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('axis_genius', $paymentObj['gateway']);
+    }
+
 
     public function testRupayPaymentFallbackTo3ds()
     {
@@ -1643,7 +1767,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1693,7 +1817,7 @@ class PaymentCreateTest extends TestCase
 
         $payment['method'] = 'netbanking';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1748,7 +1872,7 @@ class PaymentCreateTest extends TestCase
         $payment['save'] = true;
         $payment['recurring'] = 'preferred';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1804,7 +1928,7 @@ class PaymentCreateTest extends TestCase
             'ifsc'              => 'UTIB0002766'
         ];
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
 
         $request = [

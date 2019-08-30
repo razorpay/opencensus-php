@@ -178,11 +178,18 @@ class Core extends Base\Core
     }
 
     // Associate
-    public function authenticateWithToken(Entity $subr,  Customer\Token\Entity $token)
+    public function associateToken(Entity $subr,  Customer\Token\Entity $token)
     {
         $this->repo->reload($subr);
 
         $subr->token()->associate($token);
+
+        $this->repo->saveOrFail($subr);
+    }
+
+    public function authenticate(Entity $subr, Customer\Token\Entity $token)
+    {
+        $this->repo->reload($subr);
 
         if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
         {
@@ -194,7 +201,7 @@ class Core extends Base\Core
                 $subr->setStatus(Status::COMPLETED);
             }
         }
-        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
+        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::REJECTED)
         {
             $subr->setStatus(Status::COMPLETED);
         }
@@ -334,8 +341,8 @@ class Core extends Base\Core
     {
         $token = $tokenRegistration->token;
 
-        $invoice = (new Invoice\Repository)->findByMerchantAndTokenRegistration(
-            $this->merchant,
+        $invoice = $this->repo->invoice->findByMerchantAndTokenRegistration(
+            $tokenRegistration->merchant,
             $tokenRegistration
         );
 

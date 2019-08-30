@@ -1665,6 +1665,16 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
+    public function testGetCheckoutPreferencesWithPartnerLogo()
+    {
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->edit('10000000000000', ['partnership_url' => 'https://cdn.razorpay.com/logos/lalalala.png']);
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesForMerchantDisabledBanks()
     {
         $this->testSetBanks();

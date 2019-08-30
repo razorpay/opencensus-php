@@ -20,6 +20,7 @@ class Constants
     const NOFLASHCHECKOUT                 = 'noflashcheckout';
     const RECURRING                       = 'recurring';
     const S2S                             = 's2s';
+    const S2S_JSON                        = 's2s_json';
     const INVOICE                         = 'invoice';
     const NOZEROPRICING                   = 'nozeropricing';
     const REVERSE                         = 'reverse';
@@ -39,6 +40,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
     const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
@@ -123,6 +125,13 @@ class Constants
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
+
+    /**
+     * Feature flag to enable to create new customer if contact and email both are null,
+     * this functionality will be there by default for new merchants , flag need to be enabled if
+     * needed for older merchants
+     */
+    const CUST_CONTACT_EMAIL_NULL         = 'cust_contact_email_null';
 
   /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -267,6 +276,7 @@ class Constants
         self::EXPOSE_DOWNTIMES                => true,
         self::PAYMENT_FAILURE_EMAIL           => true,
         self::VIRTUAL_ACCOUNTS                => true,
+        self::BANK_TRANSFER_ON_CHECKOUT       => true,
         self::INVOICE_PARTIAL_PAYMENTS        => true,
         self::HIDE_DOWNTIMES                  => true,
         self::OLD_CREDITS_FLOW                => true,
@@ -346,6 +356,7 @@ class Constants
         self::REPORTING_GENRERIC_NOTES        => true,
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
+        self::S2S_JSON                        => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
         self::DISABLE_CARD_REFUNDS            => true,
@@ -372,6 +383,7 @@ class Constants
         self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,
         self::ASYNC_BALANCE_UPDATE            => true,
+        self::CUST_CONTACT_EMAIL_NULL         => true,
     ];
 
     // Entity type constants

@@ -58,6 +58,7 @@ class AuthLink
             Invoice\Entity::DESCRIPTION  => (string) $entry[Batch\Header::AUTH_LINK_DESCRIPTION],
             Invoice\Entity::EXPIRE_BY    => $expireBy,
             Invoice\Entity::CUSTOMER     => self::getCustomerInput($entry),
+            Invoice\Entity::NOTES        => $entry[Invoice\Entity::NOTES] ?? [],
         ];
 
         $mandateInput = self::getMandateEntityInput($entry);

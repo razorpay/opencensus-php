@@ -35,9 +35,9 @@ trait BatchTestTrait
         $this->testData[$callee]['request']['files']['file'] = $uploadedFile;
     }
 
-    public function createAndPutTxtFileInRequest(string $text, string $callee)
+    public function createAndPutTxtFileInRequest(string $name, string $text, string $callee)
     {
-        $url = $this->writeToTextFile('file', $text);
+        $url = $this->writeToTextFile($name, $text);
 
         $uploadedFile = $this->createUploadedFile($url);
 

@@ -58,6 +58,11 @@ class GovernorService
         'method'    =>  "PUT",
     ];
 
+    const UPDATE_RULES  =   [
+        'url'       =>  "rule_engine/rule/:namespace/bulk",
+        'method'    =>  "PUT",
+    ];
+
     const RULE_LIST  =   [
         'url'       =>  "rule_engine/rule/:namespace",
         'method'    =>  "GET",
@@ -139,11 +144,14 @@ class GovernorService
 
         $auth = $this->getAuthDetails($source);
 
-        $url = $url . '?';
-
-        foreach ($queryParams as $key => $value)
+        if (empty($queryParams) === false)
         {
-            $url .= $key . '=' . $value . '&';
+            $url = $url . '?';
+
+            foreach ($queryParams as $key => $value)
+            {
+                $url .= $key . '=' . $value . '&';
+            }
         }
 
         $request = [
@@ -152,13 +160,14 @@ class GovernorService
             'content' => $data,
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
-            ],
-            'options' => [
-                'auth' => $auth,
             ]
         ];
 
         $this->trace->info(TraceCode::GOVERNOR_SERVICE_REQUEST, $request);
+
+        $request['options'] = [
+            'auth' => $auth
+        ];
 
         $response = $this->sendRawRequest($request);
 

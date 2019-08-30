@@ -218,6 +218,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
+    public function getSettledOn()
+    {
+        return $this->getAttribute(self::SETTLED_ON);
+    }
+
     public function hasTransaction()
     {
         return ($this->isAttributeNotNull(self::TRANSACTION_ID));
