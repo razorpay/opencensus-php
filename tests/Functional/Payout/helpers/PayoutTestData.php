@@ -1094,7 +1094,6 @@ return [
                                 'account_number'    => '50100244702362',
                             ],
                             'active'                => true,
-                            'idempotency_key'       => 'batch_abc123',
                         ],
                         'amount'                    => 100,
                         'currency'                  => 'INR',
@@ -1116,7 +1115,6 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
-                        'idempotency_key'           => 'batch_abc123',
                     ],
                     [
                         'entity'                    => 'payout',
@@ -1130,7 +1128,6 @@ return [
                                 'address'           => '8861655100@ybl'
                             ],
                             'active'                => true,
-                            'idempotency_key'       => 'batch_abc124',
                         ],
                         'amount'                    => 100,
                         'currency'                  => 'INR',
@@ -1152,13 +1149,12 @@ return [
                         'mode'                      => 'UPI',
                         'reference_id'              => null,
                         'narration'                 => '123',
-                        'idempotency_key'           => 'batch_abc124',
                     ]
                 ]
             ],
         ],
     ],
-    
+
     'testCreatePayoutForRblDirectAccount' => [
         'request'  => [
             'method'  => 'POST',
@@ -1337,7 +1333,6 @@ return [
                                 'account_number'    => '50100244702362',
                             ],
                             'active'                => true,
-                            'idempotency_key'       => 'batch_abc123',
                         ],
                         'amount'                    => 100,
                         'currency'                  => 'INR',
@@ -1359,7 +1354,6 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
-                        'idempotency_key'           => 'batch_abc123',
                     ],
                     [
                         'entity'                    => 'payout',
@@ -1373,7 +1367,6 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
-                        'idempotency_key'           => 'batch_abc123',
                     ]
                 ]
             ],
