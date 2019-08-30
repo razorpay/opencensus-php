@@ -273,7 +273,40 @@ return [
                             'primary_message'   => 'Your payment was not successful',
                             'late_auth'         => false,
                             'currency'          => 'INR',
+                            'tertiary_message'  => 'If there is a delay in the auto-refund, ' .
+                                'you will have to escalate the issue with your issuing bank and your bank should be able to assist you on the ' .
+                                'retrieval of the funds. You may submit your bank statement as proof for the debit, stating '.
+                                '"Money has been debited from my account and I have not received services/product and not got a refund".'
                             ],
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testPaymentFetchDetailsForCustomerFromRazorpayIdCreatedPaymentCase' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/customer/refunds',
+            'content' => [
+                'captcha'    => 'dummy',
+                'mode'       => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => ['payments' =>
+                [
+                    [
+                        'refunds' => [],
+                        'payment' => [
+                            'amount'            => 50000,
+                            'status'            => 'created',
+                            'merchant_name'     => 'Test Merchant',
+                            'primary_message'   => 'Payment request has been initiated by Razorpay',
+                            'tertiary_message'  => '',
+                            'late_auth'         => false,
+                            'currency'          => 'INR',
+                        ],
                     ]
                 ]
             ]
