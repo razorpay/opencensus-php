@@ -563,7 +563,7 @@ class Notifier extends Base\Core
 
             case Preferences::MID_RBLCARD:
                 $sender = 'RBLCRD';
-                $template = 'sms.custom_invoice.rbl_card_new';
+                $template = 'sms.custom_invoice.rbl_card_del_coll';
                 $params = [
                     'receipt'        => $receipt,
                     'invoice_link'   => $invoiceLink,
