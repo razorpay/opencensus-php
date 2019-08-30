@@ -487,23 +487,27 @@ class Validator extends Base\Validator
     ];
 
     protected static $walletPaypalTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:wallet_paypal',
-        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
-        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
-        Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::MODE                       => 'sometimes',
+        Entity::GATEWAY                                 => 'required|in:wallet_paypal',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'required|string',
+        Entity::CURRENCY                                => 'sometimes|alpha|size:3',
+        Entity::INTERNATIONAL                           => 'sometimes|boolean',
+        Entity::MODE                                    => 'sometimes',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
     ];
 
     protected static $walletPaypalEditTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:wallet_paypal',
-        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
-        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
-        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
-        Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::MODE                       => 'sometimes',
+        Entity::GATEWAY                                 => 'required|in:wallet_paypal',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::CURRENCY                                => 'sometimes|alpha|size:3',
+        Entity::INTERNATIONAL                           => 'sometimes|boolean',
+        Entity::MODE                                    => 'sometimes',
+        Entity::TYPE                                    => 'sometimes|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'sometimes|in:1',
     ];
 
     protected static $walletPhonepeEditTerminalRules = [
