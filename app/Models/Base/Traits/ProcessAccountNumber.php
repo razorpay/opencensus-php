@@ -13,8 +13,10 @@ namespace RZP\Models\Base\Traits;
  */
 trait ProcessAccountNumber
 {
-    /*
-     * Replaces account number with balance id
+    /**
+     * Mandate Account number and Replaces it with balance id
+     *
+     * @param array $input
      */
     protected function processAccountNumber(array & $input)
     {
