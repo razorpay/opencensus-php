@@ -933,7 +933,21 @@ class Processor extends Base\Core
                 $skipMids = array_merge($skipMids,$esMerchantsAutomatic);
             }
 
+            $this->app['trace']->info(
+                TraceCode::SETTLEMENT_AMOUNT_FETCH_START,
+                [
+                    'pre_amount_fetch_timestamp'    => Carbon::now(Timezone::IST)->getTimestamp(),
+                    'skipped_merchant_ids'          => $skipMids
+                ]);
+
             $data = $this->repo->transaction->getAmountForNextSettlement($timeStamp, [], $skipMids);
+
+            $this->app['trace']->info(
+                TraceCode::SETTLEMENT_AMOUNT_FETCH_END,
+                [
+                    'post_amount_fetch_timestamp'    => Carbon::now(Timezone::IST)->getTimestamp(),
+                    'settlement_amount'              => $data
+                ]);
 
             (new SlackNotification)->send(
                 'setl_balance_alert',
