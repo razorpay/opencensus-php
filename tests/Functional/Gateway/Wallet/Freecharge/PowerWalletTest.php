@@ -61,23 +61,24 @@ class PowerWalletTest extends TestCase
         $this->assertTrue(isset($wallet['reference1']));
     }
 
-//    public function testInSufficientWalletBalance()
-//    {
-//        $this->setUpWalletToken();
-//        $appToken = $this->setUpAppToken();
-//        $sessionData = [
-//            'test_app_token' => $appToken->getPublicId(),
-//        ];
-//        $this->mockSession($sessionData);
-//        // Mock will return Insufficient Balance
-//        $this->setOtp(Otp::INSUFFICIENT_BALANCE);
-//        $payment = $this->getDefaultPaymentArray();
-//        $payment['amount'] = 100000;
-//        $response = $this->doAuthPayment($payment);
-//        $wallet = $this->getLastEntity('wallet', true);
-//        $this->assertEquals($response['type'], 'topup');
-//        $this->assertEquals($wallet['reference1'], null);
-//    }
+    public function testInSufficientWalletBalance()
+    {
+        $this->setUpWalletToken();
+        $appToken = $this->setUpAppToken();
+        $sessionData = [
+            'test_app_token' => $appToken->getPublicId(),
+        ];
+        $this->mockSession($sessionData);
+        // Mock will return Insufficient Balance
+        $this->setOtp(Otp::INSUFFICIENT_BALANCE);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['amount'] = 100000;
+        try {
+            $response = $this->doAuthPayment($payment);
+        }catch (\RZP\Exception\GatewayErrorException $e){
+            $this->assertTrue($e->getError()->getInternalErrorCode() === "BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE", "Invalid Error");
+        }
+    }
 
     public function testUserWalletTokenExpired()
     {
