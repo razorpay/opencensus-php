@@ -812,6 +812,19 @@ trait SettlementTrait
             $bankAccountId = $merchantSettleToPartner[$mid];
 
             $bankAccount = $this->repo->bank_account->getBankAccountById($bankAccountId);
+
+            if (empty($bankAccount) === true)
+            {
+                $this->trace->error(
+                    TraceCode::MERCHANT_SETTLING_PARTNER_BANK_ACCOUNT_NOT_MAPPED,
+                    [
+                        'merchant_id'    => $merchant->getId(),
+                        'transaction_id' => $txn->getId()
+                    ]
+                );
+
+                return false;
+            }
         }
 
         if (empty($bankAccount) === true)
