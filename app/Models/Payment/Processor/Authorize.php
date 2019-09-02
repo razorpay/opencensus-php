@@ -506,12 +506,12 @@ trait Authorize
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
     {
-        if (($payment->getGlobalTokenId() !== null) and
-            (Payment\Gateway::isPowerWalletSupported($payment) === true) and
-            (isset($request['type']) === true) and ($request['type'] === 'first'))
-        {
-            return $request;
-        }
+//        if (($payment->getGlobalTokenId() !== null) and
+//            (Payment\Gateway::isPowerWalletSupported($payment) === true) and
+//            (isset($request['type']) === true) and ($request['type'] === 'first'))
+//        {
+//            return $request;
+//        }
         $payment->incrementOtpCount();
 
         $this->repo->save($payment);
@@ -4885,7 +4885,8 @@ trait Authorize
                         'terminal_id' => $payment->getTerminalId(),
                     ]);
                 $this->repo->saveOrFail($payment);
-                return $this->topup($payment->getPublicId(), $payment);
+                //return $this->topup($payment->getPublicId(), $payment);
+                $this->processPaymentCallbackException($e);
             }
             throw $e;
         }
