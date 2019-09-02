@@ -326,7 +326,7 @@ class Processor extends Base\Core
                 // Get all transactions due settlement till yesterday end of day
                 $txns = $this->fetchRequiredEntities($settledAtCutoff, $channel, [$mid]);
 
-                $filteredTxns = $this->filterTransactionsForSettlement($txns);
+                $filteredTxns = $this->filterTransactionsForSettlement($txns, $merchantSettleToPartner);
 
                 if (isset($filteredTxns[$mid]) === false)
                 {
@@ -565,10 +565,11 @@ class Processor extends Base\Core
 
         $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);
 
-        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+        $merchantIds = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
-        $merchantIds = array_keys($groupedTxns);
         $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        $groupedTxns = $this->filterTransactionsForSettlement($txns, $merchantSettleToPartner);
 
         return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
@@ -579,10 +580,11 @@ class Processor extends Base\Core
 
         $txns = $this->fetchRequiredEntities($this->setlTime, $channel, $mids, []);
 
-        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+        $merchantIds = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
-        $merchantIds = array_keys($groupedTxns);
         $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        $groupedTxns = $this->filterTransactionsForSettlement($txns, $merchantSettleToPartner);
 
         return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
@@ -739,6 +741,10 @@ class Processor extends Base\Core
 
         $txns = $this->repo->transaction->fetchUnsettledTransactionsForProcessing($merchantId, $channel);
 
+        $merchantIds = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
+
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
         $this->merchants = $this->repo
                                 ->merchant
                                 ->findManyWithRelations(
@@ -750,9 +756,8 @@ class Processor extends Base\Core
                                     ])
                                 ->keyBy(MerchantModel\Entity::ID);
 
-        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+        $groupedTxns = $this->filterTransactionsForSettlement($txns, $merchantSettleToPartner);
 
-        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchantId]);
         return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
 
