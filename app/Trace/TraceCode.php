@@ -421,6 +421,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_BATCH_CANCEL_JOB_INV_CANCEL_ERROR             = 'INVOICE_BATCH_CANCEL_JOB_INV_CANCEL_ERROR';
     const INVOICE_BATCH_CANCEL_SUMMARY                          = 'INVOICE_BATCH_CANCEL_SUMMARY';
     const INVOICE_BATCH_COUNT_ZERO                              = 'INVOICE_BATCH_COUNT_ZERO';
+    const INVOICE_WITHOUT_GSTIN                                 = 'INVOICE_WITHOUT_GSTIN';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';
@@ -813,6 +814,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_RETURNED                                   = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_CREATE_FAILED                              = 'SETTLEMENT_CREATE_FAILED';
     const SETTLEMENT_ATTEMPT_ENTITIES_CREATED                   = 'SETTLEMENT_ATTEMPT_ENTITIES_CREATED';
+    const SETTLEMENT_AMOUNT_FETCH_START                         = 'SETTLEMENT_AMOUNT_FETCH_START';
+    const SETTLEMENT_AMOUNT_FETCH_END                           = 'SETTLEMENT_AMOUNT_FETCH_END';
     const DAILY_SETTLEMENT_CREATE_FAILED                        = 'DAILY_SETTLEMENT_CREATE_FAILED';
     const SETTLEMENT_RETRY_FAILED                               = 'SETTLEMENT_RETRY_FAILED';
     const SETTLEMENT_INVALID_REVERSE_FILE                       = 'SETTLEMENT_INVALID_REVERSE_FILE';
@@ -1466,6 +1469,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CONTACT_CREATE_REQUEST                                = 'CONTACT_CREATE_REQUEST';
     const CONTACT_UPDATE_REQUEST                                = 'CONTACT_UPDATE_REQUEST';
     const CONTACT_DELETE_REQUEST                                = 'CONTACT_DELETE_REQUEST';
+
+    //trace codes for merchant document CRUD
+    const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
+    const DOCUMENT_DELETE_REQUEST                               = 'DOCUMENT_DELETE_REQUEST';
 
     const FUND_ACCOUNT_CREATE_REQUEST                           = 'FUND_ACCOUNT_CREATE_REQUEST';
     const FUND_ACCOUNT_UPDATE_REQUEST                           = 'FUND_ACCOUNT_UPDATE_REQUEST';

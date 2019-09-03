@@ -191,8 +191,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $irctcRules = [
-        'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
-        'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
+        'refund'       => 'sometimes|filled|file|mimes:txt|max:1024',
+        'delta_refund' => 'sometimes|filled|file|mimes:txt|max:1024',
+        'settlement'   => 'sometimes|filled|file|mimes:txt|max:1024',
     ];
 
     protected static $createSubMerchantUserRules = [

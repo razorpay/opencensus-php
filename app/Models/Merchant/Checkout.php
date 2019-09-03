@@ -91,6 +91,8 @@ class Checkout
 
         $this->fillEnabledFeatures($merchant, $data);
 
+        $this->checkAndFillPartnerUrl($merchant, $data);
+
         return $data;
     }
 
@@ -844,6 +846,16 @@ class Checkout
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION);
+        }
+    }
+
+    protected function checkAndFillPartnerUrl(Merchant\Entity $merchant, array & $data)
+    {
+        $partnershipUrl = $merchant->getPartnershipUrl();
+
+        if (empty($partnershipUrl) === false)
+        {
+            $data['options']['partnership_logo'] = $partnershipUrl;
         }
     }
 

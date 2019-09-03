@@ -2029,6 +2029,9 @@ return [
                 'gateway_merchant_id'       => 'merchant_id',
                 'gateway_terminal_password2'=> 'terminal_password2',
                 'gateway_terminal_password' => 'terminal_password',
+                'type'                      => [
+                    'direct_settlement_with_refund' => '1'
+                ],
             ],
             'method' => 'POST'
         ],

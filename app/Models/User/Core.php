@@ -521,7 +521,7 @@ class Core extends Base\Core
                     $input[Entity::CONTACT_MOBILE] : $user->getContactMobile();
 
         return [
-            Entity::ACTION      =>  'setup_2fa',
+            Entity::ACTION      =>  'second_factor_auth',
             'receiver'          =>  $contact,
             'unique_id'         =>  $user->getId(),
         ];

@@ -1,0 +1,169 @@
+<?php
+
+namespace RZP\Tests\Functional\Gateway\File;
+
+use Mail;
+use Excel;
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File;
+use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Mozart\NetbankingIdbi;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class NetbankingIdbiCombinedFileTest extends TestCase
+{
+    use PaymentTrait;
+
+    protected $terminal;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/NetbankingIdbiCombinedFileTestData.php';
+
+        parent::setUp();
+
+        $this->bank = 'IBKL';
+
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_idbi_terminal');
+    }
+
+    public function testNetbankingIdbiCombinedFile()
+    {
+        Mail::fake();
+
+        list($payment1, $fullRefund) = $this->createRefund();
+
+        list($payment2, $partialRefund) = $this->createRefund(500);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $files = $this->getEntities('file_store', [
+            'count' => 2
+        ], true);
+
+        $expectedFilesContent = [
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                [
+                    'type' => 'idbi_netbanking_refund',
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
+
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($payment1, $fullRefund, $partialRefund, $payment2)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Idbi Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  =>  "1000.00",
+                    'refunds' =>  "505.00",
+                    'total'   =>  "495.00"
+                ],
+                'count' => [
+                    'claims'  => 2,
+                    'refunds' => 2,
+                    'total'   => 4
+                ],
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->checkRefundsFile(
+                $mail->viewData['refundsFile'],
+                $payment1,
+                $fullRefund,
+                $partialRefund);
+
+            $this->assertCount(1, $mail->attachments);
+
+            return true;
+        });
+    }
+
+
+    protected function checkRefundsFile(array $refundFileData, $payment, $fullRefund, $partialRefund)
+    {
+        $refundsFileContents = file($refundFileData['url'],FILE_IGNORE_NEW_LINES);
+
+        $this->assertCount(2, $refundsFileContents);
+
+        $fullRefundRowData = explode('|',$refundsFileContents[0]);
+        $fullRefundRowData = array_combine(NetbankingIdbi\RefundFields::REFUND_FIELDS, $fullRefundRowData);
+
+        $partialRefundRowData = explode('|',$refundsFileContents[1]);
+        $partialRefundRowData = array_combine(NetbankingIdbi\RefundFields::REFUND_FIELDS, $partialRefundRowData);
+
+        $this->assertCount(6, $fullRefundRowData);
+
+        $this->fixtures->stripSign($payment['id']);
+
+        $this->assertEquals($payment['id'], $fullRefundRowData[NetbankingIdbi\RefundFields::PAYMENT_ID]);
+
+
+        // validating if partial refund amount is reflected in the file
+        $refundAmount = number_format($fullRefund['amount'] / 100, 2, '.', '');
+        $this->assertEquals($refundAmount, $fullRefundRowData[NetbankingIdbi\RefundFields::REFUND_AMOUNT]);
+
+        $refundAmount = number_format($partialRefund['amount'] / 100, 2, '.', '');
+        $this->assertEquals($refundAmount, $partialRefundRowData[NetbankingIdbi\RefundFields::REFUND_AMOUNT]);
+    }
+
+    protected function checkClaimFile(array $claimData, $payment1, $payment2)
+    {
+        $claimFileContents = file($claimData['url']);
+
+        $payment1RowData = explode('~',$claimFileContents[1]);
+        $payment1RowData = array_combine(NetbankingIdbi\ClaimFields::COLUMNS, $payment1RowData);
+
+        $payment2RowData = explode('~',$claimFileContents[2]);
+        $payment2RowData = array_combine(NetbankingIdbi\ClaimFields::COLUMNS, $payment2RowData);
+
+        $this->assertCount(4, $payment1RowData);
+
+        $this->fixtures->stripSign($payment1['id']);
+        $this->assertEquals($payment1['id'], $payment1RowData[NetbankingIdbi\ClaimFields::PAYMENT_ID]);
+
+        $this->fixtures->stripSign($payment2['id']);
+        $this->assertEquals($payment2['id'], $payment2RowData[NetbankingIdbi\ClaimFields::PAYMENT_ID]);
+
+        $paymentAmount = number_format($payment1['amount'] / 100, 2, '.', '');
+
+        $this->assertEquals($paymentAmount, $payment1RowData[NetbankingIdbi\ClaimFields::TRANSACTION_AMOUNT]);
+    }
+
+    protected function createRefund($amount = -1)
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // -1 for full refund
+        if ($amount === -1)
+        {
+            $refund = $this->refundPayment($payment['id']);
+        }
+        else
+        {
+            $refund = $this->refundPayment($payment['id'], $amount);
+        }
+
+        return [$payment, $refund];
+    }
+}
