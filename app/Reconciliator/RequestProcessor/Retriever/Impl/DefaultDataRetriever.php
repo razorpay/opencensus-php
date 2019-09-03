@@ -9,7 +9,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RepositoryManager;
 
-class DefaultAPIDataRetriever extends AbstractAPIDataRetriever
+class DefaultDataRetriever extends AbstractAPIDataRetriever
 {
 
     protected function prepareGatewayRequestArray(array $input): array

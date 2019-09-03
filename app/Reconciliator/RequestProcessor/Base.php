@@ -21,7 +21,7 @@ class Base extends Core
     const ATTACHMENT_HYPHEN_ONE   = 'attachment-1';
     const FORCE_UPDATE            = 'force_update';
     const FORCE_AUTHORIZE         = 'force_authorize';
-
+    const ATTACHMENT_HYPHEN_PREFIX   = 'attachment-';
     const SOURCE                  = 'source';
 
     /**
@@ -164,6 +164,10 @@ class Base extends Core
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN                  => ['kajol.nigam@razorpay.com'],
+    ];
+
+    const GATEWAY_CRAWLERS = [
+        self::NETBANKING_BOB
     ];
 
     /**

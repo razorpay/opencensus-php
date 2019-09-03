@@ -8,6 +8,7 @@ use RZP\Reconciliator\RequestProcessor\Retriever\DataRetriever;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RepositoryManager;
+use Symfony\Component\HttpFoundation\File\File;
 
 abstract class AbstractAPIDataRetriever implements DataRetriever {
 
@@ -39,9 +40,9 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
     }
 
 
-    public function fetchData(array $input) {
+    public function fetchData(array $input): array {
 
-        $output = [];
+        $files = [];
 
         $requestList = (array) $this->prepareGatewayRequestArray($input);
 
@@ -58,9 +59,9 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
         foreach ($responseList as $key => $value)   {
 
             $fileName = $key."_".$input["gateway"]."_".date('Y-m-d_h:i:s');
-            array_push($output, $this->prepareFile($fileName, $value));
+            array_push($files, $this->prepareFile($fileName, $value));
         }
-        return $output;
+        return $files;
     }
 
     protected abstract function prepareGatewayRequestArray(array $input): array;
@@ -71,8 +72,28 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
 
     protected abstract function refactorResponse(array $responseList): array;
 
-    protected function prepareFile($fileName, array $response): array  {
+    protected function prepareFile($filename, array $response): array  {
 
+        $data = json_decode($response, true);
+
+        $f = null;
+        $filePath = storage_path('files/filestore') . '/'  . $filename . '.csv';
+        try{
+            $f = fopen($filePath, 'w');
+
+            // Header line: the field names (keys in $data)
+            fputcsv($f, array_keys($data), ',');
+            // Data line (can use array_values($data) or just $data as the 2nd argument)
+            fputcsv($f, array_values($data), ',');
+
+        }catch(\Exception $e){
+
+        }finally{
+            if($f !== null) {
+                fclose($f);
+            }
+        }
+        return new File($filePath);
     }
 
 }

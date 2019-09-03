@@ -364,6 +364,10 @@ class Service extends Base\Service
         {
             return RequestProcessor\Base::MANUAL;
         }
+        else if ($this->isCrawlerRequest())
+        {
+            return RequestProcessor\Base::CRAWLER;
+        }
         else if ($this->isLambdaRequest())
         {
             return RequestProcessor\Base::LAMBDA;
@@ -472,6 +476,17 @@ class Service extends Base\Service
     {
         if ((isset($input[RequestProcessor\Base::MANUAL]) === true) and
             ($input[RequestProcessor\Base::MANUAL] === '1'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isCrawlerRequest(array $input): bool
+    {
+        if ((isset($input[RequestProcessor\Base::CRAWLER]) === true) and
+            ($input[RequestProcessor\Base::CRAWLER] === '1'))
         {
             return true;
         }
