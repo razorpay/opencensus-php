@@ -116,6 +116,8 @@ class Reconciliate extends Base\Core
         RequestProcessor\Base::NETBANKING_VIJAYA,
         RequestProcessor\Base::NETBANKING_ALLAHABAD,
         RequestProcessor\Base::EBS,
+        RequestProcessor\Base::UPI_ICICI,
+
     ];
 
     /*********************
