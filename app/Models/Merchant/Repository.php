@@ -99,11 +99,17 @@ class Repository extends Base\Repository
       array $merchantIdsExcluded = []): array
     {
         $query = $this->newQuery()
-                    ->select(Entity::ID)
-                    ->where(Entity::ACTIVATED, '=', 1)
-                    ->where(Entity::ACTIVATED_AT, '<=', $end)
-                    ->take($limit)
-                    ->skip($skip);
+                      ->select(Entity::ID)
+                      ->where(Entity::ACTIVATED, '=', 1)
+                      ->where(Entity::ACTIVATED_AT, '<=', $end)
+                      ->where(function ($query)
+                        {
+                            $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                                  ->orWhereNull(Entity::PARENT_ID);
+                        })
+                      ->whereIn(Entity::ORG_ID, Org\Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID)
+                      ->take($limit)
+                      ->skip($skip);
 
         if (empty($merchantIds) === false)
         {

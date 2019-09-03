@@ -185,12 +185,16 @@ class Core extends Base\Core
 
         $data[Payment\Method::WALLET]        = $methods->getEnabledWallets();
         $data[Payment\Method::UPI]           = $methods->isUpiEnabled();
-        $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
         $data[Payment\Method::CARDLESS_EMI] =
                   $methods->isCardlessEmiEnabled() ? $this->getProviders($merchant, Payment\Method::CARDLESS_EMI) : [];
 
         $data[Payment\Method::PAYLATER] =
             $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER) : [];
+
+        if ($merchant->isFeatureEnabled(Constants::BANK_TRANSFER_ON_CHECKOUT) === true)
+        {
+            $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
+        }
 
         $emi = $methods->isEmiEnabled();
 

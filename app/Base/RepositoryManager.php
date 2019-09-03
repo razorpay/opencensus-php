@@ -47,6 +47,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Workflow\Repository                   $workflow
  * @property Models\Workflow\Action\Checker\Repository    $action_checker
  * @property Models\Workflow\PayoutAmountRules\Repository $workflow_payout_amount_rules
+ * @property Models\Merchant\Document\Repository          $merchant_document
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

@@ -293,7 +293,7 @@ trait Authorize
                     'terminal_id' => $payment->getTerminalId(),
                     'gateway'     => $payment->getGateway(),
                     'shared'      => $currentTerminal->isShared()
-                ] + ($gatewayInput['authenticate'] ?? []));
+                ] + ($terminalGatewayInput['authenticate'] ?? []));
 
             try
             {
@@ -818,6 +818,17 @@ trait Authorize
         }
 
         $cardlessEmiData = Customer\Validator::validateAndParseContactInInput($cardlessEmiData);
+
+        if ((empty($input['payment_id']) === false) and
+            ($cardlessEmiData['payment_id'] !== $input['payment_id']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_INVALID_PAYMENT_ID,
+                null,
+                [
+                    'payment_id'        => $input['payment_id'] ?? null,
+                ]);
+        }
 
         if ((empty($cardlessEmiData['contact']) === true) or
             ($cardlessEmiData['contact'] !== $input['contact']))
@@ -2248,8 +2259,8 @@ trait Authorize
                     ]);
             }
 
-            // mcc is supported only for card payments
-            if ($payment->isCard() === false)
+            // mcc is supported only for card payments and wallet paypal.
+            if ($payment->isMccSupported() === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -2421,7 +2432,16 @@ trait Authorize
 
             $contact = $input['contact'];
 
-            $cacheKey = strtoupper($input[Payment\Entity::PROVIDER]) . '_' . $contact . '_' . $merchantId;
+            if (isset($input['payment_id']) === true)
+            {
+                $paymentIdString = '_' . $input['payment_id'];
+            }
+            else
+            {
+                $paymentIdString = '';
+            }
+
+            $cacheKey = strtoupper($input[Payment\Entity::PROVIDER]) . '_' . $contact . '_' . $merchantId . $paymentIdString;
 
             $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
 
@@ -4387,6 +4407,11 @@ trait Authorize
         $data['razorpay_invoice_id']      = $invoice->getPublicId();
         $data['razorpay_invoice_status']  = $invoice->getStatus();
         $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
+
+        if ($invoice->isTypeOfSubscriptionRegistration() === true)
+        {
+            $data['razorpay_order_id']        = $invoice->order->getPublicId();
+        }
 
         $this->fillReturnDataWithSignatureIfApplicable($data);
     }

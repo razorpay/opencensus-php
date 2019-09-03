@@ -516,6 +516,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT_EMAIL_TRIGGER_EVENT);
     }
 
+    public function getPartnershipUrl()
+    {
+        return $this->getAttribute(self::PARTNERSHIP_URL);
+    }
+
     public function isSecondFactorAuth(): bool
     {
         return ($this->getAttribute(self::SECOND_FACTOR_AUTH) === true);
@@ -530,7 +535,6 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
-
       
     public function setRestricted(bool $restricted)
     {
@@ -2063,6 +2067,7 @@ class Entity extends Base\PublicEntity
             self::DISPLAY_NAME   => $this->getAttribute(self::DISPLAY_NAME),
             self::REFUND_SOURCE  => $this->getAttribute(self::REFUND_SOURCE),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
+            self::RESTRICTED     => $this->getAttribute(self::RESTRICTED),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
         ];

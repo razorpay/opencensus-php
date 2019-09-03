@@ -48,6 +48,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::PHONEPE)
                 ->default(0);
 
+            $table->tinyInteger(Methods::PAYPAL)
+                ->default(0);
+
             $table->tinyInteger(Methods::PAYZAPP)
                   ->default(0);
 

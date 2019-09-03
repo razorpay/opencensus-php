@@ -32,6 +32,7 @@ use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
@@ -1748,6 +1749,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $email = $this->getEmail();
 
         return ((empty($email) === true) or ($email === self::DUMMY_EMAIL));
+    }
+
+    // mcc is supported only for card and wallet paypal payments.
+    public function isMccSupported()
+    {
+        return (($this->getAttribute(self::METHOD) === Method::CARD) or
+               (($this->getAttribute(self::METHOD) === Method::WALLET) and
+                   ($this->getWallet() === Wallet::PAYPAL)));
     }
 
     /**

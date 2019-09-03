@@ -1824,8 +1824,13 @@ class Service extends Base\Service
 
         $data = [
             Entity::CONTACT   => $input[Entity::CONTACT],
-            Entity::PROVIDER  => $input[Entity::PROVIDER]
+            Entity::PROVIDER  => $input[Entity::PROVIDER],
         ];
+
+        if (isset($input['payment_id']) === true)
+        {
+            $data['payment_id'] = $input['payment_id'];
+        }
 
         $this->app['cache']->put($key, $data, $cacheTtl);
 

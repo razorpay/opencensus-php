@@ -80,6 +80,7 @@ return [
         'wallet_openwallet',
         'wallet_mpesa',
         'wallet_phonepe',
+        'wallet_paypal',
         'bt_yesbank',
         'bt_kotak',
         'bajajfinserv',
@@ -162,6 +163,7 @@ return [
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
     'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
+    'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
@@ -809,6 +811,10 @@ return [
 
     'netbanking_cub' => [
         'live_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_NETBANKING_CUB'),
+    ],
+
+    'netbanking_idbi' => [
+        'live_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_NETBANKING_IDBI'),
     ],
 
     'worldline'    => [

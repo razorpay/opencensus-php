@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Kotak;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
 use RZP\Models\FundTransfer\Base\Reconciliation\Mock;
@@ -354,5 +355,10 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function nextSettlementAmount()
+    {
+        $data = (new Settlement\Processor)->settlementAmount();
 
+        return $data;
+    }
 }
