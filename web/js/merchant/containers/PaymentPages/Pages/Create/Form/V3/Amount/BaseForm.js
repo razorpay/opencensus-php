@@ -56,7 +56,7 @@ export default class BaseForm extends React.PureComponent {
   };
 
   onSaveForm = formData => {
-    const { title, description, amount, mandatory, ...restFormData } = formData;
+    const { title, description, amount, ...restFormData } = formData;
 
     // Normalize data as per amount field's blueprint
     const baseFormData = {
@@ -145,7 +145,7 @@ export default class BaseForm extends React.PureComponent {
           isDisabled && 'InputGroup--full'
         )}
       >
-        <div class="Input-content Input-content--limits">
+        <div class="Input-content">
           <Input.CurrencySelect
             name="currency"
             defaultValue={currency}
@@ -270,6 +270,14 @@ export default class BaseForm extends React.PureComponent {
         onChange={this.onChange}
         onSubmit={this.onSaveForm}
       >
+        {/* This will automatically be controlled by both initial field and on re-render on save of Advanced Form */}
+        <input
+          name="mandatory"
+          value={Number(this.isMandatory)}
+          readOnly
+          hidden
+        />
+
         <Input.TextareaAutoResize
           class="Input--title"
           name="title"
