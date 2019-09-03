@@ -64,7 +64,19 @@ trait SettlementTrait
             return false;
         }
 
-        $bankAccount = $merchant->bankAccount;
+        $merchantSettleToPartner = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
+
+        if (isset($merchantSettleToPartner[$merchant->getId()]) === true)
+        {
+            $bankAccountId = $merchantSettleToPartner[$merchant->getId()];
+
+            $bankAccount = $this->repo->bank_account->getBankAccountById($bankAccountId);
+        }
+        else
+        {
+            $bankAccount = $merchant->bankAccount;
+        }
+
 
         // Do not proceed if merchant does not have active bank account
         if ($bankAccount === null)

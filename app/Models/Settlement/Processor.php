@@ -190,9 +190,12 @@ class Processor extends Base\Core
             else {
                 $response = $this->makeResponse([$channel]);
 
-                if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION], true) === true)) {
+                if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION], true) === true))
+                {
                     $setlResponse = $this->createSettlementsForTestMode($channel);
-                } else {
+                }
+                else
+                {
                     $setlResponse = $this->createSettlements($channel, $useQueue, $merchantIds);
                 }
 
