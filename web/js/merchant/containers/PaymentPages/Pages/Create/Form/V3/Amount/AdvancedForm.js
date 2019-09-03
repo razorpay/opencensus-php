@@ -141,7 +141,6 @@ export default class AdvancedForm extends React.PureComponent {
 
           <Input
             setRef={this.setRefMinAmountLimit}
-            class="Input--limits"
             name="min_amount"
             defaultValue={minAmount}
             type="number"
@@ -223,10 +222,10 @@ export default class AdvancedForm extends React.PureComponent {
         <div class="Input-content Input-content--limits">
           <Input
             setRef={this.setRefMinPurchaseLimit}
-            class="Input--limits"
             name="min_purchase"
             defaultValue={minPurchase}
             pattern="\d+"
+            placeholder="0"
             validator={this.validateMinPurchaseLimit}
           >
             <span class="Input-after">Min</span>

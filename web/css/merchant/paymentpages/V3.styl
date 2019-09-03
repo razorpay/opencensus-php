@@ -101,7 +101,6 @@
   .Input--Currency .value
     height: 36px
     line-height: 36px !important
-    font-size: 13px
 
   .Input--Currency
     .Input-el
@@ -120,30 +119,10 @@
       padding-left: 0
 
   .Modal-container--CreatorModal-BaseForm, .Modal-container--CreatorModal-AdvancedForm
-    .Input-content--limits
-      margin-left: -2px
-
-      .Input-content
-        margin: 0
-
-    .Input--limits
-      .Input-el
-        font-size: 13px
-
-
     .InputGroup .Input, .Input
       margin: 0
       .Input-error
         font-size: 12px
-
-    .InputGroup--full
-      width: 100%
-
-      .Input-content--limits
-        width: 100%
-
-        .Input--limits
-          width: 100%
 
     .Input--disabled
       opacity: 1
@@ -171,6 +150,18 @@
       animation: modalAppearIn 0.35s cubic-bezier(0.53, 1.78, 1, 1) // modalAppearIn 0.4s cubic-bezier(0.29, 1.75, 1, 1)
       transform-origin: center
       border-radius: 2px
+
+    .InputGroup--full
+      width: 100%
+
+      .Input-content
+        width: 100%
+
+        .Input--Currency + .Input
+          width: 100%
+
+         .Input > .Input
+            display: block
 
     .Alert
       position: relative
@@ -275,14 +266,14 @@
 
       .Input-counterTooltip
         position: absolute
-        top: 0
-        right: 0
+        top: 6px
+        right: 8px
 
       .Input-checkboxTooltip
         position: absolute
         display: inline-block
-        top: 7px
-        right: 0
+        top: 8px
+        right: 8px
 
         .Input-checkbox
           width: 20px
@@ -366,6 +357,16 @@
       margin-right: 16px
       font-weight: normal
 
+    .Input--limits
+      .Input-el
+        font-size: 13px
+
+    .Input-content--limits
+      margin-left: -2px
+
+      .Input-content
+        margin: 0
+
     .Input
       margin-bottom: 20px
 
@@ -410,7 +411,7 @@
 
       > .Input-content, > .Input-label, .separator
           display: inline-block
-          vertical-align: top
+          vertical-align: middle
       > .Input-content
           //width: 136px
           .Input-content

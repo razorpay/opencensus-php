@@ -143,7 +143,7 @@ export default class BaseForm extends React.PureComponent {
     let inputField = (
       <Input
         name={isDisabled ? '' : 'amount'}
-        class="Input--limits placeholder-field"
+        class="placeholder-field"
         placeholder={placeholder}
         defaultValue={amount}
         pattern="^[0-9]+(.([0-9]){1,2})?$"
@@ -163,7 +163,7 @@ export default class BaseForm extends React.PureComponent {
         : 'No Limit';
 
       inputField = (
-        <div className="Input-checkboxTooltip">
+        <div className="Input">
           {inputField}
           <Popover
             align="top"
@@ -182,12 +182,7 @@ export default class BaseForm extends React.PureComponent {
     }
 
     return (
-      <Input.Group
-        class={classList(
-          'InputGroup--inline',
-          isDisabled && 'InputGroup--full'
-        )}
-      >
+      <Input.Group class="InputGroup--inline InputGroup--full">
         <div class="Input-content">
           <Input.CurrencySelect
             name="currency"
