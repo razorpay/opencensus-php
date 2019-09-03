@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Error\ErrorCode;
+
 return [
     'testCreateOrder' => [
         'request' => [
@@ -808,5 +810,29 @@ return [
                 'payments' => []
             ],
         ]
+    ],
+
+    'testCustomerFetchInvalidId' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/customer/refunds',
+            'content' => [
+                'captcha'    => 'dummy',
+                'mode'       => 'test',
+            ],
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'field'      => 'id',
+                    'code'       => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
     ],
 ];

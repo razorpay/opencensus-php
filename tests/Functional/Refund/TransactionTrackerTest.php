@@ -375,6 +375,14 @@ class TransactionTrackerTest extends TestCase
         $this->ba->adminAuth('test');
     }
 
+    public function assertInvalidIdResponse($callee, $id, $description)
+    {
+        $this->testData[$callee]['request']['content']['id'] = $id;
+        $this->testData[$callee]['response']['content']['error']['description'] = $description;
+
+        $this->runRequestResponseFlow($this->testData[$callee]);
+    }
+
     public function setUpEsMockForRefundNotes($refund)
     {
         $esMock = $this->createEsMock(['search']);
@@ -1184,5 +1192,23 @@ class TransactionTrackerTest extends TestCase
     public function testCustomerFetchIdNotFound()
     {
         $this->assertResponsesNotFound(__FUNCTION__, 'CCPjoWzlDJG0g7');
+    }
+
+    public function testCustomerFetchInvalidId()
+    {
+        // 1. Atleast 1 digit required
+        // 2. Spaces not allowed
+
+        $invalidCases = [
+            'Chandra'              => 'The id format is invalid.',
+            'Chandra_'             => 'The id format is invalid.',
+            'Chandra-'             => 'The id may only contain alphabets, digits and underscores.',
+            'Chandra Reddy Layout' => 'The id may only contain alphabets, digits and underscores.',
+        ];
+
+        foreach ($invalidCases as $id => $description)
+        {
+            $this->assertInvalidIdResponse(__FUNCTION__, $id, $description);
+        }
     }
 }
