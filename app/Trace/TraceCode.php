@@ -1226,6 +1226,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ADMIN_FILE_DELETE_ERROR                               = 'ADMIN_FILE_DELETE_ERROR';
 
+    const ADMIN_SEND_TEST_SMS_REQUEST                           = 'ADMIN_SEND_TEST_SMS_REQUEST';
+
     const MUTEX_LOCK_ALREADY_RELEASED                           = 'MUTEX_LOCK_ALREADY_RELEASED';
     const MUTEX_UNABLE_TO_ACQUIRE                               = 'MUTEX_UNABLE_TO_ACQUIRE';
 
