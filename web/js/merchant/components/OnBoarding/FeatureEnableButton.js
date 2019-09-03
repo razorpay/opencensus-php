@@ -63,7 +63,7 @@ export default class FeatureEnableButton extends React.Component {
       );
     } else {
       saveOnboarding = this.props.saveOnboarding(this.props.feature, {
-        feature: this.props.feature,
+        business_model: '',
       });
     }
 
@@ -83,8 +83,6 @@ export default class FeatureEnableButton extends React.Component {
           type: 'error',
           message: err.errors,
         });
-
-        this.props.onClick && this.props.onClick(err);
       });
   };
 

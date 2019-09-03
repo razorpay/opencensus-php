@@ -124,22 +124,59 @@ $stepIndicatorSize = 36px
       margin-left: 0
 
 .QuickGuide
+  position: relative
+  overflow: hidden
+
+  &:after
+    content: ''
+    width: 418px
+    height: 158%
+    background: linear-gradient(173.46deg, #FDFDFF 0%, #EDF8FE 100%)
+    position: absolute
+    right: -194px
+    z-index: 1
+    bottom: -8px
+    transform: rotateZ(222deg) rotateY(122deg) rotateX(18deg)
+
+    @media (max-width: 767px)
+      display: none
+
   &:not(.StepGuide-mobile):before
     content: ''
-    background-image: url('assets/instant_activations/quickguide.svg')
+    background-image: url('assets/product_onboarding/quick_guide.svg')
+    background-position: bottom left
     background-repeat: no-repeat
     position: absolute
-    z-index: 1
+    z-index: 3
     left: 0
     bottom: 0
     width: 100%
     height: 100%
+
     @media (min-width: 768px) and (max-width: 1024px)
       opacity: 0.2
 
   .StepGuide--Title
     position: relative
     z-index: 2
+    font-weight: bold
+
+    &:before
+      content: ''
+      position: absolute
+      z-index: -1
+      left: -40px
+      top: -48px
+      width: 150px
+      height: 400px
+      background: #f1fafe
+      transform: rotateZ(-27deg)
+
+      @media (min-width: 768px) and (max-width: 1024px)
+        opacity: 0.2
+
+      @media (max-width: 767px)
+        display: none
 
   .divider
     height: 3px
@@ -151,12 +188,12 @@ $stepIndicatorSize = 36px
   .StepGuide--Steps
     width: 70%
     margin: 0 auto
-    z-index: 2
+    z-index: 4
     @media (min-width: 768px) and (max-width: 1024px)
       width: 100%
 
   .StepGuide--Close
-    z-index: 2
+    z-index: 4
     .done
       color: #528FF0
       font-size: 16px
