@@ -1,4 +1,4 @@
-import Stories, { Story, StoriesTabs } from 'rzp/ui/Stories';
+import StorySlider, { Story, StoriesTabs } from 'rzp/ui/Stories';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 
@@ -7,13 +7,13 @@ export default ({ closeModal }) => (
     <ModalHeader onCloseClick={closeModal} />
 
     <div class="modal-body">
-      <Stories afterFrame={StoriesTabs}>
+      <StorySlider afterFrame={StoriesTabs}>
         {STORIES_DATA.map((data, idx) => (
           <Story key={idx} {...data}>
             <img src={data.imgURL} />
           </Story>
         ))}
-      </Stories>
+      </StorySlider>
 
       <div class="got-it-button" onClick={closeModal}>
         Ok, Got it
