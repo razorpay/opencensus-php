@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
 use RZP\Models\FileStore\Accessor;
+use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
@@ -87,6 +88,19 @@ class Core extends Base\Core
         $sendEmail = $input[Entity::SEND_EMAIL];
 
         $sendEmail = filter_var($sendEmail, FILTER_VALIDATE_BOOLEAN);
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+            [
+                'channel'        => $channel,
+                'account_number' => $accountNumber,
+                'fromDate'        => $fromDate,
+                'toDate' => $toDate,
+                'format'        => $format,
+                'sendEmail' => $sendEmail,
+            ]);
+
+        SupportedFormats::validate($channel, $format);
 
         $statementGenerator = $this->getGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
 
