@@ -677,7 +677,9 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
-        Entity::TYPE                       => 'sometimes|array'
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string'
     ];
 
     protected static $upiHulkTerminalRules = [
