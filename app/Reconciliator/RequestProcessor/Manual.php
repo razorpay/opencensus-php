@@ -54,6 +54,8 @@ class Manual extends Base
 
         $inputDetails[self::SOURCE] = self::MANUAL;
 
+        $inputDetails[self::MANUAL_RECON_FILE] = $input[self::MANUAL_RECON_FILE] ?? null;
+
         return $inputDetails;
     }
 
@@ -70,6 +72,20 @@ class Manual extends Base
         $this->gateway = $inputDetails[self::GATEWAY];
 
         // Sets the gateway reconciliator object for the orchestrator.
-        $this->setGatewayReconciliatorObject();
+        if (empty($inputDetails[self::MANUAL_RECON_FILE]) === false)
+        {
+
+            //
+            // This is manual recon file prepared by FinOps.
+            // Setting the Reconciliate accordingly
+            //
+            $gatewayReconciliatorClassName = 'RZP\Reconciliator\Base\ManualReconciliate';
+
+            $this->gatewayReconciliator = new $gatewayReconciliatorClassName($this->gateway);
+        }
+        else
+        {
+            $this->setGatewayReconciliatorObject();
+        }
     }
 }

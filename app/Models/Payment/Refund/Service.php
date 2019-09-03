@@ -1724,6 +1724,8 @@ class Service extends Base\Service
         // Fetch from merchant notes
         if ($continueSearch === true)
         {
+            (new Validator)->validateCustomerRefundFetchDetailsFromMerchantNotes($id);
+
             $this->fetchRefundDetailsForCustomerFromMerchantNotes($id, $return);
         }
     }

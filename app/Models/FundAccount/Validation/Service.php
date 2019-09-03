@@ -11,6 +11,7 @@ use RZP\Models\Merchant\Balance;
 
 class Service extends Base\Service
 {
+    use Traits\ProcessAccountNumber;
     use Traits\ServiceHasCrudMethods;
 
     /**
@@ -34,7 +35,11 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $this->processAccountNumber($input);
+        if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === false)
+        {
+            // mandates account number and converts to balance id
+            $this->processAccountNumber($input);
+        }
 
         $entity = $this->core->create($input, $this->merchant);
 
@@ -43,7 +48,11 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
-        $this->processAccountNumber($input);
+        if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === false)
+        {
+            // mandates account number and converts to balance id
+            $this->processAccountNumber($input);
+        }
 
         $entities = $this->entityRepo->fetch($input, $this->merchant->getId());
 
@@ -70,18 +79,5 @@ class Service extends Base\Service
         $response = $this->core->retryAllFundAccountValidations($input);
 
         return $response;
-    }
-
-    protected function processAccountNumber(array & $input)
-    {
-        if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === true)
-        {
-            return;
-        }
-
-        /** @var Merchant\Validator $merchantValidator */
-        $merchantValidator = $this->merchant->getValidator();
-
-        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
     }
 }

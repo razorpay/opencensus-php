@@ -408,7 +408,6 @@ class Notifier extends Base\Core
 
         switch ($merchant->getId())
         {
-            case Preferences::MID_RBLCARD:
             case Preferences::MID_AMIT_RBLCARD:
 
                 $template = 'sms.custom_invoice.rbl_card';
@@ -439,9 +438,10 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.rbl_bfl';
                 $sender   = 'SPRCRD';
                 $params   = [
-                    'receipt'      => $receipt,
-                    'invoice_link' => $invoiceLink,
-                    'amount'       => $this->invoice->getAmount() / 100,
+                    'receipt'        => $receipt,
+                    'invoice_link'   => $invoiceLink,
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
                 break;
@@ -561,6 +561,18 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBLCARD:
+                $sender = 'RBLCRD';
+                $template = 'sms.custom_invoice.rbl_card_del_coll';
+                $params = [
+                    'receipt'        => $receipt,
+                    'invoice_link'   => $invoiceLink,
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
@@ -582,7 +594,14 @@ class Notifier extends Base\Core
 
         $receipt = $this->invoice->getReceipt();
 
+        if ($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS)
+        {
+            $receipt = $this->invoice->getNotes()['loan_number'] ?? $receipt;
+        }
+
         $invoiceLink = $this->invoice->getShortUrl();
+
+        $notes = $this->invoice->getNotes();
 
         switch ($merchant->getId())
         {
@@ -603,6 +622,21 @@ class Notifier extends Base\Core
                 $params   = [
                     'receipt'      => $receipt,
                     'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_RETAIL_ASSETS:
+
+                $template = 'sms.custom_invoice.rbl_retail_assets';
+
+                $sender = 'RBLBNK';
+
+                $params   = [
+                    'receipt'          => $receipt,
+                    'invoice_link'     => $invoiceLink,
+                    'rejection_reason' => $notes['rejection_reason'] ?? '',
+                    'rejection_date'   => $notes['rejection_date'] ?? '',
                 ];
 
                 break;

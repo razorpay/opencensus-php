@@ -238,9 +238,35 @@ class Reconciliation extends Base
     {
         $gateway = $this->batch->getGateway();
 
-        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+        if ($this->isManualReconFile() === true)
+        {
+            $gatewayReconciliatorClassName = 'RZP\Reconciliator\Base\ManualReconciliate';
+        }
+        else
+        {
+            $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+        }
 
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName($gateway);
+    }
+
+    /**
+     * Checks if this is manual recon file prepared by FinOps.
+     * @return bool
+     */
+    protected function isManualReconFile()
+    {
+        $keyExists = $this->settingsAccessor->exists(RequestProcessor\Base::MANUAL_RECON_FILE);
+
+        $manualReconFile = $this->settingsAccessor->get(RequestProcessor\Base::MANUAL_RECON_FILE);
+
+        //
+        // Note : We can not just use get() and convert the value to bool, bcoz when key does not
+        // exist, then it returns an instance of Dictionary.
+        //
+        $result = ($keyExists === false) ? false : boolval($manualReconFile);
+
+        return $result;
     }
 
     /**

@@ -68,7 +68,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return intval(number_format($paymentAmount, 2, '.', ''));
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->upi->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }

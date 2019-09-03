@@ -357,6 +357,21 @@ class ViewDataSerializer extends Base\Core
         {
             $serialized[Entity::DESCRIPTION] = optional($this->invoice->lineItems->first())->getDescriptionElseName();
         }
+
+        switch ($this->merchant->getId())
+        {
+            case Preferences::MID_RBL_RETAIL_ASSETS:
+
+                $serialized['rbl_emandate_retail_asset'] = true;
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS:
+
+                $serialized['rbl_emandate_interim_process'] = true;
+
+                break;
+        }
     }
 
     protected function addFormattedAmountAttributesForInvoice(array & $serialized)

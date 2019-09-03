@@ -23,7 +23,7 @@ use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 class NodalAccount extends NodalBase\FileProcessor
 {
     // used in icici AES encrypter tool
-    const ENCRYPTION_KEY = "1836204826394167";
+    const ENCRYPTION_KEY = '1836204826394167';
 
     const SIGNED_URL_DURATION = '1440';
 
@@ -143,11 +143,13 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $beneId = ($this->isRefund() === true) ? '' : $ba->getId();
 
-            $narration = '';
-
             if ($this->isRefund() === true)
             {
                 $narration = $entity->getNarration() ?? 'Razorpay Refund';
+            }
+            else
+            {
+                $narration = $entity->getNarration() ?? '';
             }
 
             $rows[] = [

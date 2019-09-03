@@ -143,8 +143,6 @@ class ScheduleLibraryTest extends TestCase
 
         $hour = $schedule->getHour();
 
-//        sd($timeObject->getTimestamp(), $timeObject->minute(15)->second(0)->getTimestamp());
-
         return $timeObject->hour($hour)->minute(0)->second(0)->getTimestamp();
     }
 

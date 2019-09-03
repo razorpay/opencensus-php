@@ -191,17 +191,10 @@ class Core extends Base\Core
     {
         $this->repo->reload($subr);
 
-        if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
-        {
-            $subr->setStatus(Status::AUTHENTICATED);
+        $subr->setStatus(Status::AUTHENTICATED);
 
-            // in case amount is zero, move it to completed
-            if ($subr->getAmount() === 0)
-            {
-                $subr->setStatus(Status::COMPLETED);
-            }
-        }
-        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::REJECTED)
+        // in case amount is zero, move it to completed
+        if ($subr->getAmount() === 0)
         {
             $subr->setStatus(Status::COMPLETED);
         }

@@ -175,8 +175,6 @@ final class Route
         'iin_edit'                                 => ['put',      'iins/{id}',                                      'IinController@editIin'                                             ],
         'iin_edit_bulk'                            => ['patch',    'iins/bulk',                                      'IinController@editIinBulk'                                         ],
         'iin_generate_post'                        => ['post',     'iins/import/generate',                           'IinController@postIinGenerate'                                     ],
-        'mpan_generate_get'                        => ['get',      'mpans',                                          'MpanController@generateMpan'                                       ],
-        'mpan_generate_post'                       => ['post',     'mpans/issue',                                    'MpanController@generateMpan',                                      ],
         'merchant_public_get_banks'                => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                          => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                       => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
@@ -283,7 +281,7 @@ final class Route
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
-        'terminal_onboard'                         => ['post',     'accounts/{id}/terminals',                        'TerminalOnboardingController@postCreateTerminal'                   ],
+        'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
@@ -1186,6 +1184,10 @@ final class Route
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
 
+        //merchant document related routes
+        'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
+
+
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
         'excel_store_create_page'                 => ['post',     'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -1201,8 +1203,15 @@ final class Route
         'p2p_admin_update_handle'                 => ['put',      'p2p/handles/{code}',                                        'P2p\VpaController@updateHandle'],
         'p2p_admin_manage_banks'                  => ['post',     'p2p/banks/bulk/manage',                                     'P2p\BankAccountController@manageBulkBanks'],
 
+        // Mpan related routes
+        'mpans_issue'                             => ['post',     'mpans/issue',                                               'MpanController@issueMpans'],
+        'mpans_fetch'                             => ['get',      'mpans',                                                     'MpanController@fetchMpans'],
+
         // Core Payment Service Routes
         'cps_sync_gateway_entities_cron'          => ['post',     'cps/sync_gateway_entities',                                 'CpsController@syncGatewayEntities'                        ],
+
+        //route for testing raven sms gateways
+        'send_test_sms'                           => ['post',      'admin/test-sms',                                           'AdminController@sendTestSms'                              ],
     ];
 
     public static $public = [
@@ -1348,8 +1357,6 @@ final class Route
         'card_check_recurring',
         'card_fetch_by_id',
         'iin_list_by_flow',
-        'mpan_generate_get',
-        'mpan_generate_post',
         'order_create',
         'order_fetch',
         'order_fetch_by_id',
@@ -1492,6 +1499,8 @@ final class Route
         'account_edit',
         'account_action',
         'subscription_registration_auto_charge',
+        'mpans_issue',
+        'mpans_fetch',
     ];
 
     // Only routes defined in internalApps go here
@@ -1674,6 +1683,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'merchant_document_delete',
         'get_es_pricing_merchant',
         'merchant_edit_config_la',
         'merchant_fetch_users',
@@ -1938,6 +1948,7 @@ final class Route
         'feature_delete_entity',
         'feature_get',
         'batch_create_admin',
+        'send_test_sms',
         'invoice_cancel_by_batch',
         'file_upload_admin',
         'admin_dummy_account_test',
@@ -2397,6 +2408,7 @@ final class Route
         'gateway_update_rule'                      => Permission::EDIT_GATEWAY_RULE,
         'gateway_delete_rule'                      => Permission::DELETE_GATEWAY_RULE,
         'terminal_toggle'                          => Permission::TOGGLE_TERMINAL,
+        'terminal_check_encrypted_value'           => Permission::CHECK_TERMINAL_SECRET,
         'terminal_delete'                          => Permission::DELETE_TERMINAL,
         'terminal_edit'                            => Permission::EDIT_TERMINAL,
         'terminal_reassign_merchant'               => Permission::ASSIGN_MERCHANT_TERMINAL,
@@ -2538,8 +2550,6 @@ final class Route
         'iin_generate_post'                        => '*',
         'iin_range_upload'                         => '*',
         'iin_upload'                               => '*',
-        'mpan_generate_get'                        => '*',
-        'mpan_generate_post'                       => '*',
         'internal_dummy_account_test'              => '*',
         'merchant_activation_upload_file_admin'    => '*',
         'merchant_beneficiary_file'                => Permission::MERCHANT_BENEFICIARY_UPLOAD,
@@ -2600,7 +2610,6 @@ final class Route
         'setl_edit'                                => '*',
         'setl_file_generate'                       => '*',
         'setl_fixer'                               => '*',
-        'terminal_check_encrypted_value'           => '*',
         'terminal_restore'                         => '*',
         'transaction_create_fees_breakup'          => '*',
         'upi_fill_bank'                            => '*',
@@ -2626,6 +2635,7 @@ final class Route
         'set_scrooge_refund_dark'                  => Permission::EDIT_SCROOGE_REDIS_CONFIG,
         'batch_create'                             => '*',
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
+        'send_test_sms'                            => '*',
         'file_upload_admin'                        => Permission::ADMIN_FILE_UPLOAD,
         'reporting_config_get'                     => '*',
         'reporting_config_list'                    => '*',
@@ -3069,6 +3079,8 @@ final class Route
             'merchant_secret',
             'payment_acknowledge',
             'apspdcl_bridge',
+            'webhook_fetch',
+            'webhook_fetch_multiple',
         ],
 
         //
@@ -3206,6 +3218,8 @@ final class Route
         'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
         'card_issuer_validate'                 => [Feature::BIN_ISSUER_VALIDATOR],
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
+        'mpans_issue'                          => [Feature::ISSUE_MPANS],
+        'mpans_fetch'                          => [Feature::ISSUE_MPANS],
     ];
 
     /*

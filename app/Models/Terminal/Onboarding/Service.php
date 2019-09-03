@@ -22,8 +22,10 @@ class Service extends Base\Service
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(string $submerchantId, array $input)
+    public function create(array $input)
     {
+        $submerchantId = $this->merchant->getId();
+
         $this->trace->info(
             TraceCode::TERMINAL_ONBOARDING_REQUEST,
             [
