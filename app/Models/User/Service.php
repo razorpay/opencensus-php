@@ -308,11 +308,10 @@ class Service extends Base\Service
 
         $user = $this->auth->getUser();
 
-        $userId = $user->getId();
-
         $product = $this->auth->getRequestOriginProduct();
 
-        return $this->core()->checkUserAccess($userId, $merchantId, $product);
+        return $this->core()->checkAccessForMerchant($user, $merchantId, $product);
+
     }
 
     public function setup2faMobileOnLogin(array $input): array
