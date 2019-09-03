@@ -17,6 +17,7 @@ use App\Trace\TraceCode;
 use App\MerchantDetails;
 use App\Providers\GenericUser;
 use App\Session as SessionTable;
+use App\Merchant\GenericMerchant;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
@@ -650,9 +651,31 @@ class Service extends Base\Service
 
         $genericUser = null;
 
+
+
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
+
+            $currentMerchantId = Session::get('current_merchant_id');
+
+            $currentMerchant = $genericUser
+                ->merchants
+                ->where('id', $currentMerchantId)
+                ->first();
+
+            // if currentMerchant is not in merchants array
+            // then check user's access on it using checkAccessOfUserOnMerchant
+            // if no error push the returned merchant object in merchants array
+            if($currentMerchant === null)
+            {
+                list($error, $data) = $this->checkAccessOfUserOnMerchant($currentMerchantId);
+
+                if(empty($error) === true)
+                {
+                    $genericUser->merchants->push(new GenericMerchant($data['merchant']));
+                }
+            }
         }
 
         return [$error, $genericUser];
