@@ -13,5 +13,4 @@ class Formats
     {
         return in_array($format, self::SUPPORTED_FORMATS, true);
     }
-
 }

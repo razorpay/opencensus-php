@@ -34,17 +34,24 @@ class Core extends Base\Core
     public function processStatementForAccount(array $input)
     {
         $channel       = array_pull($input, Entity::CHANNEL);
+
         $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
             [
                 'channel'        => $channel,
                 'account_number' => $accountNumber,
             ]);
+
         $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
+
         $merchant = $bankingAccount->merchant;
+
         $processor = $this->getProcessor($channel, $accountNumber);
+
         $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
+
         $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
 
         return ['processed' => true];
@@ -61,7 +68,6 @@ class Core extends Base\Core
      */
     public function generateBankAccountStatement($input)
     {
-
         $accountNumber = $input[Entity::ACCOUNT_NUMBER];
 
         $channel = $input[Entity::CHANNEL];
@@ -91,7 +97,6 @@ class Core extends Base\Core
         {
             return ['message' => 'File Generated', 'file_path' => $fileURL];
         }
-
     }
 
     protected function getGenerator($accountNUmber, $channel, $format, $fromDate, $toDate)

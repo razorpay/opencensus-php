@@ -33,8 +33,6 @@ class BankingAccountStatementController extends Controller
 
         $response = $this->service()->generateAccountStatement($input);
 
-        return $response;
-
         return ApiResponse::json($response);
     }
 }
