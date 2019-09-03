@@ -3074,6 +3074,8 @@ final class Route
             'merchant_secret',
             'payment_acknowledge',
             'apspdcl_bridge',
+            'webhook_fetch',
+            'webhook_fetch_multiple',
         ],
 
         //

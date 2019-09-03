@@ -1169,12 +1169,22 @@ class Service extends Base\Service
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
 
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return $webhook->toArrayHosted();
+        }
+
         return $webhook->toArrayPublic();
     }
 
     public function getWebhooks(array $params)
     {
         $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
+
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return $webhooks->toArrayHosted();
+        }
 
         return $webhooks->toArrayPublic();
     }
@@ -2514,7 +2524,7 @@ class Service extends Base\Service
     /**
      * This used to map submerchants to the partner in merchant_access_map entity
      * If the given partnerId is not a partner then it will mark him as a partner then proceed
-     * 
+     *
      * @param array $input
      *
      * @return array
@@ -2522,7 +2532,7 @@ class Service extends Base\Service
     public function createPartnerSubmerchantMap(array $input)
     {
         (new Validator)->validateInput('partner_submerchant_map', $input);
-        
+
         $partnerType   = $input[ENTITY::PARTNER_TYPE];
         $submerchantId = $input['submerchant_id'];
         $partnerId     = $input['partner_merchant_id'];
