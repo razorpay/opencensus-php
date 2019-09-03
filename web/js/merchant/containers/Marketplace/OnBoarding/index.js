@@ -12,9 +12,7 @@ import { fetchUser } from 'merchant/modules/session';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';
-import FeatureRequest from 'merchant/components/OnBoarding/Slides/FeatureRequest';
 import OnBoarding, {
-  NextButton,
   OnBoardingWrapper,
   FeatureEnableSliderButton,
   SkipAndGetStartedButton,
@@ -51,16 +49,6 @@ export default class MarketPlaceOnBoarding extends React.Component {
   };
 
   getNextBtnProp = sliderProps => () => {
-    if (!this.props.isTestMode) {
-      return (
-        <NextButton
-          feature={RZPFeatures.ROUTE}
-          onClick={sliderProps.next}
-          page={sliderProps.active}
-        />
-      );
-    }
-
     const props = {
       feature: RZPFeatures.ROUTE,
       onClick: this.props.closeOnboarding,
@@ -75,34 +63,26 @@ export default class MarketPlaceOnBoarding extends React.Component {
     return <FeatureEnableSliderButton {...props} />;
   };
 
-  onClickSkipButton = () => {
-    if (this.props.isTestMode) {
-      if (this.props.user.isMarketplaceEnabled) {
-        this.closeOnboarding();
-      }
+  renderSkipButton = sliderProps => {
+    const btnProps = {
+      feature: RZPFeatures.ROUTE,
+      page: sliderProps.active,
+      onClick: this.props.closeOnboarding,
+      isTour: this.props.routeProductOnBoarding.isTour,
+    };
 
-      this.props.closeOnboarding();
-      return;
+    if (this.props.user.isMarketplaceEnabled) {
+      btnProps.isLocalEnabler = true;
+      btnProps.onClick = this.closeOnboarding;
     }
 
-    this.props.goTo(2);
-  };
-
-  onSubmitClick = () => {
-    return this.props.fetchUser().then(() => {
-      this.props.handleProductQuickGuide({
-        ...this.props.routeProductOnBoarding,
-        showOnboarding: false,
-      });
-    });
+    return <SkipAndGetStartedButton {...btnProps} />;
   };
 
   render() {
-    const { isTestMode, active, routeProductOnBoarding, user } = this.props;
-
     return (
       <OnBoardingWrapper class="Route">
-        <Slider active={active}>
+        <Slider active={this.props.active}>
           {sliderProps => (
             <Landing
               {...sliderProps}
@@ -124,31 +104,9 @@ export default class MarketPlaceOnBoarding extends React.Component {
             />
           )}
 
-          {!isTestMode
-            ? sliderProps => (
-                <FeatureRequest
-                  {...sliderProps}
-                  isTestMode={isTestMode}
-                  formType={RZPFeatures.ROUTE}
-                  heading="Route"
-                  title="What makes Route great?"
-                  desc="We'd require the following details to enable Razorpay Route on your account."
-                  imageUrl="https://razorpay.com/assets/route/route-landing.svg"
-                />
-              )
-            : null}
-
           {sliderProps => (
             <SliderDots {...sliderProps}>
-              {sliderProps.active !== 2 && (
-                <SkipAndGetStartedButton
-                  feature={RZPFeatures.ROUTE}
-                  page={sliderProps.active}
-                  onClick={this.onClickSkipButton}
-                  isTour={routeProductOnBoarding.isTour}
-                  isLocalEnabler={user.isMarketplaceEnabled}
-                />
-              )}
+              {this.renderSkipButton(sliderProps)}
             </SliderDots>
           )}
         </Slider>

@@ -24,7 +24,7 @@ import { setOnBoardingDataInLocalState } from './utils';
     };
   },
   {
-    fetchUser,
+    fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
     saveOnboarding,
     updateFeatures,
     showNotification,
@@ -63,12 +63,12 @@ export default class FeatureEnableButton extends React.Component {
       );
     } else {
       saveOnboarding = this.props.saveOnboarding(this.props.feature, {
-        feature: this.props.feature,
+        business_model: '',
       });
     }
 
     return saveOnboarding
-      .then(() => {
+      .then(res => {
         return this.props.fetchUser();
       })
       .then(res => {
@@ -83,8 +83,6 @@ export default class FeatureEnableButton extends React.Component {
           type: 'error',
           message: err.errors,
         });
-
-        this.props.onClick && this.props.onClick(err);
       });
   };
 

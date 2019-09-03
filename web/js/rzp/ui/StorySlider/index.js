@@ -1,7 +1,7 @@
 import { classList } from 'common/util';
 import { TimedProgressBar } from 'rzp/ui/ProgressBar';
 
-export default class Stories extends React.PureComponent {
+export default class StorySlider extends React.PureComponent {
   constructor(props) {
     super(props);
     const curStoryIndex = this.isValidIndex(props.defaultStoryIndex)
@@ -13,12 +13,10 @@ export default class Stories extends React.PureComponent {
   }
 
   setStoriesAndMeta() {
-    this.stories = [];
     this.storiesMeta = [];
 
     this.props.children.forEach(child => {
       const { children, ...restProps } = child.props;
-      this.stories.push(<div class="Story">{children}</div>);
 
       this.storiesMeta.push({
         ...restProps,
@@ -39,7 +37,9 @@ export default class Stories extends React.PureComponent {
   };
 
   isValidIndex = idx => {
-    return String(idx) && idx < this.props.children.length;
+    if (!idx) return;
+
+    return idx < this.props.children.length;
   };
 
   goTo = idx => {
@@ -57,44 +57,37 @@ export default class Stories extends React.PureComponent {
   }
 
   render() {
-    const { beforeFrame: BeforeFrame, afterFrame: AfterFrame } = this.props;
-    const { curStoryIndex } = this.state;
+    const { BeforeFrame, AfterFrame } = this.props,
+      { curStoryIndex } = this.state;
+
+    const frameProps = {
+      storiesMeta: this.storiesMeta,
+      curStoryIndex: curStoryIndex,
+      goTo: this.goTo,
+    };
 
     return (
       <div class="Stories">
-        {BeforeFrame && (
-          <BeforeFrame
-            stories={this.stories}
-            curStoryIndex={curStoryIndex}
-            goTo={this.goTo}
-          />
-        )}
+        {BeforeFrame && <BeforeFrame {...frameProps} />}
 
-        <div class="Stories-frame">{this.stories[curStoryIndex]}</div>
+        <div class="Stories-frame">{this.props.children[curStoryIndex]}</div>
 
-        {AfterFrame && (
-          <AfterFrame
-            storiesMeta={this.storiesMeta}
-            curStoryIndex={curStoryIndex}
-            goTo={this.goTo}
-          />
-        )}
+        {AfterFrame && <AfterFrame {...frameProps} />}
       </div>
     );
   }
 }
 
 export class StoriesTabs extends React.PureComponent {
-  render() {
-    const {
-      className,
-      storiesMeta,
-      tabComponent,
-      curStoryIndex,
-      goTo,
-    } = this.props;
+  onClick = idx => () => {
+    this.props.goTo(idx);
+  };
 
-    const TabComp = tabComponent || Tab;
+  render() {
+    const { className, curStoryIndex, storiesMeta, TabComponent } = this.props;
+
+    const TabComp = TabComponent || StoryTab,
+      isActive = idx === curStoryIndex;
 
     return (
       <div
@@ -106,9 +99,9 @@ export class StoriesTabs extends React.PureComponent {
         {storiesMeta.map((current, idx) => (
           <TabComp
             key={idx}
-            isActive={idx === curStoryIndex}
-            onClick={() => goTo(idx)}
+            isActive={isActive}
             duration={current.duration}
+            onClick={this.onClick}
           >
             {current.title}
           </TabComp>
@@ -118,7 +111,7 @@ export class StoriesTabs extends React.PureComponent {
   }
 }
 
-const Tab = ({ className, children, onClick, isActive, duration }) => (
+const StoryTab = ({ className, children, onClick, isActive, duration }) => (
   <div
     class={classList(
       'StoriesTab',
@@ -133,4 +126,4 @@ const Tab = ({ className, children, onClick, isActive, duration }) => (
   </div>
 );
 
-export const Story = ele => ele;
+export const Story = ele => <div class="Story">{ele.children}</div>;
