@@ -67,7 +67,6 @@ class Base extends Core
     const NETBANKING_CBI         = 'NetbankingCbi';
     const NETBANKING_YESB        = 'NetbankingYesb';
     const NETBANKING_CUB         = 'NetbankingCub';
-    const NETBANKING_IDBI        = 'NetbankingIdbi';
     const NETBANKING_IBK         = 'NetbankingIbk';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_CSB         = 'NetbankingCsb';
@@ -126,7 +125,6 @@ class Base extends Core
         self::NETBANKING_CBI         => ['smcbipso@centralbankofindia.org.in'],
         self::NETBANKING_YESB        => [''],
         self::NETBANKING_CUB         => [''],
-        self::NETBANKING_IDBI        => [''],
         self::NETBANKING_IBK         => [''],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
@@ -190,7 +188,6 @@ class Base extends Core
         Gateway::NETBANKING_CBI         => self::NETBANKING_CBI,
         Gateway::NETBANKING_YESB        => self::NETBANKING_YESB,
         Gateway::NETBANKING_CUB         => self::NETBANKING_CUB,
-        Gateway::NETBANKING_IDBI        => self::NETBANKING_IDBI,
         Gateway::NETBANKING_IBK         => self::NETBANKING_IBK,
         Gateway::NETBANKING_EQUITAS     => self::NETBANKING_EQUITAS,
         Gateway::NETBANKING_BOB         => self::NETBANKING_BOB,
