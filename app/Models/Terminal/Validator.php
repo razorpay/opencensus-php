@@ -119,6 +119,13 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
     ];
 
+    protected static $terminalCheckSecretRules = [
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
+    ];
+
     protected static $upiIciciTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_icici',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',

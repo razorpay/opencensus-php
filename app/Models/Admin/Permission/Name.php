@@ -73,6 +73,7 @@ class Name
     const CREATE_NETBANKING_REFUND            = 'create_netbanking_refund';
     const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
+    const CHECK_TERMINAL_SECRET               = 'check_terminal_secret';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
     const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';

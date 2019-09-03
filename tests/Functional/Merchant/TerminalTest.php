@@ -765,6 +765,24 @@ class TerminalTest extends TestCase
         $this->assertFalse($terminal->reload()->isEnabled());
     }
 
+    public function testTerminalSecretCheck()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'gateway_terminal_password'  => '1234',
+                'gateway_terminal_password2' => '21234',
+                'gateway_secure_secret'      => '0123',
+                'gateway_secure_secret2'     => '20123',
+            ]);
+
+        $url = '/terminals/' . $terminal->getKey() . '/secret';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAddAmazonPayTerminal()
     {
         $this->startTest();
