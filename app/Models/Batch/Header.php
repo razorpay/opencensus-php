@@ -111,6 +111,16 @@ class Header
     const COMPANY_PAN              = 'company_pan';
 
     //
+    // Mpan Bulk creation headers
+    //
+    const MPAN_ID                      =   'mpan_id';
+    const MPAN_SERIAL_NUMBER           =   'SrNo';
+    const MPAN_ADDED_ON                =   'ADDEDON';
+    const MPAN_VISA_PAN                =   'VPAN';
+    const MPAN_MASTERCARD_PAN          =   'MPAN';
+    const MPAN_RUPAY_PAN               =   'RPAN';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -673,6 +683,21 @@ class Header
      * @var array
      */
     const HEADER_MAP = [
+        Type::MPAN => [
+            self::INPUT => [
+                self::MPAN_SERIAL_NUMBER,
+                self::MPAN_ADDED_ON,
+                self::MPAN_VISA_PAN,
+                self::MPAN_MASTERCARD_PAN,
+                self::MPAN_RUPAY_PAN,
+            ],
+            self::OUTPUT => [
+                self::MPAN_SERIAL_NUMBER,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
 
         Type::TERMINAL_CREATION => [
             self::INPUT => [
@@ -2172,6 +2197,13 @@ class Header
         {
             // header is dynamic for these dat files, adding hack to ignore
             $actualHeaders = [];
+        }
+
+        if ($type === Type::MPAN)
+        {
+            // header can contain empty columns when input file is CSV
+            // this is due to trailing comma in the given input file
+            $actualHeaders = array_filter($actualHeaders);
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
