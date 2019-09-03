@@ -37,7 +37,7 @@ export default class AdvancedForm extends React.PureComponent {
 
   onSaveForm = formData => {
     // console.log('formData...', formData);
-    this.props.onSaveForm(formData);
+    this.props.onSaveForm(formData, this.fieldType);
   };
 
   toggleAddQuantity = data => {

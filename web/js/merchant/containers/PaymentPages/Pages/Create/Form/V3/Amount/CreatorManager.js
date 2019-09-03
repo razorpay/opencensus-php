@@ -20,6 +20,14 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       this.setState(this.initState);
     };
 
+    componentDidUpdate(prevProps) {
+      if (prevProps.field !== this.props.field) {
+        this.setState({
+          field: this.props.field,
+        });
+      }
+    }
+
     openBaseForm = (intentFieldType, initWithBaseField) => {
       const newState = {
         isBaseFormOpened: true,
@@ -64,8 +72,8 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       });
     };
 
-    onSaveAdvancedForm = formData => {
-      const { field, fieldType } = this.state;
+    onSaveAdvancedForm = (formData, fieldType) => {
+      const { field } = this.state;
 
       console.log(formData);
 
@@ -194,8 +202,8 @@ class BaseFormModal extends React.PureComponent {
 }
 
 class AdvancedFormModal extends React.PureComponent {
-  onSaveForm = formData => {
-    this.props.onSaveForm(formData);
+  onSaveForm = (formData, fieldType) => {
+    this.props.onSaveForm(formData, fieldType);
     this.props.closeFormModal();
   };
 
