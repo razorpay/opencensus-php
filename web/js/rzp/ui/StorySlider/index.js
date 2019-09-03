@@ -88,7 +88,7 @@ export class StoriesTabs extends React.PureComponent {
       goTo,
     } = this.props;
 
-    const TabComp = TabComponent || Tab;
+    const TabComp = TabComponent || StoryTab;
 
     return (
       <div
@@ -112,7 +112,7 @@ export class StoriesTabs extends React.PureComponent {
   }
 }
 
-const Tab = ({ className, children, onClick, isActive, duration }) => (
+const StoryTab = ({ className, children, onClick, isActive, duration }) => (
   <div
     class={classList(
       'StoriesTab',
