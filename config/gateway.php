@@ -813,6 +813,10 @@ return [
         'live_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_NETBANKING_CUB'),
     ],
 
+    'netbanking_idbi' => [
+        'live_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_NETBANKING_IDBI'),
+    ],
+
     'worldline'    => [
         'aes_encryption_key'    => env('WORLDLINE_AES_KEY'),
     ],
