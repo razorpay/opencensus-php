@@ -145,7 +145,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * @param $paymentId
      * @return  BankTransfer\Entity
      */
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         $bankTransfer = $this->repo
                              ->bank_transfer
