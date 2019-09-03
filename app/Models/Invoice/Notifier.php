@@ -408,7 +408,6 @@ class Notifier extends Base\Core
 
         switch ($merchant->getId())
         {
-            case Preferences::MID_RBLCARD:
             case Preferences::MID_AMIT_RBLCARD:
 
                 $template = 'sms.custom_invoice.rbl_card';
@@ -439,9 +438,10 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.rbl_bfl';
                 $sender   = 'SPRCRD';
                 $params   = [
-                    'receipt'      => $receipt,
-                    'invoice_link' => $invoiceLink,
-                    'amount'       => $this->invoice->getAmount() / 100,
+                    'receipt'        => $receipt,
+                    'invoice_link'   => $invoiceLink,
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
                 break;
@@ -557,6 +557,18 @@ class Notifier extends Base\Core
                     'invoice_link'  => $invoiceLink,
                     'receipt'       => $receipt,
                     'expiry_date'   => $expireBy ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_RBLCARD:
+                $sender = 'RBLCRD';
+                $template = 'sms.custom_invoice.rbl_card_del_coll';
+                $params = [
+                    'receipt'        => $receipt,
+                    'invoice_link'   => $invoiceLink,
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
                 break;
