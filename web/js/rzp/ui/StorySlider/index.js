@@ -79,16 +79,15 @@ export default class StorySlider extends React.PureComponent {
 }
 
 export class StoriesTabs extends React.PureComponent {
-  render() {
-    const {
-      className,
-      storiesMeta,
-      TabComponent,
-      curStoryIndex,
-      goTo,
-    } = this.props;
+  onClick = idx => () => {
+    this.props.goTo(idx);
+  };
 
-    const TabComp = TabComponent || StoryTab;
+  render() {
+    const { className, curStoryIndex, storiesMeta, TabComponent } = this.props;
+
+    const TabComp = TabComponent || StoryTab,
+      isActive = idx === curStoryIndex;
 
     return (
       <div
@@ -100,9 +99,9 @@ export class StoriesTabs extends React.PureComponent {
         {storiesMeta.map((current, idx) => (
           <TabComp
             key={idx}
-            isActive={idx === curStoryIndex}
-            onClick={() => goTo(idx)}
+            isActive={isActive}
             duration={current.duration}
+            onClick={this.onClick}
           >
             {current.title}
           </TabComp>
