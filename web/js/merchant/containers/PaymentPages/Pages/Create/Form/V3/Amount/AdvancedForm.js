@@ -145,6 +145,7 @@ export default class AdvancedForm extends React.PureComponent {
             name="min_amount"
             defaultValue={minAmount}
             type="number"
+            placeholder="0.00"
             validator={this.validateMinAmountLimit}
           >
             <span class="Input-after">Min</span>

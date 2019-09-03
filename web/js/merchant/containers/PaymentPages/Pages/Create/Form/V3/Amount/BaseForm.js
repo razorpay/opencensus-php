@@ -9,6 +9,8 @@ import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
+import { getCurrency } from 'rzp/ui/Amount';
+
 import ModalHeader from 'rzp/ui/ModalHeader';
 
 @connect(null, {
@@ -138,6 +140,47 @@ export default class BaseForm extends React.PureComponent {
     const amount = field.item.amount || ''; // Note: If amount is there, then isDisabled = false;
     const placeholder = isDisabled ? 'To be filled by customer' : '0.00';
 
+    let inputField = (
+      <Input
+        name={isDisabled ? '' : 'amount'}
+        class="Input--limits placeholder-field"
+        placeholder={placeholder}
+        defaultValue={amount}
+        pattern="^[0-9]+(.([0-9]){1,2})?$"
+        disabled={isDisabled}
+        required={!isDisabled}
+      />
+    );
+
+    if (isDisabled) {
+      const minAmount = `${getCurrency(currency).symbol} ${Number(
+        field.min_amount
+      ).toFixed(2)}`;
+      const maxAmount = field.max_amount
+        ? `${getCurrency(currency).symbol} ${Number(field.max_amount).toFixed(
+            2
+          )}`
+        : 'No Limit';
+
+      inputField = (
+        <div className="Input-checkboxTooltip">
+          {inputField}
+          <Popover
+            align="top"
+            theme="dark"
+            parentQuerySelector=".Modal-container"
+          >
+            <PopoverBody>
+              Customer can fill custom amount
+              <br />
+              {/* TODO: As per the actual limits */}
+              (Min: {minAmount}, Max: {maxAmount})
+            </PopoverBody>
+          </Popover>
+        </div>
+      );
+    }
+
     return (
       <Input.Group
         class={classList(
@@ -153,15 +196,7 @@ export default class BaseForm extends React.PureComponent {
             onChange={this.onChangeCurrency}
           />
 
-          <Input
-            name={isDisabled ? '' : 'amount'}
-            class="Input--limits placeholder-field"
-            placeholder={placeholder}
-            defaultValue={amount}
-            pattern="^[0-9]+(.([0-9]){1,2})?$"
-            disabled={isDisabled}
-            required={!isDisabled}
-          />
+          {inputField}
         </div>
       </Input.Group>
     );

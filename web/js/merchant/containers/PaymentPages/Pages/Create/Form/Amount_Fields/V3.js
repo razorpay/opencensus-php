@@ -55,7 +55,7 @@ export function getBaseFieldForAmountFieldType(amountFieldType) {
         item: {},
         mandatory: false, // By default non-mandatory because customer can enter amount value = 0
         // As per currency
-        min_amount: null, // Convert in Rupees (bigger unit)
+        min_amount: 0, // This is in Rupees (bigger unit) To convert in paisa (small unit) before making api call
       };
 
     case FIELD_TYPES.multiple_purchase.key:
