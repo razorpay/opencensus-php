@@ -43,8 +43,6 @@ import QuickGuide, {
 )
 export default class InvoicingContainer extends Component {
   componentDidMount() {
-    this.initInvoicesOnboarding();
-
     if (this.props.invoices.invoices.length) return;
 
     if (!this.props.items.items.length) {
