@@ -198,25 +198,22 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $data) = $this->checkAccessOfUserOnMerchant($merchantId);
+        list($error) = $this->checkAccessOfUserOnMerchant($merchantId);
 
         if (empty($error) === true)
         {
 
-            if ($data['access'] === true)
-            {
-                Session::put('current_merchant_id', $merchantId);
+            Session::put('current_merchant_id', $merchantId);
 
-                $traceData = [
-                    'id'          => $user->id,
-                    'email'       => $user->email,
-                    'merchant_id' => $merchantId,
-                ];
+            $traceData = [
+                'id'          => $user->id,
+                'email'       => $user->email,
+                'merchant_id' => $merchantId,
+            ];
 
-                $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
+            $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
 
-                return [];
-            }
+            return [];
         }
 
         return ["Couldn't find the merchant you are looking for."];
