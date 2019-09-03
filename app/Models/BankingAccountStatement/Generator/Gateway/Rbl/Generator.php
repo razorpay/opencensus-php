@@ -47,13 +47,13 @@ abstract class Generator extends Base
         $merchantDetails = $merchant->merchantDetail;
 
         $account_opening_date = Carbon::createFromTimestamp($bankingAccount->account_activation_date, Timezone::IST)
-                                      ->format('d/m/Y');
+                                      ->format(self::DATE_FORMAT);
 
         $fromDateReadable = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)
-                                  ->format('d/m/Y');
+                                  ->format(self::DATE_FORMAT);
 
         $toDateReadable   = Carbon::createFromTimestamp($this->toDate, Timezone::IST)
-                                  ->format('d/m/Y');
+                                  ->format(self::DATE_FORMAT);
 
         $statementPeriod  = $fromDateReadable . ' - ' . $toDateReadable;
 

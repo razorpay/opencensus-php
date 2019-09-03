@@ -2,12 +2,16 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\External;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
 use RZP\Models\FileStore\Accessor;
-use RZP\Models\External;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
 {
@@ -62,6 +66,8 @@ class Core extends Base\Core
      * @param channel channel name
      * @param account_number
      * @param format
+     * @param fromDate
+     * @param toDate
      * @return mixed
      *
      * Creates either a PDF/Excel File and returns the file handle to the calling function
