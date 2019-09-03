@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Base;
 use App;
 
 use Carbon\Carbon;
+use RZP\Gateway\P2p\Base\Request;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
@@ -102,6 +103,19 @@ class Reconciliate extends Base\Core
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::HDFC,
         RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::NETBANKING_ICICI,
+        RequestProcessor\Base::NETBANKING_FEDERAL,
+        RequestProcessor\Base::NETBANKING_CORPORATION,
+        RequestProcessor\Base::NETBANKING_YESB,
+        RequestProcessor\Base::NETBANKING_CUB,
+        RequestProcessor\Base::NETBANKING_CSB,
+        RequestProcessor\Base::NETBANKING_IDFC,
+        RequestProcessor\Base::NETBANKING_INDUSIND,
+        RequestProcessor\Base::NETBANKING_OBC,
+        RequestProcessor\Base::NETBANKING_VIJAYA,
+        RequestProcessor\Base::NETBANKING_ALLAHABAD,
+        RequestProcessor\Base::EBS,
     ];
 
     /*********************
