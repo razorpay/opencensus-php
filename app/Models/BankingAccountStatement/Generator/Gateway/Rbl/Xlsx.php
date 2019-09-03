@@ -70,7 +70,6 @@ class Xlsx extends Generator
             AccountOwnerInfo::BRANCH_PHONE_NUMBER  => 'D26',
             AccountOwnerInfo::BRANCH_CITY          => 'D9',
             AccountOwnerInfo::BRANCH_STATE         => 'D11',
-            AccountOwnerInfo::BRANCH_PINCODE       => 'D13',
         ];
 
     # this will be determined after we know the transaction counts

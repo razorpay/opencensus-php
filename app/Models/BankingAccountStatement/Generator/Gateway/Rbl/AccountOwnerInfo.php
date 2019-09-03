@@ -29,5 +29,4 @@ class AccountOwnerInfo
     const BRANCH_PHONE_NUMBER  = 'branch_phone_number';
     const BRANCH_CITY          = 'branch_city';
     const BRANCH_STATE         = 'branch_state';
-    const BRANCH_PINCODE       = 'branch_pincode';
 }

@@ -5,23 +5,21 @@ namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 use View;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-
-use mikehaertl\wkhtmlto\Pdf;
 use RZP\Models\Currency\Currency;
-
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\BankingAccountStatement\Type as StatementType;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\BankInformation as RBLBankConstants;
-
+use RZP\Models\Bank\BasicInformation;
 
 abstract class Generator extends Base
 {
-
     abstract function getStatement();
 
     # This will be set during class initialization, and will be available to all the Child Classes
     protected $data = null;
+
+    const DATE_FORMAT = 'd/m/Y';
 
     public function __construct($accountNumber, $channel, $fromDate, $toDate)
     {
@@ -192,33 +190,60 @@ abstract class Generator extends Base
                                            string $account_opening_date,
                                            string $statementPeriod): array
     {
+        $ifscCode = $bankingAccount->getAccountIfsc();
+
+        $bankInformation = (new BasicInformation($ifscCode))->getBankInformation();
+
         $accountOwnerInfo = [
             AccountOwnerInfo::ACCOUNT_NAME         => $merchant->name,
+
             AccountOwnerInfo::CUSTOMER_ADDRESS     => $merchantDetails->business_operation_address,
+
             AccountOwnerInfo::CUSTOMER_ADDRESS_L2  => $merchantDetails->business_registered_address_l2,
-            AccountOwnerInfo::CUSTOMER_CITY        => $merchantDetails->business_operation_city,
-            AccountOwnerInfo::CUSTOMER_STATE       => $merchantDetails->business_operation_state,
-            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $merchantDetails->business_operation_pin,
-            AccountOwnerInfo::CUSTOMER_MOBILE      => $merchantDetails->contact_mobile,
-            AccountOwnerInfo::CUSTOMER_EMAIL       => $merchantDetails->contact_email,
-            AccountOwnerInfo::CUSTOMER_CIF_ID      => $bankingAccount->bank_internal_reference_number,
-            AccountOwnerInfo::CURRENCY             => Currency::INR,
-            AccountOwnerInfo::ACCOUNT_OPENING_DATE => $account_opening_date,
+
             AccountOwnerInfo::ACCOUNT_TYPE         => $bankingAccount->account_type,
+
             AccountOwnerInfo::ACCOUNT_STATUS       => $bankingAccount->status,
+
             AccountOwnerInfo::ACCOUNT_NUMBER       => $bankingAccount->account_number,
+
             AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
-            AccountOwnerInfo::HOME_BRANCH_NAME     => RBLBankConstants::BRANCH_NAME,
-            AccountOwnerInfo::HOME_BRANCH_ADDRESS  => RBLBankConstants::BRANCH_ADDRESS,
-            AccountOwnerInfo::IFSC_CODE            => RBLBankConstants::IFSC_CODE,
+
             AccountOwnerInfo::SANCTION_LIMIT       => RBLBankConstants::SANCTION_LIMIT,
+
             AccountOwnerInfo::DRAWING_POWER        => RBLBankConstants::DRAWING_POWER,
+
             AccountOwnerInfo::BRANCH_TIMINGS       => RBLBankConstants::BRANCH_TIMINGS,
+
             AccountOwnerInfo::CALL_CENTER          => RBLBankConstants::CALL_CENTER_NUMBER,
-            AccountOwnerInfo::BRANCH_PHONE_NUMBER  => RBLBankConstants::BRANCH_PHONE_NUMBER,
-            AccountOwnerInfo::BRANCH_CITY          => RBLBankConstants::BRANCH_CITY,
-            AccountOwnerInfo::BRANCH_STATE         => RBLBankConstants::BRANCH_STATE,
-            AccountOwnerInfo::BRANCH_PINCODE       => RBLBankConstants::BRANCH_PINCODE
+
+            AccountOwnerInfo::CUSTOMER_CITY        => $merchantDetails->business_operation_city,
+
+            AccountOwnerInfo::CUSTOMER_STATE       => $merchantDetails->business_operation_state,
+
+            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $merchantDetails->business_operation_pin,
+
+            AccountOwnerInfo::CUSTOMER_MOBILE      => $merchantDetails->contact_mobile,
+
+            AccountOwnerInfo::CUSTOMER_EMAIL       => $merchantDetails->contact_email,
+
+            AccountOwnerInfo::CUSTOMER_CIF_ID      => $bankingAccount->bank_internal_reference_number,
+
+            AccountOwnerInfo::CURRENCY             => Currency::INR,
+
+            AccountOwnerInfo::ACCOUNT_OPENING_DATE => $account_opening_date,
+
+            AccountOwnerInfo::HOME_BRANCH_NAME     => $bankInformation->getBankName(),
+
+            AccountOwnerInfo::HOME_BRANCH_ADDRESS  => $bankInformation->__get('address'),
+
+            AccountOwnerInfo::IFSC_CODE            => $bankInformation->__get('ifsc'),
+
+            AccountOwnerInfo::BRANCH_PHONE_NUMBER  => $bankInformation->__get('contact'),
+
+            AccountOwnerInfo::BRANCH_CITY          => $bankInformation->__get('city'),
+
+            AccountOwnerInfo::BRANCH_STATE         => $bankInformation->__get('state'),
         ];
 
         return $accountOwnerInfo;
