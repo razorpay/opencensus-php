@@ -41,7 +41,7 @@ export default class BaseForm extends React.PureComponent {
     const isMandatory =
       typeof this.props.field.mandatory === 'boolean'
         ? this.props.field.mandatory
-        : Boolean(Number(field.mandatory));
+        : Boolean(Number(this.props.field.mandatory));
 
     return isMandatory;
   }
