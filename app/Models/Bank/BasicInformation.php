@@ -22,5 +22,4 @@ class BasicInformation
 
         return $bankInfo;
     }
-
 }
