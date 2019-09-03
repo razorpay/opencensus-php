@@ -115,7 +115,7 @@ export function mapFieldToIndex(field) {
     for (let j = 0; j < FIELD_TYPES_keys.length; j++) {
       // EXCEPTION 1: values of schema.options is checked in next for-each block.
       // EXCEPTION 2: value for enum is not to be compared as it's an array, it can be skipped and options.cmp will handle existence of 'key:enum'
-      if (['options', 'enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
+      if (['settings', 'options', 'enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
         continue;
       }
 
@@ -233,6 +233,7 @@ export function _areKeysSupported(keys) {
     'maximum',
     'enum',
     'options',
+    'settings',
   ];
 
   for (let k = 0; k < keys.length; k++) {

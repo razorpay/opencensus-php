@@ -1,3 +1,5 @@
+import store from 'merchant/store';
+
 import {
   set,
   merge,
@@ -44,6 +46,7 @@ export const fetchPaymentPage = id => {
   return {
     type: FETCH_ENTITY,
     payload: fetchPaymentPageEntity(id),
+    isPPV3Enabled: store.getState().session.user.isPPV3Enabled,
     id,
   };
 };
@@ -113,29 +116,42 @@ export default function(state = initialState, action) {
         entityData.expire_by *= 1000;
       }
 
-      if (entityData.amount) {
-        entityData.amount /= 100; // Convert in Rupees (or bigger unit).
-      }
-
       entityData.settings.allow_social_share =
         entityData.settings.allow_social_share === '1';
 
       entityData.settings.allow_multiple_units =
         entityData.settings.allow_multiple_units === '1';
 
-      entityData.quantity = entityData.times_payable;
-      delete entityData.times_payable;
+      let formItems;
 
-      const formItems = []
-        .concat(JSON.parse(entityData.settings.udf_schema))
-        .concat(entityData.payment_page_items);
+      if (action.isPPV3Enabled) {
+        entityData.payment_page_items.forEach(pi => {
+          if (pi.item.amount) {
+            pi.item.amount /= 100; // Convert in Rupees (or bigger unit)
+          }
+        });
 
-      formItems.sort(function(a, b) {
-        const positionA = a.settings.position;
-        const positionB = b.settings.position;
+        formItems = []
+          .concat(JSON.parse(entityData.settings.udf_schema))
+          .concat(entityData.payment_page_items);
 
-        return Number(positionA) - Number(positionB);
-      });
+        formItems.sort(function(a, b) {
+          const positionA = a.settings.position;
+          const positionB = b.settings.position;
+
+          return Number(positionA) - Number(positionB);
+        });
+      } else {
+        // TODO: Check if payment_page_item id is needed in V2 case or not
+
+        // For V2, only 1 item must exist in payment_page_items
+        const amountItem = entityData.payment_page_items[0];
+
+        entityData.amount = amountItem.item.amount / 100; // Convert in Rupees (or bigger unit)
+        entityData.quantity = amountItem.quantity;
+
+        formItems = JSON.parse(entityData.settings.udf_schema);
+      }
 
       return {
         paymentPageEntity: entityData,

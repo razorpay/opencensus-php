@@ -110,8 +110,8 @@ const displayField = ({
 
           <span class="Field-addon Field-addon--after">{addOnAfter}</span>
         </div>
-        {field.description && (
-          <div class="Field-description">{field.description}</div>
+        {field.item.description && (
+          <div class="Field-description">{field.item.description}</div>
         )}
       </div>
       {openBaseForm && <i class="i i-edit" />}
