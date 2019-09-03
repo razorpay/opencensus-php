@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Event;
 
+use RZP\Models\Card\SubType;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Card\Network;
@@ -434,5 +435,37 @@ class MethodsTest extends TestCase
             }
             return true;
         });
+    }
+
+    public function testEnableDisableCardSubTypes()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'card_subtype' => [
+                    'business'  => 0,
+                ]
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isSubTypeEnabled(SubType::CONSUMER));
+
+        $this->assertFalse($merchantMethods->isSubTypeEnabled(SubType::BUSINESS));
+
     }
 }

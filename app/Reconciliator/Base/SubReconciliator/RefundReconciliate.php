@@ -94,7 +94,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
             if ($reconciled === true)
             {
-                $this->handleAlreadyReconciled($refundId);
+                $this->handleAlreadyReconciled($refundId, $this->refund->transaction->getReconciledAt());
 
                 return null;
             }
@@ -164,7 +164,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         return empty(static::$scroogeReconciliate[$this->refund->getId()]) === false;
     }
 
-    protected function handleAlreadyReconciled(string $entityId)
+    protected function handleAlreadyReconciled(string $entityId, int $reconciledAt = null)
     {
         // If this is a scrooge refund, do not count it for success or failure counts,
         // as this will be done during dispatch processing
@@ -178,12 +178,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             //
             static::$scroogeReconciliate[$entityId]->setReconciledAt($this->refund->transaction->getReconciledAt());
 
-            $this->setRowReconStatusAndError(Base\InfoCode::ALREADY_RECONCILED);
+            $this->setRowReconStatusAndError(Base\InfoCode::ALREADY_RECONCILED, null, $reconciledAt);
 
             return;
         }
 
-        parent::handleAlreadyReconciled($entityId);
+        parent::handleAlreadyReconciled($entityId, $reconciledAt);
     }
 
     protected function handleUnprocessedRow(array $row)

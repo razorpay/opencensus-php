@@ -4921,6 +4921,10 @@ ALTER TABLE merchant_banks
     ADD COLUMN phonepe TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
     ADD INDEX merchant_banks_phonepe_index (phonepe);
 
+ALTER TABLE merchant_banks
+    ADD COLUMN paypal TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
+    ADD INDEX merchant_banks_paypal_index (paypal);
+
 ALTER TABLE fund_transfer_attempts
     ADD INDEX fund_transfer_attempts_card_id_index (card_id);
 
@@ -5040,9 +5044,40 @@ ALTER TABLE `merchant_banks`
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+ALTER TABLE virtual_accounts
+    ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
+    ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
+    ADD INDEX virtual_accounts_close_by_index (close_by);
+
+ALTER TABLE `roles`
+    ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
+    ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE `iins`
+    ADD COLUMN `sub_type` VARCHAR(255) NOT NULL DEFAULT 'consumer' AFTER `type`;
 
 ALTER TABLE `pricing`
     ADD COLUMN `payment_method_subtype` VARCHAR(255) NULL;
+
+ALTER TABLE `gateway_rules`
+    ADD COLUMN `method_subtype` VARCHAR(255) NULL AFTER `method_type`,
+    ADD INDEX gateway_rules_method_subtype_index (method_subtype);
+
+ALTER TABLE `gateway_rules`
+    ADD COLUMN `card_category` VARCHAR(255) NULL AFTER `method_subtype`,
+    ADD INDEX gateway_card_category_index (card_category);
+
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `card_subtype` INT UNSIGNED NOT NULL DEFAULT 1;
+
+ALTER TABLE `cards`
+    ADD COLUMN `sub_type` VARCHAR(255) DEFAULT NULL AFTER `type`;
+
+ALTER TABLE `cards`
+    ADD COLUMN `category` VARCHAR(255) DEFAULT NULL AFTER `sub_type`;
+
+
+
 
 ALTER TABLE `merchants`
     ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
@@ -5259,3 +5294,16 @@ ALTER TABLE fund_accounts
 
 ALTER TABLE payouts
     ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER batch_id;
+
+ALTER TABLE merchants
+    ADD COLUMN receipt_email_trigger_event TINYINT(1) UNSIGNED DEFAULT 1 AFTER receipt_email_enabled;
+
+ALTER TABLE merchants
+	ADD COLUMN partnership_url TEXT DEFAULT NULL AFTER dashboard_whitelisted_ips_test;
+
+ALTER TABLE `external`
+    DROP INDEX `external_balance_id_foreign`,
+    DROP INDEX `external_transaction_id_foreign`,
+    ADD INDEX `external_channel_index` (`channel`),
+    ADD INDEX `external_balance_id_index` (`balance_id`),
+    ADD INDEX `external_transaction_id_index` (`transaction_id`);

@@ -192,6 +192,7 @@ class GatewayController extends Controller
             case Gateway::NETBANKING_AXIS:
             case Gateway::UPI_AIRTEL:
             case Gateway::WALLET_PHONEPE:
+            case Gateway::UPI_CITI:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
@@ -440,9 +441,7 @@ class GatewayController extends Controller
 
         $payment = $this->app['repo']->payment->findOrFail($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $publicPaymentId = $payment->getPublicId();
 
@@ -491,9 +490,7 @@ class GatewayController extends Controller
 
         $publicPaymentId = $payment->getPublicId();
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 

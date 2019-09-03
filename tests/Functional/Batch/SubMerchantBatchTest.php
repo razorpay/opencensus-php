@@ -431,13 +431,15 @@ class SubMerchantBatchTest extends TestCase
         $this->assertEquals('instantly_activated', $merchantDetail->getActivationStatus());
 
         $customActionAttributes = [
-            'type'               => 'sub_merchant',
-            'partner_id'         => '10000000000000',
-            'use_email_as_dummy' => 0,
-            'auto_activate'      => 1,
-            'auto_submit'        => 1,
-            'create_submerchant' => 0,
-            'autofill_details'   => 1,
+            'type'   => 'sub_merchant',
+            'config' => [
+                'partner_id'         => '10000000000000',
+                'use_email_as_dummy' => 0,
+                'auto_activate'      => 1,
+                'auto_submit'        => 1,
+                'create_submerchant' => 0,
+                'autofill_details'   => 1,
+            ]
         ];
 
         $this->setUpForProcessing(__FUNCTION__);

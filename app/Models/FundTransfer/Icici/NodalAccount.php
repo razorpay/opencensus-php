@@ -296,11 +296,12 @@ class NodalAccount extends NodalBase\FileProcessor
         $timelines = [15, 30, 45, 60, 90, 120, 150, 180, 210];
 
         $mailInfo = [
-            'fileInfo'  => $fileInfo,
-            'channel'   => $this->channel,
-            'filetype'  => self::BEAM_FILE_TYPE,
-            'subject'   => 'File Send failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS]
+            'fileInfo'              => $fileInfo,
+            'channel'               => $this->channel,
+            'filetype'              => self::BEAM_FILE_TYPE,
+            'subject'               => 'File Send failure',
+            'recipient'             => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS],
+            'batchFundTransferId'   => $this->batchFundTransfer->getId(),
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);

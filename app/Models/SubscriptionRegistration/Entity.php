@@ -9,6 +9,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Base\Traits\NotesTrait;
 
+/**
+ * @property Customer\Token\Entity $token
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;

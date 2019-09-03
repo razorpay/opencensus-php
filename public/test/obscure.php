@@ -135,6 +135,7 @@ function disableEmptyInputs(form) {
             <select name="wallet">
                 <option value="amazonpay" selected>Amazon Pay</option>
                 <option value="paytm">Paytm</option>
+                <option value="paypal">Paypal</option>
                 <option value="mobikwik">Mobikwik</option>
                 <option value="payzapp">Payzapp</option>
                 <option value="payumoney">Payumoney</option>

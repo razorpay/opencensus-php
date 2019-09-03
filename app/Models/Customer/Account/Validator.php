@@ -48,6 +48,7 @@ class Validator extends Base\Validator
         '_'                     => 'sometimes|array',
         'method'                => 'sometimes|in:cardless_emi,paylater',
         'provider'              => 'required_if:method,cardless_emi,paylater',
+        'payment_id'            => 'sometimes_if:method,cardless_emi',
     ];
 
     protected static $contactRules = [

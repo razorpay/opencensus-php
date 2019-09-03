@@ -565,7 +565,6 @@ return [
                             'account_number'    => '1234567890',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc123'
                     ],
                     [
                         'entity'                => 'fund_account',
@@ -577,7 +576,6 @@ return [
                             'address'           => '123@ybl',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc124'
                     ],
                     [
                         'entity'                => 'fund_account',
@@ -595,7 +593,6 @@ return [
                             'account_number'    => '1234567891',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc125'
                     ]
                 ]
             ],
@@ -689,7 +686,6 @@ return [
                             'description'       => 'The id provided does not exist',
                             'code'              => 'BAD_REQUEST_ERROR'
                         ],
-                        'idempotency_key'       => 'batch_abc123'
                     ],
                     [
                         'entity'                => 'fund_account',
@@ -701,7 +697,6 @@ return [
                             'address'           => '123@ybl',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc124'
                     ],
                     [
                         'entity'                => 'fund_account',
@@ -719,7 +714,6 @@ return [
                             'account_number'    => '1234567891',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc125'
                     ]
                 ]
             ],
@@ -824,7 +818,6 @@ return [
                             'account_number'    => '1234567890',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc123'
                     ],
                     [
                         'entity'                => 'fund_account',
@@ -836,7 +829,6 @@ return [
                             'address'           => '123@ybl',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc124'
                     ],
                     [
                         'entity'                => 'fund_account',
@@ -854,7 +846,6 @@ return [
                             'account_number'    => '1234567891',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc125'
                     ]
                 ]
             ],
@@ -958,7 +949,6 @@ return [
                             'account_number'    => '1234567890',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc123'
                     ],
                     [
                         'entity'                => 'fund_account',
@@ -970,7 +960,6 @@ return [
                             'address'           => '123@ybl',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc124'
                     ],
                     [
                         'entity'                => 'fund_account',
@@ -988,7 +977,6 @@ return [
                             'account_number'    => '1234567890',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc123'
                     ]
                 ]
             ],

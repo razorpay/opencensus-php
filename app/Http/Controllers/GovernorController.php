@@ -70,6 +70,15 @@ class GovernorController extends Controller
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
 
+    public function updateRules($source, $namespace)
+    {
+        $input = Request::all();
+
+        $response = $this->app['governor']->sendRequest(GovernorService::UPDATE_RULES, $input, $source, $namespace);
+
+        return response()->json($response['response_body'])->setStatusCode($response['response_code']);
+    }
+
     public function getRules($source, $namespace)
     {
         $input = Request::all();

@@ -190,6 +190,10 @@ return [
                 'description' => 'Ability to enable or disable a terminal',
                 'assignable' => true,
             ],
+            Permission::CHECK_TERMINAL_SECRET               => [
+                'description' => 'Ability to check terminal secrets and passwords',
+                'assignable'  => true,
+            ],
             Permission::TERMINAL_MANAGE_MERCHANT            => [
                 'description' => 'Ability to add or remove sub merchants to a terminal',
                 'assignable' => true,

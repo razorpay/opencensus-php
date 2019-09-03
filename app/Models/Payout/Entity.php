@@ -257,7 +257,6 @@ class Entity extends Base\PublicEntity
         self::REJECTED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
-        self::IDEMPOTENCY_KEY,
     ];
 
     protected static $modifiers = [

@@ -222,7 +222,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         if ($this->reconciled === true)
         {
-            $this->handleAlreadyReconciled($paymentId);
+            $this->handleAlreadyReconciled($paymentId, $this->payment->transaction->getReconciledAt());
 
             //
             // Record gateway fee and service tax for reconciled payments

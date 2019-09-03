@@ -70,6 +70,7 @@ class Fetch extends BaseFetch
             Entity::CUSTOMER_ID,
             Entity::RECURRING,
             self::EXPAND_EACH,
+            Entity::NOTES,
         ],
         AuthType::PROXY_AUTH => [
             Entity::STATUS,
@@ -79,7 +80,6 @@ class Fetch extends BaseFetch
             Entity::TRANSFER_ID,
             Entity::CAPTURED,
             Entity::BATCH_ID,
-            Entity::NOTES,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::VERIFIED,

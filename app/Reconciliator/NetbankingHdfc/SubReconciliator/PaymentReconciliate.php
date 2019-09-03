@@ -22,9 +22,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        // TODO: fix this to use Ref1 column of recon row.
         /** @var Entity $gatewayPayment */
-        $this->gatewayPayment = $this->repo->netbanking->findByVerificationIdAndAction($row[Constants::COLUMN_PAYMENT_ID],
+        $this->gatewayPayment = $this->repo->netbanking->findByGatewayPaymentIdAndAction($row[Constants::BANK_PAYMENT_ID],
                                                                                     Action::AUTHORIZE);
 
         if ($this->gatewayPayment === null)

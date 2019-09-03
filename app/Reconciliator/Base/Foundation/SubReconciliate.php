@@ -3,12 +3,14 @@
 namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Reconciliator\Core;
+use RZP\Constants\Timezone;
 use RZP\Reconciliator\Messenger;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
@@ -29,9 +31,10 @@ class SubReconciliate extends Base\Core
     const SUCCESSES_SUMMARY = 'successes_summary';
 
     // used in recon processing output file
-    const RECON_TYPE        = 'recon_type';
-    const RECON_STATUS      = 'recon_status';
-    const RECON_ERROR_MSG   = 'recon_error_msg';
+    const RECON_TYPE            = 'recon_type';
+    const RECON_STATUS          = 'recon_status';
+    const ALREADY_RECONCILED_AT = 'already_reconciled_at';
+    const RECON_ERROR_MSG       = 'recon_error_msg';
     const MERCHANT_ID       = 'merchant_id';
 
     /**
@@ -243,9 +246,10 @@ class SubReconciliate extends Base\Core
      */
     protected function insertRowInOutputFile(array $row = [], string $reconType = 'unknown')
     {
-        $row[self::RECON_TYPE]      = $reconType;
-        $row[self::RECON_STATUS]    = '';
-        $row[self::RECON_ERROR_MSG] = '';
+        $row[self::RECON_TYPE]              = $reconType;
+        $row[self::RECON_STATUS]            = '';
+        $row[self::ALREADY_RECONCILED_AT]   = '';
+        $row[self::RECON_ERROR_MSG]         = '';
         $row[self::MERCHANT_ID]     = '';
 
         static::$reconOutputData[] = $row;
@@ -471,11 +475,12 @@ class SubReconciliate extends Base\Core
      * Rows for which the corresponding entities, have already been marked as reconciled,
      * we add it to the list of successfully processed rows.
      *
-     * @param  string $entityId
+     * @param string $entityId
+     * @param int $reconciledAt
      */
-    protected function handleAlreadyReconciled(string $entityId)
+    protected function handleAlreadyReconciled(string $entityId, int $reconciledAt = null)
     {
-        $this->setRowReconStatusAndError(InfoCode::ALREADY_RECONCILED);
+        $this->setRowReconStatusAndError(InfoCode::ALREADY_RECONCILED, null, $reconciledAt);
 
         $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entityId);
     }
@@ -499,14 +504,24 @@ class SubReconciliate extends Base\Core
 
     /**
      * Set the status and error msg for the current row in progress
+     *
      * @param string $status
      * @param string|null $errorCode
+     * @param int|null $reconciledAt
      */
-    protected function setRowReconStatusAndError(string $status, string $errorCode = null)
+    protected function setRowReconStatusAndError(string $status, string $errorCode = null, int $reconciledAt = null)
     {
         $statusDescription = Constants::RECON_PUBLIC_DESCRIPTIONS[$status] ?? $status;
 
         static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS] = $statusDescription;
+
+        if ($status === InfoCode::ALREADY_RECONCILED)
+        {
+            // Add the already reconciled_at time
+            $reconciledTime = Carbon::createFromTimestamp($reconciledAt, Timezone::IST)->format('d M Y H:i:s');
+
+            static::$reconOutputData[static::$currentRowNumber][self::ALREADY_RECONCILED_AT] = $reconciledTime;
+        }
 
         if (empty($errorCode) === false)
         {

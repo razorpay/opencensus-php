@@ -484,6 +484,39 @@ return [
         ]
     ],
 
+    'testGetWebhookWithSecret' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'url'         => 'http://www.testUrl.com',
+                'secret'      => 'BestTestSecretEver',
+                'events'      => [
+                    'payment.authorized' => true,
+                ]
+            ]
+        ]
+    ],
+
+    'testGetWebhooksWithSecret' => [
+        'request' => [
+            'url' => '/webhooks',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'url'         => 'http://www.testUrl.com',
+                    'secret'      => 'BestTestSecretEver',
+                    'events'      => [
+                        'payment.authorized' => true,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testGetWebhookEvents' => [
         'request' => [
             'url'   => '/webhooks/events/all',
