@@ -226,7 +226,7 @@ export default class BaseForm extends React.PureComponent {
 
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>
-              <i class="i i-info-circle" />
+              <i className="i i-alphabet_underline" />
               {this.state.hasDescription ? 'Remove' : 'Add'} Description
             </div>
           </OptionsItem>

@@ -371,14 +371,14 @@ export default class BaseForm extends React.PureComponent {
         >
           <OptionsItem isSelected={!!this.state.imageUrl}>
             <div onClick={this.toggleImage}>
-              <i class="i i-info-circle" />
+              <i class="i i-add_image" />
               {this.state.imageUrl ? 'Remove Image' : 'Add Image'}
             </div>
           </OptionsItem>
 
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>
-              <i class="i i-info-circle" />
+              <i class="i i-alphabet_underline" />
               {this.state.hasDescription
                 ? 'Remove Description'
                 : 'Add Description'}
@@ -387,7 +387,7 @@ export default class BaseForm extends React.PureComponent {
 
           <OptionsItem>
             <div onClick={this.props.openAdvancedForm}>
-              <i class="i i-info-circle" />
+              <i class="i i-options" />
               Advanced Options
             </div>
           </OptionsItem>
