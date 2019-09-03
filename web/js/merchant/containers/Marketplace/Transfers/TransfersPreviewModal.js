@@ -1,4 +1,4 @@
-import StorySlider, { Story, StoriesTabs } from 'rzp/ui/Stories';
+import StorySlider, { Story, StoriesTabs } from 'rzp/ui/StorySlider';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 
