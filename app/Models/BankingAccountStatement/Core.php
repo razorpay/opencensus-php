@@ -7,6 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\FileStore\Accessor;
+use RZP\Models\External;
 
 class Core extends Base\Core
 {
