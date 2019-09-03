@@ -27,6 +27,7 @@ class AuthSelector extends Base\Core
 
     protected $autflow;
 
+    /** @var Terminal\Auth\Card\AuthFilter $autflowObj */
     protected $autflowObj;
 
     protected static $filters = [
@@ -103,8 +104,6 @@ class AuthSelector extends Base\Core
 
         foreach (self::$filters as $filter)
         {
-            $filterRules = $this->getRulesForFiltering($rules);
-
             $filterObj = new $filter($this->input, $this->options, $filterRules);
 
             $filteredTerminals = $filterObj->filter($filteredTerminals, $verbose);
