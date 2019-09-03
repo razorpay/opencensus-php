@@ -1,9 +1,10 @@
 <?php
 
-namespace RZP\Reconciliator\RequestProcessor\Retriever;
+namespace RZP\Reconciliator\RequestProcessor\Retriever\Impl;
 
 use App;
 use RZP\Models\Terminal;
+use RZP\Reconciliator\RequestProcessor\Retriever\DataRetriever;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RepositoryManager;
@@ -12,8 +13,17 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
 
 
     protected $app;
+
+    /**
+     * Trace instance for tracing
+     * @var $trace Trace
+     */
     protected $trace;
+
     protected $mode;
+
+    protected $gatewayManager;
+
     /**
      * @var RepositoryManager
      */
@@ -25,6 +35,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
         $this->trace = $this->app['trace'];
         $this->mode = $this->app['rzp.mode'];
         $this->repo = $this->app['repo'];
+        $this->gatewayManager = $this->app['gateway'];
     }
 
 
@@ -32,13 +43,12 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
 
         $output = [];
 
-        $requestList = (array) $this->prepareGatewayRequest($input);
-
-        $terminal = $this->fetchTerminal($input);
+        $requestList = (array) $this->prepareGatewayRequestArray($input);
 
         $responseList = [];
 
         foreach ($requestList as $request)  {
+            $terminal = $this->fetchTerminal($input, $request);
             list($key, $response) = $this->processRequest($input, $request, $terminal);
             $responseList[$key] = $response;
         }
@@ -50,25 +60,19 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
             $fileName = $key."_".$input["gateway"]."_".date('Y-m-d_h:i:s');
             array_push($output, $this->prepareFile($fileName, $value));
         }
-
         return $output;
-
     }
 
-    protected abstract function prepareGatewayRequest(array $input): array;
+    protected abstract function prepareGatewayRequestArray(array $input): array;
 
-    protected function fetchTerminal(array $input)  {
-        $terminal = $this->repo->terminal->findByGatewayMerchantId($input['gateway']);
-        return $terminal;
-    }
+    protected abstract function fetchTerminal(array $input, $request);
 
-    protected function processRequest(array $input, $request, $terminal)  {
-
-    }
+    protected abstract function processRequest(array $input, $request, $terminal);
 
     protected abstract function refactorResponse(array $responseList): array;
 
-    protected function prepareFile($fileName, array $responseList): array  {
+    protected function prepareFile($fileName, array $response): array  {
 
     }
+
 }

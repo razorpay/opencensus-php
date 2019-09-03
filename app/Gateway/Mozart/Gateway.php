@@ -75,6 +75,58 @@ class Gateway extends Base\Gateway
         return $response['next']['redirect'] ?? null;
     }
 
+    public function reconcile(array $input)
+    {
+        parent::action($input, Action::RECONCILE);
+
+        $request = $this->getMozartReconcileRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        return $response;
+    }
+
+    protected function getMozartReconcileRequestArray($input)
+    {
+        if (($input['terminal'] instanceof TerminalEntity) === true)
+        {
+            $input['terminal'] = $input['terminal']->toArrayWithPassword();
+        }
+
+        $gateway = $input['gateway'];
+
+        $content['entities'] = $input;
+
+        $baseUrl = $this->app['config']->get('applications.mozart.url');
+
+        $url =  $baseUrl . 'payments/' . $gateway . '/v1/' . $this->action;
+
+        $authentication = [
+            'api',
+            $this->app['config']->get('applications.mozart.password')
+        ];
+
+        return [
+            'url' => $url,
+            'method' => 'POST',
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'X-Task-ID'    => $this->app['request']->getTaskId(),
+            ],
+            'content' => json_encode($content),
+            'options' => [
+                'auth' => $authentication
+            ]
+        ];
+    }
+
     public function otpGenerate(array $input)
     {
         return $this->authorize($input);
