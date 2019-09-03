@@ -17,7 +17,6 @@ class Pdf extends Generator
 
     public function getStatement()
     {
-
         $input = $this->accountStatementData();
 
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $input);
@@ -41,7 +40,6 @@ class Pdf extends Generator
 
     protected function getPdfContent(string $html): string
     {
-
         $options = [
             'print-media-type',
             'footer-font-size' => '6',

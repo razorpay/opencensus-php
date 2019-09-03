@@ -20,5 +20,4 @@ class Service extends Base\Service
 
         return $response;
     }
-
 }

@@ -57,34 +57,11 @@ abstract class Generator extends Base
 
         $statementPeriod  = $fromDateReadable . ' - ' . $toDateReadable;
 
-        $accountOwnerInfo = [
-            AccountOwnerInfo::ACCOUNT_NAME         => $merchant->name,
-            AccountOwnerInfo::CUSTOMER_ADDRESS     => $merchantDetails->business_operation_address,
-            AccountOwnerInfo::CUSTOMER_ADDRESS_L2  => $merchantDetails->business_registered_address_l2,
-            AccountOwnerInfo::CUSTOMER_CITY        => $merchantDetails->business_operation_city,
-            AccountOwnerInfo::CUSTOMER_STATE       => $merchantDetails->business_operation_state,
-            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $merchantDetails->business_operation_pin,
-            AccountOwnerInfo::CUSTOMER_MOBILE      => $merchantDetails->contact_mobile,
-            AccountOwnerInfo::CUSTOMER_EMAIL       => $merchantDetails->contact_email,
-            AccountOwnerInfo::CUSTOMER_CIF_ID      => $bankingAccount->bank_internal_reference_number,
-            AccountOwnerInfo::CURRENCY             => Currency::INR,
-            AccountOwnerInfo::ACCOUNT_OPENING_DATE => $account_opening_date,
-            AccountOwnerInfo::ACCOUNT_TYPE         => $bankingAccount->account_type,
-            AccountOwnerInfo::ACCOUNT_STATUS       => $bankingAccount->status,
-            AccountOwnerInfo::ACCOUNT_NUMBER       => $bankingAccount->account_number,
-            AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
-            AccountOwnerInfo::HOME_BRANCH_NAME     => RBLBankConstants::BRANCH_NAME,
-            AccountOwnerInfo::HOME_BRANCH_ADDRESS  => RBLBankConstants::BRANCH_ADDRESS,
-            AccountOwnerInfo::IFSC_CODE            => RBLBankConstants::IFSC_CODE,
-            AccountOwnerInfo::SANCTION_LIMIT       => RBLBankConstants::SANCTION_LIMIT,
-            AccountOwnerInfo::DRAWING_POWER        => RBLBankConstants::DRAWING_POWER,
-            AccountOwnerInfo::BRANCH_TIMINGS       => RBLBankConstants::BRANCH_TIMINGS,
-            AccountOwnerInfo::CALL_CENTER          => RBLBankConstants::CALL_CENTER_NUMBER,
-            AccountOwnerInfo::BRANCH_PHONE_NUMBER  => RBLBankConstants::BRANCH_PHONE_NUMBER,
-            AccountOwnerInfo::BRANCH_CITY          => RBLBankConstants::BRANCH_CITY,
-            AccountOwnerInfo::BRANCH_STATE         => RBLBankConstants::BRANCH_STATE,
-            AccountOwnerInfo::BRANCH_PINCODE       => RBLBankConstants::BRANCH_PINCODE
-        ];
+        $accountOwnerInfo = $this->getAccountOwnerInfo($merchant,
+                                                       $merchantDetails,
+                                                       $bankingAccount,
+                                                       $account_opening_date,
+                                                       $statementPeriod);
 
         $transactions     = $this->serializeTransactions($all_bank_account_transactions);
 
@@ -92,9 +69,10 @@ abstract class Generator extends Base
 
         return [
             AccountStatementData::ACCOUNT_OWNER_INFO => $accountOwnerInfo,
-            AccountStatementData::TRANSACTIONS       => $transactions,
-            AccountStatementData::STATEMENT_SUMMARY  => $statementSummary
 
+            AccountStatementData::TRANSACTIONS       => $transactions,
+
+            AccountStatementData::STATEMENT_SUMMARY  => $statementSummary
         ];
     }
 
@@ -138,6 +116,7 @@ abstract class Generator extends Base
                 }
             }
         }
+
         $statementGeneratedDate = Carbon::createFromTimestamp(time(), Timezone::IST)
                                           ->format(StatementSummary::STATEMENT_GENERATED_DATE_FORMAT);
 
@@ -165,9 +144,9 @@ abstract class Generator extends Base
         foreach ($bank_account_statements as $transaction)
         {
             $lineItem = [
-                TransactionLineItem::TRANSACTION_DATE    =>
-                    Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
-                          ->format(TransactionLineItem::ITEM_DATE_FORMAT),
+                TransactionLineItem::TRANSACTION_DATE    => Carbon::createFromTimestamp($transaction->transaction_date,
+                                                                                        Timezone::IST)
+                                                                    ->format(TransactionLineItem::ITEM_DATE_FORMAT),
 
                 TransactionLineItem::TRANSACTION_DETAILS => $transaction->description,
 
@@ -175,14 +154,13 @@ abstract class Generator extends Base
 
                 TransactionLineItem::VALUE_DATE          => Carbon::createFromTimestamp($transaction->transaction_date,
                                                                                         Timezone::IST)
-                                                                     ->format(TransactionLineItem::ITEM_DATE_FORMAT),
+                                                                    ->format(TransactionLineItem::ITEM_DATE_FORMAT),
 
                 TransactionLineItem::BALANCE             => (float) $transaction->balance / 100
             ];
 
             if ($transaction->type == Type::CREDIT)
             {
-
                 $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = (float) $transaction->amount / 100;
 
                 $lineItem[TransactionLineItem::DEPOSIT_AMOUNT]    = null;
@@ -198,5 +176,51 @@ abstract class Generator extends Base
         }
 
         return $transactions;
+    }
+
+    /**
+     * @param $merchant
+     * @param $merchantDetails
+     * @param $bankingAccount
+     * @param string $account_opening_date
+     * @param string $statementPeriod
+     * @return array
+     */
+    protected function getAccountOwnerInfo($merchant,
+                                           $merchantDetails,
+                                           $bankingAccount,
+                                           string $account_opening_date,
+                                           string $statementPeriod): array
+    {
+        $accountOwnerInfo = [
+            AccountOwnerInfo::ACCOUNT_NAME         => $merchant->name,
+            AccountOwnerInfo::CUSTOMER_ADDRESS     => $merchantDetails->business_operation_address,
+            AccountOwnerInfo::CUSTOMER_ADDRESS_L2  => $merchantDetails->business_registered_address_l2,
+            AccountOwnerInfo::CUSTOMER_CITY        => $merchantDetails->business_operation_city,
+            AccountOwnerInfo::CUSTOMER_STATE       => $merchantDetails->business_operation_state,
+            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $merchantDetails->business_operation_pin,
+            AccountOwnerInfo::CUSTOMER_MOBILE      => $merchantDetails->contact_mobile,
+            AccountOwnerInfo::CUSTOMER_EMAIL       => $merchantDetails->contact_email,
+            AccountOwnerInfo::CUSTOMER_CIF_ID      => $bankingAccount->bank_internal_reference_number,
+            AccountOwnerInfo::CURRENCY             => Currency::INR,
+            AccountOwnerInfo::ACCOUNT_OPENING_DATE => $account_opening_date,
+            AccountOwnerInfo::ACCOUNT_TYPE         => $bankingAccount->account_type,
+            AccountOwnerInfo::ACCOUNT_STATUS       => $bankingAccount->status,
+            AccountOwnerInfo::ACCOUNT_NUMBER       => $bankingAccount->account_number,
+            AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
+            AccountOwnerInfo::HOME_BRANCH_NAME     => RBLBankConstants::BRANCH_NAME,
+            AccountOwnerInfo::HOME_BRANCH_ADDRESS  => RBLBankConstants::BRANCH_ADDRESS,
+            AccountOwnerInfo::IFSC_CODE            => RBLBankConstants::IFSC_CODE,
+            AccountOwnerInfo::SANCTION_LIMIT       => RBLBankConstants::SANCTION_LIMIT,
+            AccountOwnerInfo::DRAWING_POWER        => RBLBankConstants::DRAWING_POWER,
+            AccountOwnerInfo::BRANCH_TIMINGS       => RBLBankConstants::BRANCH_TIMINGS,
+            AccountOwnerInfo::CALL_CENTER          => RBLBankConstants::CALL_CENTER_NUMBER,
+            AccountOwnerInfo::BRANCH_PHONE_NUMBER  => RBLBankConstants::BRANCH_PHONE_NUMBER,
+            AccountOwnerInfo::BRANCH_CITY          => RBLBankConstants::BRANCH_CITY,
+            AccountOwnerInfo::BRANCH_STATE         => RBLBankConstants::BRANCH_STATE,
+            AccountOwnerInfo::BRANCH_PINCODE       => RBLBankConstants::BRANCH_PINCODE
+        ];
+
+        return $accountOwnerInfo;
     }
 }

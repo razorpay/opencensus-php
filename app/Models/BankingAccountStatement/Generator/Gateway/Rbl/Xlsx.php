@@ -4,10 +4,10 @@ namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 
 use RZP\Models\FileStore;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 
 class Xlsx extends Generator
 {
@@ -130,7 +130,6 @@ class Xlsx extends Generator
 
     public function __construct($accountNumber, $channel, $fromDate, $toDate)
     {
-
         parent::__construct($accountNumber, $channel, $fromDate, $toDate);
 
         $this->calculateStatementSummaryCellValues();
@@ -138,53 +137,68 @@ class Xlsx extends Generator
 
     protected function calculateStatementSummaryCellValues()
     {
-
         $tCount = $this->getTotalTransactionCount();
 
         $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_SUMMARY]
             = 'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+
         $this->SUMMARY_KEY_MAP[XLSXHeaders::OPENING_BALANCE]
             = 'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
+
         $this->SUMMARY_KEY_MAP[XLSXHeaders::CLOSING_BALANCE]
             = 'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 2);
+
         $this->SUMMARY_KEY_MAP[XLSXHeaders::EFFECTIVE_BALANCE]
             = 'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 3);
+
         $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_GENERATED_DATE]
             = 'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 4);
+
         $this->SUMMARY_KEY_MAP[XLSXHeaders::DEBIT_COUNT]
             = 'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+
         $this->SUMMARY_KEY_MAP[XLSXHeaders::CREDIT_COUNT]
             = 'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+
         $this->SUMMARY_KEY_MAP[XLSXHeaders::LIEN_AMOUNT]
             = 'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
         $this->SUMMARY_DATA_MAP[StatementSummary::OPENING_BALANCE]
             = 'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
+
         $this->SUMMARY_DATA_MAP[StatementSummary::CLOSING_BALANCE]
             = 'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 2);
+
         $this->SUMMARY_DATA_MAP[StatementSummary::EFFECTIVE_BALANCE]
             = 'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 3);
+
         $this->SUMMARY_DATA_MAP[StatementSummary::STATEMENT_GENERATED_DATE]
             = 'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 4);
+
         $this->SUMMARY_DATA_MAP[StatementSummary::DEBIT_COUNT]
             = 'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+
         $this->SUMMARY_DATA_MAP[StatementSummary::CREDIT_COUNT]
             = 'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+
         $this->SUMMARY_DATA_MAP[StatementSummary::LIEN_AMOUNT]
             = 'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
-
     }
 
     function getStatement()
     {
-
         $statementData = $this->accountStatementData();
+
         $spreadsheet   = $this->createTableView($statementData);
 
         $tmpFileName     = $this->accountNumber;
+
         $tmpFileFullPath = storage_path('tmp/' . $tmpFileName);
+
         $writer          = new XlsxWriter($spreadsheet);
+
         $writer->save($tmpFileFullPath);
+
         $fileStoreHandle = (new FileStore\Creator())->localFilePath($tmpFileFullPath)
                                                     ->name($tmpFileName)
                                                     ->mime(self::DEFAULT_XLSX_FORMAT)
@@ -194,22 +208,26 @@ class Xlsx extends Generator
                                                     ->getFileInstance();
 
         return $fileStoreHandle;
-
-        return 'Excel File Written';
     }
 
     protected function createTableView($statementDate): Spreadsheet
     {
-
         $spreadsheet = new Spreadsheet();
+
         $sheet       = $spreadsheet->getActiveSheet();
 
         $this->addLogo($sheet);
+
         $this->addHeaders($sheet);
+
         $this->addOwnerInfo($sheet);
+
         $this->addStatementSummary($sheet);
+
         $this->addTransactionTitle($sheet);
+
         $this->addTransactions($sheet);
+
         $this->addStyling($sheet);
 
         return $spreadsheet;
@@ -217,7 +235,6 @@ class Xlsx extends Generator
 
     protected function addHeaders(&$sheet)
     {
-
         foreach (self::HEADER_TO_CELL_MAP as $header => $columnNumber)
         {
             $sheet->setCellValue($columnNumber, $header);
@@ -231,8 +248,8 @@ class Xlsx extends Generator
 
     protected function addStatementSummary(&$sheet)
     {
-
         $statementSummary = $this->data[AccountStatementData::STATEMENT_SUMMARY];
+
         foreach ($this->SUMMARY_DATA_MAP as $dataPoint => $columnNumber)
         {
             $sheet->setCellValue($columnNumber, $statementSummary[$dataPoint]);
@@ -241,7 +258,6 @@ class Xlsx extends Generator
 
     protected function addOwnerInfo(&$sheet)
     {
-
         $basicInfo = $this->data[AccountStatementData::ACCOUNT_OWNER_INFO];
 
         foreach (self::ACCOUNT_OWNER_INFO_CELL_MAP as $dataPoint => $columnNumber)
@@ -252,7 +268,6 @@ class Xlsx extends Generator
 
     protected function addTransactionTitle(&$sheet)
     {
-
         $basicInfo = $this->data[AccountStatementData::ACCOUNT_OWNER_INFO];
 
         # Ex: Transactions List - INTERNET BANK (INR) - 409000000083
@@ -265,7 +280,6 @@ class Xlsx extends Generator
 
     protected function addLogo(&$sheet)
     {
-
         $drawing = new Drawing();
 
         $drawing->setPath(resource_path(self::LOGO_PATH));
@@ -277,25 +291,26 @@ class Xlsx extends Generator
 
     protected function addTransactions(&$sheet)
     {
-
         # loop over the statements and put in the transactions
         $transactions = $this->data[AccountStatementData::TRANSACTIONS];
 
         $currentRow   = self::TRANSACTION_DATA_START_ROW;
+
         foreach ($transactions as $lineItem)
         {
             foreach ($lineItem as $transactionKey => $transactionValue)
             {
                 $cell = self::TRANSACTION_DATA_TO_COLUMN[$transactionKey] . (string) $currentRow;
+
                 $sheet->setCellValue($cell, $transactionValue);
             }
+
             $currentRow++;
         }
     }
 
     protected function addStyling(&$sheet)
     {
-
         $this->makeCellsBold($sheet);
 
         # merge the 5 cells for logo
@@ -319,8 +334,10 @@ class Xlsx extends Generator
         # give all the cells of the transaction table blue border
         $lastTransactionIndex = 'G' . (string) (self::TRANSACTION_DATA_START_ROW +
                                                 $this->getTotalTransactionCount() - 1);
+
         $transactionRange     = 'A' . (string) self::TRANSACTION_DATA_START_ROW . ':'
                                 . $lastTransactionIndex;
+
         $sheet->getStyle($transactionRange)->getBorders()
               ->applyFromArray(
                   [
@@ -333,12 +350,10 @@ class Xlsx extends Generator
                                   ]
                           ]
                   ]);
-
     }
 
     protected function getTotalTransactionCount(): int
     {
-
         $transaction = $this->data[AccountStatementData::TRANSACTIONS];
 
         return count($transaction);
@@ -346,7 +361,6 @@ class Xlsx extends Generator
 
     protected function makeCellsBold(&$sheet)
     {
-
         $columnsToBold = array_merge(
             array_values(self::ACCOUNT_OWNER_INFO_CELL_MAP),
             array_values($this->SUMMARY_DATA_MAP)
@@ -365,8 +379,4 @@ class Xlsx extends Generator
             $sheet->getStyle($column)->getFont()->setBold(1);
         }
     }
-
 }
-
-
-
