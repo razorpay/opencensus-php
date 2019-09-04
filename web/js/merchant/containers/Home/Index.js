@@ -769,7 +769,7 @@ export default class HomeContainer extends Component {
                       trackActivateAccount();
                       onFirstStepClose();
                       tracking.trackEvent(
-                        window.rzpQ.initiated('act.form_fill', {
+                        window.rzpQ.onbr().initiated('act.form_fill', {
                           clickSource: 'first-login-popup',
                         })
                       );
@@ -791,7 +791,7 @@ export default class HomeContainer extends Component {
             }}
             onGoToDashboard={() => {
               tracking.trackEvent(
-                window.rzpQ.initiated('act.whitelist_popup_action')
+                window.rzpQ.onbr().initiated('act.whitelist_popup_action')
               );
               iaActivations.trackGoToDashboard();
               this.closeOnboardingStep();
@@ -826,10 +826,10 @@ export default class HomeContainer extends Component {
             onGiveDetails={() => {
               iaActivations.trackGiveKYCDetails();
               tracking.trackEvent(
-                window.rzpQ.initiated('act.greylist_popup_action')
+                window.rzpQ.onbr().initiated('act.greylist_popup_action')
               );
               tracking.trackEvent(
-                window.rzpQ.initiated('kyc.form_fill', {
+                window.rzpQ.onbr().initiated('kyc.form_fill', {
                   eventSource: 'greylist_popup',
                 })
               );

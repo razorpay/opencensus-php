@@ -16,7 +16,7 @@ export default RTracking((state, props, args) => {
           to="/activation"
           onClick={() => {
             props.tracking.trackEvent(
-              window.rzpQ.initiated('kyc.form_fill', {
+              window.rzpQ.onbr().initiated('kyc.form_fill', {
                 clickSource: props.location.pathname.substr(1),
               })
             );

@@ -290,7 +290,7 @@ export default class ActivationWizard extends React.Component {
     const currenActiveTab = this.state.activeTab;
     const tracker = () =>
       this.props.tracking.trackEvent(
-        window.rzpQ.initiated('kyc.save_modifications', {
+        window.rzpQ.onbr().initiated('kyc.save_modifications', {
           clickSource: 'save',
         })
       );
@@ -312,7 +312,7 @@ export default class ActivationWizard extends React.Component {
     const currenActiveTab = this.state.activeTab;
     const tracker = () =>
       this.props.tracking.trackEvent(
-        window.rzpQ.initiated('kyc.save_modifications', {
+        window.rzpQ.onbr().initiated('kyc.save_modifications', {
           clickSource: 'save-next',
         })
       );
@@ -352,7 +352,7 @@ export default class ActivationWizard extends React.Component {
     console.log(tabId, currentActiveTab);
     const tracker = () =>
       this.props.tracking.trackEvent(
-        window.rzpQ.initiated('kyc.nav_action', {
+        window.rzpQ.onbr().initiated('kyc.nav_action', {
           clickSource: mainFormTabs[tabId],
         })
       );

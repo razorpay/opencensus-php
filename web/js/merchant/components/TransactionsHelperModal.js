@@ -21,7 +21,7 @@ export default class InstantActivationSuccess extends Component {
     const { onClose, showProductsModal, showTransactionsModal } = this.props;
     this.props.track.trackViewProducts();
     this.props.tracking.trackEvent(
-      window.rzpQ.initiated('dash.accept_payments_popup_action', {
+      window.rzpQ.onbr().initiated('dash.accept_payments_popup_action', {
         clickSource: 'view-products',
       })
     );

@@ -52,7 +52,7 @@ export default RTracking((state, props, args) => {
         onClick={() => {
           trackingIntent &&
             props.tracking.trackEvent(
-              window.rzpQ.initiated(trackingIntent, {
+              window.rzpQ.onbr().initiated(trackingIntent, {
                 clickSource: 'lhs-nav-bar',
               })
             );

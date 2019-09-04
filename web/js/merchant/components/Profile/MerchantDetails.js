@@ -94,14 +94,14 @@ const MerchantDetails = ({
           label={() => <b>Account Activation</b>}
           value={() => (
             <span>
-              <Link to={'/activation'} 
-                 onClick={() => {
-                  tracking.trackEvent(
-                    window.rzpQ.onbr().initiated('kyc.form_fill', {
-                      eventSource: 'my_account',
-                    })
-                  );
-                }}
+              <Link to={'/activation'}
+               onClick={() => {
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('kyc.form_fill', {
+                    eventSource: 'my_account',
+                  })
+                );
+              }}
               >
                 {do {
                   if (user.activated || user.locked || user.submitted) {
@@ -204,7 +204,7 @@ const MerchantDetails = ({
       )}
     </div>
   );
-}
+};
 
 export default connect(null, { openModal, closeModal })(
   RTracking()(MerchantDetails)
