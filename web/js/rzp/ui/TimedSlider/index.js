@@ -30,7 +30,7 @@ export default class TimedSlider extends React.PureComponent {
 
   componentDidMount() {
     this.timer = window.setInterval(() => {
-      this.goNext();
+      // this.goNext();
     }, this.slidersMeta[this.state.curStoryIndex].duration);
   }
 

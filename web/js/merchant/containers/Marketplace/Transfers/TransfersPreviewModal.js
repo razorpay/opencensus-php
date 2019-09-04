@@ -1,4 +1,4 @@
-import StorySlider, { Story, StoriesTabs } from 'rzp/ui/StorySlider';
+import TimedSlider, { TimedSlide, TimedSliderTabs } from 'rzp/ui/TimedSlider';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 
@@ -7,13 +7,13 @@ export default ({ closeModal }) => (
     <ModalHeader onCloseClick={closeModal} />
 
     <div class="modal-body">
-      <StorySlider afterFrame={StoriesTabs}>
-        {STORIES_DATA.map((data, idx) => (
-          <Story key={idx} {...data}>
+      <TimedSlider afterFrame={TimedSliderTabs}>
+        {SLIDER_DATA.map((data, idx) => (
+          <TimedSlide key={idx} {...data}>
             <img src={data.imgURL} />
-          </Story>
+          </TimedSlide>
         ))}
-      </StorySlider>
+      </TimedSlider>
 
       <div class="got-it-button" onClick={closeModal}>
         Ok, Got it
@@ -22,7 +22,7 @@ export default ({ closeModal }) => (
   </div>
 );
 
-const STORIES_DATA = [
+const SLIDER_DATA = [
   {
     duration: 2000,
     imgURL: '/dist/css/assets/product_onboarding/route/goto_transactions.png',
