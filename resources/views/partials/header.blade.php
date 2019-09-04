@@ -55,7 +55,7 @@
 
         function checkAnalytics(data) {
            // If analytics is undefined, push to _rzpAQ_fbq
-           if (typeof analytics === 'undefined') {
+            if (typeof analytics === 'undefined') {
                 _rzpAQ_fbq.push(data);
                 return false;
             }
@@ -90,22 +90,26 @@
                 case 'facebook': {
                     if (!checkAnalytics(data)) return;
                     analytics.track('fb', data.event, data.value);
-                   break;
+
+                    break;
                 }
                 case 'bing': {
                     if (!checkAnalytics(data)) return;
                     analytics.track('bing', data.event);
-                   break;
+                    
+                    break;
                 }
                 case 'twitter': {
                     if (!checkAnalytics(data)) return;
                     analytics.track('twitter', '', data.value);
-                   break;
+
+                    break;
                 }
                 case 'linkedIn': {
                     if (!checkAnalytics(data)) return;
                     analytics.track('linkedin', '', data.value);
-                   break;
+
+                    break;
                 }
 
                 default: {
@@ -116,27 +120,15 @@
                         data.eventAction || undefined,
                         data.eventLabel || undefined,
                         data.eventValue || undefined
-                    )
+                    );
+
                     ga('send',
                         'event',
                         data.eventCategory || undefined,
                         data.eventAction || undefined,
                         data.eventLabel || undefined,
                         data.eventValue || undefined
-                    )
-
-                    // Sending Ga events to hubspot
-                    var hsqData = {
-                        id: data.eventCategory + "__" + data.eventAction,
-                    };
-
-                    if (data.eventLabel) {
-                        hsqData.value = data.eventLabel;
-                        if (data.eventValue) {
-                            hsqData.value = data.eventLabel + "__" + data.eventValue;
-                        }
-                    };
-                    window.trackHubs(hsqData);
+                    );
                 }
             }
         }
