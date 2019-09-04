@@ -104,7 +104,7 @@ class SmsOtpAuth implements BaseAuth
 
         $payload = $this->getBasePayloadForRaven($input);
 
-        $payload['template'] = 'sms.2fa.' . $input[self::ACTION];
+        $payload['template'] = 'sms.user.' . $input[self::ACTION];
 
         try
         {

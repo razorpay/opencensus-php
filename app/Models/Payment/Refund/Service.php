@@ -1552,7 +1552,10 @@ class Service extends Base\Service
         $this->repo->payment->setMerchantIdRequiredForMultipleFetch($merchantIdRequiredForMultipleFetch);
         $this->repo->refund->setMerchantIdRequiredForMultipleFetch($merchantIdRequiredForMultipleFetch);
 
-        $return = [RefundConstants::PAYMENTS => []];
+        $return = [
+            RefundConstants::ID_TYPE => RefundConstants::UNKNOWN,
+            RefundConstants::PAYMENTS => [],
+        ];
 
         switch(true)
         {
@@ -1620,9 +1623,9 @@ class Service extends Base\Service
     /**
      * @param $id
      * @param array $return
-     * @param bool $searchInEsNotes
+     * @param bool $continueSearch
      */
-    protected function populateDetailsFromPaymentId($id, array &$return, bool &$searchInEsNotes = true)
+    protected function populateDetailsFromPaymentId($id, array &$return, bool &$continueSearch = true)
     {
         $payment = $this->getPaymentFromPaymentIdForCustomerDetails($id);
 
@@ -1630,16 +1633,18 @@ class Service extends Base\Service
         {
             $this->populateRefundDetailsForCustomer($return, $payment);
 
-            $searchInEsNotes = false;
+            $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
+
+            $continueSearch = false;
         }
     }
 
     /**
      * @param $id
      * @param array $return
-     * @param bool $searchInEsNotes
+     * @param bool $continueSearch
      */
-    protected function populateDetailsFromRefundId($id, array &$return, bool &$searchInEsNotes = true)
+    protected function populateDetailsFromRefundId($id, array &$return, bool &$continueSearch = true)
     {
         $refund = $this->getRefundFromRefundIdForCustomerDetails($id);
 
@@ -1649,16 +1654,18 @@ class Service extends Base\Service
 
             $this->populateRefundDetailsForCustomer($return, $payment);
 
-            $searchInEsNotes = false;
+            $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
+
+            $continueSearch = false;
         }
     }
 
     /**
      * @param $id
      * @param array $return
-     * @param bool $searchInEsNotes
+     * @param bool $continueSearch
      */
-    protected function populateDetailsFromOrderId($id, array &$return, bool &$searchInEsNotes = true)
+    protected function populateDetailsFromOrderId($id, array &$return, bool &$continueSearch = true)
     {
         $order = $this->getOrderFromOrderIdForCustomerDetails($id);
 
@@ -1671,7 +1678,9 @@ class Service extends Base\Service
                 $this->populateRefundDetailsForCustomer($return, $payment);
             }
 
-            $searchInEsNotes = false;
+            $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
+
+            $continueSearch = false;
         }
     }
 
@@ -1693,7 +1702,7 @@ class Service extends Base\Service
             $actions = [Payment\Action::AUTHORIZE, Payment\Action::REFUND];
 
             // Check upi table - authorize action
-            $this->fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, $return);
+            $this->fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, $return, $continueSearch);
         }
         // check if RZP ID
         else if(Base\UniqueIdEntity::verifyUniqueId($id, false) === true)
@@ -1715,6 +1724,8 @@ class Service extends Base\Service
         // Fetch from merchant notes
         if ($continueSearch === true)
         {
+            (new Validator)->validateCustomerRefundFetchDetailsFromMerchantNotes($id);
+
             $this->fetchRefundDetailsForCustomerFromMerchantNotes($id, $return);
         }
     }
@@ -1723,8 +1734,9 @@ class Service extends Base\Service
      * @param $id
      * @param $actions
      * @param array $return
+     * @param bool $continueSearch
      */
-    protected function fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, array &$return)
+    protected function fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, array &$return, bool &$continueSearch = true)
     {
         $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndActions($id, $actions);
 
@@ -1737,6 +1749,10 @@ class Service extends Base\Service
             if (empty($payment) === false)
             {
                 $this->populateRefundDetailsForCustomer($return, $payment);
+
+                $return[RefundConstants::ID_TYPE] = RefundConstants::NPCI_RRN;
+
+                $continueSearch = false;
             }
         }
     }
@@ -1767,6 +1783,8 @@ class Service extends Base\Service
             $payment = $this->repo->payment->find($payment->toArray()[0][Payment\Entity::ID]);
 
             $this->populateRefundDetailsForCustomer($return, $payment);
+
+            $return[RefundConstants::ID_TYPE] = RefundConstants::MERCHANT_REFERENCE;
         }
         else
         {
@@ -1789,6 +1807,8 @@ class Service extends Base\Service
                 $payment = $refund->payment;
 
                 $this->populateRefundDetailsForCustomer($return, $payment);
+
+                $return[RefundConstants::ID_TYPE] = RefundConstants::MERCHANT_REFERENCE;
             }
         }
     }

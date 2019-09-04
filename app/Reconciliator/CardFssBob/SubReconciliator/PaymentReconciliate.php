@@ -130,7 +130,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         return strtolower($row[ReconciliationFields::ONUS_INDICATOR]?? '');
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         $status = Status::$successStates;
 

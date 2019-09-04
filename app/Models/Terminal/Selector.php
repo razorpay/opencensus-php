@@ -589,10 +589,16 @@ class Selector extends Base\Core
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
-            $downtimes = $this->repo->useSlave(function () use ($filteredTerminals)
+            if (in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true )
             {
-                return (new Downtime\Core)->getApplicableDowntimesForPayment($filteredTerminals, $this->input);
-            });
+                $downtimes = $this->repo->useSlave(function () use ($filteredTerminals) {
+                    return (new Downtime\Core)->getApplicableDowntimesForPayment($filteredTerminals, $this->input);
+                });
+            }
+            else
+            {
+                $downtimes = [];
+            }
 
             $failedTerminalIds = $this->options->getFailedTerminals();
 
@@ -718,6 +724,8 @@ class Selector extends Base\Core
         $merchantData['international']     = $merchant->isInternational();
         $merchantData['has_key_access']    = $merchant->getHasKeyAccess();
         $merchantData['features']          = $merchant->getEnabledFeatures();
+        $merchantData['fee_bearer']        = $merchant->getFeeBearer();
+        $merchantData['org_id']            = $merchant->getOrgId();
 
         $subMerchantIds = [];
 

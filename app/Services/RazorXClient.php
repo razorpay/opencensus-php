@@ -37,7 +37,7 @@ class RazorXClient
     const DEFAULT_CASE      = 'control';
 
     const CACHED_TREATMENT_PREFIX = "razorx:";
-    const CACHED_TREATMENT_TTL = 15; // In minutes.
+    const CACHED_TREATMENT_TTL = 1; // In minutes.
 
     protected $baseUrl;
 

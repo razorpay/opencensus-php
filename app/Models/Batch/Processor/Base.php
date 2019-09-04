@@ -147,11 +147,11 @@ class Base extends BaseModel\Core
         return $this;
     }
 
-    public function getBatchContext(): array
+    public function getBatchContext(array $config): array
     {
         $batchContext                        = [];
         $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
-        $batchContext[Batch\Constants::DATA] = $this->params;
+        $batchContext[Batch\Constants::DATA] = $config;
 
         return $batchContext;
     }
@@ -798,6 +798,7 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::TXT:
+            case FileStore\Format::DAT:
                 $txt = $this->generateTextWithHeadings($entries, '|', false, array_keys(current($entries)));
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);

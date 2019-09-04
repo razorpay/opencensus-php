@@ -25,7 +25,7 @@ trait ReconTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function reconcile(UploadedFile $uploadedFile, $gateway, $forceAuthorizePayments = [])
+    protected function reconcile(UploadedFile $uploadedFile, $gateway, $forceAuthorizePayments = [], $manualFile = false)
     {
         $this->ba->appAuth();
 
@@ -41,6 +41,11 @@ trait ReconTrait
             {
                 $input[Base::FORCE_AUTHORIZE][] = $forceAuthorizePayment;
             }
+        }
+
+        if ($manualFile === true)
+        {
+            $input[Base::MANUAL_RECON_FILE] = 1;
         }
 
         $request = [

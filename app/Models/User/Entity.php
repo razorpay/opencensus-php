@@ -87,6 +87,7 @@ class Entity extends Base\PublicEntity
         self::SECOND_FACTOR_AUTH_SETUP,
         self::RESTRICTED,
         self::CONFIRMED,
+        self::ACCOUNT_LOCKED,
         self::CREATED_AT,
     ];
 

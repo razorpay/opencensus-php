@@ -165,6 +165,8 @@ class CardVault
             'content' => $data
         ];
 
+        $this->trace->info(TraceCode::CARD_VAULT_REQUEST,[]);
+
         $response = $this->sendCardVaultRequest($request);
 
         $this->checkErrors(json_decode($response->body, true));

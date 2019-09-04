@@ -9,6 +9,8 @@ class Action
 
     protected $actionToRoute = [];
 
+    protected $redactRules = [];
+
     public function toRoute(string $action)
     {
         if (isset($this->actionToRoute[$action]) === false)
@@ -17,5 +19,15 @@ class Action
         }
 
         return $this->actionToRoute[$action];
+    }
+
+    public function getRedactRules(string $action)
+    {
+        if (isset($this->redactRules[$action]) === false)
+        {
+            return null;
+        }
+
+        return $this->redactRules[$action];
     }
 }

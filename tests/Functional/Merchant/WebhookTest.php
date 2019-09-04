@@ -264,6 +264,38 @@ class WebhookTest extends TestCase
         $this->assertNotContains('application_id', $response);
     }
 
+    public function testGetWebhookWithSecret()
+    {
+        $webhook = $this->fixtures->create('webhook',
+            [
+                'merchant_id' => '10NodalAccount',
+                'url'         => 'http://www.testUrl.com',
+                'secret'      => 'BestTestSecretEver',
+                'events'      => ['payment.authorized' => '1']
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->ba->hostedAuth('rzp_test_10NodalAccount');
+
+        $response = $this->startTest();
+    }
+
+    public function testGetWebhooksWithSecret()
+    {
+        $this->fixtures->create('webhook',
+            [
+                'merchant_id' => '10NodalAccount',
+                'url'         => 'http://www.testUrl.com',
+                'secret'      => 'BestTestSecretEver',
+                'events'      => ['payment.authorized' => '1']
+            ]);
+
+        $this->ba->hostedAuth('rzp_test_10NodalAccount');
+
+        $response = $this->startTest();
+    }
+
     public function testGetWebhookEvents()
     {
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);

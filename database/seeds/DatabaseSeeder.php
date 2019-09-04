@@ -548,6 +548,7 @@ class DatabaseSeeder extends Seeder
                     'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'aeps'          => '1',
+                    'paypal'        => '1',
                     'mobikwik'      => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
@@ -924,6 +925,22 @@ class DatabaseSeeder extends Seeder
                 'type'                  => 1,
                 )
             );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '1n25f6uN5S1Zak',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::WALLET_PAYPAL,
+                'card'                  => '0',
+                'gateway_merchant_id'   => 'NXR8P4C58AYQE',
+                'gateway_terminal_password2'=> Crypt::encrypt('AR2npSdWeXHqtuW2iGNL2_9q2TGsWl16ZnsTpNNoxrJ2Kv8vjGFPH_HjUVriDDh_-ZxDtA1IKLdJlLf4'),
+                'gateway_terminal_password' => Crypt::encrypt('EPaeTqZhSRferbORXbPF9Ew7uX7sErYkR1C6GCsjrVJFPriHKE3AJFGHQQzwiGvnwWxA_oUyNiTaKv_f'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 0,
+            )
+        );
 
         DB::table(Table::TERMINAL)->insert(
             array(

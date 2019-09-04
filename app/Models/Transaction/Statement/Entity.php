@@ -99,6 +99,10 @@ class Entity extends Transaction\Entity
                 $this->setPublicSourceAttributeForExternal($array);
                 break;
 
+            case E::FUND_ACCOUNT_VALIDATION:
+                // Do nothing special for fund account validations
+                break;
+
             default:
                 // By default do not expose any source attributes
                 $array[self::SOURCE] = [];

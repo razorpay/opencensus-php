@@ -652,7 +652,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'headless', 'otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -776,7 +776,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'headless', 'otp_auth_default']);
         $this->mockCardVault();
         $otpelf = $this->mockOtpElf();
 
@@ -819,7 +819,7 @@ class OtpPaymentTest extends TestCase
 
         $response = $this->makeRequestParent($request);
 
-        $content =$this->getJsonContentFromResponse($response);
+        $content = $this->getJsonContentFromResponse($response);
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 

@@ -111,6 +111,16 @@ class Header
     const COMPANY_PAN              = 'company_pan';
 
     //
+    // Mpan Bulk creation headers
+    //
+    const MPAN_ID                      =   'mpan_id';
+    const MPAN_SERIAL_NUMBER           =   'SrNo';
+    const MPAN_ADDED_ON                =   'ADDEDON';
+    const MPAN_VISA_PAN                =   'VPAN';
+    const MPAN_MASTERCARD_PAN          =   'MPAN';
+    const MPAN_RUPAY_PAN               =   'RPAN';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -662,6 +672,9 @@ class Header
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // NPCI RUPAY IIN Batch
+    const IIN_NPCI_RUPAY_ROW                     = 'row';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -670,6 +683,21 @@ class Header
      * @var array
      */
     const HEADER_MAP = [
+        Type::MPAN => [
+            self::INPUT => [
+                self::MPAN_SERIAL_NUMBER,
+                self::MPAN_ADDED_ON,
+                self::MPAN_VISA_PAN,
+                self::MPAN_MASTERCARD_PAN,
+                self::MPAN_RUPAY_PAN,
+            ],
+            self::OUTPUT => [
+                self::MPAN_SERIAL_NUMBER,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
 
         Type::TERMINAL_CREATION => [
             self::INPUT => [
@@ -2104,6 +2132,17 @@ class Header
                 self::STATUS,
                 self::FAILURE_REASON,
             ]
+        ],
+
+        Type::IIN_NPCI_RUPAY => [
+            self::INPUT => [
+            ],
+            self::OUTPUT => [
+                self::IIN_NPCI_RUPAY_ROW,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
         ]
     ];
 
@@ -2158,6 +2197,13 @@ class Header
         {
             // header is dynamic for these dat files, adding hack to ignore
             $actualHeaders = [];
+        }
+
+        if ($type === Type::MPAN)
+        {
+            // header can contain empty columns when input file is CSV
+            // this is due to trailing comma in the given input file
+            $actualHeaders = array_filter($actualHeaders);
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
