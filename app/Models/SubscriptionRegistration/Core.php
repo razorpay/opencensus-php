@@ -205,8 +205,8 @@ class Core extends Base\Core
 
         $subr->setStatus(Status::AUTHENTICATED);
 
-        // in case amount is zero, move it to completed
-        if ($subr->getAmount() === 0)
+        if (($token->getRecurringStatus() === Customer\Token\RecurringStatus::REJECTED) or
+            ($subr->getAmount() === 0))
         {
             $subr->setStatus(Status::COMPLETED);
         }
