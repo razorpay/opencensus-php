@@ -28,6 +28,31 @@ class GovernorService
         'method'    =>  "POST",
     ];
 
+    const CREATE_NAMESPACE_V1  =   [
+        'url'       =>  "clients/:client_id/namespaces",
+        'method'    =>  "POST",
+    ];
+
+    const LIST_NAMESPACES_V1  =   [
+        'url'       =>  "clients/:client_id/namespaces",
+        'method'    =>  "GET",
+    ];
+
+    const GET_NAMESPACE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id",
+        'method'    =>  "GET",
+    ];
+
+    const UPDATE_NAMESPACE_V1  =   [
+        'url'       =>  "clients/:client_id/namespaces/:namespace_id",
+        'method'    =>  "PUT",
+    ];
+
+    const DELETE_NAMESPACE_V1  =   [
+        'url'       =>  "client/:client/namespaces/:namespace_id",
+        'method'    =>  "DELETE",
+    ];
+
     const DOMAIN_MODEL_LIST  =   [
         'url'       =>  "rule_engine/data_model/:namespace",
         'method'    =>  "GET",
@@ -73,6 +98,26 @@ class GovernorService
         'method'    =>  "GET",
     ];
 
+    const CREATE_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules",
+        'method'    =>  "POST",
+    ];
+
+    const LIST_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules",
+        'method'    =>  "GET",
+    ];
+
+    const GET_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
+        'method'    =>  "GET",
+    ];
+
+    const DELETE_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
+        'method'    =>  "DELETE",
+    ];
+
     const CREATE_RULE_CHAIN  =   [
         'url'       =>  "rule_engine/rule_chain/:namespace",
         'method'    =>  "POST",
@@ -90,11 +135,36 @@ class GovernorService
         'method'    =>  "GET",
     ];
 
+    const LIST_RULE_CHAIN_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains",
+        'method'    =>  "GET",
+    ];
 
     const EXECUTE_CHAINS  =   [
         'url'       =>  "rule_engine/execute/rule_chain/:namespace",
         'method'    =>  "POST",
     ];
+
+    const LIST_RULE_GROUPS_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups",
+        'method'    =>  "GET",
+    ];
+
+    const CREATE_RULE_GROUP_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups",
+        'method'    =>  "POST",
+    ];
+
+    const GET_RULE_GROUP_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id",
+        'method'    =>  "GET",
+    ];
+
+    const DELETE_RULE_GROUP_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id",
+        'method'    =>  "DELETE",
+    ];
+
 
     /**
      * The application instance.
