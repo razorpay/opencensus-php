@@ -98,6 +98,8 @@ class SubReconciliate extends Base\Core
 
     protected $messenger;
 
+    protected $batch;
+
     /**
      * @var array This array will contain MIS row and
      * corresponding reconciliation status and error

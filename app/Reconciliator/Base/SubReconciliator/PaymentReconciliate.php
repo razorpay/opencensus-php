@@ -112,6 +112,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->messenger->batch = $batch;
 
+        $this->batch = $batch;
+
         $this->paymentRepo     = $this->repo->payment;
         $this->iinRepo         = $this->repo->iin;
         $this->transactionRepo = $this->repo->transaction;
@@ -143,9 +145,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setProcessedAtInOutput();
 
-        $this->setBatchIdInOutput($this->messenger->batch->getId());
+        $this->setBatchIdInOutput($this->batch->getId());
 
-        $this->setAttemptsInOutput($this->messenger->batch->getAttempts());
+        $this->setAttemptsInOutput($this->batch->getAttempts());
 
         try
         {
