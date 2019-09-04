@@ -971,7 +971,7 @@ app
                   }
                 }
               })
-              .catch(errors => {
+              .catch(function (errors) {
                 hideSpinner();
                 $scope.alerts.addAlert('danger', errors[0]);
               });
