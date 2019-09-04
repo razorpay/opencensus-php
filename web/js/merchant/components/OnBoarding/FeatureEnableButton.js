@@ -63,7 +63,7 @@ export default class FeatureEnableButton extends React.Component {
       );
     } else {
       saveOnboarding = this.props.saveOnboarding(this.props.feature, {
-        business_model: '',
+        business_model: 'null-value',
       });
     }
 
