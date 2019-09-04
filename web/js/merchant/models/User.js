@@ -226,6 +226,12 @@ export default class User {
     return !!isEnabled;
   }
 
+  get isPaymentLinksEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState('payment_links');
+
+    return !!isEnabled;
+  }
+
   get currentMerchant() {
     return this.merchants[this.current];
   }
