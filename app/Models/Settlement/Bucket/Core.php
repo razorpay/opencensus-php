@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Balance\Type;
 
 class Core extends Base\Core
 {
@@ -53,11 +54,21 @@ class Core extends Base\Core
     /**
      * will add the merchant to settlement bucket which will be derive based on settlement time provided
      *
+     * @param string $transactionId
      * @param string $merchantId
      * @param        $settlementTime
      */
-    public function addMerchantToSettlementBucket(string $merchantId, $settlementTime)
+    public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime)
     {
+        // check is the transaction can be settled
+        $status = $this->issettleableTransaction($transactionId);
+
+        if ($status === false)
+        {
+            return;
+        }
+
+        // check merchant specific conditions
         $status = $this->preference
                        ->skipMerchantSettlement($merchantId);
 
@@ -66,6 +77,7 @@ class Core extends Base\Core
             return;
         }
 
+        // check early settlement preferences
         list($status, $timestamp) = $this->preference
                                          ->getEarlySettlementBucketIfApplicable($merchantId, $settlementTime);
 
@@ -76,6 +88,7 @@ class Core extends Base\Core
             return;
         }
 
+        // check merchant preference
         list($status, $timestamp) = $this->preference
                                          ->getMerchantSpecificBucket($merchantId, $settlementTime);
 
@@ -126,6 +139,32 @@ class Core extends Base\Core
         $bucketTimestamp = Preference::getNextBucket($currentTimestamp->getTimestamp());
 
         $this->addToBucket($merchantId, $bucketTimestamp);
+    }
+
+    /**
+     * returns true if the transaction belongs to settleable balance type
+     * currently we settle only primary balance
+     *
+     * @param string $transactionId
+     * @return bool
+     */
+    protected function isSettleableTransaction(string $transactionId): bool
+    {
+        $balanceType = $this->repo
+                            ->transaction
+                            ->getTransactionBalanceType($transactionId);
+
+        //
+        // currently we settlement only primary balance to merchant
+        // if partner settlement has to be done then,
+        // add a type to whitelist and have a type section in bucket
+        //
+        if (($balanceType === Type::PRIMARY) or ($balanceType === null))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

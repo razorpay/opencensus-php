@@ -158,7 +158,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn);
 
-        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
 
         return [$txn, $feesSplit];
     }
@@ -198,7 +198,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
 
         return [$txn, $feesSplit];
     }
@@ -650,7 +650,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, $updateEscrow);
 
-        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
 
         return $txn;
     }
@@ -743,7 +743,7 @@ class Core extends Base\Core
         //
         $this->repo->saveOrFail($txn);
 
-        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
 
         $this->updateCredits($txn, $transfer);
 
@@ -793,7 +793,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settleTimestamp);
+        $this->dispatchForSettlementBucketing($txn, $settleTimestamp);
 
         return $txn;
     }
@@ -937,7 +937,7 @@ class Core extends Base\Core
 
         $txn->fill($values);
 
-        $this->dispatchForSettlementBucketing($txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
 
         return $txn;
     }
@@ -1570,7 +1570,7 @@ class Core extends Base\Core
      * @param string $merchantId
      * @param null   $settledAt
      */
-    public function dispatchForSettlementBucketing(string $merchantId, $settledAt = null)
+    public function dispatchForSettlementBucketing(Entity $txn, $settledAt = null)
     {
         if ($settledAt === null)
         {
@@ -1580,7 +1580,7 @@ class Core extends Base\Core
         try
         {
             // Dispatch for bucket creation for settlement
-            Bucket::dispatch($this->mode, $merchantId, $settledAt);
+            Bucket::dispatch($this->mode, $txn->getId(), $txn->getMerchantId(), $settledAt);
         }
         catch (\Throwable $e)
         {

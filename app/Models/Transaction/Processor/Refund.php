@@ -39,7 +39,7 @@ class Refund extends Base
 
         $this->repo->saveOrFail($this->txn);
 
-        $this->dispatchForSettlementBucketing($this->txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     protected function getSettledAtTimestampForRefund()

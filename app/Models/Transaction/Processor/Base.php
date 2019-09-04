@@ -589,10 +589,10 @@ abstract class Base extends BaseCore
      * This will also suppress the any error occurred at this stage
      * if settled at is null then it wont dispatch the job
      *
-     * @param string $merchantId
-     * @param null   $settledAt
+     * @param Transaction\Entity $txn
+     * @param null               $settledAt
      */
-    public function dispatchForSettlementBucketing(string $merchantId, $settledAt = null)
+    public function dispatchForSettlementBucketing(TransactionModel\Entity $txn, $settledAt = null)
     {
         if ($settledAt === null)
         {
@@ -601,7 +601,7 @@ abstract class Base extends BaseCore
 
         try
         {
-            Bucket::dispatch($this->mode, $merchantId, $settledAt);
+            Bucket::dispatch($this->mode, $txn->getId(), $txn->getMerchantId(), $settledAt);
         }
         catch (\Throwable $e)
         {

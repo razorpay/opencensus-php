@@ -32,7 +32,7 @@ class Payment extends Base
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $this->dispatchForSettlementBucketing($this->txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     private function checkAndSetTxnReconciliation()

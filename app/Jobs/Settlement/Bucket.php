@@ -26,17 +26,25 @@ class Bucket extends Job
      protected $settledAt;
 
     /**
+     * @var string
+     */
+     protected $transactionId;
+
+    /**
      * @param string $mode
+     * @param string $txnId
      * @param string $merchantId
      * @param null   $settledAt
      */
-    public function __construct(string $mode, string $merchantId, $settledAt)
+    public function __construct(string $mode, string $txnId, string $merchantId, $settledAt)
     {
         parent::__construct($mode);
 
-        $this->merchantId = $merchantId;
+        $this->transactionId = $txnId;
 
-        $this->settledAt  = $settledAt;
+        $this->merchantId    = $merchantId;
+
+        $this->settledAt     = $settledAt;
     }
 
     /**
@@ -48,7 +56,7 @@ class Bucket extends Job
 
         try
         {
-            (new Core)->addMerchantToSettlementBucket($this->merchantId, $this->settledAt);
+            (new Core)->addMerchantToSettlementBucket($this->transactionId, $this->merchantId, $this->settledAt);
         }
         catch (\Throwable $e)
         {
