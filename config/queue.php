@@ -217,6 +217,10 @@ return [
         'test'       => env('AWS_REFUND_QUEUE'),
         'live'       => env('AWS_REFUND_QUEUE'),
     ],
+    'terminal_batch' => [
+        'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+        'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+    ],
     'capture' => [
         'test'       => env('AWS_CAPTURE_TEST_QUEUE'),
         'live'       => env('AWS_CAPTURE_LIVE_QUEUE'),
