@@ -290,8 +290,6 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatusRecurring($gatewayInput);
 
-        $this->verifyCallback($gatewayPayment, $input);
-
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)

@@ -54,7 +54,7 @@ class Manual extends Base
 
         $inputDetails[self::SOURCE] = self::MANUAL;
 
-        $inputDetails[self::MANUAL_RECON_FILE] = $input[self::MANUAL_RECON_FILE] ?? null;
+        $inputDetails[self::MANUAL_RECON_FILE] = $this->isManualReconFile($input);
 
         return $inputDetails;
     }
@@ -72,9 +72,8 @@ class Manual extends Base
         $this->gateway = $inputDetails[self::GATEWAY];
 
         // Sets the gateway reconciliator object for the orchestrator.
-        if (empty($inputDetails[self::MANUAL_RECON_FILE]) === false)
+        if ($inputDetails[self::MANUAL_RECON_FILE] === true)
         {
-
             //
             // This is manual recon file prepared by FinOps.
             // Setting the Reconciliate accordingly
@@ -87,5 +86,22 @@ class Manual extends Base
         {
             $this->setGatewayReconciliatorObject();
         }
+    }
+
+    /**
+     * Checks if this is manual recon file prepared by FinOps.
+     *
+     * @param array $inputDetails
+     * @return bool
+     */
+    protected function isManualReconFile(array $inputDetails)
+    {
+        if ((empty($inputDetails[self::MANUAL_RECON_FILE]) === false) and
+            (($inputDetails[self::MANUAL_RECON_FILE]) === '1'))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

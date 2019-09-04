@@ -264,7 +264,7 @@ class Reconciliation extends Base
         // Note : We can not just use get() and convert the value to bool, bcoz when key does not
         // exist, then it returns an instance of Dictionary.
         //
-        $result = ($keyExists === false) ? false : boolval($manualReconFile);
+        $result = ($keyExists === false) ? false : ($manualReconFile === '1');
 
         return $result;
     }
