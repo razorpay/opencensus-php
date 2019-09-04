@@ -20,4 +20,28 @@ class Constants
      * We run the cron for this once a day.
      */
     const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 864000;
+
+    /**
+     * Transaction tracker related constants
+     */
+    const ID                 = 'id';
+    const DAYS               = 'days';
+    const RZP_ID             = 'rzp_id';
+    const REFUND             = 'refund';
+    const PAYMENT            = 'payment';
+    const ID_TYPE            = 'id_type';
+    const UNKNOWN            = 'unknown';
+    const REFUNDS            = 'refunds';
+    const NPCI_RRN           = 'npci_rrn';
+    const PAYMENTS           = 'payments';
+    const ORDER_ID           = 'order_id';
+    const LATE_AUTH          = 'late_auth';
+    const REFUND_ID          = 'refund_id';
+    const PAYMENT_ID         = 'payment_id';
+    const MERCHANT_ID        = 'merchant_id';
+    const MERCHANT_NAME      = 'merchant_name';
+    const PRIMARY_MESSAGE    = 'primary_message';
+    const TERTIARY_MESSAGE   = 'tertiary_message';
+    const SECONDARY_MESSAGE  = 'secondary_message';
+    const MERCHANT_REFERENCE = 'merchant_reference';
 }

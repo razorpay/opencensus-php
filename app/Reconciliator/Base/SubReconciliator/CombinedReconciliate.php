@@ -7,7 +7,6 @@ use App;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
@@ -145,6 +144,17 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                         $this->successes[] = $row;
 
                         $this->skippedRows[] = $row;
+
+                        //
+                        // Just keep it in the output file, so that
+                        // batch output file have all the txn rows.
+                        //
+                        $this->insertRowInOutputFile($row);
+
+                        $this->setRowReconStatusAndError(
+                            Base\InfoCode::RECON_UNPROCESSED_SUCCESS,
+                            Base\InfoCode::RECON_UNABLE_TO_IDENTIFY_RECON_TYPE
+                        );
 
                         continue;
                     }

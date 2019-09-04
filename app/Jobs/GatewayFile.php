@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\File;
 use Razorpay\Trace\Logger as Trace;
@@ -9,8 +10,8 @@ use RZP\Exception\BadRequestException;
 
 class GatewayFile extends Job
 {
-    const MAX_ALLOWED_ATTEMPTS = 2;
-    const RELEASE_WAIT_SECS    = 10;
+    const MAX_ALLOWED_ATTEMPTS = 5;
+    const RELEASE_WAIT_SECS    = 120;
 
     protected $gatewayFileId;
 
@@ -88,7 +89,8 @@ class GatewayFile extends Job
             $e, Trace::ERROR, TraceCode::GATEWAY_FILE_JOB_ERROR, [File\Entity::ID => $this->gatewayFileId]);
 
         if (($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS) or
-            ($e instanceof BadRequestException))
+            (($e instanceof BadRequestException) and
+            ($e->getError()->getInternalErrorCode() !== ErrorCode::BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS)))
         {
             $this->delete();
         }

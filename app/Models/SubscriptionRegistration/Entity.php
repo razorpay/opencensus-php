@@ -9,6 +9,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Base\Traits\NotesTrait;
 
+/**
+ * @property Customer\Token\Entity $token
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -213,6 +216,25 @@ class Entity extends Base\PublicEntity
     public function isMethodEmandate(): bool
     {
         return ($this->getMethod() === self::METHOD_TYPE_EMANDATE);
+    }
+
+    public function hasAutoPayment()
+    {
+        return ($this->getAmount() > 0);
+    }
+    
+
+        /**
+     * Gets dimensions for metrics around invoice module
+     * @param  array $extra Additional key, value pair of dimensions
+     * @return array
+     */
+    public function getMetricDimensions(array $extra = []): array
+    {
+        return $extra + [
+            'method'           => (string) $this->getMethod(),
+            'has_auto_payment' => (int) $this->hasAutoPayment()
+        ];
     }
 
     public function incrementAttempts()

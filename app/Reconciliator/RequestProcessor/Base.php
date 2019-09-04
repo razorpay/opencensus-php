@@ -23,6 +23,7 @@ class Base extends Core
     const FORCE_AUTHORIZE         = 'force_authorize';
 
     const SOURCE                  = 'source';
+    const MANUAL_RECON_FILE       = 'manual_recon_file';
 
     /**
      * Type of request processor
@@ -256,7 +257,8 @@ class Base extends Core
     const CONFIG_PARAMS = [
         self::FORCE_UPDATE,
         self::SOURCE,
-        self::FORCE_AUTHORIZE
+        self::FORCE_AUTHORIZE,
+        self::MANUAL_RECON_FILE,
     ];
 
     protected $validator;

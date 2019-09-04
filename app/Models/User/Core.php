@@ -18,6 +18,7 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
+use RZP\Models\Merchant\MerchantUser;
 use RZP\Models\Admin\Admin\Token;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
@@ -265,6 +266,21 @@ class Core extends Base\Core
         return $this->get($user);
     }
 
+    /**
+     * This method currently checks if given user has access to the merchant
+     * It checks if there is an entry in merchant_users table of the given userId and merchantId
+     */
+    public function checkUserAccess(string $userId, string $merchantId, string $product): array
+    {
+        $accessMaps = $this->repo
+                           ->merchant_user
+                           ->getMerchantUserRelation($userId, $merchantId, $product);
+
+        $access = (empty($accessMaps) === false);
+
+        return [ 'access' => $access ];
+    }
+
     // User 2fa is enabled and 2fa is setup. If the request has the otp, it will check
     // if the otp is correct. Else if the otp is not there it will throw an exception.
     private function handleLoginFlowUser2faEnabledAndSetupDone(Entity $user, array $input)
@@ -505,7 +521,7 @@ class Core extends Base\Core
                     $input[Entity::CONTACT_MOBILE] : $user->getContactMobile();
 
         return [
-            Entity::ACTION      =>  'setup_2fa',
+            Entity::ACTION      =>  'second_factor_auth',
             'receiver'          =>  $contact,
             'unique_id'         =>  $user->getId(),
         ];

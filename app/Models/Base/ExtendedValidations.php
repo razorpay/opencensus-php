@@ -534,6 +534,25 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return preg_match('/^[ \pL\pM\pN_-]+$/u', $value) > 0;
     }
 
+    /**
+     * Validate that an attribute contains only alpha-numeric characters and underscores
+     *
+     * @param  string  $attribute
+     * @param  mixed   $value
+     *
+     * @return bool
+     */
+    public function validateAlphaNumUnderscore($attribute, $value)
+    {
+        if ((is_string($value) === false) and
+            (is_numeric($value) === false))
+        {
+            return false;
+        }
+
+        return preg_match('/^[\pL\pM\pN_]+$/u', $value) > 0;
+    }
+
     public function validateMinAmount($attribute, $amount, $parameters)
     {
         $currencyKey = $parameters[0] ?? 'currency';

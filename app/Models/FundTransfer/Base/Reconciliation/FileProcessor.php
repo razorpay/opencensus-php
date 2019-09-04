@@ -3,9 +3,11 @@
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Mail;
-
+use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
@@ -151,6 +153,17 @@ abstract class FileProcessor extends Processor
             {
                 $reconcileFile = $this->getFile($input);
             }
+
+            $customProperties = [
+                'channel'     => static::$channel,
+                'file_info'   => $reconcileFile,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::REVERSE_FEED_RECEIVED,
+                null,
+                null,
+                $customProperties);
         }
         catch (\Throwable $exception)
         {

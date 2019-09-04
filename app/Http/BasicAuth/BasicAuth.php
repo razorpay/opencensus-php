@@ -1443,6 +1443,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'cron');
     }
 
+    public function isHosted()
+    {
+        return ($this->getInternalApp() === 'hosted');
+    }
+
     public function isSubscriptionsApp()
     {
         return ($this->getInternalApp() === 'subscriptions');

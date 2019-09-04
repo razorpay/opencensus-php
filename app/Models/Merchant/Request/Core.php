@@ -839,16 +839,6 @@ class Core extends Base\Core
         Mail::queue($requestNeedsClarificationEmail);
     }
 
-    /**
-     * @return bool
-     */
-    public function isInstantActivationOfProductsEnabled(): bool
-    {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                    Merchant\RazorxTreatment::INSTANT_ACTIVATION_2_0_PRODUCTS,
-                                                    $this->mode);
-        return (strtolower($variant) === 'on');
-    }
 
     protected function postSubmissions(Entity $request, array $input, array $submissions)
     {

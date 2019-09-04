@@ -13,8 +13,10 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
+use RZP\Reconciliator\Base\SubReconciliator\ManualReconciliate;
 
 class UpiAxisReconTest extends TestCase
 {
@@ -92,6 +94,31 @@ class UpiAxisReconTest extends TestCase
         $this->assertEquals($entries[0]['RRN'], $upiEntity['npci_reference_id']);
 
         $this->assertEquals($entries[0]['TXNID'], $upiEntity['gateway_payment_id']);
+    }
+
+    public function testUpiAxisManualReconPaymentFile()
+    {
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
+
+        $entries[] = $this->overrideNewUpiAxisManualReconFile($upiEntity);
+
+        $file = $this->writeToExcelFile($entries, 'Razorpay Software Pvt Ltd');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiAxis', [], true);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($entries[0]['reference_number'], $upiEntity['npci_reference_id']);
     }
 
     public function testUpiAxisForceAuthorizeFailedPayment()
@@ -187,6 +214,20 @@ class UpiAxisReconTest extends TestCase
         $facade['RRN'] = $upiEntity['npci_reference_id'];
 
         return $facade;
+    }
+
+    protected function overrideNewUpiAxisManualReconFile(array $upiEntity)
+    {
+        $row = [
+            ManualReconciliate::RECON_TYPE      => Reconciliate::PAYMENT,
+            ManualReconciliate::RECON_ID        => $upiEntity['payment_id'],
+            ManualReconciliate::AMOUNT          => intval($upiEntity['amount'] / 100),
+            Reconciliate::GATEWAY_FEE           => intval($upiEntity['amount'] / 1000),
+            Reconciliate::GATEWAY_SERVICE_TAX   => intval($upiEntity['amount'] / 2000),
+            Reconciliate::REFERENCE_NUMBER      => $upiEntity['npci_reference_id'],
+        ];
+
+        return $row;
     }
 
     private function makeUpiAxisRefundsSince(int $createdAt)

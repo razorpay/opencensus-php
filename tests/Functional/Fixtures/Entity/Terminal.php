@@ -2725,6 +2725,26 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiCitiTerminal(array $attributes)
+    {
+        $defaultValues = [
+            TerminalEntity::ID                          => Shared::UPI_AIRTEL_RAZORPAY_TERMINAL,
+            TerminalEntity::MERCHANT_ID                 => '100000Razorpay',
+            TerminalEntity::GATEWAY                     => 'upi_citi',
+            TerminalEntity::GATEWAY_MERCHANT_ID         => 'citi-client-id',
+            TerminalEntity::GATEWAY_MERCHANT_ID2        => 'razorpay@citi',
+            TerminalEntity::GATEWAY_TERMINAL_PASSWORD   => 'citi-secret-key',
+            TerminalEntity::UPI                         => 1,
+            TerminalEntity::VPA                         => 'razorpay@citi',
+            TerminalEntity::ACCOUNT_NUMBER              => '9876543210',
+
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiMindgateIntentTerminal(array $override)
     {
         $attributes = [
@@ -3017,6 +3037,26 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'RazorpayPhonepe',
             'gateway_secure_secret'     => 'secure_secret',
             'gateway_access_code'       => 'access_code',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedPaypalTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => '100000Razorpay',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'wallet_paypal',
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'RazorpayPaypal',
+            'gateway_terminal_password' => 'terminal_password',
+            'gateway_terminal_password2'=> 'terminal_password2',
+            'mode'                      => '1',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

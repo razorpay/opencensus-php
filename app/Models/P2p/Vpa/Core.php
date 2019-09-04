@@ -75,11 +75,17 @@ class Core extends Base\Core
 
     public function checkForMaxVpaLimit(): bool
     {
-        $vpas = $this->repo->newP2pQuery()->withTrashed()->get();
+        if (($this->isProductionAndLive() === true) or
+            ($this->isUnitTest() === true))
+        {
+            $vpas = $this->repo->newP2pQuery()->withTrashed()->get();
 
-        $maxLimit = $this->context()->getHandle()->getMaxAllowedVpas($this->context()->getMerchant()->getId());
+            $maxLimit = $this->context()->getHandle()->getMaxAllowedVpas($this->context()->getMerchant()->getId());
 
-        return ($vpas->count() >= $maxLimit);
+            return ($vpas->count() >= $maxLimit);
+        }
+
+        return false;
     }
 
     public function fetchByUsernameHandle(array $input, bool $trashed = false)

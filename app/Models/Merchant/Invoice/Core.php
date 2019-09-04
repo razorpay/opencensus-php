@@ -12,19 +12,12 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Admin\Org\Preferences;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 
 class Core extends Base\Core
 {
-    /**
-     * Array of merchant ids for which invoice should not be generated.
-     * Disabled for Airtel Payments Bank currently.
-     */
-    const INVOICE_EXCLUDED_MERCHANTS = [
-        'AqUQQH9neAMkUG'
-    ];
-
     public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $invoiceEntity = new Entity;
@@ -155,8 +148,8 @@ class Core extends Base\Core
         // for which invoice shouldn't be generated.
         //
         $merchantIdsExcluded = (isset($input['merchant_ids_excluded']) === true) ?
-                               (array_merge($input['merchant_ids_excluded'], self::INVOICE_EXCLUDED_MERCHANTS)) :
-                               self::INVOICE_EXCLUDED_MERCHANTS;
+                               (array_merge($input['merchant_ids_excluded'], Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)) :
+                                Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS;
 
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_CREATE_REQUEST,
@@ -166,6 +159,7 @@ class Core extends Base\Core
                 'is_correction'         => $isCorrection,
                 'merchant_ids'          => $merchantIds,
                 'merchant_ids_excluded' => $merchantIdsExcluded,
+                'org_ids_included'      => Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID,
             ]);
 
         $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
@@ -185,7 +179,7 @@ class Core extends Base\Core
                                               $skip,
                                               $endTimestamp,
                                               $merchantIds,
-                                              $merchantIdsExcluded);
+                                              Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS);
 
             $count = count($merchantIdsToEnqueue);
 

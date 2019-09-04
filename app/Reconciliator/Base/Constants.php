@@ -2,13 +2,15 @@
 
 namespace RZP\Reconciliator\Base;
 
+use RZP\Error\ErrorCode;
+
 class Constants
 {
     const RECON_PUBLIC_DESCRIPTIONS = [
 
         InfoCode::RECONCILED                => 'Reconciled Successfully',
 
-        InfoCode::ALREADY_RECONCILED        => 'This row has already been reconciled in the system',
+        InfoCode::ALREADY_RECONCILED        => 'Already Reconciled',
 
         InfoCode::RECON_FAILED              => 'Recon failed',
 
@@ -48,6 +50,10 @@ class Constants
 
         InfoCode::GATEWAY_FEE_MISMATCH                          => 'Gateway fee in the recon file does not match with the one stored in API.',
 
-        InfoCode::GATEWAY_SERVICE_TAX_MISMATCH                  => 'Gateway service tax in the recon file does not match with the one stored in API.'
+        InfoCode::GATEWAY_SERVICE_TAX_MISMATCH                  => 'Gateway service tax in the recon file does not match with the one stored in API.',
+
+        InfoCode::RECON_UNABLE_TO_IDENTIFY_RECON_TYPE           => 'Could not identify the row as payment or refund.',
+
+        ErrorCode::SERVER_ERROR_DB_QUERY_FAILED                 => 'DB query failed.',
     ];
 }

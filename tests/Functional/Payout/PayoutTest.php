@@ -215,6 +215,127 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testRxPayoutOnBankingHoliday(): array
+    {
+        $this->ba->privateAuth();
+
+        // Setting current time as 15th Aug Independence day holiday
+        $holidayDateTime = Carbon::createFromDate(2019, 8, 15., Timezone::IST)
+                                ->hour(18)
+                                ->minute(14);
+
+        Carbon::setTestNow($holidayDateTime);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        //Attempt should be in created state as its an holiday
+        $this->assertEquals('created', $payoutAttempt['status']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        return $payout;
+    }
+
+    public function testRxPayoutOnNonBankingHolidayBeforeNEFTtimings(): array
+    {
+        $this->ba->privateAuth();
+
+        // Date time set as non banking holiday and inside NEFT timings
+        $holidayDateTime = Carbon::createFromDate(2019, 8, 16., Timezone::IST)
+            ->hour(17)
+            ->minute(55);
+
+        Carbon::setTestNow($holidayDateTime);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        $this->assertEquals('processed', $payoutAttempt['status']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        return $payout;
+    }
+
+    public function testRxPayoutOnNonBankingHolidayAfterNEFTtimings(): array
+    {
+        $this->ba->privateAuth();
+
+        // Date time set as non banking holiday and outside NEFT timings
+        $holidayDateTime = Carbon::createFromDate(2019, 8, 16., Timezone::IST)
+            ->hour(19)
+            ->minute(55);
+
+        Carbon::setTestNow($holidayDateTime);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        $this->assertEquals('created', $payoutAttempt['status']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        return $payout;
+    }
+
     public function testCreateMerchantPayoutOnDemand()
     {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);

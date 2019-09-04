@@ -106,7 +106,8 @@ class PayerBankAccount extends Base\Core
     {
         $ifsc = $bankTransfer->getMappedPayerIfsc();
 
-        if (IFSC::validate($ifsc) === false)
+        if (($ifsc !== null) and
+            (IFSC::validate($ifsc) === false))
         {
             $bankCode = substr($ifsc, 0, 4);
 

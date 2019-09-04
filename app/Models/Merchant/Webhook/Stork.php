@@ -171,7 +171,7 @@ class Stork
             throw new ServerErrorException(
                 "Failed to complete request",
                 ErrorCode::SERVER_ERROR_STORK_FAILURE,
-                $res ? ['resp_status_code' => $res->status_code, 'resp_body' => $res->body] : null,
+                ['req_path' => $path] + ($res ? ['resp_status_code' => $res->status_code, 'resp_body' => $res->body] : []),
                 $exception);
         }
 

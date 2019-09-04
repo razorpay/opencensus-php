@@ -146,7 +146,8 @@ return [
                     'merchant_id' => '1X4hRFHFx4UiXt',
                     'paytm' => false,
                     'disabled_banks' => [],
-                ]
+                ],
+                'receipt_email_trigger_event' => 'authorized',
             ],
         ],
     ],
@@ -305,7 +306,8 @@ return [
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
-                'fee_credits_threshold'     => 1000
+                'fee_credits_threshold'       => 1000,
+                'receipt_email_trigger_event' => 'captured',
             ]),
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -327,7 +329,8 @@ return [
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
-                'fee_credits_threshold'    => 1000
+                'fee_credits_threshold'       => 1000,
+                'receipt_email_trigger_event' => 'captured'
             ]
         ]
     ],
@@ -1731,6 +1734,20 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithPartnerLogo' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'options' => [
+                    'partnership_logo' => 'https://cdn.razorpay.com/logos/lalalala.png'
+                ]
             ],
         ],
     ],
@@ -4651,7 +4668,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Merchant Restricted Settings failed to apply',
+                    'description' => 'Merchant Restricted Settings failed to apply because users of merchant are associated with multiple merchants',
                 ],
             ],
             'status_code' => 400,

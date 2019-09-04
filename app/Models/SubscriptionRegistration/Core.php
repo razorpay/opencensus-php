@@ -60,13 +60,19 @@ class Core extends Base\Core
                 $invoice = $this->createInvoice($input, $merchant, $subscriptionRegistration, $batch, $order);
 
                 return $invoice;
-            });
+            }
+        );
+
+        $tokenRegistration = $invoice->entity;
+
+        $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
     }
 
     public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
     {
+        $this->populateAuthLinkParamsFromOrder($tokenRegistrationInput, $order);
         $this->populateInvoiceParamsFromOrder($tokenRegistrationInput, $order);
 
         $invoice = $this->repo->transaction(
@@ -77,9 +83,21 @@ class Core extends Base\Core
                 $invoice = $this->createInvoice($tokenRegistrationInput, $this->merchant, $subscriptionRegistration, null, $order);
 
                 return $invoice;
-            });
+            }
+        );
 
+        $tokenRegistration = $invoice->entity;
+
+        $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
+        
         return $invoice;
+    }
+
+    private function populateAuthLinkParamsFromOrder(array & $input, Order\Entity $order)
+    {
+        (new Validator)->validateMethodWithOrder($input, $order);
+
+        $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD] = $order->getMethod();
     }
 
     private function populateInvoiceParamsFromOrder(array & $input, Order\Entity $order)
@@ -170,26 +188,30 @@ class Core extends Base\Core
     }
 
     // Associate
-    public function authenticateWithToken(Entity $subr,  Customer\Token\Entity $token)
+    public function associateToken(Entity $subr,  Customer\Token\Entity $token)
     {
         $this->repo->reload($subr);
 
         $subr->token()->associate($token);
 
-        if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
-        {
-            $subr->setStatus(Status::AUTHENTICATED);
+        $this->repo->saveOrFail($subr);
 
-            // in case amount is zero, move it to completed
-            if ($subr->getAmount() === 0)
-            {
-                $subr->setStatus(Status::COMPLETED);
-            }
-        }
-        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
+        $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_TOKEN_ASSOCIATED, $subr->getMetricDimensions());
+    }
+
+    public function authenticate(Entity $subr, Customer\Token\Entity $token)
+    {
+        $this->repo->reload($subr);
+
+        $subr->setStatus(Status::AUTHENTICATED);
+
+        // in case amount is zero, move it to completed
+        if ($subr->getAmount() === 0)
         {
             $subr->setStatus(Status::COMPLETED);
         }
+
+        $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTHENTICATED, $subr->getMetricDimensions());
 
         $this->repo->saveOrFail($subr);
     }
@@ -290,9 +312,35 @@ class Core extends Base\Core
 
         $order = $this->createOrder($tokenRegistration);
 
-        $payment = $this->createPayment($tokenRegistration, $order);
+        $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_ORDER_CREATED, $tokenRegistration->getMetricDimensions());
 
-        $tokenRegistration->setStatus(Status::COMPLETED);
+        $paymentSuccess = true;
+
+        try{
+            $payment = $this->createPayment($tokenRegistration, $order);
+        }
+        catch(Exception $ex)
+        {
+            $paymentSuccess = false;
+
+            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED, $tokenRegistration->getMetricDimensions());
+
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_FAILED,
+                [
+                    'token_registration_id' => $tokenRegistration->getPublicId(),
+                ]
+            );
+        }
+
+        if ($paymentSuccess === true)
+        {
+            $tokenRegistration->setStatus(Status::COMPLETED);
+
+            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_SUCCESSFUL, $tokenRegistration->getMetricDimensions());
+        }
 
         $this->repo->saveOrFail($tokenRegistration);
     }
@@ -326,8 +374,8 @@ class Core extends Base\Core
     {
         $token = $tokenRegistration->token;
 
-        $invoice = (new Invoice\Repository)->findByMerchantAndTokenRegistration(
-            $this->merchant,
+        $invoice = $this->repo->invoice->findByMerchantAndTokenRegistration(
+            $tokenRegistration->merchant,
             $tokenRegistration
         );
 

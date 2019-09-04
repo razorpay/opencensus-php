@@ -84,6 +84,19 @@ return array(
             ],
         ],
 
+        'live_migration' => [
+            'host'      => env('DB_LIVE_HOST'),
+            'port'      => env('DB_LIVE_PORT'),
+            'username'  => env('DB_LIVE_MIGRATION_USERNAME'),
+            'password'  => env('DB_LIVE_MIGRATION_PASSWORD'),
+            'database'  => env('DB_LIVE_DATABASE'),
+            'driver'    => env('DB_LIVE_DRIVER'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+        ],
+
         'test' => [
             'read'  => [
                 'host'     => env('SLAVE_DB_TEST_HOST'),
@@ -119,6 +132,19 @@ return array(
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
                 'log_verbose'           => ConfigKey::HEARTBEAT_LOG_VERBOSE,
             ],
+        ],
+
+        'test_migration' => [
+            'host'      => env('DB_TEST_HOST'),
+            'port'      => env('DB_TEST_PORT'),
+            'username'  => env('DB_TEST_MIGRATION_USERNAME'),
+            'password'  => env('DB_TEST_MIGRATION_PASSWORD'),
+            'database'  => env('DB_TEST_DATABASE'),
+            'driver'    => env('DB_TEST_DRIVER'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
         ],
 
         'slave-live' => [

@@ -230,7 +230,7 @@ class ErrorCodes extends Cards\ErrorCodes
 
     public static $invalidResultErrorCode = self::RP00002;
 
-    public static $errorCodeMap = array(
+    public static $hdfcErrorCodeMap = array(
         self::FSS0001     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE,
         self::FSS00002    => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
 
@@ -638,59 +638,19 @@ class ErrorCodes extends Cards\ErrorCodes
     );
 
     public static $authRespCodeErrorMap = [
-        '01' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,
-        '02' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK, //'Refer to special conditions Card Issuer',
-        '03' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Merchant not on file',
-        '04' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT,
-        '05' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT,
-        '06' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED,
-        '11' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Approved VIP',
-        '12' => ErrorCode::GATEWAY_ERROR_SUPPORT_FAILED,
-        '13' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT, //'Invalid advance amount',
-        '14' => ErrorCode::GATEWAY_ERROR_SWITCH_UNOPERATIVE, //'Invalid Card Status at Switch', //need a generic switch message
-        '15' => ErrorCode::BAD_REQUEST_CARD_ISSUER_INVALID,
-        '30' => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
-        '31' => ErrorCode::GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH,
-        '33' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
-        '36' => ErrorCode::BAD_REQUEST_CARD_FROZEN, //'Restricted Card', needs analysis // BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD
         '38' => ErrorCode::BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED,
-        '41' => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
-        '43' => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
-        '51' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
-        '54' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
-        '55' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
-        '56' => ErrorCode::GATEWAY_ERROR_NO_RECORDS_FOUND,
-        '57' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED,
-        '61' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED,
-        '62' => ErrorCode::BAD_REQUEST_CARD_FROZEN,
-        '65' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED,
-        '68' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        '75' => ErrorCode::BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED,
-        '76' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Approved country club',
-        '77' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Reserved for Private Use/Approved Pending Identification',
-        '78' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Approved Blind',
         '79' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Approved Adminitrative transaction',
-        '80' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Reserved for Private Use/Approved national NEG hit OK',
-        '81' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Reserved for Private Use/Approved Commercial',
-        '82' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Reserved for Private Use/No Security Module',
-        '83' => ErrorCode::GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH, //No Such Card / Account in Switch
         '84' => ErrorCode::GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH, //No PBF Available in Switch
-        '85' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'PBF Update Error',
         '86' => ErrorCode::BAD_REQUEST_PAYMENT_NOT_AUTHORIZED, //Invalid Authorisation Type
         '87' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA, //Bad Track Data
         '88' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'PTLF Error',
         '89' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Invalid Route Service',
-        '91' => ErrorCode::BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,
-        '94' => ErrorCode::GATEWAY_ERROR_DUPLICATE_TRANSACTION, //Duplicate Transaction
 
         'N0' => ErrorCode::BAD_REQUEST_PAYMENT_NOT_AUTHORIZED, //Unable to Authorise
         'N1' => ErrorCode::GATEWAY_ERROR_INVALID_PAN_LENGTH, //'Invalid pan lengtfh',
         'N2' => ErrorCode::BAD_REQUEST_PAYMENT_NOT_AUTHORIZED, //'Preauthorisation full',
-        'N3' => ErrorCode::GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS, //Maximum online refund  reached
-        'N4' => ErrorCode::GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS, //Maximum online refund  reached
         'N5' => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS, //Maximum online credit per refund reached
         'N6' => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS, //Maximum refund credit reached
-        'N7' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Customer Selected Negative File Reason',
         'N8' => ErrorCode::BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED, // Over floor limit
         'N9' => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,//  Maximum number of refund credit
 
@@ -706,7 +666,6 @@ class ErrorCodes extends Cards\ErrorCodes
 
         'P0' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'CAF problem',
         'P1' => ErrorCode::BAD_REQUEST_CARD_DAILY_LIMIT_REACHED, //Over Daily Limit
-        'P2' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'CAPF not found',
         'P3' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT, //advance less than minimum
         'P4' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED, //Number of times used
         'P5' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY, // declined by bank or gateway? - Decline
@@ -717,7 +676,6 @@ class ErrorCodes extends Cards\ErrorCodes
         'P9' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH_DECLINED_BY_ISSUER,
 
         'Q0' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_TRANSACTION_DATE, //Invalid transaction date
-        'Q1' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE, //Invalid Expiration Date
         'Q2' => ErrorCode::GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED, //Invalid transaction code
         'Q3' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT, //Advance less than minimum
         'Q4' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED, //Number times used
@@ -726,11 +684,7 @@ class ErrorCodes extends Cards\ErrorCodes
         'Q7' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH, //Amount over maximum
         'Q8' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Administrative card not found',
         'Q9' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Administrative card not allowed',
-
-        'R0' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Approved administrative request performed in of window',
-        'R1' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Approved administrative request performed out of window',
         'R2' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Approved administrative request performed anytime',
-        'R3' => ErrorCode::GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR, //'Chargeback customer file updated',
         'R4' => ErrorCode::GATEWAY_ERROR_ACQUIRER_UNAVAILABLE, //  'Chargeback customer file updated, acquirer not found',
         'R5' => ErrorCode::GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR, //'Chargeback, incorrect prefix number',
         'R6' => ErrorCode::GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR, //'Chargeback, incorrect response code or CPF configuration',
@@ -755,29 +709,8 @@ class ErrorCodes extends Cards\ErrorCodes
 
         'CI' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Compliance error code for issuer in authorization response from NPCI',
         'ED' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'E-commerce decline   in authorization response from NPCI',
-
-        '17' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER, //Customer cancellation.
-        '20' => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE, //Invalid response.
-        '21' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION, //  No action taken.
-        '22' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //Suspected malfunction.
-        '34' => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD, //Suspected fraud, capture.
-        '39' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT, //No credit account.
         '40' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR, //Requested function not supported.
-        '42' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT, //No universal account.
-        '52' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT, //No checking account
-        '53' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT, //No savings account.
-        '58' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED, //Transaction not permitted to terminal.
-        '59' => ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK, //Suspected fraud, decline / Transactions declined based on Risk Score
-        '60' => ErrorCode::GATEWAY_ERROR_ACQUIRER_UNAVAILABLE, //Card acceptor contact acquirer, decline.
-        '63' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Security violation',
-        '66' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Card acceptor calls acquirer’s.',
-        '67' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Hard capture (requires that card be picked up at ATM).',
         '74' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK, //Transactions declined by Issuer based on Risk Score
-        '90' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED, //'Cut-off is in process.',
-        '92' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'No routing available',
-        '93' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED, //Transaction cannot be completed. Compliance violation.
-        '95' => ErrorCode::BAD_REQUEST_RECONCILIATION, //Reconcile error
-        '96' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //System malfunction
         'E3' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT, //  ARQC validation failed by Issuer
         'E4' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT, //  TVR validation failed by Issuer
         'E5' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT, // CVR  validation failed by Issuer
@@ -817,5 +750,15 @@ class ErrorCodes extends Cards\ErrorCodes
         $retryAuthRespCodes = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'P'];
 
         return (in_array($authRespCode, $retryAuthRespCodes, true) === true);
+    }
+
+    public static function getErrorFieldName($fieldName)
+    {
+        if ($fieldName === ErrorFields::DUMMY_ERROR_FIELD)
+        {
+            return ErrorFields::AUTH_RESP_CODE;
+        }
+
+        return $fieldName;
     }
 }
