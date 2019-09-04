@@ -138,15 +138,15 @@ export default function Reports(opts) {
         switch (selectedType) {
           case 'daily':
           case 'monthly': {
-            const timeFactor = type === 'daily' ? 'day' : 'month',
-              startTime = date
-                .clone()
-                .startOf(timeFactor)
-                .unix(),
-              endTime = date
-                .clone()
-                .endOf(timeFactor)
-                .unix();
+            const timeFactor = selectedType === 'daily' ? 'day' : 'month';
+            startTime = selectedDate
+              .clone()
+              .startOf(timeFactor)
+              .unix();
+            endTime = selectedDate
+              .clone()
+              .endOf(timeFactor)
+              .unix();
             break;
           }
 
