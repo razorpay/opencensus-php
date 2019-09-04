@@ -812,7 +812,7 @@ trait SettlementTrait
 
         $bankAccount = $merchant->bankAccount;
 
-        if(isset($merchantSettleToPartner[$mid]))
+        if(isset($merchantSettleToPartner[$mid]) === true)
         {
             $bankAccountId = $merchantSettleToPartner[$mid];
 
