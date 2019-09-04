@@ -69,7 +69,7 @@ class Merchant
 
         $this->merchantSettleToPartner = $merchantSettleToPartner;
 
-        // Get merchant bank account
+        // Get settlement bank account
         $this->attachSettlementBankAccount();
 
         $this->logging = $logging;
