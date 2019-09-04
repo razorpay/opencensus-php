@@ -19,9 +19,13 @@ class DefaultDataRetriever extends AbstractAPIDataRetriever
         $request['gateway'] = $input['gateway'];
         if(isset($input['start_date'])) {
             $request['start_date'] = $input['start_date'];
+        }else{
+            $request['start_date'] = date('Y-m-d', strtotime("-1 days"));
         }
         if(isset($input['end_date'])) {
             $request['end_date'] = $input['end_date'];
+        }else{
+            $request['end_date'] = date('Y-m-d');
         }
         if(isset($input['meta_data'])) {
             $request['meta_data'] = $input['meta_data'];

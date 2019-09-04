@@ -16,9 +16,6 @@ class Crawler extends Base
 
     public function process(array $input): array
     {
-
-        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Crawler Process : ", $input]);
-
         $this->setGatewayFromInput($input);
 
         $this->setGatewayReconciliatorObject();
@@ -33,8 +30,6 @@ class Crawler extends Base
             $input[self::ATTACHMENT_HYPHEN_PREFIX . ++$fileCount] = $file;
         }
 
-        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Files : Input : ", $files, $input]);
-
         $inputDetails = [
             self::ATTACHMENT_COUNT => $fileCount,
             self::GATEWAY          => $this->gateway,
@@ -42,8 +37,6 @@ class Crawler extends Base
         ];
 
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input, FileProcessor::STORAGE);
-
-        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Crawler Response : ", $allFilesDetails, $inputDetails]);
 
         return [
             self::FILE_DETAILS  => $allFilesDetails,
