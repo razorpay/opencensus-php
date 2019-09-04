@@ -3,11 +3,10 @@
 namespace RZP\Reconciliator\RequestProcessor;
 
 use RZP\Reconciliator\RequestProcessor\Retriever\DataRetrieverManager;
-use Symfony\Component\HttpFoundation\File\File;
+use RZP\Trace\TraceCode;
 
 use Config;
 use RZP\Exception;
-use RZP\Models\FileStore\Utility;
 use RZP\Reconciliator\FileProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
@@ -18,9 +17,13 @@ class Crawler extends Base
     public function process(array $input): array
     {
 
+        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Crawler Process : ", $input]);
+
         $this->setGatewayFromInput($input);
 
         $this->setGatewayReconciliatorObject();
+
+        $input['gateway'] = self::GATEWAY_CRAWLERS[$this->gateway];
 
         $files = DataRetrieverManager::getDataRetriever($this->gateway)->fetchData($input);
 
@@ -30,6 +33,8 @@ class Crawler extends Base
             $input[self::ATTACHMENT_HYPHEN_PREFIX . ++$fileCount] = $file;
         }
 
+        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Files : Input : ", $files, $input]);
+
         $inputDetails = [
             self::ATTACHMENT_COUNT => $fileCount,
             self::GATEWAY          => $this->gateway,
@@ -37,6 +42,8 @@ class Crawler extends Base
         ];
 
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input, FileProcessor::STORAGE);
+
+        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Crawler Response : ", $allFilesDetails, $inputDetails]);
 
         return [
             self::FILE_DETAILS  => $allFilesDetails,
@@ -59,7 +66,7 @@ class Crawler extends Base
             $this->gateway = $input[self::GATEWAY];
         }
 
-        if (in_array($this->gateway, self::GATEWAY_CRAWLERS) === false)
+        if (array_key_exists($this->gateway, self::GATEWAY_CRAWLERS) === false)
         {
             throw new Exception\ReconciliationException(
                 'Invalid gateway param. Not in the allowed list of gateway params.',

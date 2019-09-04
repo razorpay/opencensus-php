@@ -58,7 +58,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
 
         foreach ($responseList as $key => $value)   {
 
-            $fileName = $key."_".$input["gateway"]."_".date('Y-m-d_h:i:s');
+            $fileName = $key."_".$input["gateway"]."_reconcile_".date('Y-m-d_h:i:s');
             array_push($files, $this->prepareFile($fileName, $value));
         }
         return $files;
@@ -72,22 +72,26 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
 
     protected abstract function refactorResponse(array $responseList): array;
 
-    protected function prepareFile($filename, array $response): array  {
-
-        $data = json_decode($response, true);
+    protected function prepareFile($filename, array $data)  {
 
         $f = null;
         $filePath = storage_path('files/filestore') . '/'  . $filename . '.csv';
         try{
+            $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["prepareFile : ", $filePath, $data]);
             $f = fopen($filePath, 'w');
 
+
             // Header line: the field names (keys in $data)
-            fputcsv($f, array_keys($data), ',');
-            // Data line (can use array_values($data) or just $data as the 2nd argument)
-            fputcsv($f, array_values($data), ',');
+            fputcsv($f, array_keys($data[0]), ',');
+
+            foreach ($data as $record){
+                // Data line (can use array_values($data) or just $data as the 2nd argument)
+                fputcsv($f, array_values($record), ',');
+            }
 
         }catch(\Exception $e){
-
+            unlink($filePath);
+            throw $e;
         }finally{
             if($f !== null) {
                 fclose($f);

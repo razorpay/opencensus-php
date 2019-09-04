@@ -86,8 +86,6 @@ class Gateway extends Base\Gateway
             'url' => $request['url'],
         ];
 
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
-
         $response = $this->sendGatewayRequest($request);
 
         return $response;

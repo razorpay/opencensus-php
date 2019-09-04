@@ -168,7 +168,7 @@ class Base extends Core
     ];
 
     const GATEWAY_CRAWLERS = [
-        self::NETBANKING_BOB
+        self::NETBANKING_BOB        => Gateway::NETBANKING_BOB,
     ];
 
     /**

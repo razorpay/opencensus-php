@@ -25,6 +25,13 @@ class Server extends Base\Mock\Server
         return $this->$gateway($input);
     }
 
+    public function reconcile($input)
+    {
+        $reconcileObj = new ReconcileData();
+
+        return $this->processMockResponse($input, $reconcileObj, 'reconcile');
+    }
+
     public function payInit($input)
     {
         $payInitObj = new PayInitData();

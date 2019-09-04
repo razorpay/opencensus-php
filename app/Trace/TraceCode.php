@@ -2046,6 +2046,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
 
+    const CRAWLER_RECONCILE                                     = 'CRAWLER_RECONCILE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

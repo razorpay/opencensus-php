@@ -364,7 +364,7 @@ class Service extends Base\Service
         {
             return RequestProcessor\Base::MANUAL;
         }
-        else if ($this->isCrawlerRequest())
+        else if ($this->isCrawlerRequest($input))
         {
             return RequestProcessor\Base::CRAWLER;
         }
@@ -485,13 +485,7 @@ class Service extends Base\Service
 
     protected function isCrawlerRequest(array $input): bool
     {
-        if ((isset($input[RequestProcessor\Base::CRAWLER]) === true) and
-            ($input[RequestProcessor\Base::CRAWLER] === '1'))
-        {
-            return true;
-        }
-
-        return false;
+        return ($this->auth->isCron() === true);
     }
 
     /**
