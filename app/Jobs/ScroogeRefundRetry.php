@@ -18,12 +18,6 @@ class ScroogeRefundRetry extends Job
         'NO_DATA_FOUND'
     ];
 
-    //
-    // Make sure that this is below 900 (seconds) because
-    // SQS doesn't support delay over 15 minutes.
-    //
-    public $delay = 0;
-
     protected $trace;
 
     protected $data;
