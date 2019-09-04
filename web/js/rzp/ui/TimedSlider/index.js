@@ -17,12 +17,12 @@ export default class TimedSlider extends React.PureComponent {
   }
 
   setStoriesAndMeta() {
-    this.storiesMeta = [];
+    this.slidersMeta = [];
 
     this.props.children.forEach(child => {
       const { children, ...restProps } = child.props;
 
-      this.storiesMeta.push({
+      this.slidersMeta.push({
         ...restProps,
       });
     });
@@ -31,7 +31,7 @@ export default class TimedSlider extends React.PureComponent {
   componentDidMount() {
     this.timer = window.setInterval(() => {
       this.goNext();
-    }, this.storiesMeta[this.state.curStoryIndex].duration);
+    }, this.slidersMeta[this.state.curStoryIndex].duration);
   }
 
   goNext = () => {
@@ -68,16 +68,18 @@ export default class TimedSlider extends React.PureComponent {
       { curStoryIndex } = this.state;
 
     const frameProps = {
-      storiesMeta: this.storiesMeta,
+      slidersMeta: this.slidersMeta,
       curStoryIndex: curStoryIndex,
       goTo: this.goTo,
     };
 
     return (
-      <div class="Stories">
+      <div class="TimedSlider">
         {BeforeFrame && <BeforeFrame {...frameProps} />}
 
-        <div class="Stories-frame">{this.props.children[curStoryIndex]}</div>
+        <div class="TimedSlider-frame">
+          {this.props.children[curStoryIndex]}
+        </div>
 
         {AfterFrame && <AfterFrame {...frameProps} />}
       </div>
@@ -91,7 +93,7 @@ export class TimedSliderTabs extends React.PureComponent {
   };
 
   render() {
-    const { className, curStoryIndex, storiesMeta, TabComponent } = this.props;
+    const { className, curStoryIndex, slidersMeta, TabComponent } = this.props;
 
     const TabComp = TabComponent || TimedSliderTab,
       isActive = idx === curStoryIndex;
@@ -99,11 +101,11 @@ export class TimedSliderTabs extends React.PureComponent {
     return (
       <div
         class={classList(
-          'StoriesTabs',
-          className && 'StoriesTabs--' + className
+          'TimedSliderTabs',
+          className && 'TimedSliderTabs--' + className
         )}
       >
-        {storiesMeta.map((current, idx) => (
+        {slidersMeta.map((current, idx) => (
           <TabComp
             key={idx}
             isActive={isActive}
@@ -127,8 +129,8 @@ const TimedSliderTab = ({
 }) => (
   <div
     class={classList(
-      'StoriesTab',
-      className && 'StoriesTab--' + className,
+      'TimedSliderTab',
+      className && 'TimedSliderTab--' + className,
       isActive && 'active'
     )}
     onClick={onClick}
@@ -139,4 +141,4 @@ const TimedSliderTab = ({
   </div>
 );
 
-export const TimedSlide = ele => <div class="Story">{ele.children}</div>;
+export const TimedSlide = ele => <div class="TimedSlide">{ele.children}</div>;
