@@ -141,6 +141,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->payment->getMerchantId());
 
+        $this->setProcessedAtInOutput();
+
+        $this->setBatchIdInOutput($this->messenger->batch->getId());
+
+        $this->setAttemptsInOutput($this->messenger->batch->getAttempts());
+
         try
         {
             //

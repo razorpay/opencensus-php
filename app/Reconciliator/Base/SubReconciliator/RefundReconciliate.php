@@ -81,6 +81,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->refund->getMerchantId());
 
+        $this->setProcessedAtInOutput();
+
+        $this->setBatchIdInOutput($this->messenger->batch->getId());
+
+        $this->setAttemptsInOutput($this->messenger->batch->getAttempts());
+
         $refundId = $rowDetails[BaseReconciliate::REFUND_ID];
 
         try

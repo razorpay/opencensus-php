@@ -270,9 +270,7 @@ class Reconciliate extends Base\Core
 
         $batchId = $batch->getId();
 
-        $attemptNumber = $batch->getAttempts();
-
-        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData(), $batchId, $attemptNumber);
+        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData());
 
         $sheetName = null;
 
@@ -404,12 +402,6 @@ class Reconciliate extends Base\Core
         foreach ($reconOutputData as $row)
         {
             $row = array_diff_key($row, array_flip($blackListedColumns));
-
-            $row['processed_at'] = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
-
-            $row['batch_id'] = $batchId;
-
-            $row['attempt_number'] = $attemptNumber;
 
             array_push($updatedData, $row);
         }
