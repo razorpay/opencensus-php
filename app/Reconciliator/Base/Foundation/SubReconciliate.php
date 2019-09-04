@@ -35,7 +35,7 @@ class SubReconciliate extends Base\Core
     const RECON_STATUS          = 'recon_status';
     const ALREADY_RECONCILED_AT = 'already_reconciled_at';
     const RECON_ERROR_MSG       = 'recon_error_msg';
-    const MERCHANT_ID       = 'merchant_id';
+    const MERCHANT_ID           = 'merchant_id';
 
     /**
      * The list of payments/refunds attempted to reconcile.
@@ -250,7 +250,7 @@ class SubReconciliate extends Base\Core
         $row[self::RECON_STATUS]            = '';
         $row[self::ALREADY_RECONCILED_AT]   = '';
         $row[self::RECON_ERROR_MSG]         = '';
-        $row[self::MERCHANT_ID]     = '';
+        $row[self::MERCHANT_ID]             = '';
 
         static::$reconOutputData[] = $row;
 

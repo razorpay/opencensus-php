@@ -5,7 +5,6 @@ namespace RZP\Reconciliator\Base;
 use App;
 
 use Carbon\Carbon;
-use RZP\Gateway\P2p\Base\Request;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
@@ -271,7 +270,9 @@ class Reconciliate extends Base\Core
 
         $batchId = $batch->getId();
 
-        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData(), $batchId);
+        $attemptNumber = $batch->getAttempts();
+
+        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData(), $batchId, $attemptNumber);
 
         $sheetName = null;
 
@@ -394,7 +395,7 @@ class Reconciliate extends Base\Core
      * removes blacklisted columns if present. otherwise adds processed_at column for each row.
      */
 
-    protected function getOutputWithRemovedBlackListedColumns($reconOutputData, $batchId)
+    protected function getOutputWithRemovedBlackListedColumns($reconOutputData, $batchId, $attemptNumber)
     {
         $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
 
@@ -407,6 +408,8 @@ class Reconciliate extends Base\Core
             $row['processed_at'] = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
 
             $row['batch_id'] = $batchId;
+
+            $row['attempt_number'] = $attemptNumber;
 
             array_push($updatedData, $row);
         }
