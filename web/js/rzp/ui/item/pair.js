@@ -69,7 +69,7 @@ export const refundMode = {
 };
 export const refundStatus = {
   title: 'Status',
-  value: item => <RefundStatusLabel status={item.status} />,
+  value: item => <RefundStatusLabel status={item.public_status} />,
 };
 export const customerRefundId = {
   title: 'Refund Id',
