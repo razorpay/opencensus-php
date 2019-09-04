@@ -8,7 +8,7 @@ const statuses = ['issued', 'paid', 'expired'];
 export default props => (
   <ListFilter {...props}>
     <div class="form-group list-filter-item">
-      <label>Authorization Link Id</label>
+      <label>Registration Link Id</label>
       <Field name="id" component="input" class="form-control input-sm" />
     </div>
 

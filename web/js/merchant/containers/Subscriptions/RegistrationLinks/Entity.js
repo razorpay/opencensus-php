@@ -13,25 +13,25 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
-import { fetchAuthLink } from 'merchant/modules/auth_link';
+import { fetchRegistrationLink } from 'merchant/modules/registration_link';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 
 @withRouter
 @connect(
   state => ({
-    ...state.authLink,
+    ...state.registrationLink,
   }),
-  { fetchAuthLink }
+  { fetchRegistrationLink }
 )
-export default class AuthLinkEntityContainer extends Component {
+export default class RegistrationLinkEntityContainer extends Component {
   componentWillMount() {
-    this.props.fetchAuthLink(this.props.id);
+    this.props.fetchRegistrationLink(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.props.fetchAuthLink(nextProps.id);
+      this.props.fetchRegistrationLink(nextProps.id);
     }
   }
 
@@ -51,7 +51,7 @@ export default class AuthLinkEntityContainer extends Component {
               <div class="SliderPanel__Body">
                 <div class="panel-body">
                   <div class="list-group details-row-container">
-                    {/* status of Authorization Link */}
+                    {/* status of Registration Link */}
                     <EntityDetailRow label="Status">
                       <InvoiceStatusLabel status={entity.status} />
                     </EntityDetailRow>

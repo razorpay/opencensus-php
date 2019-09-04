@@ -1,45 +1,23 @@
-import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
-import BatchDetails from 'merchant/containers/BatchNew/Details';
+import { titleCase } from 'rzp/utils/rzp-utils';
+
 import Time from 'rzp/ui/Time';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
+
 import BatchStats from 'ui/StatsTable';
 
-import setGaTrack from 'merchant/containers/BatchNew/ga';
-
 import { fetchHostedMandateBatchDetails as fetchBatchDetails } from 'merchant/modules/batches';
+
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
-import { titleCase } from 'rzp/utils/rzp-utils';
+
+import setGaTrack from 'merchant/containers/BatchNew/ga';
+import BatchDetails from 'merchant/containers/BatchNew/Details';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
-const renderBatchDetails = ({ batch }) => (
-  <Fragment>
-    <div class="equal-margin">
-      <BatchStats
-        stats={getStatsTable({
-          totalCount: batch.total_count,
-          failureCount: batch.failure_count,
-          successCount: batch.success_count,
-        })}
-      />
-    </div>
-    <div class="equal-margin">
-      <EntityDetailRow label="Batch Type" value={titleCase(batch.type)} />
-      <EntityDetailRow label="Batch Name" value={batch.name} />
-      <EntityDetailRow label="Status">
-        <BatchUploadStatusLabel status={batch.status} />
-      </EntityDetailRow>
-      <EntityDetailRow label="Status">
-        <Time value={batch.created_at} />
-      </EntityDetailRow>
-    </div>
-  </Fragment>
-);
-
 @connect(null, { fetchBatchDetails })
-export default class AuthLinksBatchEntityContainer extends Component {
+export default class RegistrationLinksBatchEntityContainer extends React.Component {
   render() {
     return (
       <BatchDetails
@@ -60,4 +38,31 @@ function getStatsTable(stats) {
       { title: 'Rows Failed', value: stats.failureCount },
     ],
   ];
+}
+
+function renderBatchDetails({ batch }) {
+  const stats = getStatsTable({
+    totalCount: batch.total_count,
+    failureCount: batch.failure_count,
+    successCount: batch.success_count,
+  });
+
+  return (
+    <React.Fragment>
+      <div class="equal-margin">
+        <BatchStats stats={stats} />
+      </div>
+
+      <div class="equal-margin">
+        <EntityDetailRow label="Batch Type" value={titleCase(batch.type)} />
+        <EntityDetailRow label="Batch Name" value={batch.name} />
+        <EntityDetailRow label="Status">
+          <BatchUploadStatusLabel status={batch.status} />
+        </EntityDetailRow>
+        <EntityDetailRow label="Status">
+          <Time value={batch.created_at} />
+        </EntityDetailRow>
+      </div>
+    </React.Fragment>
+  );
 }

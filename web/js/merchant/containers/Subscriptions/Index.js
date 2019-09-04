@@ -19,10 +19,9 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 
 import TokensList from './Tokens/List';
-import AuthLinksList from './AuthLinks/List';
+import RegistrationLinksList from './RegistrationLinks/List';
 import HostedEmanadateBatches from './Batch/List';
 import RecurringPayments from './RecurringPayments/List';
-
 import OnBoarding, {
   getIsAllowedResetSubscriptionBoarding,
 } from './OnBoarding';
@@ -150,7 +149,7 @@ export default class SubscriptionsController extends React.Component {
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
               <NavLink to="/recurring_payments">Payments</NavLink>
               <NavLink to="/tokens">Tokens</NavLink>
-              <NavLink to="/authlinks">Authorization Links</NavLink>
+              <NavLink to="/registration_links">Registration Links</NavLink>
               <NavLink exact to="/subscriptions/batchuploads">
                 Batch Upload
               </NavLink>
@@ -166,15 +165,33 @@ export default class SubscriptionsController extends React.Component {
                 component={HostedEmanadateBatches}
                 additionalCondition={user => user.isChargeAtWillEnabled}
               />
+
               <ShowWhenRoute
                 path="/subscriptions"
                 component={SubscriptionsList}
                 additionalCondition={user => !user.isChargeAtWillEnabled}
               />
-              <Route path="/plans" component={ClonedPlanList} />
-              <Route path="/tokens" component={TokensList} />
-              <Route path="/recurring_payments" component={RecurringPayments} />
-              <Route path="/authlinks" component={AuthLinksList} />
+              <ShowWhenRoute
+                path="/plans"
+                component={ClonedPlanList}
+                additionalCondition={user => !user.isChargeAtWillEnabled}
+              />
+
+              <ShowWhenRoute
+                path="/recurring_payments"
+                component={RecurringPayments}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
+              <ShowWhenRoute
+                path="/tokens"
+                component={TokensList}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
+              <ShowWhenRoute
+                path="/registration_links"
+                component={RegistrationLinksList}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
             </Switch>
           </content>
         </tabbed-container>

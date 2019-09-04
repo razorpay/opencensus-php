@@ -24,7 +24,7 @@ import EarningTransactionalDetails from 'merchant/containers/PartnerDashboard/Ea
 import EarningDailyDetails from 'merchant/containers/PartnerDashboard/Earnings/Daily/Entity';
 import SubventionTransactionalDetails from 'merchant/containers/PartnerDashboard/Subvention/Transactional/Entity';
 import SubventionDailyDetails from 'merchant/containers/PartnerDashboard/Subvention/Daily/Entity';
-import AuthLink from 'merchant/containers/Subscriptions/AuthLinks/Entity';
+import RegistrationLink from 'merchant/containers/Subscriptions/RegistrationLinks/Entity';
 import AccountDetailsNew from 'merchant/containers/Marketplace/Accounts/DetailsNew';
 
 import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
@@ -34,11 +34,10 @@ import SubscriptionBatchDetails from 'merchant/containers/Subscriptions/Batch/En
 
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation';
-import NewAuthLink from 'merchant/containers/Subscriptions/AuthLinks/New';
+import NewRegistrationLink from 'merchant/containers/Subscriptions/RegistrationLinks/New';
 import NewSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/New';
 import UpdateSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/Update';
 import CreditSubDetails from 'merchant/components/Credits/CreditSubDetails';
-import CreditNoteDetails from 'merchant/containers/Invoices/CreditNote/Details';
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
@@ -89,8 +88,8 @@ const entityDetailsMap = {
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
-  '/authlinks/:id(inv_.+)': {
-    component: AuthLink,
+  '/registration_links/:id(inv_.+)': {
+    component: RegistrationLink,
     additionalCondition: user => user.isChargeAtWillEnabled,
   },
 
@@ -160,8 +159,8 @@ const entityModalsMap = {
     component: PaymentLinksCreate,
     additionalCondition: user => user.isAllowedEdit('payment_links'),
   },
-  '/authlinks/new': {
-    component: NewAuthLink,
+  '/registration_links/new': {
+    component: NewRegistrationLink,
     additionalCondition: user => user.isChargeAtWillEnabled,
   },
   '/subscriptions/new': {

@@ -38,8 +38,7 @@ import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
 import tokenReducer from 'merchant/modules/token';
 import onboardingReducer from 'merchant/modules/onboarding';
-
-import authLinkReducer from 'merchant/modules/auth_link';
+import registrationLinkReducer from 'merchant/modules/registration_link';
 
 import {
   refundBatchesReducer,
@@ -58,7 +57,7 @@ import {
   settlementsReducer,
   disputesReducer,
   submerchantsReducer,
-  authLinksReducer,
+  registrationLinksReducer,
   tokensReducer,
   commissionsReducer,
   commissionsAggregateReducer,
@@ -134,8 +133,8 @@ export default combineReducers({
   commissionsAggregate: commissionsAggregateReducer,
   commAggSingleDay: commAggSingleDayReducer,
   wysiwyg: wysiwygReducer,
-  authLinks: authLinksReducer,
-  authLink: authLinkReducer,
+  registrationLinks: registrationLinksReducer,
+  registrationLink: registrationLinkReducer,
   tokens: tokensReducer,
   token: tokenReducer,
   batches: batchesReducer,

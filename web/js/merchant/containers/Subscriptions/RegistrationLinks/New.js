@@ -14,7 +14,7 @@ import {
   saveInvoice,
   updatePLInReduxList,
 } from 'merchant/modules/invoices/list';
-import { createAuthLink } from 'merchant/modules/auth_link';
+import { createRegistrationLink } from 'merchant/modules/registration_link';
 
 import Form from 'component/Form';
 import Input from 'component/Input';
@@ -44,9 +44,9 @@ const mandatoryBankFields = [
   updatePLInReduxList,
   showNotification,
   luminateRow,
-  createAuthLink,
+  createRegistrationLink,
 })
-export default class CreateNewAuthLinkContainer extends Component {
+export default class CreateNewRegistrationLinkContainer extends Component {
   state = {
     mandateMethod: '',
     hasNoExpiry: '1',
@@ -176,12 +176,12 @@ export default class CreateNewAuthLinkContainer extends Component {
     }
 
     return this.props
-      .createAuthLink(payload)
+      .createRegistrationLink(payload)
       .then(response => {
         if (response) {
           this.props.showNotification({
             type: 'success',
-            message: 'Authorization Link Successfully created',
+            message: 'Registration Link Successfully created',
           });
 
           const entityId = response.id;
@@ -191,7 +191,7 @@ export default class CreateNewAuthLinkContainer extends Component {
 
             this.props.onClose(``);
           } else {
-            const redirectUrl = '/authlinks/' + entityId;
+            const redirectUrl = '/registration_links/' + entityId;
 
             this.props.history.push(redirectUrl);
           }
@@ -212,7 +212,7 @@ export default class CreateNewAuthLinkContainer extends Component {
     return (
       <div class="PaymentLinks--Create Wizard">
         <main class="form-container">
-          <main-title>Create Authorization Link</main-title>
+          <main-title>Create Registration Link</main-title>
 
           <Form
             class="PaymentLinks--Create--Form"
@@ -294,7 +294,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 addonAfter={<i class="i i-date-range" />}
                 disabled={!!Number(this.state.hasNoExpiry)}
                 onChange={this.handleDateChange('expireAt')}
-                description="Expiry of Authentication Link"
+                description="Expiry of Registration Link"
               />
             </Input.Group>
 
@@ -421,7 +421,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                     name="amount"
                     type="tel"
                     placeholder="0.00"
-                    description="Amount of Authorization Link Payment"
+                    description="Amount of Registration Link Payment"
                     validator={checkIfAmount}
                     required
                   />
@@ -446,7 +446,7 @@ export default class CreateNewAuthLinkContainer extends Component {
             onClick={this.onCreate}
             disabled={!this.allMandatoryFieldsPresent()}
           >
-            Create Authorization Link
+            Create Registration Link
           </AsyncBtn.Primary>
         </footer>
       </div>
@@ -480,7 +480,7 @@ function PaymentMethod({ loading, avlblMethods }) {
       name="mandateMethod"
       options={avlblMethods}
       class="Input--vTop"
-      description="Method to be used for Authorization Link"
+      description="Method to be used for Registration Link"
     />
   ) : (
     <PaymentMethodPlaceHolder content={avlblMethods[0].label} />
