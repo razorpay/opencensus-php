@@ -736,4 +736,28 @@ class Service extends Base\Service
             ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => $result,
         ];
     }
+
+    public function sendTestSms(array $input)
+    {
+        $admin = $this->auth->getAdmin();
+
+        $this->trace->info(
+            TraceCode::ADMIN_SEND_TEST_SMS_REQUEST,
+            [
+                'admin_id'          => $admin->getId(),
+                'payload'           => $input,
+            ]);
+
+        $ravenPayload = [
+            'receiver' => $input['receiver'],
+            'source'   => 'api.admin.test.sms',
+            'gateway'  => $input['gateway'],
+            'sender'   => $input['sender'],
+            'template' => $input['template'] ?? 'sms.p2p.verification_completed',
+            'params'   => $input['params'],
+        ];
+
+        return $this->app->raven->sendSms($ravenPayload, true);
+    }
+
 }

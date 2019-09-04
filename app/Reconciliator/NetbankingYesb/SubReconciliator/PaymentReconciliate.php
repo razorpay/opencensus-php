@@ -51,7 +51,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->mozart->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }

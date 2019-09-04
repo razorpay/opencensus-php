@@ -125,6 +125,7 @@ class Constants
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
+    const ISSUE_MPANS                     = 'issue_mpans';
 
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
@@ -383,6 +384,7 @@ class Constants
         self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,
         self::ASYNC_BALANCE_UPDATE            => true,
+        self::ISSUE_MPANS                     => true,
         self::CUST_CONTACT_EMAIL_NULL         => true,
     ];
 

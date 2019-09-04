@@ -159,37 +159,29 @@ class Service extends Base\Service
 
     public function checkTerminalEncryptedValue($id, $input)
     {
+        (new Terminal\Validator())->validateInput('terminalCheckSecret', $input);
+
         $terminal = $this->repo->terminal->findOrFail($id);
 
-        $flag = true;
+        $secretFields = [
+            Terminal\Entity::GATEWAY_TERMINAL_PASSWORD,
+            Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2,
+            Terminal\Entity::GATEWAY_SECURE_SECRET,
+            Terminal\Entity::GATEWAY_SECURE_SECRET2,
+        ];
 
-        if (isset($input['secret']))
+        $output = [];
+
+        foreach ($secretFields as $secretField)
         {
-            $flag = $terminal->matchEncryptedAttribute(
-                        Terminal\Entity::GATEWAY_SECURE_SECRET, $input['secret']);
-        }
-        else if (isset($input['password']))
-        {
-            $flag = $terminal->matchEncryptedAttribute(
-                        Terminal\Entity::GATEWAY_TERMINAL_PASSWORD, $input['password']);
-        }
-        else if (isset($input['access_code']))
-        {
-            $flag = $terminal->matchEncryptedAttribute(
-                        Terminal\Entity::GATEWAY_ACCESS_CODE, $input['access_code']);
-        }
-        else if (isset($input['password2']))
-        {
-            $flag = $terminal->matchEncryptedAttribute(
-                Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2, $input['password2']);
-        }
-        else if (isset($input['secret2']))
-        {
-            $flag = $terminal->matchEncryptedAttribute(
-                Terminal\Entity::GATEWAY_SECURE_SECRET2, $input['secret2']);
+            if (isset($input[$secretField]) === true)
+            {
+                $output[$secretField] = $terminal->matchEncryptedAttribute(
+                    $secretField, $input[$secretField]);
+            }
         }
 
-        return ['match' => $flag];
+        return $output;
     }
 
     public function getBanks(string $id): array

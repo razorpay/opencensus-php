@@ -1362,6 +1362,26 @@ return [
         ],
     ],
 
+    'testTerminalSecretCheck' => [
+        'request' => [
+            'content' => [
+                'gateway_terminal_password'  => '1234',
+                'gateway_terminal_password2' => '21234',
+                'gateway_secure_secret'      => '0123',
+                'gateway_secure_secret2'     => '201235',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_terminal_password'  => true,
+                'gateway_terminal_password2' => true,
+                'gateway_secure_secret'      => true,
+                'gateway_secure_secret2'     => false,
+            ]
+        ]
+    ],
+
     'testAddAmazonPayTerminal' => [
         'request' => [
             'content' => [

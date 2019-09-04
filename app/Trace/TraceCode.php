@@ -815,6 +815,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_RETURNED                                   = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_CREATE_FAILED                              = 'SETTLEMENT_CREATE_FAILED';
     const SETTLEMENT_ATTEMPT_ENTITIES_CREATED                   = 'SETTLEMENT_ATTEMPT_ENTITIES_CREATED';
+    const SETTLEMENT_AMOUNT_FETCH_START                         = 'SETTLEMENT_AMOUNT_FETCH_START';
+    const SETTLEMENT_AMOUNT_FETCH_END                           = 'SETTLEMENT_AMOUNT_FETCH_END';
     const DAILY_SETTLEMENT_CREATE_FAILED                        = 'DAILY_SETTLEMENT_CREATE_FAILED';
     const SETTLEMENT_RETRY_FAILED                               = 'SETTLEMENT_RETRY_FAILED';
     const SETTLEMENT_INVALID_REVERSE_FILE                       = 'SETTLEMENT_INVALID_REVERSE_FILE';
@@ -1163,6 +1165,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_CRITICAL_ALERT                                  = 'RECON_CRITICAL_ALERT';
     const RECON_REQUEST                                         = 'RECON_REQUEST';
     const RECON_FILE_ROW                                        = 'RECON_FILE_ROW';
+    const RECON_MANUAL_FILE_ROW                                 = 'RECON_MANUAL_FILE_ROW';
     const RECON_FILE_DETAILS                                    = 'RECON_FILE_DETAILS';
     const RECON_INFO_SUMMARY                                    = 'RECON_INFO_SUMMARY';
     const RECON_FILE_LINK                                       = 'RECON_FILE_LINK';
@@ -1224,6 +1227,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_FILE_DELETE_ERROR                               = 'BATCH_FILE_DELETE_ERROR';
 
     const ADMIN_FILE_DELETE_ERROR                               = 'ADMIN_FILE_DELETE_ERROR';
+
+    const ADMIN_SEND_TEST_SMS_REQUEST                           = 'ADMIN_SEND_TEST_SMS_REQUEST';
 
     const MUTEX_LOCK_ALREADY_RELEASED                           = 'MUTEX_LOCK_ALREADY_RELEASED';
     const MUTEX_UNABLE_TO_ACQUIRE                               = 'MUTEX_UNABLE_TO_ACQUIRE';
@@ -2022,7 +2027,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                               = 'TERMINAL_ENABLE_REQUEST';
     const TERMINAL_DISABLE_REQUEST                              = 'TERMINAL_DISABLE_REQUEST';
-    const TERMINAL_ONBOARDING_REQUEST                           =  'TERMINAL_ONBOARDING_REQUEST';
+    const TERMINAL_ONBOARDING_REQUEST                           = 'TERMINAL_ONBOARDING_REQUEST';
 
     // Smart Routing
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';

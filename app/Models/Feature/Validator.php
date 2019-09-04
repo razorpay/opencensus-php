@@ -24,10 +24,7 @@ class Validator extends Base\Validator
         Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'filled|string',
         Constants::MARKETPLACE . "." . Constants::VENDOR_AGREEMENT => 'filled|file',
 
-        Constants::SUBSCRIPTIONS                                    => 'filled|array|max:3',
-        Constants::SUBSCRIPTIONS . "." . Constants::BUSINESS_MODEL  => 'filled|string',
-        Constants::SUBSCRIPTIONS . "." . Constants::SAMPLE_PLANS    => 'filled|string',
-        Constants::SUBSCRIPTIONS . "." . Constants::WEBSITE_DETAILS => 'filled|url|max:200',
+        Constants::SUBSCRIPTIONS                                   => 'filled|array|max:3',
 
         Constants::VIRTUAL_ACCOUNTS                                             => 'filled|array|max:2',
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'filled|string',

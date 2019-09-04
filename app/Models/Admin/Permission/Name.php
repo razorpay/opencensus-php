@@ -73,6 +73,7 @@ class Name
     const CREATE_NETBANKING_REFUND            = 'create_netbanking_refund';
     const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
+    const CHECK_TERMINAL_SECRET               = 'check_terminal_secret';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
     const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
@@ -108,6 +109,7 @@ class Name
     const VIEW_MERCHANT_BALANCE_LIVE          = 'view_merchant_balance_live';
     const VIEW_MERCHANT_REQUESTS              = 'view_merchant_requests';
     const ADD_RECONCILIATION_FILE             = 'add_reconciliation_file';
+    const ADD_MANUAL_RECONCILIATION_FILE      = 'add_manual_reconciliation_file';
     const ADD_SETTLEMENT_RECONCILIATION       = 'add_settlement_reconciliation';
     const SEND_NEWSLETTER                     = 'send_newsletter';
     const TRIGGER_DUMMY_ERROR                 = 'trigger_dummy_error';
