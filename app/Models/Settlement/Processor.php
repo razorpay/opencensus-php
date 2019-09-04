@@ -243,7 +243,7 @@ class Processor extends Base\Core
         {
             $channel = $setl->getChannel();
 
-            $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
+            $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo, $merchantSettleToPartner);
 
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
                 function() use ($merchantSettler, $setl, $merchantSettleToPartner)

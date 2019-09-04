@@ -49,6 +49,13 @@ return [
         ]
     ],
 
+    'testSettleToPartnerWhenNoMerchantBA' => [
+        'axis' => [
+            'count'     => 2,
+            'txnCount'  => 4,
+        ]
+    ],
+
     'testSettlementForReversalOfDirectTransfer' => [
         'method'  => 'POST',
         'url'     => '/schedules/update_next_run/',

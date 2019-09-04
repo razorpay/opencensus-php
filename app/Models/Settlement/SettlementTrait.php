@@ -692,7 +692,12 @@ trait SettlementTrait
                 try
                 {
                     // create settlement and attempt
-                    $merchantSettler = new Merchant($merchant, $channel, $this->repo, $this->isLogEnabled());
+                    $merchantSettler = new Merchant(
+                        $merchant,
+                        $channel,
+                        $this->repo,
+                        $this->isLogEnabled(),
+                        $merchantSettleToPartner);
 
                     $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
