@@ -2,21 +2,8 @@
 
 namespace RZP\Mail\Transaction;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Models\BankTransfer\Entity;
-
 class BankTransfer extends Transaction
 {
-    const DATE_FORMAT = 'M d, Y (h:i A)';
-
-    public function  __construct(string $event, array $balance, array $txn, array $source, array $merchant)
-    {
-        parent::__construct($event, $balance, $txn, $source, $merchant);
-
-        $this->modifySourceAttributes();
-    }
-
     protected function getSubject(): string
     {
         return sprintf(
@@ -28,14 +15,5 @@ class BankTransfer extends Transaction
     protected function addHtmlView()
     {
         return $this->view('emails.transaction.bank_transfer');
-    }
-
-    protected function modifySourceAttributes()
-    {
-        $value = $this->source[Entity::CREATED_AT] ?? null;
-
-        $formatted = ($value === null) ? null : Carbon::createFromTimestamp($value , Timezone::IST)->format(self::DATE_FORMAT);
-
-        $this->source[Entity::CREATED_AT . '_formatted'] = $formatted;
     }
 }

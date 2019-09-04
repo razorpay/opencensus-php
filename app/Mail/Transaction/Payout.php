@@ -5,7 +5,6 @@ namespace RZP\Mail\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Webhook\Event;
-use RZP\Models\Payout\ViewDataSerializer;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Payout\Repository as PayoutRepository;
 
@@ -56,7 +55,7 @@ class Payout extends Transaction
 
     protected function modifySourceAttributes()
     {
-        $this->source = (new ViewDataSerializer($this->source))->serializePayoutForPublic();
+        $this->source[PayoutEntity::ID] = PayoutEntity::getSignedId($this->source[PayoutEntity::ID]);
     }
 
     protected function addMailData()
