@@ -10,6 +10,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import KycForm from './new';
 import InstantActivation from './Instant';
 import { setInstantActivationsTracking } from './ga_new';
+import RTracking from 'react-tracking';
 
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
 @connect(state => ({ user: state.session.user, session: state.session }))
@@ -153,14 +154,20 @@ export default class ActivationContainer extends Component {
       isLoading = !data,
       // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
       isModal = !!this.props.onClose,
-      { isL1Submitted, isBlacklistFlow } = user.instantActivation,
+      {
+        isL1Submitted,
+        isWhitelistFlow,
+        isBlacklistFlow,
+        isGraylistFlow,
+      } = user.instantActivation,
       showL1Modal =
         !this.props.accountId &&
         user.showInstantActivation &&
         (!isL1Submitted || isBlacklistFlow);
 
     let content = null,
-      modalClasses = ['animate-down'];
+      modalClasses = ['animate-down'],
+      trackerIntent = null;
 
     if (isLoading) {
       modalClasses = ['spinner', 'transparent'];
@@ -184,9 +191,10 @@ export default class ActivationContainer extends Component {
         content = (
           <InstantActivation
             {...commonProps}
-            onFormValidityChange={this.handleIAFormValidityChange}
+            onFormValidityChanFge={this.handleIAFormValidityChange}
           />
         );
+        trackerIntent = 'act.form_fill';
       } else {
         content = (
           <KycForm
@@ -195,6 +203,7 @@ export default class ActivationContainer extends Component {
             setAdditionalModalClass={this.setAdditionalModalClass}
           />
         );
+        trackerIntent = 'kyc.form_fill';
       }
     }
 

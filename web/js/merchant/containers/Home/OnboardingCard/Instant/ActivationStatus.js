@@ -99,6 +99,11 @@ export default class ActivationCard extends Component {
               className="btn btn-primary"
               onClick={() => {
                 track.fillKyc();
+                tracking.trackEvent(
+                  window.rzpQ.initiated('act.form_fill', {
+                    eventSource: 'dashboard_banner',
+                  })
+                );
               }}
             >
               Fill KYC Form

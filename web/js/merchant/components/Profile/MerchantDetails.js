@@ -32,6 +32,11 @@ const MerchantDetails = ({
         action: 'Add_Website_Initiated',
       })
     );
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('dash.add_website', {
+        eventSource: 'my_account',
+      })
+    );
     openModal({
       size: 'small',
       component: <EditWebsiteDetails onClose={closeModal} />,
@@ -89,7 +94,15 @@ const MerchantDetails = ({
           label={() => <b>Account Activation</b>}
           value={() => (
             <span>
-              <Link to={'/activation'}>
+              <Link to={'/activation'} 
+                 onClick={() => {
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('kyc.form_fill', {
+                      eventSource: 'my_account',
+                    })
+                  );
+                }}
+              >
                 {do {
                   if (user.activated || user.locked || user.submitted) {
                     ('View');
@@ -191,7 +204,7 @@ const MerchantDetails = ({
       )}
     </div>
   );
-};
+}
 
 export default connect(null, { openModal, closeModal })(
   RTracking()(MerchantDetails)
