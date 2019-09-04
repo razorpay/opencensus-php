@@ -1,7 +1,11 @@
 import { classList } from 'common/util';
 import { TimedProgressBar } from 'rzp/ui/ProgressBar';
 
-export default class StorySlider extends React.PureComponent {
+/*
+  Instagram style story component
+*/
+
+export default class TimedSlider extends React.PureComponent {
   constructor(props) {
     super(props);
     const curStoryIndex = this.isValidIndex(props.defaultStoryIndex)
@@ -31,13 +35,16 @@ export default class StorySlider extends React.PureComponent {
   }
 
   goNext = () => {
+    // Reset the curStoryIndex to 0 after the last slide
     this.setState(({ curStoryIndex }) => ({
       curStoryIndex: (curStoryIndex + 1) % this.props.children.length,
     }));
   };
 
   isValidIndex = idx => {
-    if (!idx) return;
+    if (isNaN(idx)) {
+      return;
+    }
 
     return idx < this.props.children.length;
   };
@@ -78,7 +85,7 @@ export default class StorySlider extends React.PureComponent {
   }
 }
 
-export class StoriesTabs extends React.PureComponent {
+export class TimedSliderTabs extends React.PureComponent {
   onClick = idx => () => {
     this.props.goTo(idx);
   };
@@ -86,7 +93,7 @@ export class StoriesTabs extends React.PureComponent {
   render() {
     const { className, curStoryIndex, storiesMeta, TabComponent } = this.props;
 
-    const TabComp = TabComponent || StoryTab,
+    const TabComp = TabComponent || TimedSliderTab,
       isActive = idx === curStoryIndex;
 
     return (
@@ -111,7 +118,13 @@ export class StoriesTabs extends React.PureComponent {
   }
 }
 
-const StoryTab = ({ className, children, onClick, isActive, duration }) => (
+const TimedSliderTab = ({
+  className,
+  children,
+  onClick,
+  isActive,
+  duration,
+}) => (
   <div
     class={classList(
       'StoriesTab',
@@ -126,4 +139,4 @@ const StoryTab = ({ className, children, onClick, isActive, duration }) => (
   </div>
 );
 
-export const Story = ele => <div class="Story">{ele.children}</div>;
+export const TimedSlide = ele => <div class="Story">{ele.children}</div>;
