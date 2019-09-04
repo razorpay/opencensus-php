@@ -77,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
+        self::TOKEN_ID,
         self::EXPIRE_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -216,6 +217,25 @@ class Entity extends Base\PublicEntity
     public function isMethodEmandate(): bool
     {
         return ($this->getMethod() === self::METHOD_TYPE_EMANDATE);
+    }
+
+    public function hasAutoPayment()
+    {
+        return ($this->getAmount() > 0);
+    }
+    
+
+        /**
+     * Gets dimensions for metrics around invoice module
+     * @param  array $extra Additional key, value pair of dimensions
+     * @return array
+     */
+    public function getMetricDimensions(array $extra = []): array
+    {
+        return $extra + [
+            'method'           => (string) $this->getMethod(),
+            'has_auto_payment' => (int) $this->hasAutoPayment()
+        ];
     }
 
     public function incrementAttempts()

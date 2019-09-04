@@ -31,6 +31,7 @@ class Reconciliate extends Base\Core
     const PAYMENT        = 'payment';
     const REFUND         = 'refund';
     const COMBINED       = 'combined';
+    const MANUAL         = 'manual';
     const EMANDATE_DEBIT = 'emandate_debit';
 
     /**
@@ -41,7 +42,7 @@ class Reconciliate extends Base\Core
      */
     const INVALID_RECON_TYPE = 'invalid_recon_type';
 
-    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::EMANDATE_DEBIT];
+    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::MANUAL, self::EMANDATE_DEBIT];
 
     //
     // Used to define start_row for the MIS files.

@@ -48,6 +48,7 @@ class Validator extends Base\Core
                                                         . "\([0-9]{2}-[0-9]{2}-20[0-9]{2}\)/"
                                                      ],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
+        RequestProcessor\Base::NETBANKING_SBI     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
                                                         "/^MIS Report File Dated "
@@ -108,6 +109,7 @@ class Validator extends Base\Core
                                                             . " You net amount settled is/"
                                                          ],
         RequestProcessor\Base::NETBANKING_CSB         => ["/Please find attached, the recon file for the date/"],
+        RequestProcessor\Base::NETBANKING_SBI         => ["/Please find attached, the recon file for the date/"],
         RequestProcessor\Base::FIRST_DATA             => ["/the statement of transactions for MID (.)*razorpay/"],
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK      => ["/Please find the hourly report of Virtual Accounts./"],
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK    => ["/Please find attached subject scheduled reports./"],
@@ -356,6 +358,24 @@ class Validator extends Base\Core
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY],
             RequestProcessor\Base::NETBANKING_ICICI);
+
+        //
+        // There isn't a need to validate the attachment count because
+        // validateAttachments already validates a non zero value.
+        // In this case, the number is attachments is variable.
+        //
+        return ($validSubject and $validBody);
+    }
+
+    public function validateNetbankingSbiEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_SBI);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::NETBANKING_SBI);
 
         //
         // There isn't a need to validate the attachment count because

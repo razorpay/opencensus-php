@@ -1061,8 +1061,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getPublicStatus($response, $publicStatusFeatureEnabled = false, $cardTransferFeatureEnabled = false)
+    protected function getPublicStatus($response, array $data = [])
     {
+        $refundPublicStatusFeatureEnabled = $data[Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED] ?? false;
+        $cardTransferFeatureEnabled       = $data[Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT] ?? false;
+
         $refundStatus = $this->getStatus();
 
         $publicStatusMap = [
@@ -1103,8 +1106,8 @@ class Entity extends Base\PublicEntity
 
         $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
 
-        $callScroogeForStatus = ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
-                                 ($publicStatusFeatureEnabled === true));
+        $callScroogeForStatus = (($refundPublicStatusFeatureEnabled === true) or
+                                 (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true));
 
         if (($eligibleForScroogeCall === true) and
             (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
@@ -1176,14 +1179,19 @@ class Entity extends Base\PublicEntity
 
         $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
-        $publicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
+        $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
         $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
 
         if (($displayRefundPublicStatus === true) or
-            ($publicStatusFeatureEnabled === true) or
+            ($refundPublicStatusFeatureEnabled === true) or
             ($cardTransferRefundFeatureEnabled === true))
         {
-            $scroogeResponse = $this->getPublicStatus($response, $publicStatusFeatureEnabled, $cardTransferRefundFeatureEnabled);
+            $data = [
+                Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED   => $refundPublicStatusFeatureEnabled,
+                Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT => $cardTransferRefundFeatureEnabled,
+            ];
+
+            $scroogeResponse = $this->getPublicStatus($response, $data);
 
             return $scroogeResponse;
         }

@@ -327,4 +327,13 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function sendTestSms()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendTestSms($input);
+
+        return ApiResponse::json($data);
+    }
 }

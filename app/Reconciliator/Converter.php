@@ -31,6 +31,7 @@ class Converter extends Base\Core
         RequestProcessor\Base::AMAZONPAY,
         RequestProcessor\Base::FREECHARGE,
         RequestProcessor\Base::CARD_FSS_BOB,
+        RequestProcessor\Base::NETBANKING_SBI,
         RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::NETBANKING_EQUITAS,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,

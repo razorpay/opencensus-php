@@ -375,6 +375,14 @@ class TransactionTrackerTest extends TestCase
         $this->ba->adminAuth('test');
     }
 
+    public function assertInvalidIdResponse($callee, $id, $description)
+    {
+        $this->testData[$callee]['request']['content']['id'] = $id;
+        $this->testData[$callee]['response']['content']['error']['description'] = $description;
+
+        $this->runRequestResponseFlow($this->testData[$callee]);
+    }
+
     public function setUpEsMockForRefundNotes($refund)
     {
         $esMock = $this->createEsMock(['search']);
@@ -535,11 +543,36 @@ class TransactionTrackerTest extends TestCase
             'order_id' => $merchantTransactionId
         ]]);
 
-        $paymentEntity = $this->getDbEntityById('payment', $rzpPaymentId);
-
         $rzpPayment['secondary_message'] = 'Your payment of ₹ 500'.
             ' was not successful since we did not receive the successful callback from the issuing bank. '.
             'The amount will be refunded back to your account in 5-7 business days.';
+
+        $this->setUpEsMockForPaymentNotes($rzpPaymentId);
+
+        $this->assertPaymentResponses(__FUNCTION__, $rzpPayment, $order, $merchantTransactionId);
+    }
+
+    public function testPaymentFetchDetailsForCustomerFromRazorpayIdCreatedPaymentCase()
+    {
+        // Created Payment
+        $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $rzpPayment = $this->createFailedPayment($order);
+
+        $this->resetMockServer();
+
+        $rzpPaymentId = PublicEntity::stripDefaultSign($rzpPayment['id']);
+        $merchantTransactionId = 'REZDELKJe2c92f0f46';
+
+        $this->fixtures->edit('payment', $rzpPaymentId, [
+            'notes' => [
+                'order_id' => $merchantTransactionId
+            ],
+            'status' => 'created',
+        ]);
+
+        $rzpPayment['secondary_message'] = 'We are awaiting confirmation on the status of your payment from our Banking partners.';
 
         $this->setUpEsMockForPaymentNotes($rzpPaymentId);
 
@@ -1159,5 +1192,23 @@ class TransactionTrackerTest extends TestCase
     public function testCustomerFetchIdNotFound()
     {
         $this->assertResponsesNotFound(__FUNCTION__, 'CCPjoWzlDJG0g7');
+    }
+
+    public function testCustomerFetchInvalidId()
+    {
+        // 1. Atleast 1 digit required
+        // 2. Spaces not allowed
+
+        $invalidCases = [
+            'Chandra'              => 'The id format is invalid.',
+            'Chandra_'             => 'The id format is invalid.',
+            'Chandra-'             => 'The id may only contain alphabets, digits and underscores.',
+            'Chandra Reddy Layout' => 'The id may only contain alphabets, digits and underscores.',
+        ];
+
+        foreach ($invalidCases as $id => $description)
+        {
+            $this->assertInvalidIdResponse(__FUNCTION__, $id, $description);
+        }
     }
 }

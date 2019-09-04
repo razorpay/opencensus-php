@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayRefundEntity($storeContent, $input);
 
-        $content['CHECKSUM'] = $this->getHashOfArrayForRefund($content);
+        $content['CHECKSUM'] = urlencode($this->getHashOfArrayForRefund($content));
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,

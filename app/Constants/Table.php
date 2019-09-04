@@ -8,6 +8,7 @@ class Table
     const P2P                   = 'p2p';
     const VPA                   = 'vpas';
     const IIN                   = 'iins';
+    const MPAN                  = 'mpan';
     const KEY                   = 'keys';
     const RISK                  = 'risk';
     const PLAN                  = 'plans';

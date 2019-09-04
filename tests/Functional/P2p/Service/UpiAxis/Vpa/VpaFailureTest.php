@@ -63,14 +63,16 @@ class VpaFailureTest extends TestCase
     {
         $helper = $this->getVpaHelper();
 
-        // Creating 2 more VPAs for the customer
+        // Creating 4 more VPAs for the customer
+        $this->fixtures->createVpa([]);
+        $this->fixtures->createVpa([]);
         $this->fixtures->createVpa([]);
         $vpa = $this->fixtures->createVpa([]);
 
         $vpas = $helper->fetchAllVpa();
 
         // We are only allowing 3 max vpas
-        $this->assertCount(3, $vpas['items']);
+        $this->assertCount(5, $vpas['items']);
 
         $this->withFailureResponse($helper, function($error)
         {

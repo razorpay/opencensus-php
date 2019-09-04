@@ -1346,7 +1346,7 @@ class TerminalTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
-        $url = '/accounts/'.$subMerchantId.'/terminals';
+        $url = '/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
