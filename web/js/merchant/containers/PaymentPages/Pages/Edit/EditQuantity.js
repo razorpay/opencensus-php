@@ -34,15 +34,14 @@ export default class EditQuantity extends React.Component {
 
     let content = (
       <React.Fragment>
-        {this.state.timesPayable
-          ? this.state.timesPayable - timesPaid + ' / '
-          : ''}
-        {this.state.timesPayable || 'No Limit'}
+        {timesPaid}
+        <span style={{ opacity: 0.7 }}>
+          {this.state.timesPayable && ' of ' + this.state.timesPayable}
+        </span>
         {isRoleAllowedEdit && (
           <Button.Transparent
             onClick={this.makeEditable}
-            class="Button--Link"
-            style={{ marginLeft: 12 }}
+            class="Button--Link pull-right"
           >
             Change Quantity
           </Button.Transparent>

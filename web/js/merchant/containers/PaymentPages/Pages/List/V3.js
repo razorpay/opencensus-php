@@ -16,9 +16,9 @@ export default ({ paymentPages, loading }) => {
         <thead>
           <tr>
             <th>Title</th>
-            <th>Amount</th>
-            <th>Available Quantity</th>
-            <th>Total Sales</th>
+            <th class="text-right">Amount</th>
+            <th class="text-right">Total Sales</th>
+            <th>Quantity Sold</th>
             <th>Page Url</th>
             <th>Created At</th>
             <th>Status</th>
@@ -49,14 +49,6 @@ export default ({ paymentPages, loading }) => {
                   '--'
                 )}
               </td>
-              <td>
-                {item.times_payable
-                  ? Number(item.times_payable) -
-                    Number(item.times_paid) +
-                    '/' +
-                    Number(item.times_payable)
-                  : 'No Limit'}
-              </td>
 
               <td className="text-right">
                 <Amount
@@ -64,6 +56,14 @@ export default ({ paymentPages, loading }) => {
                   currency={item.currency}
                 />
               </td>
+
+              <td>
+                {Number(item.times_paid)}
+                <span style={{ opacity: 0.7 }}>
+                  {!!item.times_payable && ' of ' + Number(item.times_payable)}
+                </span>
+              </td>
+
               <td>
                 {item.short_url && (
                   <span className="CopyLink">
