@@ -45,6 +45,8 @@ class Reconciliation extends Job
 
     const NODE_SELECTOR  = 'node_selector';
 
+    const JOB_NAME  = 'job_name';
+
     public function __construct(string $mode, string $id, array $params = [])
     {
         parent::__construct($mode);
@@ -135,6 +137,12 @@ class Reconciliation extends Job
     {
         $data = $redis->HGETALL(self::KUBERNETES_RECON_JOB_LIST);
 
+        $this->trace->debug(
+            TraceCode::KUBERNETES_BATCH_JOB_DEBUG,
+            [
+                'job_list' => $data
+            ]);
+
         $jobAction = null;
 
         if (isset($data[$batch->getId()]) === true)
@@ -164,6 +172,9 @@ class Reconciliation extends Job
      */
     protected function modifyParams($app, $batch)
     {
+        $this->params[self::JOB_NAME] = ($batch->getAttempts() > 0) ?
+                                        ($batch->getId() . $batch->getAttempts()) :
+                                        $batch->getId();
         //
         // If its a hitachi recon, spawn the job under hitachi whitelisted node otherwise capture will timedout.
         // also this node selector only works in production.
