@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
 import { keysToSentence } from 'common/util';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import { sendLink } from '../../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
@@ -24,9 +25,9 @@ import { EditExpiry, EditNotes } from '../../../../PaymentLinks/Edit/index';
 import ShareView from '../../Modals/Share';
 import PPEmbedButtonView from '../../Modals/EmbedButton';
 
-import Button from 'component/Button';
+import PaymentsList from './PaymentsList';
 
-const MAX_API_COUNT = 100;
+import Button from 'component/Button';
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
@@ -35,7 +36,7 @@ const inActiveStatusReasonMap = {
   deactivated: 'You manually deactivated the link',
 };
 
-@connect(state => ({ user: state.session.user }), {
+@connect(state => ({ user: state.session.user, mode: state.session.mode }), {
   showNotification,
   openModal,
   closeModal,
@@ -43,21 +44,19 @@ const inActiveStatusReasonMap = {
 export default class PaymentPagesV2Entity extends React.Component {
   getStatsTable(paymentPageEntity) {
     return [
-      [
-        {
-          title: 'Number of Payments made',
-          value: paymentPageEntity.captured_payments_count,
-        },
-        {
-          title: 'Total revenue in sales',
-          value: (
-            <Amount
-              value={paymentPageEntity.total_amount_paid}
-              currency={paymentPageEntity.currency}
-            />
-          ),
-        },
-      ],
+      {
+        title: 'Total Payments',
+        value: paymentPageEntity.captured_payments_count,
+      },
+      {
+        title: 'Total revenue',
+        value: (
+          <Amount
+            value={paymentPageEntity.total_amount_paid}
+            currency={paymentPageEntity.currency}
+          />
+        ),
+      },
     ];
   }
 
@@ -120,90 +119,34 @@ export default class PaymentPagesV2Entity extends React.Component {
       paymentPageEntity.email_status === 'sent';
 
     return (
-      <div class="content-wrapper content-sm txn-details Entity--paymentpage Entity--paymentpage-v2">
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            <i class="i i-payment-pages text-primary icon--formal" />{' '}
-            <div class="text">{paymentPageEntity.title}</div>
-            <div class="btn-toolbar pull-right">
-              {isRoleAllowedEdit && (
-                <Link
-                  class="btn Button--primary--invert btn-sm"
-                  to={`/paymentpages/${paymentPageEntity.id}/edit`}
-                >
-                  Edit
-                </Link>
-              )}
-              {isRoleAllowedEdit &&
-                isActive && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={this.openShareView}
-                  >
-                    Share
-                  </button>
-                )}
-            </div>
-          </div>
-
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
-              <div class="list-group details-row-container">
-                <StatsInfo stats={this.getStatsTable(paymentPageEntity)} />
-                <div class="stats-info-footer">
+      <React.Fragment>
+        <div class="content-sm txn-details Entity--paymentpage Entity--paymentpage-v2 Entity--paymentpage-v3">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <div class="text">{paymentPageEntity.title}</div>
+              <div class="btn-toolbar pull-right">
+                {isRoleAllowedEdit && (
                   <Link
-                    target="_blank"
-                    to={`/payments?payment_link_id=${
-                      paymentPageEntity.id
-                    }&count=${MAX_API_COUNT}&ref=paymentpages`}
+                    class="btn Button--primary--invert btn-sm"
+                    to={`/paymentpages/${paymentPageEntity.id}/edit`}
                   >
-                    View payments for this page <i class="i i-chevron-right" />
+                    Edit
                   </Link>
-                </div>
-
-                <EntityDetailRow
-                  label="Payment Page title"
-                  value={paymentPageEntity.title}
-                />
-
-                <EntityDetailRow
-                  label="Amount"
-                  value={
-                    paymentPageEntity.amount
-                      ? () => (
-                          <Amount
-                            value={paymentPageEntity.amount}
-                            currency={paymentPageEntity.currency}
-                          />
-                        )
-                      : '--'
-                  }
-                />
-
-                {!!paymentPageEntity.amount &&
-                  !paymentPageEntity.times_payable && (
-                    <EntityDetailRow
-                      label="Total Units Sold"
-                      value={paymentPageEntity.times_paid}
-                    />
-                  )}
-
-                {!!paymentPageEntity.amount && (
-                  <EntityDetailRow
-                    label="Available Quantity"
-                    value={() => (
-                      <EditQuantity
-                        value={paymentPageEntity.times_payable}
-                        timesPaid={paymentPageEntity.times_paid}
-                        editFn={editPaymentPage}
-                        entityId={paymentPageEntity.id}
-                        trackerFn={trackDetailViewEdits}
-                        isRoleAllowedEdit={isRoleAllowedEdit}
-                      />
-                    )}
-                  />
                 )}
+                {isRoleAllowedEdit &&
+                  isActive && (
+                    <button
+                      class="btn btn-primary btn-sm"
+                      onClick={this.openShareView}
+                    >
+                      Share
+                    </button>
+                  )}
+              </div>
+            </div>
 
+            <div class="panel-body">
+              <div class="entity-details">
                 <EntityDetailRow
                   label="Page URL"
                   value={() => (
@@ -239,7 +182,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                 />
 
                 <EntityDetailRow
-                  label="Payment Page Id"
+                  label="Payment Page ID"
                   value={paymentPageEntity.id}
                 />
 
@@ -255,7 +198,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                 </EntityDetailRow>
 
                 <EntityDetailRow
-                  label="Created At"
+                  label="Created On"
                   value={() => <Time value={paymentPageEntity.created_at} />}
                 />
 
@@ -284,10 +227,52 @@ export default class PaymentPagesV2Entity extends React.Component {
                   )}
                 />
               </div>
+
+              <div class="item-details">
+                {!!paymentPageEntity.amount &&
+                  !paymentPageEntity.times_payable && (
+                    <EntityDetailRow
+                      label="Total Units Sold"
+                      value={paymentPageEntity.times_paid}
+                    />
+                  )}
+
+                {!!paymentPageEntity.amount && (
+                  <EntityDetailRow
+                    label="Available Quantity"
+                    value={() => (
+                      <EditQuantity
+                        value={paymentPageEntity.times_payable}
+                        timesPaid={paymentPageEntity.times_paid}
+                        editFn={editPaymentPage}
+                        entityId={paymentPageEntity.id}
+                        trackerFn={trackDetailViewEdits}
+                        isRoleAllowedEdit={isRoleAllowedEdit}
+                      />
+                    )}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        <div class="content-sm txn-details Entity--paymentpage-v3">
+          {this.props.mode === 'test' && <TestModeBanner />}
+
+          <div class="stats">
+            <b class="bold">Transactions</b>
+            {this.getStatsTable(paymentPageEntity).map((st, ix) => (
+              <div key={ix}>
+                {st.title}
+                <b class="bold">{st.value}</b>
+              </div>
+            ))}
+          </div>
+
+          <PaymentsList />
+        </div>
+      </React.Fragment>
     );
   }
 }

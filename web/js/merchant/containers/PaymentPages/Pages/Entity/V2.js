@@ -255,7 +255,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                 </EntityDetailRow>
 
                 <EntityDetailRow
-                  label="Created At"
+                  label="Created On"
                   value={() => <Time value={paymentPageEntity.created_at} />}
                 />
 
