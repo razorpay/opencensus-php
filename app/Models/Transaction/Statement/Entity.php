@@ -9,6 +9,7 @@ use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
+use RZP\Models\FundAccount;
 
 /**
  * Class Entity
@@ -100,7 +101,7 @@ class Entity extends Transaction\Entity
                 break;
 
             case E::FUND_ACCOUNT_VALIDATION:
-                // Do nothing special for fund account validations
+                $this->setPublicSourceAttributeForFAV($array);
                 break;
 
             default:
@@ -108,6 +109,23 @@ class Entity extends Transaction\Entity
                 $array[self::SOURCE] = [];
                 break;
         }
+    }
+
+    protected function setPublicSourceAttributeForFAV(array & $array)
+    {
+        $array[self::SOURCE] = array_only(
+            $array[self::SOURCE],
+            [
+                FundAccount\Validation\Entity::ID,
+                FundAccount\Validation\Entity::ENTITY,
+                FundAccount\Validation\Entity::FUND_ACCOUNT_ID,
+                FundAccount\Validation\Entity::FUND_ACCOUNT,
+                FundAccount\Validation\Entity::STATUS,
+                FundAccount\Validation\Entity::AMOUNT,
+                FundAccount\Validation\Entity::NOTES,
+                FundAccount\Validation\Entity::RESULTS,
+                FundAccount\Validation\Entity::CREATED_AT,
+            ]);
     }
 
     protected function setPublicSourceAttributeForPayout(array & $array)
