@@ -237,26 +237,32 @@ export default class PaymentPagesV2Entity extends React.Component {
                     {paymentPageEntity.payment_page_items.map((pi, ix) => (
                       <tr>
                         <td>
-                          <b>{pi.item.title}</b>
+                          <div>
+                            <b>{pi.item.title}</b>
+                          </div>
                         </td>
                         <td>
-                          <div class="title">Price</div>
-                          <Amount
-                            value={pi.item.amount}
-                            currency={paymentPageEntity.currency}
-                          />
+                          <div>
+                            <div class="title">Price</div>
+                            <Amount
+                              value={pi.item.amount}
+                              currency={paymentPageEntity.currency}
+                            />
+                          </div>
                         </td>
                         <td>
-                          <div class="title">Units Sold</div>
+                          <div>
+                            <div class="title">Units Sold</div>
 
-                          <EditQuantity
-                            value={pi.quantity}
-                            timesPaid={pi.times_paid}
-                            editFn={editPaymentPage}
-                            entityId={pi.id}
-                            trackerFn={trackDetailViewEdits}
-                            isRoleAllowedEdit={isRoleAllowedEdit}
-                          />
+                            <EditQuantity
+                              value={pi.quantity}
+                              timesPaid={pi.times_paid}
+                              editFn={editPaymentPage}
+                              entityId={pi.id}
+                              trackerFn={trackDetailViewEdits}
+                              isRoleAllowedEdit={isRoleAllowedEdit}
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}

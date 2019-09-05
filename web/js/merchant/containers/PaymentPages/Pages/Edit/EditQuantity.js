@@ -51,7 +51,7 @@ export default class EditQuantity extends React.Component {
 
     if (this.state.isEditableMode) {
       content = (
-        <div class="InputGroup Input">
+        <div class="InputGroup Input" style={{ maxWidth: 260 }}>
           <Input.Check
             fieldLabel="No Limit"
             name="hasNoLimit"
@@ -72,7 +72,7 @@ export default class EditQuantity extends React.Component {
           />
           <Input
             name="times_payable"
-            class="Input Input--small"
+            class="Input"
             placeholder="Total Quantity"
             value={this.state.timesPayable}
             disabled={this.state.hasNoLimit === '1'}
@@ -98,7 +98,6 @@ export default class EditQuantity extends React.Component {
             style={{
               textAlign: 'right',
               marginBottom: 12,
-              width: 260,
             }}
           >
             <Button.Transparent
