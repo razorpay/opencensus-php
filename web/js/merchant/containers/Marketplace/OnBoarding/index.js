@@ -3,12 +3,14 @@ import { connect } from 'react-redux';
 import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
+import Button from 'component/Button';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 import { fetchUser } from 'merchant/modules/session';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';
@@ -21,6 +23,7 @@ import OnBoarding, {
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
+import KYCAlertModal from './KYCAlertModal';
 
 @connect(
   state => ({
@@ -33,6 +36,8 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
   }),
   {
     fetchUser,
+    openModal,
+    closeModal,
     handleProductQuickGuide,
   }
 )
@@ -40,6 +45,30 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
   feature: RZPFeatures.ROUTE,
 })
 export default class MarketPlaceOnBoarding extends React.Component {
+  get showKYCModal() {
+    return !this.props.isTestMode && !this.props.user.isAccepted;
+  }
+
+  switchToTestMode = () => {
+    const { user } = this.props;
+
+    LocalStorageService.setItem(`rzp_mode--${user.current}`, 'test');
+    window.location.reload();
+  };
+
+  showKYCAlertModal = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <KYCAlertModal
+          user={this.props.user}
+          switchToTestMode={this.switchToTestMode}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
+  };
+
   closeOnboarding = () => {
     if (!this.props.routeProductOnBoarding.isTour) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.ROUTE, false);
@@ -49,6 +78,14 @@ export default class MarketPlaceOnBoarding extends React.Component {
   };
 
   getNextBtnProp = sliderProps => () => {
+    if (this.showKYCModal) {
+      return (
+        <Button.Primary class="Forward-Button" onClick={this.showKYCAlertModal}>
+          Get Started
+        </Button.Primary>
+      );
+    }
+
     const props = {
       feature: RZPFeatures.ROUTE,
       onClick: this.props.closeOnboarding,
@@ -64,6 +101,14 @@ export default class MarketPlaceOnBoarding extends React.Component {
   };
 
   renderSkipButton = sliderProps => {
+    if (this.showKYCModal) {
+      return (
+        <Button.Transparent onClick={this.showKYCAlertModal}>
+          Skip And Get Started
+        </Button.Transparent>
+      );
+    }
+
     const btnProps = {
       feature: RZPFeatures.ROUTE,
       page: sliderProps.active,

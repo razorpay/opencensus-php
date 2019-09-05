@@ -83,6 +83,7 @@ class SkipAndGetStartedButton extends React.PureComponent {
 
     return (
       <FeatureEnableButton.Transparent
+        {...props}
         feature={props.feature}
         onClick={this.onClickFeatureEnableButton}
         isLocalEnabler={props.isLocalEnabler}
