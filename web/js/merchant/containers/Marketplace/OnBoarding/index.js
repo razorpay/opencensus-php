@@ -89,7 +89,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
               title="Route"
               feature={RZPFeatures.ROUTE}
               imageUrl="https://razorpay.com/assets/route/route-landing.svg"
-              desc="Easily split payments, make vendor payouts, manage marketplace money flow or automate routing money with complete control over the business logic."
+              desc="Easily split incoming payments into various linked accounts. Manage settlements, reconciliation and refunds easily by having complete control over money flow."
             />
           )}
 
