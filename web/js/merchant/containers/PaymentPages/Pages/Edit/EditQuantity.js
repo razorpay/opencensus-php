@@ -43,7 +43,7 @@ export default class EditQuantity extends React.Component {
             onClick={this.makeEditable}
             class="Button--Link pull-right"
           >
-            Change Quantity
+            Update Quantity
           </Button.Transparent>
         )}
       </React.Fragment>

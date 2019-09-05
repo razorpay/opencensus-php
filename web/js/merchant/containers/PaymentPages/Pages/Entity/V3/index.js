@@ -12,7 +12,6 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
-import StatsInfo from 'ui/StatsTable';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
@@ -28,6 +27,8 @@ import PPEmbedButtonView from '../../Modals/EmbedButton';
 import PaymentsList from './PaymentsList';
 
 import Button from 'component/Button';
+
+import dummyEntityData from '../../Create/dummy_paymentpageentity';
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
@@ -103,6 +104,8 @@ export default class PaymentPagesV2Entity extends React.Component {
       toggleManualActivation,
       reActivateLink,
     } = this.props;
+
+    // paymentPageEntity = dummyEntityData;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
@@ -229,29 +232,36 @@ export default class PaymentPagesV2Entity extends React.Component {
               </div>
 
               <div class="item-details">
-                {!!paymentPageEntity.amount &&
-                  !paymentPageEntity.times_payable && (
-                    <EntityDetailRow
-                      label="Total Units Sold"
-                      value={paymentPageEntity.times_paid}
-                    />
-                  )}
+                <table>
+                  <tbody>
+                    {paymentPageEntity.payment_page_items.map((pi, ix) => (
+                      <tr>
+                        <td>
+                          <b>{pi.item.title}</b>
+                        </td>
+                        <td>
+                          <div class="title">Price</div>
+                          <Amount
+                            value={pi.item.amount}
+                            currency={paymentPageEntity.currency}
+                          />
+                        </td>
+                        <td>
+                          <div class="title">Units Sold</div>
 
-                {!!paymentPageEntity.amount && (
-                  <EntityDetailRow
-                    label="Available Quantity"
-                    value={() => (
-                      <EditQuantity
-                        value={paymentPageEntity.times_payable}
-                        timesPaid={paymentPageEntity.times_paid}
-                        editFn={editPaymentPage}
-                        entityId={paymentPageEntity.id}
-                        trackerFn={trackDetailViewEdits}
-                        isRoleAllowedEdit={isRoleAllowedEdit}
-                      />
-                    )}
-                  />
-                )}
+                          <EditQuantity
+                            value={pi.quantity}
+                            timesPaid={pi.times_paid}
+                            editFn={editPaymentPage}
+                            entityId={pi.id}
+                            trackerFn={trackDetailViewEdits}
+                            isRoleAllowedEdit={isRoleAllowedEdit}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

@@ -22,6 +22,7 @@ const paymentpage_data = {
     payment_success_redirect_url: 'https://razorpay.com/index.html',
     theme: 'light',
   },
+  notes: [],
   payment_page_items: [
     {
       id: 'ppi_D2D7GpbxDsPIbA',

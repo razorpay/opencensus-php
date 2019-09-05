@@ -11,14 +11,68 @@
   margin: 20px
 
   .panel-body
+    display: table
+
     .entity-details, .item-details
-      display: inline-block
+      display: table-cell
       vertical-align: top
 
     .entity-details
-      width: 500px
+      min-width: 500px
 
-    //.item-details
+    .item-details
+      width: 100%
+
+      table
+        width: 100%
+        border-spacing: 0 12px
+        border-collapse: separate
+
+      tr
+        min-height: 64px
+        border-radius: 3px
+        padding: 16px
+        transform: translateY(8px)
+        opacity: 0
+        animation: move-up .3s ease-in forwards .2s
+
+        td
+          background: #f3f4f7
+          max-width: 112px
+          padding: 14px 12px
+
+          &:first-child
+            border-bottom-left-radius: 3px
+            border-top-left-radius: 3px
+            border-left: 3px solid #fbc9a1
+
+          &:last-child
+            border-bottom-right-radius: 3px
+            border-top-right-radius: 3px
+
+        &:nth-child(4n + 2)
+          transform: translateY(11px)
+
+          td
+            border-color: #c1a1fd
+
+        &:nth-child(4n + 3)
+          transform: translateY(14px)
+
+          td
+            border-color: #9bd7ff
+
+        &:nth-child(4n + 4)
+          transform: translateY(17px)
+
+          td
+            border-color: #b4e397
+
+      .title
+        color: #8991AE
+        font-size: 13px
+        line-height: 16px;
+        vertical-align: top
 
 
   .stats
@@ -48,3 +102,11 @@
         content: ''
         border-right: 1px solid #a8afc4
         margin: 0 16px
+
+@keyframes move-up
+  0%
+    opacity: .3
+
+  100%
+    opacity: 1
+    transform: translateY(0)
