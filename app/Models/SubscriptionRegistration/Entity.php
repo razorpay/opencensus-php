@@ -77,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
+        self::TOKEN_ID,
         self::EXPIRE_AT,
         self::CREATED_AT,
         self::UPDATED_AT,

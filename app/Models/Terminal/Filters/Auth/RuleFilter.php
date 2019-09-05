@@ -70,6 +70,9 @@ class RuleFilter extends BaseRuleFilter
             $filteredTerminals = array_udiff($terminals, $rejectedTerminals, function ($a, $b) {
                 return strcmp(implode('', $a), implode('', $b));
             });
+
+            // To fix the array keys after filtering
+            $filteredTerminals = array_values($filteredTerminals);
         }
 
         $data = [

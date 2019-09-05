@@ -1100,6 +1100,8 @@ final class Route
         'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
         'subscription_registration_auto_charge'    => ['post',     'subscription_registration/auto_charge',          'SubscriptionRegistrationController@postProcessAutoCharges'         ],
+        'token_registration_token_associate'       => ['post',     'token.registration/{id}/token_associate',        'SubscriptionRegistrationController@associateToken'                 ],
+        'token_registration_tokens_authenticate'   => ['post',     'token.registration/tokens_authenticate',         'SubscriptionRegistrationController@authenticateTokens'             ],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
@@ -2306,6 +2308,10 @@ final class Route
         'p2p_admin_add_handle',
         'p2p_admin_update_handle',
         'p2p_admin_manage_banks',
+
+        // AuthLink
+        'token_registration_token_associate',
+        'token_registration_tokens_authenticate',
     ];
 
     public static $routePermission = [
@@ -2682,6 +2688,8 @@ final class Route
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
         'invoice_cancel_by_batch'                  => Permission::CANCEL_BATCH,
+        'token_registration_token_associate'       => '*',
+        'token_registration_tokens_authenticate'    => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,

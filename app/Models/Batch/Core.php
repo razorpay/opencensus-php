@@ -203,6 +203,19 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
+        if (Type::isKubernetesJobQueueGroup($batch->getType()) === true)
+        {
+            if ($batch->getType() === Type::RECONCILIATION)
+            {
+                $k8sJobProcess = $this->ifProcessReconBatchViaK8sJob($batch, $input);
+
+                if ($k8sJobProcess === true)
+                {
+                    return $batch;
+                }
+            }
+        }
+
         BatchJob::dispatch($this->mode, $batch->getId(), $batch->getType(), $input);
 
         return $batch;
