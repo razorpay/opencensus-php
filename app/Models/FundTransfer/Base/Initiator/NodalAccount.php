@@ -472,7 +472,7 @@ abstract class NodalAccount extends Base\Core
 
         $failureStatuses = $statusClass::getFailureStatus();
 
-        $failureStatus = array_key_first($failureStatuses);
+        $failureStatus = array_keys($failureStatuses)[0];
 
         $entity->setBankStatusCode($failureStatus);
 
