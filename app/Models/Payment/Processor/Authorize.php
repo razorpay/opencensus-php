@@ -258,11 +258,16 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
+            // assigning $gatewayInput to $terminalGatewayInput because we need to
+            // persist gateway input in redirection flow,in
+            // runPostGatewaySelectionPreProcessing() other attributes and
+            // payment analytics, gateway_tokens entities gets appended inside $terminalGatewayInput.
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $gatewayInput);
+            // passing $terminalGateawyInput and $gatewayInput
+            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
 
             if ($request !== null)
             {
@@ -5731,14 +5736,17 @@ trait Authorize
         return true;
     }
 
-    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    // function accepts, $terminalGatewayInput to check whether we can return a redirect response or not
+    // since it has auth terminal selection data and if we can return a redirect response, we are using
+    // $gatewayInput to add selected terminalIds node which will be used in the redirect flow
+    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array $terminalGatewayInput, array & $gatewayInput)
     {
         try
         {
             $merchant = $payment->merchant;
 
             if (($this->shouldRedirect($payment) === false) and
-                ($this->shouldRedirectV2($payment, $gatewayInput) === false))
+                ($this->shouldRedirectV2($payment, $terminalGatewayInput) === false))
             {
                 return null;
             }
