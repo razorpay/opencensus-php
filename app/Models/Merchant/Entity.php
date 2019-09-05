@@ -741,7 +741,6 @@ class Entity extends Base\PublicEntity
 
     public function activate()
     {
-        $this->setDiwaliPromotionalFeatureIfApplicable();
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
         $this->setAttribute(self::ACTIVATED_AT, time());
@@ -2196,32 +2195,5 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
-    }
-
-    // delete this after 31st
-    protected function setDiwaliPromotionalFeatureIfApplicable()
-    {
-        // Linked accounts don't have Diwali
-        if ($this->isLinkedAccount() === true)
-        {
-            return;
-        }
-
-        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-        if (($currentTimeStamp >= Pricing\Fee::DIWALI_END_TIMESTAMP) or
-            ($this->getPricingPlanId() !== Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID))
-        {
-            return;
-        }
-
-        $featureParams = [
-            Feature\Entity::ENTITY_ID    => $this->getId(),
-            Feature\Entity::ENTITY_TYPE  => 'merchant',
-            Feature\Entity::NAMES        => [Feature\Constants::DIWALI_PROMOTIONAL_PLAN],
-            Feature\Entity::SHOULD_SYNC  => true,
-        ];
-
-        (new Feature\Service)->addFeatures($featureParams);
     }
 }
