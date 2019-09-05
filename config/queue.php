@@ -225,6 +225,10 @@ return [
         'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
         'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
     ],
+    'submerchant_assign_batch' => [
+        'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+        'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+    ],
     'capture' => [
         'test'       => env('AWS_CAPTURE_TEST_QUEUE'),
         'live'       => env('AWS_CAPTURE_LIVE_QUEUE'),
