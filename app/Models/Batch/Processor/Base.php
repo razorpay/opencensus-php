@@ -128,6 +128,10 @@ class Base extends BaseModel\Core
         $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
 
         $this->app['basicauth']->setMerchant($this->merchant);
+
+        // Indicates that the request is being executed by a batch upload flow
+        $this->app['basicauth']->setBatch($batch);
+
     }
 
     public function setParams(array $params = null)
@@ -141,6 +145,15 @@ class Base extends BaseModel\Core
         $this->params = $params ?: [];
 
         return $this;
+    }
+
+    public function getBatchContext(array $config): array
+    {
+        $batchContext                        = [];
+        $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
+        $batchContext[Batch\Constants::DATA] = $config;
+
+        return $batchContext;
     }
 
     /**
@@ -785,6 +798,7 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::TXT:
+            case FileStore\Format::DAT:
                 $txt = $this->generateTextWithHeadings($entries, '|', false, array_keys(current($entries)));
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
@@ -812,13 +826,16 @@ class Base extends BaseModel\Core
 
         $mailerClass = "\\RZP\\Mail\\Batch\\$type";
 
-        $mail = new $mailerClass(
-                        $this->batch->toArray(),
-                        $this->merchant->toArray(),
-                        $this->outputFileLocalPath,
-                        $this->settingsAccessor->all()->toArray());
+        if (class_exists($mailerClass))
+        {
+            $mail = new $mailerClass(
+                            $this->batch->toArray(),
+                            $this->merchant->toArray(),
+                            $this->outputFileLocalPath,
+                            $this->settingsAccessor->all()->toArray());
 
-        Mail::send($mail);
+            Mail::send($mail);
+        }
     }
 
     protected function deleteLocalFiles()
@@ -907,6 +924,7 @@ class Base extends BaseModel\Core
                 return $this->parseExcelSheets($filePath);
 
             case FileStore\Format::TXT:
+            case FileStore\Format::DAT:
                 //
                 // We use standard separator | for txt, if needs this
                 // can be made configurable. But for now it's ok.
@@ -934,12 +952,11 @@ class Base extends BaseModel\Core
         {
             $this->trace->info(TraceCode::BATCH_FILE_PROCESS_USING_SPREADSHEET, $this->batch->toArrayTraceAll());
 
-            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
+            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath, $this->getNumRowsToSkipExcelFile());
         }
 
-        return $this->parentParseExcelSheets($filePath);
+        return $this->parentParseExcelSheets($filePath, $this->getStartRowExcelFiles());
     }
-
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {
@@ -1011,7 +1028,7 @@ class Base extends BaseModel\Core
 
         if ($this->batch->getType() === Batch\Type::TERMINAL_CREATION)
         {
-            $this->cleanTypeEntries($entries);
+            $entries = $this->cleanTypeEntries($entries);
         }
 
         $stats        = ['total_entries' => $totalEntries, 'total_cleaned_entries' => $totalEntries - count($entries)];
@@ -1524,5 +1541,15 @@ class Base extends BaseModel\Core
         }
 
         return $result;
+    }
+
+    protected function getStartRowExcelFiles()
+    {
+        return 1;
+    }
+
+    protected function getNumRowsToSkipExcelFile()
+    {
+        return 0;
     }
 }

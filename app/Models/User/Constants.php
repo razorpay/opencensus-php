@@ -36,4 +36,7 @@ class Constants
     const LINKED_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  86400; //24 hours
 
     const SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  86400; //24 hours
+
+    const LOCK   = 'lock';
+    const UNLOCK = 'unlock';
 }

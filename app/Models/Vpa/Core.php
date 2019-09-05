@@ -13,7 +13,7 @@ use RZP\Models\FundAccount\Type;
 
 class Core extends Base\Core
 {
-    public function createForBankingSource(array $input, Base\PublicEntity $source): Entity
+    public function createForSource(array $input, Base\PublicEntity $source): Entity
     {
         $vpa = (new Entity)->build($input);
 

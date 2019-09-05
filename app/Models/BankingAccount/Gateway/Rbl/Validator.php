@@ -28,7 +28,7 @@ class Validator extends Base\Validator
 
     protected static $accountInfoWebhookRules = [
         Fields::CUSTOMER_NAME          => 'required|string',
-        Fields::ACCOUNT_NUMBER         => 'required|string|max:40',
+        Fields::ACCOUNT_NO             => 'required|string|max:40',
         Fields::IFSC                   => 'required|alpha_num|size:11',
         Fields::PINCODE                => 'required|integer|digits:6',
         Fields::ADDR_1                 => 'required|string',
@@ -40,7 +40,7 @@ class Validator extends Base\Validator
         Fields::COUNTRY                => 'required|string',
         Fields::RZP_REFERENCE_NUMBER   => 'required|string|size:5',
         Fields::ACTIVATION_DATE        => 'required|date',
-        Fields::PHONE_NUM              => 'required|string',
+        Fields::PHONE_NO               => 'required|string',
         Fields::EMAIL_ID               => 'required|email',
     ];
 

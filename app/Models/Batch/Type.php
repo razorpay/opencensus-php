@@ -72,6 +72,11 @@ class Type
 
     const FUND_ACCOUNT          = 'fund_account';
 
+    // iin batches
+    const IIN_NPCI_RUPAY        = 'iin_npci_rupay';
+
+    const MPAN                  = 'mpan';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -92,6 +97,8 @@ class Type
         self::MERCHANT_ONBOARDING,
         self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
+        self::IIN_NPCI_RUPAY,
+        self::MPAN,
     ];
 
     /**
@@ -150,6 +157,8 @@ class Type
         self::MERCHANT_ONBOARDING,
         self::LINKED_ACCOUNT_REVERSAL,
         self::SUBMERCHANT_ASSIGN,
+        self::IIN_NPCI_RUPAY,
+        self::MPAN,
     ];
 
     /**
@@ -179,6 +188,25 @@ class Type
     public static $kubernetesJobGroup = [
         // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
         self::PAYMENT_LINK,
+        self::SUB_MERCHANT,
+        self::OAUTH_MIGRATION_TOKEN,
+        self::PARTNER_SUBMERCHANTS,
+        self::RECURRING_CHARGE,
+        self::AUTH_LINK,
+        self::VIRTUAL_BANK_ACCOUNT,
+        self::ENTITY_MAPPING,
+    ];
+
+    /**
+     * Following batch types get processed via Kubernetes Job, this is used for long
+     * running batches. These batches first get pushed into SQS queue, then worker picks up
+     * from the queue and initiate K8s job.
+     *
+     * @var array
+     */
+    public static $kubernetesJobQueueGroup = [
+        // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
+        self::RECONCILIATION,
     ];
 
     /**
@@ -186,7 +214,9 @@ class Type
      * @var array
      */
     public static $batchTypeMigrating = [
-        self::PAYMENT_LINK
+        self::PAYMENT_LINK,
+        self::PAYOUT,
+        self::FUND_ACCOUNT
     ];
 
     /**
@@ -195,7 +225,9 @@ class Type
      * @var array
      */
     public static $batchTypeMigrationCompleted = [
-        self::PAYMENT_LINK
+        self::PAYMENT_LINK,
+        self::PAYOUT,
+        self::FUND_ACCOUNT
     ];
 
     public static function exists(string $type)
@@ -227,11 +259,11 @@ class Type
         }
     }
 
-    public static function validateSubType(string $type)
+    public static function validateSubType(string $subtype)
     {
-        if (in_array($type, self::$subTypes, true) === false)
+        if (in_array($subtype, self::$subTypes, true) === false)
         {
-            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $type);
+            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type' . $subtype);
         }
     }
 
@@ -243,6 +275,11 @@ class Type
     public static function isKubernetesJobGroup(string $type): bool
     {
         return in_array($type, self::$kubernetesJobGroup, true);
+    }
+
+    public static function isKubernetesJobQueueGroup(string $type): bool
+    {
+        return in_array($type, self::$kubernetesJobQueueGroup, true);
     }
 
     public static function isAppType(string $type): bool

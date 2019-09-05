@@ -42,6 +42,14 @@ class Entity extends Base\PublicEntity
 
     const MAX_FAILURE_COUNT = 3;
 
+    // List of fields which when updated requires update in stork.
+    const STORK_UPDATEABLE_FIELDS = [
+        self::URL,
+        self::EVENTS,
+        self::SECRET,
+        self::ACTIVE,
+    ];
+
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
@@ -96,6 +104,19 @@ class Entity extends Base\PublicEntity
         self::APPLICATION_ID,
     ];
 
+    protected $hosted = [
+        self::ID,
+        self::ENTITY,
+        self::URL,
+        self::EVENTS,
+        self::ACTIVE,
+        self::SECRET,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::LAST_SUCCESSFUL_AT,
+        self::APPLICATION_ID,
+    ];
+
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
@@ -139,10 +160,12 @@ class Entity extends Base\PublicEntity
     public function getSecret()
     {
         $encryptedSecret = $this->getAttribute(self::SECRET);
+
         if (!empty($encryptedSecret))
         {
             return Crypt::decrypt($encryptedSecret);
         }
+
         return null;
     }
 
@@ -187,6 +210,21 @@ class Entity extends Base\PublicEntity
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    /**
+     * Gets map of event names as following:
+     * [
+     *     'order.paid' => true,
+     *     'invoice.paid' => false,
+     *     ... and so on.
+     * ]
+     *
+     * @return array
+     */
+    public function getEvents(): array
+    {
+        return $this->getAttribute(self::EVENTS);
     }
 
     public function getTimeDifferenceFromLastSuccessInHour()
@@ -305,5 +343,16 @@ class Entity extends Base\PublicEntity
     protected function activate()
     {
         $this->setAttribute(self::ACTIVE, 1);
+    }
+
+    public function toArrayHosted()
+    {
+        $attributes = $this->attributesToArray();
+
+        $hostedAttributes = array_only($attributes, $this->hosted);
+
+        $hostedAttributes['secret'] = $this->getSecret();
+
+        return $hostedAttributes;
     }
 }

@@ -3,12 +3,45 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models;
+use RZP\Models\Pricing\Entity;
+use RZP\Models\Pricing\Feature;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Tests\Functional\Partner\Constants;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class Pricing extends Base
 {
     const DEFAULT_PRICING_PLAN_ID    = '1hDYlICobzOCYt';
     const DEFAULT_COMMISSION_PLAN_ID = 'C6rNP3xJcsMXQY';
+
+    public function create(array $attributes = [])
+    {
+        if (empty($attributes) === true)
+        {
+            return parent::create($attributes);
+        }
+
+        $accountType = $this->getAccountType($attributes);
+
+        $defaultValues = [
+            Entity::CHANNEL             => null,
+            Entity::ACCOUNT_TYPE        => $accountType,
+            Entity::PAYMENT_METHOD_TYPE => null,
+            Entity::PAYMENT_NETWORK     => null,
+            Entity::PAYMENT_ISSUER      => null,
+            Entity::PERCENT_RATE        => 0,
+            Entity::FIXED_RATE          => 0,
+            Entity::AMOUNT_RANGE_ACTIVE => 0,
+            Entity::AMOUNT_RANGE_MIN    => null,
+            Entity::AMOUNT_RANGE_MAX    => null,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $pricing = parent::create($attributes);
+
+        return $pricing;
+    }
 
     public function createDefaultPlan()
     {
@@ -594,20 +627,34 @@ class Pricing extends Base
     {
         $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
 
-        $row = [
-            'id'                  => '1zE3CYqf1zbyaE',
-            'plan_id'             => $pricingPlanId,
-            'plan_name'           => 'testDefaultPlan',
-            'feature'             => 'refund',
-            'payment_method'      => 'card',
-            'fixed_rate'          => 100,
-            'amount_range_active' => 1,
-            'amount_range_min'    => 100,
-            'amount_range_max'    => 50000,
-            'org_id'              => '100000razorpay',
+        $rows = [
+            [
+                'id'                  => '1zE3CYqf1zbyaE',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'fixed_rate'          => 100,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zE3CYqf1zbyAC',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'upi',
+                'fixed_rate'          => 100,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
-        $this->addPricingRulesToDb([$row]);
+        $this->addPricingRulesToDb($rows);
     }
 
     public function createDefaultCommissionPlan()
@@ -891,13 +938,25 @@ class Pricing extends Base
 
     protected function addPricingRulesToDb($rows)
     {
-        $repo = new Models\Pricing\Repository;
-
         foreach ($rows as $row)
         {
-            $pricing = new Models\Pricing\Entity;
-            $pricing->fill($row);
-            $repo->saveOrFail($pricing);
+            $this->create($row);
         }
+    }
+
+    protected function getAccountType(array $attributes)
+    {
+        $product = $attributes[Entity::PRODUCT] ?? Type::PRIMARY;
+        $feature = $attributes[Entity::FEATURE] ?? Feature::PAYOUT;
+
+        $accountType = null;
+
+        // Set account_type as shared only if feature is payout and product is banking
+        if (($feature === Feature::PAYOUT) and ($product === Type::BANKING))
+        {
+            $accountType = AccountType::SHARED;
+        }
+
+        return $accountType;
     }
 }

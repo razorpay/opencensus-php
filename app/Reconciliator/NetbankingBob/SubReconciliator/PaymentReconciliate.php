@@ -17,7 +17,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[self::COLUMN_PAYMENT_ID];
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         $status = [Bob\Status::SUCCESS];
 

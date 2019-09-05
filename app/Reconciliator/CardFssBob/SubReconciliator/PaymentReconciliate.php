@@ -130,7 +130,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         return strtolower($row[ReconciliationFields::ONUS_INDICATOR]?? '');
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         $status = Status::$successStates;
 
@@ -315,11 +315,9 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $settledAt = $row[ReconciliationFields::PAYMENT_DATE];
 
-        $format = 'd-m-Y';
-
         try
         {
-            $gatewaySettledAtTimestamp = Carbon::createFromFormat($format, $settledAt, Timezone::IST)->timestamp;
+            $gatewaySettledAtTimestamp = Carbon::parse($settledAt)->setTimezone(Timezone::IST)->getTimestamp();
         }
         catch (\Exception $ex)
         {
@@ -328,7 +326,6 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                 [
                     'info_code'         => InfoCode::INCORRECT_DATE_FORMAT,
                     'settled_at'        => $settledAt,
-                    'expected_format'   => $format,
                     'payment_id'        => $this->payment->getId(),
                     'gateway'           => $this->gateway,
                 ]);

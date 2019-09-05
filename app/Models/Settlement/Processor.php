@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -216,11 +217,25 @@ class Processor extends Base\Core
         return $response;
     }
 
+    protected function fetchMerchantIdsFromSettlement($settlements)
+    {
+        $mids = [];
+
+        foreach ($settlements as $settlement) {
+            array_push($mids, $settlement->merchant->getId());
+        }
+
+        return $mids;
+    }
+
     protected function retrySettlements(array $setlIds)
     {
         $setlAttempts = new Base\PublicCollection;
 
         $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds);
+
+        $mids = $this->fetchMerchantIdsFromSettlement($settlements);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($mids);
 
         $settlementsRetried = [];
 
@@ -231,14 +246,14 @@ class Processor extends Base\Core
             $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
 
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
-                function() use ($merchantSettler, $setl)
+                function() use ($merchantSettler, $setl, $merchantSettleToPartner)
             {
                 if ($setl->hasTransaction() === false)
                 {
                     $merchantSettler->createTransaction($setl);
                 }
 
-                return $merchantSettler->retryFailedSettlement($setl);
+                return $merchantSettler->retryFailedSettlement($setl, $merchantSettleToPartner);
             });
 
             $setlAttempts->push($bankTransferAtpt);
@@ -283,6 +298,7 @@ class Processor extends Base\Core
         try
         {
             $mids = $this->getMerchantsOnDailySettlement();
+            $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($mids);
 
             $merchants = $this->repo->merchant->findMany(
                             $mids,
@@ -319,7 +335,7 @@ class Processor extends Base\Core
 
                 $groupedTxns = $this->groupTransactionsByDay($filteredTxns[$mid]);
 
-                $setlResponse = $this->createSettlementEntities($groupedTxns, $channel);
+                $setlResponse = $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];
@@ -398,10 +414,13 @@ class Processor extends Base\Core
      * Creates a settlement entity for every group
      *
      * @param string $channel
+     * @param array $merchantSettleToPartner
+     * merchants settling to partner bank account, key will be merchantId and value will be partner bank account id
+     *
      * @return array
      * Returns array with keys settlement_count, attempt_count, txn_count
      */
-    protected function createSettlementEntities($groupedTxns, string $channel): array
+    protected function createSettlementEntities($groupedTxns, string $channel, array $merchantSettleToPartner): array
     {
         $settlements        = new Base\PublicCollection;
         $setlAttempts       = new Base\PublicCollection;
@@ -411,7 +430,20 @@ class Processor extends Base\Core
         {
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START);
 
-            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel);
+            $transactionCount = $txns->count();
+
+            $customProperties = [
+                'channel'               => $channel,
+                'transaction_count'     => $transactionCount,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::SETTLEMENT_CREATION_INITIATED,
+                null,
+                null,
+                $customProperties);
+
+            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner);
 
             if ($setl !== null)
             {
@@ -535,7 +567,10 @@ class Processor extends Base\Core
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns);
 
-        return $this->createSettlementEntities($groupedTxns, $channel);
+        $merchantIds = array_keys($groupedTxns);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
 
     protected function createSettlementsForTestMode($channel): array
@@ -546,7 +581,10 @@ class Processor extends Base\Core
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns);
 
-        return $this->createSettlementEntities($groupedTxns, $channel);
+        $merchantIds = array_keys($groupedTxns);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
 
     protected function preSettlementProcessing(array $input)
@@ -714,7 +752,8 @@ class Processor extends Base\Core
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns);
 
-        return $this->createSettlementEntities($groupedTxns, $channel);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchantId]);
+        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
     }
 
     protected function shouldUseQueue(array $input)
@@ -755,6 +794,7 @@ class Processor extends Base\Core
         {
             $mids = $this->getMerchantOnAdhocSettlement();
 
+            $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($mids);
             $merchants = $this->repo->merchant->findMany(
                 $mids,
                 [
@@ -789,7 +829,7 @@ class Processor extends Base\Core
                     continue;
                 }
 
-                $setlResponse = $this->createSettlementEntities($filteredTxns, $channel);
+                $setlResponse = $this->createSettlementEntities($filteredTxns, $channel, $merchantSettleToPartner);
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];
@@ -841,6 +881,89 @@ class Processor extends Base\Core
         if (array_key_exists('logging', $input) === true)
         {
             $this->logging = (bool)$input['logging'];
+        }
+    }
+
+    /***
+     * @return mixed
+     * The following query fetch the MerchantId's having the ES_AUTOMATIC and ES_ATOMATIC_THREE_PM
+     * this is done because the ES_AOTOMATIC merchants only settled at 9AM and 5PM
+     * and the ES_AUTOMATIC_THREE_PM merchants settled at 3PM only
+     */
+    public function settlementAmount()
+    {
+        try
+        {
+            $skipMids = $this->getMerchantsToSkipForUsualSettlement();
+
+            $nextHour = Carbon::now(Timezone::IST)->addHour()->hour;
+
+            $timeStamp = Carbon::today(Timezone::IST)->hour($nextHour)->getTimestamp();
+
+            $now     = Carbon::now(Timezone::IST)->getTimestamp();
+            $eightAm = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
+            $nineAm  = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+            $twoPm   = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->getTimestamp();
+            $fourPm  = Carbon::today(Timezone::IST)->hour(16)->getTimestamp();
+            $fivePm  = Carbon::today(Timezone::IST)->hour(18)->getTimestamp();
+
+            if(($now > $fivePm and $now < $eightAm) or
+                ($now > $nineAm and $now < $fourPm))
+            {
+                $esMerchantsThreePm = [];
+
+                if($now < $threePm and $now >= $twoPm)
+                {
+                    $esMerchantsThreePm = $this->repo
+                                               ->feature
+                                               ->findMerchantsHavingFeatures([Feature\Constants::ES_AUTOMATIC_THREE_PM])
+                                               ->pluck(Feature\Entity::ENTITY_ID)
+                                               ->toArray();
+                }
+
+                $esMerchantsAutomatic = $this->repo
+                                             ->feature
+                                             ->findMerchantNotInEntityIdHavingFeature(
+                                                 $esMerchantsThreePm,
+                                                 Feature\Constants::ES_AUTOMATIC)
+                                             ->pluck(Feature\Entity::ENTITY_ID)
+                                             ->toArray();
+
+                $skipMids = array_merge($skipMids,$esMerchantsAutomatic);
+            }
+
+            $this->app['trace']->info(
+                TraceCode::SETTLEMENT_AMOUNT_FETCH_START,
+                [
+                    'pre_amount_fetch_timestamp'    => Carbon::now(Timezone::IST)->getTimestamp(),
+                    'skipped_merchant_ids'          => $skipMids
+                ]);
+
+            $data = $this->repo->transaction->getAmountForNextSettlement($timeStamp, [], $skipMids);
+
+            $this->app['trace']->info(
+                TraceCode::SETTLEMENT_AMOUNT_FETCH_END,
+                [
+                    'post_amount_fetch_timestamp'    => Carbon::now(Timezone::IST)->getTimestamp(),
+                    'settlement_amount'              => $data
+                ]);
+
+            (new SlackNotification)->send(
+                'setl_balance_alert',
+                $data,
+                null,
+                1,
+                SlackNotification::SETTLEMENT);
+
+            return $data;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_AMOUNT_RETRIEVE_FAILED
+            );
         }
     }
 }

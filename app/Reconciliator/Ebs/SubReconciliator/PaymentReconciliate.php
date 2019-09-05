@@ -39,7 +39,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $paymentId;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->ebs->findBypaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }

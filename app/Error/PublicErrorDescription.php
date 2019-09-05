@@ -122,6 +122,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                  = 'Contact number should not be greater than 15 digits, including country code';
     const BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED                       = 'Contact number needs to be Indian.';
     const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported';
+    const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED                        = 'Corporate card is not allowed for this payment';
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';
@@ -325,6 +326,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CARD_PAYMENT_DECLINED_MODE_NOT_SUPPORTED                  = 'Payment declined by issuer. Issuer does not support this mode of transaction.';
     const BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS                            = 'Payments Blocked by cardholder on this card.';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
+    const BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST                             = 'Merchant email type does not Exist';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -598,11 +600,30 @@ class PublicErrorDescription
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
 
+    const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
+    const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Login failed because of incorrect OTP';
+    const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                   = 'Second factor authentication setup failed because of incorrect OTP';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                          = 'User is restricted by its associated merchant to perform the action';
+    const BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED                               = 'Second factor authentication is enabled for user. OTP field is required';
+    const BAD_REQUEST_USER_2FA_SETUP_REQUIRED                                   = 'User 2FA setup is required';
+    const BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED                             = 'User 2FA setup is required before user logins.';
+    const BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED                            = 'Second factor authentication is not enabled for the user.';
+    const BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED                                  = 'User account is locked.';
+    const BAD_REQUEST_USER_2FA_ENFORCED                                         = 'Second factor authentication is mandated by one (or more) merchants';
+    const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                           = 'Operation is only allowed by the owner of the merchant.';
+    const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                 = 'Owner 2FA setup should already be done to perform this action';
+    const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                  = 'Merchant Restricted Settings failed to apply because users of merchant are associated with multiple merchants';
+    const BAD_REQUEST_USER_OTP_REQUIRED                                         = 'OTP is required';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION                     = 'Restricted user cannot perform action';
+
     const BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS                             = 'User with given role already exists';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';
     const BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT                          = 'User doesn\'t belong to the current merchant';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
+    const BAD_REQUEST_INVITATION_CREATE_FAILED                                  = 'Invitation create failed either due to user invited is restricted or merchant is restricted';
+    const BAD_REQUEST_INVITATION_ACCEPT_FAILED                                  = 'Invitation accept failed either due to user invited is restricted or merchant is restricted';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
     const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                              = 'Self-Invitation not allowed';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                              = 'SuperAdmin Role is not editable';
@@ -632,6 +653,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                        = 'The input action is not supported for the merchant user';
     const BAD_REQUEST_ACCESS_DENIED                                             = 'Access Denied';
+    const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                              = 'Dashboard cant be accessed from the current location';
 
     // Workflow Related Errors
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                 = 'Workflow entity not found';
@@ -857,4 +879,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
+
+    // Excel Store
+    const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
 }

@@ -45,7 +45,7 @@ class Gateway extends Base\Gateway
         'MessageCode'            => 'reference1',
         'DateTimeInGMT'          => 'date',
         'MerchantId'             => 'merchant_code',
-        'TraceNumber'            => 'int_payment_id',
+        'TraceNumber'            => E::VERIFICATION_ID,
         'Amount'                 => 'amount',
         'TransactionDescription' => 'client_code',
         'AuthorizationStatus'    => 'status',
@@ -111,10 +111,13 @@ class Gateway extends Base\Gateway
         // is different than what we sent
         unset($content['DateTimeInGMT']);
 
+        /** @var E $gatewayPayment */
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->assertPaymentId((string) $gatewayPayment->getIntPaymentId(), $content['TraceNumber']);
+        $gatewayPaymentId = (string) ($gatewayPayment->getVerificationId() ?: $gatewayPayment->getIntPaymentId());
+
+        $this->assertPaymentId($gatewayPaymentId, $content['TraceNumber']);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount = number_format($content['Amount'], 2, '.', '');
@@ -261,9 +264,9 @@ class Gateway extends Base\Gateway
             'MessageCode'            => MessageCodes::AUTHORIZE,
             'DateTimeInGMT'          => $date,
             'MerchantId'             => $input['terminal']['gateway_merchant_id'],
-            'TraceNumber'            => time() . random_integer(5),
+            'TraceNumber'            => $this->getTraceNumber($input),
             'Amount'                 => $input['payment']['amount'] / 100,
-            'TransactionDescription' => $this->getTxnDescription($input),
+            'TransactionDescription' => $this->getDynamicMerchantName($input['merchant'], 50),
         );
 
         if ($this->mode === Mode::TEST)
@@ -299,7 +302,7 @@ class Gateway extends Base\Gateway
             'MessageCode'   => MessageCodes::VERIFY,
             'DateTimeInGMT' => $date,
             'MerchantId'    => $gatewayPayment['merchant_code'],
-            'TraceNumber'   => $gatewayPayment['int_payment_id'],
+            'TraceNumber'   => $gatewayPayment[E::VERIFICATION_ID] ?: $gatewayPayment[E::INT_PAYMENT_ID],
             'Future1'       => '',
             'Future2'       => '',
         ];
@@ -614,13 +617,13 @@ class Gateway extends Base\Gateway
         return Fields::LIVE_SCOPE;
     }
 
-    protected function getTxnDescription($input)
+    protected function getTraceNumber($input)
     {
-        $txnDesc = $this->getDynamicMerchantName($input['merchant'], 50);
+        $txnDesc = time() . random_integer(5);
 
         if ($input['payment']['merchant_id'] === Merchant\Preferences::MID_RELIANCE_AMC)
         {
-            $txnDesc = $input['payment']['description'] . '/' . $input['payment']['id'];
+            $txnDesc = substr($input['payment']['description'], 0, 16);
         }
 
         return $txnDesc;

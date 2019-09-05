@@ -265,6 +265,13 @@ abstract class Base extends ApiProcessor
      */
     protected function mockResponseGenerator(array $input): string
     {
+        // This is to mock failed response for test cases of beneficiary for fund account
+        if ((array_key_exists('contact_id', $input) === true) and
+            ($input['contact_id'] === 'cont_invalidcontact'))
+        {
+            return $this->mockGenerateFailedResponse();
+        }
+
         if ((isset($input[self::FAILED_RESPONSE]) === true) and
             ($input[self::FAILED_RESPONSE] === '1'))
         {

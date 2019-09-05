@@ -122,6 +122,8 @@ function disableEmptyInputs(form) {
                 <option value="CNRB">Canara Bank</option>
                 <option value="VIJB">Vijaya Bank</option>
                 <option value="CIUB">City union Bank</option>
+                <option value="IDIB">Indian Bank</option>
+                <option value="IBKL">Industrial Development Bank of India</option>
                 <option value="YESB">Yes Bank</option>
                 <option value="SIBL">South Indian Bank</option>
             </select>
@@ -133,6 +135,7 @@ function disableEmptyInputs(form) {
             <select name="wallet">
                 <option value="amazonpay" selected>Amazon Pay</option>
                 <option value="paytm">Paytm</option>
+                <option value="paypal">Paypal</option>
                 <option value="mobikwik">Mobikwik</option>
                 <option value="payzapp">Payzapp</option>
                 <option value="payumoney">Payumoney</option>

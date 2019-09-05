@@ -23,12 +23,16 @@ services:
       DB_LIVE_HOST: api_db
       DB_LIVE_USERNAME: root
       DB_LIVE_PASSWORD: 123
+      DB_LIVE_MIGRATION_USERNAME: migration_user_name
+      DB_LIVE_MIGRATION_PASSWORD: 123
       SLAVE_DB_LIVE_HOST: api_db
       SLAVE_DB_LIVE_USERNAME: root
       SLAVE_DB_LIVE_PASSWORD: 123
       DB_TEST_HOST: api_db
       DB_TEST_USERNAME: root
       DB_TEST_PASSWORD: 123
+      DB_TEST_MIGRATION_USERNAME: migration_user_name
+      DB_TEST_MIGRATION_PASSWORD: 123
       SLAVE_DB_TEST_HOST: api_db
       SLAVE_DB_TEST_USERNAME: root
       SLAVE_DB_TEST_PASSWORD: 123
@@ -60,7 +64,7 @@ services:
     volumes:
       - ./dockerconf/api_db.sql:/docker-entrypoint-initdb.d/init.sql
   cache:
-    image: redis:2.8
+    image: redis:3-alpine
     ports:
       - 26379:6379
     container_name: api_cache

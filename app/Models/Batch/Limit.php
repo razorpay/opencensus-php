@@ -35,6 +35,7 @@ class Limit
         Type::RECURRING_CHARGE                      => 10000,
         Type::SUB_MERCHANT                          => 5000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
+        TYPE::IIN_NPCI_RUPAY                        => 50000,
     ];
 
     /**

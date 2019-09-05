@@ -38,8 +38,12 @@ class Constants
     const CORPORATION      = 'corporation';
     const YESB             = 'yesb';
     const CUB              = 'cub';
+    const IBK              = 'ibk';
+    const IDBI             = 'idbi';
     const CITI             = 'citi';
+    const CBI              = 'cbi';
     const SIB              = 'sib';
+    const SBIN             = 'sbin';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
 
@@ -50,7 +54,9 @@ class Constants
         Type::REFUND => [
             self::HDFC,
             self::ICICI,
+            self::IBK,
             self::CSB,
+            self::CBI,
             self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
@@ -86,6 +92,8 @@ class Constants
             self::CORPORATION,
             self::SIB,
             self::CUB,
+            self::IDBI,
+            self::SBIN,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -95,6 +103,7 @@ class Constants
             self::HDFC,
             self::AXIS,
             self::ENACH_RBL,
+            self::SBI,
             self::ENACH_NPCI_NETBANKING,
         ],
         Type::REFUND_FAILED => [
@@ -126,8 +135,10 @@ class Constants
             // todo: Fix the receipients
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::IBK           => ['refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
             self::UPI_SBI       => ['refunds@razorpay.com'],
+            self::CBI           => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [
@@ -149,6 +160,8 @@ class Constants
             self::YESB        => ['yesb.netbanking.refunds@razorpay.com'],
             self::SIB         => ['sib.netbanking.refunds@razorpay.com'],
             self::CUB         => ['cub.netbanking.refunds@razorpay.com'],
+            self::IDBI        => ['idbi.netbanking.refunds@razorpay.com'],
+            self::SBIN        => ['sbi.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
@@ -162,6 +175,7 @@ class Constants
             self::ENACH_RBL             => ['rbl.emandate@razorpay.com'],
             //TODO
             self::ENACH_NPCI_NETBANKING => [''],
+            self::SBI                   => [''],
         ],
 
         Type::EMI => [

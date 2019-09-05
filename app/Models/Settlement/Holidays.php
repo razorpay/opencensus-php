@@ -181,8 +181,10 @@ class Holidays
             8 => [
                 12 => 'Bakri Id(ld-UI-Zuha)',
                 15 => 'Independence Day',
+                17 => 'Parsi New Year',
             ],
             9 => [
+                2  => 'Ganesh Chaturthi',
                 10 => 'Muharram',
             ],
             10 => [

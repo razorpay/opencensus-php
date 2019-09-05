@@ -369,14 +369,9 @@ class Context extends ArrayObject
      *
      * @return string
      */
-    public function handlePrefix()
+    public function handlePrefix(): string
     {
-        $map = [
-            'bajaj'     => 'BJJ',
-            'razoraxis' => 'RRA',
-        ];
-
-        return array_get($map, $this->handleCode(), 'TST');
+        return $this->handle->getTxnPrefix($this->getMerchant()->getId());
     }
 
     /**
@@ -429,8 +424,7 @@ class Context extends ArrayObject
      */
     public function setHandleAndMode(string $handleCode, string $mode = null)
     {
-        // TODO: PRE PROD CHECK
-        $modes = [Mode::TEST, Mode::LIVE];
+        $modes = [Mode::LIVE, Mode::TEST];
 
         // If mode is passed, we will only look for that mode
         if (is_null($mode) === false)
@@ -442,7 +436,8 @@ class Context extends ArrayObject
         {
             $handle = app('repo')->p2p_handle->connection($mode)->find($handleCode);
 
-            if ($handle instanceof Handle\Entity)
+            if (($handle instanceof Handle\Entity) and
+                ($handle->isActive() === true))
             {
                 $this->setMode($mode);
 

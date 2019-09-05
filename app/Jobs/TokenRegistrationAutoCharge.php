@@ -44,16 +44,32 @@ class TokenRegistrationAutoCharge extends Job
             $this->tokenRegistration->getPublicId(),
             function ()
             {
-                $this->repo->reload($this->tokenRegistration);
+                try
+                {
+                    $this->repo->reload($this->tokenRegistration);
 
-                (new SubscriptionRegistration\Core())->processAutoCharge($this->tokenRegistration);
+                    (new SubscriptionRegistration\Core())->processAutoCharge($this->tokenRegistration);
 
-                $this->trace->info(
-                    TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
-                    [
-                        'token.registration_id' => $this->tokenRegistration->getId()
-                    ]
-                );
+                    $this->trace->info(
+                        TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                        [
+                            'token.registration_id' => $this->tokenRegistration->getId()
+                        ]
+                    );
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_FAILED,
+                        [
+                            'token_registration_id' => $this->tokenRegistration->getPublicId(),
+                        ]
+                    );
+
+                    $this->delete();
+                }
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS

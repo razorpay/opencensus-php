@@ -26,6 +26,18 @@ final class Constants
 
     const BANK_PROCESSED_TIME = 'bank_processed_time';
 
+    const NEFT_END_HOUR = 18;
+
+    const NEFT_START_HOUR = 8;
+
+    Const NEFT_END_MINUTE = 15;
+
+    const RTGS_REVISED_END_HOUR = 17;
+
+    const RTGS_REVISED_START_HOUR = 8;
+
+    const RTGS_REVISED_END_MINUTE = 30;
+
     const IMPS_STATUS_CHECK_DISPATCH_TIME = 10;
 
     const MAX_AGE_ATTEMPT_STATUS_DISPATCH_AGE = 1800;
@@ -41,4 +53,6 @@ final class Constants
     const VIRTUAL_ACCOUNT_IFSC = [
         'YESB0CMSNOC'
     ];
+
+    const DISABLE              = 'disable';
 }

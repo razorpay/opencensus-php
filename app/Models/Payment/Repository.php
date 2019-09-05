@@ -260,6 +260,21 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Fetches old payments which can be timed-out at method level with respective
+     * merchant relation.
+     */
+    public function fetchOldCreatedPaymentsForMethodForTimeout(int $timestamp, int $limit, string $method)
+    {
+        return $this->newQuery()
+                    ->status(Payment\Status::CREATED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->where(Payment\Entity::METHOD, '=', $method)
+                    ->with(['merchant', 'merchant.features'])
+                    ->limit($limit)
+                    ->get();
+    }
+
+    /**
      * This function is used to fetch the authorized payments where
      * Merchant auto refund delay is null.
      *
@@ -642,11 +657,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCorporatePaymentsWithStatus(
+    public function fetchCorporatePaymentsWithStatusAndRelations(
         int $from,
         int $to,
         string $gateway,
-        string $bankCode)
+        string $bankCode,
+        $relations = [])
     {
         $paymentAttrs = $this->dbColumn('*');
 
@@ -654,7 +670,7 @@ class Repository extends Base\Repository
 
         $tTablename = $terminalRepo->getTableName();
 
-        $pGateway = $terminalRepo->dbColumn(Terminal\Entity::GATEWAY);
+        $pGateway = $this->dbColumn(Entity::GATEWAY);
 
         $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
 
@@ -672,10 +688,11 @@ class Repository extends Base\Repository
                     ->where($pGateway, $gateway)
                     ->whereNotNull($pAuthorizedAt)
                     ->where($pBankCode, $bankCode)
+                    ->with($relations)
                     ->get();
     }
 
-    public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false)
+    public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false, $relations = [])
     {
         // SELECT `payments`.*
         // FROM `payments`
@@ -714,6 +731,7 @@ class Repository extends Base\Repository
                     ->whereBetween($transactionReconciledAt, [$from, $to])
                     ->whereIn($paymentStatus, $status)
                     ->where($terminalTpv, '=', $tpvEnabled)
+                    ->with($relations)
                     ->get();
     }
 

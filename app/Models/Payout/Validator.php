@@ -12,11 +12,19 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
 class Validator extends Base\Validator
 {
     const MAX_PURPOSES_ALLOWED = 100;
+
+    /**
+     * Rate limit on items sending for bulk payout create.
+     */
+    const MAX_BULK_PAYOUTS_LIMIT = 15;
 
     //
     // This is required for build. Currently, build does not
@@ -38,6 +46,7 @@ class Validator extends Base\Validator
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Entity::NARRATION            => 'sometimes|nullable|string|max:30',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
+        Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
     ];
 
     /**
@@ -54,7 +63,8 @@ class Validator extends Base\Validator
         Entity::MODE                 => 'sometimes|nullable|string',
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
-        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean|custom',
+        Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -154,12 +164,64 @@ class Validator extends Base\Validator
 
         Mode::validateModeOfAccountType($mode, $accountType);
 
+        $this->validateCardAccountType($payout);
+
+        $this->validateVpaAccountType($payout);
+
+        $this->validateModeAndAmount($input, $payout);
+    }
+
+    protected function validateCardAccountType(Entity $payout)
+    {
+        $fundAccount = $payout->fundAccount;
+
+        $mode = $payout->getMode();
+
+        $accountType = $fundAccount->getAccountType();
+
         if ($accountType === FundAccount\Type::CARD)
         {
             $cardIssuer = $fundAccount->account->getIssuer();
 
             Mode::validateModeOfIssuer($mode, $cardIssuer);
         }
+    }
+
+    protected function validateVpaAccountType(Entity $payout)
+    {
+        $fundAccount = $payout->fundAccount;
+
+        $mode = $payout->getMode();
+
+        $accountType = $fundAccount->getAccountType();
+
+        if (($accountType === FundAccount\Type::VPA) or
+            ($mode === Mode::UPI))
+        {
+            $balance = $payout->balance;
+
+            if (($balance->isTypeBanking() === true) and
+                ($balance->getAccountType() === AccountType::DIRECT) and
+                ($balance->getChannel() === Channel::RBL))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'UPI is not supported for RBL Banking Payouts currently',
+                    Entity::MODE,
+                    [
+                        'balance_id'    => $balance->getId(),
+                        'mode'          => $mode,
+                        'account_type'  => $accountType,
+                        'payout_id'     => $payout->getId(),
+                    ]);
+            }
+        }
+    }
+
+    protected function validateModeAndAmount(array $input, Entity $payout)
+    {
+        $fundAccount = $payout->fundAccount;
+
+        $mode = $payout->getMode();
 
         $amount = $input[Entity::AMOUNT];
 
@@ -179,29 +241,8 @@ class Validator extends Base\Validator
                     'mode'            => $mode,
                     'min_rtgs_amount' => $minRtgsAmount,
                     'max_imps_amount' => $maxImpsAmount,
-                    'fund_account_id' => $payout->fundAccount->getId(),
-                    'account_type'    => $accountType,
-                ]);
-        }
-    }
-
-    protected function validateQueueIfLowBalance($attribute, $value)
-    {
-        if (boolval($value) === false)
-        {
-            return;
-        }
-
-        /** @var Entity $payout */
-        $payout = $this->entity;
-
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::QUEUED_PAYOUTS) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Queued payouts not available for the merchant',
-                null,
-                [
-                    'value' => $value
+                    'fund_account_id' => $fundAccount->getId(),
+                    'account_type'    => $fundAccount->getAccountType(),
                 ]);
         }
     }
@@ -307,7 +348,7 @@ class Validator extends Base\Validator
 
         $payoutStatus = $payout->getStatus();
 
-        if ($payoutStatus !== Status::REVERSED)
+        if ($payout->isStatusReversedOrFailed() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED,
@@ -408,6 +449,24 @@ class Validator extends Base\Validator
                     'payout_id' => $payout->getId(),
                     'status'    => $payout->getStatus(),
                 ]);
+        }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of payout creation in Bulk Route
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkPayoutCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_PAYOUTS_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Current batch size ' . count($input) . ', max limit of Bulk Contact is ' . self::MAX_BULK_PAYOUTS_LIMIT,
+                null,
+                null
+            );
         }
     }
 }

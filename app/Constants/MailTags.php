@@ -42,6 +42,8 @@ class MailTags
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
     const AIRTEL_MONEY_FAILED_REFUNDS_MAIL      = 'airtel_money_failed_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
+    const INDIAN_BANK_NETBANKING_REFUNDS_MAIL   = 'indianbank_netbanking_refunds_mail';
+    const CBI_NETBANKING_REFUNDS_MAIL           = 'cbi_netbanking_refunds_mail';
     const CANARA_NETBANKING_REFUNDS_MAIL        = 'canara_netbanking_refunds_mail';
     const FEDERAL_NETBANKING_REFUNDS_MAIL       = 'axis_netbanking_refunds_mail';
     const IDFC_NETBANKING_REFUNDS_MAIL          = 'idfc_netbanking_refunds_mail';
@@ -126,6 +128,9 @@ class MailTags
     const AFFILIATE_ADDED                  = 'affiliate_added';
 
     const ICICI_FILES                      = 'icici_files';
+    const CBI_FILES                        = 'cbi_files';
+
+    const IBK_FILES                        = 'ibk_files';
 
     // Heimdall Email Tags
     const ADMIN_INVITE_MERCHANT            = 'admin_invite_merchant';
@@ -170,6 +175,8 @@ class MailTags
         self::HDFC_NETBANKING_REFUNDS_MAIL,
         self::AXIS_NETBANKING_REFUNDS_MAIL,
         self::ICICI_NETBANKING_REFUNDS_MAIL,
+        self::INDIAN_BANK_NETBANKING_REFUNDS_MAIL,
+        self::CBI_NETBANKING_REFUNDS_MAIL,
         self::RBL_NETBANKING_REFUNDS_MAIL,
         self::INDUSIND_NETBANKING_REFUNDS_MAIL,
     ];

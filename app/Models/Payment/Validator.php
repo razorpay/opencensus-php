@@ -89,11 +89,11 @@ class Validator extends Base\Validator
         'offer_id'                      => 'filled|public_id|size:20',
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
+        'payment_id'                    => 'sometimes_if:method,cardless_emi',
     ];
 
     protected static $editAcquirerRules = [
         Entity::VPA                  => 'sometimes|string|max:100',
-        Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
         Entity::REFERENCE16          => 'sometimes|nullable|string',

@@ -12,6 +12,7 @@ class Payout extends Base
             'customer_id'       => '100000customer',
             'destination_id'    => '1000000lcustba',
             'destination_type'  => 'bank_account',
+            'balance_id'        => '10000000000000',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

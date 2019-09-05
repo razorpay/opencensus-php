@@ -309,13 +309,30 @@ class Plan extends PublicCollection
         return null;
     }
 
-    public function hasBankingPayoutRule(): bool
+    public function hasBankingSharedAccountPayoutRule(): bool
     {
         /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
             if (($rule->isBankingProduct() === true) and
-                ($rule->getFeature() === Feature::PAYOUT))
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAccountTypeShared() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasBankingDirectAccountPayoutRule(): bool
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if (($rule->isBankingProduct() === true) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAccountTypeDirect() === true))
             {
                 return true;
             }

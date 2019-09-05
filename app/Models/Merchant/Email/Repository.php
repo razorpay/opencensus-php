@@ -38,4 +38,20 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->first();
     }
+
+    /**
+     * This function does not check for verification status and
+     * hence should not be used for getting emails for communication.
+     * this function get all the emails by type except 'partner_dummy' type
+     * @param  string  $merchantId
+     *
+     * @return mixed
+     */
+    public function getEmailByMerchantId(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->Where(Entity::TYPE, '<>', Type::PARTNER_DUMMY)
+                    ->get();
+    }
 }

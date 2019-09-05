@@ -28,6 +28,7 @@ class Reconciliate extends Base\Core
     const PAYMENT        = 'payment';
     const REFUND         = 'refund';
     const COMBINED       = 'combined';
+    const MANUAL         = 'manual';
     const EMANDATE_DEBIT = 'emandate_debit';
 
     /**
@@ -38,7 +39,7 @@ class Reconciliate extends Base\Core
      */
     const INVALID_RECON_TYPE = 'invalid_recon_type';
 
-    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::EMANDATE_DEBIT];
+    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::MANUAL, self::EMANDATE_DEBIT];
 
     //
     // Used to define start_row for the MIS files.
@@ -103,6 +104,14 @@ class Reconciliate extends Base\Core
     protected $repo;
 
     protected $gateway;
+
+    /**
+     * This variable indicates if we are in reconciliation code flow.
+     * Currently this flag is being used to skip checksum validation
+     * while creating Hitachi Unexpected payment via recon.
+     * @var bool
+     */
+    public static $isReconRunning = false;
 
     public function __construct(string $gateway = null)
     {
@@ -170,6 +179,8 @@ class Reconciliate extends Base\Core
 
         foreach ($allFilesContents as $fileContents)
         {
+            self::$isReconRunning = true;
+
             $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
 
             $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
@@ -204,6 +215,8 @@ class Reconciliate extends Base\Core
             {
                 // Create the output file
                 $this->generateReconOutputFile($batchProcessor, $extraDetails);
+
+                self::$isReconRunning = false;
             }
         }
 
@@ -248,6 +261,17 @@ class Reconciliate extends Base\Core
         }
 
         $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
+
+        $attempt = $batch->getAttempts();
+
+        if ($attempt > 1)
+        {
+            //
+            // After each retry, the output file is generated again. Need to append
+            // attempt count, so as to avoid file overwrite in s3 bucket.
+            //
+            $fileName .= '_' . $attempt;
+        }
 
         $this->trace->info(
             TraceCode::RECON_INFO,
@@ -544,9 +568,13 @@ class Reconciliate extends Base\Core
             }
         }
 
+        $fileName = basename($batch->latestFileByType(FileStore\Type::RECONCILIATION_BATCH_INPUT)->location);
+
+        $originalFileName = str_replace('_' . $batch->getId(), '', $fileName);
+
         $summary = [
             'info'              => 'Processed Batch Summary',
-            'file'              => basename($batch->latestFileByType(FileStore\Type::RECONCILIATION_BATCH_INPUT)->location),
+            'file'              => $originalFileName,
             'output_file_id'    => $outputFileIds,
             'total_count'       => $batch->getTotalCount(),
             'success_count'     => $batch->getSuccessCount(),

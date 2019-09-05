@@ -46,6 +46,16 @@ trait Callback
         $gatewayInputLog = $gatewayInput;
 
         unset($gatewayInputLog['otp']);
+        if (empty($gatewayInputLog['PaRes']) === false)
+        {
+            $gatewayInputLog['PaRes'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaRes']);
+        }
+
+        if (empty($gatewayInputLog['PaReq']) === false)
+        {
+            $gatewayInputLog['PaReq'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaReq']);
+        }
+
 
         $this->trace->info(
             TraceCode::PAYMENT_CALLBACK_REQUEST,

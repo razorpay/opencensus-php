@@ -144,7 +144,7 @@ trait Inquiry
         if (($input['payment']['auth_type'] === AuthType::PIN) or
             ($this->isSecondRecurringPaymentRequest($input) === true))
         {
-            $payment = $payments->first();
+            $payment = $payments->firstOrFail();
 
             $verify->payment = $payment;
 

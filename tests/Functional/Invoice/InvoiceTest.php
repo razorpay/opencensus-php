@@ -327,6 +327,58 @@ class InvoiceTest extends TestCase
         $this->assertEquals($invoice['customer_details']['contact'], '+919918899029');
     }
 
+    public function testCreateLinkCustomerContactEmailNullOldMerchantFlagDisabled()
+    {
+        $this->fixtures->merchant->editCreatedAt(1565865984);
+        $customer = $this->fixtures->create(
+            'customer',
+            [
+                'id'          => '100022customer',
+                'contact'     => null,
+                'email'       => null,
+                'merchant_id' => '10000000000000',
+            ]);
+        $this->startTest();
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertEquals('cust_100022customer', $invoice['customer_id']);
+    }
+
+    public function testCreateLinkCustomerContactEmailNullOldMerchantFlagEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['cust_contact_email_null']);
+        $this->fixtures->merchant->editCreatedAt(1565865984);
+        $customer = $this->fixtures->create(
+            'customer',
+            [
+                'id'          => '100022customer',
+                'contact'     => null,
+                'email'       => null,
+                'merchant_id' => '10000000000000',
+            ]);
+        $this->startTest();
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertNotEquals('cust_100022customer', $invoice['customer_id']);
+    }
+
+    public function testCreateLinkCustomerContactEmailNullNewMerchant()
+    {
+        $this->fixtures->merchant->editCreatedAt(1566559717);
+        $customer = $this->fixtures->create(
+            'customer',
+            [
+                'id'          => '100022customer',
+                'contact'     => null,
+                'email'       => null,
+                'merchant_id' => '10000000000000',
+            ]);
+        $this->startTest();
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertNotEquals('cust_100022customer', $invoice['customer_id']);
+    }
+
     public function testCreateInvoiceWithMultipleLineItems()
     {
         $response = $this->startTest();

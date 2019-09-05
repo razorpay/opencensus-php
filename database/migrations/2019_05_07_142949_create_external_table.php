@@ -36,6 +36,9 @@ class CreateExternalTable extends Migration
 
             $table->string(Entity::BANK_REFERENCE_NUMBER, 255);
 
+            $table->string(Entity::UTR, 255)
+                  ->nullable();
+
             $table->string(Entity::TYPE, 255);
 
             $table->bigInteger(Entity::AMOUNT)
@@ -55,9 +58,15 @@ class CreateExternalTable extends Migration
 
             $table->index(Entity::BANK_REFERENCE_NUMBER);
 
+            $table->index(Entity::UTR);
+
             $table->index(Entity::CREATED_AT);
 
             $table->index(Entity::UPDATED_AT);
+
+            $table->index(Entity::CHANNEL);
+
+            $table->index(Entity::TRANSACTION_ID);
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 

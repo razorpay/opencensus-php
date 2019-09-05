@@ -48,12 +48,12 @@ class RuleFilter extends Terminal\Filter
         }
         catch (\Throwable $e)
         {
-            $this->traceException($e,
-                                  Trace::Error,
-                                  TraceCode::TERMINAL_RULE_FILTER_EXCEPTION,
-                                  [
-                                      'terminal_ids' => array_pluck($terminals, 'id'),
-                                  ]);
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::TERMINAL_RULE_FILTER_EXCEPTION,
+                [
+                    'terminal_ids' => array_pluck($terminals, 'id'),
+                ]);
 
             return $terminals;
         }
@@ -208,6 +208,17 @@ class RuleFilter extends Terminal\Filter
 
         $globallyApplicableRuleGroups = $this->options->getGloballyApplicableRuleGroups();
 
-        return (in_array($group, $globallyApplicableRuleGroups, true) === true);
+        $ruleGroupToFeature = $this->options->getRuleGroupMapToFeature();
+
+        $result = (in_array($group, $globallyApplicableRuleGroups, true) === true);
+
+        if (empty($ruleGroupToFeature[$group]) === false)
+        {
+            $feature = $ruleGroupToFeature[$group];
+
+            $result = ($result & $this->input['merchant']->isFeatureEnabled($feature));
+        }
+
+        return $result;
     }
 }

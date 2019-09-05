@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Invoice;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
@@ -109,14 +110,28 @@ class Processor extends Base\Core
         {
             foreach ($this->invoiceBreakup as $type => $values)
             {
+                $feeBearer = $this->merchant->getFeeBearer();
+
                 $params = [
                     Entity::MONTH   => $this->month,
                     Entity::YEAR    => $this->year,
-                    Entity::GSTIN   => $this->gstin,
                     Entity::TYPE    => $type,
+                    Entity::GSTIN   => $this->gstin,
                     Entity::AMOUNT  => $values[Entity::AMOUNT],
                     Entity::TAX     => $values[Entity::TAX],
                 ];
+
+                if($feeBearer === Merchant\FeeBearer::CUSTOMER)
+                {
+                    unset($params[Entity::GSTIN]);
+
+                    $this->app['trace']->info(
+                        TraceCode::INVOICE_WITHOUT_GSTIN,
+                        [
+                            'gstin_no'     => $this->gstin,
+                            'Merchant_id'  => $this->merchantId,
+                        ]);
+                }
 
                 (new Core)->create($params, $this->merchant);
             }

@@ -12,9 +12,12 @@ use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Utility;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Constants\Timezone;
+use RZP\Constants\IndianStates;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 
@@ -162,6 +165,26 @@ trait RequestHandlerTrait
                 ]);
         }
 
+        $terminalCity = $terminalState = $postalCode = $telephone = null;
+
+        if ($this->input['payment'][Payment\Entity::CREATED_AT] > \RZP\Gateway\Hitachi\Gateway::PAYSECURE_MID_SWITCH_TIME)
+        {
+            $terminalCity = substr($this->input['merchant_detail'][Merchant\Detail\Entity::BUSINESS_OPERATION_CITY], 0, 13);
+
+            if (strlen($this->input['merchant_detail'][Merchant\Detail\Entity::BUSINESS_OPERATION_STATE]) === 2)
+            {
+                $terminalState = strtoupper($this->input['merchant_detail'][Merchant\Detail\Entity::BUSINESS_OPERATION_STATE]);
+            }
+            else
+            {
+                $terminalState = IndianStates::getStateCode(strtoupper($this->input['merchant_detail'][Merchant\Detail\Entity::BUSINESS_OPERATION_STATE]));
+            }
+
+            $postalCode = substr($this->input['merchant_detail'][Merchant\Detail\Entity::BUSINESS_OPERATION_PIN], 0, 9);
+
+            $telephone = substr($this->input['merchant_detail'][Merchant\Detail\Entity::CONTACT_MOBILE], -10, 10);
+        }
+
         $ownerName = $this->getDynamicMerchantName($this->input['merchant'], 22);
 
         $requestArray = [
@@ -181,11 +204,11 @@ trait RequestHandlerTrait
             Fields::RETRIEVAL_REF_NUMBER              => $rrn,
             Fields::CARD_ACCEPTOR_ID                  => $this->getMerchantId(),
             Fields::TERMINAL_OWNER_NAME               => $ownerName,
-            Fields::TERMINAL_CITY                     => 'Bangalore',
-            Fields::TERMINAL_STATE_CODE               => 'KA',
+            Fields::TERMINAL_CITY                     => $terminalCity ?: 'Bangalore',
+            Fields::TERMINAL_STATE_CODE               => $terminalState ?:'KA',
             Fields::TERMINAL_COUNTRY_CODE             => 'IN',
-            Fields::MERCHANT_POSTAL_CODE              => '560030',
-            Fields::MERCHANT_TELEPHONE                => '9999999999',
+            Fields::MERCHANT_POSTAL_CODE              => $postalCode ?: '560030',
+            Fields::MERCHANT_TELEPHONE                => $telephone ?: '9999999999',
             Fields::ORDER_ID                          => $this->input['payment']['id'],
         ];
 
@@ -195,16 +218,14 @@ trait RequestHandlerTrait
     // Since we're the acquirer, we can pass our own internal merchant id
     protected function getMerchantId()
     {
-//        todo: Revert this later if required based on discussion
-//        if ($this->mode === Mode::LIVE)
-//        {
-//            return $this->input['merchant']['id'];
-//        }
-//
-//        return $this->config['merchant_id'];
         if ($this->mode === Mode::LIVE)
         {
-            return '38RR00000000001';
+            if ($this->input['payment'][Payment\Entity::CREATED_AT] <= \RZP\Gateway\Hitachi\Gateway::PAYSECURE_MID_SWITCH_TIME)
+            {
+                return '38RR00000000001';
+            }
+
+            return $this->input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
         }
 
         return $this->app['config']->get('gateway.hitachi.test_merchant_id');
@@ -216,17 +237,14 @@ trait RequestHandlerTrait
     // Hitachi's mid and tid when sending the requests to PaySecure
     protected function getTerminalId()
     {
-//        todo: Revert this later if required based on discussion
-//        if ($this->mode === Mode::LIVE)
-//        {
-//            return $this->input['terminal']['id'];
-//        }
-//
-//        return $this->config['terminal_id'];
-
         if ($this->mode === Mode::LIVE)
         {
-            return '38R00001';
+            if ($this->input['payment'][Payment\Entity::CREATED_AT] <= \RZP\Gateway\Hitachi\Gateway::PAYSECURE_MID_SWITCH_TIME)
+            {
+                return '38R00001';
+            }
+
+            return $this->input['terminal'][Terminal\Entity::GATEWAY_TERMINAL_ID];
         }
 
         return $this->app['config']->get('gateway.hitachi.test_terminal_id');
@@ -286,6 +304,8 @@ trait RequestHandlerTrait
      */
     protected function sendRequest($command, $params)
     {
+        $this->wasGatewayHit = true;
+
         $this->traceGatewayPaymentRequest(
             [
                 'command'    => $command,
@@ -338,6 +358,8 @@ trait RequestHandlerTrait
         }
         catch (SoapFault $sf)
         {
+            error_clear_last();
+
             if (Utility::checkSoapTimeout($sf))
             {
                 // If Soap request times out on auth request, we need to verify using transaction status and
@@ -372,7 +394,14 @@ trait RequestHandlerTrait
             }
             else
             {
-                throw $sf;
+                $ex = new Exception\GatewayRequestException($sf->getMessage(), $sf);
+
+                if ($command !== Command::AUTHORIZE)
+                {
+                    $ex->markSafeRetryTrue();
+                }
+
+                throw $ex;
             }
         }
         finally

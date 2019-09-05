@@ -107,6 +107,18 @@ class Channel
     }
 
     /**
+     * Gives list of channels which support API based beneficiary verification
+     *
+     * @return array
+     */
+    public static function getChannelsWithOnlineBeneficiaryVerification()
+    {
+        return [
+            self::YESBANK
+        ];
+    }
+
+    /**
      * Gives list of channels which support file based settlement and recon
      *
      * @return array
@@ -219,10 +231,29 @@ class Channel
         ];
     }
 
+    /**
+     * Supported FTA (API based) channels for razorpayX payouts
+     * @return array
+     */
+    public static function getFTASupportedPayoutChannels()
+    {
+        return [
+            self::YESBANK,
+        ];
+    }
+
     public static function getNonTransactionChannels()
     {
         return [
             self::RBL,
+        ];
+    }
+
+    public static function getPreferredModeSupportedChannels()
+    {
+        return [
+            self::RBL,
+            self::YESBANK,
         ];
     }
 }

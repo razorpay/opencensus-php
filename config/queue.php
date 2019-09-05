@@ -201,6 +201,10 @@ return [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
+    'reconciliation_batch' => [
+        'test'       => env('AWS_RECON_QUEUE'),
+        'live'       => env('AWS_RECON_QUEUE'),
+    ],
     'direct_debit_batch' => [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
@@ -210,6 +214,14 @@ return [
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
     'terminal_creation_batch' => [
+        'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+        'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+    ],
+    'refund_batch' => [
+        'test'       => env('AWS_REFUND_QUEUE'),
+        'live'       => env('AWS_REFUND_QUEUE'),
+    ],
+    'terminal_batch' => [
         'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
         'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
     ],
@@ -292,6 +304,14 @@ return [
     'subscriptions_payment_notify' => [
         'test'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
         'live'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
+    ],
+    'beneficiary_registrations' => [
+        'test'       => env('AWS_BENEFICIARY_TEST_QUEUE'),
+        'live'       => env('AWS_BENEFICIARY_LIVE_QUEUE'),
+    ],
+    'beneficiary_verifications' => [
+        'test'       => env('AWS_BENEFICIARY_VERIFY_TEST_QUEUE'),
+        'live'       => env('AWS_BENEFICIARY_VERIFY_LIVE_QUEUE'),
     ],
     /*
      | Lists various queues to be used per mailable

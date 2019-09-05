@@ -2,13 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use App;
-use Redirect;
 use Request;
+use Redirect;
+use ApiResponse;
+
 use RZP\Models\Admin;
 use RZP\Models\Report;
-use RZP\Constants\Entity as E;
 
 class AdminController extends Controller
 {
@@ -324,6 +324,15 @@ class AdminController extends Controller
     public function getGatewayDowntimeConf()
     {
         $data = $this->service()->getGatewayDowntimeConf();
+
+        return ApiResponse::json($data);
+    }
+
+    public function sendTestSms()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendTestSms($input);
 
         return ApiResponse::json($data);
     }

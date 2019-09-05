@@ -29,6 +29,8 @@ class Entity extends Base\PublicEntity
     const LENGTH              = 'length';
     const NETWORK             = 'network';
     const TYPE                = 'type';
+    const SUBTYPE             = 'sub_type';
+    const CATEGORY            = 'category';
     const EMI                 = 'emi';
     const ISSUER              = 'issuer';
     const COUNTRY             = 'country';
@@ -79,6 +81,8 @@ class Entity extends Base\PublicEntity
         self::COUNTRY,
         self::EMI,
         self::TYPE,
+        self::SUBTYPE,
+        self::CATEGORY,
         self::ISSUER,
         self::VAULT_TOKEN,
         self::VAULT,
@@ -118,6 +122,8 @@ class Entity extends Base\PublicEntity
         self::LENGTH,
         self::NETWORK,
         self::TYPE,
+        self::SUBTYPE,
+        self::CATEGORY,
         self::EMI,
         self::ISSUER,
         self::COUNTRY,
@@ -153,6 +159,7 @@ class Entity extends Base\PublicEntity
         Card\Entity::LAST4,
         Card\Entity::NETWORK,
         Card\Entity::TYPE,
+        Card\Entity::SUBTYPE,
         Card\Entity::ISSUER,
         Card\Entity::IIN,
     ];
@@ -176,6 +183,7 @@ class Entity extends Base\PublicEntity
         self::ISSUER         => null,
         self::COUNTRY        => null,
         self::TRIVIA         => null,
+        self::CATEGORY       => null,
     ];
 
     protected $casts = [
@@ -386,6 +394,16 @@ class Entity extends Base\PublicEntity
         return $type;
     }
 
+    public function getSubType()
+    {
+        return $this->getAttribute(self::SUBTYPE);
+    }
+
+    public function getCategory()
+    {
+        return $this->getAttribute(self::CATEGORY);
+    }
+
     public function getLast4()
     {
         return $this->getAttribute(self::LAST4);
@@ -473,6 +491,16 @@ class Entity extends Base\PublicEntity
     public function setType($type)
     {
         $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setCategory($category)
+    {
+        $this->setAttribute(self::CATEGORY, $category);
+    }
+
+    public function setSubType($subtype)
+    {
+        $this->setAttribute(self::SUBTYPE, $subtype);
     }
 
     public function setInternational($flag)
@@ -800,6 +828,18 @@ class Entity extends Base\PublicEntity
         unset($attributes[self::ID]);
 
         return $attributes;
+    }
+
+    public function toArray()
+    {
+        $data = parent::toArray();
+
+        if (empty($data[Card\Entity::VAULT_TOKEN]) === true)
+        {
+            $data[Card\Entity::VAULT_TOKEN] = $this->getCardVaultToken();
+        }
+
+        return $data;
     }
 
     public function toArrayFundAccount()

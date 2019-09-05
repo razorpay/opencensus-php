@@ -121,7 +121,18 @@ class Processor extends Base\Processor
         $transactionInput = $this->input->bag(Entity::TRANSACTION);
         $upiInput         = $this->input->bag(Entity::UPI);
 
-        $transaction = $this->createTransaction($this->action, $transactionInput, $upiInput);
+        $upi = $this->core->findAllUpi($upiInput->toArray());
+
+        if ($upi->count() === 1)
+        {
+            $transaction = $this->core->fetch($upi->first()->getTransactionId());
+
+            $this->updateTransaction($transaction, $transactionInput, $upiInput);
+        }
+        else
+        {
+            $transaction = $this->createTransaction($this->action, $transactionInput, $upiInput);
+        }
 
         return $transaction->toArrayPublic();
     }
@@ -132,6 +143,10 @@ class Processor extends Base\Processor
 
         $transaction = $this->core->fetch($this->input->pull(Entity::ID));
 
+        if ($transaction->isConcernEligible() === false)
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
         if ($transaction->concern instanceof Concern\Entity)
         {
             if ($transaction->concern->isClosed() === false)
@@ -160,7 +175,11 @@ class Processor extends Base\Processor
         $concern->mergeGatewayData($concernInput[Entity::GATEWAY_DATA] ?? []);
         $concern->setInternalStatus($concernInput[Entity::INTERNAL_STATUS]);
 
-        (new Concern\Core)->update($concern, $concernInput);
+        (new Concern\Core)->update($concern, array_only($concernInput, [
+            Concern\Entity::GATEWAY_REFERENCE_ID,
+            Concern\Entity::RESPONSE_CODE,
+            Concern\Entity::RESPONSE_DESCRIPTION,
+        ]));
 
         return $concern->toArrayPublic();
     }
@@ -229,6 +248,7 @@ class Processor extends Base\Processor
 
             case Status::PENDING:
             case Status::INITIATED:
+            case Status::REQUESTED:
                 $actions = $this->setTransactionProcessing($transaction, $input);
                 break;
 
@@ -336,6 +356,12 @@ class Processor extends Base\Processor
             $transaction->setErrorCode($error->getPublicErrorCode());
             $transaction->setErrorDescription($error->getDescription());
         }
+        else if ($input[Entity::INTERNAL_STATUS] === Status::REQUESTED)
+        {
+            $transaction->setInternalStatus(Status::REQUESTED);
+
+            $actions->setEvent(new P2p\TransactionCreated($this->context(), $transaction));
+        }
 
         return $actions;
     }
@@ -370,6 +396,11 @@ class Processor extends Base\Processor
         $transaction = $this->core->build($transactionInput->toArray());
 
         $properties->attachToTransaction($transaction);
+
+        if ($transaction->payer->getDeviceId() === $transaction->payee->getDeviceId())
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_PAYER_PAYEE_SAME);
+        }
 
         $upi = $this->core->buildUpi($transaction, $action, $upiInput->toArray());
 

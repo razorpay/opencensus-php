@@ -11,7 +11,6 @@ use RZP\Models\Card\IIN;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
@@ -33,8 +32,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_CANARA,
         RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::NETBANKING_CBI,
         RequestProcessor\Base::NETBANKING_YESB,
         RequestProcessor\Base::NETBANKING_CUB,
+        RequestProcessor\Base::NETBANKING_IBK,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
@@ -46,6 +47,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::NETBANKING_EQUITAS,
         RequestProcessor\Base::NETBANKING_VIJAYA,
+        RequestProcessor\Base::NETBANKING_SBI,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::UPI_HDFC,
         RequestProcessor\Base::UPI_ICICI,
@@ -218,7 +220,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         if ($this->reconciled === true)
         {
-            $this->handleAlreadyReconciled($paymentId);
+            $this->handleAlreadyReconciled($paymentId, $this->payment->transaction->getReconciledAt());
 
             //
             // Record gateway fee and service tax for reconciled payments
@@ -855,7 +857,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         );
     }
 
-    protected function setPaymentAndTransaction($row, $paymentId)
+    public function setPaymentAndTransaction($row, $paymentId)
     {
         try
         {
@@ -1044,7 +1046,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * @param array $rowDetails
      * @param PublicEntity $gatewayPayment
      */
-    protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
+    public function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
     {
         if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
         {
@@ -1523,7 +1525,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->payment->setGatewayCaptured(true);
     }
 
-    protected function recordGatewayFeeAndServiceTax($rowDetails)
+    public function recordGatewayFeeAndServiceTax($rowDetails)
     {
         $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
         $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
@@ -2031,7 +2033,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * NOTE: If this is being implemented in the child class,
      * ensure that the relevant setters are implemented in the entity.
      */
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return null;
     }

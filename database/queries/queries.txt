@@ -4921,6 +4921,10 @@ ALTER TABLE merchant_banks
     ADD COLUMN phonepe TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
     ADD INDEX merchant_banks_phonepe_index (phonepe);
 
+ALTER TABLE merchant_banks
+    ADD COLUMN paypal TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
+    ADD INDEX merchant_banks_paypal_index (paypal);
+
 ALTER TABLE fund_transfer_attempts
     ADD INDEX fund_transfer_attempts_card_id_index (card_id);
 
@@ -5041,6 +5045,55 @@ ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
+ALTER TABLE `subscriptions`
+    ADD COLUMN `customer_name` VARCHAR(255) DEFAULT NULL AFTER `customer_email`,
+    ADD COLUMN `customer_contact` VARCHAR(255) DEFAULT NULL AFTER `customer_name`,
+    ADD INDEX `subscriptions_customer_contact_index` (`customer_contact`);
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
+    ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
+    ADD INDEX virtual_accounts_close_by_index (close_by);
+
+ALTER TABLE `roles`
+    ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
+    ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE `iins`
+    ADD COLUMN `sub_type` VARCHAR(255) NOT NULL DEFAULT 'consumer' AFTER `type`;
+
+ALTER TABLE `pricing`
+    ADD COLUMN `payment_method_subtype` VARCHAR(255) NULL;
+
+ALTER TABLE `gateway_rules`
+    ADD COLUMN `method_subtype` VARCHAR(255) NULL AFTER `method_type`,
+    ADD INDEX gateway_rules_method_subtype_index (method_subtype);
+
+ALTER TABLE `gateway_rules`
+    ADD COLUMN `card_category` VARCHAR(255) NULL AFTER `method_subtype`,
+    ADD INDEX gateway_card_category_index (card_category);
+
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `card_subtype` INT UNSIGNED NOT NULL DEFAULT 1;
+
+ALTER TABLE `cards`
+    ADD COLUMN `sub_type` VARCHAR(255) DEFAULT NULL AFTER `type`;
+
+ALTER TABLE `cards`
+    ADD COLUMN `category` VARCHAR(255) DEFAULT NULL AFTER `sub_type`;
+
+
+
+
+ALTER TABLE `merchants`
+    ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
+    ADD COLUMN `restricted` BOOLEAN DEFAULT 0 NOT NULL AFTER `second_factor_auth`;
+
+ALTER TABLE `users`
+    ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `contact_mobile`,
+    ADD COLUMN `wrong_2fa_attempts` INT(2) DEFAULT 0 NOT NULL AFTER `second_factor_auth`,
+    ADD COLUMN `account_locked` BOOLEAN DEFAULT 0 NOT NULL AFTER `wrong_2fa_attempts`;
+
 ALTER TABLE `banking_account_statement`
   ADD UNIQUE INDEX `banking_account_statement_bank_transaction_id_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`);
 
@@ -5083,14 +5136,14 @@ ALTER TABLE `refunds`
     ADD COLUMN `speed_decisioned` enum('normal', 'optimum', 'instant') NOT NULL DEFAULT 'normal' AFTER `speed_requested`;
 
 ALTER TABLE `action_checker`
-	ADD COLUMN `checker_type` VARCHAR(255) DEFAULT NULL AFTER admin_id,
-	ADD COLUMN `checker_id` CHAR(14) DEFAULT NULL AFTER checker_type,
-	MODIFY COLUMN admin_id CHAR(14) DEFAULT NULL,
-	ADD INDEX action_checker_checker_id_index (checker_id);
+    ADD COLUMN `checker_type` VARCHAR(255) DEFAULT NULL AFTER admin_id,
+    ADD COLUMN `checker_id` CHAR(14) DEFAULT NULL AFTER checker_type,
+    MODIFY COLUMN admin_id CHAR(14) DEFAULT NULL,
+    ADD INDEX action_checker_checker_id_index (checker_id);
 
 ALTER TABLE action_state
-	ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER merchant_id,
-	ADD INDEX action_state_user_id_index (user_id);
+    ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD INDEX action_state_user_id_index (user_id);
 
 ALTER TABLE `workflow_payout_amount_rules`
     CHANGE COLUMN x_amount min_amount BIGINT UNSIGNED DEFAULT NULL,
@@ -5104,12 +5157,12 @@ ALTER TABLE payouts
 
 ALTER TABLE `workflow_actions`
     ADD COLUMN `state_changer_type` VARCHAR(255) DEFAULT NULL AFTER state_changer_id,
-	MODIFY COLUMN state_changer_id CHAR(14) DEFAULT NULL,
+    MODIFY COLUMN state_changer_id CHAR(14) DEFAULT NULL,
     DROP FOREIGN KEY workflow_actions_state_changer_id_foreign;
 
 ALTER TABLE workflows
-	ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
-	ADD INDEX workflows_merchant_id_index (merchant_id);
+    ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
+    ADD INDEX workflows_merchant_id_index (merchant_id);
 
 ALTER TABLE banking_accounts
        ADD COLUMN bank_internal_reference_number VARCHAR(255) DEFAULT NULL AFTER balance_id,
@@ -5152,7 +5205,7 @@ ALTER table `gateway_rules`
     ADD COLUMN org_id VARCHAR(14) NOT NULL DEFAULT '100000razorpay' AFTER `merchant_id`,
     MODIFY COLUMN merchant_id varchar(14) DEFAULT NULL,
     ADD INDEX gateway_rules_org_id_merchant_id_index (`org_id`, `merchant_id`);
-    
+
 ALTER TABLE banking_accounts
     CHANGE COLUMN reference_1 reference1 varchar(255) DEFAULT NULL,
     ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
@@ -5185,3 +5238,78 @@ ALTER TABLE iins
 
 ALTER TABLE `reversals`
     MODIFY COLUMN `transaction_id` CHAR(14) DEFAULT NULL;
+
+ALTER table terminals
+    ADD COLUMN `org_id` VARCHAR(14) NULL AFTER `merchant_id`,
+    ADD COLUMN `status` VARCHAR(255) NULL DEFAULT "activated" AFTER `enabled`,
+    ADD COLUMN `notes` TEXT DEFAULT NULL AFTER `ifsc_code`,
+    ADD INDEX terminals_org_id_index (`org_id`),
+    ADD INDEX terminals_status_index (`status`);
+
+ALTER TABLE reversals
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER channel,
+    ADD INDEX reversals_utr_index (utr);
+
+ALTER TABLE external
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
+    ADD INDEX external_utr_index (utr);
+
+ALTER TABLE `banking_account_statement`
+  DROP INDEX `banking_account_statement_bank_transaction_id_unique`,
+  ADD UNIQUE INDEX `banking_account_statement_bank_txn_id_srl_no_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`, `bank_serial_number`);
+
+ALTER TABLE `pricing`
+    ADD COLUMN `account_type` VARCHAR(255) DEFAULT NULL AFTER `receiver_type`,
+    ADD COLUMN `channel` VARCHAR(255) DEFAULT NULL AFTER `account_type`,
+    ADD INDEX `pricing_account_type_index` (`account_type`),
+    ADD INDEX `pricing_channel_index` (`channel`);
+
+ALTER TABLE payouts
+    ADD COLUMN failed_at INT(11) DEFAULT NULL AFTER `reversed_at`,
+    ADD INDEX payouts_failed_at_index (failed_at);
+
+ALTER TABLE merchants
+    ADD COLUMN dashboard_whitelisted_ips_live text DEFAULT NULL AFTER whitelisted_ips_test,
+    ADD COLUMN dashboard_whitelisted_ips_test text DEFAULT NULL AFTER dashboard_whitelisted_ips_live;
+
+ALTER TABLE payments
+    CHANGE approval_code authentication_gateway VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE netbanking
+    ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
+
+ALTER TABLE `merchant_emails`
+    DROP INDEX `merchant_emails_merchant_id_type_email_unique`,
+    DROP INDEX `merchant_emails_email_index`,
+    ADD INDEX `merchant_emails_merchant_id` (`merchant_id`),
+    ADD UNIQUE KEY `merchant_emails_merchant_id_type` (`merchant_id`,`type`),
+    MODIFY `email` TEXT;
+
+ALTER TABLE netbanking
+    ADD COLUMN verification_id VARCHAR(255) DEFAULT NULL AFTER reference1;
+
+ALTER TABLE netbanking
+    ADD INDEX verification_id_index (verification_id);
+
+ALTER TABLE contacts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
+
+ALTER TABLE fund_accounts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER active;
+
+ALTER TABLE payouts
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL AFTER batch_id;
+
+ALTER TABLE merchants
+    ADD COLUMN receipt_email_trigger_event TINYINT(1) UNSIGNED DEFAULT 1 AFTER receipt_email_enabled;
+
+ALTER TABLE merchants
+	ADD COLUMN partnership_url TEXT DEFAULT NULL AFTER dashboard_whitelisted_ips_test;
+
+ALTER TABLE `external`
+    DROP INDEX `external_balance_id_foreign`,
+    DROP INDEX `external_transaction_id_foreign`,
+    ADD INDEX `external_channel_index` (`channel`),
+    ADD INDEX `external_balance_id_index` (`balance_id`),
+    ADD INDEX `external_transaction_id_index` (`transaction_id`);

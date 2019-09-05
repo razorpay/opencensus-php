@@ -217,6 +217,36 @@ trait PartnerTrait
         return [$client->getId(), 'acc_' . $submerchantId];
     }
 
+    public function setUpPartnerAuthAndGetSubMerchantId()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $client = $this->setUpPartnerMerchantAppAndGetClient();
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $client->getApplicationId(),
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        return $subMerchantId;
+
+    }
+
     public function markMerchantAsNonPurePlatformPartner(string $merchantId, string $partnerType)
     {
         $this->setUpPartnerMerchantAppAndGetClient('dev', [], $merchantId);

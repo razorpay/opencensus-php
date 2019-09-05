@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
@@ -16,6 +17,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Constants\SettlementChannelMedium as Medium;
 
 trait SettlementTrait
 {
@@ -458,7 +460,7 @@ trait SettlementTrait
         return false;
     }
 
-    protected function createSettlementsFromTxns($txns, string $channel): array
+    protected function createSettlementsFromTxns($txns, string $channel, $merchantSettleToPartner): array
     {
         $merchantId = $txns->first()->getMerchantId();
 
@@ -498,13 +500,70 @@ trait SettlementTrait
         try
         {
             list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax);
+                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner);
+
+            if(($setl !== null) and ($bankTransferAtpt !== null))
+            {
+                $transactionCount = $txns->count();
+
+                $customProperties = [
+                    'channel'               => $channel,
+                    'settlement_amount'     => $setlAmount,
+                    'transaction_count'     => $transactionCount
+                ];
+
+                $this->app['diag']->trackSettlementEvent(
+                    EventCode::SETTLEMENT_CREATION_SUCCESS,
+                    $setl,
+                    null,
+                    $customProperties);
+
+                $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
+                    Medium::API : Medium::FILE;
+
+                $customProperties += [
+                    'fund_transfer_attempt_id'                => $bankTransferAtpt->getId(),
+                    'fund_transfer_attempt_mode'              => $bankTransferAtpt->getMode(),
+                    'fund_transfer_attempt_medium'            => $medium
+                ];
+
+                $this->app['diag']->trackSettlementEvent(
+                    EventCode::FTA_CREATION_SUCCESS,
+                    $setl,
+                    null,
+                    $customProperties);
+            }
 
             return [$setl, $bankTransferAtpt];
         }
         catch (\Exception $exception)
         {
             $this->trace->traceException($exception);
+
+            $transactionCount = $txns->count();
+
+            $customProperties = [
+                'channel'               => $channel,
+                'settlement_amount'     => $setlAmount,
+                'transaction_count'     => $transactionCount
+            ];
+
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::SETTLEMENT_CREATION_FAILED,
+                null,
+                $exception,
+                $customProperties);
+
+            $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
+                Medium::API : Medium::FILE;
+
+            $customProperties += ['fund_transfer_attempt_medium' => $medium];
+
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::FTA_CREATION_FAILED,
+                null,
+                $exception,
+                $customProperties);
 
             return [null, null];
         }
@@ -613,10 +672,11 @@ trait SettlementTrait
      * @param $setlFee
      * @param $setlApiFee
      * @param $tax
+     * @param $merchantSettleToPartner
      * @return array
      */
     protected function settleForMerchant(
-        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
+        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner): array
     {
         $settlement = null;
 
@@ -626,7 +686,8 @@ trait SettlementTrait
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
-            function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt) {
+            function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt,
+                 $merchantSettleToPartner) {
                 try
                 {
                     // create settlement and attempt
@@ -643,11 +704,12 @@ trait SettlementTrait
                         $setlApiFee,
                         $tax,
                         $this->setlTime,
-                        $setlDetailAmounts);
+                        $setlDetailAmounts,
+                        $merchantSettleToPartner);
 
                     $merchantSettler->createTransaction($settlement);
 
-                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
+                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner);
                 }
                 catch (\Exception $ex)
                 {
@@ -814,7 +876,6 @@ trait SettlementTrait
     protected function settlementFailure($channel, $e, $traceCode)
     {
         $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
-
         $this->failureNotification($e);
 
         throw $e;

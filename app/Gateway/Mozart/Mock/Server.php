@@ -46,6 +46,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $verifyObj, 'verify');
     }
 
+    public function capture($input)
+    {
+        $captureObj = new CaptureData();
+
+        return $this->processMockResponse($input, $captureObj, 'capture');
+    }
+
     public function refund($input)
     {
         $refundObj = new RefundData();
@@ -95,6 +102,52 @@ class Server extends Base\Mock\Server
         $response = $this->makeResponseJson($response);
 
         return $response;
+    }
+
+    public function getCallbackRequest(array $payment)
+    {
+        $url = '/callback/' . $payment['gateway'];
+        $method = 'post';
+        $server = [
+            'CONTENT_TYPE' => 'application/json'
+        ];
+
+        switch ($payment['gateway'])
+        {
+            case 'upi_citi':
+                $content = [
+                    'TxnRefNo'             => '700000135-100000001120',
+                    'OrderNo'              => $payment['id'],
+                    'NPCITxnId'            => 'CITI7FA2285C01AC932AE05392BCBBA925A',
+                    'TimeStamp'            => '2019-01-17T15:42:44+05:30',
+                    'TranAuthDate'         => '2019-01-17T00:00:00',
+                    'StatusCode'           => '1',
+                    'StatusDesc'           => 'NPCI Success - Pending Posting',
+                    'RespCode'             => '00',
+                    'SettlementAmount'     => amount_format_IN($payment['amount']),
+                    'SettlementCurrency'   => 'INR'
+                ];
+
+                switch ($payment['description'])
+                {
+                    case 'toBeRejected':
+                        $content['StatusCode'] = '3';
+                        $content['RespCode']   = 'ZA';
+                        break;
+
+                    case 'callbackAmountMismatch':
+                        $content['SettlementAmount'] = amount_format_IN($payment['amount'] - 1);
+                }
+
+                $raw = json_encode(['PushNotificationToSSG' => $content]);
+        }
+
+        return [
+            'url'       => $url,
+            'method'    => $method,
+            'raw'       => $raw,
+            'server'    => $server,
+        ];;
     }
 
     public function getAsyncCallbackContent(array $payment)
@@ -169,6 +222,26 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function wallet_paypal($input)
+    {
+        $content = $input;
+        $content = [
+            'token'     => 'PayPal_Token',
+            'PayId'     => '8DS61651XA862144J',
+            'status'    => 'callback_successful',
+        ];
+
+        $this->content($content, 'authorize');
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function netbanking_sib($input)
     {
         // this encrypted value is never used as the pay_verify response from mozart is mocked
@@ -179,6 +252,17 @@ class Server extends Base\Mock\Server
         $request = [
             'url'          => $input['callbackUrl'],
             'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_cbi($input)
+    {
+        $request = [
+            'url'          => $input['callbackUrl'] . '?encdata=encrypted_data_here',
+            'content'      => [],
             'method'       => 'post',
         ];
 
@@ -209,6 +293,40 @@ class Server extends Base\Mock\Server
         // this encrypted value is never used as the pay_verify response from mozart is mocked
         $content = [
             'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_ibk($input)
+    {
+
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+    
+    protected function netbanking_idbi($input)
+    {
+
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'random_encrypted_string' => ''
         ];
 
         $request = [

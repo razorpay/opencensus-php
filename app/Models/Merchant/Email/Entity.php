@@ -4,15 +4,18 @@ namespace RZP\Models\Merchant\Email;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
-    const TYPE       = 'type';
-    const EMAIL      = 'email';
-    const VERIFIED   = 'verified';
-    const PHONE      = 'phone';
-    const POLICY     = 'policy';
-    const URL        = 'url';
+    use HardDeletes;
+
+    const TYPE     = 'type';
+    const EMAIL    = 'email';
+    const VERIFIED = 'verified';
+    const PHONE    = 'phone';
+    const POLICY   = 'policy';
+    const URL      = 'url';
 
     protected $entity = 'merchant_email';
 
@@ -25,6 +28,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::ID,
+        self::TYPE,
         self::EMAIL,
         self::PHONE,
         self::POLICY,

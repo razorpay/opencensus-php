@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use RZP\Models\Feature;
 use RZP\Models\Gateway\Rule;
 
 class Options
@@ -41,6 +42,10 @@ class Options
         'sbi_emi_filter',
         'routing_filter',
         'org_filter',
+    ];
+
+    protected $ruleGroupMapToFeature = [
+        'tpv_filter' => Feature\Constants::TPV
     ];
 
 
@@ -91,6 +96,11 @@ class Options
     public function setFeatureSkippedFilters(array $filters)
     {
         $this->featureSkippedFilters = $filters;
+    }
+
+    public function getRuleGroupMapToFeature()
+    {
+        return $this->ruleGroupMapToFeature;
     }
 
     public function getGloballyApplicableRuleGroups()

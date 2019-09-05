@@ -53,8 +53,12 @@ class CreateReversals extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
-            // Todo: Remove null-able after code deploy and backfilling
+            // TODO: Remove null-able after code deploy and backfilling
             $table->string(Entity::CHANNEL, 255)
+                  ->nullable();
+
+            // TODO: Figure out uniqueness stuff
+            $table->string(Entity::UTR)
                   ->nullable();
 
             $table->text(Entity::NOTES);
@@ -80,6 +84,8 @@ class CreateReversals extends Migration
             $table->index(Entity::UPDATED_AT);
 
             $table->index(Entity::ENTITY_ID);
+
+            $table->index(Entity::UTR);
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 

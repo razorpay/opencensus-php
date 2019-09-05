@@ -16,11 +16,13 @@ class SlackNotification extends Base\Core
 
     const GOOD = 'good';
 
+    const SETTLEMENT = 'settlements';
+
     protected $operations = array(
         'setl_initiate',
         'setl_reconciled');
 
-    protected $messages = array(
+    protected $messages = [
         'setl_skipped'            => 'Settlement Skipped. Check for Retry.',
         'setl_initiate'           => 'Settlements initiated.',
         'setl_reconciliation'     => 'Settlements reconciled. ',
@@ -30,7 +32,9 @@ class SlackNotification extends Base\Core
         'bene_reg_status'         => 'Beneficiaries Registration status',
         'critical_failure'        => 'Critical failure summary',
         'setl_verify'             => 'Settlement verification complete',
-        'low_balance_alert'       => 'Account balance is below threshold');
+        'low_balance_alert'       => 'Account balance is below threshold',
+        'setl_balance_alert'      => 'Settlement Amount',
+    ];
 
     /**
      * Used to send slack notifications

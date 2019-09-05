@@ -2,13 +2,16 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
-use Illuminate\Support\Facades\Redis;
+use App;
 use Mail;
 use Queue;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Gateway\Hitachi;
+use RZP\Services\DowntimeMetric;
 use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Exception\GatewayTimeoutException;
@@ -28,11 +31,18 @@ class PaysecureGatewayTest extends TestCase
 
     protected $terminal;
 
+    /** @var $downtimeMetric DowntimeMetric */
+    protected $downtimeMetric;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
 
         parent::setUp();
+
+        $app = App::getFacadeRoot();
+
+        $this->downtimeMetric = $app['gateway_downtime_metric'];
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
@@ -80,6 +90,25 @@ class PaysecureGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->mockCardVault();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'save_all_cards')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
 
         $this->payment = $this->getDefaultPaymentArray();
     }
@@ -317,6 +346,10 @@ class PaysecureGatewayTest extends TestCase
             ],
             $payment
         );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEquals($paysecure[Entity::ERROR_CODE], 'ACCU100');
     }
 
     public function testCallbackAutoCapture()
@@ -400,6 +433,17 @@ class PaysecureGatewayTest extends TestCase
             ],
             $payment
         );
+
+        $this->assertEquals([
+            $this->gateway => [
+                DowntimeMetric::Success    => [
+                    DowntimeMetric::NoError      => 1,
+                ],
+                DowntimeMetric::Failure   => [
+                    'SERVER_ERROR_INVALID_ARGUMENT' => 1,
+                ]
+            ],
+        ], $this->downtimeMetric->getMetrics());
     }
 
     public function testAuthorizeFailureWithNoErrorMessage()
@@ -527,8 +571,7 @@ class PaysecureGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function (&$content, $action = null)
             {
-                // Hitachi's advice uses the same action response as that of callback
-                if ($action === 'callback')
+                if ($action === 'advice')
                 {
                     throw new GatewayTimeoutException('Timed out');
                 }
@@ -559,8 +602,7 @@ class PaysecureGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function (&$content, $action = null)
             {
-                // Hitachi's advice uses the same action response as that of callback
-                if ($action === 'callback')
+                if ($action === 'advice')
                 {
                     $decoded = json_decode($content, true);
 
@@ -834,22 +876,6 @@ class PaysecureGatewayTest extends TestCase
     protected function assertSuccess($authResponse, $flow)
     {
         $payment = $this->getDbLastEntityToArray('payment');
-
-        $cacheDriver = $this->app['config']->get('cache.secure_default');
-
-        $key = sprintf(Gateway::CACHE_KEY, $payment['id']);
-
-        $cacheValue = $this->app['cache']->store($cacheDriver)->get($key);
-
-        $this->assertArraySelectiveEquals(
-            [
-                'vault_token' => base64_encode($this->payment['card']['number']),
-            ],
-            $cacheValue
-        );
-
-        // Ensure cvv does not get stored in cache
-        $this->assertArrayNotHasKey('cvv', $cacheValue);
 
         $this->assertArraySelectiveEquals(
             [

@@ -57,7 +57,7 @@ class TransactionTransformer extends Transformer
                 $output = [
                     Entity::TYPE            => Type::COLLECT,
                     Entity::FLOW            => Flow::DEBIT,
-                    Entity::INTERNAL_STATUS => Status::CREATED,
+                    Entity::INTERNAL_STATUS => Status::REQUESTED,
                 ];
                 break;
 
