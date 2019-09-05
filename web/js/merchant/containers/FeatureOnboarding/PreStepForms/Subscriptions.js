@@ -34,7 +34,6 @@ import RTracking from 'react-tracking';
 export default class SubscriptionsPreStep extends Component {
   handleSave = form => {
     const { user, mode, tracking } = this.props;
-    alert('here');
     tracking.trackEvent(window.rzpQ.onbr().initiated('dash.add_website'), {
       clickSource: 'subscriptions',
     });

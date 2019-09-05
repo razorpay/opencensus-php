@@ -349,7 +349,6 @@ export default class ActivationWizard extends React.Component {
   changeTab = ({ target }) => {
     const tabId = parseInt(target.getAttribute('data-index'));
     const currentActiveTab = this.state.activeTab;
-    console.log(tabId, currentActiveTab);
     const tracker = () =>
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().initiated('kyc.nav_action', {

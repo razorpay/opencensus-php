@@ -191,7 +191,7 @@ export default class ActivationContainer extends Component {
         content = (
           <InstantActivation
             {...commonProps}
-            onFormValidityChanFge={this.handleIAFormValidityChange}
+            onFormValidityChange={this.handleIAFormValidityChange}
           />
         );
         trackerIntent = 'act.form_fill';
