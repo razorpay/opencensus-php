@@ -145,10 +145,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setProcessedAtInOutput();
 
-        $this->setBatchIdInOutput($this->batch->getId());
-
-        $this->setAttemptsInOutput($this->batch->getAttempts());
-
         try
         {
             //

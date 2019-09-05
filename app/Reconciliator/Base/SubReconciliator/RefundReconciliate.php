@@ -83,10 +83,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setProcessedAtInOutput();
 
-        $this->setBatchIdInOutput($this->batch->getId());
-
-        $this->setAttemptsInOutput($this->batch->getAttempts());
-
         $refundId = $rowDetails[BaseReconciliate::REFUND_ID];
 
         try

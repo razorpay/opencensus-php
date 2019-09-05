@@ -271,7 +271,9 @@ class Reconciliate extends Base\Core
 
         $batchId = $batch->getId();
 
-        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData());
+        $attempt = $batch->getAttempts();
+
+        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData(), $batchId, $attempt);
 
         $sheetName = null;
 
@@ -288,8 +290,6 @@ class Reconciliate extends Base\Core
         }
 
         $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
-
-        $attempt = $batch->getAttempts();
 
         if ($attempt > 1)
         {
@@ -403,6 +403,10 @@ class Reconciliate extends Base\Core
         foreach ($reconOutputData as $row)
         {
             $row = array_diff_key($row, array_flip($blackListedColumns));
+
+            $row['batch_id'] = $batchId;
+
+            $row['attempt_number'] = $attemptNumber;
 
             array_push($updatedData, $row);
         }
