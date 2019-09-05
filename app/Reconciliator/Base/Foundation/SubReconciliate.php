@@ -267,7 +267,7 @@ class SubReconciliate extends Base\Core
         static::$currentRowNumber = -1;
     }
 
-    protected function persistReconciledAt($entity)
+    protected function persistReconciledAt($entity, string $reconciledType = ReconciledType::MIS)
     {
         if (($entity->getEntityName() !== Entity::REFUND) or
             ($entity->isScrooge() === false))
@@ -276,7 +276,7 @@ class SubReconciliate extends Base\Core
 
             $time = time();
             $transaction->setReconciledAt($time);
-            $transaction->setReconciledType(ReconciledType::MIS);
+            $transaction->setReconciledType($reconciledType);
 
             $transaction->saveOrFail();
 

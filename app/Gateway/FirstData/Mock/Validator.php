@@ -69,6 +69,28 @@ class Validator extends Base\Validator
         ConnectRequestFields::TOKEN                     => 'sometimes|string',
     ];
 
+    protected static $preAuthRules = [
+        'Transaction'                                                   => 'required',
+        'Transaction.CreditCardTxType'                                  => 'required',
+        'Transaction.CreditCardTxType.StoreId'                          => 'required',
+        'Transaction.CreditCardTxType.Type'                             => 'required|in:preauth,sale',
+        'Transaction.CreditCardData'                                    => 'required',
+        'Transaction.CreditCardData.CardCodeValue'                      => 'required|numeric',
+        'Transaction.CreditCardData.CardNumber'                         => 'required|numeric|luhn|digits_between:12,19',
+        'Transaction.CreditCardData.ExpMonth'                           => 'required|integer|digits_between:1,2|max:12|min:1',
+        'Transaction.CreditCardData.ExpYear'                            => 'required|integer|digits:2',
+        'Transaction.CreditCard3DSecure'                                => 'required|array',
+        'Transaction.CreditCard3DSecure.VerificationResponse'           => 'required|string|in:Y',
+        'Transaction.CreditCard3DSecure.PayerAuthenticationResponse'    => 'required|string|in:Y',
+        'Transaction.CreditCard3DSecure.AuthenticationValue'            => 'required|string',
+        'Transaction.CreditCard3DSecure.XID'                            => 'required|string',
+        'Transaction.TransactionDetails'                                => 'required|array',
+        'Transaction.Payment'                                           => 'required|array',
+        'Transaction.Payment.ChargeTotal'                               => 'required|numeric',
+        'Transaction.Payment.Currency'                                  => 'required|numeric|digits:3',
+        'Transaction.TransactionDetails.OrderId'                        => 'required|string',
+    ];
+
     protected static $authValidators = [
         ConnectRequestFields::MODE,
         ConnectRequestFields::PAYMENT_METHOD,

@@ -798,6 +798,7 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::TXT:
+            case FileStore\Format::DAT:
                 $txt = $this->generateTextWithHeadings($entries, '|', false, array_keys(current($entries)));
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);

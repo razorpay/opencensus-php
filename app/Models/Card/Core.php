@@ -153,6 +153,10 @@ class Core extends Base\Core
 
         $type = null;
 
+        $subtype = null;
+
+        $category = null;
+
         if ($iin)
         {
             $iinNetwork = $iin->getNetwork();
@@ -169,6 +173,10 @@ class Core extends Base\Core
             }
 
             $type = $iin['type'];
+
+            $subtype = $iin[Card\IIN\Entity::SUBTYPE];
+
+            $category = $iin[Card\IIN\Entity::CATEGORY];
 
             $emi = IIN\IIN::isEmiAvailableForCard($iin, $input['number']);
 
@@ -203,6 +211,10 @@ class Core extends Base\Core
 
         $type = Card\Type::getType($type, $network);
         $card->setType($type);
+
+        $card->setSubtype($subtype);
+
+        $card->setCategory($category);
 
         $this->checkCvvLength($card, $input);
 

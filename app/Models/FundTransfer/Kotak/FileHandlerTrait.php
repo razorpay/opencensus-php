@@ -26,11 +26,11 @@ trait FileHandlerTrait
 
     private $_zipCommand = "zip --junk-paths --move";
 
-    public function writeToTextFile($name, $txt)
+    public function writeToTextFile($name, $txt, $mime='text/plain')
     {
         $fullpath = $this->createTxtFile($name, $txt);
 
-        $url = $this->saveToAws($name, $fullpath, 'text/plain');
+        $url = $this->saveToAws($name, $fullpath, $mime);
 
         // This will be local file path if aws is mocked
         return $url;

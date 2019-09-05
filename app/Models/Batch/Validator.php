@@ -173,7 +173,7 @@ class Validator extends Base\Validator
     protected static $iinNpciRupayCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
-        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE                 => 'required|file|max:4096' . self::DEFAULT_MIME_RULE,
     ];
 
     /**

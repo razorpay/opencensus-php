@@ -1362,6 +1362,26 @@ return [
         ],
     ],
 
+    'testTerminalSecretCheck' => [
+        'request' => [
+            'content' => [
+                'gateway_terminal_password'  => '1234',
+                'gateway_terminal_password2' => '21234',
+                'gateway_secure_secret'      => '0123',
+                'gateway_secure_secret2'     => '201235',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_terminal_password'  => true,
+                'gateway_terminal_password2' => true,
+                'gateway_secure_secret'      => true,
+                'gateway_secure_secret2'     => false,
+            ]
+        ]
+    ],
+
     'testAddAmazonPayTerminal' => [
         'request' => [
             'content' => [
@@ -2011,6 +2031,27 @@ return [
                 'gateway_merchant_id'       => 'merchant_id',
                 'gateway_secure_secret'     => 'secure_secret',
                 'gateway_access_code'       => 'access_code',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateWalletPaypalTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_terminal_password2'=> 'terminal_password2',
+                'gateway_terminal_password' => 'terminal_password',
+                'type'                      => [
+                    'direct_settlement_with_refund' => '1'
+                ],
             ],
             'method' => 'POST'
         ],

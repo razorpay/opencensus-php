@@ -113,7 +113,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * @param $paymentId
      * @return mixed
      */
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->wallet->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE) ?? null;
     }

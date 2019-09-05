@@ -146,8 +146,6 @@ class Entity extends Base\PublicEntity
         self::LAST4,
         self::NETWORK,
         self::TYPE,
-        self::SUBTYPE,
-        self::CATEGORY,
         self::ISSUER,
         self::INTERNATIONAL,
         self::EMI,

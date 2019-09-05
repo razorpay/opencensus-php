@@ -28,6 +28,7 @@ class Reconciliate extends Base\Core
     const PAYMENT        = 'payment';
     const REFUND         = 'refund';
     const COMBINED       = 'combined';
+    const MANUAL         = 'manual';
     const EMANDATE_DEBIT = 'emandate_debit';
 
     /**
@@ -38,7 +39,7 @@ class Reconciliate extends Base\Core
      */
     const INVALID_RECON_TYPE = 'invalid_recon_type';
 
-    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::EMANDATE_DEBIT];
+    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::MANUAL, self::EMANDATE_DEBIT];
 
     //
     // Used to define start_row for the MIS files.
@@ -260,6 +261,17 @@ class Reconciliate extends Base\Core
         }
 
         $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
+
+        $attempt = $batch->getAttempts();
+
+        if ($attempt > 1)
+        {
+            //
+            // After each retry, the output file is generated again. Need to append
+            // attempt count, so as to avoid file overwrite in s3 bucket.
+            //
+            $fileName .= '_' . $attempt;
+        }
 
         $this->trace->info(
             TraceCode::RECON_INFO,

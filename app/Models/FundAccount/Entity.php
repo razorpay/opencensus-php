@@ -53,6 +53,9 @@ class Entity extends Base\PublicEntity
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
 
+    // input key
+    const ACCOUNT_NUMBER = 'account_number';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
@@ -75,7 +78,6 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::ACTIVE,
         self::CREATED_AT,
-        self::IDEMPOTENCY_KEY,
     ];
 
     protected $publicSetters = [
@@ -96,7 +98,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ACTIVE => true,
+        self::ACTIVE            => true,
         self::IDEMPOTENCY_KEY   => null,
     ];
 

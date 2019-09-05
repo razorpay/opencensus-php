@@ -138,13 +138,14 @@ class TransactionTrackerTest extends TestCase
         return $payment;
     }
 
-    public function assertPaymentResponse($callee, $rzpPayment)
+    public function assertPaymentResponse($callee, $rzpPayment, $idType)
     {
         $response = $this->runRequestResponseFlow($this->testData[$callee]);
 
         $this->assertEquals($rzpPayment['id'], $response['payments'][0]['payment']['id']);
         $this->assertEquals($rzpPayment['created_at'], $response['payments'][0]['payment']['created_at']);
         $this->assertEquals($rzpPayment['secondary_message'], $response['payments'][0]['payment']['secondary_message']);
+        $this->assertEquals($idType, $response['id_type']);
     }
 
     public function assertPaymentResponses($callee, $rzpPayment, $order, $merchantTransactionId)
@@ -155,8 +156,7 @@ class TransactionTrackerTest extends TestCase
         $this->ba->directAuth();
 
         $this->assertEquals($rzpPayment['id'], $this->testData[$callee]['request']['content']['payment_id']);
-        $this->assertPaymentResponse($callee, $rzpPayment);
-
+        $this->assertPaymentResponse($callee, $rzpPayment, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['payment_id']);
 
@@ -164,7 +164,7 @@ class TransactionTrackerTest extends TestCase
         $this->testData[$callee]['request']['content']['id'] = PublicEntity::stripDefaultSign($rzpPayment['id']);
 
         $this->assertEquals(PublicEntity::stripDefaultSign($rzpPayment['id']), $this->testData[$callee]['request']['content']['id']);
-        $this->assertPaymentResponse($callee, $rzpPayment);
+        $this->assertPaymentResponse($callee, $rzpPayment, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['id']);
 
@@ -172,7 +172,7 @@ class TransactionTrackerTest extends TestCase
         $this->testData[$callee]['request']['content']['order_id'] = $order['id'];
 
         $this->assertEquals($order['id'], $this->testData[$callee]['request']['content']['order_id']);
-        $this->assertPaymentResponse($callee, $rzpPayment);
+        $this->assertPaymentResponse($callee, $rzpPayment, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['order_id']);
 
@@ -180,7 +180,7 @@ class TransactionTrackerTest extends TestCase
         $this->testData[$callee]['request']['content']['id'] = PublicEntity::stripDefaultSign($order['id']);
 
         $this->assertEquals(PublicEntity::stripDefaultSign($order['id']), $this->testData[$callee]['request']['content']['id']);
-        $this->assertPaymentResponse($callee, $rzpPayment);
+        $this->assertPaymentResponse($callee, $rzpPayment, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['id']);
 
@@ -188,7 +188,7 @@ class TransactionTrackerTest extends TestCase
         $this->testData[$callee]['request']['content']['id'] = $merchantTransactionId;
 
         $this->assertEquals($merchantTransactionId, $this->testData[$callee]['request']['content']['id']);
-        $this->assertPaymentResponse($callee, $rzpPayment);
+        $this->assertPaymentResponse($callee, $rzpPayment, 'merchant_reference');
 
         unset($this->testData[$callee]['request']['content']['id']);
 
@@ -196,7 +196,7 @@ class TransactionTrackerTest extends TestCase
         $this->ba->adminAuth('test');
     }
 
-    public function assertRefundResponse($callee, $rzpPayment, $refunds, $days)
+    public function assertRefundResponse($callee, $rzpPayment, $refunds, $days, $idType)
     {
         $response = $this->runRequestResponseFlow($this->testData[$callee]);
 
@@ -206,6 +206,7 @@ class TransactionTrackerTest extends TestCase
         $this->assertEquals($rzpPayment['created_at'], $response['payments'][0]['payment']['created_at']);
         $this->assertEquals($refunds[0]['created_at'], $response['payments'][0]['refunds'][0]['created_at']);
         $this->assertEquals($refunds[0]['secondary_message'], $response['payments'][0]['refunds'][0]['secondary_message']);
+        $this->assertEquals($idType, $response['id_type']);
     }
 
     public function assertResponseNotFound($callee)
@@ -213,6 +214,7 @@ class TransactionTrackerTest extends TestCase
         $response = $this->runRequestResponseFlow($this->testData[$callee]);
 
         $this->assertEquals([], $response['payments']);
+        $this->assertEquals('unknown', $response['id_type']);
     }
 
     public function assertRefundResponses($callee, $rzpPayment, $order, $refunds, $merchantTransactionId)
@@ -230,7 +232,7 @@ class TransactionTrackerTest extends TestCase
 
         $this->assertEquals($rzpPayment['id'], $this->testData[$callee]['request']['content']['payment_id']);
 
-        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days);
+        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['payment_id']);
 
@@ -239,14 +241,14 @@ class TransactionTrackerTest extends TestCase
 
         $this->assertEquals(PublicEntity::stripDefaultSign($rzpPayment['id']), $this->testData[$callee]['request']['content']['id']);
 
-        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days);
+        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['id']);
 
         // Testing with RZP Order Id
         $this->testData[$callee]['request']['content']['order_id'] = $order['id'];
 
-        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days);
+        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days, 'rzp_id');
 
         $this->assertEquals($order['id'], $this->testData[$callee]['request']['content']['order_id']);
 
@@ -258,7 +260,7 @@ class TransactionTrackerTest extends TestCase
 
         $this->assertEquals(PublicEntity::stripDefaultSign($order['id']), $this->testData[$callee]['request']['content']['id']);
 
-        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days);
+        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['id']);
 
@@ -267,7 +269,7 @@ class TransactionTrackerTest extends TestCase
 
         $this->assertEquals($refunds[0]['id'], $this->testData[$callee]['request']['content']['refund_id']);
 
-        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days);
+        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['refund_id']);
 
@@ -276,7 +278,7 @@ class TransactionTrackerTest extends TestCase
 
         $this->assertEquals(PublicEntity::stripDefaultSign($refunds[0]['id']), $this->testData[$callee]['request']['content']['id']);
 
-        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days);
+        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days, 'rzp_id');
 
         unset($this->testData[$callee]['request']['content']['id']);
 
@@ -285,7 +287,7 @@ class TransactionTrackerTest extends TestCase
 
         $this->assertEquals($merchantTransactionId, $this->testData[$callee]['request']['content']['id']);
 
-        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days);
+        $this->assertRefundResponse($callee, $rzpPayment, $refunds, $days, 'merchant_reference');
 
         unset($this->testData[$callee]['request']['content']['id']);
 
@@ -371,6 +373,14 @@ class TransactionTrackerTest extends TestCase
 
         // just resetting
         $this->ba->adminAuth('test');
+    }
+
+    public function assertInvalidIdResponse($callee, $id, $description)
+    {
+        $this->testData[$callee]['request']['content']['id'] = $id;
+        $this->testData[$callee]['response']['content']['error']['description'] = $description;
+
+        $this->runRequestResponseFlow($this->testData[$callee]);
     }
 
     public function setUpEsMockForRefundNotes($refund)
@@ -510,6 +520,7 @@ class TransactionTrackerTest extends TestCase
 
         $this->assertEquals($days2, $response['payments'][1]['refunds'][1]['days']);
         $this->assertEquals($secondaryMessage2, $response['payments'][1]['refunds'][1]['secondary_message']);
+        $this->assertEquals('rzp_id', $response['id_type']);
 
         // just resetting
         $this->ba->adminAuth('test');
@@ -532,11 +543,36 @@ class TransactionTrackerTest extends TestCase
             'order_id' => $merchantTransactionId
         ]]);
 
-        $paymentEntity = $this->getDbEntityById('payment', $rzpPaymentId);
-
         $rzpPayment['secondary_message'] = 'Your payment of ₹ 500'.
             ' was not successful since we did not receive the successful callback from the issuing bank. '.
             'The amount will be refunded back to your account in 5-7 business days.';
+
+        $this->setUpEsMockForPaymentNotes($rzpPaymentId);
+
+        $this->assertPaymentResponses(__FUNCTION__, $rzpPayment, $order, $merchantTransactionId);
+    }
+
+    public function testPaymentFetchDetailsForCustomerFromRazorpayIdCreatedPaymentCase()
+    {
+        // Created Payment
+        $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $rzpPayment = $this->createFailedPayment($order);
+
+        $this->resetMockServer();
+
+        $rzpPaymentId = PublicEntity::stripDefaultSign($rzpPayment['id']);
+        $merchantTransactionId = 'REZDELKJe2c92f0f46';
+
+        $this->fixtures->edit('payment', $rzpPaymentId, [
+            'notes' => [
+                'order_id' => $merchantTransactionId
+            ],
+            'status' => 'created',
+        ]);
+
+        $rzpPayment['secondary_message'] = 'We are awaiting confirmation on the status of your payment from our Banking partners.';
 
         $this->setUpEsMockForPaymentNotes($rzpPaymentId);
 
@@ -995,6 +1031,7 @@ class TransactionTrackerTest extends TestCase
         $this->assertEquals($upiPayment['id'], $response['payments'][0]['payment']['id']);
         $this->assertEquals($upiPayment['created_at'], $response['payments'][0]['payment']['created_at']);
         $this->assertEquals($secondaryMessage, $response['payments'][0]['payment']['secondary_message']);
+        $this->assertEquals('npci_rrn', $response['id_type']);
     }
 
     public function testPaymentFetchDetailsForCustomerFromIdFetchFromUpiRefund()
@@ -1043,6 +1080,7 @@ class TransactionTrackerTest extends TestCase
         $this->assertEquals($secondaryMessage, $response['payments'][0]['refunds'][0]['secondary_message']);
         $this->assertEquals($days, $response['payments'][0]['refunds'][0]['days']);
         $this->assertNotNull($response['payments'][0]['refunds'][0]['acquirer_data']['rrn']);
+        $this->assertEquals('npci_rrn', $response['id_type']);
     }
 
     public function testPaymentFetchDetailsForCustomerFromRazorpayOrderIdMultiplePaymentsMultipleRefunds()
@@ -1154,5 +1192,23 @@ class TransactionTrackerTest extends TestCase
     public function testCustomerFetchIdNotFound()
     {
         $this->assertResponsesNotFound(__FUNCTION__, 'CCPjoWzlDJG0g7');
+    }
+
+    public function testCustomerFetchInvalidId()
+    {
+        // 1. Atleast 1 digit required
+        // 2. Spaces not allowed
+
+        $invalidCases = [
+            'Chandra'              => 'The id format is invalid.',
+            'Chandra_'             => 'The id format is invalid.',
+            'Chandra-'             => 'The id may only contain alphabets, digits and underscores.',
+            'Chandra Reddy Layout' => 'The id may only contain alphabets, digits and underscores.',
+        ];
+
+        foreach ($invalidCases as $id => $description)
+        {
+            $this->assertInvalidIdResponse(__FUNCTION__, $id, $description);
+        }
     }
 }

@@ -23,16 +23,20 @@ class IinNpciRupay extends BaseProcessor
 
     protected function processEntry(array &$entry)
     {
-        if (substr(array_values($entry)[0], 0, 3) === 'TRL')
+        $header = array_keys($entry)[0];
+
+        $row = array_values($entry)[0];
+
+        if (substr($row, 0, 3) !== 'TRL')
         {
-            $entry[Batch\Header::STATUS]  = Batch\Status::SUCCESS;
+            $this->processor->preprocess($entry);
 
-            return;
+            unset($entry[$header]);
+
+            $entry[Batch\Header::IIN_NPCI_RUPAY_ROW] = $row;
+
+            $this->processor->process();
         }
-
-        $this->processor->preprocess($entry);
-
-        $this->processor->process();
 
         $entry[Batch\Header::STATUS]  = Batch\Status::SUCCESS;
     }

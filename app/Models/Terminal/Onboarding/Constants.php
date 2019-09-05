@@ -8,5 +8,4 @@ class Constants
     const VISA       = 'visa';
     const MASTERCARD = 'mastercard';
     const RUPAY      = 'rupay';
-
 }

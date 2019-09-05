@@ -43,6 +43,7 @@ class Constants
     const CITI             = 'citi';
     const CBI              = 'cbi';
     const SIB              = 'sib';
+    const SBIN             = 'sbin';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
 
@@ -92,6 +93,7 @@ class Constants
             self::SIB,
             self::CUB,
             self::IDBI,
+            self::SBIN,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -159,6 +161,7 @@ class Constants
             self::SIB         => ['sib.netbanking.refunds@razorpay.com'],
             self::CUB         => ['cub.netbanking.refunds@razorpay.com'],
             self::IDBI        => ['idbi.netbanking.refunds@razorpay.com'],
+            self::SBIN        => ['sbi.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

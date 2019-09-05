@@ -9,6 +9,10 @@ class Channel
 {
     const RBL = Settlement\Channel::RBL;
 
+    protected static $channels = [
+        self::RBL,
+    ];
+
     /**
      * This array has a list of channels for which transactions
      * should not be created through reversals
@@ -38,5 +42,10 @@ class Channel
         self::validate($channel);
 
         return in_array($channel, self::$skipTxnCreation, true);
+    }
+
+    public static function getAll(): array
+    {
+        return self::$channels;
     }
 }

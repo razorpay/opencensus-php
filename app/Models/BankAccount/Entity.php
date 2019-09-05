@@ -615,6 +615,8 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArrayHosted();
 
+        $data[self::ACCOUNT_NUMBER] = $this->getAccountNumber();
+
         unset($data[self::ID]);
 
         unset($data[self::ENTITY]);
