@@ -153,6 +153,7 @@ class Core extends Base\Core
             Entity::CREDIT_CARD          => true,
             Entity::PREPAID_CARD         => true,
             Entity::CARD_NETWORKS        => [],
+            Entity::CARD_SUBTYPE         => [],
             Payment\Gateway::AMEX        => false,
             Payment\Method::NETBANKING   => [],
             Payment\Method::WALLET       => [],
@@ -169,6 +170,7 @@ class Core extends Base\Core
         $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
         $data[Entity::PREPAID_CARD]  = $methods->isPrepaidCardEnabled();
         $data[Entity::CARD_NETWORKS] = $methods->getCardNetworks();
+        $data[Entity::CARD_SUBTYPE]  = $methods->getCardSubtypes();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled           = $methods->isNetbankingEnabled();
 
@@ -181,13 +183,18 @@ class Core extends Base\Core
             $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
         }
 
-        $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
-        $data[Payment\Method::UPI] = $methods->isUpiEnabled();
+        $data[Payment\Method::WALLET]        = $methods->getEnabledWallets();
+        $data[Payment\Method::UPI]           = $methods->isUpiEnabled();
         $data[Payment\Method::CARDLESS_EMI] =
                   $methods->isCardlessEmiEnabled() ? $this->getProviders($merchant, Payment\Method::CARDLESS_EMI) : [];
 
         $data[Payment\Method::PAYLATER] =
             $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER) : [];
+
+        if ($merchant->isFeatureEnabled(Constants::BANK_TRANSFER_ON_CHECKOUT) === true)
+        {
+            $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
+        }
 
         $emi = $methods->isEmiEnabled();
 

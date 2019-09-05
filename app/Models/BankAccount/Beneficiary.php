@@ -29,7 +29,7 @@ use RZP\Models\Settlement\SlackNotification;
 
 class Beneficiary extends Base\Core
 {
-    const BENEFICIARY_CACHE_KEY_TTL = 300;
+    const BENEFICIARY_CACHE_KEY_TTL = 5;
 
     public function register(array $input, string $channel): array
     {
@@ -153,7 +153,7 @@ class Beneficiary extends Base\Core
                         'bank_account_id' => $bankAccount->getId(),
                     ]);
 
-                return ;
+                return;
             }
 
             Cache::put($cacheKey, 'in_progress', self::BENEFICIARY_CACHE_KEY_TTL);
@@ -347,6 +347,15 @@ class Beneficiary extends Base\Core
 
         $status = $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
 
+        // add counter for success or failure
+        $this->trace->count(
+            Metric::BENEFICIARY_REGISTER_API_RESPONSE,
+            [
+                'status'  => $status,
+                'channel' => $channel,
+                'mode'    => $this->mode,
+            ]);
+
         if ($status === true)
         {
             $this->removeBeneficiaryRegistrationCacheKey($bankAccount->getId());
@@ -382,6 +391,15 @@ class Beneficiary extends Base\Core
         $this->verifyBeneficiary($bankAccounts, $channel);
 
         $status = $this->checkBeneficiaryVerificationStatus($bankAccount, $channel);
+
+        // add counter for success or failure
+        $this->trace->count(
+            Metric::BENEFICIARY_VERIFY_API_RESPONSE,
+            [
+                'status'  => $status,
+                'channel' => $channel,
+                'mode'    => $this->mode,
+            ]);
 
         if ($status === true)
         {

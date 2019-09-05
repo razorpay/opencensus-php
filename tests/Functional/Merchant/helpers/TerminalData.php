@@ -983,6 +983,28 @@ return [
         ]
     ],
 
+    'testCreateUpiCitiTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_citi',
+                'gateway_merchant_id'       => 'CITI0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl',
+                'type'                      => [
+                    'collect'               => 1,
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'CITI0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
@@ -1338,6 +1360,26 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE ,
         ],
+    ],
+
+    'testTerminalSecretCheck' => [
+        'request' => [
+            'content' => [
+                'gateway_terminal_password'  => '1234',
+                'gateway_terminal_password2' => '21234',
+                'gateway_secure_secret'      => '0123',
+                'gateway_secure_secret2'     => '201235',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_terminal_password'  => true,
+                'gateway_terminal_password2' => true,
+                'gateway_secure_secret'      => true,
+                'gateway_secure_secret2'     => false,
+            ]
+        ]
     ],
 
     'testAddAmazonPayTerminal' => [
@@ -2000,6 +2042,27 @@ return [
         ]
     ],
 
+    'testCreateWalletPaypalTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_terminal_password2'=> 'terminal_password2',
+                'gateway_terminal_password' => 'terminal_password',
+                'type'                      => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingSibTerminal'  => [
         'request' => [
             'content' => [
@@ -2153,15 +2216,34 @@ return [
         ]
     ],
 
+    'testSubMerchantsShouldNotBeAbleToDisableTerminals'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
+
     'testFetchTerminals'  => [
         'request' => [
             'method' => 'GET'
         ],
         'response' => [
             'content'  => [
-                'count'   => 3,
+                'count'   => 2,
                 'entity'  => 'collection',
-                'items'   => [  
+                'items'   => [
                     [
                         'entity'  => "terminal",
                         'status'  => "activated",
@@ -2183,22 +2265,73 @@ return [
                             'rupay_mpan' =>  "6287346823986423",
                             'visa_mpan' =>  "5287346823986423"
                         ]
-                    ],
-                    [
-                        'entity'  => "terminal",
-                        'status'  => "activated",
-                        'enabled' => true,
-                        'notes'   => null,
-                        'mpan' => [
-                            'mc_mpan' =>  NULL,
-                            'rupay_mpan' =>  NULL,
-                            'visa_mpan' =>  NULL
-                        ]
                     ]
-
                 ]
             ]
         ]
     ],
 
+    'testPartnerWithouTerminalControlFeatureShouldNotBeAbleToFetchTerminals'  => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
+
+    'testSubMerchantsShouldNotBeAbleToFetchTerminals'  => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
+
+    'testTerminalOnboardingCreateTerminal' => [
+        'request' => [
+            'content' => [
+                "mpan" => [
+                  "mastercard"  => "1234567880123456",
+                  "visa"        => "1234567890123456",
+                  "rupay"       => "1234567890123457"
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  "1234567880123456",
+                    'rupay_mpan'    =>  "1234567890123457",
+                    'visa_mpan'     =>  "1234567890123456"
+                ]
+
+            ]
+        ]
+    ],
 ];

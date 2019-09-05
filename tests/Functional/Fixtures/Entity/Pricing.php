@@ -627,20 +627,34 @@ class Pricing extends Base
     {
         $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
 
-        $row = [
-            'id'                  => '1zE3CYqf1zbyaE',
-            'plan_id'             => $pricingPlanId,
-            'plan_name'           => 'testDefaultPlan',
-            'feature'             => 'refund',
-            'payment_method'      => 'card',
-            'fixed_rate'          => 100,
-            'amount_range_active' => 1,
-            'amount_range_min'    => 100,
-            'amount_range_max'    => 50000,
-            'org_id'              => '100000razorpay',
+        $rows = [
+            [
+                'id'                  => '1zE3CYqf1zbyaE',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'fixed_rate'          => 100,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zE3CYqf1zbyAC',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'upi',
+                'fixed_rate'          => 100,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
-        $this->addPricingRulesToDb([$row]);
+        $this->addPricingRulesToDb($rows);
     }
 
     public function createDefaultCommissionPlan()
@@ -723,46 +737,6 @@ class Pricing extends Base
                 'amount_range_active' => 1,
                 'amount_range_min'    => 10000,
                 'amount_range_max'    => 1000000000,
-                'org_id'              => '100000razorpay',
-            ],
-        ];
-
-        $this->addPricingRulesToDb($rows);
-
-        return $pricingPlanId;
-    }
-
-    public function createDiwaliPromotionalPlan()
-    {
-        $pricingPlanId = 'BI7O6FmHlzLFZm';
-
-         $rows = [
-            [
-                'id'                  => '1nvp2XPMxaRLxb',
-                'plan_id'             => $pricingPlanId,
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'payment',
-                'payment_method'      => 'card',
-                'payment_method_type' => null,
-                'payment_network'     => null,
-                'payment_issuer'      => null,
-                'percent_rate'        => 0,
-                'fixed_rate'          => 100,
-                'international'       => 0,
-                'org_id'              => '100000razorpay',
-            ],
-            [
-                'id'                  => '1zD0BXpxOJaqpC',
-                'plan_id'             => $pricingPlanId,
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'payment',
-                'payment_method'      => 'emandate',
-                'payment_method_type' => 'netbanking',
-                'payment_network'     => null,
-                'payment_issuer'      => 'initial',
-                'percent_rate'        => 0,
-                'fixed_rate'          => 100000,
-                'international'       => 0,
                 'org_id'              => '100000razorpay',
             ],
         ];

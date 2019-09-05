@@ -20,7 +20,7 @@ class Yesb extends Base
     const EXTENSION                  = FileStore\Format::XLS;
     const FILE_TYPE                  = FileStore\Type::YESB_NETBANKING_REFUND;
     const GATEWAY                    = Payment\Gateway::NETBANKING_YESB;
-    const PAYMENT_BANK               = 'Yes Bank';
+    const PAYMENT_BANK               = 'Yesbank';
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::YESB;
 
@@ -35,7 +35,7 @@ class Yesb extends Base
 
         foreach ($data as $row)
         {
-            $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('dmY');
+            $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d/m/Y');
 
             $content[] = [
                 RefundFields::MERCHANT_CODE      => $row['terminal']['gateway_merchant_id'],
@@ -55,7 +55,7 @@ class Yesb extends Base
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
         // the serial no is hardcoded as the file is generated only once
-        return $this->gatewayMerchantId. self::FILE_NAME . $date . '_' . '01';
+        return 'RAZORPAY'. self::FILE_NAME . $date . '_' . '01';
     }
 
     protected function fetchBankPaymentId($data)

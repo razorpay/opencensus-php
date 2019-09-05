@@ -84,6 +84,7 @@ class Entity extends Base\PublicEntity
     const NARRATION              = 'narration';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const BATCH_ID               = 'batch_id';
+    const IDEMPOTENCY_KEY        = 'idempotency_key';
     const INITIATED_AT           = 'initiated_at';
 
     // Public attribute
@@ -169,6 +170,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::REFERENCE_ID,
         self::NARRATION,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $visible = [
@@ -216,6 +218,7 @@ class Entity extends Base\PublicEntity
         self::INITIATED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $public = [
@@ -312,6 +315,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION         => null,
         self::FEES              => 0,
         self::TAX               => 0,
+        self::IDEMPOTENCY_KEY   => null,
     ];
 
     protected $amounts = [
@@ -1037,6 +1041,11 @@ class Entity extends Base\PublicEntity
         $batchId = $this->getAttribute(self::BATCH_ID);
 
         $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
+    }
+
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
     }
 
     public function setPublicFundAccountAttribute(array & $attributes)

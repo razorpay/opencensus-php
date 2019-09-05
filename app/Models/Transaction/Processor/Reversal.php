@@ -154,7 +154,7 @@ class Reversal extends Base
         // Save is necessary here to create CreditReversalTransaction
         $this->repo->saveOrFail($this->txn);
 
-        $this->dispatchForSettlementBucketing($this->txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     public function setMerchantBalanceLockForUpdate()

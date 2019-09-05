@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
+use RZP\Models\Card\SubType;
 use RZP\Models\Feature;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Methods;
@@ -340,6 +341,24 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
     }
 
+    public function enableCardSubType($id = '10000000000000', $subtype)
+    {
+        $subTypes = SubType::getEnabledCardSubTypes(1);
+
+        $subTypes[$subtype] = 1;
+
+        return $this->fixtures->edit('methods', $id, ['card_subtype' => $subTypes]);
+    }
+
+    public function disableCardSubType($id = '10000000000000', $subtype)
+    {
+        $subTypes = SubType::getEnabledCardSubTypes(1);
+
+        $subTypes[$subtype] = 0;
+
+        return $this->fixtures->edit('methods', $id, ['card_subtype' => $subTypes]);
+    }
+
     public function enableCardNetworks($id = '10000000000000', $networks)
     {
         $cardNetworks = Network::getEnabledCardNetworks(Network::DEFAULT_CARD_NETWORKS);
@@ -353,7 +372,6 @@ class Merchant extends Base
 
         return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
     }
-
 
     public function disableCardNetworks($id = '10000000000000', $networks)
     {
@@ -646,9 +664,19 @@ class Merchant extends Base
         return $this->edit($id, ['has_key_access' => $hasKeyAccess]);
     }
 
+    public function setRestricted(bool $restricted, string $id = '10000000000000')
+    {
+        return $this->edit($id, ['restricted' => $restricted]);
+    }
+
     public function editPricingPlanId($planId, $id = '10000000000000')
     {
         return $this->edit($id, ['pricing_plan_id' => $planId]);
+    }
+
+    public function editCreatedAt($createdAt, $id = '10000000000000')
+    {
+        return $this->edit($id, ['created_at' => $createdAt]);
     }
 
     public function enableMagic($id = '10000000000000')

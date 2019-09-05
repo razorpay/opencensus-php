@@ -7,7 +7,7 @@ class RefundFields
 {
     const SR_NO                 = "Sr.No";
     const REFUND_ID             = "Refund Id";
-    const BAND_ID               = "Bank Id";
+    const BANK_ID               = "Bank Id";
     const MERCHANT_NAME         = "Merchant Name";
     const TXN_DATE              = "Txn Date";
     const REFUND_DATE           = "Refund Date";
@@ -20,7 +20,7 @@ class RefundFields
     const REFUND_FIELDS = [
         self::SR_NO,
         self::REFUND_ID,
-        self::BAND_ID,
+        self::BANK_ID,
         self::MERCHANT_NAME,
         self::TXN_DATE,
         self::REFUND_DATE,

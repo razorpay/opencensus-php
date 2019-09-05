@@ -96,6 +96,7 @@ class TerminalAuthenticationTest extends TestCase
         self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayHeadlessOtp()
@@ -147,6 +148,7 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('headless_otp' ,$payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayIvr()
@@ -193,6 +195,7 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayExpressPay()
@@ -237,9 +240,10 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
 
-        $payment = $this->getLastEntity('mpi', true);
+        $mpi = $this->getLastEntity('mpi', true);
 
-        self::assertEquals('mpi_enstage', $payment['gateway']);
+        self::assertEquals('mpi_enstage', $mpi['gateway']);
+        $this->assertEquals('mpi_enstage', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     // boost 3ds over headless otp
@@ -306,6 +310,7 @@ class TerminalAuthenticationTest extends TestCase
         $this->assertEquals('pin', $payment['auth_type']);
         $this->assertEquals('card_fss', $payment['gateway']);
         $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
+        $this->assertNull($payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     // boost 3ds over headless otp
@@ -357,6 +362,7 @@ class TerminalAuthenticationTest extends TestCase
         self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     // boost cyber source mpi gateway
@@ -400,6 +406,115 @@ class TerminalAuthenticationTest extends TestCase
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
         self::assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
+    }
+
+    public function testAuthenticationGatewayFirstdata()
+    {
+        TerminalOptions::setTestChance(1000);
+
+        $this->otpFlow = false;
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->mockCardVault();
+
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+
+        $this->createGatewayRules($this->testData[__FUNCTION__]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = ['3ds'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
+    }
+
+    public function testAuthenticationGatewayPaysecure()
+    {
+        TerminalOptions::setTestChance(1000);
+
+        $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
+
+        $merchantDetailArray = [
+            'contact_name'                => 'rzp',
+            'contact_email'               => 'test@rzp.com',
+            'merchant_id'                 => '10000000000000',
+            'business_registered_address' => 'Koramangala',
+            'business_registered_state'   => 'KARNATAKA',
+            'business_registered_pin'     => 560047,
+            'business_dba'                => 'test',
+            'business_name'               => 'rzp_test',
+            'business_registered_city'    => 'Bangalore',
+        ];
+
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Ménage12345678901234567890']);
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ],
+            'gateway_merchant_id' => 'sample_hitachi_mid',
+            'gateway_terminal_id' => 'sample_hitachi_tid',
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'          => '607384',
+            'country'      => 'IN',
+            'issuer'       => 'PUNB',
+            'network'      => 'RuPay',
+            'message_type' => 'SMS',
+            'flows'        => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ],
+        ]);
+
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['card'] = array(
+            'number'            => '6073849700004947',
+            'name'              => 'Test user',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2024',
+            'cvv'               => '566',
+        );
+
+        $this->otpFlow = false;
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+        $payment['preferred_auth'] = ['3ds'];
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('paysecure', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayHdfcCapabilityFilter()
@@ -442,6 +557,8 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('authorized', $payment['status']);
 
         self::assertEquals('hdfc', $payment['gateway']);
+
+        $this->assertNull($payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
     public function testAuthenticationGatewayHdfcAuthCapabilityFilter()

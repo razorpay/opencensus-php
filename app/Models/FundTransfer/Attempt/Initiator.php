@@ -7,6 +7,7 @@ use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -20,6 +21,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Constants\SettlementChannelMedium as Medium;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
@@ -116,6 +118,8 @@ class Initiator extends Base\Core
 
             $limit = $this->getLimitForChannel($channel);
 
+            $unsupportedModeList = $this->getUnsupportedModesForTime($timestamp);
+
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_FETCHING_ENTITIES);
 
             $attempts = $this->repo
@@ -125,6 +129,7 @@ class Initiator extends Base\Core
                                 $purpose,
                                 $sourceType,
                                 $channel,
+                                $unsupportedModeList,
                                 $limit,
                                 ['source']);
 
@@ -176,33 +181,96 @@ class Initiator extends Base\Core
 
         $purpose = $attempts->first()->getPurpose();
 
-        list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
-            $attempts,
-            function(PublicCollection $collection) use ($purpose, $channel)
+        $medium = (in_array($channel, Channel::getApiBasedChannels(), true) === true) ?
+            Medium::API : Medium::FILE;
+
+        try
+        {
+            $customProperties = [
+                'channel'                       => $channel,
+                'fund_transfer_attempt_count'   => $count,
+                'purpose'                       => $purpose,
+                'fund_transfer_attempt_medium'  => $medium,
+            ];
+
+            $this->raiseSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
+                null,
+                null,
+                $customProperties);
+
+            list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
+                $attempts,
+                function(PublicCollection $collection) use ($purpose, $channel)
+                {
+                    $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+
+                    return [
+                        (new $class($purpose))->initiateTransfer($collection),
+                        $collection
+                    ];
+                });
+
+            $allowedChannels = Channel::getApiBasedChannels();
+
+            if (in_array($channel, $allowedChannels, true) === true)
             {
-                $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+                $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+            }
 
-                return [
-                    (new $class($purpose))->initiateTransfer($collection),
-                    $collection
-                ];
-            });
+            $data += $response;
 
-        $allowedChannels = Channel::getApiBasedChannels();
+            $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        if (in_array($channel, $allowedChannels, true) === true)
-        {
-            $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+            //reducing slack alerts for API based channels
+            if (in_array($channel, $allowedChannels, true) === false)
+            {
+                (new SlackNotification)->send('setl_initiate', $slackData);
+            }
+
+            $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
+
+            $batchFTaId = $batchFundTransfer->getId();
+
+            $batchAmount = $batchFundTransfer->getAmount();
+
+            $transactionCount = $batchFundTransfer->getTransactionCount();
+
+            $ftaCountInBatch = $batchFundTransfer->getTotalCount();
+
+            $customProperties = [
+                'channel'                               => $channel,
+                'fund_transfer_attempt_count'           => $ftaCountInBatch,
+                'purpose'                               => $purpose,
+                'fund_transfer_attempt_medium'          => $medium,
+                'batch_fund_transfer_id'                => $batchFTaId,
+                'batch_fund_transfer_attempt_amount'    => $batchAmount,
+                'transaction_count'                     => $transactionCount,
+            ];
+
+            $this->raiseSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
+                null,
+                null,
+                $customProperties
+            );
+
         }
-
-        $data += $response;
-
-        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
-
-        //reducing slack alerts for API based channels
-        if (in_array($channel, $allowedChannels, true) === false)
+        catch (\Exception $exception)
         {
-            (new SlackNotification)->send('setl_initiate', $slackData);
+            $customProperties = [
+                'channel'                       => $channel,
+                'fund_transfer_attempt_count'   => $count,
+                'purpose'                       => $purpose,
+                'medium'                        => $medium,
+            ];
+
+            $this->raiseSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_FAILED,
+                null,
+                $exception,
+                $customProperties);
+
         }
 
         return $data;
@@ -531,5 +599,73 @@ class Initiator extends Base\Core
         ];
 
         return $info;
+    }
+
+    protected function raiseSettlementEvent(array $eventDetails,
+                                            Settlement\Entity $settlement = null,
+                                            \Throwable $exception = null,
+                                            array $customProperties = [])
+    {
+
+        $this->app['diag']->trackSettlementEvent(
+            $eventDetails,
+            $settlement,
+            $exception,
+            $customProperties);
+    }
+    
+    // This will return the mode which are unsupported due to being outside of timing window.
+    // The time uses minimum Start Timing of all banks supported for razorpayX payouts and
+    // maximum ending timing. Since Nodal account class for each channel has its own timing
+    // so transfer initiation will get blocked there if the timings are different for that channel.
+    public function getUnsupportedModesForTime(int $currentTime)
+    {
+        $modeList = [];
+
+        if ($this->isOutsideNeftTimings($currentTime) === true)
+        {
+            $modeList[] = TransferMode::NEFT;
+        }
+
+        if ($this->isOutsideRtgsTimings($currentTime) === true)
+        {
+            $modeList[] = TransferMode::RTGS;
+        }
+
+        return $modeList;
+    }
+
+    public function isOutsideNeftTimings(int $currentTime)
+    {
+        $bankingStartTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_START_HOUR)->getTimestamp();
+
+        $bankingEndTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_END_HOUR)
+                                                          ->minute(Constants::NEFT_END_MINUTE)
+                                                          ->getTimestamp();
+
+        if (($currentTime < $bankingStartTime) or
+            ($currentTime > $bankingEndTime))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isOutsideRtgsTimings(int $currentTime)
+    {
+        $bankingStartTimeRtgs = Carbon::today(Timezone::IST)->hour(Constants::RTGS_REVISED_START_HOUR)->getTimestamp();
+
+        $bankingEndTimeRtgs = Carbon::today(Timezone::IST)->hour(Constants::RTGS_REVISED_END_HOUR)
+                                                              ->minute(Constants::RTGS_REVISED_END_MINUTE)
+                                                              ->getTimestamp();
+
+        if (($currentTime < $bankingStartTimeRtgs) or
+            ($currentTime > $bankingEndTimeRtgs))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

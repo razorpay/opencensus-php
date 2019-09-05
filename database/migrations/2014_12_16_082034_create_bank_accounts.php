@@ -44,6 +44,9 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::BENEFICIARY_NAME, 120);
 
+            $table->string(BankAccount::REGISTERED_BENEFICIARY_NAME, 255)
+                  ->nullable();
+
             $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30)
                   ->nullable();
 
@@ -82,6 +85,9 @@ class CreateBankAccounts extends Migration
 
             $table->integer(BankAccount::FTS_FUND_ACCOUNT_ID)
                   ->nullable();
+
+            $table->tinyInteger(BankAccount::VIRTUAL)
+                  ->default(0);
 
             $table->integer(BankAccount::CREATED_AT);
             $table->integer(BankAccount::UPDATED_AT);

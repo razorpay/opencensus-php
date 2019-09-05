@@ -3,9 +3,6 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Redis;
-
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra;
@@ -166,74 +163,5 @@ class PaymentMiscTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertFalse((bool) $response[0]['new_value']);
-    }
-
-    public function testSetApprovalCodeNullCron()
-    {
-        $paymentBeforeFilledApprovalCode = $this->fixtures->create('payment');
-
-        $payments = $this->fixtures->times(10)->create('payment:card_authorized');
-
-        \RZP\Models\Payment\Service::$approvalCodeNullCronPaymentIdBeforeFirst = $paymentBeforeFilledApprovalCode['id'];
-        \RZP\Models\Payment\Service::$approvalCodeNullCronEndId = last($payments)['id'];
-
-        $testData = [
-            'request'   => [
-                'content'   => [
-                    'limit' => 6,
-                ],
-                'method' => 'POST',
-                'url' => '/payments/approval_code'
-            ],
-            'response'  => [
-                'content'     => [
-                    'payments_count' => 6,
-                    'payment_failed' => [],
-                ],
-                'status_code' => 200,
-            ],
-        ];
-
-        $this->ba->cronAuth();
-
-        $this->startTest($testData);
-
-        $testData = [
-            'request'   => [
-                'method' => 'POST',
-                'url' => '/payments/approval_code'
-            ],
-            'response'  => [
-                'content'     => [
-                    'payments_count' => 4,
-                    'payment_failed' => [],
-                ],
-                'status_code' => 200,
-            ],
-        ];
-
-        $this->startTest($testData);
-
-        $testData = [
-            'request'   => [
-                'method' => 'POST',
-                'url' => '/payments/approval_code'
-            ],
-            'response'  => [
-                'content'     => [
-                    'error' => [
-                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'no payment found',
-                    ],
-                ],
-                'status_code' => 400,
-            ],
-            'exception' => [
-                'class'               => \RZP\Exception\BadRequestException::class,
-                'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
-            ],
-        ];
-
-        $this->startTest($testData);
     }
 }

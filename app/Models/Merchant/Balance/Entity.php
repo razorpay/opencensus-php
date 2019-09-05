@@ -52,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::ACCOUNT_TYPE,
         self::CHANNEL,
+        self::ACCOUNT_NUMBER,
     ];
 
     protected $defaults = [

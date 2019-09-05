@@ -20,17 +20,17 @@ class Validator extends Base\Validator
                                         string|size:14|unique:webhooks,entity_id',
     ];
 
-    protected static $createValidators = [
-        'events',
-        'url',
-    ];
-
     protected static $editRules = [
         Entity::URL                => 'sometimes|filled|string|url|max:255|min:3',
         Entity::EVENTS             => 'sometimes|array',
         Entity::ACTIVE             => 'sometimes|in:0,1',
         Entity::SECRET             => 'sometimes|string|max:255',
         Entity::DISABLE_ON_FAILURE => 'sometimes|boolean|custom',
+    ];
+
+    protected static $createValidators = [
+        'events',
+        'url',
     ];
 
     protected static $editValidators = [

@@ -30,8 +30,21 @@ class Core extends Base\Core
     public function create(array $input,
                            Merchant\Entity $merchant,
                            Base\PublicEntity $source = null,
-                           Batch\Entity $batch = null): Entity
+                           Batch\Entity $batch = null,
+                           string $batchId = null): Entity
     {
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->fund_account->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
+                                                                      $merchant->getId(),
+                                                                      $batchId);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
+
         $this->modifyRequestForBackwardCompatibility($input);
 
         $fundAccount = (new Entity);
@@ -43,7 +56,7 @@ class Core extends Base\Core
         $fundAccount = $fundAccount->build($input);
 
         $this->repo->transaction(
-            function() use ($input, $merchant, $source, $fundAccount, $batch)
+            function() use ($input, $merchant, $source, $fundAccount, $batch, $batchId)
             {
                 $account = $this->createAccount($input, $merchant, $source);
 
@@ -51,7 +64,7 @@ class Core extends Base\Core
 
                 $fundAccount->account()->associate($account);
 
-                $fundAccount->batch()->associate($batch);
+                $batchId ? ($fundAccount->setBatchId($batchId)) : ($fundAccount->batch()->associate($batch));
 
                 $this->repo->saveOrFail($fundAccount);
             });
@@ -113,7 +126,7 @@ class Core extends Base\Core
                 break;
 
             case Type::VPA:
-                $account = (new Vpa\Core)->createForBankingSource($accountInput, $source);
+                $account = (new Vpa\Core)->createForSource($accountInput, $source);
                 break;
 
             case Type::CARD:

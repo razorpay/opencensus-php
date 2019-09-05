@@ -92,6 +92,8 @@ class Fixtures
         $this->entities = $entities;
 
         $this->seedP2pFixture();
+
+        $this->create('gateway_rule:hitachi');
     }
 
     public function createEsIndex($entity, $mode)

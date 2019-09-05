@@ -99,7 +99,7 @@ class Payout extends Base
 
         // the transaction is saved in the caller
 
-        $this->dispatchForSettlementBucketing($this->txn->getMerchantId(), $settledAt);
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     public function setMerchantBalanceLockForUpdate()

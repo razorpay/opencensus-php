@@ -45,9 +45,9 @@ class CreateMerchantEmailsTable extends Migration
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
-            $table->unique([Entity::MERCHANT_ID, Entity::TYPE, Entity::EMAIL]);
+            $table->unique([Entity::MERCHANT_ID, Entity::TYPE]);
 
-            $table->index(Entity::EMAIL);
+            $table->index(Entity::MERCHANT_ID);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
         });

@@ -86,6 +86,15 @@ class Validator extends Base\Validator
         'captcha'           => 'required|string|custom',
     ];
 
+    protected static $customerRefundsDetailsRules = [
+        'refund_id'         => 'required_without_all:payment_id,order_id,id|public_id',
+        'payment_id'        => 'required_without_all:refund_id,order_id,id|public_id',
+        'order_id'          => 'required_without_all:payment_id,refund_id,id|public_id',
+        'id'                => 'required_without_all:payment_id,refund_id,order_id|alpha_num_underscore',
+        'mode'              => 'sometimes|in:live,test',
+        'captcha'           => 'required|string|custom',
+    ];
+
     protected static $verifyInternalRefundGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS,
@@ -500,6 +509,18 @@ class Validator extends Base\Validator
                     'payment_id'    => $payment->getId(),
                     'gateway'       => $gateway,
                 ]);
+        }
+    }
+
+    public function validateCustomerRefundFetchDetailsFromMerchantNotes($id)
+    {
+        $idRegex = '/^.*[0-9]+.*$/';
+
+        $validId = (preg_match($idRegex, $id) === 1);
+
+        if ($validId === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('The id format is invalid.', 'id');
         }
     }
 }

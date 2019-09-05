@@ -61,7 +61,7 @@ class Core extends Base\Core
     public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime)
     {
         // check is the transaction can be settled
-        $status = $this->issettleableTransaction($transactionId);
+        $status = $this->isSettleableTransaction($transactionId);
 
         if ($status === false)
         {

@@ -583,17 +583,6 @@ class Service extends Base\Service
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::DIWALI_PROMOTIONAL_PLAN) === true)
-        {
-            // removing diwali_promotional_plan
-            (new Feature\Service)->deleteEntityFeature(
-                'accounts',
-                $merchant->getId(),
-                Feature\Constants::DIWALI_PROMOTIONAL_PLAN,
-                [Feature\Entity::SHOULD_SYNC => true]
-            );
-        }
-
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);
@@ -1169,12 +1158,22 @@ class Service extends Base\Service
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
 
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return $webhook->toArrayHosted();
+        }
+
         return $webhook->toArrayPublic();
     }
 
     public function getWebhooks(array $params)
     {
         $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
+
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return $webhooks->toArrayHosted();
+        }
 
         return $webhooks->toArrayPublic();
     }
@@ -2514,7 +2513,7 @@ class Service extends Base\Service
     /**
      * This used to map submerchants to the partner in merchant_access_map entity
      * If the given partnerId is not a partner then it will mark him as a partner then proceed
-     * 
+     *
      * @param array $input
      *
      * @return array
@@ -2522,7 +2521,7 @@ class Service extends Base\Service
     public function createPartnerSubmerchantMap(array $input)
     {
         (new Validator)->validateInput('partner_submerchant_map', $input);
-        
+
         $partnerType   = $input[ENTITY::PARTNER_TYPE];
         $submerchantId = $input['submerchant_id'];
         $partnerId     = $input['partner_merchant_id'];
@@ -3143,5 +3142,18 @@ class Service extends Base\Service
 
         return (new TerminalService)->onboardMerchant($merchant, $input, false)
                                     ->toArrayAdmin();
+    }
+
+    public function applyRestrictedSettings(array $input): array
+    {
+        (new Validator)->validateInput('restrict_settings_merchant', $input);
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $action = $input[Entity::ACTION];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        return $this->core()->applyRestrictedSettings($merchant, $action);
     }
 }

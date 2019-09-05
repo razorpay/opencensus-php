@@ -30,7 +30,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[Constants::BANK_REFERENCE_NO] ?? null;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->netbankingRepo->findByPaymentIdAndAction($paymentId,
             Action::AUTHORIZE);

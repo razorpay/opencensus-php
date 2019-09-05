@@ -4,7 +4,9 @@ namespace RZP\Models\Payment\Refund;
 
 use App;
 use ApiResponse;
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -13,12 +15,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Models\Reversal;
 use RZP\Models\Transaction;
+use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
@@ -180,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::ACQUIRER_DATA,
         self::CREATED_AT,
+        self::CURRENCY,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
@@ -894,13 +896,63 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    public function toArrayPublicCustomer(): array
+    public function toArrayPublicCustomer(bool $populateMessages = false): array
     {
         $data = parent::toArrayPublicCustomer();
 
         $data['merchant_name'] = $this->merchant->getBillingLabel();
 
         $data[self::STATUS] = (($this->isProcessed() === true) ? Status::PROCESSED : Status::INITIATED);
+
+        if ($populateMessages === true)
+        {
+            $this->populateMessages($data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    private function populateMessages(array &$data): array
+    {
+        $transactionTrackerMessages = new TransactionTrackerMessages();
+
+        $createdAtDate = Carbon::createFromTimestamp($this->getCreatedAt(), Timezone::IST);
+
+        $expectedDate = Holidays::getNthWorkingDayFrom($createdAtDate, $transactionTrackerMessages::REFUND_SLA_DAYS, true);
+
+        $currentDate = Carbon::now(Timezone::IST);
+
+        $data[Constants::MERCHANT_ID] = $this->merchant->getPublicId();
+
+        $data[Constants::DAYS] = $expectedDate->diffInDays($currentDate, false);
+
+        $data[Constants::PRIMARY_MESSAGE]   =
+            $this->getMessageForTransactionTracker(
+                $transactionTrackerMessages,
+                $data[Constants::DAYS],
+                $expectedDate,
+                TransactionTrackerMessages::PRIMARY
+            );
+
+        $data[Constants::SECONDARY_MESSAGE] =
+            $this->getMessageForTransactionTracker(
+                $transactionTrackerMessages,
+                $data[Constants::DAYS],
+                $expectedDate,
+                TransactionTrackerMessages::SECONDARY
+            );
+
+        $data[Constants::TERTIARY_MESSAGE]  =
+            $this->getMessageForTransactionTracker(
+                $transactionTrackerMessages,
+                $data[Constants::DAYS],
+                $expectedDate,
+                TransactionTrackerMessages::TERTIARY
+            );
 
         return $data;
     }
@@ -939,6 +991,48 @@ class Entity extends Base\PublicEntity
         return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
     }
 
+    /**
+     * @param TransactionTrackerMessages $transactionTrackerMessages
+     * @param int $days
+     * @param Carbon $expectedDate
+     * @param $messageType
+     * @return string
+     */
+    private function getMessageForTransactionTracker(TransactionTrackerMessages $transactionTrackerMessages, int $days, Carbon $expectedDate, $messageType): string
+    {
+        $messageLateAuth = null;
+        $messageEntity = Constants::REFUND;
+        $messageSlaDone = ($days < 0 === true) ? false : true;
+        $messageStatus = ($this->isProcessed() === true) ? Status::PROCESSED: Status::INITIATED;
+
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+
+        return $this->populateTransactionTrackerMessages($message, $expectedDate);
+    }
+
+    /**
+     * @param $message
+     * @param Carbon $expectedDate
+     * @return mixed
+     */
+    private function populateTransactionTrackerMessages($message, Carbon $expectedDate)
+    {
+        $populatedMessage = $message;
+
+        $replacer = [
+            TransactionTrackerMessages::MESSAGE_AMOUNT        => $this->getFormattedAmount(),
+            TransactionTrackerMessages::MESSAGE_MERCHANT_NAME => $this->merchant->getBillingLabel(),
+            TransactionTrackerMessages::MESSAGE_EXPECTED_DATE => $expectedDate->toFormattedDateString(),
+        ];
+
+        foreach ($replacer as $key => $value)
+        {
+            $populatedMessage = str_replace($key, $value, $populatedMessage);
+        }
+
+        return $populatedMessage;
+    }
+
     protected function pushMetricsForProcessedStatusChange(array $dimensions)
     {
         if ($this->isProcessed() === false)
@@ -967,8 +1061,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getPublicStatus($response, $publicStatusFeatureEnabled = false, $cardTransferFeatureEnabled = false)
+    protected function getPublicStatus($response, array $data = [])
     {
+        $refundPublicStatusFeatureEnabled = $data[Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED] ?? false;
+        $cardTransferFeatureEnabled       = $data[Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT] ?? false;
+
         $refundStatus = $this->getStatus();
 
         $publicStatusMap = [
@@ -1009,8 +1106,8 @@ class Entity extends Base\PublicEntity
 
         $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
 
-        $callScroogeForStatus = ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
-                                 ($publicStatusFeatureEnabled === true));
+        $callScroogeForStatus = (($refundPublicStatusFeatureEnabled === true) or
+                                 (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true));
 
         if (($eligibleForScroogeCall === true) and
             (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
@@ -1082,14 +1179,19 @@ class Entity extends Base\PublicEntity
 
         $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
-        $publicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
+        $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
         $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
 
         if (($displayRefundPublicStatus === true) or
-            ($publicStatusFeatureEnabled === true) or
+            ($refundPublicStatusFeatureEnabled === true) or
             ($cardTransferRefundFeatureEnabled === true))
         {
-            $scroogeResponse = $this->getPublicStatus($response, $publicStatusFeatureEnabled, $cardTransferRefundFeatureEnabled);
+            $data = [
+                Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED   => $refundPublicStatusFeatureEnabled,
+                Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT => $cardTransferRefundFeatureEnabled,
+            ];
+
+            $scroogeResponse = $this->getPublicStatus($response, $data);
 
             return $scroogeResponse;
         }

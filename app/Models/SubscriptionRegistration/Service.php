@@ -128,4 +128,68 @@ class Service extends Base\Service
 
         return $tokenRegistrationsPicked;
     }
+
+    public function associateToken(string $id, array $input)
+    {
+        $tokenRegistration = $this->repo->subscription_registration->findByPublicId($id);
+
+        $validator = $tokenRegistration->getValidator();
+
+        $validator->validateInput('associate_token', $input);
+
+        $validator->validateTokenRegistrationToAssociate();
+
+        $token = $this->repo->token->findByPublicId($input[Entity::TOKEN_ID]);
+
+        $this->core->associateToken($tokenRegistration, $token);
+
+        return $tokenRegistration->toArrayAdmin();
+    }
+
+    public function authenticateTokens(array $input)
+    {
+        $validator = new Validator;
+
+        $validator->validateInput('authenticate_tokens', $input);
+
+        $subscriptionRegistrations = [];
+
+        $failed = [];
+
+        foreach ($input[Entity::IDS] as $id)
+        {
+            try
+            {
+                $validator->validateInput('public_id', ['id' => $id]);
+
+                $subscriptionRegistration = $this->authenticateToken($id);
+
+                array_push($subscriptionRegistrations, $subscriptionRegistration[Entity::ID]);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                array_push($failed, $id);
+            }
+        }
+
+        return [
+            'failed'    => $failed,
+            'succeeded' => $subscriptionRegistrations,
+        ];
+    }
+
+    protected function authenticateToken(string $id)
+    {
+        $tokenRegistration = $this->repo->subscription_registration->findByPublicId($id);
+
+        $tokenRegistration->getValidator()->validateTokenRegistrationToAuthenticate();
+
+        $token = $tokenRegistration->token;
+
+        $this->core->authenticate($tokenRegistration, $token);
+
+        return $tokenRegistration->toArrayAdmin();
+    }
 }
