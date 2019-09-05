@@ -52,7 +52,14 @@ import RTracking from 'react-tracking';
 )
 @RTracking(
   ({ user, mode }) => {
-    const u = { email: user.user.email, id: user.user.id, mid: user.current };
+    const u = {
+      email: user.user.email,
+      id: user.user.id,
+      mid: user.current,
+      role: user.role,
+      business_type: user.business_type,
+      activated: user.activated,
+    };
     let utm = null;
     if (undefined !== analytics) {
       utm = analytics.utils.getLandingParams();
@@ -65,6 +72,7 @@ import RTracking from 'react-tracking';
   },
   {
     dispatch: data => {
+      console.log(data);
       window.rzpQ.push(data);
     },
   }

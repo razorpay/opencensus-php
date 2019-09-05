@@ -19,7 +19,7 @@ const WelcomeModal = ({ onActivate, onClose, tracking }) => (
           onActivate();
           tracking.trackEvent(window.rzpQ.onbr().initiated('act.form_fill'));
           tracking.trackEvent(
-            window.rzpQ.onbr().initiated('login.first_login_modal.success', {
+            window.rzpQ.onbr().success('login.first_login_modal', {
               action: 'Activate Account',
             })
           );
@@ -33,7 +33,7 @@ const WelcomeModal = ({ onActivate, onClose, tracking }) => (
         onClick={() => {
           onClose();
           tracking.trackEvent(
-            window.rzpQ.onbr().initiated('login.first_login_modal.success', {
+            window.rzpQ.onbr().success('login.first_login_modal', {
               action: 'Try Dashboard',
             })
           );

@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { render } from 'react-dom';
 
 import { Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 import Button, { AsyncBtn } from 'component/Button';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Svelte from './Svelte';
@@ -57,6 +58,7 @@ const ERROR = {
     updateTemplateType,
   }
 )
+@RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -313,9 +315,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   // Handles both Create and Edit payment page.
+  @RTracking(() =>
+    window.rzpQ.success('dash.pp_action', {
+      action: 'Initiate PP launch',
+    })
+  )
   handleSavePublish = () => {
     const { FORM_SCHEMA, paymentPageEntity } = this.props;
-    // console.log('Handle Create..', paymentPageEntity);
 
     const {
       currency,

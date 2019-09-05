@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -37,6 +38,7 @@ const batchStatus = {
     ...NotificationsActions,
   }
 )
+@RTracking(() => window.rzpQ.component('BatchList'))
 export default class BatchList extends ListContainer {
   static defaultProps = {
     extraColumns: [],
@@ -61,6 +63,12 @@ export default class BatchList extends ListContainer {
   };
 
   openUploadModal = renderUploadModal => () => {
+    const { tracking } = this.props;
+    tracking.trackEvent(
+      window.rzpQ.success('dash.pl_action', {
+        action: 'Upload batch PL file',
+      })
+    );
     this.props.openModal({
       size: 'large',
       component: renderUploadModal(),

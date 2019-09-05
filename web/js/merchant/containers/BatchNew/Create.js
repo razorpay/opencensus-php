@@ -1,16 +1,23 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
+import RTracking from 'react-tracking';
 import { showNotification } from 'rzp/modules/notifications';
 
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 
 @connect(state => state.session, { showNotification })
+@RTracking(() => window.rzpQ.component('BatchCreate'))
 export default class BatchCreate extends Component {
   formInitialValues = {
     name: this.props.batchName,
   };
 
+  @RTracking(() =>
+    window.rzpQ.success('dash.pl_action', {
+      action: 'Initiate batch PL generation',
+    })
+  )
   handleBatchCreate = props => {
     let data = { ...props };
 

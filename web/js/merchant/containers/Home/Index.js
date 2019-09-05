@@ -748,11 +748,9 @@ export default class HomeContainer extends Component {
                   this.closeOnboardingStep();
                   onFirstStepClose();
                   tracking.trackEvent(
-                    window.rzpQ
-                      .onbr()
-                      .initiated('login.first_login_modal.success', {
-                        action: 'Close popup',
-                      })
+                    window.rzpQ.onbr().success('login.first_login_modal', {
+                      action: 'Close popup',
+                    })
                   );
                 }}
               >
