@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-
+import { withRouter } from 'react-router-dom';
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
 import { keysToSentence } from 'common/util';
 
@@ -33,6 +33,7 @@ const inActiveStatusReasonMap = {
   deactivated: 'You manually deactivated the link',
 };
 
+@withRouter
 @connect(state => ({ user: state.session.user }), {
   updatePPInReduxList,
   showNotification,
@@ -52,13 +53,14 @@ export default class extends React.Component {
   };
 
   componentWillMount() {
-    this.fetchEntity(this.props.id);
-    this.fetchEntityPayments(this.props.id);
+    this.fetchEntity(this.entityId);
+    this.fetchEntityPayments(this.entityId);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
-      this.fetchEntity(nextProps.id);
+    const nextPropsEntityId = nextProps.id || nextProps.match.params.id;
+    if (this.entityId !== nextPropsEntityId) {
+      this.fetchEntity(nextPropsEntityId);
       this.fetchEntityPayments(nextProps.id);
     }
   }
@@ -366,6 +368,10 @@ export default class extends React.Component {
     });
   };
 
+  get entityId() {
+    return this.props.id || this.props.match.params.id; // This view can be invoked as slider(+standalone) / only standalone view as per V2/V3
+  }
+
   render() {
     let { paymentPageEntity, loading } = this.state;
 
@@ -385,7 +391,7 @@ export default class extends React.Component {
           <NoEntityResultsFound
             error={
               <span>
-                No results found for id: <i>{this.props.id}</i>
+                No results found for id: <i>{this.entityId}</i>
               </span>
             }
           />

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
 import { keysToSentence } from 'common/util';
 
-import { sendLink } from '../model';
+import { sendLink } from '../../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Definition from 'rzp/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -16,13 +16,13 @@ import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { trackDetailViewEdits, trackShareActions } from '../ga';
+import { trackDetailViewEdits, trackShareActions } from '../../ga';
 
-import EditQuantity from '../Edit/EditQuantity';
+import EditQuantity from '../../Edit/EditQuantity';
 
-import { EditExpiry, EditNotes } from '../../../PaymentLinks/Edit/index';
-import ShareView from '../Modals/Share';
-import PPEmbedButtonView from '../Modals/EmbedButton';
+import { EditExpiry, EditNotes } from '../../../../PaymentLinks/Edit/index';
+import ShareView from '../../Modals/Share';
+import PPEmbedButtonView from '../../Modals/EmbedButton';
 
 import Button from 'component/Button';
 

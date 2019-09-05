@@ -7,7 +7,7 @@ import {
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
-import PaymentPages from 'merchant/containers/PaymentPages/Pages/Entity';
+import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
 import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/Create/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
@@ -76,8 +76,9 @@ const entityDetailsMap = {
       user.isAllowedView('payment_links_batch_uploads'),
   },
   '/paymentpages/:id(pl_.+)': {
-    component: PaymentPages,
-    additionalCondition: user => user.isAllowedView('payment_pages'),
+    component: PaymentPagesDetails,
+    additionalCondition: user =>
+      user.isAllowedView('payment_pages') && !user.isPPV3Enabled,
   },
   '/invoices/:id/details': {
     component: PaymentLinkEntity,
