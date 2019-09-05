@@ -6,13 +6,14 @@ const FRESHCHAT_HOST = 'https://wchat.freshchat.com';
 
 const initFreshchat = data => {
   let role = data.userRole;
-  window.fcWidget.init({
-    token: FRESHCHAT_TOKEN,
-    host: FRESHCHAT_HOST,
-    config: {
-      headerProperty: { hideChatButton: true, backgroundColor: '#2E3345' },
-    },
-  });
+  window.fcWidget &&
+    window.fcWidget.init({
+      token: FRESHCHAT_TOKEN,
+      host: FRESHCHAT_HOST,
+      config: {
+        headerProperty: { hideChatButton: true, backgroundColor: '#2E3345' },
+      },
+    });
   fcWidget.setExternalId(data.id);
   fcWidget.user.setFirstName(data.name);
   fcWidget.user.setEmail(data.email);
