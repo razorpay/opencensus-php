@@ -108,6 +108,13 @@ class NodalAccount extends NodalBase\FileProcessor
 
         foreach ($entities as $entity)
         {
+            //if BA is not present for attempt
+            // marking FTA as failed, if source is settlement
+            if($this->markFailedIfBANotExists($entity) === true)
+            {
+                continue;
+            }
+
             $record   = $this->emptyRow;
 
             $source   = $entity->source;
@@ -115,7 +122,6 @@ class NodalAccount extends NodalBase\FileProcessor
             $amount   = ($source->getAmount() / 100);
 
             $ba       = $entity->bankAccount;
-
             $mode     = $this->getPaymentType($amount, $ba);
 
             $entity->setMode($mode);

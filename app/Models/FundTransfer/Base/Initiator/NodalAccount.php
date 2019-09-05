@@ -461,4 +461,49 @@ abstract class NodalAccount extends Base\Core
 
         return Mode::NEFT;
     }
+
+    protected function markAttemptAsFailed(Attempt\Entity $entity, $remarks, $failureReason)
+    {
+        $attemptCore = new Attempt\Core;
+
+        $statusNamespace = $attemptCore->getStatusClass($entity);
+
+        $statusClass = new $statusNamespace;
+
+        $failureStatuses = $statusClass::getFailureStatus();
+
+        $failureStatus = array_keys($failureStatuses)[0];
+
+        $entity->setBankStatusCode($failureStatus);
+
+        $entity->setRemarks($remarks);
+
+        $entity->setFailureReason($failureReason);
+
+        $this->repo->saveOrFail($entity);
+    }
+
+    protected function markFailedIfBANotExists(Attempt\Entity $entity) : bool
+    {
+        if($entity->hasBankAccount() === true)
+        {
+            if(empty($entity->bankAccount) === true)
+            {
+                $remarks = 'Associated Bank Account is not active.';
+
+                $failureReason = 'Associated Bank Account is not active.';
+
+                $this->markAttemptAsFailed($entity, $remarks, $failureReason);
+
+                $this->trace->info(TraceCode::FTA_BANK_ACCOUNT_EMPTY,
+                    [
+                        'fta_id'            => $entity->getId(),
+                        'remarks'           => $remarks
+                    ]);
+
+                return true;
+            }
+        }
+        return false;
+    }
 }
