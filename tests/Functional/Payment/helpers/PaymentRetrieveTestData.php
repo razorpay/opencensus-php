@@ -271,12 +271,10 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'multi_match' => [
-                                'query'                => 'es',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '100%',
+                            'term' => [
+                                'notes.value' => [
+                                    'value' => 'es',
+                                ],
                             ],
                         ],
                     ],
@@ -335,12 +333,10 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'multi_match' => [
-                                'query'                => 'es_random_1',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '100%',
+                            'term' => [
+                                'notes.value' => [
+                                    'value' => 'es_random_1',
+                                ],
                             ],
                         ],
                     ],

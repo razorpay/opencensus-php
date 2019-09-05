@@ -33,12 +33,10 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'multi_match' => [
-                                'query'                => 'GOBUSANDe2c92f0f46',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '100%',
+                            'term' => [
+                                'notes.value' => [
+                                    'value' => 'GOBUSANDe2c92f0f46',
+                                ],
                             ],
                         ],
                     ],
@@ -66,12 +64,10 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'multi_match' => [
-                                'query'                => 'CCPjoWzlDJG0g7',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '100%',
+                            'term' => [
+                                'notes.value' => [
+                                    'value' => 'CCPjoWzlDJG0g7',
+                                ],
                             ],
                         ],
                     ],
@@ -99,12 +95,10 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'multi_match' => [
-                                'query'                => 'REZDELKJe2c92f0f46',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '100%',
+                            'term' => [
+                                'notes.value' => [
+                                    'value' => 'REZDELKJe2c92f0f46',
+                                ],
                             ],
                         ],
                     ],
@@ -132,12 +126,10 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'multi_match' => [
-                                'query'                => 'GOBUSANDe2c92f0f46',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '100%',
+                            'term' => [
+                                'notes.value' => [
+                                    'value' => 'GOBUSANDe2c92f0f46',
+                                ],
                             ],
                         ],
                     ],
@@ -165,12 +157,10 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'multi_match' => [
-                                'query'                => 'CCPjoWzlDJG0g7',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '100%',
+                            'term' => [
+                                'notes.value' => [
+                                    'value' => 'CCPjoWzlDJG0g7',
+                                ],
                             ],
                         ],
                     ],

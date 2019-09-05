@@ -129,19 +129,17 @@ return [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
+            // Reference: https://www.elastic.co/guide/en/elasticsearch/reference/current/object.html
             'notes' => [
-                'type' => 'object',
-            ],
-        ],
-        'dynamic_templates' => [
-            [
-                'notes' => [
-                    'path_match' => 'notes.*',
-                    'mapping'    => [
-                        'type'            => 'text',
-                        'analyzer'        => 'edge_ngram_analyzer',
-                        'search_analyzer' => 'standard_custom',
-                        'index_options'   => 'offsets',
+                'type'       => 'object',
+                'dynamic'    => false,
+                'enabled'    => true,
+                'properties' => [
+                    'key' => [
+                        'type' => 'keyword',
+                    ],
+                    'value' => [
+                        'type' => 'keyword',
                     ],
                 ],
             ],
