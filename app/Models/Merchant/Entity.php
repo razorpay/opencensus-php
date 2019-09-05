@@ -35,6 +35,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
@@ -900,10 +901,11 @@ class Entity extends Base\PublicEntity
     public function bankingBalance()
     {
         return $this->hasOne(Balance\Entity::class)
-                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
+                    ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
     }
 
-    public function getBalanceByProductType(string $product): Balance\Entity
+    public function getBalanceByProductType(string $product)
     {
         switch ($product)
         {
@@ -921,6 +923,24 @@ class Entity extends Base\PublicEntity
                         Entity::MERCHANT_ID => $this->getId(),
                     ]);
         }
+    }
+
+    public function getBalanceByProductTypeOrFail(string $product): Balance\Entity
+    {
+        $balance = $this->getBalanceByProductType($product);
+
+        if ($balance === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
+                null,
+                [
+                    self::ID      => $this->getKey(),
+                    self::PRODUCT => $product,
+                ]);
+        }
+
+        return $balance;
     }
 
     public function bankAccount()

@@ -75,7 +75,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($adjustment)
         {
-            return (new TransactionCore)->createFromAdjustment($adjustment, false);
+            return (new TransactionCore)->createFromAdjustment($adjustment);
         });
     }
 }
