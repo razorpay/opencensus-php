@@ -7,7 +7,7 @@ export default ({ closeModal }) => (
     <ModalHeader onCloseClick={closeModal} />
 
     <div class="modal-body">
-      <TimedSlider afterFrame={TimedSliderTabs}>
+      <TimedSlider AfterFrame={TimedSliderTabs}>
         {SLIDER_DATA.map((data, idx) => (
           <TimedSlide key={idx} {...data}>
             <img src={data.imgURL} />

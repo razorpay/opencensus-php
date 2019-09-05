@@ -6,7 +6,7 @@ import Button from 'component/Button';
 
 import TransfersPreviewModal from './TransfersPreviewModal';
 
-@connect(() => ({}), {
+@connect(null, {
   openModal,
   closeModal,
 })

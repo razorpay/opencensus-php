@@ -30,7 +30,7 @@ export default class TimedSlider extends React.PureComponent {
 
   componentDidMount() {
     this.timer = window.setInterval(() => {
-      // this.goNext();
+      this.goNext();
     }, this.slidersMeta[this.state.curStoryIndex].duration);
   }
 
@@ -93,10 +93,8 @@ export class TimedSliderTabs extends React.PureComponent {
   };
 
   render() {
-    const { className, curStoryIndex, slidersMeta, TabComponent } = this.props;
-
-    const TabComp = TabComponent || TimedSliderTab,
-      isActive = idx === curStoryIndex;
+    const { className, curStoryIndex, slidersMeta, TabComponent } = this.props,
+      TabComp = TabComponent || TimedSliderTab;
 
     return (
       <div
@@ -108,9 +106,9 @@ export class TimedSliderTabs extends React.PureComponent {
         {slidersMeta.map((current, idx) => (
           <TabComp
             key={idx}
-            isActive={isActive}
+            isActive={idx === curStoryIndex}
             duration={current.duration}
-            onClick={this.onClick}
+            onClick={this.onClick(idx)}
           >
             {current.title}
           </TabComp>
