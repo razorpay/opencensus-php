@@ -762,13 +762,6 @@ return [
             ],
         ],
 
-        PermissionCategory::RAZORPAYX_BANKING => [
-            Permission::BANKING_ACCOUNT_VIEW_ACTIVATION_FORM => [
-                'description' => 'View banking account activation status change log of the merchant',
-                'assignable'  => true,
-            ],
-        ],
-
         PermissionCategory::PAYOUTS => [
             Permission::CREATE_PAYOUT => [
                 'description' => 'Merchant can create a new payout',

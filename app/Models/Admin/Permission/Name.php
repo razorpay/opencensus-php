@@ -244,7 +244,6 @@ class Name
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
-    const BANKING_ACCOUNT_VIEW_ACTIVATION_FORM    = 'banking_account_view_activation_form';
 
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';

@@ -332,7 +332,7 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
 
         $request  = [
-            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/status_change_log',
             'method'  => 'GET',
             'content' => []
         ];
@@ -342,7 +342,7 @@ class BankingAccountTest extends TestCase
         $logs = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals('created', $logs['items'][0]['status']);
-        $this->assertEquals('processed', $logs['items'][1]['status']);
+        $this->assertEquals('initiated', $logs['items'][1]['status']);
     }
 
     public function testUpdateBankingAccountStatusAsProcessed()

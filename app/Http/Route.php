@@ -2749,7 +2749,7 @@ final class Route
 
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
-        . 'change_log'                             => Permission::BANKING_ACCOUNT_VIEW_ACTIVATION_FORM,
+        . 'change_log'                             => '*',
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 
