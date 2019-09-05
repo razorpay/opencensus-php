@@ -80,6 +80,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
             $f = fopen($filePath, 'w');
             // Header line: the field names (keys in $data)
             fputcsv($f, array_keys($data[0]), ',');
+            //fputs($f,PHP_EOL);
             foreach ($data as $record){
                 // Data line (can use array_values($data) or just $data as the 2nd argument)
                 fputcsv($f, array_values($record), ',');

@@ -144,13 +144,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByGateway(string $gateway)
-    {
-        return $this->newQuery()
-            ->where(Entity::GATEWAY, '=', $gateway)
-            ->first();
-    }
-
     public function getByParams(array $params)
     {
         $params = $this->unsetEmptyParams($params);

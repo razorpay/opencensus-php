@@ -36,7 +36,7 @@ class DefaultDataRetriever extends AbstractAPIDataRetriever
 
     protected function fetchTerminal(array $input, $request)
     {
-        $terminal = $this->repo->terminal->findByGateway($request['gateway']);
+        $terminal = $this->repo->terminal->findByGatewayMerchantId(\RZP\Models\Merchant\Account::SHARED_ACCOUNT, $request['gateway']);
         return $terminal;
     }
 

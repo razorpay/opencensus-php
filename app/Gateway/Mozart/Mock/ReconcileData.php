@@ -57,4 +57,47 @@ class ReconcileData extends Base\Mock\Server
 
         return $response;
     }
+
+
+    const PAYMENT_ID            = 'Payment Id';
+    const PAYMENT_AMOUNT        = 'Payment Amount';
+    const BANK_REFERENCE_NUMBER = 'Bank Ref No';
+    const PAYMENT_DATE          = 'Payment Date';
+    public function netbanking_cub($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'records' => [
+                        [
+                            "Payment Id"=> "DEelpRi0HMBGOi",
+                            "Payment Amount"=> "1.00",
+                            "Bank Ref No"=> "108114286",
+                            "Payment Date"=> "2019-09-04",
+                        ],
+                        [
+                            "Payment Id"=> "D85nLQUuW4i5Jp",
+                            "Payment Amount"=> "1.00",
+                            "Bank Ref No"=> "108114286",
+                            "Payment Date"=> "2019-09-04",
+                        ],
+                        [
+                            "Payment Id"=> "D85nLQUuW4i5Jp",
+                            "Payment Amount"=> "1.00",
+                            "Bank Ref No"=> "108114286",
+                            "Payment Date"=> "2019-09-04",
+                        ],
+                    ],
+                    'status' => 'recon_successful',
+                    '_raw' => '',
+                ],
+            'next' => [],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
 }
