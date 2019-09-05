@@ -23,7 +23,7 @@ use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 class NodalAccount extends NodalBase\FileProcessor
 {
     // used in icici AES encrypter tool
-    const ENCRYPTION_KEY = "1836204826394167";
+    const ENCRYPTION_KEY = '1836204826394167';
 
     const SIGNED_URL_DURATION = '1440';
 
@@ -143,11 +143,13 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $beneId = ($this->isRefund() === true) ? '' : $ba->getId();
 
-            $narration = '';
-
             if ($this->isRefund() === true)
             {
                 $narration = $entity->getNarration() ?? 'Razorpay Refund';
+            }
+            else
+            {
+                $narration = $entity->getNarration() ?? '';
             }
 
             $rows[] = [
@@ -296,11 +298,12 @@ class NodalAccount extends NodalBase\FileProcessor
         $timelines = [15, 30, 45, 60, 90, 120, 150, 180, 210];
 
         $mailInfo = [
-            'fileInfo'  => $fileInfo,
-            'channel'   => $this->channel,
-            'filetype'  => self::BEAM_FILE_TYPE,
-            'subject'   => 'File Send failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS]
+            'fileInfo'              => $fileInfo,
+            'channel'               => $this->channel,
+            'filetype'              => self::BEAM_FILE_TYPE,
+            'subject'               => 'File Send failure',
+            'recipient'             => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS],
+            'batchFundTransferId'   => $this->batchFundTransfer->getId(),
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);

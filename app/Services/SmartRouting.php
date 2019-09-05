@@ -63,7 +63,7 @@ class SmartRouting
 
     public function sendPaymentData($data)
     {
-        $this->sendNonBlockingRequest(self::SEND_PAYMENT_DATA, $data);
+        return $this->sendRequest(self::SEND_PAYMENT_DATA, $data);
     }
 
     public function createGatewayRule($data)

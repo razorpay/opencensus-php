@@ -30,6 +30,8 @@ class RequestHeader
     const X_DASHBOARD_USER_EMAIL        = 'X-Dashboard-User-Email';
     const X_DASHBOARD_USER_ROLE         = 'X-Dashboard-User-Role';
 
+    const X_DASHBOARD_IP                = 'X-Dashboard-Ip';
+
     /**
      * To support Account Auth: Allows API requests to be served under the
      * scope of a merchant ID that is sent as the value to this header

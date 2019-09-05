@@ -199,6 +199,6 @@ class Repository extends Base\Repository
 
     protected function addQueryAuthType(Querybuilder $query, array $params)
     {
-        $query->whereIn(Entity::AUTH_TYPE, $paras[Entity::AUTH_TYPE]);
+        $query->whereIn(Entity::AUTH_TYPE, $params[Entity::AUTH_TYPE]);
     }
 }

@@ -27,6 +27,12 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($content);
 
         $content['CHECKSUMHASH'] = $this->generateHash($content);
+
+        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST, [
+            'content' => $content,
+            'gateway' => 'paytm',
+        ]);
+
         $request = array(
             'url' => $this->getUrl('pay')."?ORDER_ID=".$content['ORDER_ID'],
             'content' => $content,
@@ -47,7 +53,9 @@ class Gateway extends Base\Gateway
         $values = $this->lowerArrayKeys($input['gateway']);
 
         $values['received'] = 1;
+
         $payment->fill($values);
+
         $this->repo->saveOrFail($payment);
 
         $this->verifyPaymentCallbackResponse($input);
@@ -92,7 +100,7 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayRefundEntity($storeContent, $input);
 
-        $content['CHECKSUM'] = $this->getHashOfArrayForRefund($content);
+        $content['CHECKSUM'] = urlencode($this->getHashOfArrayForRefund($content));
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
@@ -277,11 +285,15 @@ class Gateway extends Base\Gateway
         if ($method === 'card')
         {
             $card = $input['card'];
+
             $expiryDate = $this->getFormattedCardExpiryDate($input);
-            $cardDetails = $card['number'] . '|' . $card['cvv'] .
-                '|' . $expiryDate;
+
+            $cardDetails = $card['number'] . '|' . $card['cvv'] . '|' . $expiryDate;
+
             $content['PAYMENT_DETAILS'] = $this->getHashOfString($cardDetails);
+
             $content['AUTH_MODE'] = '3D';
+
             $type = $input['card']['type'];
 
             $cardType = Type::DC;
@@ -292,18 +304,18 @@ class Gateway extends Base\Gateway
             }
 
             $content['PAYMENT_TYPE_ID'] = $cardType;
+
             $content['PAYMENT_MODE_ONLY'] = 'Yes';
         }
         else if ($method === 'netbanking')
         {
             $content['BANK_CODE'] = $this->getBankCode($input);
+
             $content['PAYMENT_TYPE_ID'] = Type::NB;
+
             $content['AUTH_MODE'] = 'USRPWD';
+
             $content['PAYMENT_MODE_ONLY'] = 'Yes';
-        }
-        else if ($method === 'wallet')
-        {
-            ;
         }
 
         $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
@@ -344,6 +356,7 @@ class Gateway extends Base\Gateway
     protected function getBankCode($input)
     {
         $codes = BankCodes::$bankCodeMap;
+
         $bank = $input['payment']['bank'];
 
         return $codes[$bank];

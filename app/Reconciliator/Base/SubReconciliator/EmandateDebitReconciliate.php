@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
@@ -20,7 +21,7 @@ class EmandateDebitReconciliate extends PaymentReconciliate
      * @param $paymentId
      * @throws \Exception
      */
-    protected function setPaymentAndTransaction($row, $paymentId)
+    public function setPaymentAndTransaction($row, $paymentId)
     {
         try
         {
@@ -323,7 +324,7 @@ class EmandateDebitReconciliate extends PaymentReconciliate
     /*
      * Overriding this here, since we do not want to increse the success count here.
      */
-    protected function persistReconciledAt($entity)
+    protected function persistReconciledAt($entity, string $reconciledType = ReconciledType::MIS)
     {
         $transaction = $entity->transaction;
         $time = time();

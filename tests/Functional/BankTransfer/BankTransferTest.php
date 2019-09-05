@@ -2155,4 +2155,31 @@ class BankTransferTest extends TestCase
         $this->assertEquals('UDAN', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
+
+    public function testBankTransferPreferences()
+    {
+        $methods = $this->getPreferences()['methods'];
+
+        // Key is not present in preferences, even though method is enabled
+        $this->assertArrayNotHasKey('bank_transfer', $methods);
+
+        $this->fixtures->merchant->addFeatures(['bank_transfer_on_checkout']);
+
+        $methods = $this->getPreferences()['methods'];
+
+        // Key becomes available when feature is enabled
+        $this->assertArrayHasKey('bank_transfer', $methods);;
+    }
+
+    protected function getPreferences()
+    {
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent([
+            'url'    => '/preferences',
+            'method' => 'get'
+        ]);
+
+        return $response;
+    }
 }

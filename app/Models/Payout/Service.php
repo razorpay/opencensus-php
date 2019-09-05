@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
@@ -13,18 +14,29 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Contact\Service as ContactService;
+use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 
 use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
+    use Base\Traits\ProcessAccountNumber;
+
+    protected $contactService;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->core = new Payout\Core;
+
+        $this->contactService = new ContactService;
     }
 
     public function fundAccountPayout(array $input): array
@@ -35,6 +47,7 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
 
+        // Only allowed for Rx payouts, mandates account number
         $this->processAccountNumber($input);
 
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
@@ -173,6 +186,7 @@ class Service extends Base\Service
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
+        // Only allowed for Rx payouts, mandates account number
         $this->processAccountNumber($payoutInput);
 
         $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
@@ -219,6 +233,7 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+        // Only allowed for Rx payouts, mandates account number
         $this->processAccountNumber($input);
 
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
@@ -381,18 +396,138 @@ class Service extends Base\Service
     }
 
     /**
-     * We are allowing Fund Account payouts only on RX.
-     * In RX, we always mandate account number.
-     *
      * @param array $input
      *
-     * @throws Exception\BadRequestException
+     * @return array
      */
-    protected function processAccountNumber(array & $input)
+    public function createBulkPayout(array $input): array
     {
-        /** @var Merchant\Validator $merchantValidator */
-        $merchantValidator = $this->merchant->getValidator();
+        $payoutBatch = new Base\PublicCollection;
 
-        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
+        $validator = new Validator;
+
+        $validator->validateBulkPayoutCount($input);
+
+        $idempotencyKey = null;
+
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+
+        $validator->validateBatchId($batchId);
+
+        foreach ($input as $item)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST,
+                    [
+                        Entity::BATCH_ID => $batchId,
+                        'input'          => $item
+                    ]);
+
+                $this->repo->transaction(function() use (& $item,
+                                                         & $payoutBatch,
+                                                         & $batchId,
+                                                         & $idempotencyKey,
+                                                         $validator)
+                {
+                    $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
+
+                    $validator->validateIdempotencyKey($idempotencyKey, $batchId);
+
+                    $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+
+                    $fundAccount = null;
+
+                    //
+                    // Check if fund_id is present in input and exists in DB
+                    // If yes skip contact and fund_account creation step
+                    //
+                    if (empty($fundAccountId) === false)
+                    {
+                        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId,
+                                                                                            $this->merchant);
+                    }
+
+                    // If fund_account is null then, it is not created before
+                    if ($fundAccount === null)
+                    {
+                        $contact = $this->contactService->processEntryForContact($item,
+                                                                                 $idempotencyKey,
+                                                                                 $batchId);
+
+                        $fundAccount = $this->contactService->processEntryForContactsFundAccount($item,
+                                                                                                 $contact,
+                                                                                                 $idempotencyKey,
+                                                                                                 $batchId);
+                    }
+                    else
+                    {
+                        // convert to array
+                        $fundAccount = $fundAccount->toArrayPublic();
+                    }
+
+                    $payout = $this->processEntryForPayoutForFundAccount($item,
+                                                                         $fundAccount,
+                                                                         $idempotencyKey,
+                                                                         $batchId
+                    );
+
+                    $payoutBatch->push($payout->toArrayPublic());
+                });
+
+            }
+            catch (Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                                             Trace::INFO,
+                                             TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
+                $exceptionData = [
+                    Entity::BATCH_ID        => $batchId,
+                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $payoutBatch->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                                             Trace::CRITICAL,
+                                             TraceCode::BATCH_SERVICE_BULK_EXCEPTION);
+
+                $exceptionData = [
+                    Entity::BATCH_ID        => $batchId,
+                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $payoutBatch->push($exceptionData);
+            }
+        }
+
+        $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST, $payoutBatch->toArrayWithItems());
+
+        return $payoutBatch->toArrayWithItems();
+    }
+
+    protected function processEntryForPayoutForFundAccount(array $entry,
+                                                           array $fundAccount,
+                                                           string $idempotencyKey,
+                                                           string $batchId): Entity
+    {
+        $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount, $this->merchant);
+
+        $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
+
+        return $this->core->createPayoutToFundAccount($input, $this->merchant, null, $batchId);
     }
 }

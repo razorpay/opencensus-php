@@ -125,7 +125,10 @@ class UpiTransactionTransformer extends Transformer
 
     public function transformTransactionId()
     {
-        return substr($this->input[Fields::MERCHANT_REQUEST_ID], -14);
+        if (isset($this->input[Fields::MERCHANT_REQUEST_ID]) === true)
+        {
+            return substr($this->input[Fields::MERCHANT_REQUEST_ID], -14);
+        }
     }
 
     public function transformTransactionMode()

@@ -1512,68 +1512,6 @@ class MerchantTest extends TestCase
         $this->assertEquals(2, $bankAccounts['count']);
     }
 
-    public function testDiwaliPromotionalPlan()
-    {
-        $this->markTestSkipped();
-
-        $this->fixtures->pricing->createDiwaliPromotionalPlan();
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals($payment['id'], $transaction['entity_id']);
-        $this->assertEquals(1000, $transaction['fee']);
-
-        $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals($payment['id'], $transaction['entity_id']);
-
-        $this->assertEquals(100, $transaction['fee']);
-
-        // mock carbon to test timestamp check
-
-        $feb2019 = Carbon::createFromTimestamp(1549002600);
-
-        Carbon::setTestNow($feb2019);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals($payment['id'], $transaction['entity_id']);
-        $this->assertEquals(1000, $transaction['fee']);
-    }
-
-    public function testDiwaliPromotionalPlanFeatureRemoval()
-    {
-        $this->markTestSkipped();
-
-        $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
-        $this->fixtures->pricing->createStandardPlan();
-        $this->fixtures->merchant->disableInternational();
-
-        $merchant = $this->getDbEntityById('merchant', '10000000000000', true);
-
-        $this->assertTrue($merchant->isFeatureEnabled('diwali_promotional_plan'));
-        $this->ba->adminAuth();
-        $this->merchantAssignPricingPlan('1A0Fkd38fGZPVC', '10000000000000');
-
-        $merchant = $this->getDbEntityById('merchant', '10000000000000', true);
-
-        $this->assertFalse($merchant->isFeatureEnabled('diwali_promotional_plan'));
-    }
-
     public function testSetBanks()
     {
         $this->ba->adminAuth();
@@ -1663,6 +1601,16 @@ class MerchantTest extends TestCase
 
         $count = count($content['methods']['netbanking']);
         $this->assertEquals(0, $count);
+    }
+
+    public function testGetCheckoutPreferencesWithPartnerLogo()
+    {
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->edit('10000000000000', ['partnership_url' => 'https://cdn.razorpay.com/logos/lalalala.png']);
+
+        $this->startTest();
     }
 
     public function testGetCheckoutPreferencesForMerchantDisabledBanks()
@@ -4658,5 +4606,240 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
+    }
+
+    public function testEditDashboardWhitelistedIpsLive()
+    {
+        $merchantPublicAttributes = $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantPublicAttributes['id']);
+
+        $this->assertEquals($merchant->getMerchantDashboardWhitelistedIpsLive(), ['1.1.1.1', '2.2.2.2']);
+    }
+
+    public function testEditDashboardInvalidWhitelistedIpsLive()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardRedundantWhitelistedIpsLive()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardWhitelistedIpsTest()
+    {
+        $merchantPublicAttributes = $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantPublicAttributes['id']);
+
+        $this->assertEquals($merchant->getMerchantDashboardWhitelistedIpsTest(), ['1.1.1.1', '2.2.2.2']);
+    }
+
+    public function testEditDashboardInvalidWhitelistedIpsTest()
+    {
+         $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditDashboardRedundantWhitelistedIpsTest()
+    {
+        $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantApplyRestrictionSettingsSuccess()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchantIds = $ownerUser->merchants()->distinct()->get()->pluck('id')->toArray();
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchantIds[0];
+
+        $testData['response']['content']['merchant_id'] = $merchantIds[0];
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $this->assertEquals(1, $merchant['restricted']);
+    }
+
+
+    public function testMerchantApplyRestrictionSettingFailure()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $this->assertEquals(0, $merchant['restricted']);
+    }
+
+    public function testMerchantRemoveRestrictionSettings()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchantIds = $ownerUser->merchants()->distinct()->get()->pluck('id')->toArray();
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchantIds[0];
+
+        $testData['response']['content']['merchant_id'] = $merchantIds[0];
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $this->assertEquals(0, $merchant['restricted']);
+    }
+
+    public function testUpdateContactMobileOfUser()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->merchant->setRestricted(true, $merchant['id']);
+
+        $user1 = $this->fixtures->create('user');
+
+        $user2 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'admin');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1['id']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user2['id'];
+
+        $response = $this->startTest();
+
+        $userDB = $this->getDbEntityById('user', $user2['id']);
+
+        $this->assertEquals($userDB['contact_mobile_verified'], $response['contact_mobile_verified']);
+
+        $this->assertEquals($userDB['contact_mobile_verified'], true);
+
+        $this->assertEquals($userDB['contact_mobile'], $response['contact_mobile']);
+    }
+
+    public function testUpdateContactMobileOfUserByAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDb['contact_mobile_verified'], false);
+    }
+
+    public function testUpdateContactMobileOfSelfUser()
+    {
+        $merchant = $this->createMerchant();
+
+        $this->fixtures->merchant->setRestricted(true, $merchant['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+    }
+
+    public function testUserAccountUnlock()
+    {
+        $merchant = $this->createMerchant();
+
+        $this->fixtures->merchant->setRestricted(true, $merchant['id']);
+
+        $userMapping = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($userMapping['id'], $merchant['id'], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $userMapping['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/account/' . $user['id'] . '/unlock';
+
+        $testData['response']['content']['user_id'] = $user['id'];
+
+        $response = $this->startTest();
+
+        $userDB = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDB['account_locked'], $response['account_locked']);
     }
 }

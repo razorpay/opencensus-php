@@ -39,8 +39,8 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
-        Entity::AMOUNT,
         Entity::BANK,
+        Entity::AMOUNT,
         'method_fee_bearer',
         Entity::CURRENCY,
         Entity::DISCOUNT,

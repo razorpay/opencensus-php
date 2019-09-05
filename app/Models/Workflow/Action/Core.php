@@ -5,8 +5,10 @@ namespace RZP\Models\Workflow\Action;
 use App;
 use Request;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 use RZP\Models\State;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
@@ -122,15 +124,25 @@ class Core extends Base\Core
             return null;
         }
 
+        /** @var Merchant\Entity $merchant */
         $merchant = app('basicauth')->getMerchant();
 
-        //
-        // The amount attribute will definitely exist in the request payload at this point
-        // If it doesn't, Payout validators will fail before the code reaches the workflow layer
-        //
-        $amount = $input[Differ\Entity::PAYLOAD]['amount'];
+        $this->trace->info(
+            TraceCode::PAYOUT_WORKFLOW_EVALUATION_INPUT,
+            ['input' => $input, 'merchant' => $merchant->getId()]);
 
-        return (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($amount, $merchant);
+        //
+        // The amount attribute will definitely exist in the "new" attributes of the workflows diff
+        // at this point. If it doesn't, Payout validators will fail before the code reaches the workflow
+        // layer
+        //
+        $amount = $input[Differ\Entity::DIFF]['new']['amount'];
+
+        $workflow = (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($amount, $merchant);
+
+        $this->trace->info(TraceCode::PAYOUT_WORKFLOW_EVALUATION_RESULT, ['workflow_id' => optional($workflow)->getId()]);
+
+        return $workflow;
     }
 
     /*

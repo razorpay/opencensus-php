@@ -72,6 +72,11 @@ class Type
 
     const FUND_ACCOUNT          = 'fund_account';
 
+    // iin batches
+    const IIN_NPCI_RUPAY        = 'iin_npci_rupay';
+
+    const MPAN                  = 'mpan';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -92,6 +97,8 @@ class Type
         self::MERCHANT_ONBOARDING,
         self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
+        self::IIN_NPCI_RUPAY,
+        self::MPAN,
     ];
 
     /**
@@ -150,6 +157,8 @@ class Type
         self::MERCHANT_ONBOARDING,
         self::LINKED_ACCOUNT_REVERSAL,
         self::SUBMERCHANT_ASSIGN,
+        self::IIN_NPCI_RUPAY,
+        self::MPAN,
     ];
 
     /**
@@ -205,7 +214,9 @@ class Type
      * @var array
      */
     public static $batchTypeMigrating = [
-        self::PAYMENT_LINK
+        self::PAYMENT_LINK,
+        self::PAYOUT,
+        self::FUND_ACCOUNT
     ];
 
     /**
@@ -214,7 +225,9 @@ class Type
      * @var array
      */
     public static $batchTypeMigrationCompleted = [
-        self::PAYMENT_LINK
+        self::PAYMENT_LINK,
+        self::PAYOUT,
+        self::FUND_ACCOUNT
     ];
 
     public static function exists(string $type)
@@ -246,11 +259,11 @@ class Type
         }
     }
 
-    public static function validateSubType(string $type)
+    public static function validateSubType(string $subtype)
     {
-        if (in_array($type, self::$subTypes, true) === false)
+        if (in_array($subtype, self::$subTypes, true) === false)
         {
-            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $type);
+            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type' . $subtype);
         }
     }
 

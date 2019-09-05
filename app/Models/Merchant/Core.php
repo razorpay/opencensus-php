@@ -2315,4 +2315,88 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
     }
+
+    /**
+     *  Restricted Merchant will have all its users associated to only itself.
+     *  If Restricted cannot be applied, will return userIds which are associated
+     *  with more than one merchant.
+     *
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    protected function getMerchantUsersWithMultipleMerchants(Entity $merchant): array
+    {
+        $users = $merchant->users()
+                          ->get();
+
+        $userAssociatedWithMoreMerchants = [];
+
+        foreach ($users as $user)
+        {
+            $merchantIds = $user->merchants()->distinct()->get()->pluck(Entity::ID)->toArray();
+
+            if (count($merchantIds) !== 1)
+            {
+                $userAssociatedWithMoreMerchants[] = $user->getId();
+            }
+        }
+
+        return $userAssociatedWithMoreMerchants;
+    }
+
+    /**
+     * This method does remove/apply restricted settings.
+     *
+     * @param Entity $merchant
+     * @param string $action
+     *
+     * @return array
+     */
+    public function applyRestrictedSettings(Entity $merchant, string $action): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_RESTRICTED_SETTINGS,
+            [
+                Entity::MERCHANT_ID => $merchant->getId(),
+                Entity::ACTION      => $action,
+                'admin_id'          => $this->app['basicauth']->getAdmin()->getId(),
+            ]);
+
+        if ($action === Constants::REMOVE)
+        {
+            return $this->addRestrictedSettingsToMerchant($merchant, false);
+        }
+        else
+        {
+            $userIds = $this->getMerchantUsersWithMultipleMerchants($merchant);
+
+            // Will add restricted settings only if all users
+            // are associated with one merchant itself.
+
+            if (count($userIds) === 0)
+            {
+                return $this->addRestrictedSettingsToMerchant($merchant, true);
+            }
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED,
+                                                    null,
+                                                    [
+                                                        'count_users_with_multiple_merchants' => count($userIds),
+                                                        'users_with_mutiple_merchants'        => $userIds,
+                                                    ]);
+        }
+    }
+
+    protected function addRestrictedSettingsToMerchant(Entity $merchant, bool $action)
+    {
+        $merchant->setAttribute(Entity::RESTRICTED, $action);
+
+        $this->repo->saveOrFail($merchant);
+
+        return [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            Entity::RESTRICTED  => $merchant->getRestricted(),
+        ];
+    }
 }

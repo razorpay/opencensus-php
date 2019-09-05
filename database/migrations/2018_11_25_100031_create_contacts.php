@@ -30,6 +30,9 @@ class CreateContacts extends Migration
             $table->char(Contact::BATCH_ID, Batch::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Contact::IDEMPOTENCY_KEY, Batch::IDEMPOTENCY_ID_LENGTH)
+                  ->nullable();
+
             $table->string(Contact::NAME, 255)
                   ->nullable();
 
@@ -77,11 +80,6 @@ class CreateContacts extends Migration
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
-            $table->foreign(Contact::BATCH_ID)
-                  ->references(Batch::ID)
-                  ->on(Table::BATCH)
-                  ->on_delete('restrict');
         });
     }
 
@@ -95,11 +93,6 @@ class CreateContacts extends Migration
         Schema::table(Table::CONTACT, function($table)
         {
            $table->dropForeign(Table::CONTACT . '_' . Contact::MERCHANT_ID . '_foreign');
-        });
-
-        Schema::table(Table::CONTACT, function($table)
-        {
-            $table->dropForeign(Table::CONTACT . '_' . Contact::BATCH_ID . '_foreign');
         });
 
         Schema::drop(Table::CONTACT);

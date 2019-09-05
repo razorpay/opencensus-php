@@ -16,4 +16,5 @@ final class Metric
     const WEBHOOK_REQUEST_DURATION_MILLISECONDS = 'webhook_request_duration_milliseconds.histogram';
     // Captures time taken from queuing a webhook event to having it fired with attempts range.
     const WEBHOOK_QUEUED_TO_FIRED_MILLISECONDS  = 'webhook_queued_to_fired_milliseconds.histogram';
+    const EVENT_PROCESS_DURATION_MILLISECONDS   = 'event_process_duration_milliseconds.histogram';
 }

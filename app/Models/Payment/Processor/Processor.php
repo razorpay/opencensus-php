@@ -459,6 +459,14 @@ class Processor
             return;
         }
 
+        $payment = $this->createPaymentEntity($input, $payment);
+
+        $payment->setBaseAmount($payment->getAmount());
+
+        $payment->saveOrFail();
+
+        $input['payment_id'] = $payment->getPublicId();
+
         if ((empty($input['emi_duration']) === false) and
             (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
         {
@@ -486,6 +494,8 @@ class Processor
 
             $coproto['missing'][] = 'contact';
 
+            $coproto['payment_id'] = $payment->getPublicId();
+
             unset($coproto['request']['content']['contact']);
 
             return $coproto;
@@ -496,16 +506,45 @@ class Processor
                          ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::CARDLESS_EMI);
+        try
+        {
+            $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+        }
+        catch (Exception\GatewayErrorException $exception)
+        {
+            $this->payment->setStatus(Payment\Status::FAILED);
 
-        $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+            $error = $exception->getError();
+
+            if ($error === null)
+            {
+                $this->payment->setError(null, null, null);
+            }
+            else
+            {
+                $errorCode = $error->getGatewayErrorCode();
+
+                $errorDescription = $error->getDescription();
+
+                $internalErrorCode = $error->getInternalErrorCode();
+
+                $this->payment->setError($errorCode, $errorDescription, $internalErrorCode);
+            }
+
+
+            $this->payment->saveOrFail();
+
+            throw $exception;
+        }
 
         $coproto = [
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                    'method'   => 'cardless_emi',
-                    'provider' => $input['provider']
+                    'method'     => 'cardless_emi',
+                    'provider'   => $input['provider'],
+                    'payment_id' => $input['payment_id'],
                 ]),
                 'method'  => 'POST',
                 'content' => $input,
@@ -532,6 +571,8 @@ class Processor
 
             $coproto['resend_url'] = $this->route->getUrlWithPublicAuth('otp_post');
         }
+
+        $coproto['payment_id'] = $payment->getPublicId();
 
         return $coproto;
     }
@@ -806,7 +847,7 @@ class Processor
         }
 
         $host = $this->route->getHost();
-        
+
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -1862,6 +1903,15 @@ class Processor
     {
         $this->tracePaymentNewRequest($input);
 
+        if (($input['method'] === Payment\Method::CARDLESS_EMI) === true)
+        {
+            if ((isset($input['ott']) === true) and
+                (isset($input['payment_id']) === true))
+            {
+                $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
+            }
+        }
+
         if ($payment == null)
         {
             $payment = $this->buildPaymentEntity($input);
@@ -2399,7 +2449,13 @@ class Processor
             return false;
         }
 
-        if ($payment->isDirectSettlement() === true)
+        //
+        // We do an auto capture direct settlement payment only if payment is not associated with an order.
+        //
+        // Later we are checking if the payment is associated with order and order status is paid then don't
+        // capture this late auth payment since order is fullfilled by some other payment made for this order.
+        if (($payment->isDirectSettlement() === true) and
+            ($payment->hasOrder() === false))
         {
             return true;
         }
@@ -2549,6 +2605,13 @@ class Processor
         // An order must not have more than one captured payment.
         //
         $this->repo->reload($order);
+
+        // If order status is not paid yet and if the payment is direct settlement then capture
+        if (($order->isPaid() === false) and
+            ($payment->isDirectSettlement()))
+        {
+            return true;
+        }
 
         if (($order->isPaid() === true) or
             ($order->getPaymentCapture() === false))
@@ -2942,6 +3005,8 @@ class Processor
                 }
 
                 $payment->setAuthType(Payment\AuthType::_3DS);
+
+                $payment->setAuthenticationGateway(null);
 
                 $this->repo->saveOrFail($payment);
 

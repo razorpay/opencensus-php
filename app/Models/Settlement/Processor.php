@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -446,6 +447,19 @@ class Processor extends Base\Core
         foreach ($groupedTxns as $merchantId => $txns)
         {
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START);
+
+            $transactionCount = $txns->count();
+
+            $customProperties = [
+                'channel'               => $channel,
+                'transaction_count'     => $transactionCount,
+            ];
+
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::SETTLEMENT_CREATION_INITIATED,
+                null,
+                null,
+                $customProperties);
 
             list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner);
 
@@ -939,6 +953,89 @@ class Processor extends Base\Core
         if (array_key_exists('debug', $input) === true)
         {
             $this->debug = (bool) $input['debug'];
+        }
+    }
+
+    /***
+     * @return mixed
+     * The following query fetch the MerchantId's having the ES_AUTOMATIC and ES_ATOMATIC_THREE_PM
+     * this is done because the ES_AOTOMATIC merchants only settled at 9AM and 5PM
+     * and the ES_AUTOMATIC_THREE_PM merchants settled at 3PM only
+     */
+    public function settlementAmount()
+    {
+        try
+        {
+            $skipMids = $this->getMerchantsToSkipForUsualSettlement();
+
+            $nextHour = Carbon::now(Timezone::IST)->addHour()->hour;
+
+            $timeStamp = Carbon::today(Timezone::IST)->hour($nextHour)->getTimestamp();
+
+            $now     = Carbon::now(Timezone::IST)->getTimestamp();
+            $eightAm = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
+            $nineAm  = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+            $twoPm   = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->getTimestamp();
+            $fourPm  = Carbon::today(Timezone::IST)->hour(16)->getTimestamp();
+            $fivePm  = Carbon::today(Timezone::IST)->hour(18)->getTimestamp();
+
+            if(($now > $fivePm and $now < $eightAm) or
+                ($now > $nineAm and $now < $fourPm))
+            {
+                $esMerchantsThreePm = [];
+
+                if($now < $threePm and $now >= $twoPm)
+                {
+                    $esMerchantsThreePm = $this->repo
+                                               ->feature
+                                               ->findMerchantsHavingFeatures([Feature\Constants::ES_AUTOMATIC_THREE_PM])
+                                               ->pluck(Feature\Entity::ENTITY_ID)
+                                               ->toArray();
+                }
+
+                $esMerchantsAutomatic = $this->repo
+                                             ->feature
+                                             ->findMerchantNotInEntityIdHavingFeature(
+                                                 $esMerchantsThreePm,
+                                                 Feature\Constants::ES_AUTOMATIC)
+                                             ->pluck(Feature\Entity::ENTITY_ID)
+                                             ->toArray();
+
+                $skipMids = array_merge($skipMids,$esMerchantsAutomatic);
+            }
+
+            $this->app['trace']->info(
+                TraceCode::SETTLEMENT_AMOUNT_FETCH_START,
+                [
+                    'pre_amount_fetch_timestamp'    => Carbon::now(Timezone::IST)->getTimestamp(),
+                    'skipped_merchant_ids'          => $skipMids
+                ]);
+
+            $data = $this->repo->transaction->getAmountForNextSettlement($timeStamp, [], $skipMids);
+
+            $this->app['trace']->info(
+                TraceCode::SETTLEMENT_AMOUNT_FETCH_END,
+                [
+                    'post_amount_fetch_timestamp'    => Carbon::now(Timezone::IST)->getTimestamp(),
+                    'settlement_amount'              => $data
+                ]);
+
+            (new SlackNotification)->send(
+                'setl_balance_alert',
+                $data,
+                null,
+                1,
+                SlackNotification::SETTLEMENT);
+
+            return $data;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_AMOUNT_RETRIEVE_FAILED
+            );
         }
     }
 }

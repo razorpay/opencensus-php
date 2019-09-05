@@ -6,6 +6,7 @@ use DB;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -28,6 +29,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::PAYMENT_ID    => 'sometimes|alpha_dash|min:14|max:18',
         Entity::PUBLIC_STATUS => 'sometimes|filled|in:processed,processing',
+        Entity::NOTES         => 'sometimes|notes_fetch',
     ];
 
     // These are proxy allowed params to search on.
@@ -138,16 +140,12 @@ class Repository extends Base\Repository
         switch($params[Entity::PUBLIC_STATUS])
         {
             case 'processed':
-                $query->where(function($subQuery) {
-                    $subQuery->where(Entity::SPEED_DECISIONED, Speed::NORMAL)
-                             ->orWhereNotNull(Entity::SPEED_PROCESSED);
-                });
+                $query->whereNotNull(Entity::SPEED_PROCESSED);
 
                 break;
 
             case 'processing':
-                $query->where(Entity::SPEED_DECISIONED, '!=', Speed::NORMAL)
-                      ->WhereNull(Entity::SPEED_PROCESSED);
+                $query->whereNull(Entity::SPEED_PROCESSED);
 
                 break;
         }

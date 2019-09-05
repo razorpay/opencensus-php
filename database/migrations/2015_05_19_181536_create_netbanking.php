@@ -34,6 +34,7 @@ class CreateNetbanking extends Migration
             $table->string('status')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
+            $table->string('verification_id')->nullable();
             $table->string('si_token')->nullable();
             $table->string('si_status')->nullable();
             $table->string('si_message')->nullable();
@@ -60,6 +61,7 @@ class CreateNetbanking extends Migration
             $table->index('int_payment_id');
             $table->index('caps_payment_id');
             $table->index('bank_payment_id');
+            $table->index('verification_id');
             $table->index('created_at');
         });
     }

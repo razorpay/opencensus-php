@@ -23,6 +23,7 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const ATOS                   = 'atos';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -82,6 +83,7 @@ class Gateway
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
+    const UPI_CITI               = 'upi_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -96,6 +98,7 @@ class Gateway
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PHONEPE     = 'wallet_phonepe';
+    const WALLET_PAYPAL      = 'wallet_paypal';
 
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
@@ -209,6 +212,7 @@ class Gateway
         self::PAYTM             => self::PAYTM,
         self::UPI_AXIS          => self::AXIS,
         self::UPI_MINDGATE      => self::HDFC,
+        self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
     ];
 
     /**
@@ -264,6 +268,7 @@ class Gateway
      * and be allowed to perform it.
      * */
     const REFUND_RETRY_GATEWAYS = [
+        Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::EBS,
@@ -305,6 +310,8 @@ class Gateway
         IFSC::CBIN,
         IFSC::CIUB,
         IFSC::DEUT,
+        IFSC::ESFB,
+        IFSC::FDRL,
         IFSC::HDFC,
         IFSC::IBKL,
         IFSC::ICIC,
@@ -315,6 +322,7 @@ class Gateway
         IFSC::MAHB,
         IFSC::PYTM,
         IFSC::RATN,
+        IFSC::SIBL,
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTIB,
@@ -697,6 +705,7 @@ class Gateway
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
             self::WALLET_PHONEPE,
+            self::WALLET_PAYPAL,
         ],
 
         Method::EMI => [
@@ -829,6 +838,7 @@ class Gateway
         self::UPI_RBL,
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
+        self::UPI_CITI,
     ];
 
     public static $headless = [
@@ -969,6 +979,7 @@ class Gateway
         Wallet::MPESA       => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
         Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
+        Wallet::PAYPAL      => Gateway::WALLET_PAYPAL,
     ];
 
     public static $upiToGatewayMap = [
@@ -1258,6 +1269,7 @@ class Gateway
         Gateway::UPI_YESBANK,
         Gateway::UPI_AIRTEL,
         Gateway::WALLET_PHONEPE,
+        Gateway::UPI_CITI,
     ];
 
     /**
@@ -1339,6 +1351,7 @@ class Gateway
         IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::SBIN         => Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1348,22 +1361,24 @@ class Gateway
      * @var array
      */
     public static $refundFileNetbankingGateways = [
-        IFSC::ICIC => Gateway::NETBANKING_ICICI,
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::CBIN => Gateway::NETBANKING_CBI,
-        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
-        IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-        IFSC::ALLA => Gateway::NETBANKING_ALLAHABAD,
-        IFSC::CNRB => Gateway::NETBANKING_CANARA,
-        IFSC::IDFB => Gateway::NETBANKING_IDFC,
-        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
-        IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
-        Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
-        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::ICIC          => Gateway::NETBANKING_ICICI,
+        IFSC::IDIB          => Gateway::NETBANKING_IBK,
+        IFSC::HDFC          => Gateway::NETBANKING_HDFC,
+        IFSC::CBIN          => Gateway::NETBANKING_CBI,
+        IFSC::CORP          => Gateway::NETBANKING_CORPORATION,
+        IFSC::KKBK          => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB          => Gateway::NETBANKING_AXIS,
+        IFSC::FDRL          => Gateway::NETBANKING_FEDERAL,
+        IFSC::RATN          => Gateway::NETBANKING_RBL,
+        IFSC::INDB          => Gateway::NETBANKING_INDUSIND,
+        IFSC::ALLA          => Gateway::NETBANKING_ALLAHABAD,
+        IFSC::CNRB          => Gateway::NETBANKING_CANARA,
+        IFSC::IDFB          => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB          => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB          => Gateway::NETBANKING_VIJAYA,
+        Netbanking::PUNB_R  => Gateway::NETBANKING_PNB,
+        Netbanking::BARB_R  => Gateway::NETBANKING_BOB,
+        IFSC::SBIN          => Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1499,6 +1514,10 @@ class Gateway
 
     public static $cardlessEmiRedirectFlowProvider = [
         CardlessEmi::FLEXMONEY,
+    ];
+
+    public static $verifyClientOnS2s = [
+        Gateway::UPI_CITI,
     ];
 
     public static function isNonTerminalGateway(string $gateway)

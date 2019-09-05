@@ -9,6 +9,7 @@ use RZP\Models\Batch\Status;
 use RZP\Models\Payment\Refund;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\GatewayRequestException;
 use RZP\Reconciliator\RequestProcessor\Base;
@@ -16,6 +17,7 @@ use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
 use RZP\Tests\Functional\Gateway\Reconciliation\TestTraits;
+use RZP\Reconciliator\Base\SubReconciliator\ManualReconciliate;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
@@ -1426,6 +1428,20 @@ class ReconciliationFileTest extends TestCase
         return array_merge($facade, $forceOverride);
     }
 
+    private function overrideHitachiPaymentManualReconFile(array $payment)
+    {
+        $row = [
+            ManualReconciliate::RECON_TYPE      => Reconciliate::PAYMENT,
+            ManualReconciliate::RECON_ID        => $payment['payment_id'],
+            ManualReconciliate::AMOUNT          => intval($payment['amount'] / 100),
+            Reconciliate::GATEWAY_FEE           => intval($payment['amount'] / 1000),
+            Reconciliate::GATEWAY_SERVICE_TAX   => intval($payment['amount'] / 2000),
+            Reconciliate::ARN                   => '1234567890',
+        ];
+
+        return $row;
+    }
+
     private function overrideHitachiRefund(array $payment, array $forceOverride = [])
     {
         $facade = $this->overrideHitachiPayment($payment, $forceOverride);
@@ -1457,7 +1473,7 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [], array $forceAuthorizePayments = [])
+    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [], array $forceAuthorizePayments = [], $manualFile = false)
     {
         $this->ba->appAuth();
 
@@ -1469,6 +1485,11 @@ class ReconciliationFileTest extends TestCase
         foreach ($files as $index => $file)
         {
             $testData['request']['files']['attachment-' . ($index + 1)] = $this->createUploadedFile($file);
+        }
+
+        if ($manualFile === true)
+        {
+            $testData['request']['content'][Base::MANUAL_RECON_FILE] = 1;
         }
 
         if (empty($forceUpdate) === false)
@@ -1677,6 +1698,43 @@ class ReconciliationFileTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    //
+    // Test for manually prepared recon file.
+    // Here we have taken Hitachi payment to test card payment recon
+    //
+    public function testHitachiManualReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment1 = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment1['reference1']);
+
+        $entries[] = $this->overrideHitachiPaymentManualReconFile($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi', [], [], true);
+
+        $updatedPayment1 = $this->getEntityById('payment', $payment1['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }

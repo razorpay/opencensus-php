@@ -109,7 +109,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::TRANSACTIONAMOUNT]);
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->upi->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }

@@ -313,7 +313,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Carbon::createFromFormat('d-M-Y  H:i:s', $settledAt, Timezone::IST)->timestamp;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->upi->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }

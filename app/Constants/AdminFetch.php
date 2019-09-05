@@ -5,6 +5,7 @@ namespace RZP\Constants;
 use RZP\Base\Fetch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
+use RZP\Models\External;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Models\Partner\Config;
@@ -12,6 +13,7 @@ use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Merchant\MerchantUser;
+use RZP\Models\BankingAccountStatement as BAS;
 
 /**
  * Class AdminFetch
@@ -449,6 +451,43 @@ class AdminFetch
                 ],
                 'fts_fund_account_id'  => [
                     Fetch::LABEL  => 'FTS Fund Account Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::BANKING_ACCOUNT_STATEMENT => [
+                BAS\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
+                BAS\Entity::TRANSACTION_ID => [
+                    Fetch::LABEL  => 'Transaction Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::ACCOUNT_NUMBER => [
+                    Fetch::LABEL  => 'Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::BANK_TRANSACTION_ID => [
+                    Fetch::LABEL  => 'Bank Txn Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::EXTERNAL => [
+                External\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
+                External\Entity::TRANSACTION_ID => [
+                    Fetch::LABEL  => 'Transaction Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                External\Entity::CHANNEL => [
+                    Fetch::LABEL  => 'Entity Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                    Fetch::VALUES => BAS\Channel::getAll(),
+                ],
+                External\Entity::BANK_REFERENCE_NUMBER => [
+                    Fetch::LABEL  => 'Bank Ref Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                External\Entity::UTR => [
+                    Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
