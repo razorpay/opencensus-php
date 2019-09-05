@@ -1392,6 +1392,8 @@ class Gateway extends Base\Gateway
 
         $message = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
+        unset($response[ResponseFields::CARD_NUMBER]);
+
         if ($respCode !== Status::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(

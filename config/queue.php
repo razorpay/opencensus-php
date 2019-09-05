@@ -213,11 +213,19 @@ return [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
+    'terminal_creation_batch' => [
+        'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+        'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+    ],
     'refund_batch' => [
         'test'       => env('AWS_REFUND_QUEUE'),
         'live'       => env('AWS_REFUND_QUEUE'),
     ],
     'terminal_batch' => [
+        'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+        'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+    ],
+    'submerchant_assign_batch' => [
         'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
         'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
     ],

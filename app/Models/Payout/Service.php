@@ -473,7 +473,9 @@ class Service extends Base\Service
                                                                          $batchId
                     );
 
-                    $payoutBatch->push($payout->toArrayPublic());
+                    $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+                    $payoutBatch->push($payoutArr);
                 });
 
             }
