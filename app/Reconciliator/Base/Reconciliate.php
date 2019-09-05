@@ -390,6 +390,8 @@ class Reconciliate extends Base\Core
 
     /**
      * @param $reconOutputData
+     * @param $batchId
+     * @param $attemptNumber
      * @return array
      * removes blacklisted columns if present. otherwise adds processed_at column for each row.
      */
