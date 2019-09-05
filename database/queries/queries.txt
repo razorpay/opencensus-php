@@ -5044,6 +5044,12 @@ ALTER TABLE `merchant_banks`
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE `subscriptions`
+    ADD COLUMN `customer_name` VARCHAR(255) DEFAULT NULL AFTER `customer_email`,
+    ADD COLUMN `customer_contact` VARCHAR(255) DEFAULT NULL AFTER `customer_name`,
+    ADD INDEX `subscriptions_customer_contact_index` (`customer_contact`);
+
 ALTER TABLE virtual_accounts
     ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
     ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
