@@ -51,6 +51,6 @@ class CreateBankingAccountState extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists(Table::BANKING_ACCOUNT_STATE);
     }
 }

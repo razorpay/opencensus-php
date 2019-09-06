@@ -357,6 +357,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Balance\Entity::class);
     }
 
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
+    }
+
     /**
      * This function is used for getting the activation status change log of a banking account
      * @param Entity $bankingAccount
@@ -368,11 +373,6 @@ class Entity extends Base\PublicEntity
         return $this->activationStates()
                     ->orderBy(State\Entity::CREATED_AT)
                     ->get();
-    }
-
-    public function activationStates()
-    {
-        return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
     }
 
     protected function isChannelYesbank()

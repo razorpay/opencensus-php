@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ADMIN_ID,
         self::BANKING_ACCOUNT_ID,
+        self::CREATED_AT,
     ];
 
     public $public = [
@@ -48,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ADMIN_ID,
         self::BANKING_ACCOUNT_ID,
+        self::CREATED_AT,
     ];
 
     public function bankingAccount()

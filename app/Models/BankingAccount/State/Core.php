@@ -15,7 +15,7 @@ class Core extends Base\Core
      *
      * @return Entity $state
      */
-    public function createForMakerAndEntity(array $input, $maker, BankingAccount\Entity $bankingAccount)
+    public function createForMakerAndEntity(array $input, PublicEntity $maker, BankingAccount\Entity $bankingAccount)
     {
         $state = $this->create($input);
 
