@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
-import { keysToSentence } from 'common/util';
+import { classList } from 'common/util';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import { sendLink } from '../../model';
@@ -42,7 +42,9 @@ const inActiveStatusReasonMap = {
   openModal,
   closeModal,
 })
-export default class PaymentPagesV2Entity extends React.Component {
+export default class PaymentPagesV3Entity extends React.Component {
+  state = { detailsCollapse: true };
+
   getStatsTable(paymentPageEntity) {
     return [
       {
@@ -105,7 +107,7 @@ export default class PaymentPagesV2Entity extends React.Component {
       reActivateLink,
     } = this.props;
 
-    // paymentPageEntity = dummyEntityData;
+    paymentPageEntity = dummyEntityData;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
@@ -123,7 +125,12 @@ export default class PaymentPagesV2Entity extends React.Component {
 
     return (
       <React.Fragment>
-        <div class="content-sm txn-details Entity--paymentpage Entity--paymentpage-v2 Entity--paymentpage-v3">
+        <div
+          class={classList(
+            'content-sm txn-details Entity--paymentpage Entity--paymentpage-v2 Entity--paymentpage-v3',
+            this.state.detailsCollapse && 'Entity--paymentpage-collapse'
+          )}
+        >
           <div class="panel panel-default">
             <div class="panel-heading">
               <div class="text">{paymentPageEntity.title}</div>
@@ -255,7 +262,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                             <div class="title">Units Sold</div>
 
                             <EditQuantity
-                              value={pi.quantity}
+                              value={pi.quantity_available}
                               timesPaid={pi.times_paid}
                               editFn={editPaymentPage}
                               entityId={pi.id}
@@ -271,6 +278,23 @@ export default class PaymentPagesV2Entity extends React.Component {
               </div>
             </div>
           </div>
+          <button
+            type="button"
+            class="btn-primary btn-sm panel-collapser"
+            onClick={_ =>
+              this.setState({ detailsCollapse: !this.state.detailsCollapse })
+            }
+          >
+            {this.state.detailsCollapse ? (
+              <span>
+                Show More <i class="i i-chevron-down" />
+              </span>
+            ) : (
+              <span>
+                Show Less <i class="i i-chevron-up" />
+              </span>
+            )}
+          </button>
         </div>
 
         <div class="content-sm txn-details Entity--paymentpage-v3">

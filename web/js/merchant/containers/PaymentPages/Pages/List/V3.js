@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router-dom';
-
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'rzp/ui/Amount';
@@ -70,9 +69,9 @@ export default ({ paymentPages, loading }) => {
                       <tr key={ix}>
                         <td>
                           {Number(pi.times_paid)}
-                          {!!pi.quantity && (
+                          {!!pi.quantity_available && (
                             <span style={{ opacity: 0.7 }}>
-                              of {Number(pi.quantity)}
+                              of {Number(pi.quantity_available)}
                             </span>
                           )}
                         </td>

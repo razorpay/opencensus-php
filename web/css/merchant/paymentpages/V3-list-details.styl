@@ -5,13 +5,43 @@
     margin-top: 124px
 
 .Entity--paymentpage-v3
+  position: relative
   border: 1px solid #DFE5E7
   border-radius: 3px
   max-width: unset
   margin: 20px
 
+  .panel
+    overflow: hidden
+    transition: .8s cubic-bezier(0.26, 0.7, 1, 1)
+    max-height: 1800px // This height must be able to fit in ~16 payment page items
+    position: relative
+    margin-bottom: 48px
+
+  &.Entity--paymentpage-collapse
+    &::after
+      content: ''
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, #FFFFFF 100%)
+      position: absolute
+      height: 34px
+      bottom: 48px
+      left: 0
+      right: 0
+
+    .panel
+      max-height: 312px
+
+  .panel-collapser
+    position: absolute
+    bottom: 12px
+    left: 50%
+    transform: translateX(-50%)
+    padding: 2px 6px
+
+
   .panel-body
     display: table
+    padding-bottom: 0
 
     .entity-details, .item-details
       display: table-cell
@@ -22,6 +52,9 @@
 
     .item-details
       width: 100%
+
+      .InputGroup
+        margin: 0
 
       table
         width: 100%
@@ -74,7 +107,7 @@
       .title
         color: #8991AE
         font-size: 13px
-        line-height: 16px;
+        line-height: 16px
         vertical-align: top
 
 
