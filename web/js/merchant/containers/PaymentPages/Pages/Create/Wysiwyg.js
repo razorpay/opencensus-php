@@ -416,13 +416,18 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       support_contact: support_contact || null,
       settings: {
         theme: settings.theme,
-        allow_multiple_units: settings.allow_multiple_units ? '1' : '0',
         allow_social_share: settings.allow_social_share ? '1' : '0',
         payment_success_message: settings.payment_success_message,
         payment_success_redirect_url: settings.payment_success_redirect_url,
         udf_schema: JSON.stringify(udf_schema),
       },
     };
+
+    if (!isPPV3Enabled) {
+      reqPayload.settings.allow_multiple_units = settings.allow_multiple_units
+        ? '1'
+        : '0';
+    }
 
     // Will exist only when props.user.isPPV3Enabled = true
     if (paymentPageItems.length) {

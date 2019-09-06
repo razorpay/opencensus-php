@@ -245,7 +245,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                       <tr>
                         <td>
                           <div>
-                            <b>{pi.item.title}</b>
+                            <b>{pi.item.name}</b>
                           </div>
                         </td>
                         <td>

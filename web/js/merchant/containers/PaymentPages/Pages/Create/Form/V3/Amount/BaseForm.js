@@ -22,15 +22,15 @@ export default class BaseForm extends React.PureComponent {
     super(props);
     const field = props.field;
 
-    const title = field.item.title,
-      disableSubmit = !title,
+    const name = field.item.name,
+      disableSubmit = !name,
       hasDescription = !!field.item.description,
       imageUrl = field.image_url || '';
 
     this.state = {
       disableSubmit,
       hasDescription,
-      mirrorDisplayTitle: title || '',
+      mirrorDisplayName: name || '',
       imageUrl,
     };
 
@@ -58,12 +58,12 @@ export default class BaseForm extends React.PureComponent {
   };
 
   onSaveForm = formData => {
-    const { title, description, amount, ...restFormData } = formData;
+    const { name, description, amount, ...restFormData } = formData;
 
     // Normalize data as per amount field's blueprint
     const baseFormData = {
       item: {
-        title,
+        name,
         description,
         amount,
       },
@@ -96,9 +96,9 @@ export default class BaseForm extends React.PureComponent {
     this.props.onDeleteField();
   };
 
-  onInputTitle = ({ target }) => {
+  onInputName = ({ target }) => {
     this.setState({
-      mirrorDisplayTitle: target.value,
+      mirrorDisplayName: target.value,
     });
   };
 
@@ -291,7 +291,7 @@ export default class BaseForm extends React.PureComponent {
       imageUrl,
       hasDescription,
       disableSubmit,
-      mirrorDisplayTitle,
+      mirrorDisplayName,
     } = this.state;
 
     return (
@@ -310,11 +310,11 @@ export default class BaseForm extends React.PureComponent {
 
         <Input.TextareaAutoResize
           class="Input--title"
-          name="title"
-          defaultValue={field.item.title || ''}
+          name="name"
+          defaultValue={field.item.name || ''}
           placeholder="Enter field title"
           pattern="^[0-9a-zA-Z ]+"
-          onInput={this.onInputTitle}
+          onInput={this.onInputName}
           validator={function(val) {
             if (!val) {
               return 'Field title is required';
@@ -336,8 +336,8 @@ export default class BaseForm extends React.PureComponent {
               this.isMandatory && 'Field--required'
             )}
           >
-            <span class="mirror-title">{mirrorDisplayTitle}</span>
-            {mirrorDisplayTitle && <span class="symbol--red">*</span>}
+            <span class="mirror-title">{mirrorDisplayName}</span>
+            {mirrorDisplayName && <span class="symbol--red">*</span>}
           </div>
         </Input.TextareaAutoResize>
 

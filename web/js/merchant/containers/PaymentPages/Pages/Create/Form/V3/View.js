@@ -42,7 +42,7 @@ class SortableFormItemsList extends React.Component {
           if (isFormItemOfTypeAmount(fi)) {
             return (
               <Sortable_AmountDisplayField
-                key={fi.item.title}
+                key={fi.item.name}
                 index={idx}
                 field={fi}
                 currency={currency}
@@ -154,7 +154,7 @@ export default class View extends React.PureComponent {
 
   validateSameTitleExists = (title, fieldSelfIndex) => {
     const allFieldsTitles = this.props.FORM_ITEMS.map(f => {
-      return isFormItemOfTypeAmount(f) ? f.item.title : f.title;
+      return isFormItemOfTypeAmount(f) ? f.item.name : f.title;
     });
 
     const sameTitleIndex = allFieldsTitles.indexOf(title);
@@ -207,7 +207,7 @@ export default class View extends React.PureComponent {
 
               <div className="Field-content">
                 <AddAmountButton
-                  field={{ item: { title: 'Amount' } }}
+                  field={{ item: { name: 'Amount' } }}
                   currency={paymentPageEntity.currency}
                   updateData={this.props.updateData}
                   onDeleteFormItem={this.onDeleteFormItem}

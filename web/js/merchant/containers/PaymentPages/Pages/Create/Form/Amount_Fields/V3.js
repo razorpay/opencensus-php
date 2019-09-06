@@ -71,7 +71,7 @@ export function getBaseFieldForAmountFieldType(amountFieldType) {
 // Exhaustive set of keys for amount item
 {
   item: {
-    title: '',
+    name: '',
     description: '',
     amount: null
   },
@@ -89,8 +89,8 @@ export function constructAmountField(fieldData) {
   const { mandatory, ...restProps } = fieldData;
   const amountItem = { ...restProps };
 
-  const prettyTitle = amountItem.item.title.trim().replace('  ', ' ');
-  amountItem.title = prettyTitle;
+  const prettyName = amountItem.item.name.trim().replace('  ', ' ');
+  amountItem.item.name = prettyName;
 
   if (typeof mandatory !== 'undefined') {
     amountItem.mandatory =

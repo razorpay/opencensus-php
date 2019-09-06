@@ -91,7 +91,7 @@ const displayField = ({
       <DragHandle />
 
       <div class="Field-label">
-        {field.item.title}
+        {field.item.name}
         {!field.mandatory && <div class="text-optional">(Optional)</div>}
         {/*{field.mandatory && <span class="symbol--red">*</span>}*/}
       </div>
