@@ -5627,6 +5627,7 @@ trait Authorize
 
         $input['payment']['id'] = $payment->getId();
 
+
         $cache = Cache::getFacadeRoot();
 
         if ($type === 'fallback')
@@ -5638,7 +5639,6 @@ trait Authorize
         {
             $key = $payment->getCacheRedirectInputKey();
             $ttl = static::REDIRECT_CACHE_TTL;
-            $input['gateway_input'] = $gatewayInput;
             $input['headless_error'] = $this->headlessError;
         }
 
@@ -5658,7 +5658,12 @@ trait Authorize
 
             unset($input['card']['number']);
             unset($input['card']['cvv']);
+
+            unset($gatewayInput['card']['number']);
+            unset($gatewayInput['card']['cvv']);
         }
+
+        $input['gateway_input'] = $gatewayInput;
 
         $this->cache->put($key, $input, $ttl);
     }
@@ -5861,7 +5866,9 @@ trait Authorize
                         ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
                 }
 
-                $inputDetails = $this->getInputDetails($payment);
+                $key = $payment->getCacheRedirectInputKey();
+
+                $inputDetails = $this->getInputDetails($payment, $key);
 
                 $gatewayInput = $inputDetails['gateway_input'];
 
@@ -5907,9 +5914,12 @@ trait Authorize
         return $response;
     }
 
-    protected function getInputDetails($payment)
+    protected function getInputDetails($payment, $key = null)
     {
-        $key = $payment->getCacheRedirectInputKey();
+        if ($key === null)
+        {
+            $key = $payment->getCacheRedirectInputKey();
+        }
 
         $inputDetails = $this->cache->get($key);
 
@@ -5923,6 +5933,16 @@ trait Authorize
         if (($payment->isMethodCardOrEmi() === true) and (empty($inputDetails[Payment\Entity::TOKEN]) === true))
         {
             $this->setCardNumberAndCvv($inputDetails);
+
+            if(empty($inputDetails['gateway_input']) === false)
+            {
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                $this->setCardNumberAndCvv($gatewayInput);
+
+                $inputDetails['gateway_input'] = $gatewayInput;
+            }
         }
 
         return $inputDetails;
