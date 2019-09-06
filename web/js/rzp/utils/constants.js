@@ -112,6 +112,7 @@ export const RZPFeatures = {
   VA: 'virtual_accounts',
   PP: 'payment_pages',
   PL: 'payment_links',
+  INVOICE: 'invoices',
 };
 
 export const SubscriptionsStates = {

@@ -336,7 +336,8 @@
 .OnBoarding--Subscription,
 .OnBoarding--Route,
 .OnBoarding--PaymentPages,
-.OnBoarding--PaymentLinks
+.OnBoarding--PaymentLinks,
+.OnBoarding--Invoices
   .Landing--Image
     overflow: hidden
     z-index: 2
@@ -401,3 +402,14 @@
     img
       max-width: 600px
       left: 0
+
+.OnBoarding--Invoices
+  .Landing--Image
+    &:before
+      background: #0aca9b
+      color: #0aca9b
+      background: linear-gradient(45deg,#0aca9b, #01bd97 50%)
+      box-shadow: 1px 1px 0 #0aca9b, 2px 2px 0 #0aca9b, 3px 3px 0 #0aca9b, 4px 4px 0 #0aca9b
+
+    img
+      transform: translate(0, -25%)  rotateY(-180deg)
