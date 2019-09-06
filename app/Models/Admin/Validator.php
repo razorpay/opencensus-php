@@ -136,4 +136,9 @@ class Validator extends Base\Validator
         'on_demand' => 'sometimes|integer',
         'scheduled' => 'sometimes|integer',
     ];
+
+    protected static $bulkCreateEntityRules = [
+        'type' => 'required|string',
+        'data' => 'required|array|min:1',
+    ];
 }

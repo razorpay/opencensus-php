@@ -11,9 +11,10 @@ use RZP\Models\Merchant;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
-use RZP\Models\Adjustment\Constants;
+use RZP\Models\Settlement\Channel as BankingChannel;
 
 class Core extends Base\Core
 {
@@ -33,21 +34,29 @@ class Core extends Base\Core
         $merchantInvoiceInput = $input;
 
         // Checking validations on input array
-        (new Validator)->validateAdjusmentCreateInput($input);
+        (new Validator)->validateAdjustmentCreateInput($input);
 
         $amount = $input[Entity::AMOUNT] ?? 0;
 
         $tax =  $input[MerchantInvoice\Entity::TAX] ?? 0;
 
-        $fees = $input['fees'] ?? 0;
+        $fees = $input[Entity::FEES] ?? 0;
+
+        $balanceType = $input[Entity::TYPE] ?? Balance\Type::PRIMARY;
 
         $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
 
-        unset($adjInput['fees']);
+        unset($adjInput[Entity::FEES]);
 
         unset($adjInput[MerchantInvoice\Entity::TAX]);
 
+        unset($adjInput[Entity::TYPE]);
+
+        $balance = $merchant->getBalanceByProductTypeOrFail($balanceType);
+
         $adj = (new Adjustment\Entity)->build($adjInput);
+
+        $adj->balance()->associate($balance);
 
         $this->app['workflow']
              ->setEntityAndId($adj->getEntity(), $merchant->getId())
@@ -68,16 +77,18 @@ class Core extends Base\Core
 
             unset($merchantInvoiceInput['fees']);
 
-            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $merchantInvoiceInput)
-            {
-                // 1. Create adjustment
-                // 2. Create Invoice entity for adjustment
-                $adjustment = $this->createAdjInTransaction($adj, $merchant);
+            $adjustment = $this->repo->transaction(
+                function () use ($adj, $merchant, $merchantInvoiceInput)
+                {
+                    // 1. Create adjustment
+                    // 2. Create Invoice entity for adjustment
+                    $adjustment = $this->createAdjInTransaction($adj, $merchant);
 
-                (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $merchantInvoiceInput);
+                    (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $merchantInvoiceInput);
 
-                return $adjustment;
-            });
+                    return $adjustment;
+                }
+            );
 
             return $adjustment;
         }
@@ -250,7 +261,17 @@ class Core extends Base\Core
         // set channel if not set already from input
         if ($adj->getChannel() === null)
         {
-            $adj->setChannel($merchant->getChannel());
+            if ($adj->isBalanceTypeBanking() === true)
+            {
+                // TODO : Remove second condition later
+                $channel = $adj->balance->getChannel() ?? BankingChannel::YESBANK;
+
+                $adj->setChannel($channel);
+            }
+            else
+            {
+                $adj->setChannel($merchant->getChannel());
+            }
         }
 
         $adj->merchant()->associate($merchant);
@@ -260,6 +281,7 @@ class Core extends Base\Core
         $txn = (new Transaction\Core)->createFromAdjustment($adj);
 
         $this->repo->saveOrFail($txn);
+
         $this->repo->saveOrFail($adj);
 
         $this->trace->info(

@@ -1146,6 +1146,8 @@ class ErrorCode
 
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                           = 'BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT';
 
+    const BAD_REQUEST_BALANCE_DOES_NOT_EXIST                                        = 'BAD_REQUEST_BALANCE_DOES_NOT_EXIST';
+
     const BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE                                      = 'BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE';
 
     // Merchant requests

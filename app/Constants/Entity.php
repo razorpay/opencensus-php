@@ -341,6 +341,7 @@ class Entity
         Entity::BANK_TRANSFER,
         Entity::REFUND,
         Entity::FUND_ACCOUNT_VALIDATION,
+        Entity::ADJUSTMENT,
     ];
 
     public static $namespace = [

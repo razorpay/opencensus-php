@@ -336,4 +336,13 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function bulkCreateEntity()
+    {
+        $input = Request::all();
+
+        $data  = $this->service()->bulkCreate($input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -257,6 +257,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
+    const FTA_BANK_ACCOUNT_EMPTY                                = 'FTA_BANK_ACCOUNT_EMPTY';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 
@@ -1182,6 +1183,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
     const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
     const RECON_BATCH_OUTPUT_FILE                               = 'RECON_BATCH_OUTPUT_FILE';
+    const RECON_BATCH_ANALYTICS_OUTPUT_FILE                     = 'RECON_BATCH_ANALYTICS_OUTPUT_FILE';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';

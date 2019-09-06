@@ -713,6 +713,78 @@ class TerminalAuthenticationTest extends TestCase
         $this->assertEquals($expectedTerminal, $authTerminal);
     }
 
+    // boost 3ds over headless otp
+    public function testAuthenticationGateway3dsJsonFlowS2S()
+    {
+        TerminalOptions::setTestChance(200);
+
+        $this->createGatewayRules($this->testData['testAuthenticationGateway3ds']);
+
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json', 'headless', 's2s_otp_json', 'otp_auth_default']);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin' => '556763',
+            'country' => 'IN',
+            'issuer' => 'ICIC',
+            'network' => 'MasterCard',
+            'flows' => [
+                '3ds' => '1',
+                'headless_otp' => '1'
+            ]
+        ]);
+
+        $this->otpFlow = false;
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = ['3ds', 'otp'];
+
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+         $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertNull($payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        self::assertEquals('authorized', $payment['status']);
+    }
+
     protected function createGatewayRules($rules)
     {
         foreach ($rules as $rule)

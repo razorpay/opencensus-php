@@ -2229,7 +2229,7 @@
             "time": "2017-06-27T06:30:13+00:00"
         },
         {
-            "name": "jeremeamia/superclosure",
+            "name": "jeremeamia/SuperClosure",
             "version": "2.3.0",
             "source": {
                 "type": "git",
@@ -3632,7 +3632,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsstream",
+            "name": "mikey179/vfsStream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -5796,16 +5796,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.5",
+            "version": "1.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "c467d64489353d341bb9e47475d9c6b84d564008"
+                "reference": "74532df6409e3c1d0271d34e73769db1dd1de7d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/c467d64489353d341bb9e47475d9c6b84d564008",
-                "reference": "c467d64489353d341bb9e47475d9c6b84d564008",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/74532df6409e3c1d0271d34e73769db1dd1de7d5",
+                "reference": "74532df6409e3c1d0271d34e73769db1dd1de7d5",
                 "shasum": ""
             },
             "require": {
@@ -5819,7 +5819,7 @@
                 "guzzlehttp/psr7": "^1.3",
                 "php-http/message": "^1.7",
                 "php-http/mock-client": "^0.3 || ^1.0",
-                "phpunit/phpunit": "^6.0 || ^8.0"
+                "phpunit/phpunit": "^6.0 || ^8.0 || ^7.0"
             },
             "type": "library",
             "autoload": {
@@ -5838,7 +5838,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2019-07-17T06:19:58+00:00"
+            "time": "2019-09-05T17:43:48+00:00"
         },
         {
             "name": "razorpay/metrics-php",

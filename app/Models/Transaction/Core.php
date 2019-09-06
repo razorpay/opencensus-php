@@ -607,50 +607,9 @@ class Core extends Base\Core
         return [$txn, $feesSplit];
     }
 
-    public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
+    public function createFromAdjustment(Adjustment\Entity $adj)
     {
-        $txn = new Transaction\Entity;
-
-        $amount = $adj->getAmount();
-
-        $debit = $credit = 0;
-
-        if ($amount > 0)
-            $credit = $amount;
-
-        if ($amount < 0)
-            $debit = -1 * $amount;
-
-        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $values = array(
-            Transaction\Entity::DEBIT           => $debit,
-            Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::GATEWAY_FEE     => 0,
-            Transaction\Entity::API_FEE         => 0,
-            Transaction\Entity::RECONCILED_AT   => time(),
-            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
-            Transaction\Entity::SETTLED         => 0,
-            Transaction\Entity::SETTLED_AT      => $settledAt,
-            Transaction\Entity::FEE             => 0,
-            Transaction\Entity::TAX             => 0,
-            Transaction\Entity::AMOUNT          => abs($amount),
-            Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
-            Transaction\Entity::CHANNEL         => $adj->getChannel(),
-        );
-
-        $txn->fillAndGenerateId($values);
-
-        $txn->merchant()->associate($adj->merchant);
-
-        $txn->sourceAssociate($adj);
-
-        $adj->transaction()->associate($txn);
-
-        $this->updateBalances($txn, $updateEscrow);
-
-        $this->dispatchForSettlementBucketing($txn, $settledAt);
+        list($txn, $feeSplit) = $this->createTransactionForSource($adj);
 
         return $txn;
     }

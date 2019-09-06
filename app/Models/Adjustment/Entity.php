@@ -4,9 +4,12 @@ namespace RZP\Models\Adjustment;
 
 use RZP\Models\Base;
 use RZP\Models\Settlement;
+use RZP\Models\Base\Traits\HasBalance;
 
 class Entity extends Base\PublicEntity
 {
+    use HasBalance;
+
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
     const ENTITY_ID         = 'entity_id';
@@ -16,11 +19,16 @@ class Entity extends Base\PublicEntity
     const CHANNEL           = 'channel';
     const DESCRIPTION       = 'description';
     const TRANSACTION_ID    = 'transaction_id';
+    const BALANCE_ID        = 'balance_id';
     const SETTLEMENT_ID     = 'settlement_id';
 
     // For report
     const DISPUTE_ID        = 'dispute_id';
     const ENTITY            = 'entity';
+
+    // Input parameters
+    const FEES              = 'fees';
+    const TYPE              = 'type';
 
     protected static $sign = 'adj';
 
@@ -42,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::CHANNEL,
         self::DESCRIPTION,
+        self::BALANCE_ID,
         self::TRANSACTION_ID,
         self::SETTLEMENT_ID,
         self::ENTITY_ID,
@@ -108,6 +117,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID));
     }
 
     public function setAmount($amount)
