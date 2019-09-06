@@ -206,7 +206,7 @@ class GovernorService
         return $request;
     }
 
-    public function sendRequest(array $requestSchema, $data, $source, $namespace = null, $getEntityIdentifier = null, array $queryParams = [],$client_id = null, $namespace_id =null, $client = null, $rule_chain_id = null, $rule_group_id = null, $rule_id =null)
+    public function sendRequest(array $requestSchema, $data, $source, $namespace = null, $getEntityIdentifier = null, array $queryParams = [], $client_id = null, $namespace_id =null, $client = null, $rule_chain_id = null, $rule_group_id = null, $rule_id =null)
     {
         $url = $this->getUrl($requestSchema, $namespace, $getEntityIdentifier, $client_id, $namespace_id, $client, $rule_chain_id, $rule_group_id, $rule_id);
 
