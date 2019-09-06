@@ -55,7 +55,7 @@ export default class CreateHostedMandateBatch extends Component {
     return (
       <div class="SubscriptionsBatch--upload-modal">
         <div
-          class="panel panel-default auth-link"
+          class="panel panel-default registration-link"
           onClick={openUploadModal(this.renderRegistrationLinksModal)}
         >
           <div class="panel-body">
