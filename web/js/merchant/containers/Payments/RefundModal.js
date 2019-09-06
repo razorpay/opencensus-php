@@ -214,7 +214,8 @@ export default class RefundModal extends Component {
                   <div class="text-semi-muted">
                     <p>
                       This payment will be instantly refunded to the customer. A
-                      fee of &#8377; {this.props.refundFee.data.fee} will be
+                      fee of &#8377;{' '}
+                      {paiseToRupees(this.props.refundFee.data.fee)} will be
                       charged from your unsettled balance.
                     </p>
                   </div>
