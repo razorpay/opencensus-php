@@ -12,11 +12,13 @@ use RZP\Base\RepositoryManager;
 class DefaultDataRetriever extends AbstractAPIDataRetriever
 {
 
+
     protected function prepareGatewayRequestArray(array $input): array
     {
         $requestList = [];
         $request = [];
-        $request['gateway'] = $input['gateway'];
+        $request[self::GATEWAY] = $input['gateway'];
+        $request[self::IDENTIFIER] = "_";
         if(isset($input['start_date'])) {
             $request['start_date'] = $input['start_date'];
         }else{
@@ -34,27 +36,10 @@ class DefaultDataRetriever extends AbstractAPIDataRetriever
         return $requestList;
     }
 
-    protected function fetchTerminal(array $input, $request)
-    {
-        $terminal = $this->repo->terminal->findByGatewayMerchantId(\RZP\Models\Merchant\Account::SHARED_ACCOUNT, $request['gateway']);
-        return $terminal;
-    }
-
-    protected function processRequest(array $input, $request, $terminal)
-    {
-        $gatewayData = [];
-        $gatewayData['terminal'] = $terminal;
-        $gatewayData['gateway'] = $request['gateway'];
-        $gatewayData['payment'] = ["gateway" => $request['gateway'], ];
-        $gatewayData['entities'] = $request;
-        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Gateway Request : ",$gatewayData, $terminal]);
-        return ["__", $this->gatewayManager->call($request['gateway'], 'reconcile', $gatewayData, $this->mode, $terminal)];
-    }
-
     protected function refactorResponse(array $responseList): array{
         $output = [];
-        foreach ($responseList as $response){
-            array_push($output, $response['data']['records']);
+        foreach ($responseList as $key => $value)   {
+            $output[$key] =  $value['data']['records'];
         }
         return $output;
     }

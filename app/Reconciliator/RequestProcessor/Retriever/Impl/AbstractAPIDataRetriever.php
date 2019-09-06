@@ -30,6 +30,10 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
      */
     protected $repo;
 
+    const GATEWAY = 'gateway';
+    const IDENTIFIER = 'identifier';
+
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -66,9 +70,22 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
 
     protected abstract function prepareGatewayRequestArray(array $input): array;
 
-    protected abstract function fetchTerminal(array $input, $request);
+    protected function fetchTerminal(array $input, $request)
+    {
+        $terminal = $this->repo->terminal->findByGatewayMerchantId(\RZP\Models\Merchant\Account::SHARED_ACCOUNT, $request[self::GATEWAY]);
+        return $terminal;
+    }
 
-    protected abstract function processRequest(array $input, $request, $terminal);
+    protected function processRequest(array $input, $request, $terminal)
+    {
+        $gatewayData = [];
+        $gatewayData['terminal'] = $terminal;
+        $gatewayData[self::GATEWAY] = $request[self::GATEWAY];
+        $gatewayData['payment'] = ["gateway" => $request['gateway'], ];
+        $gatewayData['entities'] = $request;
+        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Gateway Request : ",$gatewayData, $terminal]);
+        return [$request[self::IDENTIFIER], $this->gatewayManager->call($request['gateway'], 'reconcile', $gatewayData, $this->mode, $terminal)];
+    }
 
     protected abstract function refactorResponse(array $responseList): array;
 
