@@ -31,7 +31,7 @@ import { setTrackData } from 'rzp/utils/googleAnalytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import initChat from 'merchant/chat';
-import track from 'react-tracking';
+import RTracking from 'react-tracking';
 
 @withRouter
 @connect(
@@ -50,9 +50,16 @@ import track from 'react-tracking';
     resizeWindow,
   }
 )
-@track(
+@RTracking(
   ({ user, mode }) => {
-    const u = { email: user.user.email, id: user.user.id, mid: user.current };
+    const u = {
+      email: user.user.email,
+      id: user.user.id,
+      mid: user.current,
+      role: user.role,
+      business_type: user.business_type,
+      activated: user.activated,
+    };
     let utm = null;
     if (undefined !== analytics) {
       utm = analytics.utils.getLandingParams();
@@ -65,6 +72,7 @@ import track from 'react-tracking';
   },
   {
     dispatch: data => {
+      console.log(data);
       window.rzpQ.push(data);
     },
   }

@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 
 import { activationDuration } from 'common/data';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
-import track from 'react-tracking';
+import RTracking from 'react-tracking';
 
 const initialState = {
   status: null,
   content: null,
   title: 'Account Activation',
 };
-@track((state, props, args) => {
+@RTracking(() => {
   return window.rzpQ.component('ActivationCard');
 })
 export default class ActivationCard extends Component {
@@ -19,7 +19,23 @@ export default class ActivationCard extends Component {
     this.state = initialState;
   }
 
+  handleBlackListFlowClick = () => {
+    const { track, tracking } = this.props;
+    track.refillActivationForm();
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('act.form_fill', {
+        clickSource: 'Modify_Business_Category',
+      })
+    );
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('act.blacklist_change_category', {
+        clickSource: 'Dashboard_Link',
+      })
+    );
+  };
+
   componentWillReceiveProps(nextProps) {
+    const { tracking } = this.props;
     const {
         instantActivation,
         isSubmitted,
@@ -50,8 +66,10 @@ export default class ActivationCard extends Component {
               className="btn btn-primary"
               onClick={e => {
                 track.activateAccount();
-                this.props.tracking.trackEvent(
-                  window.rzpQ.initiated('activation')
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('act.form_fill', {
+                    clickSource: 'Dashboard_CTA',
+                  })
                 );
               }}
             >
@@ -105,7 +123,7 @@ export default class ActivationCard extends Component {
           <Link
             to="/activation"
             className="btn-link"
-            onClick={() => track.refillActivationForm()}
+            onClick={this.handleBlackListFlowClick}
           >
             here
           </Link>

@@ -7,6 +7,7 @@ import Alert from 'component/Alert';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { trackFormFields } from 'rzp/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { classList, addPrefixToObjectKeys } from 'common/util';
 import { activationDuration } from 'common/data';
@@ -32,6 +33,7 @@ import accountFormTabsContent, {
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import RTracking from 'react-tracking';
 /*
 *             Main-form        LA-form
 * Submited      E F ~S        ~E ~F ~S
@@ -98,6 +100,7 @@ let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 @connect(state => ({
   user: state.session.user,
 }))
+@RTracking(() => window.rzpQ.component('ActivationWizard'))
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: this.isLinkedAccountForm ? LOADING.DEFAULT : LOADING.INITIAL,
@@ -137,6 +140,7 @@ export default class ActivationWizard extends React.Component {
   }
 
   prepareTabs(props) {
+    const { tracking } = props;
     if (this.isLinkedAccountForm) {
       // Activation form for linked account
 
@@ -194,6 +198,12 @@ export default class ActivationWizard extends React.Component {
             updateHubSpotContactsProperties({
               [a.name]: true,
             });
+
+            tracking.trackEvent(
+              window.rzpQ.onbr().initiated('kyc.upload_document', {
+                name: a.name,
+              })
+            );
 
             this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
           });
@@ -343,6 +353,17 @@ export default class ActivationWizard extends React.Component {
   };
 
   //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
+  @RTracking((props, state) => {
+    const { tracking } = props;
+    const events = trackFormFields(props.data, state.dirty);
+    return events.forEach(event =>
+      tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.provide_details', {
+          ...event,
+        })
+      )
+    );
+  })
   goto = (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.

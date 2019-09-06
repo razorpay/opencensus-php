@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, NavLink } from 'react-router-dom';
+import RTracking from 'react-tracking';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -17,6 +18,7 @@ import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
 })
+@RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
 export default class PaymentLinksContainer extends ListContainer {
   fetchEntityList(params) {
     params.types = ['link', 'ecod'];
@@ -70,7 +72,7 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   render() {
-    let { loading, invoices, user, mode } = this.props;
+    let { loading, invoices, user, mode, tracking } = this.props;
     let status = this.state.status;
 
     return (
@@ -86,7 +88,17 @@ export default class PaymentLinksContainer extends ListContainer {
             >
               <NavLink class="btn btn-primary" to="/paymentlinks/new">
                 <i class="i i-plus" />
-                <span>Create Payment Link</span>
+                <span
+                  onClick={() =>
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().success('dash.pl_action', {
+                        action: 'Initiate_PL_Creation',
+                      })
+                    )
+                  }
+                >
+                  Create Payment Link
+                </span>
               </NavLink>
             </ShowWhen>
           </div>
