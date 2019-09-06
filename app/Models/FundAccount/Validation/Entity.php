@@ -99,8 +99,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::RESULTS,
-        self::FUND_ACCOUNT_ID,
-        self::FUND_ACCOUNT,
     ];
 
     protected $defaults = [
@@ -225,31 +223,6 @@ class Entity extends Base\PublicEntity
             self::ACCOUNT_STATUS  => $this->getAccountStatus(),
             self::REGISTERED_NAME => $this->getRegisteredName(),
         ];
-    }
-
-    public function setPublicFundAccountIdAttribute(array & $attributes)
-    {
-        $fundAccountId = $this->getAttribute(self::FUND_ACCOUNT_ID);
-
-        $attributes[self::FUND_ACCOUNT_ID] = FundAccount::getSignedIdOrNull($fundAccountId);
-    }
-
-    public function setPublicFundAccountAttribute(array & $attributes)
-    {
-        //
-        // We never want to expose fund_account on private.
-        // The correct way to do this would be to not add it in $public array.
-        // But, we want to expose it in proxy auth (via expands). Hence, we
-        // cannot remove it from $public array.
-        // It's possible that the fund_account is loaded in some flow. This check
-        // ensures that it's always removed before sending out the response.
-        //
-        if (app('basicauth')->isStrictPrivateAuth() === true)
-        {
-            array_forget($attributes, self::FUND_ACCOUNT);
-
-            return;
-        }
     }
 
     // -------------- Getters --------------
