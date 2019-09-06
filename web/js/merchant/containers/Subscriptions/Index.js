@@ -1,9 +1,11 @@
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Switch, NavLink } from 'react-router-dom';
 
 import { classList } from 'common/util';
 
 import { RZPFeatures } from 'rzp/utils/constants';
+
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
@@ -149,7 +151,14 @@ export default class SubscriptionsController extends React.Component {
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
               <NavLink to="/recurring_payments">Payments</NavLink>
               <NavLink to="/tokens">Tokens</NavLink>
-              <NavLink to="/registration_links">Registration Links</NavLink>
+              <NavLink to="/registration_links">
+                Registration Links
+                <Popover theme="dark">
+                  <PopoverBody>
+                    Authorization links are now called Registration links
+                  </PopoverBody>
+                </Popover>
+              </NavLink>
               <NavLink exact to="/subscriptions/batchuploads">
                 Batch Upload
               </NavLink>
