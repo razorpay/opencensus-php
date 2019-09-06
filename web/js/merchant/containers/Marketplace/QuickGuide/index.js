@@ -47,7 +47,7 @@ export default class MarketPlaceQuickGuide extends React.Component {
   render() {
     const { accountsStatus, transfersStatus } = getStatus(this.props);
 
-    const CloseBtn = this.getCloseBtn(transfersStatus === done);
+    const closeBtn = this.getCloseBtn(transfersStatus === done);
 
     let activeStep = 0;
 
@@ -60,7 +60,7 @@ export default class MarketPlaceQuickGuide extends React.Component {
         activeStep={activeStep}
         class="Route"
         title={Title}
-        closeBtn={CloseBtn}
+        closeBtn={closeBtn}
       >
         <QuickGuideStep
           status={accountsStatus}

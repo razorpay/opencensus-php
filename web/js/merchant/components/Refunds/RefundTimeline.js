@@ -58,13 +58,16 @@ export default class RefundStatusTimeline extends React.Component {
       mileStones.push({
         status: 'processing',
         mode: `Instant Refund`,
-        timeStamp: refund.processed_at,
+        timeStamp: refund.created_at,
       });
-      mileStones.push({
-        status: 'processed',
-        mode: 'Instant Refund',
-        timeStamp: refund.processed_at,
-      });
+
+      if (refund.status === 'processed') {
+        mileStones.push({
+          status: 'processed',
+          mode: 'Instant Refund',
+          timeStamp: refund.processed_at,
+        });
+      }
     }
 
     if (refund.speed_processed === null) {

@@ -17,7 +17,6 @@ import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
 import creditsReducer from 'merchant/modules/credits';
-import teamReducer from 'merchant/modules/team';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
@@ -63,7 +62,10 @@ import {
   tokensReducer,
   commissionsReducer,
   commissionsAggregateReducer,
+  invitationsReducer,
 } from 'merchant/modules/collection';
+
+import { teamReducer } from 'merchant/modules/team';
 
 import {
   subscriptionsReducer,
@@ -137,5 +139,6 @@ export default combineReducers({
   tokens: tokensReducer,
   token: tokenReducer,
   batches: batchesReducer,
+  invitations: invitationsReducer,
   onboarding: onboardingReducer,
 });

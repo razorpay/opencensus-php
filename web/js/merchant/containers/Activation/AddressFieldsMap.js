@@ -40,7 +40,7 @@ export default [
   ],
   {
     _name: 'same_address',
-    fieldLabel: 'Operational Address same as Registered Address',
+    fieldLabel: 'Operational Address same as above',
     description: 'Physical Verification may take place at this address',
     _cmp: Input.Check,
   },

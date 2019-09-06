@@ -54,7 +54,10 @@ export default class MarketplaceContainer extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.transfers.loading !== this.props.transfers.loading) {
+    if (
+      nextProps.transfers.loading !== this.props.transfers.loading ||
+      nextProps.accounts.loading !== this.props.accounts.loading
+    ) {
       this.initMarketPlace(nextProps);
     }
   }

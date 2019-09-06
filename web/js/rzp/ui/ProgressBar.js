@@ -1,3 +1,5 @@
+import { classList } from 'common/util';
+
 export const ProgressBar = ({ value, min, max, type, className, color }) => {
   let completionPercentage = `${100 / (max - min) * value}%`;
 
@@ -27,7 +29,6 @@ export default ProgressBar;
 
 export class TimedProgressBar extends React.PureComponent {
   static defaultProps = {
-    min: 0,
     type: 'success',
   };
 
@@ -61,7 +62,7 @@ export class TimedProgressBar extends React.PureComponent {
     return (
       <div
         ref={this.progressBarRef}
-        class={`progress timed-progress ${className}`}
+        class={classList('progress', 'timed-progress', className)}
       >
         <div class={`progress-bar progress-bar-${type}`} style={style}>
           {children}

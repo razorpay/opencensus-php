@@ -3,18 +3,18 @@ import { connect } from 'react-redux';
 import { RZPFeatures } from 'rzp/utils/constants';
 
 import Slider, { SliderDots } from 'component/Slider';
+import Button from 'component/Button';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 import { fetchUser } from 'merchant/modules/session';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';
-import FeatureRequest from 'merchant/components/OnBoarding/Slides/FeatureRequest';
 import OnBoarding, {
-  NextButton,
   OnBoardingWrapper,
   FeatureEnableSliderButton,
   SkipAndGetStartedButton,
@@ -23,6 +23,7 @@ import OnBoarding, {
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
+import KYCAlertModal from './KYCAlertModal';
 
 @connect(
   state => ({
@@ -35,6 +36,8 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
   }),
   {
     fetchUser,
+    openModal,
+    closeModal,
     handleProductQuickGuide,
   }
 )
@@ -42,22 +45,44 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
   feature: RZPFeatures.ROUTE,
 })
 export default class MarketPlaceOnBoarding extends React.Component {
+  get showKYCModal() {
+    return !this.props.isTestMode && !this.props.user.isAccepted;
+  }
+
+  switchToTestMode = () => {
+    const { user } = this.props;
+
+    LocalStorageService.setItem(`rzp_mode--${user.current}`, 'test');
+    window.location.reload();
+  };
+
+  showKYCAlertModal = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <KYCAlertModal
+          user={this.props.user}
+          switchToTestMode={this.switchToTestMode}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
+  };
+
   closeOnboarding = () => {
     if (!this.props.routeProductOnBoarding.isTour) {
-      setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.ROUTE, false);
     }
 
     this.props.closeOnboarding();
   };
 
   getNextBtnProp = sliderProps => () => {
-    if (!this.props.isTestMode) {
+    if (this.showKYCModal) {
       return (
-        <NextButton
-          feature={RZPFeatures.ROUTE}
-          onClick={sliderProps.next}
-          page={sliderProps.active}
-        />
+        <Button.Primary class="Forward-Button" onClick={this.showKYCAlertModal}>
+          Get Started
+        </Button.Primary>
       );
     }
 
@@ -75,41 +100,41 @@ export default class MarketPlaceOnBoarding extends React.Component {
     return <FeatureEnableSliderButton {...props} />;
   };
 
-  onClickSkipButton = () => {
-    if (this.props.isTestMode) {
-      if (this.props.user.isMarketplaceEnabled) {
-        this.closeOnboarding();
-      }
-
-      this.props.closeOnboarding();
-      return;
+  renderSkipButton = sliderProps => {
+    if (this.showKYCModal) {
+      return (
+        <Button.Transparent onClick={this.showKYCAlertModal}>
+          Skip And Get Started
+        </Button.Transparent>
+      );
     }
 
-    this.props.goTo(2);
-  };
+    const btnProps = {
+      feature: RZPFeatures.ROUTE,
+      page: sliderProps.active,
+      onClick: this.props.closeOnboarding,
+      isTour: this.props.routeProductOnBoarding.isTour,
+    };
 
-  onSubmitClick = () => {
-    return this.props.fetchUser().then(() => {
-      this.props.handleProductQuickGuide({
-        ...this.props.routeProductOnBoarding,
-        showOnboarding: false,
-      });
-    });
+    if (this.props.user.isMarketplaceEnabled) {
+      btnProps.isLocalEnabler = true;
+      btnProps.onClick = this.closeOnboarding;
+    }
+
+    return <SkipAndGetStartedButton {...btnProps} />;
   };
 
   render() {
-    const { isTestMode, active, routeProductOnBoarding, user } = this.props;
-
     return (
       <OnBoardingWrapper class="Route">
-        <Slider active={active}>
+        <Slider active={this.props.active}>
           {sliderProps => (
             <Landing
               {...sliderProps}
               title="Route"
               feature={RZPFeatures.ROUTE}
               imageUrl="https://razorpay.com/assets/route/route-landing.svg"
-              desc="Easily split payments, make vendor payouts, manage marketplace money flow or automate routing money with complete control over the business logic."
+              desc="Easily split incoming payments into various linked accounts. Manage settlements, reconciliation and refunds easily by having complete control over money flow."
             />
           )}
 
@@ -124,31 +149,9 @@ export default class MarketPlaceOnBoarding extends React.Component {
             />
           )}
 
-          {!isTestMode
-            ? sliderProps => (
-                <FeatureRequest
-                  {...sliderProps}
-                  isTestMode={isTestMode}
-                  formType={RZPFeatures.ROUTE}
-                  heading="Route"
-                  title="What makes Route great?"
-                  desc="We'd require the following details to enable Razorpay Route on your account."
-                  imageUrl="https://razorpay.com/assets/route/route-landing.svg"
-                />
-              )
-            : null}
-
           {sliderProps => (
             <SliderDots {...sliderProps}>
-              {sliderProps.active !== 2 && (
-                <SkipAndGetStartedButton
-                  feature={RZPFeatures.ROUTE}
-                  page={sliderProps.active}
-                  onClick={this.onClickSkipButton}
-                  isTour={routeProductOnBoarding.isTour}
-                  isLocalEnabler={user.isMarketplaceEnabled}
-                />
-              )}
+              {this.renderSkipButton(sliderProps)}
             </SliderDots>
           )}
         </Slider>

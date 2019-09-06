@@ -101,20 +101,30 @@ export default class User {
   }
 
   isAllowedEdit(moduleName) {
-    const isEditAllowed = _isAllowed(
+    let isEditAllowed = _isAllowed(
       this.userRole,
       moduleName,
       roleEditPermissions
     );
+
+    if (this.isEditRestrictedByRazorX(moduleName)) {
+      isEditAllowed = false;
+    }
+
     return isEditAllowed;
   }
 
   isAllowedView(moduleName) {
-    const isViewAllowed = _isAllowed(
+    let isViewAllowed = _isAllowed(
       this.userRole,
       moduleName,
       roleViewPermissions
     );
+
+    if (this.isViewRestrictedByRazorX(moduleName)) {
+      isViewAllowed = false;
+    }
+
     return isViewAllowed;
   }
 
@@ -242,6 +252,10 @@ export default class User {
 
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
+  }
+
+  get isMerchantRestricted() {
+    return this.restricted;
   }
 
   get isAgentRole() {
@@ -377,6 +391,24 @@ export default class User {
 
   get isPostActivationHotjarSurveyEnabled() {
     return this.getExpStatus('post_activation_hotjar_survey');
+  }
+
+  get isAllowedTeamManagement() {
+    return this.isMerchantRestricted
+      ? this.isAllowedView('team')
+      : this.isAllowedEdit('team');
+  }
+
+  // No experiment of disable-edit-<moduleName> => Module is not restricted
+  isViewRestrictedByRazorX(moduleName) {
+    // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
+    return this.getExpStatus(`disable-view-${moduleName}`);
+  }
+
+  // No experiment of disable-edit-<moduleName> => Module is not restricted
+  isEditRestrictedByRazorX(moduleName) {
+    // Eg: disable-edit-reports (if corresponding experiment is "on", it can't be edited for those merchants)
+    return this.getExpStatus(`disable-edit-${moduleName}`);
   }
 }
 
