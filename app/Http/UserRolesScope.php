@@ -25,10 +25,10 @@ class UserRolesScope
         $this->routeUserRoleMap = [
 
             // batch routes
-            'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER]),
-            'batch_download_file'  => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER]),
-            'batch_fetch_by_id'    => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER]),
-            'batch_fetch_multiple' => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER]),
+            'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
+            'batch_download_file'  => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
+            'batch_fetch_by_id'    => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
+            'batch_fetch_multiple' => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
 
             // payment routes
             'payment_capture'        => array_merge(Role::WRITER_ROLES, [ROLE::RBL_SUPERVISOR]),
