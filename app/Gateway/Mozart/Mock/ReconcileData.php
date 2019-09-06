@@ -58,11 +58,6 @@ class ReconcileData extends Base\Mock\Server
         return $response;
     }
 
-
-    const PAYMENT_ID            = 'Payment Id';
-    const PAYMENT_AMOUNT        = 'Payment Amount';
-    const BANK_REFERENCE_NUMBER = 'Bank Ref No';
-    const PAYMENT_DATE          = 'Payment Date';
     public function netbanking_cub($entities)
     {
         $response = [

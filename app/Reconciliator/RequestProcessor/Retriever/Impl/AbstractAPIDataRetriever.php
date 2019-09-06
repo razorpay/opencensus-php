@@ -83,7 +83,6 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
         $gatewayData[self::GATEWAY] = $request[self::GATEWAY];
         $gatewayData['payment'] = ["gateway" => $request['gateway'], ];
         $gatewayData['entities'] = $request;
-        $this->trace->info(TraceCode::CRAWLER_RECONCILE, ["Gateway Request : ",$gatewayData, $terminal]);
         return [$request[self::IDENTIFIER], $this->gatewayManager->call($request['gateway'], 'reconcile', $gatewayData, $this->mode, $terminal)];
     }
 
