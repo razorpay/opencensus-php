@@ -1692,16 +1692,11 @@ trait Authorize
                 ($payment->isSecondRecurring() === false) and
                 ($payment->isPushPaymentMethod() === false))
             {
-                $response = $this->app->razorx->getTreatment($payment->merchant->getId(), 'authentication_via_gateway_rules', $this->mode);
+                $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
 
-                if (strtolower($response) === 'on')
-                {
-                    $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
+                $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
 
-                    $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
-
-                    return;
-                }
+                return;
             }
         }
         catch (\Throwable $ex)
