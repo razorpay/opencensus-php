@@ -1063,6 +1063,10 @@ class SettlementTest extends TestCase
 
         $secondMerchant = Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2;
 
+        $this->fixtures->merchant->edit($firstMerchant, ['channel' => Channel::AXIS2]);
+
+        $this->fixtures->merchant->edit($secondMerchant, ['channel' => Channel::AXIS2]);
+
         $this->createTransactionForMerchants($merchantIds, $amount);
 
         $firstSubMerchantBankAccount = $this->getDbEntity(
@@ -1095,7 +1099,7 @@ class SettlementTest extends TestCase
                 'deleted_at' => $deletedTimestamp
             ]);
 
-        $setlResponse = $this->initiateSettlements(Channel::AXIS);
+        $setlResponse = $this->initiateSettlements(Channel::AXIS2);
 
         $this->assertTestResponse($setlResponse);
 

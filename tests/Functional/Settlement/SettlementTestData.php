@@ -50,7 +50,7 @@ return [
     ],
 
     'testSettleToPartnerWhenNoMerchantBA' => [
-        'axis' => [
+        'axis2' => [
             'count'     => 2,
             'txnCount'  => 4,
         ]
