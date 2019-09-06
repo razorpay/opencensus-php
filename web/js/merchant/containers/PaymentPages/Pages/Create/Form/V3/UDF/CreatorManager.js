@@ -33,16 +33,20 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         validateSameTitleExists,
         onDeleteFormItem,
         onSubmitUDFField,
+        checkoutOptions,
         ...restProps
       } = this.props;
 
       let isFieldDeletable = true,
-        isFieldForcedRequired = false; // If so, then no option in dropdown to set the field optional.
+        isFieldForcedRequired = false, // If so, then no option in dropdown to set the field optional.
+        isCheckoutOption = false;
 
       if (field) {
-        // TODO: In V3, title of Email and Phone field can be modified. But don't allow name to get modified for those 2 fields
-        // TODO: Improve this logic, if the phone/email label is changed, then name is also is changed, so condition will have to change
-        if (field.name === 'email' || field.name === 'phone') {
+        if (
+          [checkoutOptions.email, checkoutOptions.phone].indexOf(field.name) >
+          -1
+        ) {
+          isCheckoutOption = true;
           isFieldDeletable = false;
           isFieldForcedRequired = true; // Email and Phone cannot be made as Optional field
         }
@@ -65,6 +69,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               closeFormModal={this.closeBaseForm}
               isFieldDeletable={isFieldDeletable}
               isFieldForcedRequired={isFieldForcedRequired}
+              isCheckoutOption={isCheckoutOption}
             />
           )}
         </div>
@@ -77,7 +82,11 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 
 class BaseFormModal extends React.PureComponent {
   onSaveForm = formData => {
-    this.props.onSubmitUDFField(formData, this.props.index);
+    this.props.onSubmitUDFField(
+      formData,
+      this.props.index,
+      this.props.isCheckoutOption
+    );
     this.props.closeFormModal();
   };
 

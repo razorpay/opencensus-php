@@ -83,7 +83,15 @@ export const markDataSaved = _ => ({
 });
 
 let initialState = {
-  paymentPageEntity: { currency: 'INR', settings: {} }, // Initialising with INR currency
+  paymentPageEntity: {
+    currency: 'INR', // Initialising with INR currency
+    settings: {
+      checkout_options: {
+        email: FIXED_FIELDS.email.name, // email key in form to be used in prefill checkout
+        phone: FIXED_FIELDS.phone.name, // phone key in form to be used in prefill checkout
+      },
+    },
+  },
   payment_page_id: null,
   FORM_ITEMS: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API.
   isPageDirty: false,

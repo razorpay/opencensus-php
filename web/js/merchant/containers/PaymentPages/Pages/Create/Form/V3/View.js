@@ -28,6 +28,7 @@ class SortableFormItemsList extends React.Component {
       FORM_ITEMS,
       isListSorting,
       validateSameTitleExists,
+      checkoutOptions,
       updateData,
       onDeleteUDFItem,
       onDeleteAmountItem,
@@ -59,6 +60,7 @@ class SortableFormItemsList extends React.Component {
                 index={idx}
                 field={fi}
                 isListSorting={isListSorting}
+                checkoutOptions={checkoutOptions}
                 onDeleteFormItem={onDeleteUDFItem}
                 onSubmitUDFField={onSubmitUDFField}
                 validateSameTitleExists={validateSameTitleExists}
@@ -117,7 +119,7 @@ export default class View extends React.PureComponent {
     this.props.deleteInFormItems(indexInFormItems);
   };
 
-  onSubmitUDFField = (formData, indexInFormItems) => {
+  onSubmitUDFField = (formData, indexInFormItems, isCheckoutOption) => {
     // console.log('FORM DATA.....', formData);
     const fieldSchema = constructFieldSchema(formData);
     // console.log('FIELD SCHEMA...', fieldSchema);
@@ -131,6 +133,17 @@ export default class View extends React.PureComponent {
 
     if (fieldSchema.enum) {
       fieldSchema.enum = formData.enum.concat();
+    }
+
+    // Remap the email and phone in checkout_options as per their updated label
+    if (isCheckoutOption) {
+      const checkoutOptions = this.props.paymentPageEntity.settings
+        .checkout_options;
+      checkoutOptions[fieldSchema.pattern] = fieldSchema.name; // Update the key
+
+      this.props.updateData({
+        settings: { checkout_options: checkoutOptions },
+      });
     }
 
     this.props.updateInFormItems({
@@ -221,6 +234,7 @@ export default class View extends React.PureComponent {
             currency={paymentPageEntity.currency}
             FORM_ITEMS={FORM_ITEMS}
             updateData={this.props.updateData}
+            checkoutOptions={paymentPageEntity.settings.checkout_options}
             onDeleteUDFItem={this.onDeleteUDFItem}
             onDeleteAmountItem={this.onDeleteAmountItem}
             onSubmitAmountField={this.onSubmitAmountField}
