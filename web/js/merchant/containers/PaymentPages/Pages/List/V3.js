@@ -16,11 +16,11 @@ export default ({ paymentPages, loading }) => {
         <thead>
           <tr>
             <th>Title</th>
-            <th class="text-right">Amount</th>
             <th class="text-right">Total Sales</th>
+            <th>Item Name</th>
             <th>Quantity Sold</th>
             <th>Page Url</th>
-            <th>Created At</th>
+            <th>Created On</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -42,14 +42,8 @@ export default ({ paymentPages, loading }) => {
                   {item.title}
                 </NavLink>
               </td>
-              <td className="text-right">
-                {item.amount ? (
-                  <Amount value={item.amount} currency={item.currency} />
-                ) : (
-                  '--'
-                )}
-              </td>
 
+              {/* TODO: Check if needed to be manually calculated from items or we've direct value */}
               <td className="text-right">
                 <Amount
                   value={item.total_amount_paid}
@@ -58,10 +52,34 @@ export default ({ paymentPages, loading }) => {
               </td>
 
               <td>
-                {Number(item.times_paid)}
-                <span style={{ opacity: 0.7 }}>
-                  {!!item.times_payable && ' of ' + Number(item.times_payable)}
-                </span>
+                <table>
+                  <tbody>
+                    {items.payment_page_items.map((pi, ix) => (
+                      <tr key={ix}>
+                        <td>{pi.item.title}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </td>
+
+              <td>
+                <table>
+                  <tbody>
+                    {items.payment_page_items.map((pi, ix) => (
+                      <tr key={ix}>
+                        <td>
+                          {Number(pi.times_paid)}
+                          {!!pi.quantity && (
+                            <span style={{ opacity: 0.7 }}>
+                              of {Number(pi.quantity)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </td>
 
               <td>

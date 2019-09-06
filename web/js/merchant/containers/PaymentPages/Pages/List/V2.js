@@ -20,7 +20,7 @@ export default ({ paymentPages, loading }) => {
             <th class="text-right">Total Sales</th>
             <th>Quantity Sold</th>
             <th>Page Url</th>
-            <th>Created At</th>
+            <th>Created On</th>
             <th>Status</th>
           </tr>
         </thead>
