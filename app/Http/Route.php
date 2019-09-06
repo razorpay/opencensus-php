@@ -1179,6 +1179,7 @@ final class Route
         'governor_create_rule_chain'              => ['post',     '{source}/rule_engine/rule_chain/{namespace}',                                                                   'GovernorController@createRuleChain'       ],
         'governor_update_rule_chain'              => ['put',      '{source}/rule_engine/rule_chain/{namespace}',                                                                   'GovernorController@updateRuleChain'       ],
         'governor_rule_chain_list'                => ['get',      '{source}/rule_engine/rule_chain/{namespace}',                                                                   'GovernorController@getRuleChains'         ],
+
         'governor_list_rule_chains_v1'            => ['get',      '{source}/namespaces/{namespace_id}/rule_chains',                                                                'GovernorControllerV1@listRuleChains'      ],
 
         // Governor Proxy APIs - Rule Group
@@ -2292,6 +2293,21 @@ final class Route
         'banking_account_update',
         'banking_account_webhook_account_info_internal',
 
+        'governor_create_namespace_v1',
+        'governor_list_namespace_v1',
+        'governor_get_namespace_v1',
+        'governor_update_namespace_v1',
+        'governor_delete_namespace_v1',
+        'governor_create_rule_v1',
+        'governor_list_rule_v1',
+        'governor_get_rule_v1',
+        'governor_delete_rule_v1',
+        'governor_list_rule_chains_v1',
+        'governor_list_rule_groups_v1',
+        'governor_create_rule_group_v1',
+        'governor_get_rule_group_v1',
+        'governor_delete_rule_group_v1',
+
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
@@ -2752,6 +2768,22 @@ final class Route
         'governor_rule_chain_list'                 => Permission::VIEW_GATEWAY_RULE,
         'governor_rule_chain_execute'              => Permission::VIEW_GATEWAY_RULE,
         'webhook_fire'                             => Permission::MAKE_API_CALL,
+
+        'governor_create_namespace_v1'             => Permission::CREATE_GATEWAY_RULE,
+        'governor_list_namespace_v1'               => Permission::VIEW_GATEWAY_RULE,
+        'governor_get_namespace_v1'                => Permission::VIEW_GATEWAY_RULE,
+        'governor_update_namespace_v1'             => Permission::EDIT_GATEWAY_RULE,
+        'governor_delete_namespace_v1'             => Permission::DELETE_GATEWAY_RULE,
+        'governor_create_rule_v1'                  => Permission::CREATE_GATEWAY_RULE,
+        'governor_list_rule_v1'                    => Permission::VIEW_GATEWAY_RULE,
+        'governor_get_rule_v1'                     => Permission::VIEW_GATEWAY_RULE,
+        'governor_delete_rule_v1'                  => Permission::DELETE_GATEWAY_RULE,
+        'governor_list_rule_chains_v1'             => Permission::VIEW_GATEWAY_RULE,
+        'governor_list_rule_groups_v1'             => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_get_rule_group_v1'               => Permission::VIEW_GATEWAY_RULE,
+        'governor_delete_rule_group_v1'            => Permission::DELETE_GATEWAY_RULE,
+
 
         //Enable maker/checker for payouts
         'payout_create'                            => Permission::CREATE_PAYOUT,

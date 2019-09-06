@@ -11,7 +11,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::CREATE_NAMESPACE_V1, $input, $source, $client_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::CREATE_NAMESPACE_V1, $input, $source, null, null, [], $client_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -20,7 +20,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::LIST_NAMESPACES_V1, $input, $source, $client_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::LIST_NAMESPACES_V1, $input, $source, null, null, [], $client_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -29,7 +29,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::GET_NAMESPACE_V1, $input, $source, $namespace_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::GET_NAMESPACE_V1, $input, $source, null, null, [], null, $namespace_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -38,7 +38,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::UPDATE_NAMESPACE_V1, $input, $source, $client_id, $namespace_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::UPDATE_NAMESPACE_V1, $input, $source, null, null, [], $client_id, $namespace_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -47,7 +47,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::DELETE_NAMESPACE_V1, $input, $source, $client, $namespace_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::DELETE_NAMESPACE_V1, $input, $source, null, null, [], null, $namespace_id, $client);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -56,7 +56,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::LIST_RULE_CHAIN_V1, $input, $source, $namespace_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::LIST_RULE_CHAIN_V1, $input, $source, null, null, [], null, $namespace_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -65,7 +65,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::LIST_RULE_GROUPS_V1, $input, $source, $namespace_id, $rule_chain_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::LIST_RULE_GROUPS_V1, $input, $source, null, null, [], null, $namespace_id, null, $rule_chain_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -74,7 +74,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::CREATE_RULE_GROUP_V1, $input, $source, $namespace_id, $rule_chain_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::CREATE_RULE_GROUP_V1, $input, $source, null, null, [], null, $namespace_id, null, $rule_chain_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -83,7 +83,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::GET_RULE_GROUP_V1, $input, $source, $namespace_id, $rule_chain_id, $rule_group_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::GET_RULE_GROUP_V1, $input, $source, null, null, [], null, $namespace_id, null, $rule_chain_id, $rule_group_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -92,7 +92,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::DELETE_RULE_GROUP_V1, $input, $source, $namespace_id, $rule_chain_id, $rule_group_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::DELETE_RULE_GROUP_V1, $input, $source, null, null, [], null, $namespace_id, null, $rule_chain_id, $rule_group_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -101,7 +101,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::CREATE_RULE_V1, $input, $source, $namespace_id, $rule_chain_id, $rule_group_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::CREATE_RULE_V1, $input, $source, null, null, [], null, $namespace_id, null, $rule_chain_id, $rule_group_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -110,7 +110,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::LIST_RULE_V1, $input, $source, $namespace_id, $rule_chain_id, $rule_group_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::LIST_RULE_V1, $input, $source, null, null, [], null, $namespace_id, null, $rule_chain_id, $rule_group_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -119,7 +119,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::GET_RULE_V1, $input, $source, $namespace_id, $rule_chain_id, $rule_group_id, $rule_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::GET_RULE_V1, $input, $source, null, null, [], null, $namespace_id, null, $rule_chain_id, $rule_group_id, $rule_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -128,11 +128,8 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::DELETE_RULE_V1, $input, $source, $namespace_id, $rule_chain_id, $rule_group_id, $rule_id);
+        $response = $this->app['governor']->sendRequest(GovernorService::DELETE_RULE_V1, $input, $source, null, null, [], null, $namespace_id, null, $rule_chain_id, $rule_group_id, $rule_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
-
-
-
 }
