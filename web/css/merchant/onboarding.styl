@@ -110,8 +110,8 @@
 
   .SliderDots
     position: absolute
-    bottom: -80px
     left: 50%
+    margin-top: 20px
     transform: translate(-50%, 0)
 
     @media(max-width: 1024px)
@@ -190,9 +190,11 @@
     padding: 0 64px
     margin-top: 120px
     align-self: flex-start
+    width: 50%
 
     @media(max-width: 1024px)
       padding: 0 24px
+      width: auto
 
     .Details-heading
       font-weight: bold
@@ -340,24 +342,9 @@
     position: relative
     z-index: 3
 
-.OnBoarding--FeatureRequest
-  .FeatureRequest
-    padding: 0 64px 64px 64px
-    width: 40%
-
-    .desc
-      color: #8B9498
-      font-size: 14px
-      line-height: 20px
-      margin-bottom: 12px
-
-    .FeatureRequest--Form
-      .form-body
-        .Input:first-child
-          margin-top: 0
-
-.OnBoarding--Subscription
-  .OnBoarding--ImageSlide .Landing--Image
+.OnBoarding--Subscription,
+.OnBoarding--Route
+  .Landing--Image
     overflow: hidden
     z-index: 2
     position: relative
@@ -379,8 +366,8 @@
       top: -132px
       border-radius: 1px
       z-index: -1
-      height: 640px
       width: 180%
+      height: 816px
       min-width: 400px
       max-width: 490px
       color: #40c1bb
@@ -388,3 +375,13 @@
       box-shadow: 1px 1px 0 #009688, 2px 2px 0 #009688, 3px 3px 0 #009688, 4px 4px 0 #009688
       transform-origin: 0 0
       transform: rotateZ(45deg) skewX(-15deg) skewY(-16deg)
+
+.OnBoarding--Route
+  .Landing--Image
+    &:before
+      color: #50a8ed
+      box-shadow: 1px 1px 0 #11c0fa, 2px 2px 0 #11c0fa, 3px 3px 0 #11c0fa, 4px 4px 0 #11c0fa
+      background: linear-gradient(0deg, #0f6eed 0%, #00d4ff 100%)
+    
+    img
+      transform: translate(0, -25%)  rotateY(-180deg)
