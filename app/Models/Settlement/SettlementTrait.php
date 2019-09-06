@@ -23,12 +23,13 @@ trait SettlementTrait
 {
     /**
      * @param $txns
+     * @param $merchantSettleToPartner
      *
      * @return array
      * Returns array keyed by merchant id, and
      * the values are the filtered transactions for that merchant
      */
-    protected function filterTransactionsForSettlement($txns): array
+    protected function filterTransactionsForSettlement($txns, $merchantSettleToPartner): array
     {
         $filterGroupedTxns    = [];
 
@@ -55,7 +56,7 @@ trait SettlementTrait
         foreach ($txns as $txn)
         {
             // skip if txn not to be settled
-            if ($this->shouldSettle($txn) === false)
+            if ($this->shouldSettle($txn, $merchantSettleToPartner) === false)
             {
                 $transactionSkipCount++;
 
@@ -691,7 +692,12 @@ trait SettlementTrait
                 try
                 {
                     // create settlement and attempt
-                    $merchantSettler = new Merchant($merchant, $channel, $this->repo, $this->isLogEnabled());
+                    $merchantSettler = new Merchant(
+                        $merchant,
+                        $channel,
+                        $this->repo,
+                        $this->isLogEnabled(),
+                        $merchantSettleToPartner);
 
                     $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
@@ -766,9 +772,10 @@ trait SettlementTrait
      * time till beneficiary is updated in kotak
      *
      * @param Transaction\Entity $txn
+     * @param $merchantSettleToPartner
      * @return bool
      */
-    protected function shouldSettle(Transaction\Entity $txn): bool
+    protected function shouldSettle(Transaction\Entity $txn, $merchantSettleToPartner): bool
     {
         $mid = $txn->getMerchantId();
 
@@ -805,7 +812,27 @@ trait SettlementTrait
 
         $bankAccount = $merchant->bankAccount;
 
-        if ($bankAccount === null)
+        if(isset($merchantSettleToPartner[$mid]) === true)
+        {
+            $bankAccountId = $merchantSettleToPartner[$mid];
+
+            $bankAccount = $this->repo->bank_account->getBankAccountById($bankAccountId);
+
+            if (empty($bankAccount) === true)
+            {
+                $this->trace->error(
+                    TraceCode::MERCHANT_SETTLING_PARTNER_BANK_ACCOUNT_NOT_MAPPED,
+                    [
+                        'merchant_id'    => $merchant->getId(),
+                        'transaction_id' => $txn->getId()
+                    ]
+                );
+
+                return false;
+            }
+        }
+
+        if (empty($bankAccount) === true)
         {
             $this->trace->error(
                 TraceCode::SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED,
