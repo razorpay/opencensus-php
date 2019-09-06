@@ -45,6 +45,8 @@ class Gateway extends Base\Gateway
     const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
     const DEFAULT_CVV_VALUE         = '000';
 
+    const PAYSECURE_MID_SWITCH_TIME = 1567612806; // 4 Sept 2019, 4:00 PM
+
     protected $map = [
         ResponseFields::RETRIEVAL_REF_NUM   => Entity::RRN,
         ResponseFields::STATUS              => Entity::STATUS,
@@ -1390,6 +1392,8 @@ class Gateway extends Base\Gateway
 
         $message = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
+        unset($response[ResponseFields::CARD_NUMBER]);
+
         if ($respCode !== Status::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(
@@ -1497,15 +1501,13 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        $merchantId = $this->getLiveMerchantId();
-
-        // For all Paysecure requests, use hitachi's shared mid on live mode
-        if ($this->isRupayTransaction($this->input) === true)
+        if (($this->isRupayTransaction($this->input) === true) and
+            ($this->input['payment'][Payment\Entity::CREATED_AT] <= self::PAYSECURE_MID_SWITCH_TIME))
         {
-            // todo: Change later as required.
-            // For PVT, we would be using shared Hitachi merchant
-            $merchantId = '38RR00000000001';
+            return '38RR00000000001';
         }
+
+        $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {
@@ -1517,15 +1519,13 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
-        $terminalId = $this->terminal['gateway_terminal_id'];
-
-        // For all Paysecure requests, use hitachi's shared tid on live mode
-        if ($this->isRupayTransaction($this->input) === true)
+        if (($this->isRupayTransaction($this->input) === true) and
+            ($this->input['payment'][Payment\Entity::CREATED_AT] <= self::PAYSECURE_MID_SWITCH_TIME))
         {
-            // todo: Change later as required.
-            // For PVT, we would be using shared Hitachi terminal
             return '38R00001';
         }
+
+        $terminalId = $this->terminal['gateway_terminal_id'];
 
         if ($this->mode === Mode::TEST)
         {

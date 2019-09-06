@@ -93,4 +93,31 @@ class Gateway extends AxisMigs\Gateway
     {
         return false;
     }
+
+    protected function verifyPaymentCallbackResponse($gatewayPayment, array $input)
+    {
+        $data = parent::verifyPaymentCallbackResponse($gatewayPayment, $input);
+
+        $threeDSenrolled = $input['gateway']['vpc_3DSenrolled'] ?? null;
+
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+
+        $message = $input['gateway']['vpc_Message'] ?? '';
+
+        $threeDSstatus = $input['gateway']['vpc_3DSstatus'] ?? null;
+
+        $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED;
+
+        if ($threeDSenrolled !== 'Y')
+        {
+            $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
+        }
+
+        if ($threeDSstatus === 'N')
+        {
+            $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
+        }
+
+        return $data;
+    }
 }

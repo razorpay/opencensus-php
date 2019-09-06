@@ -34,6 +34,10 @@ return [
                 'assignable'  => true,
             ],
             Permission::CANCEL_BATCH => 'cancel batch',
+            Permission::BULK_CREATE_ENTITY      => [
+                'assignable' => true,
+                'workflow'   => false,
+            ],
         ],
 
         PermissionCategory::RAZORX => [
@@ -190,6 +194,10 @@ return [
                 'description' => 'Ability to enable or disable a terminal',
                 'assignable' => true,
             ],
+            Permission::CHECK_TERMINAL_SECRET               => [
+                'description' => 'Ability to check terminal secrets and passwords',
+                'assignable'  => true,
+            ],
             Permission::TERMINAL_MANAGE_MERCHANT            => [
                 'description' => 'Ability to add or remove sub merchants to a terminal',
                 'assignable' => true,
@@ -315,6 +323,10 @@ return [
                 'assignable' => true,
             ],
             Permission::ADD_RECONCILIATION_FILE             => '',
+            Permission::ADD_MANUAL_RECONCILIATION_FILE      => [
+                'description' => 'Upload manually prepared MIS file to mark txn reconciled (used by FinOps)',
+                'assignable'  => true,
+            ],
             Permission::ADD_SETTLEMENT_RECONCILIATION       => '',
             Permission::RETRY_SETTLEMENT                    => '',
             Permission::MERCHANT_INVOICE_EDIT               => '',

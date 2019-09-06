@@ -46,6 +46,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $verifyObj, 'verify');
     }
 
+    public function capture($input)
+    {
+        $captureObj = new CaptureData();
+
+        return $this->processMockResponse($input, $captureObj, 'capture');
+    }
+
     public function refund($input)
     {
         $refundObj = new RefundData();
@@ -208,6 +215,26 @@ class Server extends Base\Mock\Server
         $url = $this->route->getPublicCallbackUrlWithHash($publicId);
         $request = [
             'url'          => $url,
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function wallet_paypal($input)
+    {
+        $content = $input;
+        $content = [
+            'token'     => 'PayPal_Token',
+            'PayId'     => '8DS61651XA862144J',
+            'status'    => 'callback_successful',
+        ];
+
+        $this->content($content, 'authorize');
+
+        $request = [
+            'url'          => $input['callbackUrl'],
             'content'      => $content,
             'method'       => 'post',
         ];

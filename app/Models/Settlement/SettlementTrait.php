@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
@@ -16,6 +17,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Constants\SettlementChannelMedium as Medium;
 
 trait SettlementTrait
 {
@@ -500,11 +502,68 @@ trait SettlementTrait
             list($setl, $bankTransferAtpt) = $this->settleForMerchant(
                 $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner);
 
+            if(($setl !== null) and ($bankTransferAtpt !== null))
+            {
+                $transactionCount = $txns->count();
+
+                $customProperties = [
+                    'channel'               => $channel,
+                    'settlement_amount'     => $setlAmount,
+                    'transaction_count'     => $transactionCount
+                ];
+
+                $this->app['diag']->trackSettlementEvent(
+                    EventCode::SETTLEMENT_CREATION_SUCCESS,
+                    $setl,
+                    null,
+                    $customProperties);
+
+                $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
+                    Medium::API : Medium::FILE;
+
+                $customProperties += [
+                    'fund_transfer_attempt_id'                => $bankTransferAtpt->getId(),
+                    'fund_transfer_attempt_mode'              => $bankTransferAtpt->getMode(),
+                    'fund_transfer_attempt_medium'            => $medium
+                ];
+
+                $this->app['diag']->trackSettlementEvent(
+                    EventCode::FTA_CREATION_SUCCESS,
+                    $setl,
+                    null,
+                    $customProperties);
+            }
+
             return [$setl, $bankTransferAtpt];
         }
         catch (\Exception $exception)
         {
             $this->trace->traceException($exception);
+
+            $transactionCount = $txns->count();
+
+            $customProperties = [
+                'channel'               => $channel,
+                'settlement_amount'     => $setlAmount,
+                'transaction_count'     => $transactionCount
+            ];
+
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::SETTLEMENT_CREATION_FAILED,
+                null,
+                $exception,
+                $customProperties);
+
+            $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
+                Medium::API : Medium::FILE;
+
+            $customProperties += ['fund_transfer_attempt_medium' => $medium];
+
+            $this->app['diag']->trackSettlementEvent(
+                EventCode::FTA_CREATION_FAILED,
+                null,
+                $exception,
+                $customProperties);
 
             return [null, null];
         }
@@ -817,7 +876,6 @@ trait SettlementTrait
     protected function settlementFailure($channel, $e, $traceCode)
     {
         $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
-
         $this->failureNotification($e);
 
         throw $e;

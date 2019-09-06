@@ -315,7 +315,7 @@ class Core extends Base\Core
         }
         else
         {
-            $balance = $this->repo->balance->getMerchantBalance($merchant);
+            $balance = $this->merchant->primaryBalance;
         }
 
         if ($balance->getFeeCredits() >= $fee)

@@ -765,6 +765,24 @@ class TerminalTest extends TestCase
         $this->assertFalse($terminal->reload()->isEnabled());
     }
 
+    public function testTerminalSecretCheck()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'gateway_terminal_password'  => '1234',
+                'gateway_terminal_password2' => '21234',
+                'gateway_secure_secret'      => '0123',
+                'gateway_secure_secret2'     => '20123',
+            ]);
+
+        $url = '/terminals/' . $terminal->getKey() . '/secret';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAddAmazonPayTerminal()
     {
         $this->startTest();
@@ -946,6 +964,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateSbiTpvTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAssignUpiYesbankTerminal()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -1114,6 +1141,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateWalletPhonepeTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateWalletPaypalTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
@@ -1319,7 +1355,7 @@ class TerminalTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
-        $url = '/accounts/'.$subMerchantId.'/terminals';
+        $url = '/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 

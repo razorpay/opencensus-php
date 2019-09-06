@@ -19,6 +19,7 @@ class Entity
     // Core entities
     //
     const IIN                       = 'iin';
+    const MPAN                      = 'mpan';
     const KEY                       = 'key';
     const P2P                       = 'p2p';
     const VPA                       = 'vpa';
@@ -123,6 +124,7 @@ class Entity
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
     const BANKING_ACCOUNT_STATEMENT = 'banking_account_statement';
     const BANKING_ACCOUNT_STATE     = 'banking_account_state';
+    const MERCHANT_DOCUMENT         = 'merchant_document';
 
     // heimdall
     const ORG                   = 'org';
@@ -229,6 +231,7 @@ class Entity
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_AMAZONPAY       = 'wallet_amazonpay';
     const WALLET_PHONEPE         = 'wallet_phonepe';
+    const WALLET_PAYPAL          = 'wallet_paypal';
     const CARDLESS_EMI           = 'cardless_emi';
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
@@ -338,6 +341,7 @@ class Entity
         Entity::BANK_TRANSFER,
         Entity::REFUND,
         Entity::FUND_ACCOUNT_VALIDATION,
+        Entity::ADJUSTMENT,
     ];
 
     public static $namespace = [
@@ -415,6 +419,7 @@ class Entity
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
+        self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -493,6 +498,7 @@ class Entity
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
         self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
+        self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::UPI_CITI               => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,

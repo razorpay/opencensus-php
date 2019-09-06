@@ -98,6 +98,7 @@ class Gateway
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PHONEPE     = 'wallet_phonepe';
+    const WALLET_PAYPAL      = 'wallet_paypal';
 
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
@@ -211,6 +212,7 @@ class Gateway
         self::PAYTM             => self::PAYTM,
         self::UPI_AXIS          => self::AXIS,
         self::UPI_MINDGATE      => self::HDFC,
+        self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
     ];
 
     /**
@@ -266,6 +268,7 @@ class Gateway
      * and be allowed to perform it.
      * */
     const REFUND_RETRY_GATEWAYS = [
+        Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::EBS,
@@ -295,6 +298,7 @@ class Gateway
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::PAYTM,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -702,6 +706,7 @@ class Gateway
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
             self::WALLET_PHONEPE,
+            self::WALLET_PAYPAL,
         ],
 
         Method::EMI => [
@@ -975,6 +980,7 @@ class Gateway
         Wallet::MPESA       => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
         Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
+        Wallet::PAYPAL      => Gateway::WALLET_PAYPAL,
     ];
 
     public static $upiToGatewayMap = [

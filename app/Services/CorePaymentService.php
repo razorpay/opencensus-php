@@ -128,9 +128,10 @@ class CorePaymentService
 
         $request = [
             'url'     => 'sync',
-            'method'  => 'GET',
+            'method'  => 'POST',
             'content' => [
-                'count' => $count,
+                'count'       => intval($count),
+                'payment_ids' => $data['payment_ids'] ?? [],
             ],
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),

@@ -124,7 +124,7 @@ class Mailgun extends Base
             self::SUBJECT        => $input[self::SUBJECT],
             self::TO             => $input[self::RECIPIENT],
             self::TIMESTAMP      => $input[self::TIMESTAMP],
-            self::BODY           => $input[self::STRIPPED_TEXT],
+            self::BODY           => $input[self::STRIPPED_TEXT] ?? '',
             self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input[self::STRIPPED_HTML])),
         ];
 

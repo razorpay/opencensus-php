@@ -736,4 +736,93 @@ class Service extends Base\Service
             ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => $result,
         ];
     }
+
+    public function sendTestSms(array $input)
+    {
+        $admin = $this->auth->getAdmin();
+
+        $this->trace->info(
+            TraceCode::ADMIN_SEND_TEST_SMS_REQUEST,
+            [
+                'admin_id'          => $admin->getId(),
+                'payload'           => $input,
+            ]);
+
+        $ravenPayload = [
+            'receiver' => $input['receiver'],
+            'source'   => 'api.admin.test.sms',
+            'gateway'  => $input['gateway'],
+            'sender'   => $input['sender'],
+            'template' => $input['template'] ?? 'sms.p2p.verification_completed',
+            'params'   => $input['params'],
+        ];
+
+        return $this->app->raven->sendSms($ravenPayload, true);
+    }
+
+    /**
+     * @param $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
+     */
+    public function bulkCreate($input)
+    {
+        (new Validator)->validateInput('bulkCreateEntity', $input);
+
+        $type = $input['type'];
+
+        Entity::validateEntityOrFailPublic($type);
+
+        $dataList = $input['data'];
+
+        $failed = $processed = [];
+
+        $this->repo->transactionOnLiveAndTest(function() use ($type, $dataList, &$processed, &$failed) {
+            foreach ($dataList as $data)
+            {
+                try
+                {
+                    $newEntityClass = (new Entity)->getEntityClass($type);
+
+                    $newEntity = (new $newEntityClass)->generateId();
+
+                    if (array_key_exists($newEntity::MERCHANT_ID, $data))
+                    {
+                        $merchantId = $data[$newEntity::MERCHANT_ID];
+
+                        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                        $newEntity->merchant()->associate($merchant);
+
+                        unset($data[$newEntity::MERCHANT_ID]);
+                    }
+
+                    $newEntity->build($data);
+
+                    $this->repo->saveOrFail($newEntity);
+
+                    array_push($processed, $newEntity[$newEntity::ID]);
+
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR
+                    );
+                    array_push($failed, $data);
+                }
+            }
+        });
+
+        $summary = [
+            'failed_count'  => count($failed),
+            'success_count' => count($processed),
+            'failed'        => $failed,
+        ];
+
+        return $summary;
+    }
 }

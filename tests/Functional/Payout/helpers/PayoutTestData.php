@@ -110,6 +110,111 @@ return [
         ],
     ],
 
+    'testRxPayoutOnBankingHoliday' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'NEFT',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testRxPayoutOnNonBankingHolidayBeforeNEFTtimings' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'NEFT',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testRxPayoutOnNonBankingHolidayAfterNEFTtimings' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'NEFT',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePayoutWithOtp' => [
         'request'  => [
             'method'  => 'POST',
@@ -989,7 +1094,6 @@ return [
                                 'account_number'    => '50100244702362',
                             ],
                             'active'                => true,
-                            'idempotency_key'       => 'batch_abc123',
                         ],
                         'amount'                    => 100,
                         'currency'                  => 'INR',
@@ -1011,7 +1115,6 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
-                        'idempotency_key'           => 'batch_abc123',
                     ],
                     [
                         'entity'                    => 'payout',
@@ -1025,7 +1128,6 @@ return [
                                 'address'           => '8861655100@ybl'
                             ],
                             'active'                => true,
-                            'idempotency_key'       => 'batch_abc124',
                         ],
                         'amount'                    => 100,
                         'currency'                  => 'INR',
@@ -1047,13 +1149,12 @@ return [
                         'mode'                      => 'UPI',
                         'reference_id'              => null,
                         'narration'                 => '123',
-                        'idempotency_key'           => 'batch_abc124',
                     ]
                 ]
             ],
         ],
     ],
-    
+
     'testCreatePayoutForRblDirectAccount' => [
         'request'  => [
             'method'  => 'POST',
@@ -1232,7 +1333,6 @@ return [
                                 'account_number'    => '50100244702362',
                             ],
                             'active'                => true,
-                            'idempotency_key'       => 'batch_abc123',
                         ],
                         'amount'                    => 100,
                         'currency'                  => 'INR',
@@ -1254,7 +1354,6 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
-                        'idempotency_key'           => 'batch_abc123',
                     ],
                     [
                         'entity'                    => 'payout',
@@ -1268,7 +1367,6 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
-                        'idempotency_key'           => 'batch_abc123',
                     ]
                 ]
             ],

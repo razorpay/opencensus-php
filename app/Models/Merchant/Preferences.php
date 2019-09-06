@@ -109,6 +109,12 @@ class Preferences
     const MID_BFL_CARD              = 'Cya3FzbrKbxMGg';
     const MID_RBL_LAPOD             = 'CzQAGjwnr3RSqw';
     const MID_RBL_PL_NON_DEL_CUST   = 'DAeLo1KdwN2BTW';
+    const MID_RBL_RETAIL_ASSETS     = 'AtgdEIzM6qtWmS';
+    const MID_RBL_INTERIM_PROCESS   = 'D83Pk7NqU6URGe';
+    const MID_MSR_LAW_CLG_VFH       = 'CxqHOiYBc8yG4U';
+
+    const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
+    const MID_AIRTEL                = 'AqUQQH9neAMkUG';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
@@ -266,6 +272,19 @@ class Preferences
         self::MID_PT_SENDERLAL_OPEN_UNI,
         self::MID_SDM_YOGA_AND_NATURE,
         self::MID_ARMY_PUBLIC_SCHOOL,
+        self::MID_MSR_LAW_CLG_VFH,
+    ];
+
+    const NO_MERCHANT_INVOICE_PARENT_MIDS =  [
+        self::MID_NSDL_MERCHANTS,
+    ];
+
+    /**
+     * Array of merchant ids for which invoice should not be generated.
+     * Disabled for Airtel Payments Bank currently.
+     */
+    const NO_MERCHANT_INVOICE_MIDS = [
+        self::MID_AIRTEL,
     ];
 
     public static function checkZohoHeaders(Headers $headers)

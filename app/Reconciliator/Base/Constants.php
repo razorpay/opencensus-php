@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\Base;
 
+use RZP\Error\ErrorCode;
+
 class Constants
 {
     const RECON_PUBLIC_DESCRIPTIONS = [
@@ -51,5 +53,7 @@ class Constants
         InfoCode::GATEWAY_SERVICE_TAX_MISMATCH                  => 'Gateway service tax in the recon file does not match with the one stored in API.',
 
         InfoCode::RECON_UNABLE_TO_IDENTIFY_RECON_TYPE           => 'Could not identify the row as payment or refund.',
+
+        InfoCode::RECON_INSUFFICIENT_DATA_FOR_MANUAL_RECON      => 'Insufficient data given for manual reconciliation of txn.',
     ];
 }

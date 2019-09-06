@@ -104,6 +104,9 @@ class CreateBankingAccountTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->string(Entity::INTERNAL_COMMENT, 255)
+                  ->nullable();
+
             $table->index(Entity::STATUS);
 
             $table->index(Entity::CHANNEL);
