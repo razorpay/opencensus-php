@@ -126,7 +126,11 @@ export default class Sidebar extends Component {
     }
   }
 
-  @RTracking(() => window.rzpQ.onbr().initiated('act.form_fill'))
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('act.form_fill', {
+      clickSource: 'LHS_Nav_Bar',
+    })
+  )
   onSidebarBannerClick = e => {
     const { user } = this.props,
       { showInstantActivation } = user;

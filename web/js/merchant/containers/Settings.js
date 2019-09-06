@@ -38,7 +38,7 @@ export default class Settings extends Component {
                 analyticsGoTo('Configuration');
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('dash.settings_action', {
-                    action: 'View configurations',
+                    action: 'View_Configurations',
                   })
                 );
               }}
@@ -56,7 +56,7 @@ export default class Settings extends Component {
                 analyticsGoTo('Webhooks');
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('dash.settings_action', {
-                    action: 'View webhook tab',
+                    action: 'View_Webhook_Tab',
                   })
                 );
               }}
@@ -74,7 +74,7 @@ export default class Settings extends Component {
                 analyticsGoTo('API Keys');
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('dash.settings_action', {
-                    action: 'View API key tab',
+                    action: 'View_API_Key_Tab',
                   })
                 );
               }}

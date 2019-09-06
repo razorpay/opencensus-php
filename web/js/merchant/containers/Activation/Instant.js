@@ -65,14 +65,6 @@ function defaultFieldProps(f) {
   }
 }
 
-function getLabelFromBusinessTypeOption(val) {
-  const numVal = Number(val);
-  const label = (
-    BUSINESS_TYPE_OPTIONS.find(option => option.name === numVal) || {}
-  ).label;
-  return label;
-}
-
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 1;
 
@@ -600,9 +592,9 @@ function updateHubSpotContactsProperties(data) {
   delete hbsData.l1_business_model;
 
   if (data.business_type) {
-    hbsData.l1_business_type = getLabelFromBusinessTypeOption(
-      data.business_type
-    );
+    hbsData.l1_business_type = (
+      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
+    ).label;
   }
 
   if (hbsData.l1_promoter_pan) {

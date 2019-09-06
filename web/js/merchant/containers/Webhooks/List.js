@@ -28,7 +28,7 @@ export default class WebhooksContainer extends ListContainer {
 
   @RTracking(() =>
     window.rzpQ.onbr().initiated('dash.settings_action', {
-      action: 'Initiate webhook setup',
+      action: 'Initiate_Webhook_Setup',
     })
   )
   showWebhookModal = (webhook = null) => {
@@ -41,7 +41,7 @@ export default class WebhooksContainer extends ListContainer {
 
   @RTracking(() =>
     window.rzpQ.onbr().initiated('dash.settings_action', {
-      action: 'Submit webhook details',
+      action: 'Submit_Webhook_Details',
     })
   )
   highlightRowAndClose = webhook => {

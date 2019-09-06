@@ -155,7 +155,7 @@ export default class Profile extends Component {
 
   @RTracking(() =>
     window.rzpQ.onbr().initiated('dash.my_account_actions', {
-      clickSource: 'Change password initiated',
+      action: 'Change_Password_Initiated',
     })
   )
   openChangePasswordModal = () => {

@@ -316,8 +316,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   // Handles both Create and Edit payment page.
   @RTracking(() =>
-    window.rzpQ.success('dash.pp_action', {
-      action: 'Initiate PP launch',
+    window.rzpQ.onbr().success('dash.pp_action', {
+      action: 'Initiate_PP_Launch',
     })
   )
   handleSavePublish = () => {

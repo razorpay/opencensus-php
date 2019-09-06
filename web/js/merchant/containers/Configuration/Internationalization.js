@@ -51,8 +51,8 @@ export default class FlashCheckout extends Component {
   };
 
   @RTracking(() =>
-    window.rzpQ.initiated('dash.settings_action', {
-      action: 'Toggle international payments',
+    window.rzpQ.onbr().initiated('dash.settings_action', {
+      action: 'Toggle_International_Payments',
     })
   )
   toggleInternationalization = (enableInternational, cb) => {

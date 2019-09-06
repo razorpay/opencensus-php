@@ -19,6 +19,21 @@ export default class ActivationCard extends Component {
     this.state = initialState;
   }
 
+  handleBlackListFlowClick = () => {
+    const { track, tracking } = this.props;
+    track.refillActivationForm();
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('act.form_fill', {
+        clickSource: 'Modify_Business_Category',
+      })
+    );
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('act.blacklist_change_category', {
+        clickSource: 'Dashboard_Link',
+      })
+    );
+  };
+
   componentWillReceiveProps(nextProps) {
     const { tracking } = this.props;
     const {
@@ -53,7 +68,7 @@ export default class ActivationCard extends Component {
                 track.activateAccount();
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('act.form_fill', {
-                    clickSource: 'Dashboard CTA',
+                    clickSource: 'Dashboard_CTA',
                   })
                 );
               }}
@@ -108,14 +123,7 @@ export default class ActivationCard extends Component {
           <Link
             to="/activation"
             className="btn-link"
-            onClick={() => {
-              track.refillActivationForm();
-              tracking.trackEvent(
-                window.rzpQ.onbr().initiated('act.form_fill', {
-                  clickSource: 'Modify Business Category',
-                })
-              );
-            }}
+            onClick={this.handleBlackListFlowClick}
           >
             here
           </Link>

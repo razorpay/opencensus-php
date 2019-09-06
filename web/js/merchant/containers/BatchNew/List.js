@@ -63,13 +63,13 @@ export default class BatchList extends ListContainer {
   };
 
   openUploadModal = renderUploadModal => () => {
-    const { tracking } = this.props;
+    const { tracking, openModal } = this.props;
     tracking.trackEvent(
-      window.rzpQ.success('dash.pl_action', {
-        action: 'Upload batch PL file',
+      window.rzpQ.onbr().success('dash.pl_action', {
+        action: 'Upload_Batch_PL_File',
       })
     );
-    this.props.openModal({
+    openModal({
       size: 'large',
       component: renderUploadModal(),
     });

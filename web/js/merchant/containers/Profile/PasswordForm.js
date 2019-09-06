@@ -27,7 +27,7 @@ export default class PasswordForm extends PureComponent {
         });
         tracking.trackEvent(
           window.rzpQ.onbr().initiated('dash.my_account_actions', {
-            action: 'Change password successful',
+            action: 'Change_Password_Successful',
           })
         );
         closeModal();

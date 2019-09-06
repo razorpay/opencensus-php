@@ -287,8 +287,8 @@ export default class PaymentPagesContainer extends ListContainer {
                 <span
                   onClick={() => {
                     tracking.trackEvent(
-                      window.rzpQ.success('dash.pp_action', {
-                        action: 'Initiate PP creation',
+                      window.rzpQ.onbr().success('dash.pp_action', {
+                        action: 'Initiate_PP_Creation',
                       })
                     );
                   }}

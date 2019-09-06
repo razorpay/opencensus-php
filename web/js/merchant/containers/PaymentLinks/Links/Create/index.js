@@ -421,8 +421,8 @@ export default class CreateNewContainer extends React.Component {
           });
 
           tracking.trackEvent(
-            window.rzpQ.success('dash.pl_action', {
-              action: 'PL creation successful',
+            window.rzpQ.onbr().success('dash.pl_action', {
+              action: 'PL_Creation_Successful',
             })
           );
 
@@ -440,8 +440,8 @@ export default class CreateNewContainer extends React.Component {
           }
         } else {
           tracking.trackEvent(
-            window.rzpQ.success('dash.pl_action', {
-              action: 'PL creation failed',
+            window.rzpQ.onbr().success('dash.pl_action', {
+              action: 'PL_Creation_Failed',
             })
           );
           throw new Error(resp.errors);

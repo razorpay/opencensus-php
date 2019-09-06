@@ -26,6 +26,18 @@ const MerchantDetails = ({
       ? 'Activation'
       : 'KYC';
 
+  const handleEditWebsite = () => {
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('dash.my_account_actions', {
+        action: 'Add_Website_Initiated',
+      })
+    );
+    openModal({
+      size: 'small',
+      component: <EditWebsiteDetails onClose={closeModal} />,
+    });
+  };
+
   return (
     <div class="list-group details-row-container">
       <DetailRow label="Merchant Name" value={user.name} />
@@ -159,21 +171,7 @@ const MerchantDetails = ({
               !user.has_key_access ? (
                 !user.business_website ? (
                   <span>
-                    <a
-                      onClick={() => {
-                        tracking.trackEvent(
-                          window.rzpQ.initiated('dash.my_account_actions', {
-                            action: 'Add website initiated',
-                          })
-                        );
-                        openModal({
-                          size: 'small',
-                          component: (
-                            <EditWebsiteDetails onClose={closeModal} />
-                          ),
-                        });
-                      }}
-                    >
+                    <a onClick={handleEditWebsite}>
                       Add Website/App URL for Full Access
                     </a>
                   </span>

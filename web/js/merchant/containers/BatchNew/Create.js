@@ -14,8 +14,8 @@ export default class BatchCreate extends Component {
   };
 
   @RTracking(() =>
-    window.rzpQ.success('dash.pl_action', {
-      action: 'Initiate batch PL generation',
+    window.rzpQ.onbr().success('dash.pl_action', {
+      action: 'Initiate_Batch_PL_Generation',
     })
   )
   handleBatchCreate = props => {

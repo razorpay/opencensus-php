@@ -88,7 +88,7 @@ export default class AddGST extends Component {
 
         tracking.trackEvent(
           window.rzpQ.onbr().initiated('dash.my_account_actions', {
-            action: 'Add GSTIN successful',
+            action: 'Add_GSTIN_Successful',
           })
         );
 

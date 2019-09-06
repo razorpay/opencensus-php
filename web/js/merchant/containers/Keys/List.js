@@ -50,7 +50,7 @@ export default class KeysListContainer extends ListContainer {
 
   @RTracking(() =>
     window.rzpQ.onbr().initiated('dash.settings_action', {
-      action: 'Initiate API key gen',
+      action: 'Initiate_API_Key_Gen',
     })
   )
   generateKey = params => {
