@@ -234,9 +234,12 @@ export default class BaseForm extends React.PureComponent {
           {!!selfIndex &&
             onDeleteField && (
               <OptionsItem>
-                <div onClick={this.onDeleteField}>
+                <div
+                  class="OptionsDropdown-item--delete"
+                  onClick={this.onDeleteField}
+                >
                   <i class="i i-delete" />
-                  Delete Field
+                  <div>Delete Field</div>
                 </div>
               </OptionsItem>
             )}

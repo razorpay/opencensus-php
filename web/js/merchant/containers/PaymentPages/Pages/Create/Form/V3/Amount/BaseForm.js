@@ -388,16 +388,24 @@ export default class BaseForm extends React.PureComponent {
           <OptionsItem>
             <div onClick={this.props.openAdvancedForm}>
               <i class="i i-options" />
-              Advanced Options
+              <div>
+                Advanced Options
+                <div class="subOption">
+                  Add quantity, define rules around quantity, etc.
+                </div>
+              </div>
             </div>
           </OptionsItem>
 
           {typeof selfIndex !== 'undefined' &&
             onDeleteField && (
               <OptionsItem>
-                <div onClick={this.onDeleteField}>
+                <div
+                  class="OptionsDropdown-item--delete"
+                  onClick={this.onDeleteField}
+                >
                   <i class="i i-delete" />
-                  Delete Field
+                  <div>Delete Field</div>
                 </div>
               </OptionsItem>
             )}

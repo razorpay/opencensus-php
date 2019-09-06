@@ -2,25 +2,25 @@ const FIELD_TYPES = {
   fixed_price: {
     label: 'Fixed Price',
     key: 'fixed_price',
-    icon: 'alphabet i-fix-alphabet',
+    icon: 'fixed_price',
   },
 
   fixed_price_optional: {
     label: 'Fixed Price (Optional Item)',
     key: 'fixed_price_optional',
-    icon: 'alphabet i-fix-alphabet',
+    icon: 'fixed_price_optional',
   },
 
   dynamic_price: {
     label: 'Customer decides Price',
     key: 'dynamic_price',
-    icon: 'alphabet i-fix-alphabet',
+    icon: 'dynamic_price',
   },
 
   multiple_purchase: {
     label: 'Multiple Purchase',
     key: 'multiple_purchase',
-    icon: 'alphabet i-fix-alphabet',
+    icon: 'multiple_purchase',
   },
 };
 

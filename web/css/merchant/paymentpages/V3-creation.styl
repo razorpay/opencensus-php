@@ -478,11 +478,21 @@
 
     i
       display: inline-block
-      vertical-align: middle
+      vertical-align: top
       font-size: 16px
       margin-right: 8px
       line-height: inherit
       pointer-events: none
+
+    i + div
+      display: inline-block
+      vertical-align: top
+      width: 84%
+
+    .subOption
+      font-size: 12px
+      line-height: 15px
+      color: #8991AE
 
     &:hover
       background-color: #f5f7f9
@@ -514,6 +524,12 @@
 
       i
         color: #969caf
+
+    .OptionsDropdown-item--delete
+      color: #D26A6A
+      border-top: 2px solid #e8e9ee
+      .i
+        color: #D26A6A
 
 @keyframes dropdownAppearIn
   0%
