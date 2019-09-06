@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
+use Cache;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
@@ -13,9 +14,9 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
-use RZP\Jobs\SettlementJob;
 use RZP\Models\BankAccount;
 use RZP\Constants\Environment;
+use RZP\Jobs\Settlement\Create;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant as MerchantModel;
 
@@ -45,6 +46,10 @@ class Processor extends Base\Core
     const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
     const MUTEX_LOCK_TIMEOUT    = 1800;
+
+    const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s';
+
+    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 600;
 
     public function __construct()
     {
@@ -132,7 +137,9 @@ class Processor extends Base\Core
 
         if ($shouldProcess === true)
         {
-            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel);
+            // TODO: remove channel option form URI and from here post 100% rollout
+            //  Make sure these 2 are not running parallel till then
+            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel ?? '');
 
             $data = $this->mutex->acquireAndRelease(
                 $mutexResource,
@@ -144,6 +151,8 @@ class Processor extends Base\Core
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
 
+        $count = ($useQueue === true) ? 1 : $data[$channel]['count'];
+
         //
         // tracing metric with details like
         // - total number of merhcants involved in this process
@@ -154,7 +163,8 @@ class Processor extends Base\Core
             [
                 Metric::CHANNEL                 => $channel,
                 Metric::TIME_TAKEN_IN_MILLI     => get_diff_in_millisecond($startTime),
-                Metric::TOTAL_MERCHANTS_COUNT   => $data[$channel]['count'],
+                Metric::USING_QUEUE             => $useQueue,
+                Metric::TOTAL_MERCHANTS_COUNT   => $count,
             ]);
 
         return $data;
@@ -162,17 +172,24 @@ class Processor extends Base\Core
 
     protected function processSettlements($channel, bool $useQueue, array $merchantIds)
     {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_INITIATING,
+            [
+                'timestamp'   => $this->setlTime,
+                'time'        => time(),
+                'using_queue' => $useQueue,
+            ]);
+
         $response = [];
 
         try
         {
-            $channels = $this->getArrayedChannels($channel);
-
-            $response = $this->makeResponse($channels);
-
-            foreach ($channels as $channel)
+            if ($useQueue === true)
             {
-                $this->traceSetlInitiating($channel);
+                $response = $this->createSettlementsAsync($merchantIds);
+            }
+            else {
+                $response = $this->makeResponse([$channel]);
 
                 if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION], true) === true))
                 {
@@ -183,15 +200,8 @@ class Processor extends Base\Core
                     $setlResponse = $this->createSettlements($channel, $useQueue, $merchantIds);
                 }
 
-                if ($useQueue === true)
-                {
-                    $response = $setlResponse;
-                }
-                else
-                {
-                    $response[$channel]['count']    += $setlResponse['settlement_count'];
-                    $response[$channel]['txnCount'] += $setlResponse['txn_count'];
-                }
+                $response[$channel]['count']    += $setlResponse['settlement_count'];
+                $response[$channel]['txnCount'] += $setlResponse['txn_count'];
             }
 
             $this->trace->info(
@@ -265,14 +275,15 @@ class Processor extends Base\Core
 
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
                 function() use ($merchantSettler, $setl, $merchantSettleToPartner)
-            {
-                if ($setl->hasTransaction() === false)
                 {
-                    $merchantSettler->createTransaction($setl);
-                }
+                    if ($setl->hasTransaction() === false)
+                    {
+                        $merchantSettler->createTransaction($setl);
+                    }
 
-                return $merchantSettler->retryFailedSettlement($setl, $merchantSettleToPartner);
-            });
+                    return $merchantSettler->retryFailedSettlement($setl, $merchantSettleToPartner);
+                }
+            );
 
             $setlAttempts->push($bankTransferAtpt);
 
@@ -566,22 +577,22 @@ class Processor extends Base\Core
         return $mids;
     }
 
+    protected function createSettlementsAsync(array $merchantIds = []): array
+    {
+        $bucketTimestamp = null;
+
+        if (empty($merchantIds) === true)
+        {
+            // queue based implementation is indipendent of channels
+            list($bucketTimestamp, $merchantIds) = (new Bucket\Core)->getMerchantIdsFromBucket();
+        }
+
+        return $this->pushMerchantsToSettlementQueue($merchantIds, $bucketTimestamp);
+    }
+
     protected function createSettlements($channel, bool $useQueue, array $merchantIds = []): array
     {
         $skipMids = $this->getMerchantsToSkipForUsualSettlement();
-
-        if ($useQueue === true)
-        {
-            $bucketTimestamp = null;
-
-            if (empty($merchantIds) === true)
-            {
-                // queue based implementation is indipendent of channels
-                list($bucketTimestamp, $merchantIds) = (new Bucket\Core)->getMerchantIdsFromBucket();
-            }
-
-            return $this->pushMerchantsToSettlementQueue($merchantIds, $bucketTimestamp);
-        }
 
         $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);
 
@@ -725,8 +736,14 @@ class Processor extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT,
             [
-                'merchant_count'    => count($merchantIds)
+                'merchant_count' => count($merchantIds)
             ]);
+
+        //
+        // add cout of total merchant IDs in cache
+        // so that it can be used to initate transfer when settlement creation is complete
+        //
+        Cache::increment(Create::TOTAL_MERCHANT_COUNT, count($merchantIds));
 
         $startTime = time();
 
@@ -734,7 +751,12 @@ class Processor extends Base\Core
         {
             try
             {
-                SettlementJob::dispatch($this->mode, $merchantId, $bucketTimestamp);
+                //
+                // passing $bucketTimestamp is not necessory
+                // for now passing this, just to track the performance
+                // if timestamp exist then its a automated process else its manual
+                //
+                Create::dispatch($this->mode, $merchantId, $bucketTimestamp);
 
                 $this->trace->info(
                     TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT,
@@ -749,6 +771,13 @@ class Processor extends Base\Core
             catch(\Throwable $e)
             {
                 $totalCount['enqueue_failed'] += 1;
+
+                //
+                // in case of failures decremenet the total count stored
+                // this will help maintain the exact count pushed to queue
+                // and also when to iniatie the transfer
+                //
+                Cache::decrement(Create::TOTAL_MERCHANT_COUNT);
 
                 $this->trace->traceException(
                     $e,
@@ -776,14 +805,11 @@ class Processor extends Base\Core
         return $totalCount;
     }
 
-    public function fetchAndProcessTransactionsForSettlement(string $merchantId)
+    public function fetchAndProcessTransactionsForSettlement(MerchantModel\Entity $merchant)
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        // get merchat details for further filtering
-        $this->merchant = $this->repo->merchant->find($merchantId);
-
-        if ($this->isMerchantSettlementAllowed($this->merchant) === false)
+        if ($this->isMerchantSettlementAllowed($merchant) === false)
         {
             return [
                 'settlement_count' => 0,
@@ -792,17 +818,59 @@ class Processor extends Base\Core
             ];
         }
 
-        $channel = $this->merchant->getChannel();
+        // Avoiding race condition here
+        $resource = sprintf(self::MUTEX_SETTLEMENT_CREATE_RESOURCE, $merchant->getId());
 
+        $result = $this->mutex->acquireAndRelease(
+            $resource,
+            function () use ($merchant)
+            {
+                return $this->createSettlementForMerchant($merchant);
+            },
+            self::MUTEX_SETTLEMENT_CREATE_TIMEOUT);
+
+        //
+        // Marking merchant settlement as complete here (update the bucket entity)
+        // at this point we have tried to settle to merchant
+        // at this stage settlement might have also been skipped because of balance
+        // but still we update the bucket as completed
+        // reason being, if merchant balance is low the only way to get settlement is by fixing the balance
+        // to fix the balance there has to be a transaction (payment/adjustment) created
+        // which will add the merchant to bucket for settlement hence the process continues
+        //
+        (new Bucket\Core)->markMerchantSettlementAsComplete($merchant->getId());
+
+        $this->trace->count(
+            Metric::SETTLEMENT_CREATED_COUNT,
+            [
+                'channel' => $merchant->getChannel(),
+            ]);
+
+        return $result;
+    }
+
+    protected function createSettlementForMerchant(MerchantModel\Entity $merchant): array
+    {
+        $channel = $merchant->getChannel();
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
-                     ->fetchUnsettledTransactionsForProcessing($merchantId, $channel);
+                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel);
+
+        // If there are no transactions to settle then return
+        if ($txns->count() === 0)
+        {
+            return [
+                'settlement_count'  => 0,
+                'attempt_count'     => 0,
+                'txn_count'         => 0,
+            ];
+        }
 
         $this->merchants = $this->repo
                                 ->merchant
                                 ->findManyWithRelations(
-                                    [$merchantId],
+                                    [$merchant->getId()],
                                     ['primaryBalance', 'bankAccount'],
                                     [
                                         MerchantModel\Entity::ID,
@@ -810,22 +878,15 @@ class Processor extends Base\Core
                                     ])
                                 ->keyBy(MerchantModel\Entity::ID);
 
-
+        // refund filter is removed as this is handled while creating auth refund
+        // /Models/Transaction/Processor/Refund.php#L34
         $transactionsGroup = [
-            $merchantId => $this->filterMerchantTransactionsForSettlement($txns),
+            $merchant->getId() => $txns,
         ];
 
-        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchantId]);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
 
-        $result = $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner);
-
-        $this->trace->count(
-            Metric::PROCESSED_SETTLEMENT_COUNT,
-            [
-                'channel' => $this->channel,
-            ]);
-
-        return $result;
+        return $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner);
     }
 
     protected function shouldUseQueue(array $input)

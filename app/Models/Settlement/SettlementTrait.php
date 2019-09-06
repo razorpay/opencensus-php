@@ -24,17 +24,6 @@ use RZP\Constants\SettlementChannelMedium as Medium;
 
 trait SettlementTrait
 {
-    protected function filterMerchantTransactionsForSettlement(Base\PublicCollection $transactions): Base\PublicCollection
-    {
-        $transactions->filter(function ($item)
-        {
-            // keep all the elements which except ones which has to be skipped
-            return $this->skipForRefundAuthTxn($item) === false;
-        });
-
-        return $transactions;
-    }
-
     protected function traceMerchantSettlementSkip(Merchant\Entity $merchant, array $data)
     {
         $this->trace->info(
@@ -77,7 +66,19 @@ trait SettlementTrait
             return false;
         }
 
-        $bankAccount = $merchant->bankAccount;
+        $merchantSettleToPartner = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
+
+        if (isset($merchantSettleToPartner[$merchant->getId()]) === true)
+        {
+            $bankAccountId = $merchantSettleToPartner[$merchant->getId()];
+
+            $bankAccount = $this->repo->bank_account->getBankAccountById($bankAccountId);
+        }
+        else
+        {
+            $bankAccount = $merchant->bankAccount;
+        }
+
 
         // Do not proceed if merchant does not have active bank account
         if ($bankAccount === null)
@@ -109,6 +110,8 @@ trait SettlementTrait
         {
             return true;
         }
+
+        $today = Carbon::today(Timezone::IST);
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
@@ -145,6 +148,9 @@ trait SettlementTrait
      */
     protected function skipSpecificMerchants(Merchant\Entity $merchant): bool
     {
+        $today = Carbon::today(Timezone::IST);
+
+        // redundant check to ensure this does not happen while creating the settlement
         if (($merchant->getParentId() === Preferences::MID_WEALTHY) and
             ($today->dayOfWeek === Carbon::SATURDAY))
         {
@@ -158,7 +164,7 @@ trait SettlementTrait
             return true;
         }
 
-        if (in_array($merchant->getId(), MerchantModel\Preferences::NO_SETTLEMENT_MIDS, true) === true)
+        if (in_array($merchant->getId(), Preferences::NO_SETTLEMENT_MIDS, true) === true)
         {
             return true;
         }
@@ -994,19 +1000,6 @@ trait SettlementTrait
         }
 
         return $shouldSettle;
-    }
-
-    protected function traceSetlInitiating($channel)
-    {
-        $time = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
-
-        $this->trace->info(
-            TraceCode::SETTLEMENT_INITIATING,
-            [
-                'channel'   => $channel,
-                'timestamp' => $this->setlTime,
-                'time'      => $time,
-            ]);
     }
 
     protected function successNotification($data, $settlements, $traceCode)

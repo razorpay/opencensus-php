@@ -52,7 +52,7 @@ final class Metric
     /**
      * Method: Count
      */
-    const PROCESSED_SETTLEMENT_COUNT                        = 'processed_settlement_count';
+    const SETTLEMENT_CREATED_COUNT                          = 'settlement_created_count';
 
     // ------ Histograms ------
 
@@ -85,5 +85,6 @@ final class Metric
     const BENEFICIARY_REGISTRATION_STATUS       = 'bene_reg_status';
     const RECORD_EXIST_PENDING_APPROVAL         = 'record_exist_pending_approval';
     const TOTAL_MERCHANTS_COUNT                 = 'total_merchants_count';
+    const USING_QUEUE                           = 'using_queue';
     const TIME_TAKEN_IN_MILLI                   = 'time_taken_in_milli';
 }

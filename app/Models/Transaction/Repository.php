@@ -1645,6 +1645,21 @@ class Repository extends Base\Repository
                     ->count();
     }
 
+    public function getTransactionBalanceType(string $transactionId)
+    {
+        $id                     = $this->dbColumn(Entity::ID);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+                    ->select($balanceTypeColumn)
+                    ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                    ->where($id , $transactionId)
+                    ->value(Entity::TYPE);
+    }
+
     /**
      * {@inheritDoc}
      */

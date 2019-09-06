@@ -261,6 +261,23 @@ return [
         'test'       => env('AWS_BEAM_TEST_QUEUE'),
         'live'       => env('AWS_BEAM_LIVE_QUEUE'),
     ],
+
+    // settlement related QUEUES
+    'settlement_create' => [
+        'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_CREATE_LIVE_QUEUE'),
+    ],
+    'settlement_bucket' => [
+        'test'       => env('AWS_SETTLEMENT_BUCKET_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_BUCKET_LIVE_QUEUE'),
+    ],
+    'settlement_initiate' => [
+        'test'       => env('AWS_SETTLEMENT_INITIATE_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_INITIATE_LIVE_QUEUE'),
+    ],
+
+    // not using anymore for settlement
+    // but has dependency on FTA
     'settlement_transactions' => [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
