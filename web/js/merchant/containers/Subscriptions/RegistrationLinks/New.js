@@ -1,4 +1,3 @@
-import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
@@ -46,7 +45,7 @@ const mandatoryBankFields = [
   luminateRow,
   createRegistrationLink,
 })
-export default class CreateNewRegistrationLinkContainer extends Component {
+export default class CreateNewRegistrationLinkContainer extends React.Component {
   state = {
     mandateMethod: '',
     hasNoExpiry: '1',
@@ -206,9 +205,6 @@ export default class CreateNewRegistrationLinkContainer extends Component {
   };
 
   renderForm = ({ isModalView }) => {
-    const { mandateMethod: method, avlblMethods, loading } = this.state;
-    const skipBankDetails = !!Number(this.state.skipBankDetails);
-
     return (
       <div class="PaymentLinks--Create Wizard">
         <main class="form-container">
@@ -219,223 +215,7 @@ export default class CreateNewRegistrationLinkContainer extends Component {
             layout="tabular"
             onChange={this.handleChange}
             onSubmit={this.onCreate}
-          >
-            <Input.Textarea
-              name="description"
-              label="Description"
-              description="Payment / Authentication Description"
-              required
-            />
-
-            <Input
-              name="customerName"
-              label="Customer Name"
-              description="Name of Customer"
-            />
-
-            <Input.Group
-              class="InputGroup--inline"
-              label="Customer Contact"
-              required
-            >
-              <div class="Input-content">
-                <Input
-                  name="customerContact"
-                  placeholder="Mobile"
-                  type="tel"
-                  size="half_big"
-                  required
-                  validator={val => !isPhone(val) && 'Invalid Phone'}
-                  description="Phone number of Customer"
-                />
-                <Input
-                  name="customerEmail"
-                  placeholder="Email"
-                  type="email"
-                  size="half_big"
-                  required
-                  validator={val => !isEmail(val) && 'Invalid Email'}
-                  description="Email of Customer"
-                />
-              </div>
-            </Input.Group>
-
-            <Input.Group
-              class="InputGroup--inline InputGroup--vTop"
-              label="Notify"
-            >
-              <div class="Input-content">
-                <Input.Check name="configSmsNotify" fieldLabel="Via SMS" />
-                <Input.Check name="configEmailNotify" fieldLabel="Via Email" />
-              </div>
-            </Input.Group>
-
-            <Input
-              name="receipt"
-              size="half_big"
-              label="Receipt No."
-              description="Receipt for Customer"
-            />
-
-            <Input.Group label="Expiry" class="InputGroup--vTop">
-              <Input.Check
-                fieldLabel="No Expiry"
-                data-name="hasNoExpiry"
-                defaultValue="1"
-              />
-
-              <Input.ToCalendar
-                name="expireAt"
-                placeholder="DD-MM-YYYY"
-                allowToday
-                disablePastDates
-                placement="topLeft"
-                size="half_big"
-                addonAfter={<i class="i i-date-range" />}
-                disabled={!!Number(this.state.hasNoExpiry)}
-                onChange={this.handleDateChange('expireAt')}
-                description="Expiry of Registration Link"
-              />
-            </Input.Group>
-
-            <PaymentMethod loading={loading} avlblMethods={avlblMethods} />
-
-            {method === 'emandate' && (
-              <Fragment>
-                <Input.Check
-                  data-name="skipBankDetails"
-                  fieldLabel="Skip Bank Details"
-                />
-
-                <Input.Group
-                  label="Bank Details"
-                  class="InputGroup--inline"
-                  disabled={skipBankDetails}
-                >
-                  <div class="Input-content">
-                    <Input.Select
-                      name="mandateBankName"
-                      options={['Select Bank', ...this.state.emandateBanks]}
-                      size="half_big"
-                      placeholder="Bank Name"
-                      description="Preferred bank for authentication"
-                    />
-
-                    <Input
-                      name="mandateBankAccountIFSC"
-                      size="half_big"
-                      placeholder="IFSC"
-                      description="IFSC on the Bank Account"
-                    />
-                  </div>
-                </Input.Group>
-
-                <Input.Group
-                  label="Account Details"
-                  class="InputGroup--inline"
-                  disabled={skipBankDetails}
-                >
-                  <div class="Input-content">
-                    <Input
-                      placeholder="Beneficiary Name"
-                      name="mandateBeneficiaryName"
-                      description="Customer/Beneficiary Name on the Account"
-                      size="half_big"
-                    />
-
-                    <Input
-                      placeholder="Account Number"
-                      name="mandateBankAccountNumber"
-                      description="Bank Account Number"
-                      size="half_big"
-                    />
-                  </div>
-                </Input.Group>
-
-                <Input.Group label="Token Expiry" class="InputGroup--vTop">
-                  <Input.Check
-                    fieldLabel="Until cancelled"
-                    data-name="tokenHasNoExpiry"
-                    defaultValue="1"
-                  />
-
-                  <Input.ToCalendar
-                    name="mandateExpireAt"
-                    placeholder="Expiry (DD-MM-YYYY)"
-                    disablePastDates
-                    placement="topLeft"
-                    size="half_big"
-                    addonAfter={<i class="i i-date-range" />}
-                    description="Expiry of Token"
-                    onChange={this.handleDateChange('mandateExpireAt')}
-                    disabled={!!Number(this.state.tokenHasNoExpiry)}
-                  />
-                </Input.Group>
-
-                <Input
-                  name="first_payment_amount"
-                  type="number"
-                  placeholder="0"
-                  size="half_big"
-                  label="Amount"
-                  class="Input--Amount"
-                  description="Amount of First Charge"
-                  validator={value => {
-                    return checkIfAmountForFirstCharge(
-                      Number(this.state.mandateMaxAmount) || 100000,
-                      value
-                    );
-                  }}
-                  addonBefore={
-                    <AmountTooltip
-                      currency={'INR'}
-                      parentQuerySelector=".Modal"
-                    />
-                  }
-                />
-
-                <Input
-                  name="mandateMaxAmount"
-                  placeholder="100000"
-                  label="Token Max Amount"
-                  addonBefore={
-                    <AmountTooltip
-                      currency={'INR'}
-                      parentQuerySelector=".Modal"
-                    />
-                  }
-                  size="half_big"
-                  validator={checkIfAmount}
-                  description="Max Amount for Mandate"
-                  class="Input--Amount"
-                />
-              </Fragment>
-            )}
-
-            {method === 'card' && (
-              <Input.Group class="InputGroup--inline" label="Amount">
-                <div class="Input-content">
-                  <Input.CurrencySelect name="currency" />
-
-                  <Input
-                    name="amount"
-                    type="tel"
-                    placeholder="0.00"
-                    description="Amount of Registration Link Payment"
-                    validator={checkIfAmount}
-                    required
-                  />
-                </div>
-              </Input.Group>
-            )}
-
-            <Input.PairList
-              name="notes"
-              label="Internal Notes"
-              class="Input--vTop"
-              onChange={this.handleNotesChange}
-            />
-          </Form>
+          />
         </main>
         <footer>
           {isModalView && <Button onClick={this.props.onClose}>Cancel</Button>}
@@ -495,22 +275,3 @@ function PaymentMethodPlaceHolder({ content }) {
     </div>
   );
 }
-
-// utils required
-function checkIfAmount(value) {
-  return !isAmount(Number(value)) && 'Invalid Amount';
-}
-
-const checkIfAmountForFirstCharge = (maxAmount, value) => {
-  const amount = Number(value);
-
-  if (amount === 0) {
-    return null;
-  }
-
-  if (amount > maxAmount) {
-    return 'Amount is should be less than or equal Token Max Amount';
-  }
-
-  return !isAmount(value) && 'Invalid Amount';
-};
