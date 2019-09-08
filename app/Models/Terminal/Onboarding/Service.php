@@ -8,7 +8,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Core as TerminalCore;
 use RZP\Models\Terminal\Onboarding\Processor\FreechargeTerminalOnboardingProcessor;
-use RZP\Models\Terminal\Status;
 
 class Service extends Base\Service
 {
@@ -56,12 +55,6 @@ class Service extends Base\Service
         $this->verifyPartnerTerminalOnboardingAccess();
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
-
-        if ($terminal->getStatus() !== Status::ACTIVATED)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED);
-        }
 
         $terminal = (new TerminalCore)->toggle($terminal, true);
 
@@ -120,7 +113,6 @@ class Service extends Base\Service
             return $partnerMerchant->isTerminalOnboardingEnabled();
         }
 
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+        return false;
     }
 }
