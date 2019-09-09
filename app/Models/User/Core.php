@@ -550,28 +550,10 @@ class Core extends Base\Core
 
         $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 
-        // Prepares unique list of merchants for users out of pivot relations.
-        $merchantsUnique = [];
-
-        array_walk($merchants, function ($merchant) use (& $merchantsUnique)
-        {
-            $id   = $merchant[Entity::ID];
-            $role = $merchant[Entity::ROLE];
-
-            if (isset($merchantsUnique[$id]) === false)
-            {
-                $merchantsUnique[$id]                       = $merchant;
-                $merchantsUnique[$id][Entity::BANKING_ROLE] = null;
-                $merchantsUnique[$id][Entity::ROLE]         = null;
-            }
-
-            // Push pivot's role to one of the keys in response basis product type.
-            $key = $merchant[Entity::PRODUCT] === Product::BANKING ? Entity::BANKING_ROLE : Entity::ROLE;
-            $merchantsUnique[$id][$key] = $role;
-        });
+        $merchantsUnique = $this->getUnifiedMerchants($merchants);
 
         // Additional resources for users.
-        $merchantsUnique = $this->appendBankingSpecificDetails(array_values($merchantsUnique));
+        $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique);
         $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
         $settings        = $user->getAllSettings();
 
@@ -1246,7 +1228,7 @@ class Core extends Base\Core
      * Prepares unified
      * @param Array       $merchants
      */
-    protected function getUnifiedMerchants($merchants)
+    protected function getUnifiedMerchants($merchants): array
     {
         $merchantsUnique = [];
 
