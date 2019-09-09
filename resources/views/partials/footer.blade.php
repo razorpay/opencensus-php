@@ -12,13 +12,14 @@
                     failed: noop, //A failure occured
                     push: noop, //Explicitly push as custom event to the queue
                     setUser:noop, //Set a user one time
+                    defineEventModifiers:noop,//Extends to set custom event properties
                     //Any modifiers
                     onbr:()=>window.rzpQ,
                 };
     //Above code doesn't perform any function, can avoid application breakage if the library is
     //removed, not loaded or library code breaks anytime.
     var isLocal = undefined; //Maintaining this for legacy reason, shall clear soon.
-    var disableEventEmitters = true; //If true events will not be emitted to LJ and PROM
+    var disableEventEmitters = false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname=="dashboard.razorpay.com" ? 'prod' : 'stage';
     if(analytics){
         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','perf'], {
