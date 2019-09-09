@@ -61,6 +61,7 @@ export default class InvoicesListContainer extends ListContainer {
   }
 
   fetchEntityList(params) {
+    params.subscriptions = '0';
     params.type = 'invoice';
 
     return this.props.fetchInvoices(params);
@@ -77,6 +78,7 @@ export default class InvoicesListContainer extends ListContainer {
       params: {
         count: 1,
         type: 'invoice',
+        subscriptions: '0',
       },
     })
       .then(resp => {
