@@ -265,7 +265,7 @@ class EventCode
 
     const FTA_CREATION_SUCCESS = [
         'group' => 'success',
-        'name'  => 'fta.creation.initiated'
+        'name'  => 'fta.creation.success'
     ];
 
     const FTA_CREATION_FAILED = [
