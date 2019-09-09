@@ -406,11 +406,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const reqPayload = {
       currency,
-      amount: amount || null,
       expire_by: expire_by || null,
       title,
       description: description || null,
-      times_payable: quantity || null,
       terms: terms || null,
       support_email: support_email || null,
       support_contact: support_contact || null,
@@ -428,6 +426,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     };
 
     if (!isPPV3Enabled) {
+      reqPayload.amount = amount || null;
+
+      reqPayload.times_payable = quantity || null;
+
       reqPayload.settings.allow_multiple_units = settings.allow_multiple_units
         ? '1'
         : '0';
