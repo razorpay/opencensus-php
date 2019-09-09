@@ -926,9 +926,17 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false)
+    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false, $auth = [])
     {
-        $this->ba->privateAuth();
+        if ((empty($auth['key']) === false) and
+            (empty($auth['secret']) === false))
+        {
+            $this->ba->privateAuth($auth['key'], $auth['secret']);
+        }
+        else
+        {
+            $this->ba->privateAuth();
+        }
 
         $content = [];
 
