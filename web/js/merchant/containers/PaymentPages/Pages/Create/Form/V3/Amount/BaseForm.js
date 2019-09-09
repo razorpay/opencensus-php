@@ -79,17 +79,10 @@ export default class BaseForm extends React.PureComponent {
     });
   };
 
-  toggleImage = _ => {
-    const toAddImage = !this.state.imageUrl;
-
-    if (toAddImage) {
-      // 1. Open modal to add image
-      // 2. After success imageUrl in state
-    } else {
-      this.setState({
-        imageUrl: '',
-      });
-    }
+  removeImage = _ => {
+    this.setState({
+      imageUrl: '',
+    });
   };
 
   onDeleteField = _ => {
@@ -341,8 +334,6 @@ export default class BaseForm extends React.PureComponent {
           </div>
         </Input.TextareaAutoResize>
 
-        <input name="image_url" value={imageUrl} hidden readOnly />
-
         <div class="Field--representation">
           {this.amountRepresentationForFieldType}
 
@@ -370,7 +361,13 @@ export default class BaseForm extends React.PureComponent {
           }
         >
           <OptionsItem isSelected={!!this.state.imageUrl}>
-            <div onClick={this.toggleImage}>
+            <div
+              onClick={
+                !!this.state.imageUrl
+                  ? _ => this.props.onUpdateImage(null)
+                  : this.props.openImageCropper
+              }
+            >
               <i class="i i-add_image" />
               {this.state.imageUrl ? 'Remove Image' : 'Add Image'}
             </div>

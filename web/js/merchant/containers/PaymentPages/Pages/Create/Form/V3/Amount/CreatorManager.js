@@ -1,6 +1,7 @@
 import CreatorModal from '../CreatorModal';
 import BaseForm from './BaseForm';
 import AdvancedForm from './AdvancedForm';
+import { ImageCropperModal } from './ImageCropper';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
@@ -11,6 +12,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       return {
         isBaseFormOpened: false,
         isAdvancedFormOpened: false,
+        isImageCropperOpened: false,
         fieldType: null,
         field: this.props.field,
       };
@@ -18,6 +20,15 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 
     closeBaseForm = _ => {
       this.setState(this.initState);
+    };
+
+    toggleImageCropper = forceStatus => {
+      this.setState({
+        isImageCropperOpened:
+          typeof forceStatus !== 'undefined'
+            ? forceStatus
+            : !this.state.isImageCropperOpened,
+      });
     };
 
     componentDidUpdate(prevProps) {
@@ -52,6 +63,10 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             ? forcedState
             : !this.state.isAdvancedFormOpened,
       });
+    };
+
+    onSaveImageForm = imgUrl => {
+      // Check whether to remove image or upload image
     };
 
     onSaveBaseForm = formData => {
@@ -120,6 +135,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         fieldType,
         isBaseFormOpened,
         isAdvancedFormOpened,
+        isImageCropperOpened,
       } = this.state;
 
       return (
@@ -141,6 +157,8 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               onDeleteFormItem={onDeleteFormItem}
               closeFormModal={this.closeBaseForm}
               openAdvancedForm={_ => this.toggleAdvancedForm(true)}
+              openImageCropper={_ => this.toggleImageCropper(true)}
+              onUpdateImage={this.onSaveImageForm}
             />
           )}
 
@@ -151,6 +169,14 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               currency={currency}
               onSaveForm={this.onSaveAdvancedForm}
               closeFormModal={_ => this.toggleAdvancedForm(false)}
+            />
+          )}
+
+          {isImageCropperOpened && (
+            <ImageCropperModal
+              imgUrl={field.image_url}
+              onSave={this.onSaveImageForm}
+              onClose={_ => this.toggleImageCropper(false)}
             />
           )}
         </div>
@@ -181,6 +207,8 @@ class BaseFormModal extends React.PureComponent {
       validateSameTitleExists,
       closeFormModal,
       openAdvancedForm,
+      openImageCropper,
+      onUpdateImage,
     } = this.props;
 
     return (
@@ -194,6 +222,8 @@ class BaseFormModal extends React.PureComponent {
           onSaveForm={this.onSaveForm}
           onDeleteField={this.onDeleteFormItem}
           openAdvancedForm={openAdvancedForm}
+          openImageCropper={openImageCropper}
+          onUpdateImage={onUpdateImage}
           currency={currency}
         />
       </CreatorModal>
