@@ -66,6 +66,14 @@ return [
                     ],
                 ],
             ],
+            // Ref- https://www.elastic.co/guide/en/elasticsearch/reference/5.6/normalizer.html.
+            'normalizer' => [
+                'lowercase_custom' => [
+                    'type'        => 'custom',
+                    'char_filter' => [],
+                    'filter'      => ['lowercase'],
+                ],
+            ],
             'tokenizer' => [
                 'edge_ngram_tokenizer' => [
                     'type'        => 'edge_ngram',
@@ -136,10 +144,12 @@ return [
                 'enabled'    => true,
                 'properties' => [
                     'key' => [
-                        'type' => 'keyword',
+                        'type'       => 'keyword',
+                        'normalizer' => 'lowercase_custom',
                     ],
                     'value' => [
-                        'type' => 'keyword',
+                        'type'       => 'keyword',
+                        'normalizer' => 'lowercase_custom',
                     ],
                 ],
             ],
