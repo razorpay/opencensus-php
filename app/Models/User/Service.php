@@ -304,6 +304,11 @@ class Service extends Base\Service
 
     public function checkUserAccess(array $input)
     {
+        if (isset($input['merchant_id']) === false or $input['merchant_id'] === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
         $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($input['merchant_id']);
 
         $user = $this->auth->getUser();
