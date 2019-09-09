@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccountStatement\Generator;
 
+use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class SupportedFormats
@@ -10,7 +11,11 @@ class SupportedFormats
 
     const XLSX = 'xlsx';
 
-    const SUPPORTED_FORMAT_MAP = ['rbl' => [self::PDF, self::XLSX]];
+    const RBL = Channel::RBL;
+
+    const SUPPORTED_FORMAT_MAP = [self::RBL => [self::PDF, self::XLSX]];
+
+    const ALL_VALID_FORMATS = [self::PDF, self::XLSX];
 
     public static function validate($channel, $format)
     {
@@ -28,5 +33,4 @@ class SupportedFormats
             throw new BadRequestValidationFailureException($message);
         }
     }
-
 }

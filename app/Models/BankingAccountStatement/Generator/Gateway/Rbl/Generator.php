@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankInfo;
 use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Type;
+use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Type as StatementType;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
 
@@ -54,11 +55,7 @@ abstract class Generator extends Base
 
         $statementPeriod  = $fromDateReadable . ' - ' . $toDateReadable;
 
-        $accountOwnerInfo = $this->getAccountOwnerInfo($merchant,
-                                                       $merchantDetails,
-                                                       $bankingAccount,
-                                                       $account_opening_date,
-                                                       $statementPeriod);
+        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount, $account_opening_date, $statementPeriod);
 
         $transactions     = $this->serializeTransactions($all_bank_account_transactions);
 
@@ -160,11 +157,11 @@ abstract class Generator extends Base
             {
                 $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = (float) $transaction->amount / 100;
 
-                $lineItem[TransactionLineItem::DEPOSIT_AMOUNT]    = null;
+                $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = null;
             }
             else if ($transaction->type == Type::DEBIT)
             {
-                $lineItem[TransactionLineItem::DEPOSIT_AMOUNT]    = (float) $transaction->amount / 100;
+                $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = (float) $transaction->amount / 100;
 
                 $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = null;
             }
@@ -176,16 +173,12 @@ abstract class Generator extends Base
     }
 
     /**
-     * @param $merchant
-     * @param $merchantDetails
-     * @param $bankingAccount
+     * @param BankingAccountEntity $bankingAccount
      * @param string $account_opening_date
      * @param string $statementPeriod
      * @return array
      */
-    protected function getAccountOwnerInfo($merchant,
-                                           $merchantDetails,
-                                           $bankingAccount,
+    protected function getAccountOwnerInfo(BankingAccountEntity $bankingAccount,
                                            string $account_opening_date,
                                            string $statementPeriod): array
     {
@@ -194,17 +187,17 @@ abstract class Generator extends Base
         $bankInformation = (new BankInfo($ifscCode))->getBankInformation();
 
         $accountOwnerInfo = [
-            AccountOwnerInfo::ACCOUNT_NAME         => $merchant->name,
+            AccountOwnerInfo::ACCOUNT_NAME         => $bankingAccount->getBeneficiaryName(),
 
-            AccountOwnerInfo::CUSTOMER_ADDRESS     => $merchantDetails->business_operation_address,
+            AccountOwnerInfo::CUSTOMER_ADDRESS     => $bankingAccount->getBeneficiaryAddress1(),
 
-            AccountOwnerInfo::CUSTOMER_ADDRESS_L2  => $merchantDetails->business_registered_address_l2,
+            AccountOwnerInfo::CUSTOMER_ADDRESS_L2  => $bankingAccount->getBeneficiaryAddress2(),
 
-            AccountOwnerInfo::ACCOUNT_TYPE         => $bankingAccount->account_type,
+            AccountOwnerInfo::ACCOUNT_TYPE         => $bankingAccount->getAccountType(),
 
-            AccountOwnerInfo::ACCOUNT_STATUS       => $bankingAccount->status,
+            AccountOwnerInfo::ACCOUNT_STATUS       => $bankingAccount->getStatus(),
 
-            AccountOwnerInfo::ACCOUNT_NUMBER       => $bankingAccount->account_number,
+            AccountOwnerInfo::ACCOUNT_NUMBER       => $bankingAccount->getAccountNumber(),
 
             AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
 
@@ -216,17 +209,17 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::CALL_CENTER          => BankConstants::CALL_CENTER_NUMBER,
 
-            AccountOwnerInfo::CUSTOMER_CITY        => $merchantDetails->business_operation_city,
+            AccountOwnerInfo::CUSTOMER_CITY        => $bankingAccount->getBeneficiaryCity(),
 
-            AccountOwnerInfo::CUSTOMER_STATE       => $merchantDetails->business_operation_state,
+            AccountOwnerInfo::CUSTOMER_STATE       => $bankingAccount->getBeneficiaryState(),
 
-            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $merchantDetails->business_operation_pin,
+            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $bankingAccount->getPincode(),
 
-            AccountOwnerInfo::CUSTOMER_MOBILE      => $merchantDetails->contact_mobile,
+            AccountOwnerInfo::CUSTOMER_MOBILE      => $bankingAccount->getBeneficiaryMobile(),
 
-            AccountOwnerInfo::CUSTOMER_EMAIL       => $merchantDetails->contact_email,
+            AccountOwnerInfo::CUSTOMER_EMAIL       => $bankingAccount->getBeneficiaryEmail(),
 
-            AccountOwnerInfo::CUSTOMER_CIF_ID      => $bankingAccount->bank_internal_reference_number,
+            AccountOwnerInfo::CUSTOMER_CIF_ID      => $bankingAccount->getInternalReferenceNumber(),
 
             AccountOwnerInfo::CURRENCY             => Currency::INR,
 

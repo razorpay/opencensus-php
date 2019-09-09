@@ -115,6 +115,12 @@ class Core extends Base\Core
         }
         else
         {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+                [
+                    'fileURL' => $fileURL
+                ]);
+
             return ['message' => 'File Generated', 'file_path' => $fileURL];
         }
     }
@@ -411,4 +417,3 @@ class Core extends Base\Core
     }
 
 }
-

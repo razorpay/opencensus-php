@@ -3,9 +3,13 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use RZP\Base;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 
 class Validator extends Base\Validator
 {
+    const ACCOUNT_STATEMENT_GENERATE = 'accountStatementGenerate';
+
     protected static $createRules = [
         Entity::CHANNEL             => 'required|string|custom',
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
@@ -22,6 +26,23 @@ class Validator extends Base\Validator
         Entity::POSTED_DATE         => 'required|integer',
         Entity::TRANSACTION_DATE    => 'required|integer',
     ];
+
+    protected static  $accountStatementGenerateRules = [
+        Entity::CHANNEL        => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER => 'required|string|max:40',
+        Entity::FROM_DATE      => 'required|integer',
+        Entity::TO_DATE        => 'required|integer',
+        Entity::FORMAT         => 'required|string|custom',
+        Entity::SEND_EMAIL     => 'required|boolean'
+    ];
+
+    protected function validateFormat($attribute, $channel)
+    {
+        if (!in_array($channel, SupportedFormats::ALL_VALID_FORMATS))
+        {
+            throw new BadRequestValidationFailureException('Not a valid format: ' . $channel);
+        }
+    }
 
     protected function validateChannel($attribute, $channel)
     {

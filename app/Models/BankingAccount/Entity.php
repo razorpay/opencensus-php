@@ -294,9 +294,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_MOBILE);
     }
 
+    public function getInternalReferenceNumber()
+    {
+        return $this->getAttribute(self::BANK_INTERNAL_REFERENCE_NUMBER);
+    }
+
     public function getBeneficiaryAddress1()
     {
         return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
+    }
+
+    public function getBeneficiaryAddress2()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS2);
     }
 
     public function getBeneficiaryCountry()
@@ -327,6 +337,11 @@ class Entity extends Base\PublicEntity
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);
+    }
+
+    public function getPincode()
+    {
+        return $this->getAttribute(self::PINCODE);
     }
 
     public function getReference1()
