@@ -1,17 +1,30 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import Croppie from 'croppie';
 import Button from 'component/Button';
 import CreatorModal from '../CreatorModal';
-import Croppie from 'croppie';
+import FileUpload from 'merchant/components/File/Upload';
 import { uploadImageInDescription } from '../../../../model';
-
 import { showNotification } from 'rzp/modules/notifications';
+import { classList } from 'common/util';
 
-const THUMBNAIL_SIZE_LIMIT = 500; // 500KB limit
+const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
 
 @connect(state => ({}), { showNotification })
 export default class ImageCropper extends React.PureComponent {
+  state = { showImgCropper: false };
+
   componentDidMount() {
+    if (this.props.imgUrl) {
+      this.initImgCropper(this.props.imgUrl);
+    }
+  }
+
+  initImgCropper(img) {
+    this.setState({
+      showImgCropper: true,
+    });
+
     const {
       viewPort = { width: 100, height: 100, type: 'square' },
       boundary = { width: '100%', height: 200 },
@@ -25,22 +38,11 @@ export default class ImageCropper extends React.PureComponent {
     });
 
     this.vanilla.bind({
-      url: 'https://cdn.razorpay.com/logos/D3JjREAG8erHB7_large.jpg',
+      url: img,
     });
   }
 
   handleImageUpload(blob) {
-    const fileSizeMB = blob.size / 1024;
-
-    if (fileSizeMB > THUMBNAIL_SIZE_LIMIT) {
-      this.props.showNotification({
-        type: 'error',
-        message: `Image too large. Max limit ${THUMBNAIL_SIZE_LIMIT}MB`,
-      });
-
-      return;
-    }
-
     const isImageType = /^image\//.test(blob.type);
 
     if (isImageType) {
@@ -84,6 +86,27 @@ export default class ImageCropper extends React.PureComponent {
     });
   };
 
+  addFile = file => {
+    const self = this;
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        self.initImgCropper(e.target.result);
+      };
+
+      reader.readAsDataURL(file);
+    }
+  };
+
+  onBiggerFileSize = _ => {
+    this.props.showNotification({
+      type: 'error',
+      message: `Image too large. Max limit ${THUMBNAIL_SIZE_LIMIT / 1024}KB`,
+    });
+  };
+
   setRef = el => (this.cropperAreaEl = el);
 
   render() {
@@ -91,11 +114,32 @@ export default class ImageCropper extends React.PureComponent {
 
     return (
       <div class="Input-ImageCropper">
-        <div class="Cropper-area" ref={this.setRef} />
+        <div
+          class={classList(
+            'Cropper-area',
+            this.state.showImgCropper && 'Cropper-area--enabled'
+          )}
+          ref={this.setRef}
+        >
+          {!this.state.showImgCropper && (
+            <FileUpload
+              accept={['png', 'jpg', 'jpeg', 'gif']}
+              size="large"
+              uploadedFileName="Upload Image here"
+              maxSize={THUMBNAIL_SIZE_LIMIT} // In bytes
+              onBiggerFileSize={this.onBiggerFileSize}
+              onFileChange={this.addFile}
+              showFileSize={false}
+            />
+          )}
+        </div>
 
         <div class="btn-group pull-right">
           <Button.Transparent onClick={onClose}>Cancel</Button.Transparent>
-          <Button.Primary onClick={this.onSaveImage}>Save</Button.Primary>
+
+          {this.state.showImgCropper && (
+            <Button.Primary onClick={this.onSaveImage}>Save</Button.Primary>
+          )}
         </div>
       </div>
     );
