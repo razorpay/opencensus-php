@@ -578,6 +578,7 @@ class Gateway
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::ATOM,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     public static $channels = [
