@@ -70,6 +70,13 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
+            //if BA is not present for attempt
+            // marking FTA as failed, if source is settlement
+            if($this->markFailedIfBANotExists($attempt) === true)
+            {
+                continue;
+            }
+
             $gateway = $attempt->shouldUseGateway();
 
             $this->doRequiredChecks($gateway);

@@ -336,7 +336,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getAuthCode($row)
     {
-        if (empty($row[ReconciliationFields::AUTH_CODE]) === true)
+        if (isset($row[ReconciliationFields::AUTH_CODE]) === false)
         {
             $this->reportMissingColumn($row, ReconciliationFields::AUTH_CODE);
 
@@ -347,7 +347,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     }
 
     /**
-     * In MIS file, we are not receiving ARN hence sstoring RRN in reference1 field of payment entity.
+     * In MIS file, we are not receiving ARN hence storing RRN in reference1 field of payment entity.
      * This is done because for reporting purposes, we need reference number in payment entity.
      * @param $rowDetails
      */

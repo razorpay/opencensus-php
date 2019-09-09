@@ -258,6 +258,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
+    const FTA_BANK_ACCOUNT_EMPTY                                = 'FTA_BANK_ACCOUNT_EMPTY';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 
@@ -1179,6 +1180,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
     const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
     const RECON_BATCH_OUTPUT_FILE                               = 'RECON_BATCH_OUTPUT_FILE';
+    const RECON_BATCH_ANALYTICS_OUTPUT_FILE                     = 'RECON_BATCH_ANALYTICS_OUTPUT_FILE';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -1636,6 +1638,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_METRIC_DIMENSION_PUSH_FAILED                  = 'GATEWAY_METRIC_DIMENSION_PUSH_FAILED';
 
     const SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED           = 'SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED';
+    const MERCHANT_SETTLING_PARTNER_BANK_ACCOUNT_NOT_MAPPED     = 'MERCHANT_SETTLING_PARTNER_BANK_ACCOUNT_NOT_MAPPED';
 
     //headless otp elf failures
     const HEADLESS_OTP_ELF_FAILURE                              = 'HEADLESS_OTP_ELF_FAILURE';

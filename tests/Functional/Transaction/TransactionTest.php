@@ -45,7 +45,31 @@ class TransactionTest extends TestCase
         $testData = $this->testData['txnDataAfterAddingAdjustment'];
         $testData['entity_id'] = $adj['id'];
         $testData['balance_id'] = '10000000000000';
-        $response = $this->assertArraySelectiveEquals($testData, $txn);
+        
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        $adjustment = $this->getDbLastEntity('adjustment');
+        $this->assertEquals($testData['balance_id'], $adjustment->getBalanceId());
+
+        return $adj;
+    }
+
+    public function testAddNegativeAdjustment()
+    {
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $adj = $this->startTest();
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->assertEquals(abs($adj['amount']), $txn['debit']);
+    }
+
+    public function testAddAdjustmentBalanceDoesNotExist()
+    {
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $adj = $this->startTest();
 
         return $adj;
     }

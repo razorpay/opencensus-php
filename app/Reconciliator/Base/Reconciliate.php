@@ -4,15 +4,18 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
 use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -93,6 +96,29 @@ class Reconciliate extends Base\Core
     const DEBIT         = 'debit';
     const DOMESTIC      = 'domestic';
     const INTERNATIONAL = 'international';
+
+
+    const ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS = [
+        RequestProcessor\Base::NETBANKING_HDFC,
+        RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::NETBANKING_ICICI,
+        RequestProcessor\Base::NETBANKING_FEDERAL,
+        RequestProcessor\Base::NETBANKING_CORPORATION,
+        RequestProcessor\Base::NETBANKING_YESB,
+        RequestProcessor\Base::NETBANKING_CUB,
+        RequestProcessor\Base::NETBANKING_CSB,
+        RequestProcessor\Base::NETBANKING_IDFC,
+        RequestProcessor\Base::NETBANKING_INDUSIND,
+        RequestProcessor\Base::NETBANKING_OBC,
+        RequestProcessor\Base::NETBANKING_VIJAYA,
+        RequestProcessor\Base::NETBANKING_ALLAHABAD,
+        RequestProcessor\Base::EBS,
+        RequestProcessor\Base::UPI_ICICI,
+
+    ];
 
     /*********************
      * Instance objects
@@ -240,11 +266,14 @@ class Reconciliate extends Base\Core
      */
     protected function generateReconOutputFile(Batch\Processor\Reconciliation $batchProcessor, array $extraDetails)
     {
-        $data = $batchProcessor->getReconBatchOutputData();
 
         $batch = $batchProcessor->batch;
 
         $batchId = $batch->getId();
+
+        $attempt = $batch->getAttempts();
+
+        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData(), $batchId, $attempt);
 
         $sheetName = null;
 
@@ -261,8 +290,6 @@ class Reconciliate extends Base\Core
         }
 
         $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
-
-        $attempt = $batch->getAttempts();
 
         if ($attempt > 1)
         {
@@ -310,6 +337,83 @@ class Reconciliate extends Base\Core
         ];
 
         $this->messenger->raiseReconInfo($traceData);
+
+        $this->generateReconAnalyticsData($data, $batch, $sheetName);
+    }
+
+    /**
+     * @param $data
+     * @param $batch
+     * @param $sheetName
+     * @throws \RZP\Exception\LogicException
+     *
+     * output file stored in a rzp-edh bucket for analytics. once all the gateways are migrated,
+     * output file will be stored only in this bucket.
+     */
+    protected function generateReconAnalyticsData($data, $batch, $sheetName)
+    {
+        if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
+        {
+            $creator = new FileStore\Creator;
+
+            $extension = FileStore\Format::CSV;
+
+            $batchId = $batch->getId();
+
+            $analyticsOutputFileName = $batchId . $sheetName . '_analytics' . self::OUTPUT_FILE_SUFFIX;
+
+            $dirPath = 'reconciliation_output/' . $this->gateway;
+
+            $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
+
+            $creator->localFilePath($analyticsOutputFilePath)
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                    ->name($dirPath . '/' . $analyticsOutputFileName)
+                    ->extension($extension)
+                    ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
+                    ->entity($batch)
+                    ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
+                    ->save();
+
+            $fileStoreEntity = $creator->get();
+
+            $traceData = [
+                'file_id'   => $fileStoreEntity['id'],
+                'file_name' => $fileStoreEntity['name'],
+                'batch_id'  => $batchId,
+                'gateway'   => $this->gateway,
+            ];
+
+            $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
+        }
+    }
+
+    /**
+     * @param $reconOutputData
+     * @param $batchId
+     * @param $attemptNumber
+     * @return array
+     * removes blacklisted columns if present. otherwise adds processed_at column for each row.
+     */
+
+    protected function getOutputWithRemovedBlackListedColumns($reconOutputData, $batchId, $attemptNumber)
+    {
+        $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
+
+        $updatedData = [];
+
+        foreach ($reconOutputData as $row)
+        {
+            $row = array_diff_key($row, array_flip($blackListedColumns));
+
+            $row['batch_id'] = $batchId;
+
+            $row['attempt_number'] = $attemptNumber;
+
+            array_push($updatedData, $row);
+        }
+
+        return $updatedData;
     }
 
     /**

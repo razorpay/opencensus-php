@@ -19,6 +19,16 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_TRANSACTION_STATUS     = 'transaction_status';
     const COLUMN_TRANSACTION_REMARKS    = 'transaction_remarks';
 
+    const COLUMN_PAYER_VPA = 'payer_virtual_address';
+
+    const COLUMN_PAYEE_VPA = 'payee_virtual_address';
+
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_PAYEE_VPA,
+        self::COLUMN_PAYER_VPA,
+    ];
+
     const SUCCESS   = 'SUCCESS';
     const DEBIT     = 'Debit';
     const APPROVED  = 'Approved';
@@ -175,5 +185,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         // We will only update the RRN if it is empty
         $gatewayRefund->setNpciReferenceId($referenceNumber);
+    }
+
+
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return self::BLACKLISTED_COLUMNS;
     }
 }

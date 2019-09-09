@@ -833,6 +833,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $cardFssEditTerminalRules = [
@@ -845,6 +846,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $upiHulkEditTerminalRules = [

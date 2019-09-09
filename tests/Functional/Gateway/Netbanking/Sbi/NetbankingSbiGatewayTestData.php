@@ -30,6 +30,38 @@ return [
         'verified'          => null,
     ],
 
+    'testTpvPayment' => [
+                 'request' => [
+                        'content' => [
+                                'amount'         => 50000,
+                                'currency'       => 'INR',
+                                'receipt'        => 'rcptid42',
+                                'method'         => 'netbanking',
+                                'bank'           => 'SBIN',
+                                'account_number' => '04030403040304',
+                            ],
+                        'method'    => 'POST',
+                        'url'       => '/orders',
+                    ],
+                'response' => [
+                        'content' => [
+                                'amount'         => 50000,
+                                'currency'       => 'INR',
+                                'receipt'        => 'rcptid42',
+                            ],
+                    ],
+            ],
+
+        'testTpvPaymentEntity' => [
+            'amount'            => 50000,
+            'action'            => 'authorize',
+            'status'            => 'Success',
+            'bank'              => 'SBIN',
+            'bank_payment_id'   => "IGAAAAGNN6",
+            'reference1'        => null,
+            'received'          => true,
+            ],
+
     'testPaymentNetbankingEntity' => [
         'action'            => 'authorize',
         'bank'              => 'SBIN',

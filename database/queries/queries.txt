@@ -5316,4 +5316,7 @@ ALTER TABLE `external`
     ADD INDEX `external_channel_index` (`channel`),
     ADD INDEX `external_balance_id_index` (`balance_id`),
     ADD INDEX `external_transaction_id_index` (`transaction_id`);
-    
+
+ALTER TABLE adjustment
+    ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
+    ADD INDEX `adjustment_balance_id_index` (`balance_id`);

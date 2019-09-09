@@ -34,6 +34,10 @@ return [
                 'assignable'  => true,
             ],
             Permission::CANCEL_BATCH => 'cancel batch',
+            Permission::BULK_CREATE_ENTITY      => [
+                'assignable' => true,
+                'workflow'   => false,
+            ],
         ],
 
         PermissionCategory::RAZORX => [

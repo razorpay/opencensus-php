@@ -101,6 +101,7 @@ class Name
     const ADD_MERCHANT_ADJUSTMENT             = 'add_merchant_adjustment';
     const EDIT_MERCHANT_EMAIL                 = 'edit_merchant_email';
     const EDIT_MERCHANT_ADDITIONAL_EMAIL      = 'edit_merchant_additional_email';
+    const BULK_CREATE_ENTITY                  = 'bulk_create_entity';
     const MERCHANT_AUTOFILL_FORM              = 'merchant_autofill_form';
     const EDIT_MERCHANT_MARK_REFERRED         = 'edit_merchant_mark_referred';
     const VIEW_AS_ENTITY                      = 'view_as_entity';
