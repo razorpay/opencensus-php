@@ -274,6 +274,8 @@ class Processor
 
             if ($ret !== null)
             {
+                $this->logPaymentRespawnEvent($input, $ret);
+
                 return $ret;
             }
 
@@ -331,6 +333,24 @@ class Processor
         {
             (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
         }
+    }
+
+    protected function logPaymentRespawnEvent(array $request, array $data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $properties = [
+            'payment' => $request,
+            'reason'  => $data['missing'] ?? "Unknown",
+            'merchant'     => [
+                'id'        => $merchant->getId(),
+                'name'      => $merchant->getBillingLabel(),
+                'mcc'       => $merchant->getCategory(),
+                'category'  => $merchant->getCategory2(),
+            ],
+        ];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
     }
 
     public function getPayment(): Payment\Entity

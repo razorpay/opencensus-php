@@ -31,6 +31,11 @@ class EventCode
         'name'  => 'payment.input.validations.processed'
     ];
 
+    const PAYMENT_CREATION_RESPAWN                      = [
+        'group' => 'initiation',
+        'name'  => 'payment.creation.respawn'
+    ];
+
     const PAYMENT_CARDSAVING_INITIATED                  = [
         'group' => 'internal_checks',
         'name'  => 'payment.cardsaving.initiated'
