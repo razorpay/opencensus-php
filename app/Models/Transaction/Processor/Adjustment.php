@@ -48,6 +48,8 @@ class Adjustment extends Base
         $this->txn->setReconciledType(Transaction\ReconciledType::NA);
 
         $this->repo->saveOrFail($this->txn);
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     public function setMerchantBalanceLockForUpdate()

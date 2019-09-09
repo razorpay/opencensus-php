@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Pricing\Feature;
@@ -124,7 +126,7 @@ class Reversal extends Base
      */
     public function updateTransaction()
     {
-        $settledAt = $reconciledAt = time();
+        $settledAt = $reconciledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         // In case of payout reversal, reversal settlement
         // will be instant since payout settlement is.
@@ -151,6 +153,8 @@ class Reversal extends Base
 
         // Save is necessary here to create CreditReversalTransaction
         $this->repo->saveOrFail($this->txn);
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     public function setMerchantBalanceLockForUpdate()

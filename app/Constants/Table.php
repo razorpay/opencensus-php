@@ -70,6 +70,7 @@ class Table
     const TRANSACTION               = 'transactions';
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
+    const SETTLEMENT_BUCKET         = 'settlement_bucket';
 
     // Subscriptions Tables
     const SUBSCRIPTION                   = 'subscriptions';
