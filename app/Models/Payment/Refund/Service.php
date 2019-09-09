@@ -436,15 +436,20 @@ class Service extends Base\Service
                                         if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
                                         {
                                             $entity = $this->repo
-                                                ->$gatewayEntity
-                                                ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
-                                                ->toArray();
+                                                           ->$gatewayEntity
+                                                           ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                           ->toArray();
 
                                             $map = [];
 
+                                            if ($gatewayEntity === RefundConstants::MOZART)
+                                            {
+                                                $entity = json_decode($entity['raw'], true);
+                                            }
+
                                             foreach ($columns as $column)
                                             {
-                                                $map[$column] = $entity[$column];
+                                                $map[$column] = $entity[$column] ?? '';
                                             }
 
                                             $response[RefundConstants::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;

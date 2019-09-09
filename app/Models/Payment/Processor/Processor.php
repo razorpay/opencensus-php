@@ -459,11 +459,16 @@ class Processor
             return;
         }
 
-        $payment = $this->createPaymentEntity($input, $payment);
+        $payment = $this->repo->transaction(function() use ($input, $payment)
+        {
+            $payment = $this->createPaymentEntity($input, $payment);
 
-        $payment->setBaseAmount($payment->getAmount());
+            $payment->setBaseAmount($payment->getAmount());
 
-        $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
+
+            return $payment;
+        });
 
         $input['payment_id'] = $payment->getPublicId();
 

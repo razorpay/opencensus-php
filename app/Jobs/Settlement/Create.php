@@ -146,7 +146,7 @@ class Create extends Job
         $channelCount = $redis->hgetall(self::CHANNEL_WISE_COUNT);
 
         // If there any channel with pending settlement initiate then dispatch it for the same
-        foreach($channelCount as $ch => $count)
+        foreach ($channelCount as $ch => $count)
         {
             if ($count !== 0)
             {

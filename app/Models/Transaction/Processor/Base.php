@@ -594,6 +594,10 @@ abstract class Base extends BaseCore
      */
     public function dispatchForSettlementBucketing(TransactionModel\Entity $txn, $settledAt = null)
     {
+        //
+        // in case the transaction is not eligible for settlement then
+        // settled_at will have some number else it will be null
+        //
         if ($settledAt === null)
         {
             return;

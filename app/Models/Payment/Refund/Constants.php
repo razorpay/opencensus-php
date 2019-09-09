@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 class Constants
 {
     const IS_FTA                            = 'is_fta';
+    const MOZART                            = 'mozart';
     const ENTITIES                          = 'entities';
     const REFUND_IDS                        = 'refund_ids';
     const DB_FETCH_LIMIT                    = 'limit';

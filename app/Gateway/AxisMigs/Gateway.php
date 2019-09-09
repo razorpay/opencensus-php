@@ -213,24 +213,14 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $mpiEntity = $this->app['repo']
-                          ->mpi
-                          ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
-
-        $authenticationGateway = $this->gateway;
-
-        if ($mpiEntity !== null)
-        {
-            $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
-        }
-
-        switch ($authenticationGateway)
+        switch ($input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY])
         {
             case Payment\Gateway::MPI_BLADE:
             case Payment\Gateway::MPI_ENSTAGE:
                 parent::callback($input);
 
-                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+                $authResponse = $this->callAuthenticationGateway($input,
+                                                    $input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY]);
 
                 $this->setCardNumberAndCvv($input);
 
