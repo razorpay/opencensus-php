@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountStatement;
 
 use Cache;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -16,6 +17,13 @@ class Service extends Base\Service
 
     public function generateAccountStatement(array $input)
     {
+
+        $validator = (new Entity())->getValidator();
+
+        $validator->setStrictFalse();
+
+        $validator->validateInput(Validator::ACCOUNT_STATEMENT_GENERATE, $input);
+
         $response = $this->core()->generateBankAccountStatement($input);
 
         return $response;
