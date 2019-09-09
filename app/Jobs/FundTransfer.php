@@ -2,13 +2,15 @@
 
 namespace RZP\Jobs;
 
-use App;
-
+use Carbon\Carbon;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
-use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\FundTransfer as FTA;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Settlement\SlackNotification;
@@ -112,8 +114,10 @@ class FundTransfer extends Job
 
     /**
      * @param array $data
+     * @param string $traceCode
+     * @param Attempt\Entity $fta
      */
-    public function checkRetryOrDelete(array $data, $traceCode)
+    public function checkRetryOrDelete(array $data, $traceCode, Attempt\Entity $fta)
     {
         // Functional test cases gets failed due to checkRetryOrDelete
         // gets called in sync hence returning false in test mode
@@ -128,9 +132,14 @@ class FundTransfer extends Job
         }
         else
         {
-            (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure', $data, null, 1);
-
             $this->logAndDelete($data, $traceCode);
+
+            (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure',
+                                          $data,
+                                          null,
+                                          1);
+
+            return $this->isWithInFtaSla($fta);
         }
 
         return true;
@@ -177,14 +186,14 @@ class FundTransfer extends Job
             {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
 
-                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_REGISTERED);
+                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_REGISTERED, $fta);
             }
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED)
             {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel);
 
-                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_VERIFIED);
+                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_VERIFIED, $fta);
             }
         }
 
@@ -220,5 +229,41 @@ class FundTransfer extends Job
                     'mode' => $this->mode
                 ]);
         }
+    }
+
+    private function isWithInFtaSla(Attempt\Entity $fta): bool
+    {
+        // SLA in seconds
+        $sla = (new Admin\Service)->getConfigKey(['key' => ConfigKey::RX_SLA_FOR_IMPS_PAYOUT]);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $duration = $currentTime - $fta->getCreatedAt();
+
+        if ((empty($sla) === false) and
+            ($fta->getSourceType() === Attempt\Type::PAYOUT) and
+            (((int) $sla) <= $duration) and
+            (($fta->getMode() === FTA\Mode::IMPS) or
+                ($fta->getMode() === FTA\Mode::IFT)))
+        {
+            $this->trace->info(
+                TraceCode::FTA_SLA_EXPIRED,
+                [
+                    'fta_id'   => $this->ftaId,
+                    'mode'     => $this->mode,
+                    'sla'      => $sla,
+                    'duration' => $duration,
+                ]);
+
+            $this->trace->count(
+                Attempt\Metric::FTA_SLA_EXPIRED,
+                [
+                    Attempt\Metric::SLA => $sla,
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }
