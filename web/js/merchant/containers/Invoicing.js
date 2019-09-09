@@ -46,14 +46,17 @@ export default class InvoicingContainer extends Component {
     if (this.props.invoices.invoices.length) return;
 
     if (!this.props.items.items.length) {
-      this.props.fetchItems();
+      this.props.fetchItems({
+        count: 25,
+        type: 'invoice',
+      });
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (
-      nextProps.invoices.loading != this.props.invoices.loading ||
-      nextProps.items.loading != this.props.items.loading
+      nextProps.invoices.loading !== this.props.invoices.loading ||
+      nextProps.items.loading !== this.props.items.loading
     ) {
       this.initInvoicesOnboarding(nextProps);
     }
