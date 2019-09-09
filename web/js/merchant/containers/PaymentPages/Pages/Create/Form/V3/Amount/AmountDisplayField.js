@@ -102,7 +102,13 @@ const displayField = ({
             field._type && 'Field-wrapper--' + field_type
           )}
         >
-          <span class="Field-addon Field-addon--before">
+          <span
+            class={classList(
+              `Field-addon Field-addon--before ${field.image_url &&
+                'Field-addon--image'}`
+            )}
+          >
+            {field.image_url && <img src={field.image_url} />}
             <b>{getCurrency(currency).symbol}</b>
           </span>
 
