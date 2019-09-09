@@ -1,5 +1,4 @@
-  <!-- <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script> -->
-  <script src="http://127.0.0.1:5500/public/static/analytics/bundle.js"></script>
+  <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
   <script src="https://cdn.razorpay.com/static/assets/holidays.js"></script>
   <script type="text/javascript">
     const noop = ()=>{}
@@ -18,7 +17,7 @@
                 };
     //Above code doesn't perform any function, can avoid application breakage if the library is
     //removed, not loaded or library code breaks anytime.
-    var isLocal = undefined; //Maintaining this for legacy reason, shall clear soon.
+    var isLocal = undefined; //Maintaining this for legacy reason.
     var disableEventEmitters = false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname=="dashboard.razorpay.com" ? 'prod' : 'stage';
     if(analytics){
