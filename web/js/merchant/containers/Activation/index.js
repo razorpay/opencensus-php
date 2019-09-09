@@ -10,7 +10,6 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import KycForm from './new';
 import InstantActivation from './Instant';
 import { setInstantActivationsTracking } from './ga_new';
-import RTracking from 'react-tracking';
 
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
 @connect(state => ({ user: state.session.user, session: state.session }))

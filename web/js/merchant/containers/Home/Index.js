@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
-import RTracking from 'react-tracking';
 
 import { showNotification } from 'rzp/modules/notifications';
 import { customRangeText } from 'rzp/ui/DateRangePicker';
@@ -102,9 +101,6 @@ const keymetricsSectionTitle = 'Transactions Overview',
   trafficSectionTitle = 'Traffic split on platforms',
   recentActivityTitle = 'Recent Activity';
 
-@RTracking((state, props, args) => {
-  return window.rzpQ.component('HomeContainer');
-})
 @connect(
   state => {
     return {
@@ -622,7 +618,6 @@ export default class HomeContainer extends Component {
       current_balance,
       tabsMeta,
       user,
-      tracking,
       // following three props will be sent by admin analytics
       // - web/pokedex.js
       isAdmin,

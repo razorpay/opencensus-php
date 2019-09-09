@@ -35,7 +35,6 @@ export default class ActivationCard extends Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    const { tracking } = this.props;
     const {
         instantActivation,
         isSubmitted,
