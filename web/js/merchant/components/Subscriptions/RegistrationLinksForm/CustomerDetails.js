@@ -3,13 +3,24 @@ import { isEmail, isPhone } from 'rzp/utils/validators';
 import Input from 'component/Input';
 
 export default props => {
-  const { hasNoExpiry, handleDateChange } = props;
+  const {
+    hasNoExpiry,
+    handleDateChange,
+    description,
+    customerName,
+    customerContact,
+    configSmsNotify,
+    customerEmail,
+    configEmailNotify,
+    receipt,
+  } = props;
 
   return (
     <React.Fragment>
       <Input.Textarea
         name="description"
         label="Description"
+        value={description}
         description="Payment / Authentication Description"
         required
       />
@@ -17,28 +28,29 @@ export default props => {
       <Input
         name="customerName"
         label="Customer Name"
+        value={customerName}
         description="Name of Customer"
       />
 
       <Input.Group class="InputGroup--inline" label="Customer Contact" required>
         <div class="Input-content">
           <Input
+            required
             name="customerContact"
             placeholder="Mobile"
             type="tel"
-            size="half_big"
-            required
-            validator={val => !isPhone(val) && 'Invalid Phone'}
+            value={customerContact}
+            validator={validatePhone}
             description="Phone number of Customer"
           />
 
           <Input
+            required
             name="customerEmail"
             placeholder="Email"
             type="email"
-            size="half_big"
-            required
-            validator={val => !isEmail(val) && 'Invalid Email'}
+            value={customerEmail}
+            validator={validateEmail}
             description="Email of Customer"
           />
         </div>
@@ -46,24 +58,33 @@ export default props => {
 
       <Input.Group class="InputGroup--inline InputGroup--vTop" label="Notify">
         <div class="Input-content">
-          <Input.Check name="configSmsNotify" fieldLabel="Via SMS" />
+          <Input.Check
+            name="configSmsNotify"
+            checked={configSmsNotify}
+            fieldLabel="Via SMS"
+          />
 
-          <Input.Check name="configEmailNotify" fieldLabel="Via Email" />
+          <Input.Check
+            name="configEmailNotify"
+            checked={configEmailNotify}
+            fieldLabel="Via Email"
+          />
         </div>
       </Input.Group>
 
       <Input
         name="receipt"
-        size="half_big"
         label="Receipt No."
+        value={receipt}
         description="Receipt for Customer"
       />
 
       <Input.Group label="Expiry" class="InputGroup--vTop">
         <Input.Check
           fieldLabel="No Expiry"
-          data-name="hasNoExpiry"
+          name="hasNoExpiry"
           defaultValue="1"
+          value={hasNoExpiry}
         />
 
         <Input.ToCalendar
@@ -72,7 +93,6 @@ export default props => {
           allowToday
           disablePastDates
           placement="topLeft"
-          size="half_big"
           addonAfter={<i class="i i-date-range" />}
           disabled={!!Number(hasNoExpiry)}
           onChange={handleDateChange('expireAt')}
@@ -82,3 +102,11 @@ export default props => {
     </React.Fragment>
   );
 };
+
+export function validatePhone(val) {
+  return !isPhone(val) && 'Invalid Phone';
+}
+
+export function validateEmail(val) {
+  return !isEmail(val) && 'Invalid Email';
+}
