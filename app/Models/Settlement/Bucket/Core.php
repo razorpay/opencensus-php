@@ -7,7 +7,9 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Balance\Type;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -18,6 +20,60 @@ class Core extends Base\Core
         $this->preference = new Preference;
 
         parent::__construct();
+    }
+
+    public function backfillSettlementBucket(array $input)
+    {
+        $startTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $endTime = null;
+
+        if (empty($input['start']) === false)
+        {
+            $startTime = $input['start'];
+        }
+
+        if (empty($input['end']) === false)
+        {
+            $endTime = $input['end'];
+        }
+
+        $this->trace->info(
+            TraceCode::BUCKETING_INITIATE,
+            [
+                'start' => $startTime,
+                'end'   => $endTime,
+            ]
+        );
+
+        $featuredMids = $this->repo->feature->findMerchantsHavingFeatures([
+            'es_automatic',
+            'daily_settlement',
+            'block_settlements'
+        ])->pluck('entity_id')
+          ->toArray();
+
+        $featuredMids = array_merge($featuredMids, Preferences::NO_SETTLEMENT_MIDS);
+
+        $result = $this->repo->transaction->getMerchantSettledAtTime($featuredMids, $startTime, $endTime);
+
+        foreach ($result as $record)
+        {
+            $this->addMerchantToSettlementBucket(0, $record['merchant_id'], $record['settled_at']);
+        }
+
+        $this->trace->info(
+            TraceCode::BUCKETING_DONE,
+            [
+                'count' => count($result),
+                'start' => $startTime,
+                'end'   => $endTime,
+            ]
+        );
+
+        return [
+            'count' => count($result)
+        ];
     }
 
     /**
@@ -60,14 +116,6 @@ class Core extends Base\Core
      */
     public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime)
     {
-        // check is the transaction can be settled
-        $status = $this->isSettleableTransaction($transactionId);
-
-        if ($status === false)
-        {
-            return;
-        }
-
         // check merchant specific conditions
         $status = $this->preference
                        ->skipMerchantSettlement($merchantId);
