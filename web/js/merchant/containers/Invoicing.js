@@ -59,19 +59,6 @@ export default class InvoicingContainer extends Component {
     }
   }
 
-  componentWillUnmount() {
-    const { invoicesProductOnBoarding } = this.props;
-
-    if (invoicesProductOnBoarding.isTour) {
-      this.props.handleProductQuickGuide({
-        ...invoicesProductOnBoarding,
-        showOnboarding: false,
-        isQuickGuideOpen: false,
-        isTour: false,
-      });
-    }
-  }
-
   initInvoicesOnboarding = (props = this.props) => {
     if (props.invoicesProductOnBoarding.isTour) {
       return false;
@@ -123,10 +110,12 @@ export default class InvoicingContainer extends Component {
 
         <content>
           <Route path="/invoices" component={Invoices} />
-          <Route path="/items" component={Items} />
+          <Route path="/items" render={ItemsComponent} />
           <Route path="/customers" component={Customers} />
         </content>
       </tabbed-container>
     );
   }
 }
+
+const ItemsComponent = props => <Items {...props} isInvoiceView />;

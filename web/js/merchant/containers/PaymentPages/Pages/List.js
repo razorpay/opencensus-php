@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import { NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 
 import { RZPFeatures } from 'rzp/utils/constants';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
@@ -39,6 +40,7 @@ import { getPaymentPageQuickGuideIsClosed } from '../QuickGuide';
 import { trackListActions } from './ga';
 import { fetchPaymentPagesList } from './model';
 
+@withRouter
 @connect(
   state => ({
     ...state.invoices,
@@ -147,11 +149,22 @@ export default class PaymentPagesContainer extends ListContainer {
       this.props.handleProductQuickGuide({
         ...paymentPageProductOnBoarding,
         showOnboarding: false,
-        isQuickGuideOpen: false,
-        isTour: false,
+        isQuickGuideOpen: this.state.isPaymentPageWysiwyg,
+        isTour: this.state.isPaymentPageWysiwyg,
       });
     }
   }
+
+  handleProductQuickGuide = () => {
+    this.setState(
+      {
+        isPaymentPageWysiwyg: true,
+      },
+      () => {
+        this.props.history.push('/paymentpages/new');
+      }
+    );
+  };
 
   initPaymentPagesOnboarding = (props = this.props) => {
     if (props.paymentPageProductOnBoarding.isTour) {
@@ -359,10 +372,13 @@ export default class PaymentPagesContainer extends ListContainer {
             </ShowWhen>
 
             {isRoleAllowedEdit && (
-              <NavLink class="btn btn-primary" to="/paymentpages/new">
+              <span
+                class="btn btn-primary"
+                onClick={this.handleProductQuickGuide}
+              >
                 <i class="i i-plus" />
                 <span>Create Payment Page</span>
-              </NavLink>
+              </span>
             )}
           </div>
         </HeaderAction>
