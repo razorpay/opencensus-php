@@ -5,12 +5,11 @@ namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 use View;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Bank\BankInfo;
 use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\BankingAccountStatement\Type as StatementType;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
-use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\BankInformation as RBLBankConstants;
-use RZP\Models\Bank\BasicInformation;
 
 abstract class Generator extends Base
 {
@@ -192,7 +191,7 @@ abstract class Generator extends Base
     {
         $ifscCode = $bankingAccount->getAccountIfsc();
 
-        $bankInformation = (new BasicInformation($ifscCode))->getBankInformation();
+        $bankInformation = (new BankInfo($ifscCode))->getBankInformation();
 
         $accountOwnerInfo = [
             AccountOwnerInfo::ACCOUNT_NAME         => $merchant->name,
@@ -209,13 +208,13 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
 
-            AccountOwnerInfo::SANCTION_LIMIT       => RBLBankConstants::SANCTION_LIMIT,
+            AccountOwnerInfo::SANCTION_LIMIT       => BankConstants::SANCTION_LIMIT,
 
-            AccountOwnerInfo::DRAWING_POWER        => RBLBankConstants::DRAWING_POWER,
+            AccountOwnerInfo::DRAWING_POWER        => BankConstants::DRAWING_POWER,
 
-            AccountOwnerInfo::BRANCH_TIMINGS       => RBLBankConstants::BRANCH_TIMINGS,
+            AccountOwnerInfo::BRANCH_TIMINGS       => BankConstants::BRANCH_TIMINGS,
 
-            AccountOwnerInfo::CALL_CENTER          => RBLBankConstants::CALL_CENTER_NUMBER,
+            AccountOwnerInfo::CALL_CENTER          => BankConstants::CALL_CENTER_NUMBER,
 
             AccountOwnerInfo::CUSTOMER_CITY        => $merchantDetails->business_operation_city,
 

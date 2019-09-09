@@ -94,19 +94,19 @@ class Core extends Base\Core
             [
                 'channel'        => $channel,
                 'account_number' => $accountNumber,
-                'fromDate'        => $fromDate,
-                'toDate' => $toDate,
-                'format'        => $format,
-                'sendEmail' => $sendEmail,
+                'fromDate'       => $fromDate,
+                'toDate'         => $toDate,
+                'format'         => $format,
+                'sendEmail'      => $sendEmail,
             ]);
 
         SupportedFormats::validate($channel, $format);
 
         $statementGenerator = $this->getGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
 
-        $statementFile      = $statementGenerator->getStatement();
+        $statementFile = $statementGenerator->getStatement();
 
-        $fileURL            = (new Accessor())->getSignedUrlOfFile($statementFile);
+        $fileURL = (new Accessor())->getSignedUrlOfFile($statementFile);
 
         if ($sendEmail)
         {
@@ -123,7 +123,7 @@ class Core extends Base\Core
     {
         $statementGeneratorNamespace = __NAMESPACE__ . '\\' . 'Generator\\Gateway\\' . studly_case($channel);
 
-        $statementGenerator          = $statementGeneratorNamespace . '\\' . studly_case($format);
+        $statementGenerator = $statementGeneratorNamespace . '\\' . studly_case($format);
 
         return new $statementGenerator($accountNUmber, $channel, $fromDate, $toDate);
     }
