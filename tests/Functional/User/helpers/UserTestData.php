@@ -221,15 +221,15 @@ return [
         ]
     ],
 
-    'testUserAccessWithoutMerchantIdInRequest'  => [
-        'response'      => [
-            'content'   => [
+    'testUserAccessWithoutMerchantIdInRequest' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
                 ],
             ],
-            'status_code'   => 400,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',

@@ -304,7 +304,7 @@ class Service extends Base\Service
 
     public function checkUserAccess(array $input)
     {
-        if (isset($input['merchant_id']) === false or $input['merchant_id'] === null)
+        if (empty($input['merchant_id']) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
