@@ -11,6 +11,7 @@ use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service;
 use RZP\Encryption\PGPEncryption;
@@ -56,6 +57,8 @@ class Beneficiary extends FileProcessor
     {
         try
         {
+            $this->increaseAllowedSystemLimits();
+
             $rows = $this->getData($bankAccounts);
 
             $this->trace->info(TraceCode::FTA_ROWS_FETCHED_FOR_FILE);
@@ -231,5 +234,14 @@ class Beneficiary extends FileProcessor
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(900);
+
+        RuntimeManager::setMaxExecTime(900);
     }
 }
