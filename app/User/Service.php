@@ -648,31 +648,35 @@ class Service extends Base\Service
 
         $genericUser = null;
 
-
-
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
 
             $currentMerchantId = Session::get('current_merchant_id');
 
-            $currentMerchant = $genericUser
-                ->merchants
-                ->where('id', $currentMerchantId)
-                ->first();
-
-            // if currentMerchant is not in merchants array
-            // then check user's access on it using checkAccessOfUserOnMerchant
-            // if no error push the returned merchant object in merchants array
-            if($currentMerchant === null)
+            if ($currentMerchantId !== null)
             {
-                list($error, $data) = $this->checkAccessOfUserOnMerchant($currentMerchantId);
+                $currentMerchant = $genericUser
+                    ->merchants
+                    ->where('id', $currentMerchantId)
+                    ->first();
 
-                if(empty($error) === true)
+                // if currentMerchant is not in merchants array
+                // then check user's access on it using checkAccessOfUserOnMerchant
+                // if no error push the returned merchant object in merchants array
+                if($currentMerchant === null)
                 {
-                    $genericUser->merchants->push(new GenericMerchant($data['merchant']));
+                    list($error, $data) = $this->checkAccessOfUserOnMerchant($currentMerchantId);
+
+                    if(empty($error) === true)
+                    {
+                        $genericUser->merchants->push(new GenericMerchant($data['merchant']));
+                        Session::put('dashboard_user_payload', $genericUser);
+                    }
                 }
+
             }
+
         }
 
         return [$error, $genericUser];
