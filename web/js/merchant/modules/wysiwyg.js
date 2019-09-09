@@ -132,6 +132,8 @@ export default function(state = initialState, action) {
 
       let formItems;
 
+      const udfSchema = JSON.parse(entityData.settings.udf_schema);
+
       if (action.isPPV3Enabled) {
         entityData.payment_page_items.forEach(pi => {
           if (pi.item.amount) {
@@ -139,9 +141,7 @@ export default function(state = initialState, action) {
           }
         });
 
-        formItems = []
-          .concat(JSON.parse(entityData.settings.udf_schema))
-          .concat(entityData.payment_page_items);
+        formItems = [].concat(udfSchema).concat(entityData.payment_page_items);
 
         formItems.sort(function(a, b) {
           const positionA = a.settings.position;
@@ -158,7 +158,7 @@ export default function(state = initialState, action) {
         entityData.amount = amountItem.item.amount / 100; // Convert in Rupees (or bigger unit)
         entityData.quantity = amountItem.quantity;
 
-        formItems = JSON.parse(entityData.settings.udf_schema);
+        formItems = udfSchema;
       }
 
       return {

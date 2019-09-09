@@ -71,7 +71,14 @@ export function mapFieldToIndex(field) {
   let selectedIndexInOptions = null;
 
   // Removing the fixed schema fields
-  const { title, name, required, description, ...schemaFields } = field;
+  const {
+    title,
+    name,
+    required,
+    description,
+    settings,
+    ...schemaFields
+  } = field;
 
   const fieldTypes = flattenFIELD_TYPES();
 
@@ -103,7 +110,7 @@ export function mapFieldToIndex(field) {
       // EXCEPTION 1: Ignore schema.settings as it's not part of actual udf_schema
       // EXCEPTION 2: values of schema.options is checked in next for-each block.
       // EXCEPTION 3: value for enum is not to be compared as it's an array, it can be skipped and options.cmp will handle existence of 'key:enum'
-      if (['settings', 'options', 'enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
+      if (['options', 'enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
         continue;
       }
 

@@ -415,6 +415,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       support_email: support_email || null,
       support_contact: support_contact || null,
       settings: {
+        // TODO: Send here custom pay-button label
+        checkout_options: {
+          ...paymentPageEntity.settings.checkout_options,
+        },
         theme: settings.theme,
         allow_social_share: settings.allow_social_share ? '1' : '0',
         payment_success_message: settings.payment_success_message,
