@@ -165,3 +165,33 @@ const checkIfAmountForFirstCharge = (maxAmount, value) => {
 
   return !isAmount(value) && 'Invalid Amount';
 };
+
+function PaymentMethod({ loading, avlblMethods }) {
+  if (loading)
+    return (
+      <PaymentMethodPlaceHolder
+        content={<span class="text-muted">Fetching Methods...</span>}
+      />
+    );
+  return avlblMethods.length > 1 ? (
+    <Input.Radio
+      required
+      label="Payment Method"
+      name="mandateMethod"
+      options={avlblMethods}
+      class="Input--vTop"
+      description="Method to be used for Registration Link"
+    />
+  ) : (
+    <PaymentMethodPlaceHolder content={avlblMethods[0].label} />
+  );
+}
+
+function PaymentMethodPlaceHolder({ content }) {
+  return (
+    <div class="Input Input--vTop">
+      <div class="Input-label">Payment Method</div>
+      <div class="Input-content">{content}</div>
+    </div>
+  );
+}

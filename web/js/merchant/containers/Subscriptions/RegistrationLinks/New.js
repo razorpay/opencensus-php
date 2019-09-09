@@ -1,7 +1,6 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import { isEmail, isAmount, isPhone } from 'rzp/utils/validators';
 import { rupeesToPaise } from 'rzp/utils/rzp-utils';
 import { titleCase } from 'common/util';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
@@ -16,11 +15,8 @@ import {
 import { createRegistrationLink } from 'merchant/modules/registration_link';
 
 import Form from 'component/Form';
-import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { Modal, ModalContent } from 'component/Modal';
-
-import { AmountTooltip } from 'rzp/ui/Amount';
 
 const mandatoryFields = [
   'description',
@@ -56,6 +52,10 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   };
 
   componentWillMount() {
+    this.fetchDataForRegistrationLinks();
+  }
+
+  fetchDataForRegistrationLinks = () => {
     fetchPaymentMethods().then(methods => {
       if (methods && methods.recurring) {
         let emandateBanks = [];
@@ -82,7 +82,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         });
       }
     });
-  }
+  };
 
   allMandatoryFieldsPresent = () => {
     const { mandateMethod } = this.state;
@@ -244,34 +244,4 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       <div class="StandAloneContainer">{this.renderForm({ isModalView })}</div>
     );
   }
-}
-
-function PaymentMethod({ loading, avlblMethods }) {
-  if (loading)
-    return (
-      <PaymentMethodPlaceHolder
-        content={<span class="text-muted">Fetching Methods...</span>}
-      />
-    );
-  return avlblMethods.length > 1 ? (
-    <Input.Radio
-      required
-      label="Payment Method"
-      name="mandateMethod"
-      options={avlblMethods}
-      class="Input--vTop"
-      description="Method to be used for Registration Link"
-    />
-  ) : (
-    <PaymentMethodPlaceHolder content={avlblMethods[0].label} />
-  );
-}
-
-function PaymentMethodPlaceHolder({ content }) {
-  return (
-    <div class="Input Input--vTop">
-      <div class="Input-label">Payment Method</div>
-      <div class="Input-content">{content}</div>
-    </div>
-  );
 }
