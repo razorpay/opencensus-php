@@ -664,11 +664,11 @@ class Service extends Base\Service
                 // if currentMerchant is not in merchants array
                 // then check user's access on it using checkAccessOfUserOnMerchant
                 // if no error push the returned merchant object in merchants array
-                if($currentMerchant === null)
+                if ($currentMerchant === null)
                 {
                     list($error, $data) = $this->checkAccessOfUserOnMerchant($currentMerchantId);
 
-                    if(empty($error) === true)
+                    if (empty($error) === true)
                     {
                         $genericUser->merchants->push(new GenericMerchant($data['merchant']));
                         Session::put('dashboard_user_payload', $genericUser);
