@@ -128,12 +128,18 @@ export default class InvoicesListContainer extends ListContainer {
         showOnboarding: false,
         isQuickGuideOpen: this.state.isInvoiceView,
         isTour: this.state.isInvoiceView,
+        lastItemId: null,
       });
     }
   }
 
   onClickNewInvoice = () => {
-    const { history } = this.props;
+    const { history, invoices } = this.props;
+
+    this.props.handleProductQuickGuide({
+      ...this.props.invoicesProductOnBoarding,
+      lastElementId: (invoices[0] || {}).id,
+    });
 
     this.setState(
       {

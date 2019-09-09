@@ -60,10 +60,13 @@ export default params => {
     generateDataPointFromProps = type => {
       const latestEle = this.props[type].items[0] || {};
 
+      const lastItemId =
+        this.props.currentOnboarding.lastElementId || latestEle.id;
+
       return {
         [type]: {
           type: type,
-          lastItemId: latestEle.id,
+          lastItemId,
           items: [],
           loading: false,
         },
