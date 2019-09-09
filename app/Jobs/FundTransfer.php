@@ -139,7 +139,7 @@ class FundTransfer extends Job
                                           null,
                                           1);
 
-            return $this->isFtaSlaBreached($fta);
+            return $this->isWithInFtaSla($fta);
         }
 
         return true;
@@ -231,7 +231,7 @@ class FundTransfer extends Job
         }
     }
 
-    private function isFtaSlaBreached(Attempt\Entity $fta): bool
+    private function isWithInFtaSla(Attempt\Entity $fta): bool
     {
         // SLA in seconds
         $sla = (new Admin\Service)->getConfigKey(['key' => ConfigKey::RX_SLA_FOR_IMPS_PAYOUT]);
