@@ -5,7 +5,11 @@ import Group, { GroupItem } from 'rzp/ui/Group';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Button from 'component/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
+import RTracking from 'react-tracking';
 
+@RTracking((state, props, args) => {
+  return window.rzpQ.component('HomeContainer');
+})
 export default class InstantActivationSuccess extends Component {
   constructor(props) {
     super(props);
@@ -15,8 +19,12 @@ export default class InstantActivationSuccess extends Component {
 
   handleProductsView() {
     const { onClose, showProductsModal, showTransactionsModal } = this.props;
-
     this.props.track.trackViewProducts();
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().initiated('dash.accept_payments_popup_action', {
+        clickSource: 'view-products',
+      })
+    );
     onClose();
     showProductsModal(() => showTransactionsModal());
   }

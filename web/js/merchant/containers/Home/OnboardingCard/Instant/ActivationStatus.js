@@ -35,7 +35,6 @@ export default class ActivationCard extends Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    const { tracking } = this.props;
     const {
         instantActivation,
         isSubmitted,
@@ -45,6 +44,7 @@ export default class ActivationCard extends Component {
         onActive,
         track,
         international,
+        tracking,
       } = nextProps,
       {
         isL1Submitted,
@@ -66,9 +66,9 @@ export default class ActivationCard extends Component {
               className="btn btn-primary"
               onClick={e => {
                 track.activateAccount();
-                tracking.trackEvent(
+                this.props.tracking.trackEvent(
                   window.rzpQ.onbr().initiated('act.form_fill', {
-                    clickSource: 'Dashboard_CTA',
+                    clickSource: 'dashboard-cta',
                   })
                 );
               }}
@@ -96,7 +96,14 @@ export default class ActivationCard extends Component {
             <Link
               to="/activation"
               className="btn btn-primary"
-              onClick={() => track.fillKyc()}
+              onClick={() => {
+                track.fillKyc();
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('act.form_fill', {
+                    eventSource: 'dashboard_banner',
+                  })
+                );
+              }}
             >
               Fill KYC Form
             </Link>

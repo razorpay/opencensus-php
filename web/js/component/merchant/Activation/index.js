@@ -97,6 +97,9 @@ let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
+@RTracking((state, props, args) => {
+  return window.rzpQ.component('ActivationCard');
+})
 @connect(state => ({
   user: state.session.user,
 }))
@@ -285,10 +288,16 @@ export default class ActivationWizard extends React.Component {
 
   saveCurrentTab = () => {
     const currenActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.save_modifications', {
+          clickSource: 'save',
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
+        tracker();
         onAction.trackSave({
           tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
@@ -301,10 +310,16 @@ export default class ActivationWizard extends React.Component {
 
   next = e => {
     const currenActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.save_modifications', {
+          clickSource: 'save-next',
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
+        tracker();
         onAction.trackSaveAndNext({
           tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
@@ -334,12 +349,17 @@ export default class ActivationWizard extends React.Component {
   changeTab = ({ target }) => {
     const tabId = parseInt(target.getAttribute('data-index'));
     const currentActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.nav_action', {
+          clickSource: mainFormTabs[tabId],
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
         onAction.trackTabClick(tabId); // Tracks current tab clicked
-
+        tracker();
         if (typeof result !== 'undefined') {
           onAction.trackSaveOnTabClick({
             tabId: currentActiveTab, // Tracks for tab that got saved

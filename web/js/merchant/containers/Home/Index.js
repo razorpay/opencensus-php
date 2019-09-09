@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
-import RTracking from 'react-tracking';
 
 import { showNotification } from 'rzp/modules/notifications';
 import { customRangeText } from 'rzp/ui/DateRangePicker';
@@ -45,6 +44,7 @@ import Banner from 'rzp/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';
+import RTracking from 'react-tracking';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -618,7 +618,6 @@ export default class HomeContainer extends Component {
       current_balance,
       tabsMeta,
       user,
-
       // following three props will be sent by admin analytics
       // - web/pokedex.js
       isAdmin,
@@ -764,6 +763,11 @@ export default class HomeContainer extends Component {
                     onActivate={() => {
                       trackActivateAccount();
                       onFirstStepClose();
+                      tracking.trackEvent(
+                        window.rzpQ.onbr().initiated('act.form_fill', {
+                          clickSource: 'first-login-popup',
+                        })
+                      );
                     }}
                   />
                 </ModalContent>
@@ -774,10 +778,16 @@ export default class HomeContainer extends Component {
           <InstantActivationSuccess
             onClose={() => {
               iaActivations.trackClose(activation_flow);
+              tracking.trackEvent(
+                window.rzpQ.dropped('act.whitelist_popup_action')
+              );
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
             }}
             onGoToDashboard={() => {
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('act.whitelist_popup_action')
+              );
               iaActivations.trackGoToDashboard();
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
@@ -803,10 +813,21 @@ export default class HomeContainer extends Component {
           <KycDetailsModal
             onClose={() => {
               iaActivations.trackCloseKYCDetails();
+              tracking.trackEvent(
+                window.rzpQ.dropped('act.greylist_popup_action')
+              );
               hideKYCDetailsModal();
             }}
             onGiveDetails={() => {
               iaActivations.trackGiveKYCDetails();
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('act.greylist_popup_action')
+              );
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.form_fill', {
+                  eventSource: 'greylist_popup',
+                })
+              );
               hideKYCDetailsModal();
             }}
           />

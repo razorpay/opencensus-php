@@ -153,14 +153,20 @@ export default class ActivationContainer extends Component {
       isLoading = !data,
       // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
       isModal = !!this.props.onClose,
-      { isL1Submitted, isBlacklistFlow } = user.instantActivation,
+      {
+        isL1Submitted,
+        isWhitelistFlow,
+        isBlacklistFlow,
+        isGraylistFlow,
+      } = user.instantActivation,
       showL1Modal =
         !this.props.accountId &&
         user.showInstantActivation &&
         (!isL1Submitted || isBlacklistFlow);
 
     let content = null,
-      modalClasses = ['animate-down'];
+      modalClasses = ['animate-down'],
+      trackerIntent = null;
 
     if (isLoading) {
       modalClasses = ['spinner', 'transparent'];
@@ -187,6 +193,7 @@ export default class ActivationContainer extends Component {
             onFormValidityChange={this.handleIAFormValidityChange}
           />
         );
+        trackerIntent = 'act.form_fill';
       } else {
         content = (
           <KycForm
@@ -195,6 +202,7 @@ export default class ActivationContainer extends Component {
             setAdditionalModalClass={this.setAdditionalModalClass}
           />
         );
+        trackerIntent = 'kyc.form_fill';
       }
     }
 
