@@ -134,12 +134,14 @@ export default class InvoicesListContainer extends ListContainer {
   }
 
   onClickNewInvoice = () => {
-    const { history, invoices } = this.props;
+    const { history, invoices, invoicesProductOnBoarding } = this.props;
 
-    this.props.handleProductQuickGuide({
-      ...this.props.invoicesProductOnBoarding,
-      lastElementId: (invoices[0] || {}).id,
-    });
+    if (invoicesProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...invoicesProductOnBoarding,
+        lastElementId: (invoices[0] || {}).id,
+      });
+    }
 
     this.setState(
       {
