@@ -1045,6 +1045,16 @@ trait PaymentTrait
 
             switch ($refund['amount'])
             {
+                case 200:
+                    $failed = $data['failed'] ?? false;
+
+                    if ($failed === false)
+                    {
+                        $event = 'processed_event';
+                    }
+
+                    break;
+
                 case 3459:
                     $event = 'failed_event';
                     break;
@@ -1176,7 +1186,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $paymentId = null, $content = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [])
     {
         $this->ba->adminAuth();
 
@@ -1193,6 +1203,11 @@ trait PaymentTrait
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
             $response['attempts'] = 1;
+
+            if (isset($data['amount']) === true)
+            {
+                $response['amount'] = $data['amount'];
+            }
 
             $this->scroogeRefund($response, $content);
         }
