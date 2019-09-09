@@ -1,6 +1,7 @@
   <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
   <script src="https://cdn.razorpay.com/static/assets/holidays.js"></script>
   <script type="text/javascript">
+
     const noop = ()=>{}
     //Empty Interface for rzpQ
     window.rzpQ = {

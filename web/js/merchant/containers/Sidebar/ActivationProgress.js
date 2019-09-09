@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'rzp/ui/ProgressBar';
-
 import { classList } from 'common/util';
+import RTracking from 'react-tracking';
 
-export default function ActivationProgress(props) {
+export default RTracking((state, props, args) => {
+  return window.rzpQ.component('HomeContainer');
+})(function ActivationProgress(props) {
   const { user, config } = props;
 
   const {
@@ -14,14 +16,18 @@ export default function ActivationProgress(props) {
   } = user;
 
   let actionCopy,
-    actionContent = null;
+    actionContent = null,
+    trackingIntent = null;
 
   if (user.activation_progress < 100) {
     // If user form is still unfilled
     actionCopy = 'Activate your account';
-
+    trackingIntent = 'act.form_fill';
     if (isL1Submitted) {
       actionCopy = user.isActivated ? 'Accept Payments' : 'Submit KYC';
+      if (user.isActivated) {
+        trackingIntent = 'dash.accept_payments';
+      }
     }
   } else if (user.isSubmitted) {
     actionCopy = 'Form submitted';
@@ -43,7 +49,15 @@ export default function ActivationProgress(props) {
       <Link
         className="activation-status-link"
         to={!user.isSubmitted ? '/activation' : '/config'}
-        onClick={props.onSidebarBannerClick}
+        onClick={() => {
+          trackingIntent &&
+            props.tracking.trackEvent(
+              window.rzpQ.onbr().initiated(trackingIntent, {
+                clickSource: 'lhs-nav-bar',
+              })
+            );
+          props.onSidebarBannerClick();
+        }}
       >
         <div
           className={classList(
@@ -101,4 +115,4 @@ export default function ActivationProgress(props) {
       </Link>
     </ShowWhen>
   ) : null;
-}
+});

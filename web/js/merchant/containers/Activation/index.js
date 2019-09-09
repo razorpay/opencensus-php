@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { Modal, ModalContent } from 'component/Modal';
 import { classList } from 'common/util';
@@ -10,6 +11,7 @@ import KycForm from './new';
 import InstantActivation from './Instant';
 import { setInstantActivationsTracking } from './ga_new';
 
+@RTracking(() => window.rzpQ.component('ActivationContainer'))
 @connect(state => ({ user: state.session.user, session: state.session }))
 export default class ActivationContainer extends Component {
   constructor(props) {
@@ -121,6 +123,10 @@ export default class ActivationContainer extends Component {
     this.setState({ data });
   }
 
+  handleCloseActivationForm = e => {
+    this.props.tracking.trackEvent(window.rzpQ.onbr().dropped('act.form_fill'));
+  };
+
   componentWillMount() {
     this.fetchActivationDetails(this.props.accountId);
   }
@@ -147,14 +153,20 @@ export default class ActivationContainer extends Component {
       isLoading = !data,
       // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
       isModal = !!this.props.onClose,
-      { isL1Submitted, isBlacklistFlow } = user.instantActivation,
+      {
+        isL1Submitted,
+        isWhitelistFlow,
+        isBlacklistFlow,
+        isGraylistFlow,
+      } = user.instantActivation,
       showL1Modal =
         !this.props.accountId &&
         user.showInstantActivation &&
         (!isL1Submitted || isBlacklistFlow);
 
     let content = null,
-      modalClasses = ['animate-down'];
+      modalClasses = ['animate-down'],
+      trackerIntent = null;
 
     if (isLoading) {
       modalClasses = ['spinner', 'transparent'];
@@ -181,6 +193,7 @@ export default class ActivationContainer extends Component {
             onFormValidityChange={this.handleIAFormValidityChange}
           />
         );
+        trackerIntent = 'act.form_fill';
       } else {
         content = (
           <KycForm
@@ -189,6 +202,7 @@ export default class ActivationContainer extends Component {
             setAdditionalModalClass={this.setAdditionalModalClass}
           />
         );
+        trackerIntent = 'kyc.form_fill';
       }
     }
 
@@ -201,7 +215,7 @@ export default class ActivationContainer extends Component {
         <Modal
           class={classList(...modalClasses)}
           onClose={this.props.onClose}
-          onCloseCB={this.saveDirtyState}
+          onCloseCB={this.handleCloseActivationForm}
         >
           <ModalContent>{content || spinner}</ModalContent>
         </Modal>

@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 import { updateSession } from 'merchant/modules/session';
 import { Link } from 'react-router-dom';
 import { showNotification } from 'rzp/modules/notifications';
@@ -38,6 +39,7 @@ const CUSTOM_MSG = {
   },
   { updateSession, showNotification }
 )
+@RTracking(() => window.rzpQ.component('FlashCheckout'))
 export default class FlashCheckout extends Component {
   state = { internationalEnabled: this.props.user.international };
 
@@ -48,6 +50,11 @@ export default class FlashCheckout extends Component {
     });
   };
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.settings_action', {
+      action: 'Toggle_International_Payments',
+    })
+  )
   toggleInternationalization = (enableInternational, cb) => {
     this.analytics(enableInternational ? 'Enable' : 'Disable');
 
