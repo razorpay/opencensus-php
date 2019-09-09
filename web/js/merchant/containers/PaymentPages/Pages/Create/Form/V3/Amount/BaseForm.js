@@ -24,14 +24,12 @@ export default class BaseForm extends React.PureComponent {
 
     const name = field.item.name,
       disableSubmit = !name,
-      hasDescription = !!field.item.description,
-      imageUrl = field.image_url || '';
+      hasDescription = !!field.item.description;
 
     this.state = {
       disableSubmit,
       hasDescription,
       mirrorDisplayName: name || '',
-      imageUrl,
     };
 
     this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
@@ -76,12 +74,6 @@ export default class BaseForm extends React.PureComponent {
   toggleDescriptionField = _ => {
     this.setState({
       hasDescription: !this.state.hasDescription,
-    });
-  };
-
-  removeImage = _ => {
-    this.setState({
-      imageUrl: '',
     });
   };
 
@@ -280,12 +272,7 @@ export default class BaseForm extends React.PureComponent {
       onDeleteField,
     } = this.props;
 
-    const {
-      imageUrl,
-      hasDescription,
-      disableSubmit,
-      mirrorDisplayName,
-    } = this.state;
+    const { hasDescription, disableSubmit, mirrorDisplayName } = this.state;
 
     return (
       <Form
@@ -360,16 +347,16 @@ export default class BaseForm extends React.PureComponent {
             </Button.Transparent>
           }
         >
-          <OptionsItem isSelected={!!this.state.imageUrl}>
+          <OptionsItem isSelected={!!field.image_url}>
             <div
               onClick={
-                !!this.state.imageUrl
+                !!field.image_url
                   ? _ => this.props.onUpdateImage(null)
                   : this.props.openImageCropper
               }
             >
               <i class="i i-add_image" />
-              {this.state.imageUrl ? 'Remove Image' : 'Add Image'}
+              {field.image_url ? 'Remove Image' : 'Add Image'}
             </div>
           </OptionsItem>
 

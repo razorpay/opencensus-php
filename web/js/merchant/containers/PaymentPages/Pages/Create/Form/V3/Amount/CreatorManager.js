@@ -67,6 +67,14 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 
     onSaveImageForm = imgUrl => {
       // Check whether to remove image or upload image
+      const { field } = this.state;
+
+      this.setState({
+        field: {
+          ...field,
+          image_url: imgUrl,
+        },
+      });
     };
 
     onSaveBaseForm = formData => {
@@ -176,7 +184,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             <ImageCropperModal
               imgUrl={field.image_url}
               onSave={this.onSaveImageForm}
-              onClose={_ => this.toggleImageCropper(false)}
+              closeCropperModal={_ => this.toggleImageCropper(false)}
             />
           )}
         </div>
