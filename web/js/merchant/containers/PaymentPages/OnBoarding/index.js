@@ -62,12 +62,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
   };
 
   render() {
-    const {
-      active,
-      onSlideChange,
-      user,
-      paymentPageProductOnBoarding,
-    } = this.props;
+    const { active, onSlideChange, paymentPageProductOnBoarding } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentPages">
@@ -96,10 +91,10 @@ export default class PaymentPagesOnBoarding extends React.Component {
           {sliderProps => (
             <SliderDots {...sliderProps}>
               <SkipAndGetStartedButton
+                isLocalEnabler
                 feature={RZPFeatures.PP}
                 onClick={this.closeOnboarding}
                 page={sliderProps.active}
-                isLocalEnabler={user.isPaymentPagesEnabled}
                 isTour={paymentPageProductOnBoarding.isTour}
               />
             </SliderDots>
