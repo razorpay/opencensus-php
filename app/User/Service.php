@@ -466,6 +466,7 @@ class Service extends Base\Service
                     $data['experiments']['post_activation_hotjar_survey'] = $merchantService->getTreatment('post_activation_hotjar_survey');
                     $data['experiments']['second_factor_auth'] = $merchantService->getTreatment('second_factor_auth');
                     $data['experiments']['disable-view-reports'] = $merchantService->getTreatment('disable-view-reports');
+                    $data['experiments']['mobile_hotjar_survey'] = $merchantService->getTreatment('mobile_hotjar_survey');
 
                     $data['current'] = $currentMerchantId;
 

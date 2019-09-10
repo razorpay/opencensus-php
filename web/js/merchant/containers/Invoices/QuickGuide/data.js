@@ -8,14 +8,14 @@ export const getQuickGuideData = {
       return {
         title: '1. Invoice Created',
         content:
-          'Create GST based invoices instantly and notify your customer via sms or email',
+          'Create GST based invoices instantly and notify your customer via sms or email.',
       };
     }
 
     return {
       title: '1. Create Invoice',
       content:
-        'Create GST based invoices instantly and notify your customer via sms or email',
+        'Create GST based invoices instantly and notify your customer via sms or email.',
     };
   },
   ReceivePayments: status => {

@@ -393,6 +393,10 @@ export default class User {
     return this.getExpStatus('post_activation_hotjar_survey');
   }
 
+  get isMobileHotjarSurveyEnabled() {
+    return this.getExpStatus('mobile_hotjar_survey');
+  }
+
   get isAllowedTeamManagement() {
     return this.isMerchantRestricted
       ? this.isAllowedView('team')

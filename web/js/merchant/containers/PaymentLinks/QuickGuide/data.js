@@ -28,7 +28,8 @@ export const getQuickGuideData = {
 
     return {
       title: '2. Receive Payments',
-      content: 'Your customers can make payments directly on the payment link.',
+      content:
+        'Your customers can make domestic and international payments directly on the payment link.',
     };
   },
 };

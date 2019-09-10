@@ -14,9 +14,9 @@ export const FEATURES_DATA = [
   },
   {
     icon: '/dist/css/assets/product_onboarding/easy_refunds.svg',
-    title: 'Memorable URLS',
+    title: 'Payment Button',
     desc:
-      'Look professional with a custom URL that is as easy to remember and is an extension of your business.',
+      'Design a customized payment button which can be used on your site/app to trigger the payment page.',
   },
 ];
 

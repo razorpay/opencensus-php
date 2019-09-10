@@ -62,12 +62,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
   };
 
   render() {
-    const {
-      active,
-      onSlideChange,
-      user,
-      paymentPageProductOnBoarding,
-    } = this.props;
+    const { active, onSlideChange, paymentPageProductOnBoarding } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentPages">
@@ -78,7 +73,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               title="Payment Pages"
               feature={RZPFeatures.PP}
               imageUrl="https://razorpay.com/assets/paymentpages/hero-main.svg"
-              desc="Create custom-branded, hosted Payment Pages in a few clicks to accept payments online. Your business can go online with zero integration and tech efforts."
+              desc="Build a custom, branded payment page for your business in under 10 minutes and start accepting international and domestic payments with zero integration and tech efforts."
             />
           )}
 
@@ -96,10 +91,10 @@ export default class PaymentPagesOnBoarding extends React.Component {
           {sliderProps => (
             <SliderDots {...sliderProps}>
               <SkipAndGetStartedButton
+                isLocalEnabler
                 feature={RZPFeatures.PP}
                 onClick={this.closeOnboarding}
                 page={sliderProps.active}
-                isLocalEnabler={user.isPaymentPagesEnabled}
                 isTour={paymentPageProductOnBoarding.isTour}
               />
             </SliderDots>

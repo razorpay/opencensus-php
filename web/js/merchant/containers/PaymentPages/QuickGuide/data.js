@@ -28,7 +28,7 @@ export const getQuickGuideData = {
 
     return {
       title: '2. Receive Payments',
-      content: 'Publish your page to receive payments from your customers',
+      content: 'Publish your page to receive payments from your customers.',
     };
   },
 };

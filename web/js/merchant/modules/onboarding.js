@@ -13,6 +13,7 @@ export const handleProductQuickGuide = data => {
       showOnboarding: data.showOnboarding,
       isQuickGuideOpen: data.isQuickGuideOpen,
       isTour: data.isTour,
+      lastElementId: data.lastElementId,
     },
   };
 };

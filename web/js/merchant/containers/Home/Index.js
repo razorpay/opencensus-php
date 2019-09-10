@@ -28,6 +28,7 @@ import {
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 
 import {
@@ -496,6 +497,14 @@ export default class HomeContainer extends Component {
     this.setScrollAmountToStickHeader();
 
     window.addEventListener('resize', this.onResize);
+
+    const shouldShowMobileHotjarSurvey = showWhenUtil({
+      additionalCondition: user => user.isMobileHotjarSurveyEnabled,
+    });
+
+    if (shouldShowMobileHotjarSurvey) {
+      window.hj && window.hj('trigger', 'MOBILE_SURVEY');
+    }
   }
 
   closeOnboardingStep() {

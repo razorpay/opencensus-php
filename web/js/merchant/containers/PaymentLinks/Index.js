@@ -37,10 +37,6 @@ import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
   { handleProductQuickGuide }
 )
 export default class PaymentLinksContainer extends React.Component {
-  componentDidMount() {
-    this.initPaymentLinksOnboarding();
-  }
-
   componentWillReceiveProps(nextProps) {
     if (nextProps.invoices.loading !== this.props.invoices.loading) {
       this.initPaymentLinksOnboarding(nextProps);

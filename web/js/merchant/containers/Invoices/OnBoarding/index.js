@@ -71,7 +71,7 @@ export default class InvoicesOnBoarding extends React.Component {
               feature={RZPFeatures.INVOICE}
               title="Invoices"
               imageUrl="https://razorpay.com/assets/invoices/banner.svg"
-              desc="Create and send GST compliant invoices that your customers can pay online instantly."
+              desc="Create and send GST compliant and International invoices your customers can pay online instantly."
             />
           )}
 
