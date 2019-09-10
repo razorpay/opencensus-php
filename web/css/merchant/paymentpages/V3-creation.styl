@@ -1,3 +1,6 @@
+// TODO: Wrap form in tablet screen
+// TODO: Fix Amount fields where currency label is big
+
 .Modal-container--ImageCropper
   .Cropper-area
     margin: 12px 0
@@ -45,6 +48,7 @@
       font-weight: 600
       line-height: 16px
       visibility: hidden
+      cursor: ns-resize
 
     &:not(.disable-hover):hover
       .Input-info
@@ -120,7 +124,6 @@
     line-height: 36px !important
 
   .Input--Currency
-    right: -3px
     .Input-el
       height: 36px
 
@@ -135,6 +138,10 @@
     .PowerSelect__TriggerStatus
       padding-right: 6px
       padding-left: 0
+
+  .Input--Currency:not(.Input--noMargin) + .Input
+    left: -3px
+
 
   .Modal-container--CreatorModal-BaseForm, .Modal-container--CreatorModal-AdvancedForm
     .InputGroup .Input, .Input
@@ -278,6 +285,17 @@
       margin-right: 0
       vertical-align: top
       position: relative
+
+      .Input--img
+        vertical-align: top
+        border: 1px solid #e2e2e2
+        border-bottom-left-radius: 2px
+        border-top-left-radius: 2px
+      img
+        height: 34px
+
+      .Input--img + .Input--Currency
+        left: -1px
 
       select
         color: rgba(13, 35, 102, .3)

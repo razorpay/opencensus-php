@@ -169,6 +169,12 @@ export default class BaseForm extends React.PureComponent {
     return (
       <Input.Group class="InputGroup--inline InputGroup--full">
         <div class="Input-content">
+          {field.image_url && (
+            <div className="Input Input--img">
+              <img src={field.image_url} />
+            </div>
+          )}
+
           <Input.CurrencySelect
             name="currency"
             defaultValue={currency}
