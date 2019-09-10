@@ -83,6 +83,7 @@ const displayField = ({
       class={classList(
         'Field Field--amount Field--disabled',
         field.mandatory && 'Field--required',
+        field.image_url && 'Field--has-image',
         isListSorting && 'disable-hover'
       )}
       onClick={openBaseForm}
@@ -102,14 +103,11 @@ const displayField = ({
             field._type && 'Field-wrapper--' + field_type
           )}
         >
-          <span
-            class={classList(
-              `Field-addon Field-addon--before ${field.image_url &&
-                'Field-addon--image'}`
-            )}
-          >
-            {field.image_url && <img src={field.image_url} />}
-            <b>{getCurrency(currency).symbol}</b>
+          <span class="Field-addon Field-addon--before">
+            <span>
+              {field.image_url && <img src={field.image_url} />}
+              <b class="currency-symbol">{getCurrency(currency).symbol}</b>
+            </span>
           </span>
 
           {fieldEl}
