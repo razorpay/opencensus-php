@@ -86,6 +86,7 @@ let initialState = {
   paymentPageEntity: {
     currency: 'INR', // Initialising with INR currency
     settings: {
+      pay_button_label: 'Pay',
       checkout_options: {
         email: FIXED_FIELDS.email.name, // email key in form to be used in prefill checkout
         phone: FIXED_FIELDS.phone.name, // phone key in form to be used in prefill checkout

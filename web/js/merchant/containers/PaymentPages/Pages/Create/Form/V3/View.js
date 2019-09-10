@@ -3,6 +3,7 @@ import AmountDisplayField from './Amount/AmountDisplayField';
 import UDFDisplayField from './UDF/UDFDisplayField';
 import AddUDFButton from './UDF/AddUDFButton';
 import AddAmountButton from './Amount/AddAmountButton';
+import EditLayer from '../../EditLayer';
 
 import {
   updateData,
@@ -14,7 +15,7 @@ import {
 import { constructFieldSchema } from '../UDF_Fields/V3';
 import { constructAmountField } from '../Amount_Fields/V3';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
-
+import { getCurrency } from 'rzp/ui/Amount';
 import { arrayMove } from 'common/util';
 
 const Sortable_UDFDisplayField = sortableElement(UDFDisplayField);
@@ -263,7 +264,10 @@ export default class View extends React.PureComponent {
             </div>
           </div>
 
-          <FormFooter amountToPay={paymentPageEntity.amount} />
+          <FormFooter
+            currency={paymentPageEntity.currency}
+            payButtonLabel={paymentPageEntity.settings.pay_button_label}
+          />
 
           <div id="draggableElementsContainer" />
         </div>
@@ -272,14 +276,25 @@ export default class View extends React.PureComponent {
   }
 }
 
-const FormFooter = ({ amountToPay }) => (
+const FormFooter = ({ currency, payButtonLabel }) => (
   <div id="form-footer">
-    <div class="form-footer-payment">
-      <img
-        id="fin-logo"
-        alt="pay-methods"
-        src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
-      />
-    </div>
+    <EditLayer class="edit-layer--formFooter" onClick={_ => _}>
+      <div class="form-footer-payment">
+        <img
+          id="fin-logo"
+          alt="pay-methods"
+          src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
+        />
+
+        <button class="btn">
+          {payButtonLabel}{' '}
+          <span style={{ marginLeft: 4 }}>
+            <b class="currency-symbol">{getCurrency(currency).symbol}</b> 000.00
+          </span>
+        </button>
+      </div>
+
+      <i class="i i-edit" />
+    </EditLayer>
   </div>
 );

@@ -103,7 +103,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
 export const FormFooter = ({ amountToPay }) => (
   <div id="form-footer">
-    <div className="form-footer-payment">
+    <div class="form-footer-payment">
       <img
         id="fin-logo"
         alt="pay-methods"
