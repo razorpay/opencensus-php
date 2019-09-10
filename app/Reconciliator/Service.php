@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -487,5 +488,23 @@ class Service extends Base\Service
     protected function isLambdaRequest(): bool
     {
         return ($this->auth->isLambda() === true);
+    }
+
+    public function getReconBatchesAndFiles($input)
+    {
+        $service = new Batch\Service;
+
+        $data  = $service->getReconBatchesWithFiles($input);
+
+        return $data;
+    }
+
+    public function getReconFilesCount($input)
+    {
+        $service = new Batch\Service;
+
+        $data  = $service->getReconFilesCount($input);
+
+        return $data;
     }
 }

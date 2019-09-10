@@ -204,4 +204,22 @@ class Service extends Base\Service
 
         return $this->core()->sendMail($input);
     }
+
+    public function getReconBatchesWithFiles(array $input)
+    {
+        $result = $this->repo->batch->getReconBatchesWithFiles($input);
+
+        return $result->toArray();
+    }
+
+    public function getReconFilesCount(array $input)
+    {
+        $from = $input['from'] ?? null;
+
+        $to   = $input['to'] ?? null;
+
+        $result = $this->repo->batch->getReconFilesCountByGateway($from, $to);
+
+        return $result->toArray();
+    }
 }
