@@ -87,43 +87,53 @@ export class ModalMask extends React.PureComponent {
 *   - {Function} onClose, action on close btn press
 *   - {Function, optional} onCloseCB, Callback after closing modal
 * */
-export const Modal = ({
-  children,
-  showCloseBtn = true,
-  className,
-  onClose,
-  onCloseCB,
-  ...rest
-}) => {
-  let classArray = className
-    ? className.split(' ').map(cls => 'Modal-container--' + cls)
-    : '';
-
-  // Add the class if not present on body
-  if (!document.body.classList.contains('noscroll')) {
-    document.body.classList.add('noscroll');
+export class Modal extends React.PureComponent {
+  componentDidMount() {
+    // Add the class if not present on body
+    if (!document.body.classList.contains('noscroll')) {
+      document.body.classList.add('noscroll');
+    }
   }
 
-  return (
-    <div class={classList('Modal-container', classArray)} {...rest}>
-      {showCloseBtn && (
-        <span
-          class="Modal-close"
-          onClick={e => {
-            onCloseCB && onCloseCB(e);
-            document.body.classList.remove('noscroll');
+  componentWillUnmount() {
+    document.body.classList.remove('noscroll');
+  }
 
-            onClose(e);
-          }}
-        >
-          &times;
-        </span>
-      )}
+  render() {
+    const {
+      children,
+      showCloseBtn = true,
+      className,
+      onClose,
+      onCloseCB,
+      ...rest
+    } = this.props;
 
-      {children}
-    </div>
-  );
-};
+    let classArray = className
+      ? className.split(' ').map(cls => 'Modal-container--' + cls)
+      : '';
+
+    return (
+      <div class={classList('Modal-container', classArray)} {...rest}>
+        {showCloseBtn && (
+          <span
+            class="Modal-close"
+            onClick={e => {
+              onCloseCB && onCloseCB(e);
+              document.body.classList.remove('noscroll');
+
+              onClose(e);
+            }}
+          >
+            &times;
+          </span>
+        )}
+
+        {children}
+      </div>
+    );
+  }
+}
 
 /* ModalContent only provides the wrapper for the content
 * @props
