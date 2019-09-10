@@ -135,21 +135,23 @@ class Processor extends Base\Core
 
         $startTime = microtime(true);
 
-        if ($shouldProcess === true)
+        if ($shouldProcess === false)
         {
-            // TODO: remove channel option form URI and from here post 100% rollout
-            //  Make sure these 2 are not running parallel till then
-            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel ?? '');
-
-            $data = $this->mutex->acquireAndRelease(
-                $mutexResource,
-                function () use ($channel, $useQueue, $merchantIds)
-                {
-                    return $this->processSettlements($channel, $useQueue, $merchantIds);
-                },
-                self::MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+            return $data;
         }
+
+        // TODO: remove channel option form URI and from here post 100% rollout
+        //  Make sure these 2 are not running parallel till then
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel ?? '');
+
+        $data = $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function () use ($channel, $useQueue, $merchantIds)
+            {
+                return $this->processSettlements($channel, $useQueue, $merchantIds);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         $count = ($useQueue === true) ? 1 : $data[$channel]['count'];
 
@@ -188,7 +190,8 @@ class Processor extends Base\Core
             {
                 $response = $this->createSettlementsAsync($merchantIds);
             }
-            else {
+            else
+            {
                 $response = $this->makeResponse([$channel]);
 
                 if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION], true) === true))
@@ -890,7 +893,9 @@ class Processor extends Base\Core
             $merchant->getId() => $txns,
         ];
 
-        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
+        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([
+            $merchant->getId()
+        ]);
 
         return $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner);
     }
