@@ -15,6 +15,7 @@ use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
+use RZP\Models\FundAccount\Type as FundAccountType;
 use RZP\Models\NodalBeneficiary\Status as BeneficiaryStatus;
 
 class FundTransfer extends Job
@@ -67,7 +68,20 @@ class FundTransfer extends Job
 
             $channel     = $fta->getChannel();
 
-            $bankAccount = $fta->bankAccount;
+            $accountEntity = null;
+
+            $accountType = FundAccountType::BANK_ACCOUNT;
+
+            if ($fta->hasCard() === true)
+            {
+                $accountEntity = $fta->card;
+
+                $accountType = FundAccountType::CARD;
+            }
+            else
+            {
+                $accountEntity = $fta->bankAccount;
+            }
 
             $data = [
                 'fta_id'  => $fta->getId(),
@@ -84,7 +98,7 @@ class FundTransfer extends Job
                 return;
             }
 
-            $shouldReturn = $this->checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, $data);
+            $shouldReturn = $this->checkBeneficiaryRegistrationAndVerification($fta, $channel, $data, $accountEntity, $accountType);
 
             if ($shouldReturn === true)
             {
@@ -167,31 +181,31 @@ class FundTransfer extends Job
      * then dispatch it for the same and wait for the RELEASE_WAIT_SECS.
      *
      * @param       $fta
-     * @param       $bankAccount
      * @param       $channel
      * @param array $data
+     * @param $accountEntity
      * @return bool
      */
-    public function checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, array $data)
+    public function checkBeneficiaryRegistrationAndVerification($fta, $channel, array $data, $accountEntity, $accountType)
     {
         // Checks if registration is required based on product and account type
         $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
 
         if ($isBeneRegistrationRequired === true)
         {
-            $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($bankAccount, $channel);
+            $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($channel, $accountEntity, $accountType);
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED and
                 $beneficiaryStatus !== BeneficiaryStatus::REGISTERED)
             {
-                (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($accountEntity, $channel, $accountType);
 
                 return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_REGISTERED, $fta);
             }
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED)
             {
-                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel);
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($accountEntity, $channel, $accountType);
 
                 return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_VERIFIED, $fta);
             }

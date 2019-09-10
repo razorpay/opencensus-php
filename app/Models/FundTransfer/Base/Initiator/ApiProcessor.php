@@ -10,10 +10,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Models\FundTransfer\Yesbank\Request\Constants;
+use RZP\Models\FundTransfer\Attempt\Constants as FundTransferConstants;
 
 abstract class ApiProcessor extends NodalAccount
 {
@@ -620,11 +619,20 @@ abstract class ApiProcessor extends NodalAccount
      */
     protected function getIfscCodeUsingCardInfo(CardEntity $cardObj)
     {
-        $cardIssuer = trim($cardObj->iinRelation->getIssuer());
+        $cardIssuer = trim($cardObj->getIssuer());
 
-        if (in_array($cardIssuer, array_keys(Constants::BANK_IFSC), true) === true )
+        $cardNetworkCode = trim($cardObj->getNetworkCode());
+
+        $issuerList = array_keys(FundTransferConstants::BANK_IFSC);
+
+        if (in_array($cardIssuer, $issuerList, true) === true)
         {
-            return Constants::BANK_IFSC[$cardIssuer];
+            if (array_key_exists($cardNetworkCode, array_keys(FundTransferConstants::BANK_IFSC[$cardIssuer])) === true)
+            {
+                return FundTransferConstants::BANK_IFSC[$cardIssuer][$cardNetworkCode];
+            }
+
+            return FundTransferConstants::BANK_IFSC[$cardIssuer][FundTransferConstants::DEFAULT_NETWORK];
         }
         else
         {
@@ -634,7 +642,7 @@ abstract class ApiProcessor extends NodalAccount
                     'issuer' => $cardIssuer,
                 ], null, 1);
 
-            new LogicException('Ifsc code does not exist for this card issuer');
+            new LogicException('IFSC code does not exist for this card issuer');
         }
     }
 
@@ -644,11 +652,11 @@ abstract class ApiProcessor extends NodalAccount
      * This contains the vault token generated.
      * If no vault token is present then null is returned to mark fta as failed.
      *
-     * @param CardVault $card
+     * @param CardEntity $card
      * @return mixed
      * @throws \Exception
      */
-    protected function getCardVaultToken(CardVault $card)
+    protected function getCardVaultToken(CardEntity $card)
     {
         $token = $card->getCardVaultToken();
 

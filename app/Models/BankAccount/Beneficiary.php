@@ -91,7 +91,6 @@ class Beneficiary extends Base\Core
         }
     }
 
-
     /**
      * Push the bank account id / card id to the queue along with the channel on which bene registration
      * has to be performed. Also suppresses error which might happen because of queue
@@ -527,18 +526,31 @@ class Beneficiary extends Base\Core
     /**
      * Get Nodal Beneficiary Status For Bank Account
      *
-     * @param $bankAccount
      * @param $channel
+     * @param $accountEntity
+     * @param $accountType
      * @return |null
      */
-    public function getBeneficiaryStatus($bankAccount, $channel)
+    public function getBeneficiaryStatus($channel, $accountEntity, $accountType = FundAccountType::BANK_ACCOUNT)
     {
-        $nodalBeneficiary = $this->repo
-                                 ->nodal_beneficiary
-                                 ->fetchActivatedBankAccountBeneficiaryDetailsForChannel(
-                                     $bankAccount->getId(),
-                                     $channel
-                            );
+        if ($accountType === FundAccountType::BANK_ACCOUNT)
+        {
+            $nodalBeneficiary = $this->repo
+                                     ->nodal_beneficiary
+                                     ->fetchActivatedBankAccountBeneficiaryDetailsForChannel(
+                                         $accountEntity->getId(),
+                                         $channel
+                                     );
+        }
+        else
+        {
+            $nodalBeneficiary = $this->repo
+                                     ->nodal_beneficiary
+                                     ->fetchActivatedCardBeneficiaryDetailsForChannel(
+                                         $accountEntity->getId(),
+                                         $channel
+                                     );
+        }
 
         if (empty($nodalBeneficiary) === true)
         {
