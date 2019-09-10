@@ -273,7 +273,9 @@ class Reconciliate extends Base\Core
 
         $attempt = $batch->getAttempts();
 
-        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData(), $batchId, $attempt);
+        $data = $batchProcessor->getReconBatchOutputData();
+
+        $this->getOutputWithRemovedBlackListedColumns($data, $batchId, $attempt);
 
         $sheetName = null;
 
@@ -392,28 +394,21 @@ class Reconciliate extends Base\Core
      * @param $reconOutputData
      * @param $batchId
      * @param $attemptNumber
-     * @return array
      * removes blacklisted columns if present. otherwise adds processed_at column for each row.
      */
 
-    protected function getOutputWithRemovedBlackListedColumns($reconOutputData, $batchId, $attemptNumber)
+    protected function getOutputWithRemovedBlackListedColumns(&$reconOutputData, $batchId, $attemptNumber)
     {
         $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
 
-        $updatedData = [];
-
-        foreach ($reconOutputData as $row)
+        foreach ($reconOutputData as &$row)
         {
             $row = array_diff_key($row, array_flip($blackListedColumns));
 
             $row['batch_id'] = $batchId;
 
             $row['attempt_number'] = $attemptNumber;
-
-            array_push($updatedData, $row);
         }
-
-        return $updatedData;
     }
 
     /**
