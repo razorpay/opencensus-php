@@ -127,7 +127,7 @@ export default class BaseForm extends React.PureComponent {
 
     let inputField = (
       <Input
-        name={isDisabled ? '' : 'amount'}
+        name={isDisabled ? undefined : 'amount'}
         class="placeholder-field"
         placeholder={placeholder}
         defaultValue={amount}
