@@ -27,6 +27,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Order\Repository                      $order
  * @property Models\Payment\Analytics\Repository          $payment_analytics
  * @property Models\Transaction\Repository                $transaction
+ * @property Models\Card\Repository                       $card
  * @property Models\Vpa\Repository                        $vpa
  * @property Models\Contact\Repository                    $contact
  * @property Models\FundAccount\Repository                $fund_account

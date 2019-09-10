@@ -19,6 +19,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\FundAccount\Type as FundAccountType;
 use RZP\Models\FundTransfer\Base\Beneficiary\FileProcessor;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
@@ -53,7 +54,7 @@ class Beneficiary extends FileProcessor
      *                         'file_name'
      *                         'merchants_count'
      */
-    public function register(PublicCollection $bankAccounts, array $input = []): array
+    public function register(PublicCollection $bankAccounts, $accountType = FundAccountType::BANK_ACCOUNT, array $input = []): array
     {
         try
         {
