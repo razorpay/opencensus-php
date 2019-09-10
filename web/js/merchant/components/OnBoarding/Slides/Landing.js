@@ -7,7 +7,10 @@ export default class OnBoardingLanding extends React.PureComponent {
     const { title, desc, pros, next, imageUrl, feature, active } = this.props;
 
     return (
-      <div class="OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing">
+      <div
+        class="OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing"
+        key="LandingSlide"
+      >
         <div class="Landing--Image">
           <img src={imageUrl} alt="landing-image" />
         </div>

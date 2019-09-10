@@ -22,7 +22,7 @@ export default class OnBoardingFeatures extends React.PureComponent {
     } = this.props;
 
     return (
-      <div class="OnBoarding--Slide OnBoarding--Features">
+      <div class="OnBoarding--Slide OnBoarding--Features" key="FeatureSlide">
         <div class="Header">
           <div class="Header-title">{title}</div>
 

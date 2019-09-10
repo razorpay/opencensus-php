@@ -1,5 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { filterBy } from 'rzp/utils/rzp-utils';
+import { RZPFeatures } from 'rzp/utils/constants';
 
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import LocalStorageService from 'rzp/utils/localStorage';
@@ -221,21 +222,21 @@ export default class User {
   }
 
   get isPaymentPagesEnabled() {
-    const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PP);
 
     return !!isEnabled;
   }
 
   get isPaymentLinksEnabled() {
-    const { isEnabled } = getOnBoardingDataFromLocalState('payment_links');
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PL);
 
     return !!isEnabled;
   }
 
   get isInvoicesEnabled() {
-    const { isEnabled } = getOnBoardingDataFromLocalState('invoices');
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.INVOICE);
 
-    return !!isEnabled;
+    return isEnabled;
   }
 
   get currentMerchant() {
