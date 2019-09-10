@@ -413,10 +413,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       support_email: support_email || null,
       support_contact: support_contact || null,
       settings: {
-        // TODO: Send here custom pay-button label
-        checkout_options: {
-          ...paymentPageEntity.settings.checkout_options,
-        },
         theme: settings.theme,
         allow_social_share: settings.allow_social_share ? '1' : '0',
         payment_success_message: settings.payment_success_message,
@@ -433,6 +429,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       reqPayload.settings.allow_multiple_units = settings.allow_multiple_units
         ? '1'
         : '0';
+    } else {
+      reqPayload.settings.checkout_options = {
+        ...settings.checkout_options,
+      };
+
+      reqPayload.settings.payment_button_label = settings.payment_button_label;
     }
 
     // Will exist only when props.user.isPPV3Enabled = true

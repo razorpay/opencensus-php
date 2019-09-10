@@ -17,6 +17,9 @@ import { constructAmountField } from '../Amount_Fields/V3';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 import { getCurrency } from 'rzp/ui/Amount';
 import { arrayMove } from 'common/util';
+import CreatorModal from '../V3/CreatorModal';
+import Input from 'component/Input';
+import Button from 'component/Button';
 
 const Sortable_UDFDisplayField = sortableElement(UDFDisplayField);
 const Sortable_AmountDisplayField = sortableElement(AmountDisplayField);
@@ -266,7 +269,8 @@ export default class View extends React.PureComponent {
 
           <FormFooter
             currency={paymentPageEntity.currency}
-            payButtonLabel={paymentPageEntity.settings.pay_button_label}
+            paymentButtonLabel={paymentPageEntity.settings.payment_button_label}
+            updateData={this.props.updateData}
           />
 
           <div id="draggableElementsContainer" />
@@ -276,25 +280,113 @@ export default class View extends React.PureComponent {
   }
 }
 
-const FormFooter = ({ currency, payButtonLabel }) => (
-  <div id="form-footer">
-    <EditLayer class="edit-layer--formFooter" onClick={_ => _}>
-      <div class="form-footer-payment">
+class FormFooter extends React.PureComponent {
+  state = {
+    isEditModalOpened: false,
+    paymentButtonLabel: this.props.paymentButtonLabel,
+  };
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.paymentButtonLabel !== this.props.paymentButtonLabel) {
+      this.setState({
+        paymentButtonLabel: this.props.paymentButtonLabel,
+      });
+    }
+  }
+
+  toggleModal = force => {
+    this.setState({
+      isEditModalOpened:
+        typeof force !== 'undefined' ? force : !this.state.paymentButtonLabel,
+    });
+  };
+
+  onChangePaymentButtonLabel = e => {
+    this.setState({
+      paymentButtonLabel: e.target.value,
+    });
+  };
+
+  savePaymentButtonLabel = () => {
+    this.props.updateData({
+      settings: {
+        payment_button_label: this.state.paymentButtonLabel,
+      },
+    });
+
+    this.toggleModal(false);
+  };
+
+  render() {
+    const { currency } = this.props;
+    const { isEditModalOpened, paymentButtonLabel } = this.state;
+
+    const content = (
+      <div className="form-footer-payment">
         <img
           id="fin-logo"
           alt="pay-methods"
           src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
         />
 
-        <button class="btn">
-          {payButtonLabel}{' '}
+        <button className="btn">
+          {isEditModalOpened
+            ? paymentButtonLabel
+            : this.props.paymentButtonLabel}{' '}
           <span style={{ marginLeft: 4 }}>
-            <b class="currency-symbol">{getCurrency(currency).symbol}</b> 000.00
+            <b className="currency-symbol">{getCurrency(currency).symbol}</b>{' '}
+            000.00
           </span>
         </button>
       </div>
+    );
 
-      <i class="i i-edit" />
-    </EditLayer>
-  </div>
-);
+    return (
+      <div id="form-footer">
+        {isEditModalOpened && (
+          <CreatorModal class="CreatorModal-BaseForm" overElement>
+            <div>
+              <Input
+                name="payment_button_label"
+                required
+                maxLength="16"
+                label="Payment Button Label"
+                value={paymentButtonLabel}
+                onChange={this.onChangePaymentButtonLabel}
+                autoFocus
+              />
+              {content}
+            </div>
+
+            <Button.Transparent
+              class="base-form-side-btn base-form-cancel"
+              type="button"
+              onClick={_ => this.toggleModal(false)}
+            >
+              <span>&times;</span>
+              Cancel
+            </Button.Transparent>
+
+            <Button.Transparent
+              class="base-form-side-btn base-form-save"
+              type="button"
+              disabled={!paymentButtonLabel}
+              onClick={this.savePaymentButtonLabel}
+            >
+              <span class="icon i-check" />
+              Save
+            </Button.Transparent>
+          </CreatorModal>
+        )}
+
+        <EditLayer
+          class="edit-layer--formFooter"
+          onClick={_ => this.toggleModal(true)}
+        >
+          {content}
+          <i className="i i-edit" />
+        </EditLayer>
+      </div>
+    );
+  }
+}
