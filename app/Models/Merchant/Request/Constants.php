@@ -41,7 +41,9 @@ class Constants
         ],
     ];
 
-    public static $instantlyActivatedProducts = [Feature\Constants::SUBSCRIPTIONS, Feature\Constants::MARKETPLACE];
+    public static $instantlyActivatedProducts = [Feature\Constants::SUBSCRIPTIONS,
+                                                 Feature\Constants::MARKETPLACE,
+                                                 Feature\Constants::VIRTUAL_ACCOUNTS];
 
 
     /**
