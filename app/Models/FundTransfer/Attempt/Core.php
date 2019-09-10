@@ -645,6 +645,15 @@ class Core extends Base\Core
 
         $this->postFtaRecon($fta->source, $ftaData);
 
+        if (($fta->getSourceType() === Type::REFUND) and ($fta->getStatus() !== Status::PROCESSED))
+        {
+            //
+            // For refund fta, not updating transaction entity if fta is not processed.
+            // Do not want to set recon details of transaction entity for non-processed refunds
+            //
+            return;
+        }
+
         $this->updateTransactionEntity($fta->source);
     }
 
