@@ -403,7 +403,10 @@ class Reconciliate extends Base\Core
 
         foreach ($reconOutputData as &$row)
         {
-            $row = array_diff_key($row, array_flip($blackListedColumns));
+            foreach ($blackListedColumns as $column)
+            {
+                unset($row[$column]);
+            }
 
             $row['batch_id'] = $batchId;
 
