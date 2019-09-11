@@ -672,6 +672,7 @@ class Service extends Base\Service
                     if (empty($error) === true)
                     {
                         $genericUser->merchants->push(new GenericMerchant($data['merchant']));
+                        Auth::login($genericUser, false);
                         Session::put('dashboard_user_payload', $genericUser);
                     }
                 }
