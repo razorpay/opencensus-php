@@ -655,7 +655,7 @@ class Service extends Base\Service
 
             $currentMerchantId = Session::get('current_merchant_id');
 
-            if ($currentMerchantId !== null)
+            if ($currentMerchantId !== null and empty($adminUser) === true)
             {
                 $currentMerchant = $genericUser
                     ->merchants
