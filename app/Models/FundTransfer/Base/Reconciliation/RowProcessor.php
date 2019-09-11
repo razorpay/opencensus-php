@@ -19,6 +19,8 @@ abstract class RowProcessor extends Base\Core
 
     protected $row;
 
+    protected $reconcileFile;
+
     protected $version;
 
     protected $parsedData;
@@ -39,11 +41,13 @@ abstract class RowProcessor extends Base\Core
      */
     abstract protected function getUtrToUpdate();
 
-    public function __construct($row)
+    public function __construct($row, $reconcileFile = null)
     {
         parent::__construct();
 
         $this->row = $row;
+
+        $this->reconcileFile = $reconcileFile;
     }
 
     /**
@@ -96,7 +100,7 @@ abstract class RowProcessor extends Base\Core
                                   ->findWithRelations($this->reconEntityId, ['source']);
     }
 
-    protected function raiseUtrUpdateEvent()
+    protected function raiseUtrUpdateEvent($utr)
     {
         $batchFta = $this->reconEntity->batchFundTransfer;
 
@@ -105,11 +109,12 @@ abstract class RowProcessor extends Base\Core
             'purpose'                           => $this->reconEntity->getPurpose(),
             'fund_transfer_attempt_id'          => $this->reconEntity->getId(),
             'batch_fund_transfer_attempt_id'    => $batchFta->getId(),
-            'utr'                               => $this->reconEntity->getUtr(),
+            'utr'                               => $utr,
             'source_type'                       => $this->reconEntity->getSourceType(),
             'fund_transfer_attempt_mode'        => $this->reconEntity->getMode(),
             'fund_transfer_attempt_status'      => $this->reconEntity->getStatus(),
             'source_id'                         => $this->reconEntity->getSourceId(),
+            'reconcile_file'                    => $this->reconcileFile,
         ];
 
         $this->app['diag']->trackSettlementEvent(
@@ -157,7 +162,7 @@ abstract class RowProcessor extends Base\Core
         {
             $this->updateUtrMetric();
 
-            $this->raiseUtrUpdateEvent();
+            $this->raiseUtrUpdateEvent($utr);
         }
 
         $this->reconEntity->setUtr($utr);
@@ -234,10 +239,11 @@ abstract class RowProcessor extends Base\Core
             'fund_transfer_attempt_status'      => $this->reconEntity->getStatus(),
             'source_id'                         => $this->reconEntity->getSourceId(),
             'error_message'                     => $publicErrorMessage,
+            'reconcileFile'                     => $this->reconcileFile
         ];
 
         $this->app['diag']->trackSettlementEvent(
-            EventCode::FTA_STATUS_UPDATED,
+            EventCode::FTA_DATA_UPDATED_FROM_REVERSE_FEED,
             null,
             null,
             $customProperties);

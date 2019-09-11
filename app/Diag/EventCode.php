@@ -313,6 +313,11 @@ class EventCode
         'name'  => 'fta.utr.updated'
     ];
 
+    const FTA_DATA_UPDATED_FROM_REVERSE_FEED = [
+        'group' => 'update',
+        'name'  => 'fta.data.updated.reverse.feed'
+    ];
+
     const FTA_STATUS_UPDATED = [
         'group' => 'update',
         'name'  => 'fta.status.updated'
