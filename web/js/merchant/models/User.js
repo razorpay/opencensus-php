@@ -222,13 +222,13 @@ export default class User {
   }
 
   get isPaymentPagesEnabled() {
-    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PP);
+    const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 
     return !!isEnabled;
   }
 
   get isPaymentLinksEnabled() {
-    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PL);
+    const { isEnabled } = getOnBoardingDataFromLocalState('payment_links');
 
     return !!isEnabled;
   }
