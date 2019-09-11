@@ -2661,13 +2661,15 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['google_pay']);
 
-        $this->fixtures->merchant->addFeatures(['google_pay_omnichannel']);
+        $this->fixtures->merchant->addFeatures(['google_pay_omnichannel', 'phonepe_intent']);
 
         $response = $this->startTest();
 
         $this->assertNotNull($response['features']['google_pay']);
 
         $this->assertNotNull($response['features']['google_pay_omnichannel']);
+
+        $this->assertNotNull($response['features']['phonepe_intent']);
     }
 
     public function testPutPaytmMethod()
