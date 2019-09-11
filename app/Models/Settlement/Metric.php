@@ -45,6 +45,11 @@ final class Metric
     const NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT       = 'number_of_merchants_in_queue_for_settlement';
 
     /**
+     * Method: Count
+     */
+    const TIME_TAKEN_TO_CREATE_MERCHANT_SETTLEMENT          = 'time_taken_to_create_merchant_settlement';
+
+    /**
      * Method: Gauge
      */
     const TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT    = 'time_taken_t0_enqueue_merchants_for_settlement';

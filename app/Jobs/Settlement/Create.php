@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Metric;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Models\Settlement\Processor as SettlementProcessor;
@@ -80,6 +81,11 @@ class Create extends Job
                 'channel'       => $merchant->getChannel(),
                 'time_taken'    => get_diff_in_millisecond($startTime),
             ] + $setlResponse;
+
+            $this->trace->count(
+                Metric::TIME_TAKEN_TO_CREATE_MERCHANT_SETTLEMENT,
+                [],
+                $response['time_taken']);
 
             $this->trace->info(
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
