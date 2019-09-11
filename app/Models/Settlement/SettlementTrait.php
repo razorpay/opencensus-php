@@ -166,6 +166,12 @@ trait SettlementTrait
 
         if (in_array($merchant->getId(), Preferences::NO_SETTLEMENT_MIDS, true) === true)
         {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'parent merchant opted for no settlement',
+                ]);
+
             return true;
         }
 
@@ -179,9 +185,18 @@ trait SettlementTrait
                                                Feature\Constants::DAILY_SETTLEMENT
                                            ]);
 
-        $skipSettlement = (empty($skipSetlFeatureEnabled) === false);
+        if ($skipSetlFeatureEnabled->count() !== 0)
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant has block_settlement/daily_settlement feature',
+                ]);
 
-        return $skipSettlement;
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -194,7 +209,7 @@ trait SettlementTrait
      */
     protected function filterTransactionsForSettlement($txns, $merchantSettleToPartner): array
     {
-        $filterGroupedTxns    = [];
+        $filterGroupedTxns       = [];
 
         $transactionSkipCount    = 0;
 

@@ -164,10 +164,9 @@ class Processor extends Base\Core
             Metric::SETTLEMENTS_INITIATE_RUNTIME,
             [
                 Metric::CHANNEL                 => $channel,
-                Metric::TIME_TAKEN_IN_MILLI     => get_diff_in_millisecond($startTime),
                 Metric::USING_QUEUE             => $useQueue,
                 Metric::TOTAL_MERCHANTS_COUNT   => $count,
-            ]);
+            ], get_diff_in_millisecond($startTime));
 
         return $data;
     }
@@ -799,9 +798,8 @@ class Processor extends Base\Core
         $this->trace->count(
             Metric::TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT,
             [
-                'time_taken'  => get_diff_in_millisecond($startTime),
                 'total_count' => $totalCount,
-            ]);
+            ], get_diff_in_millisecond($startTime));
 
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE,
@@ -857,6 +855,7 @@ class Processor extends Base\Core
     protected function createSettlementForMerchant(MerchantModel\Entity $merchant): array
     {
         $channel = $merchant->getChannel();
+
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction

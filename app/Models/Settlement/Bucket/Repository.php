@@ -12,7 +12,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->select(Entity::MERCHANT_ID)
-                    ->where(Entity::BUCKET_TIMESTAMP, '<', $bucketTimestamp)
+                    ->where(Entity::BUCKET_TIMESTAMP, '<=', $bucketTimestamp)
                     ->where(Entity::COMPLETED, '=', 0)
                     ->distinct()
                     ->get();
