@@ -41,6 +41,11 @@ class SubReconciliate extends Base\Core
     const ATTEMPT_NUMBER        = 'attempt_number';
 
     /**
+     * The list of columns which shouldn't be exposed to specific data sources like qubole.
+     */
+    const BLACKLISTED_COLUMNS = [];
+
+    /**
      * The list of payments/refunds attempted to reconcile.
      *
      * @var array
@@ -717,6 +722,6 @@ class SubReconciliate extends Base\Core
      */
     public function getBlackListedColumnHeadersForOutputFile()
     {
-        return [];
+        return static::BLACKLISTED_COLUMNS;
     }
 }
