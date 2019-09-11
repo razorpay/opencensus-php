@@ -174,7 +174,7 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED,
         ],
     ],
 
