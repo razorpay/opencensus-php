@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -11,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
 use RZP\Models\FileStore\Accessor;
+use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -87,6 +89,10 @@ class Core extends Base\Core
 
         $sendEmail = $input[Entity::SEND_EMAIL];
 
+        $toEmails = $input[Entity::TO_EMAIL_LIST];
+
+        $toEmails = explode(',', $toEmails);
+
         $sendEmail = filter_var($sendEmail, FILTER_VALIDATE_BOOLEAN);
 
         $this->trace->info(
@@ -108,9 +114,10 @@ class Core extends Base\Core
 
         $fileURL = (new Accessor())->getSignedUrlOfFile($statementFile);
 
-        if ($sendEmail)
+        if ($sendEmail and count($toEmails) > 0)
         {
-            // code for sending this file via an email
+            $this->sendBankAccountStatementEmail($accountNumber, $channel, $toEmails, $fileURL, $fromDate, $toDate);
+
             return ['message' => 'Email Sent'];
         }
         else
@@ -123,6 +130,27 @@ class Core extends Base\Core
 
             return ['message' => 'File Generated', 'file_path' => $fileURL];
         }
+    }
+
+    protected function sendBankAccountStatementEmail(string $accountNumber,
+                                                     string $channel,
+                                                     array $toEmails,
+                                                     string $fileURL,
+                                                     string $fromDate,
+                                                     string $toDate)
+    {
+        $merchant = $bankingAccount = $this->repo
+                                           ->banking_account
+                                           ->findByAccountNumberAndChannel($accountNumber, $channel)
+                                           ->merchant;
+
+        $email = new StatementMail($merchant,
+                                   $toEmails,
+                                   $fromDate,
+                                   $toDate,
+                                   $fileURL);
+
+        Mail::queue($email);
     }
 
     protected function getGenerator($accountNUmber, $channel, $format, $fromDate, $toDate)

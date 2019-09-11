@@ -33,7 +33,8 @@ class Validator extends Base\Validator
         Entity::FROM_DATE      => 'required|integer',
         Entity::TO_DATE        => 'required|integer',
         Entity::FORMAT         => 'required|string|custom',
-        Entity::SEND_EMAIL     => 'required|boolean'
+        Entity::SEND_EMAIL     => 'required|boolean',
+        Entity::TO_EMAIL_LIST  => 'required'
     ];
 
     protected function validateFormat($attribute, $channel)
