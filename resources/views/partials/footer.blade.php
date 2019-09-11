@@ -6,7 +6,7 @@
         useAnalytics = false;
     }
     if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
-         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing'], {
+         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing', 'taboola'], {
            ga: 'UA-53341507-2',
            fb: '697927486977350'
          });

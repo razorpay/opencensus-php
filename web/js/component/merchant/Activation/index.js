@@ -664,6 +664,11 @@ export default class ActivationWizard extends React.Component {
           });
         }
 
+        window.rzpAnalytics({
+          name: 'taboola',
+          event: 'l2_submission',
+        });
+
         updateHubSpotContactsProperties(
           {
             final_submission: true,

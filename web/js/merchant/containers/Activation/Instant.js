@@ -232,6 +232,11 @@ export default class ActivationWizard extends React.Component {
           completed: true,
         });
 
+        window.rzpAnalytics({
+          name: 'taboola',
+          event: 'l1_activation',
+        });
+
         const {
           isWhitelistFlow,
           isBlacklistFlow,

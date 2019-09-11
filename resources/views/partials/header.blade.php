@@ -112,6 +112,12 @@
                     break;
                 }
 
+                case 'taboola': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('taboola', data.event);
+                    break;
+                }
+
                 default: {
                     if (!checkGa(data)) return;
                     ga('old.send',
