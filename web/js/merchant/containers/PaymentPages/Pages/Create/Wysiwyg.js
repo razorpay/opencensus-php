@@ -160,7 +160,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
-    script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
+    // script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
+    script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js'; // TODO: Only for Beta testing
 
     document.head.appendChild(script);
 
