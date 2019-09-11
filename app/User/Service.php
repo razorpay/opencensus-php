@@ -17,6 +17,7 @@ use App\Trace\TraceCode;
 use App\MerchantDetails;
 use App\Providers\GenericUser;
 use App\Session as SessionTable;
+use App\Merchant\GenericMerchant;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
@@ -197,25 +198,22 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $data) = $this->checkAccessOfUserOnMerchant($merchantId);
+        list($error) = $this->checkAccessOfUserOnMerchant($merchantId);
 
         if (empty($error) === true)
         {
 
-            if ($data['access'] === true)
-            {
-                Session::put('current_merchant_id', $merchantId);
+            Session::put('current_merchant_id', $merchantId);
 
-                $traceData = [
-                    'id'          => $user->id,
-                    'email'       => $user->email,
-                    'merchant_id' => $merchantId,
-                ];
+            $traceData = [
+                'id'          => $user->id,
+                'email'       => $user->email,
+                'merchant_id' => $merchantId,
+            ];
 
-                $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
+            $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
 
-                return [];
-            }
+            return [];
         }
 
         return ["Couldn't find the merchant you are looking for."];
@@ -654,6 +652,32 @@ class Service extends Base\Service
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
+
+            $currentMerchantId = Session::get('current_merchant_id');
+
+            if ($currentMerchantId !== null)
+            {
+                $currentMerchant = $genericUser
+                    ->merchants
+                    ->where('id', $currentMerchantId)
+                    ->first();
+
+                // if currentMerchant is not in merchants array
+                // then check user's access on it using checkAccessOfUserOnMerchant
+                // if no error push the returned merchant object in merchants array
+                if ($currentMerchant === null)
+                {
+                    list($error, $data) = $this->checkAccessOfUserOnMerchant($currentMerchantId);
+
+                    if (empty($error) === true)
+                    {
+                        $genericUser->merchants->push(new GenericMerchant($data['merchant']));
+                        Session::put('dashboard_user_payload', $genericUser);
+                    }
+                }
+
+            }
+
         }
 
         return [$error, $genericUser];
