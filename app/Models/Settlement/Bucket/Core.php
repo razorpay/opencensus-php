@@ -31,15 +31,7 @@ class Core extends Base\Core
         // if the bucket timestamp is not given then derive the same for current timestamp
         if (empty($bucketTimestamp) === true)
         {
-            $currentTimestamp = Carbon::now(Timezone::IST);
-
-            $offsetHour = ($currentTimestamp->minute > 0) ? 1 : 0;
-
-            // start of the hour will always be bucket timestamp
-            $bucketTimestamp = $currentTimestamp->addHours($offsetHour)
-                                                ->subMinutes($currentTimestamp->minute)
-                                                ->subSeconds($currentTimestamp->second)
-                                                ->getTimestamp();
+            $bucketTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
         $merchantIDs = $this->repo
