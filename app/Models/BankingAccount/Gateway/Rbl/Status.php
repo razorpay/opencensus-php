@@ -36,13 +36,14 @@ class Status
         BankingAccount\Status::PROCESSED      => [
             self::CLOSED
         ],
-        BankingAccount\Status::CANCELLED      => [
-            self::CANCELLED
-        ],
+        BankingAccount\Status::CANCELLED      => [],
         BankingAccount\Status::INITIATED      => [],
         BankingAccount\Status::UNSERVICEABLE  => [],
         BankingAccount\Status::CREATED        => [],
         BankingAccount\Status::ACTIVATED      => [],
+        BankingAccount\Status::REJECTED       => [
+            self::CANCELLED
+        ],
     ];
 
     protected static $internalToBankStatusForWebhookMap = [
@@ -58,6 +59,7 @@ class Status
         self::DISCREPANCY,
         self::CLOSED,
         self::CANCELLED,
+        self::HOLD,
     ];
 
     public static function isValid(string $status): bool

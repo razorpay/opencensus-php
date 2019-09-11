@@ -53,7 +53,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         return null;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo
                     ->netbanking

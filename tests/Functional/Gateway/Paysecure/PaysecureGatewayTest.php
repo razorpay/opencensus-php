@@ -11,6 +11,7 @@ use RZP\Gateway\Hitachi;
 use RZP\Services\DowntimeMetric;
 use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Exception\GatewayTimeoutException;
@@ -89,6 +90,25 @@ class PaysecureGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->mockCardVault();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'save_all_cards')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
 
         $this->payment = $this->getDefaultPaymentArray();
     }

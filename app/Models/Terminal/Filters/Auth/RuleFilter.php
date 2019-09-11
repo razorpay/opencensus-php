@@ -3,13 +3,11 @@
 namespace RZP\Models\Terminal\Filters\Auth;
 
 use RZP\Models\Base;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Terminal\Filters\RuleFilter as BaseRuleFilter;
 
-class RuleFilter extends Terminal\Filter
+class RuleFilter extends BaseRuleFilter
 {
     public function filter(array $terminals, $verbose = false)
     {
@@ -32,7 +30,7 @@ class RuleFilter extends Terminal\Filter
         return $terminals;
     }
 
-    protected function filterTerminalsForGroup(array & $terminals, Base\PublicCollection $rules, bool $verbose, string $group)
+    protected function filterTerminalsForGroup(array & $terminals, Base\PublicCollection $rules, bool $verbose, string $group = '')
     {
         $selectedTerminals = [];
 
@@ -60,13 +58,30 @@ class RuleFilter extends Terminal\Filter
             }
         }
 
-        $terminals = $selectedTerminals;
+        $isSelectRulePresent = $this->isSelectRulePresent($rules);
+
+        $filteredTerminals = $selectedTerminals;
+
+        // If any select rules are present we only proceed with the set of
+        // selected_terminals. If no select rules are present we take the diff
+        // of all terminals and rejected terminals
+        if ($isSelectRulePresent === false)
+        {
+            $filteredTerminals = array_udiff($terminals, $rejectedTerminals, function ($a, $b) {
+                return strcmp(implode('', $a), implode('', $b));
+            });
+
+            // To fix the array keys after filtering
+            $filteredTerminals = array_values($filteredTerminals);
+        }
 
         $data = [
             'selected' => $selectedTerminals,
             'rejected' => $rejectedTerminals,
-            'final'    => $terminals,
+            'final'    => $filteredTerminals,
         ];
+
+        $terminals = $filteredTerminals;
 
         $this->traceTerminalsForGroup($data, $group, $verbose);
     }

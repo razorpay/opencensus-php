@@ -436,15 +436,20 @@ class Service extends Base\Service
                                         if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
                                         {
                                             $entity = $this->repo
-                                                ->$gatewayEntity
-                                                ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
-                                                ->toArray();
+                                                           ->$gatewayEntity
+                                                           ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                           ->toArray();
 
                                             $map = [];
 
+                                            if ($gatewayEntity === RefundConstants::MOZART)
+                                            {
+                                                $entity = json_decode($entity['raw'], true);
+                                            }
+
                                             foreach ($columns as $column)
                                             {
-                                                $map[$column] = $entity[$column];
+                                                $map[$column] = $entity[$column] ?? '';
                                             }
 
                                             $response[RefundConstants::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
@@ -497,6 +502,16 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
+        // We are masking status for merchants
+        if ((($this->app['basicauth']->isProxyAuth() === true) or
+             ($this->app['basicauth']->isPrivateAuth() === true)) and
+            (isset($input[Entity::STATUS]) === true))
+        {
+            $input[Entity::PUBLIC_STATUS] = $input[Entity::STATUS];
+
+            unset($input[Entity::STATUS]);
+        }
+
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
 
         $refundsArray = $refunds->toArrayPublic();
@@ -595,6 +610,8 @@ class Service extends Base\Service
                 foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
                 {
                     $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
+
+                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
                 }
             }
             else
@@ -608,6 +625,8 @@ class Service extends Base\Service
                     Entity::verifyIdAndStripSign($refundId);
 
                     $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+                    $refundArray[Entity::STATUS] = $refundStatus[$refundId];
                 }
             }
         }
@@ -630,6 +649,8 @@ class Service extends Base\Service
                 $refundArray[Entity::MODE] = $refundModes[$refundId];
 
                 $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+                $refundArray[Entity::STATUS] = $refundStatus[$refundId];
             }
         }
     }
@@ -1724,6 +1745,8 @@ class Service extends Base\Service
         // Fetch from merchant notes
         if ($continueSearch === true)
         {
+            (new Validator)->validateCustomerRefundFetchDetailsFromMerchantNotes($id);
+
             $this->fetchRefundDetailsForCustomerFromMerchantNotes($id, $return);
         }
     }

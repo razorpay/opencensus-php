@@ -43,9 +43,6 @@ class Holidays
                 12 => 'Bakri Id(ld-UI-Zuha)',
                 15 => 'Independence Day',
             ],
-            9 => [
-                10 => 'Muharram',
-            ],
             10 => [
                 2 => 'Mahatma Gandhi Jayanti',
                 8 => 'Dussehra / Vijaya Dasami',

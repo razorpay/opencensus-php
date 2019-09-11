@@ -9,6 +9,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
+use RZP\Models\FundAccount\Type as FundAccountType;
 
 class BeneficiaryVerification extends Job
 {
@@ -29,15 +30,22 @@ class BeneficiaryVerification extends Job
     /**
      * @var string
      */
-    protected $bankAccountId;
+    protected $accountId;
 
-    public function __construct(string $mode, string $channel, string $bankAccountId)
+    /**
+     * @var string
+     */
+    protected $accountType;
+
+    public function __construct(string $mode, string $channel, string $accountId, string $accountType)
     {
         parent::__construct($mode);
 
-        $this->channel        = $channel;
+        $this->channel     = $channel;
 
-        $this->bankAccountId  = $bankAccountId;
+        $this->accountId   = $accountId;
+
+        $this->accountType = $accountType;
     }
 
     /**
@@ -51,44 +59,55 @@ class BeneficiaryVerification extends Job
 
             if (in_array($this->channel, Channel::getChannelsWithOnlineBeneficiaryVerification(), true) === false)
             {
-                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->accountId);
 
                 return;
             }
 
             $this->traceData(TraceCode::ATTEMPTING_BENEFICIARY_VERIFICATION);
 
-            $bankAccount = $this->repoManager->bank_account->getBankAccountById($this->bankAccountId);
+            $accountEntity = null;
+
+            if ($this->accountType === FundAccountType::BANK_ACCOUNT)
+            {
+                $accountEntity = $this->repoManager->bank_account->getBankAccountById($this->accountId);
+            }
+            else if ($this->accountType === FundAccountType::CARD)
+            {
+                $accountEntity = $this->repoManager->card->getCardById($this->accountId);
+            }
 
             // TODO: Check when this can be empty
             // Example case: BcqrSOKTFuw1pS
             // Mode sent was live, but it was created in test mode.
             // No live bank account exists for the merchant: BcqrSKvM8bIq2g
-            if (empty($bankAccount) === true)
+            if (empty($accountEntity) === true)
             {
-                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->accountId);
 
-                $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_VERIFY);
+                $this->traceData(TraceCode::ACCOUNT_NOT_FOUND_FOR_BENE_VERIFY);
 
                 return;
             }
 
             // Check to avoid unnecessary tries.
             // checks for the type and returns false for the bank account which are not `merchant` or `contact`
-            if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
+            if (($this->accountType === FundAccountType::BANK_ACCOUNT) and
+                (in_array($accountEntity->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false))
             {
-                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->accountId);
 
                 return;
             }
 
-            $status = (new Beneficiary)->verifyBeneficiaryThroughApi($bankAccount, $this->channel);
+            $status = (new Beneficiary)->verifyBeneficiaryThroughApi($accountEntity, $this->accountType, $this->channel);
 
             $this->traceData(
                 TraceCode::BENEFICIARY_VERIFY_ATTEMPT_STATUS,
                 [
-                    'status'          => $status,
-                    'bank_account_id' => $bankAccount->getId()
+                    'status'     => $status,
+                    'account_id'   => $this->accountId,
+                    'account_type' => $this->accountType,
                 ]);
         }
         catch (LogicException $e)
@@ -99,8 +118,9 @@ class BeneficiaryVerification extends Job
                 TraceCode::BENEFICIARY_VERIFY_ATTEMPT_FAILED,
                 [
                     'channel'         => $this->channel,
+                    'account_id'      => $this->accountId,
+                    'account_type'    => $this->accountType,
                     'attempt_count'   => $this->attempts(),
-                    'bank_account_id' => $this->bankAccountId,
                 ]);
 
             if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
@@ -120,7 +140,7 @@ class BeneficiaryVerification extends Job
             }
             else
             {
-                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->accountId);
 
                 $this->delete();
             }
@@ -132,12 +152,13 @@ class BeneficiaryVerification extends Job
                 Trace::ERROR,
                 TraceCode::BENEFICIARY_VERIFY_PROCESS_FAILED,
                 [
-                    'channel'             => $this->channel,
-                    'attempt_count'       => $this->attempts(),
-                    'bank_account_id'     => $this->bankAccountId,
+                    'channel'         => $this->channel,
+                    'account_id'      => $this->accountId,
+                    'account_type'    => $this->accountType,
+                    'attempt_count'   => $this->attempts(),
                 ]);
 
-            (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+            (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->accountId);
 
             $this->delete();
         }
@@ -148,10 +169,11 @@ class BeneficiaryVerification extends Job
         $this->trace->info(
             $traceCode,
             [
-                'channel'         => $this->channel,
-                'attempt_count'   => $this->attempts(),
-                'bank_account_id' => $this->bankAccountId,
                 'mode'            => $this->mode,
+                'channel'         => $this->channel,
+                'account_id'      => $this->accountId,
+                'account_type'    => $this->accountType,
+                'attempt_count'   => $this->attempts(),
             ] + $extraData
         );
     }

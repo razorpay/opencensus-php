@@ -14,6 +14,7 @@ class Validator extends Base\Validator
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
     const YESBANK_CREATE        = 'yesbank_create';
     const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
+    const ACTIVATED_STATUS      = 'activated_status';
 
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
@@ -86,6 +87,7 @@ class Validator extends Base\Validator
         Entity::USERNAME                        => 'filled|string',
         Entity::PASSWORD                        => 'filled|string',
         Entity::REFERENCE1                      => 'filled|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255'
     ];
 
     protected static $internalEditRules = [
@@ -103,6 +105,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'filled|string',
         Entity::BENEFICIARY_EMAIL               => 'filled|string',
         Entity::BENEFICIARY_NAME                => 'filled|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
     ];
 
     protected static $internalEditValidators = [
@@ -125,6 +128,21 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'required|string',
         Entity::BENEFICIARY_EMAIL               => 'required|string',
         Entity::BENEFICIARY_NAME                => 'required|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
+    ];
+
+    protected static $activatedStatusRules = [
+        Entity::BENEFICIARY_PIN                 => 'sometimes|string',
+        Entity::BENEFICIARY_CITY                => 'sometimes|string',
+        Entity::BENEFICIARY_COUNTRY             => 'sometimes|string',
+        Entity::BENEFICIARY_STATE               => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS1            => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'sometimes|string',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|string',
+        Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
+        Entity::BENEFICIARY_NAME                => 'sometimes|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
     ];
 
     protected static $serviceablePincodeRules = [

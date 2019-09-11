@@ -31,6 +31,10 @@ return [
             'name'   => env('AWS_S3_RECON_BUCKET'),
             'region' => env('AWS_RECON_BUCKET_REGION', 'ap-south-1'),
         ],
+        'analytics_bucket_config' => [
+            'name'   => env('AWS_S3_ANALYTICS_BUCKET'),
+            'region' => env('AWS_ANALYTICS_BUCKET_REGION', 'ap-south-1'),
+        ],
         'customer_bucket_config' => [
             'name'   => env('AWS_S3_CUSTOMER_BUCKET'),
             'region' => env('AWS_CUSTOMER_BUCKET_REGION', 'ap-south-1')
@@ -76,6 +80,10 @@ return [
         ],
         'recon_bucket_config' => [
             'name'   => env('LOCAL_RECON_BUCKET', 'recon_bucket'),
+            'region' => null,
+        ],
+        'analytics_bucket_config' => [
+            'name'   => env('LOCAL_ANALYTICS_BUCKET', 'analytics_bucket'),
             'region' => null,
         ],
         'test_bucket_config' => [

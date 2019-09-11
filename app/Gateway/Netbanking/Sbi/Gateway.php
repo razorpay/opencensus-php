@@ -207,6 +207,11 @@ class Gateway extends Base\Gateway
                 RequestFields::REDIRECT_URL => $input['callbackUrl'],
                 RequestFields::CANCEL_URL   => $input['callbackUrl'],
             ];
+
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+                $requestArray[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+            }
         }
 
         $contentToEncrypt = $this->getFormattedRequest($requestArray);
@@ -289,8 +294,6 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayInput);
 
         $this->checkCallbackStatusRecurring($gatewayInput);
-
-        $this->verifyCallback($gatewayPayment, $input);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 

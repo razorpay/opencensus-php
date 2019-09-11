@@ -5044,6 +5044,12 @@ ALTER TABLE `merchant_banks`
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE `subscriptions`
+    ADD COLUMN `customer_name` VARCHAR(255) DEFAULT NULL AFTER `customer_email`,
+    ADD COLUMN `customer_contact` VARCHAR(255) DEFAULT NULL AFTER `customer_name`,
+    ADD INDEX `subscriptions_customer_contact_index` (`customer_contact`);
+
 ALTER TABLE virtual_accounts
     ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
     ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
@@ -5301,9 +5307,24 @@ ALTER TABLE merchants
 ALTER TABLE merchants
 	ADD COLUMN partnership_url TEXT DEFAULT NULL AFTER dashboard_whitelisted_ips_test;
 
+ALTER TABLE banking_accounts
+    ADD COLUMN internal_comment VARCHAR(255) DEFAULT NULL AFTER account_type;
+
 ALTER TABLE `external`
     DROP INDEX `external_balance_id_foreign`,
     DROP INDEX `external_transaction_id_foreign`,
     ADD INDEX `external_channel_index` (`channel`),
     ADD INDEX `external_balance_id_index` (`balance_id`),
     ADD INDEX `external_transaction_id_index` (`transaction_id`);
+
+ALTER TABLE adjustment
+    ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
+    ADD INDEX `adjustment_balance_id_index` (`balance_id`);
+
+ALTER TABLE nodal_beneficiaries
+    MODIFY COLUMN `bank_account_id` CHAR(14) DEFAULT NULL,
+    DROP INDEX `nodal_beneficiaries_bank_account_id_channel_unique`,
+    ADD COLUMN `card_id` CHAR(14) DEFAULT NULL AFTER `bank_account_id`,
+    ADD INDEX `nodal_beneficiaries_card_id_index` (`card_id`);
+
+ALTER TABLE nodal_beneficiaries ADD INDEX nodal_beneficiaries_bank_account_id_channel_index(bank_account_id, channel);

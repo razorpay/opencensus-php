@@ -4,10 +4,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Adjustment\Entity as Adjustment;
 use RZP\Models\Merchant;
-use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+use RZP\Models\Adjustment\Entity as Adjustment;
+use RZP\Models\Merchant\Balance\Entity as Balance;
 
 class CreateAdjustments extends Migration
 {
@@ -45,6 +46,9 @@ class CreateAdjustments extends Migration
             $table->char(Adjustment::TRANSACTION_ID, Adjustment::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Adjustment::BALANCE_ID, Balance::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Adjustment::SETTLEMENT_ID, Adjustment::ID_LENGTH)
                   ->nullable();
 
@@ -67,6 +71,7 @@ class CreateAdjustments extends Migration
                   ->on_delete('restrict');
 
             $table->index(Adjustment::CHANNEL);
+            $table->index(Adjustment::BALANCE_ID);
             $table->index(Adjustment::ENTITY_ID);
             $table->index(Adjustment::ENTITY_TYPE);
             $table->index(Adjustment::CREATED_AT);

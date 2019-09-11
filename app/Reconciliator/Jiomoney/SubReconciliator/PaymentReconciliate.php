@@ -94,7 +94,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         try
         {

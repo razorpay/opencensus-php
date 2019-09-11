@@ -6,7 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
-use RZP\Gateway\Netbanking\Base\Entity;
+use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Reconciliator\NetbankingHdfc\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -22,9 +22,21 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        /** @var Entity $gatewayPayment */
-        $this->gatewayPayment = $this->repo->netbanking->findByGatewayPaymentIdAndAction($row[Constants::BANK_PAYMENT_ID],
-                                                                                    Action::AUTHORIZE);
+        try
+        {
+            $this->gatewayPayment = $this->repo->netbanking->findByGatewayPaymentIdAndAction(
+                                                                            $row[Constants::BANK_PAYMENT_ID],
+                                                                            Action::AUTHORIZE);
+        }
+        catch (DBQueryException $ex)
+        {
+            // Just trace the exception and Do nothing.
+            // This try-catch is needed, just to suppress the exception,
+            // Else recon process gets terminated here and rows after this
+            // current row do not get processed.
+            //
+            $this->trace->traceException($ex);
+        }
 
         if ($this->gatewayPayment === null)
         {
@@ -39,7 +51,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
          return $row[Constants::BANK_PAYMENT_ID] ?? null;
      }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
                                                                Action::AUTHORIZE);
@@ -89,5 +101,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getReconPaymentAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[Constants::COLUMN_PAYMENT_AMOUNT]);
+    }
+
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return Constants::BLACKLISTED_COLUMN_HEADERS;
     }
 }

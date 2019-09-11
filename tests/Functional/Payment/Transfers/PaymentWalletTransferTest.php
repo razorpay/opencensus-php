@@ -73,10 +73,21 @@ class PaymentWalletTransferTest extends TestCase
 
     public function testTransferToWalletFundsOnHold()
     {
+        //
+        // this been added as there is some issues in test framework
+        // which resets the the mode to test
+        // where as here we are operating on live mode.
+        //
+        $this->app['rzp.mode'] = 'live';
+
         $this->fixtures->merchant->holdFunds();
 
         // Merchant needs to be activated to make live requests
         $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
 
         $this->fixtures->merchant->addFeatures(['openwallet']);
 

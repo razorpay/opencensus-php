@@ -298,6 +298,7 @@ class Gateway
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::PAYTM,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -577,6 +578,7 @@ class Gateway
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::ATOM,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     public static $channels = [

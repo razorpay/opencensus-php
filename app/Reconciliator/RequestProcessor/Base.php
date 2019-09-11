@@ -23,6 +23,7 @@ class Base extends Core
     const FORCE_AUTHORIZE         = 'force_authorize';
 
     const SOURCE                  = 'source';
+    const MANUAL_RECON_FILE       = 'manual_recon_file';
 
     /**
      * Type of request processor
@@ -67,7 +68,6 @@ class Base extends Core
     const NETBANKING_CBI         = 'NetbankingCbi';
     const NETBANKING_YESB        = 'NetbankingYesb';
     const NETBANKING_CUB         = 'NetbankingCub';
-    const NETBANKING_IDBI        = 'NetbankingIdbi';
     const NETBANKING_IBK         = 'NetbankingIbk';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_CSB         = 'NetbankingCsb';
@@ -80,6 +80,7 @@ class Base extends Core
     const NETBANKING_EQUITAS     = 'NetbankingEquitas';
     const NETBANKING_HDFC        = 'NetbankingHdfc';
     const NETBANKING_ALLAHABAD   = 'NetbankingAllahabad';
+    const NETBANKING_SBI         = 'NetbankingSbi';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
@@ -126,7 +127,6 @@ class Base extends Core
         self::NETBANKING_CBI         => ['smcbipso@centralbankofindia.org.in'],
         self::NETBANKING_YESB        => [''],
         self::NETBANKING_CUB         => [''],
-        self::NETBANKING_IDBI        => [''],
         self::NETBANKING_IBK         => [''],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
@@ -142,6 +142,7 @@ class Base extends Core
         self::NETBANKING_VIJAYA      => [], //TODO: add this value when shared post UAT
         self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_HDFC        => [],
+        self::NETBANKING_SBI         => [],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
@@ -190,7 +191,6 @@ class Base extends Core
         Gateway::NETBANKING_CBI         => self::NETBANKING_CBI,
         Gateway::NETBANKING_YESB        => self::NETBANKING_YESB,
         Gateway::NETBANKING_CUB         => self::NETBANKING_CUB,
-        Gateway::NETBANKING_IDBI        => self::NETBANKING_IDBI,
         Gateway::NETBANKING_IBK         => self::NETBANKING_IBK,
         Gateway::NETBANKING_EQUITAS     => self::NETBANKING_EQUITAS,
         Gateway::NETBANKING_BOB         => self::NETBANKING_BOB,
@@ -206,6 +206,7 @@ class Base extends Core
         Gateway::NETBANKING_OBC         => self::NETBANKING_OBC,
         Gateway::NETBANKING_ALLAHABAD   => self::NETBANKING_ALLAHABAD,
         Gateway::NETBANKING_CANARA      => self::NETBANKING_CANARA,
+        Gateway::NETBANKING_SBI         => self::NETBANKING_SBI,
         Gateway::PAYTM                  => self::PAYTM,
         Gateway::UPI_MINDGATE           => self::UPI_HDFC,
         Gateway::UPI_SBI                => self::UPI_SBI,
@@ -259,7 +260,8 @@ class Base extends Core
     const CONFIG_PARAMS = [
         self::FORCE_UPDATE,
         self::SOURCE,
-        self::FORCE_AUTHORIZE
+        self::FORCE_AUTHORIZE,
+        self::MANUAL_RECON_FILE,
     ];
 
     protected $validator;

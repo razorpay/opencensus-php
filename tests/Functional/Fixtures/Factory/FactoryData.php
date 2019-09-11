@@ -1115,5 +1115,9 @@ final class FactoryData
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Mpan\Entity::class, [
+
+        ]);
     }
 }
