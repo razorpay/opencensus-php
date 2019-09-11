@@ -154,11 +154,10 @@ trait SettlementTrait
         if (($merchant->getParentId() === Preferences::MID_WEALTHY) and
             ($today->dayOfWeek === Carbon::SATURDAY))
         {
-            $this->trace->info(
-                TraceCode::SETTLEMENT_SKIPPED,
+            $this->traceMerchantSettlementSkip(
+                $merchant,
                 [
-                    'merchant_id'       => $mid,
-                    'reason'            => Metric::BLOCK_WEALTHY_ON_SATURDAY,
+                    'reason' => Metric::BLOCK_WEALTHY_ON_SATURDAY,
                 ]);
 
             return true;
