@@ -97,5 +97,21 @@ export function constructAmountField(fieldData) {
       typeof mandatory === 'boolean' ? mandatory : Boolean(Number(mandatory)); // BOOL
   }
 
+  if (restProps.min_amount === '') {
+    restProps.min_amount = null;
+  }
+
+  if (restProps.max_amount === '') {
+    restProps.max_amount = null;
+  }
+
+  if (restProps.min_purchase === '') {
+    restProps.min_purchase = null;
+  }
+
+  if (restProps.max_purchase === '') {
+    restProps.max_purchase = null;
+  }
+
   return amountItem;
 }
