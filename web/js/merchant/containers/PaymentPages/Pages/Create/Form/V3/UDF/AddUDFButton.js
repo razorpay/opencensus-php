@@ -12,7 +12,7 @@ class AddUDFButton extends React.PureComponent {
     return (
       <UDFDropdown
         onSelect={this.onSelectFieldType}
-        beforeOptionsTxt="New Input Field"
+        beforeOptionsTxt="Select Input Type"
       >
         <Button.Transparent class="btn-dotted">
           <span class="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}

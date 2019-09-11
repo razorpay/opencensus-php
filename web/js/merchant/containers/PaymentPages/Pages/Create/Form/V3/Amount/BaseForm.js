@@ -298,7 +298,7 @@ export default class BaseForm extends React.PureComponent {
           class="Input--title"
           name="name"
           defaultValue={field.item.name || ''}
-          placeholder="Enter field title"
+          placeholder="Enter field label"
           pattern="^[0-9a-zA-Z ]+"
           onInput={this.onInputName}
           validator={function(val) {
@@ -353,7 +353,7 @@ export default class BaseForm extends React.PureComponent {
             </Button.Transparent>
           }
         >
-          <OptionsItem isSelected={!!field.image_url}>
+          <OptionsItem>
             <div
               onClick={
                 !!field.image_url

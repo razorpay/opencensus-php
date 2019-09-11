@@ -144,7 +144,7 @@ export default class BaseForm extends React.PureComponent {
           class="Input--title"
           name="title"
           defaultValue={field.title}
-          placeholder="Enter field title"
+          placeholder="Enter field label"
           pattern="^[0-9a-zA-Z ]+"
           onInput={this.onInputTitle}
           validator={function(val) {
@@ -219,7 +219,7 @@ export default class BaseForm extends React.PureComponent {
             <OptionsItem isSelected={!this.state.isRequired}>
               <div onClick={this.toggleOptional}>
                 <i class="i i-info-circle" />
-                Optional
+                Optional Field
               </div>
             </OptionsItem>
           )}

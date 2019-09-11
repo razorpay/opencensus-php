@@ -20,7 +20,7 @@ class AddAmountButton extends React.PureComponent {
     return (
       <AmountDropdown
         onSelect={this.onSelectFieldType}
-        beforeOptionsTxt="New Amount Field"
+        beforeOptionsTxt="Select Amount Type"
       >
         <Button.Transparent class="btn-dotted">
           <span class="enclose-circle">

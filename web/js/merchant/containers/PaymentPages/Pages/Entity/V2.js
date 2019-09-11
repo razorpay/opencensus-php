@@ -190,7 +190,7 @@ export default class PaymentPagesV2Entity extends React.Component {
 
                 {!!paymentPageEntity.amount && (
                   <EntityDetailRow
-                    label="Available Quantity"
+                    label=" Available Quantity"
                     value={() => (
                       <EditQuantity
                         value={paymentPageEntity.times_payable}

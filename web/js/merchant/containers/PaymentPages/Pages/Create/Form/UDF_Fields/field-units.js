@@ -4,7 +4,7 @@
 *
 * */
 const str = {
-  label: 'Single line text',
+  label: 'Single Line Text',
   icon: 'alphabet i-fix-alphabet',
   schema: {
     type: 'string',

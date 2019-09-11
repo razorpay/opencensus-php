@@ -55,7 +55,7 @@ export default class AdvancedForm extends React.PureComponent {
         class="Input--hasQuantity Input--vTop"
         label={() => (
           <React.Fragment>
-            Available Quantity
+            Units Available
             <div class="modal-description">in stock</div>
           </React.Fragment>
         )}
