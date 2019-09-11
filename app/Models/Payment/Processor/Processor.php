@@ -274,6 +274,8 @@ class Processor
 
             if ($ret !== null)
             {
+                $this->logPaymentRespawnEvent($input, $ret);
+
                 return $ret;
             }
 
@@ -331,6 +333,24 @@ class Processor
         {
             (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
         }
+    }
+
+    protected function logPaymentRespawnEvent(array $request, array $data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $properties = [
+            'payment' => $request,
+            'reason'  => $data['missing'] ?? "Unknown",
+            'merchant'     => [
+                'id'        => $merchant->getId(),
+                'name'      => $merchant->getBillingLabel(),
+                'mcc'       => $merchant->getCategory(),
+                'category'  => $merchant->getCategory2(),
+            ],
+        ];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
     }
 
     public function getPayment(): Payment\Entity
@@ -459,11 +479,16 @@ class Processor
             return;
         }
 
-        $payment = $this->createPaymentEntity($input, $payment);
+        $payment = $this->repo->transaction(function() use ($input, $payment)
+        {
+            $payment = $this->createPaymentEntity($input, $payment);
 
-        $payment->setBaseAmount($payment->getAmount());
+            $payment->setBaseAmount($payment->getAmount());
 
-        $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
+
+            return $payment;
+        });
 
         $input['payment_id'] = $payment->getPublicId();
 
@@ -2976,18 +3001,13 @@ class Processor
 
         $key = $payment->getCacheInputKey();
 
-        $inputDetails = $this->cache->get($key);
+        $inputDetails = $this->getInputDetails($payment, $key);
 
         if ($inputDetails === null)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
             );
-        }
-
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
-        {
-            $this->setCardNumberAndCvv($inputDetails);
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -3010,7 +3030,19 @@ class Processor
 
                 $this->repo->saveOrFail($payment);
 
-                return $this->authorize($payment, $inputDetails);
+                // temporary code
+                if (empty($inputDetails['gateway_input']) === true)
+                {
+                    return $this->authorize($payment, $inputDetails);
+                }
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                $gatewayInput['selected_terminals_ids'] = [$payment->getTerminalId()];
+
+                unset($inputDetails['gatewayInput']);
+
+                return $this->gatewayRelatedProcessing($payment, $inputDetails, $gatewayInput);
             },
             120,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,

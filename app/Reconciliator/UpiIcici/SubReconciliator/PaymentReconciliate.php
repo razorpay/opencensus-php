@@ -21,6 +21,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const AMOUNT            = 'amount';
     const PAYER_VPA         = 'payerva';
 
+    const BLACKLISTED_COLUMNS = [
+        self::PAYER_VPA,
+    ];
+
     protected function getPaymentId(array $row)
     {
         if (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false)
@@ -105,5 +109,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // have received the payment in MIS file, which means payment got success at bank's side)
         //
         $this->allowForceAuthorization = true;
+    }
+
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return self::BLACKLISTED_COLUMNS;
     }
 }

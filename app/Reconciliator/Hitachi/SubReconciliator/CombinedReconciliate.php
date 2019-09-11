@@ -22,6 +22,10 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         self::REFUND_TXN        => BaseReconciliate::REFUND
     ];
 
+    const BLACKLISTED_COLUMN_HEADERS = [
+        PaymentReconciliate::COLUMN_MERCHANT_NAME,
+    ];
+
     /**
      * Column Transaction Type in excel indicates whether
      * txn is payment or refund
@@ -45,5 +49,10 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         $transactionType = $row[self::COLUMN_TRANSACTION_TYPE];
 
         return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? self::NA;
+    }
+
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return self::BLACKLISTED_COLUMN_HEADERS;
     }
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 class Constants
 {
     const IS_FTA                            = 'is_fta';
+    const MOZART                            = 'mozart';
     const ENTITIES                          = 'entities';
     const REFUND_IDS                        = 'refund_ids';
     const DB_FETCH_LIMIT                    = 'limit';
@@ -19,8 +20,13 @@ class Constants
      * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.
      */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 864000;
-
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT      = 864000;
+    /**
+     * Refund public status related constants
+     */
+    const DISPLAY_REFUND_PUBLIC_STATUS           = 'display_refund_public_status';
+    const REFUND_PUBLIC_STATUS_FEATURE_ENABLED   = 'refund_public_status_feature_enabled';
+    const CARD_TRANSFER_FEATURE_ENABLED_MERCHANT = 'card_transfer_feature_enabled_merchant';
     /**
      * Transaction tracker related constants
      */

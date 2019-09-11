@@ -73,6 +73,7 @@ class Name
     const CREATE_NETBANKING_REFUND            = 'create_netbanking_refund';
     const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
+    const CHECK_TERMINAL_SECRET               = 'check_terminal_secret';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
     const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
@@ -100,6 +101,7 @@ class Name
     const ADD_MERCHANT_ADJUSTMENT             = 'add_merchant_adjustment';
     const EDIT_MERCHANT_EMAIL                 = 'edit_merchant_email';
     const EDIT_MERCHANT_ADDITIONAL_EMAIL      = 'edit_merchant_additional_email';
+    const BULK_CREATE_ENTITY                  = 'bulk_create_entity';
     const MERCHANT_AUTOFILL_FORM              = 'merchant_autofill_form';
     const EDIT_MERCHANT_MARK_REFERRED         = 'edit_merchant_mark_referred';
     const VIEW_AS_ENTITY                      = 'view_as_entity';
@@ -108,6 +110,7 @@ class Name
     const VIEW_MERCHANT_BALANCE_LIVE          = 'view_merchant_balance_live';
     const VIEW_MERCHANT_REQUESTS              = 'view_merchant_requests';
     const ADD_RECONCILIATION_FILE             = 'add_reconciliation_file';
+    const ADD_MANUAL_RECONCILIATION_FILE      = 'add_manual_reconciliation_file';
     const ADD_SETTLEMENT_RECONCILIATION       = 'add_settlement_reconciliation';
     const SEND_NEWSLETTER                     = 'send_newsletter';
     const TRIGGER_DUMMY_ERROR                 = 'trigger_dummy_error';

@@ -9,6 +9,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Amex;
 use RZP\Gateway\AxisMigs;
 use RZP\Models\Merchant;
+use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends AxisMigs\Gateway
 {
@@ -92,5 +93,61 @@ class Gateway extends AxisMigs\Gateway
     protected function shouldRaiseErrorForInternationalMerchant(array $input) : bool
     {
         return false;
+    }
+
+    protected function verifyPaymentCallbackResponse($gatewayPayment, array $input)
+    {
+        $data = parent::verifyPaymentCallbackResponse($gatewayPayment, $input);
+
+        $threeDSenrolled = $input['gateway']['vpc_3DSenrolled'] ?? null;
+
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+
+        $message = $input['gateway']['vpc_Message'] ?? '';
+
+        $threeDSstatus = $input['gateway']['vpc_3DSstatus'] ?? null;
+
+        $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED;
+
+        if ($threeDSenrolled !== 'Y')
+        {
+            $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
+        }
+
+        if ($threeDSstatus !== 'Y')
+        {
+            $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
+        }
+
+        return $data;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        parent::verifyPayment($verify);
+
+        $content = $verify->verifyResponseContent;
+
+        $threeDSenrolled = $content['vpc_3DSenrolled'] ?? null;
+
+        $threeDSstatus = $content['vpc_3DSstatus'] ?? null;
+
+        if (($threeDSenrolled !== 'Y') and ($threeDSenrolled !== null))
+        {
+            $verify->gatewaySuccess = false;
+
+            $verify->status = $verify->apiSuccess === true ? VerifyResult::STATUS_MISMATCH : VerifyResult::STATUS_MATCH;
+        }
+
+        if (($threeDSstatus !== 'Y') and ($threeDSenrolled !== null))
+        {
+            $verify->gatewaySuccess = false;
+
+            $verify->status = $verify->apiSuccess === true ? VerifyResult::STATUS_MISMATCH : VerifyResult::STATUS_MATCH;
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        return $verify->status;
     }
 }

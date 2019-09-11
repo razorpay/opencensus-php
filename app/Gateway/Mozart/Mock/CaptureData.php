@@ -16,7 +16,7 @@ class CaptureData extends Base\Mock\Server
                     'VerifyLink' => 'https://api.sandbox.paypal.com/v2/checkout/orders/12345678901234567',
                     'amount' => $entities['payment']['amount'],
                     'paymentId' => $entities['payment']['id'],
-                    'currency' => 'INR',
+                    'currency' => 'USD',
                     'status' => 'capture_successful',
                 ],
             'error' => null,

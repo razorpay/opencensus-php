@@ -37,4 +37,22 @@ class ReconciliatorController extends Controller
 
         return ApiResponse::generateResponse($response);
     }
+
+    public function getReconBatches()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getReconBatchesAndFiles($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getReconFiles()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getReconFilesCount($input);
+
+        return ApiResponse::json($data);
+    }
 }

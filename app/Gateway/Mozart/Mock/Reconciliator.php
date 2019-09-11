@@ -12,7 +12,6 @@ use RZP\Gateway\Mozart\NetbankingCbi;
 use RZP\Gateway\Mozart\NetbankingYesb;
 use RZP\Gateway\Mozart\NetbankingIbk;
 use RZP\Gateway\Mozart\NetbankingCub;
-use RZP\Gateway\Mozart\NetbankingIdbi;
 use RZP\Models\Payment\Gateway as PaymentGateway;
 
 class Reconciliator extends Base\Mock\PaymentReconciliator
@@ -208,44 +207,6 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
 
         $formattedData = $this->generateText($data, ',');
-
-        return $formattedData;
-    }
-
-    protected function netbanking_idbi($input)
-    {
-        $this->fileExtension = FileStore\Format::TXT;
-
-        $this->fileToWriteName = 'RAZORPAY_2019May';
-
-        $data = [
-            ['dynamic header from bank is ignored'],
-        ];
-
-        foreach ($input as $row)
-        {
-            $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'],
-                Timezone::IST)
-                ->format('d/m/Y');
-
-            $col = [
-                NetbankingIdbi\ReconFields::BANK                            => 'IDBI',
-                NetbankingIdbi\ReconFields::PAYMENT_DATE                    => $date,
-                NetbankingIdbi\ReconFields::PAYMENT_ID                      => $row['payment']['id'],
-                NetbankingIdbi\ReconFields::PAYMENT_AMOUNT                  => $row['payment']['amount'] / 100,
-                NetbankingIdbi\ReconFields::PAYMENT_REFERENCE_NUMBER        => $row['payment']['id'],
-                NetbankingIdbi\ReconFields::BANK_REFERENCE_NUMBER           => $this->fetchFieldFromJsonData(
-                    $row['mozart']['raw'],
-                    'bank_payment_id'),
-            ];
-
-            $this->content($col, 'col_payment_idbi_nb_recon');
-
-            $data[] = $col;
-        }
-
-        $formattedData = $this->generateText($data, ',', true);
 
         return $formattedData;
     }

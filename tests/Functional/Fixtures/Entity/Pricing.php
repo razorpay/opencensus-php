@@ -746,46 +746,6 @@ class Pricing extends Base
         return $pricingPlanId;
     }
 
-    public function createDiwaliPromotionalPlan()
-    {
-        $pricingPlanId = 'BI7O6FmHlzLFZm';
-
-         $rows = [
-            [
-                'id'                  => '1nvp2XPMxaRLxb',
-                'plan_id'             => $pricingPlanId,
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'payment',
-                'payment_method'      => 'card',
-                'payment_method_type' => null,
-                'payment_network'     => null,
-                'payment_issuer'      => null,
-                'percent_rate'        => 0,
-                'fixed_rate'          => 100,
-                'international'       => 0,
-                'org_id'              => '100000razorpay',
-            ],
-            [
-                'id'                  => '1zD0BXpxOJaqpC',
-                'plan_id'             => $pricingPlanId,
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'payment',
-                'payment_method'      => 'emandate',
-                'payment_method_type' => 'netbanking',
-                'payment_network'     => null,
-                'payment_issuer'      => 'initial',
-                'percent_rate'        => 0,
-                'fixed_rate'          => 100000,
-                'international'       => 0,
-                'org_id'              => '100000razorpay',
-            ],
-        ];
-
-        $this->addPricingRulesToDb($rows);
-
-        return $pricingPlanId;
-    }
-
     public function createPromotionalPlan()
     {
         $pricingPlanId = '1In3Yh5Mluj605';

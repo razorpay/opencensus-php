@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Service;
+use RZP\Models\FundAccount\Type;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -37,7 +38,7 @@ class Beneficiary extends FileProcessor
      * @param array $input
      * @return array
      */
-    public function register(PublicCollection $bankAccounts, array $input = []): array
+    public function register(PublicCollection $bankAccounts, $accountType = Type::BANK_ACCOUNT, array $input = []): array
     {
         $file          = new FileStore\Creator;
 

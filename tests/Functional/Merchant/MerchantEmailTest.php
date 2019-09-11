@@ -5,10 +5,10 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Event;
 use Mail;
-use RZP\Models\Merchant\Email\Type;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Email\Type;
+use RZP\Tests\Functional\Partner\Constants;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 
 class MerchantEmailTest extends TestCase

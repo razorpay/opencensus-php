@@ -182,7 +182,7 @@ class Entity extends Base\Entity
     {
         // Currently we are hardcoding to 3 for all merchant
         // Later we need to find a way for separate limit for a handle and merchant
-        return 3;
+        return 5;
     }
 
     public function isAllowedToMerchant(string $merchantId): bool

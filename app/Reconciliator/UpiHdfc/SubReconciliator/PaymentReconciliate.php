@@ -43,6 +43,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const PAYER_VPA                 = 'payer_vpa';
 
+    const MERCHANT_VPA              = 'merchant_vpa';
+
+    const BLACKLISTED_COLUMNS = [
+        self::PAYER_VPA,
+        self::MERCHANT_VPA,
+    ];
+
     /**
      * If we are not able to find payment id to reconcile,
      * this ratio defines the minimum proportion of columns to be filled in a valid row.
@@ -313,7 +320,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Carbon::createFromFormat('d-M-Y  H:i:s', $settledAt, Timezone::IST)->timestamp;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->upi->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }
@@ -379,5 +386,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return [
             Base\Reconciliate::REFERENCE_NUMBER => $this->getReferenceNumber($row),
         ];
+    }
+
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return self::BLACKLISTED_COLUMNS;
     }
 }

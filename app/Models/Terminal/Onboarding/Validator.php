@@ -1,7 +1,8 @@
 <?php
+
 namespace RZP\Models\Terminal\Onboarding;
+
 use RZP\Base;
-use RZP\Models\Terminal\Onboarding\Constants as C;
 
 class Validator extends Base\Validator
 {

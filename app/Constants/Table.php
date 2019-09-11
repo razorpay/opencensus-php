@@ -8,6 +8,7 @@ class Table
     const P2P                   = 'p2p';
     const VPA                   = 'vpas';
     const IIN                   = 'iins';
+    const MPAN                  = 'mpan';
     const KEY                   = 'keys';
     const RISK                  = 'risk';
     const PLAN                  = 'plans';
@@ -69,6 +70,7 @@ class Table
     const TRANSACTION               = 'transactions';
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
+    const SETTLEMENT_BUCKET         = 'settlement_bucket';
 
     // Subscriptions Tables
     const SUBSCRIPTION                   = 'subscriptions';
