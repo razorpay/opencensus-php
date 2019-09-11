@@ -151,9 +151,9 @@ export default function(state = initialState, action) {
           return Number(positionA) - Number(positionB);
         });
       } else {
-        // TODO: Check if payment_page_item id is needed in V2 case or not
+        // NOTE:  Ignoring id for this item. So, only side effect is whenever a page is edited, then new payment page item will be created
 
-        // For V2, only 1 item must exist in payment_page_items
+        // For V2, mapping new format to old format for FE to handle. Only 1 item must exist in payment_page_items.
         const amountItem = entityData.payment_page_items[0];
 
         entityData.amount = amountItem.item.amount / 100; // Convert in Rupees (or bigger unit)

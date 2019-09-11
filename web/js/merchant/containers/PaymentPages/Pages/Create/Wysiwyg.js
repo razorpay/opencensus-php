@@ -317,6 +317,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   // Handles both Create and Edit payment page.
   handleSavePublish = () => {
+    const isEditExistingId = !!this.props.id;
     const isPPV3Enabled = this.props.user.isPPV3Enabled;
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
@@ -347,19 +348,53 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       fi.settings.position = isPPV3Enabled ? ix : ix + 1; // Updating the position of each item (both udf and amount fields)
 
       if (isFormItemOfTypeAmount(fi)) {
-        // TODO: Check with BE if id needs to be sent in case of edited amount item.
+        // Prepare payload for amount field (as extra fields aren't required to be sent)
+        const {
+          id,
+          image_url,
+          mandatory,
+          min_purchase,
+          max_purchase,
+          min_amount,
+          max_amount,
+          item,
+          settings,
+          stock,
+        } = fi;
+        const { name, description, amount } = item;
 
-        if (fi.item.amount) {
-          fi.item.amount *= 100;
+        const filterFi = {
+          item: {
+            name,
+            description,
+            amount: amount * 100, // Convert in paisa (smaller unit)
+          },
+          settings, // Contains position
+          image_url,
+          mandatory,
+          min_purchase,
+          max_purchase,
+          min_amount,
+          max_amount,
+          stock,
+        };
+
+        if (!isEditExistingId) {
+          if (fi.item.currency === currency) {
+            filterFi.id = id; // If currency is changed then the item becomes different, so id isn't required then.
+          } else {
+            filterFi.item.currency = currency; // If currency is edited, then treat as different payment_page_item
+          }
+        } else {
+          filterFi.item.currency = currency; // Always currency is edited, then treat as different payment_page_item
         }
 
         /*
         * NOTE: Since payment_page_items are not shareable items with other payment pages, therefore, currency of payment_page entity is used as single source of truth .
         * Currency of each payment_page_item is ignored in general, and is being added here only for the reason that blueprint of line_items of invoices is reused for PP in BE.
         * */
-        fi.item.currency = currency;
 
-        paymentPageItems.push(fi);
+        paymentPageItems.push(filterFi);
       } else {
         udf_schema.push(fi);
       }
@@ -421,30 +456,37 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       },
     };
 
-    if (!isPPV3Enabled) {
-      reqPayload.amount = amount || null;
-
-      reqPayload.times_payable = quantity || null;
-
-      reqPayload.settings.allow_multiple_units = settings.allow_multiple_units
-        ? '1'
-        : '0';
-    } else {
+    if (isPPV3Enabled) {
       reqPayload.settings.checkout_options = {
         ...settings.checkout_options,
       };
 
       reqPayload.settings.payment_button_label = settings.payment_button_label;
-    }
 
-    // Will exist only when props.user.isPPV3Enabled = true
-    if (paymentPageItems.length) {
-      reqPayload.payment_page_items = paymentPageItems;
+      // Should exist only when props.user.isPPV3Enabled = true
+      if (paymentPageItems.length) {
+        reqPayload.payment_page_items = paymentPageItems;
+      }
+    } else {
+      // Preparing the V2 request payload in V3 format
+      reqPayload.payment_page_items = {
+        item: {
+          name: 'Amount',
+          description: '',
+          amount: amount || null,
+          currency: currency,
+        },
+        settings: {
+          position: '0', // Always 0 for V2. Also, for udf fields in V2, position is already starting from 1 (via ix + 1 on top)
+        },
+        mandatory: !!amount,
+        stock: quantity,
+        min_purchase: settings.allow_multiple_units ? 0 : null, // 0 => Treating this amount item as Counter
+      };
     }
 
     // console.log('REQ PAYLOAD...', reqPayload);
 
-    const isEditExistingId = !!this.props.id;
     const requestAPIPromise = isEditExistingId
       ? editPaymentPage(this.props.id, reqPayload)
       : createPaymentPage(reqPayload);
