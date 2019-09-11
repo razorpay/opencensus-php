@@ -503,7 +503,9 @@ export default class HomeContainer extends Component {
     });
 
     if (shouldShowMobileHotjarSurvey) {
-      window.hj && window.hj('trigger', 'MOBILE_SURVEY');
+      setTimeout(() => {
+        window.hj && window.hj('trigger', 'MOBILE_SURVEY');
+      }, 0);
     }
   }
 
