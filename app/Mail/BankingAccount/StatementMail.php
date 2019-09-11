@@ -10,6 +10,12 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class StatementMail extends Mailable
 {
+    const HEADER = 'RX Account Statement';
+
+    const DATE_FORMAT = 'd M y';
+
+    const DATE_TIME_FORMAT = 'd M y h:i A';
+
     protected $data;
 
     protected $channel;
@@ -23,12 +29,6 @@ class StatementMail extends Mailable
     protected $toEmails;
 
     protected $fileDownloadUrl;
-
-    const HEADER = 'RX Account Statement';
-
-    const DATE_FORMAT = 'd M y';
-
-    const DATE_TIME_FORMAT = 'd M y h:i A';
 
     public function __construct(MerchantEntity $merchant,
                                 array $toEmails,
