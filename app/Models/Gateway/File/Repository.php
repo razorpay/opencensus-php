@@ -14,7 +14,7 @@ class Repository extends Base\Repository
         Entity::STATUS => 'filled|string|max:20',
     ];
 
-    public function fetchTodaysFileSentCount($type, $target, $start)
+    public function fetchFileSentCountFromStart($type, $target, $start)
     {
         return $this->newQuery()
                     ->where(Entity::TYPE, '=', $type)
