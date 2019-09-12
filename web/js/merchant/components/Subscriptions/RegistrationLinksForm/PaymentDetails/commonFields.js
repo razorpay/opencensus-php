@@ -1,54 +1,9 @@
 import Input from 'component/Input';
 
-const options = [
-  { label: 'Axis Bank', authTypes: ['netbanking'], name: 'UTIB' },
-  {
-    label: 'Bank of Baroda - Retail Banking',
-    authTypes: ['netbanking'],
-    name: 'BARB_R',
-  },
-  { label: 'Bank of Maharashtra', authTypes: ['netbanking'], name: 'MAHB' },
-  { label: 'Central Bank of India', authTypes: ['netbanking'], name: 'CBIN' },
-  { label: 'City Union Bank', authTypes: ['netbanking'], name: 'CIUB' },
-  { label: 'Deutsche Bank', authTypes: ['netbanking'], name: 'DEUT' },
-  {
-    label: 'Equitas Small Finance Bank',
-    authTypes: ['netbanking'],
-    name: 'ESFB',
-  },
-  { label: 'Federal Bank', authTypes: ['netbanking'], name: 'FDRL' },
-  { label: 'HDFC Bank', authTypes: ['netbanking'], name: 'HDFC' },
-  { label: 'ICICI Bank', authTypes: ['netbanking'], name: 'ICIC' },
-  { label: 'IDBI', authTypes: ['netbanking'], name: 'IBKL' },
-  { label: 'IDFC FIRST Bank', authTypes: ['netbanking'], name: 'IDFB' },
-  { label: 'Indian Overseas Bank', authTypes: ['netbanking'], name: 'IOBA' },
-  { label: 'Indusind Bank', authTypes: ['netbanking'], name: 'INDB' },
-  { label: 'Kotak Mahindra Bank', authTypes: ['netbanking'], name: 'KKBK' },
-  { label: 'Paytm Payments Bank', authTypes: ['netbanking'], name: 'PYTM' },
-  {
-    label: 'Punjab National Bank - Retail Banking',
-    authTypes: ['netbanking'],
-    name: 'PUNB_R',
-  },
-  { label: 'RBL Bank', authTypes: ['netbanking'], name: 'RATN' },
-  { label: 'South Indian Bank', authTypes: ['netbanking'], name: 'SIBL' },
-  { label: 'State Bank of India', authTypes: ['netbanking'], name: 'SBIN' },
-  {
-    label: 'Tamilnadu Mercantile Bank',
-    authTypes: ['netbanking'],
-    name: 'TMBL',
-  },
-  {
-    label: 'Ujjivan Small Finance Bank',
-    authTypes: ['netbanking'],
-    name: 'USFB',
-  },
-  { label: 'Yes Bank', authTypes: ['netbanking'], name: 'YESB' },
-];
-
 export const BankDetails = ({
+  hideBankName,
   disabled,
-  // options,
+  options,
   children,
   bankName,
   bankAccountIFSC,
@@ -61,13 +16,15 @@ export const BankDetails = ({
     required={required}
   >
     <div class="Input-content">
-      <Input.Select
-        name="bankName"
-        options={['Select Bank', ...options]}
-        placeholder="Bank Name"
-        value={bankName}
-        description="Preferred bank for authentication"
-      />
+      {!hideBankName && (
+        <Input.Select
+          name="bankName"
+          options={['Select Bank', ...options]}
+          placeholder="Bank Name"
+          value={bankName}
+          description="Preferred bank for authentication"
+        />
+      )}
 
       <Input
         name="bankAccountIFSC"

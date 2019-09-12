@@ -47,7 +47,6 @@ export default props => {
       {isNACHPayment && (
         <NACH
           isNachFormAval={isNachFormAval}
-          nachBanks={emandateBanks} // Update banks list to nachBanks
           bankName={bankName}
           accountType={accountType}
           bankAccountIFSC={bankAccountIFSC}

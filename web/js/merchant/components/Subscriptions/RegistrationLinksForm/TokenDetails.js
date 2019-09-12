@@ -8,6 +8,7 @@ import {
 } from './PaymentDetails/utils';
 
 export default ({
+  defaultMandateMaxAMount,
   tokenHasNoExpiry,
   handleDateChange,
   mandateMaxAmount,
@@ -59,7 +60,7 @@ export default ({
 
     <Input
       name="mandateMaxAmount"
-      placeholder="100000"
+      placeholder={defaultMandateMaxAMount}
       label="Token Max Amount"
       addonBefore={
         <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />

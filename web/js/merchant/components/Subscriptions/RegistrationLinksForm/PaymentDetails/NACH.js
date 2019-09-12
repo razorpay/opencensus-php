@@ -4,10 +4,8 @@ import { BankDetails, AccountDetails } from './commonFields';
 
 export default ({
   accountType,
-  nachBanks,
   isNachFormAval,
   bankAccountIFSC,
-  bankName,
   beneficiaryName,
   bankAccountNumber,
 }) => (
@@ -20,12 +18,7 @@ export default ({
       fieldLabel="I have Customer's signed form"
     />
 
-    <BankDetails
-      required
-      options={nachBanks}
-      bankName={bankName}
-      bankAccountIFSC={bankAccountIFSC}
-    />
+    <BankDetails required hideBankName bankAccountIFSC={bankAccountIFSC} />
 
     <AccountDetails
       required
@@ -34,7 +27,7 @@ export default ({
     >
       <Input.Select
         name="accountType"
-        options={['Select Bank', ...OPTIONS]}
+        options={['--Select Bank--', ...OPTIONS]}
         placeholder="Account Type"
         value={accountType}
       />

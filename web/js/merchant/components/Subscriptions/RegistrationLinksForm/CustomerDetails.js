@@ -4,6 +4,7 @@ import Input from 'component/Input';
 
 export default props => {
   const {
+    isCustomerNameRequired,
     hasNoExpiry,
     handleDateChange,
     description,
@@ -26,6 +27,7 @@ export default props => {
       />
 
       <Input
+        required={isCustomerNameRequired}
         name="customerName"
         label="Customer Name"
         value={customerName}

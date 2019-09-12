@@ -49,7 +49,12 @@ const EmandateMandatoryFields = [
   'bankAccountNumber',
 ];
 
-const NACHMandatoryFields = [...EmandateMandatoryFields, 'accountType'];
+const NACHMandatoryFields = [
+  'accountType',
+  'bankAccountIFSC',
+  'beneficiaryName',
+  'bankAccountNumber',
+];
 
 const CardMandatoryFields = [{ name: 'amount', validator: checkIfAmount }];
 
@@ -67,6 +72,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   constructor(props) {
     super(props);
 
+    this.DEFAULT_MAX_AMOUNT = 10000;
     this.state = {
       loading: true,
       currentTab: 0,
@@ -81,7 +87,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         customerContact: '',
         configSmsNotify: '',
         configEmailNotify: '',
-        isNachFormAval: '0',
+        isNachFormAval: '',
         mandateMethod: '',
         bankName: '',
         skipBankDetails: '',
@@ -93,6 +99,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         accountType: '',
       },
       validTabs: [false, false, false],
+      showNachFormModal: false,
     };
   }
 
@@ -232,7 +239,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       currency: data.currency,
       amount: !!data.amount ? rupeesToPaise(data.amount) : 0,
       sms_notify: data.configSmsNotify,
-      email_notify: data.emailNotify,
+      email_notify: data.configEmailNotify,
       notes: notes || undefined,
       customer: {
         name: data.customerName,
@@ -241,9 +248,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       },
       subscription_registration: {
         method: data.mandateMethod,
-        max_amount: !!data.mandateMaxAmount
-          ? rupeesToPaise(data.mandateMaxAmount)
-          : undefined,
         auth_type: !data.skipBankDetails ? 'netbanking' : undefined, //hardcoded after aadhaar was disabled temporarily
         expire_at: !Number(data.tokenHasNoExpiry)
           ? data.mandateExpireAt
@@ -253,7 +257,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     };
 
     const bankAccountDetails = {
-      bank_name: data.bankName,
       ifsc_code: data.bankAccountIFSC,
       account_number: data.bankAccountNumber,
       beneficiary_name: data.beneficiaryName,
@@ -261,6 +264,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     };
 
     if (this.isEmandatePayment && !data.skipBankDetails) {
+      bankAccountDetails.bank_name = data.bankName;
+
       payload.subscription_registration.bank_account = bankAccountDetails;
     }
 
@@ -273,6 +278,14 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     if (this.isEmandatePayment || this.isNACHPayment) {
       payload.subscription_registration.first_payment_amount =
         rupeesToPaise(data.firstPaymentAmount) || 0;
+
+      let max_amount = this.DEFAULT_MAX_AMOUNT;
+
+      if (data.mandateMaxAmount) {
+        max_amount = rupeesToPaise(data.mandateMaxAmount);
+      }
+
+      payload.subscription_registration.max_amount = max_amount;
     }
 
     return payload;
@@ -292,10 +305,16 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
           const entityId = response.id;
 
+          if (this.state.formFields.isNachFormAval) {
+            this.setState({
+              showNachFormModal: true,
+            });
+          }
+
           if (this.props.onClose) {
             this.props.luminateRow(entityId);
 
-            this.props.onClose(``);
+            !this.state.formFields.isNachFormAval && this.props.onClose(``);
           } else {
             const redirectUrl = '/registration_links/' + entityId;
 
@@ -381,6 +400,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       case 0: {
         return (
           <CustomerDetailsForm
+            isCustomerNameRequired={this.isNACHPayment}
             disabled={this.state.disabled}
             validateForm={this.validateForm}
             receipt={formFields.receipt}
@@ -425,6 +445,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             mandateExpireAt={formFields.mandateExpireAt}
             tokenHasNoExpiry={formFields.tokenHasNoExpiry}
             mandateMaxAmount={formFields.mandateMaxAmount}
+            defaultMandateMaxAMount={this.DEFAULT_MAX_AMOUNT}
             firstPaymentAmount={formFields.firstPaymentAmount}
             handleDateChange={this.handleDateChange}
           />
@@ -502,7 +523,10 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   render() {
     const isModalView = this.props.onClose;
 
-    // return this.openNACHFormUploadModal();
+    if (this.state.showNachFormModal) {
+      return this.openNACHFormUploadModal();
+    }
+
     if (isModalView) {
       return (
         <Modal
