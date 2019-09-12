@@ -735,7 +735,7 @@ class Processor extends Base\Core
             'total_merchants' => count($merchantIds),
             'enqueued'        => 0,
             'enqueue_failed'  => 0,
-            'time_taken'      => get_diff_in_millisecond($startTime),
+            'time_taken'      => 0,
         ];
 
         $this->trace->info(
