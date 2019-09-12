@@ -264,6 +264,25 @@ class GatewayEmiFileTest extends TestCase
         });
     }
 
+    public function testGenerateEmiFileForSbiSecondFile()
+    {
+        $this->prerequisitesForSbiEmi();
+
+        $testData = $this->testData['testGenerateEmiFileForSbi'];
+
+        $this->startTest($testData);
+
+        $this->startTest($testData);
+
+        $fileStoreEntity = $this->getDbLastEntity('file_store')->toArray();
+
+        $startString = 'GGCMS2';
+
+        $length = strlen($startString);
+
+        $this->assertEquals(substr($fileStoreEntity['name'], 0, $length), $startString);
+    }
+
     public function testGenerateEmiFileForSbiWithBeamFailure()
     {
         $this->prerequisitesForSbiEmi();

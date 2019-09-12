@@ -18,12 +18,14 @@ use RZP\Constants\Environment;
 use RZP\Services\Beam\Service;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
+use RZP\Models\Gateway\File\Type;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Gateway\File\Constants as GatewayFileConstants;
 
 class Sbi extends Base
 {
@@ -31,7 +33,7 @@ class Sbi extends Base
     const EXTENSION         = FileStore\Format::TXT;
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
     const FILE_TYPE_OUTPUT  = FileStore\Type::SBI_EMI_OUTPUT_FILE;
-    const FILE_NAME         = 'GGCMS1';
+    const FILE_NAME         = 'GGCMS';
     const BEAM_FILE_TYPE    = 'emi';
 
     const TEST_ENCRYPTION_KEY = 'T8DIATjuwST8DIATjuwST8DIATjuwS22';
@@ -450,7 +452,10 @@ class Sbi extends Base
 
     protected function getFileToWriteName()
     {
-        return static::FILE_NAME . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
+        // This assumes we won't be sending more than 9 files after retry.
+        $count = $this->repo->gateway_file->fetchTodaysFileSentCount(Type::EMI, GatewayFileConstants::SBI);
+
+        return static::FILE_NAME . (string)($count + 1) . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
     }
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
