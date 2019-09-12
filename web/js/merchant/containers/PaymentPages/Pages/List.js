@@ -4,6 +4,13 @@ import { NavLink } from 'react-router-dom';
 import { withRouter } from 'react-router-dom';
 
 import { RZPFeatures } from 'rzp/utils/constants';
+import RTracking from 'react-tracking';
+import HeaderAction from 'rzp/ui/HeaderAction';
+import Pager from 'rzp/ui/Pager';
+import Spinner from 'rzp/ui/Spinner';
+import ListContainer from 'merchant/containers/ListContainer';
+import ListFilter from 'merchant/components/ListFilter';
+import { fetchPaymentPagesList } from './model';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import Time from 'rzp/ui/Time';
@@ -196,7 +203,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
   render() {
     const { loading, loadingAllList, totalPaymentPagesLength } = this.state;
-    const { paymentPages, user } = this.props;
+    const { paymentPages, user, tracking } = this.props;
 
     const isRoleAllowedEdit = user.isAllowedEdit('payment_pages');
 
@@ -377,7 +384,17 @@ export default class PaymentPagesContainer extends ListContainer {
                 onClick={this.handleProductQuickGuide}
               >
                 <i class="i i-plus" />
-                <span>Create Payment Page</span>
+                <span
+                  onClick={() => {
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().success('dash.pp_action', {
+                        action: 'Initiate_PP_Creation',
+                      })
+                    );
+                  }}
+                >
+                  Create Payment Page
+                </span>
               </span>
             )}
           </div>

@@ -111,6 +111,9 @@ export const toggle2FaEnforcement = data => {
       headers: {
         'Content-Type': 'application/json',
       },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       should_sync: 1,
     }),
   };

@@ -31,6 +31,7 @@ import { setTrackData } from 'rzp/utils/googleAnalytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import initChat from 'merchant/chat';
+import RTracking from 'react-tracking';
 
 @withRouter
 @connect(
@@ -47,6 +48,36 @@ import initChat from 'merchant/chat';
     ...NotificationActions,
     fetchGST,
     resizeWindow,
+  }
+)
+@RTracking(
+  ({ user, mode }) => {
+    const u = {
+      email: user.user.email,
+      id: user.user.id,
+      mid: user.current,
+      role: user.role,
+      business_type: user.business_type,
+      activated: user.activated,
+    };
+    let utm = null;
+    let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
+    if (undefined !== analytics) {
+      utm = analytics.utils.getLandingParams();
+      gclid = analytics.utils.getCookie('gclid');
+    }
+    return window.rzpQ.component('Home', {
+      user: u,
+      utm_params: utm,
+      gclid: gclid,
+      mode: mode,
+    });
+  },
+  {
+    dispatch: data => {
+      console.log(data);
+      window.rzpQ.push(data);
+    },
   }
 )
 export default class App extends Component {

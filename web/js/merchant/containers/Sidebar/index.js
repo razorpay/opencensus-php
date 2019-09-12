@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 
@@ -51,6 +52,7 @@ const BASE_ROUTES = {
   }),
   { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal }
 )
+@RTracking(() => window.rzpQ.component('Sidebar'))
 export default class Sidebar extends Component {
   constructor(props) {
     super(props);
@@ -124,6 +126,11 @@ export default class Sidebar extends Component {
     }
   }
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('act.form_fill', {
+      clickSource: 'LHS_Nav_Bar',
+    })
+  )
   onSidebarBannerClick = e => {
     const { user } = this.props,
       { showInstantActivation } = user;
