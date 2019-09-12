@@ -95,6 +95,17 @@ abstract class FileProcessor extends Processor
             return [];
         }
 
+        $customProperties = [
+            'channel'     => static::$channel,
+            'file_name'   => basename($reconcileFile),
+            ];
+
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::REVERSE_FEED_RECEIVED,
+            null,
+            null,
+            $customProperties);
+
         $extension = $this->getFileExtensionForParsing($reconcileFile);
 
         // If file extension is a part of ignore list then file is ignored from parsing
@@ -126,7 +137,7 @@ abstract class FileProcessor extends Processor
         {
             $this->setDate($data);
 
-            $response = $this->startReconciliation($data);
+            $response = $this->startReconciliation($data, basename($reconcileFile));
         }
 
         $this->sendEmail();
@@ -153,17 +164,6 @@ abstract class FileProcessor extends Processor
             {
                 $reconcileFile = $this->getFile($input);
             }
-
-            $customProperties = [
-                'channel'     => static::$channel,
-                'file_info'   => $reconcileFile,
-            ];
-
-            $this->app['diag']->trackSettlementEvent(
-                EventCode::REVERSE_FEED_RECEIVED,
-                null,
-                null,
-                $customProperties);
         }
         catch (\Throwable $exception)
         {
