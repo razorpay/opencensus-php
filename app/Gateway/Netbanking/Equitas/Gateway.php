@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\HashAlgo;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Payment\Action;
@@ -106,10 +107,10 @@ class Gateway extends Base\Gateway
     protected function getAuthRequestData($input)
     {
         return [
-            RequestFields::MERCHANT_ID                  => $this->getMerchantId(),
-            RequestFields::PAYMENT_ID                   => $input['payment']['id'],
-            RequestFields::AMOUNT                       => $this->formatAmount($input['payment']['amount']),
-            RequestFields::RETURN_URL                   => $input['callbackUrl'],
+            RequestFields::MERCHANT_ID                  => $this->getMerchantId(),      // PID
+            RequestFields::PAYMENT_ID                   => $input['payment']['id'],     //BRN
+            RequestFields::AMOUNT                       => $this->formatAmount($input['payment']['amount']), //AMT
+            RequestFields::RETURN_URL                   => $input['callbackUrl'], //
             RequestFields::ACCOUNT_NUMBER               => Constants::NOT_APPLICABLE,
             RequestFields::MODE                         => Constants::MODE_OF_TRANSACTION_PAYMENT,
             // TODO : should we send this ?
@@ -168,7 +169,10 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        return strval(crc32($str));
+        //return strval(crc32($str)); //changed to SHA-256
+        $hashedString = hash(HashAlgo::SHA256, $str, false);
+
+        return $hashedString;
     }
 
     protected function checkForErrors($content)
@@ -266,12 +270,12 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $verify->payment;
 
         $data = [
-            RequestFields::MERCHANT_ID                  => $this->getMerchantId(),
-            RequestFields::PAYMENT_ID                   => $input['payment']['id'],
-            RequestFields::AMOUNT                       => $this->formatAmount($input['payment']['amount']),
-            RequestFields::ACCOUNT_NUMBER               => Constants::NOT_APPLICABLE,
-            RequestFields::MODE                         => Constants::MODE_OF_TRANSACTION_VERIFY,
-            RequestFields::VERIFY_BANK_PAYMENT_ID       => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID] ?? '',
+            RequestFields::MERCHANT_ID                  => $this->getMerchantId(),      //PID
+            RequestFields::PAYMENT_ID                   => $input['payment']['id'],     //BRN
+            RequestFields::AMOUNT                       => $this->formatAmount($input['payment']['amount']), //AMT
+            RequestFields::ACCOUNT_NUMBER               => Constants::NOT_APPLICABLE,   //ACCNO
+            RequestFields::MODE                         => Constants::MODE_OF_TRANSACTION_VERIFY, //MODE
+            RequestFields::VERIFY_BANK_PAYMENT_ID       => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID] ?? '', //TID
         ];
 
         $data[RequestFields::CHECKSUM] = $this->generateHash($data);

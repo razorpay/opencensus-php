@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\ViewDataSerializer;
@@ -398,9 +399,15 @@ class Notifier extends Base\Core
 
         $invoiceLink = $this->invoice->getShortUrl();
 
+        $expireBy = $this->invoice->getExpireBy();
+
+        if(empty($expireBy) === false)
+        {
+            $expireBy = Carbon::createFromTimestamp($expireBy, Timezone::IST)->format('d/m/Y');
+        }
+
         switch ($merchant->getId())
         {
-            case Preferences::MID_RBLCARD:
             case Preferences::MID_AMIT_RBLCARD:
 
                 $template = 'sms.custom_invoice.rbl_card';
@@ -431,9 +438,10 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.rbl_bfl';
                 $sender   = 'SPRCRD';
                 $params   = [
-                    'receipt'      => $receipt,
-                    'invoice_link' => $invoiceLink,
-                    'amount'       => $this->invoice->getAmount() / 100,
+                    'receipt'        => $receipt,
+                    'invoice_link'   => $invoiceLink,
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
                 break;
@@ -469,6 +477,102 @@ class Notifier extends Base\Core
                     'amount'       => $this->invoice->getAmount() / 100,
                     'invoice_link' => $invoiceLink,
                 ];
+
+                break;
+
+            case Preferences::MID_INDIABULLS_FINANCE:
+                $template = 'sms.custom_invoice.indiabull_custom';
+                $params = [
+                    'amount'        => $this->invoice->getAmount() / 100,
+                    'invoice_link'  => $invoiceLink,
+                    'notes_charges' => $this->invoice->getNotes()->charges ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_PDD_BANK:
+                $sender = 'RBLCRD';
+                $template = 'sms.custom_invoice.rbl_pdd_bank';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_PDD_CREDIT:
+                $sender = 'RBLCRD';
+                $template = 'sms.custom_invoice.rbl_pdd_credit';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_BFL_BANK:
+                $sender = 'SPRCRD';
+                $template = 'sms.custom_invoice.bfl_bank';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_BFL_CARD:
+                $sender = 'SPRCRD';
+                $template = 'sms.custom_invoice.bfl_card';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_LAPOD:
+                $sender = 'RBLBNK';
+                $template = 'sms.custom_invoice.rbl_lapod';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'expiry_date'    => $expireBy ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_PL_NON_DEL_CUST:
+                $sender = 'RBLBNK';
+                $template = 'sms.custom_invoice.rbl_pl_non_del_cust';
+                $params = [
+                    'invoice_link'  => $invoiceLink,
+                    'receipt'       => $receipt,
+                    'expiry_date'   => $expireBy ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_RBLCARD:
+                $sender = 'RBLCRD';
+                $template = 'sms.custom_invoice.rbl_card_del_coll';
+                $params = [
+                    'receipt'        => $receipt,
+                    'invoice_link'   => $invoiceLink,
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
@@ -490,7 +594,14 @@ class Notifier extends Base\Core
 
         $receipt = $this->invoice->getReceipt();
 
+        if ($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS)
+        {
+            $receipt = $this->invoice->getNotes()['loan_number'] ?? $receipt;
+        }
+
         $invoiceLink = $this->invoice->getShortUrl();
+
+        $notes = $this->invoice->getNotes();
 
         switch ($merchant->getId())
         {
@@ -511,6 +622,21 @@ class Notifier extends Base\Core
                 $params   = [
                     'receipt'      => $receipt,
                     'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_RETAIL_ASSETS:
+
+                $template = 'sms.custom_invoice.rbl_retail_assets';
+
+                $sender = 'RBLBNK';
+
+                $params   = [
+                    'receipt'          => $receipt,
+                    'invoice_link'     => $invoiceLink,
+                    'rejection_reason' => $notes['rejection_reason'] ?? '',
+                    'rejection_date'   => $notes['rejection_date'] ?? '',
                 ];
 
                 break;

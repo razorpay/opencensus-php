@@ -38,6 +38,8 @@ class Refund extends Base
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
         $this->repo->saveOrFail($this->txn);
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     protected function getSettledAtTimestampForRefund()
@@ -59,8 +61,10 @@ class Refund extends Base
     protected function shouldUpdateBalance()
     {
         $payment = $this->source->payment;
+        $refund  = $this->source;
 
-        if ($payment->isAuthorized() === true)
+        if (($payment->isAuthorized() === true) and
+            ($refund->isDirectSettlementWithoutRefund() === false))
         {
             return false;
         }
@@ -95,7 +99,8 @@ class Refund extends Base
 
         $payment = $refund->payment;
 
-        if ($payment->isCaptured() === true)
+        if (($payment->isCaptured() === true) or
+            ($refund->isDirectSettlementWithoutRefund() === true))
         {
             if ($refund->isRefundSpeedInstant() === true)
             {

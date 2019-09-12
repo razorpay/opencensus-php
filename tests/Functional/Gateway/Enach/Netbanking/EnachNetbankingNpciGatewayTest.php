@@ -22,6 +22,7 @@ use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 
 class EnachNetbankingNpciGatewayTest extends TestCase
 {
@@ -29,6 +30,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     use DbEntityFetchTrait;
     use AttemptTrait;
     use AttemptReconcileTrait;
+    use PartnerTrait;
 
     public function setUp()
     {
@@ -83,6 +85,27 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('netbanking', $token['auth_type']);
 
         $this->assertEquals('initiated', $token['recurring_status']);
+    }
+
+    public function testPartnerPayment()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $this->doPartnerAuthPayment($payment, $clientId, $submerchantId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame('authorized', $payment['status']);
     }
 
     public function testPaymentRejectResponse()
@@ -681,6 +704,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 $url, $method, $content);
         }
 
+        $this->ba->publicCallbackAuth();
+
         $response = $this->sendRequest($request);
 
         $this->assertEquals($response->getStatusCode(), '302');
@@ -691,6 +716,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         if (filter_var($data['url'], FILTER_VALIDATE_URL))
         {
+            // Hack: only way to remove IsPartnerAuth from container
+            $this->app['basicauth']->checkAndSetKeyId('');
+
             return $this->submitPaymentCallbackRedirect($data['url']);
         }
 

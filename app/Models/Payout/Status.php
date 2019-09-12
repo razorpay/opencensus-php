@@ -72,6 +72,7 @@ class Status
         self::PENDING,
         self::PROCESSED,
         self::REVERSED,
+        self::FAILED,
         self::REJECTED,
         self::QUEUED,
         self::CANCELLED,

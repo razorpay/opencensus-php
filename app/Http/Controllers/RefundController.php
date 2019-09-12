@@ -250,6 +250,15 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getRefundsDetailsForCustomer()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchRefundsDetailsForCustomer($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateProcessedAt()
     {
         $input = Request::all();
@@ -309,6 +318,15 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->isScroogeBackFill($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function speedProcessedBackfill()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->speedProcessedBackfill($input);
 
         return ApiResponse::json($data);
     }

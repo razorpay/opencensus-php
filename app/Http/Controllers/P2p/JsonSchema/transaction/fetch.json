@@ -17,7 +17,8 @@
         "error_description",
         "created_at",
         "completed_at",
-        "expire_at"
+        "expire_at",
+        "is_concern_eligible"
     ],
     "properties": {
         "id": {
@@ -60,6 +61,12 @@
         "flow": {
             "type": "string",
             "pattern": "^(.*)$"
+        },
+        "is_concern_eligible": {
+            "type" : "boolean"
+        },
+        "is_pending_collect": {
+            "type" : "boolean"
         },
         "created_at": {
             "type": ["integer", "null"]

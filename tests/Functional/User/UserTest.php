@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\Otp;
 use RZP\Models\Admin\Admin;
 use RZP\Models\User\Constants;
+use RZP\Services\HubspotClient;
+use RZP\Services\RazorXClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
@@ -19,6 +21,7 @@ use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -73,6 +76,8 @@ class UserTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->mockHubSpotClient('trackSignupEvent');
+
         $this->startTest();
 
         $merchant = $this->getLastEntity('merchant', true);
@@ -84,6 +89,19 @@ class UserTest extends TestCase
                     ->first();
 
         $this->assertNotNull($row);
+    }
+
+    protected function mockHubSpotClient($methodName)
+    {
+        $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods([$methodName])
+                            ->getMock();
+
+        $this->app->instance('hubspot', $hubSpotMock);
+
+        $hubSpotMock->expects($this->exactly(1))
+                    ->method($methodName);
     }
 
     public function testGet()
@@ -163,6 +181,835 @@ class UserTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    public function testUserAccessWithProductPrimary()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserAccessWithProductBanking()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserAccessWithMappingForMultipleProducts()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingDataForPrimaryProduct = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $mappingDataForBankingProduct = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'admin',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingDataForPrimaryProduct);
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingDataForBankingProduct);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedUserAccessAccrossProducts()
+    {
+        // this should fail
+        // since mapping is for one product
+        // and request is coming for different product
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedUserAccess()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserAccessWithoutMerchantIdInRequest()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserDisable2fa()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 1,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 0]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => 0,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isSecondFactorAuth());
+    }
+
+    public function testUserEnable2fa()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 0]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertTrue($user->isSecondFactorAuth());
+    }
+
+    public function testFailedUserEnable2faIncorrectPass()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 0]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello1234',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isSecondFactorAuth());
+    }
+
+    public function testFailedUserEnable2faMerchant2faEnforced()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 1]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isSecondFactorAuth());
+    }
+
+    public function testFailedUserEnable2faMobNotVerified()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 0]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isSecondFactorAuth());
+    }
+
+    public function testFailedUserEnable2faMobNotPresent()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+        [
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
+            UserEntity::SECOND_FACTOR_AUTH      => 0,
+            UserEntity::PASSWORD                => 'hello123',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 0]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = UserFixture::MERCHANT_USER_ID;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isSecondFactorAuth());
+    }
+
+    /**
+     * Otp is not sent while logging in for a user
+     * who has 2fa enabled.
+     */
+    public function testFailedLogin2faNoOtp()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+                    'password'                => 'hello123',
+                    'second_factor_auth'      => true,
+                    'contact_mobile'          => '9999999999',
+                    'contact_mobile_verified' => true,
+                ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Otp is not sent with the login credentials for whom 2fa
+     * is enforced by one of the merchants.
+     */
+    public function testFailedLogin2faEnforcedNoOtp()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+                    'password'                => 'hello123',
+                    'second_factor_auth'      => false,
+                    'contact_mobile'          => '9999999999',
+                    'contact_mobile_verified' => true,
+                ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'second_factor_auth'    =>  true,
+        ]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogin2faCorrectOtp()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+            'wrong_2fa_attempts'      => 5,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'otp'      => \RZP\Services\Raven::MOCK_VALID_OTP,
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($user->getWrong2faAttempts(), 0);
+    }
+
+    public function testFailedLogin2faIncorrectOtp()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+            'wrong_2fa_attempts'      => 0,
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($user->getWrong2faAttempts(), 1);
+    }
+
+    public function testFailedLoginAccountLocked()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'         => 'hello123',
+            'account_locked'   => true,
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedLogin2faNotSetup()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => false,
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testMaxWrongOtpLocksAccount()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+            'account_locked'          => false,
+            'wrong_2fa_attempts'      => ($this->app['config']
+                                                ->get('applications.user_2fa.max_incorrect_tries'))
+                                                 - 1,
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertTrue($user->isAccountLocked());
+    }
+
+    public function testFailed2faSetupUser2faNotEnabled()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => false,
+            'contact_mobile'          => '9012345678',
+            'contact_mobile_verified' => false,
+            'account_locked'          => false,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'               => $user['email'],
+            'password'            => 'hello123',
+            'contact_mobile'      => '9012345678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailed2faSetupUserLocked()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile_verified' => false,
+            'account_locked'          => true,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'               => $user['email'],
+            'password'            => 'hello123',
+            'contact_mobile'      => '9012345678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailed2faSetupUserRestricted()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9012345678',
+            'contact_mobile_verified' => false,
+            'account_locked'          => false,
+        ]);
+
+        $merchantIds = $user->merchants()->distinct()->get()->pluck('id')->toArray();
+        $merchant    = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $merchant->setRestricted(true);
+        $merchant->saveOrFail();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'               => $user['email'],
+            'password'            => 'hello123',
+            'contact_mobile'      => '9012345678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailed2faSetupUserAlreadySetup()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9012345678',
+            'contact_mobile_verified' => true,
+            'account_locked'          => false,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'               => $user['email'],
+            'password'            => 'hello123',
+            'contact_mobile'      => '9012345678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function test2faSetupMobile()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => false,
+            'account_locked'          => false,
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'contact_mobile'   => '8888888888',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertTrue($user->getContactMobile() === '8888888888');
+    }
+
+    public function testFailed2faSetupVerifyMobileWrongOtp()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => false,
+            'account_locked'          => false,
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function test2faSetupVerifyMobile()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => false,
+            'account_locked'          => false,
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'otp'      => \RZP\Services\Raven::MOCK_VALID_OTP,
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertTrue($user->isContactMobileVerified());
+    }
+
+    public function testUserRestrictedFeature()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->distinct()->get()->pluck('id')->toArray();
+        $merchant    = $this->getDbEntityById('merchant', $merchantIds[0]);
+
+        $merchant->setRestricted(true);
+        $merchant->saveOrFail();
+
+        $this->assertTrue($user->getRestricted() === true);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'admin',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->assertTrue($user->getRestricted() === true);
     }
 
     public function testConfirmByToken()
@@ -747,6 +1594,130 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testSetAccountLock()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->create('permission', ['name' => 'user_account_lock_unlock']);
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users-admin/account/' . $user['id'] . '/lock';
+
+        $testData['response']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDbRecord = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDbRecord['account_locked'], 1);
+    }
+
+    public function testSetAccountUnlock()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->create('permission', ['name' => 'user_account_lock_unlock']);
+
+        $this->ba->adminAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users-admin/account/' . $user['id'] . '/unlock';
+
+        $testData['response']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDbRecord = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDbRecord['account_locked'], 0);
+        $this->assertEquals($userDbRecord['wrong_2fa_attempts'], 0);
+    }
+
+    public function testSetAccountLockByMerchant()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchant->setRestricted(true);
+
+        $merchant->saveOrFail();
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/account/' . $user['id'] . '/lock';
+
+        $this->startTest();
+    }
+
+    public function testSetAccountUnlockByMerchant()
+    {
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchant->setRestricted(true);
+
+        $merchant->saveOrFail();
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/account/' . $user['id'] . '/unlock';
+
+        $testData['response']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDbRecord = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDbRecord['account_locked'], 0);
+        $this->assertEquals($userDbRecord['wrong_2fa_attempts'], 0);
+    }
+
     protected function setPasswordResetTestData(string $callee)
     {
         $testData = & $this->testData[$callee];
@@ -764,5 +1735,94 @@ class UserTest extends TestCase
         $testData['request']['content']['password_confirmation'] = $password;
 
         return $admin;
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+    }
+
+    public function testEditContactMobileByUser()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserRestrictedForManagerRole()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantIds[0],
+            'role'        => 'manager',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'manager');
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserAndVerify()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $response = $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($response['contact_mobile_verified'], true);
+
+        $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
+
+        $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
+    }
+
+    public function testUpdateContactMobile()
+    {
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user->getId();
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $userDB = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertEquals($userDB['contact_mobile_verified'], false);
+
+        $this->assertEquals($userDB['contact_mobile'], $response['contact_mobile']);
     }
 }

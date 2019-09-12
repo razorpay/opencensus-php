@@ -5,6 +5,7 @@ namespace RZP\Constants;
 use RZP\Base\Fetch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
+use RZP\Models\External;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Models\Partner\Config;
@@ -12,6 +13,8 @@ use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Merchant\MerchantUser;
+use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\BankingAccountStatement as BAS;
 
 /**
  * Class AdminFetch
@@ -453,6 +456,43 @@ class AdminFetch
                 ],
             ],
 
+            Entity::BANKING_ACCOUNT_STATEMENT => [
+                BAS\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
+                BAS\Entity::TRANSACTION_ID => [
+                    Fetch::LABEL  => 'Transaction Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::ACCOUNT_NUMBER => [
+                    Fetch::LABEL  => 'Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::BANK_TRANSACTION_ID => [
+                    Fetch::LABEL  => 'Bank Txn Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::EXTERNAL => [
+                External\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
+                External\Entity::TRANSACTION_ID => [
+                    Fetch::LABEL  => 'Transaction Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                External\Entity::CHANNEL => [
+                    Fetch::LABEL  => 'Entity Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                    Fetch::VALUES => BAS\Channel::getAll(),
+                ],
+                External\Entity::BANK_REFERENCE_NUMBER => [
+                    Fetch::LABEL  => 'Bank Ref Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                External\Entity::UTR => [
+                    Fetch::LABEL  => 'UTR',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::BANK_TRANSFER => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'balance_id' => Fetch::FIELD_BALANCE_ID,
@@ -521,10 +561,15 @@ class AdminFetch
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
+                        'failed',
                         'created',
-                        'processing',
                         'processed',
+                        'partially_processed',
                     ],
+                ],
+                'processing' => [
+                    Fetch::LABEL  => 'Processing',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN,
                 ],
                 'type' => [
                     Fetch::LABEL  => 'Type',
@@ -552,15 +597,20 @@ class AdminFetch
                         'acknowledge',
                         'debit',
                         'register',
+                        'combined',
+                        'payment',
+                        'refund',
                     ],
                 ],
                 'gateway' => [
                     Fetch::LABEL  => 'Gateway',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => [
-                        'enach_rbl',
-                        'hdfc'
-                    ],
+                    Fetch::VALUES => array_merge(
+                                        array_keys(RequestProcessor\Base::GATEWAY_SENDER_MAPPING),
+                                        [
+                                            'enach_rbl',
+                                            'hdfc'
+                                        ]),
                 ],
             ],
 

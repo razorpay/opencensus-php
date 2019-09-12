@@ -52,6 +52,8 @@ class Type
 
     const AXIS_EMANDATE_DEBIT               = 'axis_emandate_debit';
 
+    const SBI_EMANDATE_DEBIT                = 'sbi_emandate_debit';
+
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
     const CSB_NETBANKING_REFUND             = 'csb_netbanking_refund';
@@ -60,9 +62,17 @@ class Type
 
     const RBL_NETBANKING_CLAIM              = 'rbl_netbanking_claim';
 
+    const SBI_NETBANKING_REFUND             = 'sbi_netbanking_refund';
+
+    const SBI_NETBANKING_CLAIM              = 'sbi_netbanking_claim';
+
+    const CBI_NETBANKING_REFUND             = 'cbi_netbanking_refund';
+
     const CUB_NETBANKING_REFUND             = 'cub_netbanking_refund';
 
     const CUB_NETBANKING_CLAIM              = 'cub_netbanking_claim';
+
+    const IBK_NETBANKING_REFUND             = 'ibk_netbanking_refund';
 
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
@@ -116,6 +126,7 @@ class Type
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
     const BATCH_SERVICE                     = 'batch_service';
     const RECONCILIATION_BATCH_OUTPUT       = 'reconciliation_batch_output';
+    const RECONCILIATION_BATCH_ANALYTICS_OUTPUT       = 'reconciliation_batch_analytics_output';
 
     const BLANK                             = 'blank';
 
@@ -160,6 +171,7 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
+    const ANALYTICS_BUCKET_CONFIG               = 'analytics_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
@@ -184,6 +196,7 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -195,9 +208,12 @@ class Type
             self::BOB_NETBANKING_REFUND,
             self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
+            self::SBI_NETBANKING_REFUND,
             self::EQUITAS_NETBANKING_REFUND,
+            self::CBI_NETBANKING_REFUND,
             self::CUB_NETBANKING_REFUND,
             self::CUB_NETBANKING_CLAIM,
+            self::IBK_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
             self::SIB_NETBANKING_REFUND,
@@ -212,6 +228,7 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
+            self::SBI_NETBANKING_CLAIM,
             self::CSB_NETBANKING_REFUND,
             self::ICICI_UPI_REFUND,
             self::MINDGATE_UPI_REFUND,
@@ -254,6 +271,7 @@ class Type
             self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
             self::RECONCILIATION_BATCH_OUTPUT,
+            self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
@@ -292,6 +310,7 @@ class Type
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::RECONCILIATION_BATCH_INPUT,
         self::RECONCILIATION_BATCH_OUTPUT,
+        self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
         self::AXIS_EMI_FILE,
@@ -317,6 +336,7 @@ class Type
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
+        self::SBI_EMANDATE_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
         self::CANARA_NETBANKING_REFUND,
@@ -331,8 +351,11 @@ class Type
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
+        self::SBI_NETBANKING_REFUND,
+        self::CBI_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
+        self::IBK_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
         self::SIB_NETBANKING_REFUND,
@@ -342,6 +365,7 @@ class Type
         self::YESB_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
         self::RBL_NETBANKING_CLAIM,
+        self::SBI_NETBANKING_CLAIM,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
@@ -447,6 +471,11 @@ class Type
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
+            self::RECONCILIATION_BATCH_OUTPUT,
+        ],
+
+        self::ANALYTICS_BUCKET_CONFIG => [
+            self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [

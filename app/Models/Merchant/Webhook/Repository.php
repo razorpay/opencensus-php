@@ -124,4 +124,34 @@ class Repository extends Base\Repository
 
         return $query;
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Method overridden to dual write to stork's webhook module.
+     *
+     * @param Entity $entity
+     * @param array  $options
+     */
+    public function saveOrFail($entity, array $options = array())
+    {
+        // This check must be before parent's method call because later mutates var like exists.
+        $shouldUpsertStork = (($entity->exists === false) or
+            ($entity->isDirty(Entity::STORK_UPDATEABLE_FIELDS) === true));
+
+        parent::saveOrFail($entity, $options);
+
+        // Intentionally not within transaction for initial phase.
+        if ($shouldUpsertStork === true)
+        {
+            try
+            {
+                (new Stork)->upsert($entity);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+    }
 }

@@ -25,6 +25,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Reconciliator\Base\Reconciliate;
 
 class Gateway extends Base\Gateway
 {
@@ -43,6 +44,8 @@ class Gateway extends Base\Gateway
     const DATE_FORMAT               = 'md';
     const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
     const DEFAULT_CVV_VALUE         = '000';
+
+    const PAYSECURE_MID_SWITCH_TIME = 1567612806; // 4 Sept 2019, 4:00 PM
 
     protected $map = [
         ResponseFields::RETRIEVAL_REF_NUM   => Entity::RRN,
@@ -371,13 +374,26 @@ class Gateway extends Base\Gateway
 
     protected function validateChecksumAndGetQrData($input)
     {
-        $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
+        //
+        // While trying to create unexpected Hitachi BQR payment
+        // via recon (dashboard file upload by FinOps), we don't
+        // have checksum. So we use this flag $isReconRunning to decide
+        // whether to skip or continue with the checksum validation.
+        //
+        // In normal flow when actual callback comes from outside,
+        // $isReconRunning will be false and checksum will be validated.
+        //
 
-        $hashString = $this->getStringToHashForBharatQr($input);
+        if (Reconciliate::$isReconRunning === false)
+        {
+            $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
 
-        $expectedChecksum = $this->getHashOfString($hashString);
+            $hashString = $this->getStringToHashForBharatQr($input);
 
-        $this->compareHashes($actualChecksum, $expectedChecksum);
+            $expectedChecksum = $this->getHashOfString($hashString);
+
+            $this->compareHashes($actualChecksum, $expectedChecksum);
+        }
 
         $this->checkForBharatQrFailure($input);
 
@@ -1376,6 +1392,8 @@ class Gateway extends Base\Gateway
 
         $message = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
+        unset($response[ResponseFields::CARD_NUMBER]);
+
         if ($respCode !== Status::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(
@@ -1483,15 +1501,13 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        $merchantId = $this->getLiveMerchantId();
-
-        // For all Paysecure requests, use hitachi's shared mid on live mode
-        if ($this->isRupayTransaction($this->input) === true)
+        if (($this->isRupayTransaction($this->input) === true) and
+            ($this->input['payment'][Payment\Entity::CREATED_AT] <= self::PAYSECURE_MID_SWITCH_TIME))
         {
-            // todo: Change later as required.
-            // For PVT, we would be using shared Hitachi merchant
-            $merchantId = '38RR00000000001';
+            return '38RR00000000001';
         }
+
+        $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {
@@ -1503,15 +1519,13 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
-        $terminalId = $this->terminal['gateway_terminal_id'];
-
-        // For all Paysecure requests, use hitachi's shared tid on live mode
-        if ($this->isRupayTransaction($this->input) === true)
+        if (($this->isRupayTransaction($this->input) === true) and
+            ($this->input['payment'][Payment\Entity::CREATED_AT] <= self::PAYSECURE_MID_SWITCH_TIME))
         {
-            // todo: Change later as required.
-            // For PVT, we would be using shared Hitachi terminal
             return '38R00001';
         }
+
+        $terminalId = $this->terminal['gateway_terminal_id'];
 
         if ($this->mode === Mode::TEST)
         {
@@ -1579,31 +1593,6 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    // Overriding this, because for only rupay payments, we need to fetch this data from Paysecure gateway
-    protected function getCacheKey($paymentId)
-    {
-        $key = sprintf(static::CACHE_KEY, $paymentId);
-
-        if ($this->isRupayTransaction($this->input) === true)
-        {
-            $key = sprintf(Paysecure\Gateway::CACHE_KEY, $paymentId);
-        }
-
-        return $key;
-    }
-
-    // Overriding this from CardCacheTrait, since for Paysecure, we want to set the cache_ttl
-    // to the one mentioned in Paysecure gateway implementation
-    protected function getCardCacheTtl()
-    {
-        if ($this->isRupayTransaction($this->input) === true)
-        {
-            return Paysecure\Gateway::CARD_CACHE_TTL;
-        }
-
-        return static::CARD_CACHE_TTL;
-    }
-
     public function forceAuthorizeFailed(array $input)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
@@ -1627,5 +1616,27 @@ class Gateway extends Base\Gateway
         $gatewayPayment->saveOrFail();
 
         return true;
+    }
+
+    protected function getCacheKey($input)
+    {
+        if ((isset($input['card'][Card\Entity::NETWORK_CODE]) === true) and
+            ($input['card'][Card\Entity::NETWORK_CODE] === Card\Network::RUPAY))
+        {
+            return sprintf(Paysecure\Gateway::CACHE_KEY, $input['payment']['id']);
+        }
+
+            return sprintf(static::CACHE_KEY, $input['payment']['id']);
+    }
+
+    protected function getCardCacheTtl($input)
+    {
+        if ((isset($input['card'][Card\Entity::NETWORK_CODE]) === true) and
+            ($input['card'][Card\Entity::NETWORK_CODE] === Card\Network::RUPAY))
+        {
+            return 60 * 24 * 10;
+        }
+
+        return static::CARD_CACHE_TTL;
     }
 }

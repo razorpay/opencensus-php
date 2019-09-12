@@ -3,6 +3,8 @@
 namespace RZP\Models\Transaction\Statement;
 
 use RZP\Models\Payout;
+use RZP\Models\External;
+use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
@@ -94,11 +96,38 @@ class Entity extends Transaction\Entity
                 // Do nothing special for reversal transactions
                 break;
 
+            case E::ADJUSTMENT:
+                $this->setPublicSourceAttributeForAdjustment($array);
+                break;
+
+            case E::EXTERNAL:
+                $this->setPublicSourceAttributeForExternal($array);
+                break;
+
+            case E::FUND_ACCOUNT_VALIDATION:
+                // Do nothing special for fund account validations
+                break;
+
             default:
                 // By default do not expose any source attributes
                 $array[self::SOURCE] = [];
                 break;
         }
+    }
+
+    protected function setPublicSourceAttributeForAdjustment(array & $array)
+    {
+        $array[self::SOURCE] = array_only(
+            $array[self::SOURCE],
+            [
+                Adjustment\Entity::ENTITY,
+                Adjustment\Entity::DESCRIPTION,
+                Adjustment\Entity::AMOUNT,
+                Adjustment\Entity::CREATED_AT,
+            ]);
+
+        // Returning only absolute amount regardless of credit/debit
+        $array["source"]["amount"] = abs($array["source"]["amount"]);
     }
 
     protected function setPublicSourceAttributeForPayout(array & $array)
@@ -122,11 +151,24 @@ class Entity extends Transaction\Entity
             ]);
     }
 
+    protected function setPublicSourceAttributeForExternal(array & $array)
+    {
+        $array[self::SOURCE] = array_only(
+            $array[self::SOURCE],
+            [
+                External\Entity::ENTITY,
+                External\Entity::AMOUNT,
+                External\Entity::UTR,
+                External\Entity::CREATED_AT,
+            ]);
+    }
+
     protected function setPublicSourceAttributeForBankTransfer(array & $array)
     {
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
             [
+                BankTransfer\Entity::ENTITY,
                 BankTransfer\Entity::MODE,
                 BankTransfer\Entity::BANK_REFERENCE,
                 BankTransfer\Entity::AMOUNT,
@@ -139,12 +181,12 @@ class Entity extends Transaction\Entity
 
         // Prepends id & entity as they are not exposed in bank_transfer entity, for now.
         $array[self::SOURCE] = [
-                                    BankTransfer\Entity::ID             => $bankTransfer->getPublicId(),
-                                    BankTransfer\Entity::ENTITY         => $bankTransfer->getEntity(),
-                                    BankTransfer\Entity::PAYER_NAME     => $bankTransfer->getPayerName(),
-                                    BankTransfer\Entity::PAYER_ACCOUNT  => $bankTransfer->getPayerAccount(),
-                                    BankTransfer\Entity::PAYER_IFSC     => $bankTransfer->getPayerIfsc(),
-                               ] + $array[self::SOURCE];
+                BankTransfer\Entity::ID             => $bankTransfer->getPublicId(),
+                BankTransfer\Entity::ENTITY         => $bankTransfer->getEntity(),
+                BankTransfer\Entity::PAYER_NAME     => $bankTransfer->getPayerName(),
+                BankTransfer\Entity::PAYER_ACCOUNT  => $bankTransfer->getPayerAccount(),
+                BankTransfer\Entity::PAYER_IFSC     => $bankTransfer->getPayerIfsc(),
+            ] + $array[self::SOURCE];
     }
 
     /**

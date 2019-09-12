@@ -11,6 +11,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Yesbank;
 use RZP\Gateway\Upi\Yesbank\Fields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment\Entity as Payment;
 
 class Server extends Base\Mock\Server
@@ -35,7 +36,7 @@ class Server extends Base\Mock\Server
           Fields::APPROVALNUM           => random_integer(5),
           Fields::PAYER_VPA             => 'test@vpa',
           Fields::NPCI_TXN_ID           => 'YESB38A1AF0B2B2B601CE05500000000000',
-          Fields::CUST_REF_ID           => '769876897654',
+          Fields::CUST_REF_ID           => PublicEntity::generateUniqueId(),
           Fields::PAYER_ACC_NO          => '',
           Fields::PAYER_IFSC_NO         => '',
           Fields::PAYER_ACC_NAME        => '',

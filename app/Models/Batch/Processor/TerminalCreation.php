@@ -100,23 +100,12 @@ class TerminalCreation extends Base
         // Unsetting empty or null values
         $createTerminalParams = array_filter($createTerminalParams);
 
-        try
-        {
-            $terminal = $this->terminalService->createTerminal($merchantId, $createTerminalParams);
+        $terminal = $this->terminalService->createTerminal($merchantId, $createTerminalParams);
 
-            $entry[Batch\Header::STATUS]            = Batch\Status::SUCCESS;
+        $entry[Batch\Header::STATUS]            = Batch\Status::SUCCESS;
 
-            $entry[Batch\Header::TERMINAL_ID]       = $terminal[Terminal\Entity::ID];
-        }
+        $entry[Batch\Header::TERMINAL_ID]       = $terminal[Terminal\Entity::ID];
 
-        catch (BaseException $e)
-        {
-            $error = $e->getError();
-
-            $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
-
-            $entry[Batch\Header::ERROR_DESCRIPTION] = $error->getDescription();
-        }
     }
 
     public function getOutputFileHeadings(): array

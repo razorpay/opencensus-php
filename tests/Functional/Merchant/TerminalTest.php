@@ -13,10 +13,15 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Models\Terminal\Shared;
 use RZP\Exception;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal as TerminalFixture;
+use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class TerminalTest extends TestCase
 {
     use PaymentTrait;
+
+    use PartnerTrait;
 
     public function setUp()
     {
@@ -398,6 +403,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateUpiCitiTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
@@ -598,6 +612,22 @@ class TerminalTest extends TestCase
         $this->assertEquals(true, $terminal->reload()->upi);
     }
 
+    public function testEditUpiCitiTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_upi_citi_terminal', ['used' => true, 'upi' => 0]);
+
+        $data = [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ];
+
+        $content = $this->editTerminal($terminal['id'], $data);
+
+        $this->assertTrue($terminal->refresh()->isNonRecurring());
+    }
+
     public function testToggleTerminal()
     {
         $terminal = $this->fixtures->create(
@@ -733,6 +763,24 @@ class TerminalTest extends TestCase
         });
 
         $this->assertFalse($terminal->reload()->isEnabled());
+    }
+
+    public function testTerminalSecretCheck()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'gateway_terminal_password'  => '1234',
+                'gateway_terminal_password2' => '21234',
+                'gateway_secure_secret'      => '0123',
+                'gateway_secure_secret2'     => '20123',
+            ]);
+
+        $url = '/terminals/' . $terminal->getKey() . '/secret';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
     }
 
     public function testAddAmazonPayTerminal()
@@ -908,6 +956,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateAllahabadTpvTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateSbiTpvTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
@@ -1092,6 +1149,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWalletPaypalTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateNetbankingSibTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
@@ -1102,6 +1168,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateNetbankingYesbTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateNetbankingIbkTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
@@ -1143,11 +1218,144 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
+
     }
 
     public function testCreateWorldlineTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
+    }
+
+    public function testEnableTerminal()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled' => false,
+            'merchant_id' => $subMerchantId,
+            'mc_mpan' => '1234567890123456',
+            'visa_mpan' => '9876543210123456',
+            'rupay_mpan' => '1234123412341234',
+            'notes'     => 'some notes'
+        ]);
+
+        $url = '/terminals/'.$terminal['id'].'/enable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testDisableTerminal()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled' => true,
+            'merchant_id' => $subMerchantId,
+            'mc_mpan' => '1234567890123456',
+            'visa_mpan' => '9876543210123456',
+            'rupay_mpan' => '1234123412341234',
+            'notes'     => 'some notes'
+        ]);
+
+        $url = '/terminals/'.$terminal['id'].'/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testSubMerchantsShouldNotBeAbleToDisableTerminals()
+    {
+        $this->ba->privateAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled' => true,
+            'merchant_id' => '10000000000000',
+            'mc_mpan' => '1234567890123456',
+            'visa_mpan' => '9876543210123456',
+            'rupay_mpan' => '1234123412341234',
+            'notes'     => 'some notes'
+        ]);
+
+        $url = '/terminals/'.$terminal['id'].'/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testFetchTerminals()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $terminal1 = (new TerminalFixture)->createBharatQrTerminal();
+
+        $terminal1['merchant_id'] = $subMerchantId;
+
+        $terminal1->save();
+
+        $terminal2 = (new TerminalFixture)->createBharatQrIsgTerminal();
+
+        $terminal2['merchant_id'] = $subMerchantId;
+
+        $terminal2->save();
+
+        $this->startTest();
+    }
+
+    public function testPartnerWithouTerminalControlFeatureShouldNotBeAbleToFetchTerminals()
+    {
+        $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testSubMerchantsShouldNotBeAbleToFetchTerminals()
+    {
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals';
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingCreateTerminal()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 

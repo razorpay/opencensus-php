@@ -2,18 +2,126 @@
 
 namespace RZP\Models\Merchant\Email;
 
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
 {
+
     /**
-     * @param  Merchant\Entity $merchant
-     * @param  array $input
+     *  fetch a merchant's all type of emails
      *
+     * @param Merchant\Entity $merchant
+     *
+     * @return PublicCollection
+     */
+    public function fetchAllEmails(Merchant\Entity $merchant): PublicCollection
+    {
+        $emails = $this->repo->merchant_email->getEmailByMerchantId($merchant->getId());
+
+        return $emails;
+    }
+
+    /**
+     *  Delete a merchant's single type of emails from databases return if it is successful or not
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $type
+     *
+     * @return bool
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function deleteEmails(Merchant\Entity $merchant, string $type): bool
+    {
+        $emails = $this->fetchEmailsByType($merchant, $type);
+
+        $deletedItem = $this->repo->delete($emails);
+
+        return $deletedItem;
+
+    }
+
+    /**
+     * Fetch a merchant's particular type of emails
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $type
+     *
+     * @return Entity
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function fetchEmailsByType(Merchant\Entity $merchant, string $type): Entity
+    {
+        (new Validator)->validateType(Entity::TYPE, $type);
+
+        $emails = $this->repo->merchant_email->getEmailByType($type, $merchant->getId());
+
+        if ($emails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST);
+        }
+
+        return $emails;
+    }
+
+    /**
+     * Edit merchant email if already exists else create one
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     *
+     * @return Entity
+     */
+    public function upsert(Merchant\Entity $merchant, array $input): Entity
+    {
+        (new Validator)->validateInput('edit', $input);
+
+        $email = $this->repo->merchant_email->getEmailByType($input[Entity::TYPE], $merchant->getId());
+
+        if (empty($email) === false)
+        {
+            $email = $this->edit($email, $input);
+        }
+        else
+        {
+            $email = $this->create($merchant, $input);
+        }
+
+        return $email;
+    }
+
+    /**
+     * edit merchant email entity based on input
+     *
+     * @param Entity $email
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    protected function edit(Entity $email, array $input): Entity
+    {
+        $email->edit($input);
+
+        $this->repo->saveOrFail($email);
+
+        return $email;
+    }
+
+    /**
+     * create merchant email entity based on input
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     *
+     * @return Entity
      */
     protected function create(Merchant\Entity $merchant, array $input): Entity
     {
@@ -22,8 +130,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_EMAIL_ADD_REQUEST,
             [
-                'input'       => $input,
-                'merchant_id' => $merchant->getId()
+                'input'       => $input
             ]);
 
         // Calling this before the get call below to avoid calling validator
@@ -45,30 +152,4 @@ class Core extends Base\Core
         return $newEmail;
     }
 
-    protected function edit(Entity $email, array $input): Entity
-    {
-        $email->edit($input);
-
-        $email->saveOrFail();
-
-        return $email;
-    }
-
-    public function upsert(Merchant\Entity $merchant, array $input): Entity
-    {
-        (new Validator)->validateInput('edit', $input);
-
-        $email = $this->repo->merchant_email->getEmailByType($input[Entity::TYPE], $merchant->getId());
-
-        if (empty($email) === false)
-        {
-            $email = $this->edit($email, $input);
-        }
-        else
-        {
-            $email = $this->create($merchant, $input);
-        }
-
-        return $email;
-    }
 }

@@ -4,9 +4,12 @@ namespace RZP\Models\Invitation;
 
 use Mail;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 
@@ -24,15 +27,44 @@ class Core extends Base\Core
 
         $senderName = $this->getSenderName($input);
 
-        // Associate user only if it exists
-        try
-        {
-            $invitedUser = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+        $invitedUser = $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL]));
 
-            $invitation->user()->associate($invitedUser);
-        }
-        catch (\Exception $e)
+        if (empty($invitedUser) === false)
         {
+            $variant = $this->app->razorx->getTreatment(
+                $this->app['request']->getId(),
+                Merchant\RazorxTreatment::SECOND_FACTOR_AUTH_PROJECT_EXP,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                $merchantCollections = $invitedUser->merchants()->get();
+
+                //
+                // if the invitedUser is restricted or
+                // merchant is restricted and user is associated with any other merchant
+                // then invitation action is not performed
+                //
+                if ((count($merchantCollections) > 0 and
+                     $this->merchant->getRestricted() === true) or
+                    $invitedUser->getRestricted() === true)
+                {
+                    $this->trace->info(
+                        TraceCode::INVITATION_CREATE_FAILED, [
+                        Entity::MERCHANT_ID                       => $this->merchant['id'],
+                        'invited_user_merchant_count'             => count($merchantCollections),
+                        'merchant_' . Merchant\Entity::RESTRICTED => $this->merchant->getRestricted(),
+                        'user_' . Merchant\Entity::RESTRICTED     => $invitedUser->getRestricted(),
+                    ]);
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVITATION_CREATE_FAILED);
+                }
+            }
+
+            // Associate user only if it exists
+            $invitation->user()->associate($invitedUser);
         }
 
         $this->repo->saveOrFail($invitation);
@@ -107,6 +139,8 @@ class Core extends Base\Core
      *
      * @param Entity $invitation
      * @param string $userId
+     *
+     * @throws Exception\BadRequestException
      */
     protected function accept(Entity $invitation, string $userId)
     {
@@ -118,6 +152,44 @@ class Core extends Base\Core
         ];
 
         $user = $this->repo->user->findOrFailPublic($userId);
+
+        $variant = $this->app->razorx->getTreatment(
+            $this->app['request']->getId(),
+            Merchant\RazorxTreatment::SECOND_FACTOR_AUTH_PROJECT_EXP,
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            $merchantCollections = $user->merchants()->get();
+
+            $merchantInvited = $this->repo->merchant->findOrFailPublic($invitation->getMerchantId());
+
+            //
+            // [ if the invitedUser is restricted (belongs to restricted merchant) ] or
+            // [ merchant who has send the invitation becomes restricted
+            //   and user is associated with any other merchant ]
+            //   then invitation accept is not performed or will be failed.
+            //
+            if ((count($merchantCollections) > 0 and
+                 $merchantInvited->getRestricted() === true) or
+                $user->getRestricted() === true)
+            {
+                // delete the invitation
+                $invitation->deleteOrFail();
+
+                $this->trace->info(
+                    TraceCode::INVITATION_ACCEPT_FAILED, [
+                    Entity::MERCHANT_ID                       => $merchantInvited['id'],
+                    'invited_user_merchant_count'             => count($merchantCollections),
+                    'merchant_' . Merchant\Entity::RESTRICTED => $merchantInvited->getRestricted(),
+                    'user_' . Merchant\Entity::RESTRICTED     => $user->getRestricted(),
+                ]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVITATION_ACCEPT_FAILED);
+            }
+        }
 
         $user = (new User\Core)->updateUserMerchantMapping($user, $updateParams);
 

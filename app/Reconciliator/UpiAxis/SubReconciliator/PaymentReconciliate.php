@@ -132,7 +132,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         try
         {

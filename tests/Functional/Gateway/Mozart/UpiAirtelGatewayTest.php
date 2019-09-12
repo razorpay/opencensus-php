@@ -72,6 +72,7 @@ class UpiAirtelGatewayTest extends TestCase
         // The payment should now be authorized
         $payment = $this->getEntityById('payment', $paymentId, true);
         $this->assertEquals('authorized', $payment['status']);
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
 
         $this->capturePayment($paymentId, $payment['amount']);
 
@@ -157,46 +158,19 @@ class UpiAirtelGatewayTest extends TestCase
     {
         $payment = $this->testPayment();
 
-        $this->gateway = 'mozart';
-
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            if ($action === 'refund')
-            {
-                $content = [
-                    'data' =>
-                        [
-                            'code' => '09',
-                            'errorCode' => '000',
-                            'message' => '',
-                            'rrn' => '987654321',
-                            'txnStatus' => 'FAILURE',
-                            'hdnOrderID' => 'ablxasaasbajahskajkg',
-                            'amount' => 100,
-                            'hash' => '6256e8a43ba4e56eac1ef8c1faaad0c7236595e3638d74dd7c30e787dc00235624a5d2920230cf5478c88d616474abd1185c236b3c30107f7c931fb7070e20d9',
-                            '_raw' => '{}',
-                        ],
-                    'error'             => null,
-                    'success'           => false,
-                    'mozart_id'         => 'DUMMY_MOZART_ID',
-                    'external_trace_id' => 'DUMMY_REQUEST_ID',
-                ];
-            }
-        });
-
-        $this->payment = $this->refundPayment($payment['id']);
+        $this->payment = $this->refundPayment($payment['id'], 200, ['failed' => true]);
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
-        $this->clearMockFunction();
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id'], [], ['amount' => $refund['amount']]);
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals($refund['id'], $response['refund_id']);
-        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals('processed', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
     }
 
@@ -204,75 +178,20 @@ class UpiAirtelGatewayTest extends TestCase
     {
         $payment = $this->testPayment();
 
-        $this->gateway = 'mozart';
-
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            if ($action === 'refund')
-            {
-                $content = [
-                    'data' =>
-                        [
-                            'code' => '09',
-                            'errorCode' => '000',
-                            'message' => '',
-                            'rrn' => '987654321',
-                            'txnStatus' => 'FAILURE',
-                            'hdnOrderID' => 'ablxasaasbajahskajkg',
-                            'amount' => 100,
-                            'hash' => 'testhash',
-                            '_raw' => '{}',
-                        ],
-                    'error'             => null,
-                    'success'           => false,
-                    'mozart_id'         => 'DUMMY_MOZART_ID',
-                    'external_trace_id' => 'DUMMY_REQUEST_ID',
-                ];
-            }
-        });
-
-        $this->payment = $this->refundPayment($payment['id']);
+        $this->payment = $this->refundPayment($payment['id'], 200, ['failed' => true]);
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
-        $this->clearMockFunction();
-
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            if ($action === 'verify_refund')
-            {
-                $content = [
-                    'data' =>
-                        [
-                            'code' => '0',
-                            'errorCode' => 000,
-                            'message' => 'successful',
-                            'rrn' => '987654321',
-                            'txnStatus' => 'SUCCESS',
-                            'hdnOrderID' => 'abcd',
-                            'amount' => 100,
-                            'hash' => 'abcd',
-                            '_raw' => '{}',
-                        ],
-                    'error'             => null,
-                    'success'           => false,
-                    'mozart_id'         => '',
-                    'external_trace_id' => '',
-                ];
-
-            }
-        });
-
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id'], [], ['amount' => $refund['amount']]);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
         $this->assertEquals($refund['id'], $response['refund_id']);
-        $this->assertEquals('processed', $response['status']);
-        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
 
     }
 

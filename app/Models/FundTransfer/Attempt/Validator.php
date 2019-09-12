@@ -25,9 +25,14 @@ class Validator extends Base\Validator
 
     protected static $initiateFundTransferRules = [
         Entity::PURPOSE         => 'required|filled|string|max:30|custom',
-        Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout',
+        Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout,settlement',
         // This will be used while generating response while mock. Only used in api based settlements
         'failed_response'       => 'sometimes|int'
+    ];
+
+    protected static $ftaControlRules = [
+        Entity::CHANNEL => 'required|string|custom',
+        'action'        => 'required|in:enable,disable',
     ];
 
     protected static $bulkReconcileRules = [
@@ -75,7 +80,7 @@ class Validator extends Base\Validator
      */
     public function validateChannel(string $attribute, string $value)
     {
-        $channels = [Channel::AXIS, Channel::ICICI, Channel::YESBANK];
+        $channels = [Channel::AXIS, Channel::ICICI, Channel::YESBANK, Channel::AXIS2, Channel::RBL, Channel::HDFC];
 
         if (in_array($value, $channels, true) !== true)
         {
@@ -98,6 +103,11 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     */
     public function validateModeIfSet()
     {
         /** @var Entity $attempt */
@@ -109,6 +119,7 @@ class Validator extends Base\Validator
         }
 
         $mode = $attempt->getMode();
+
         $destinationType = $attempt->getDestinationType();
 
         Mode::validateModeOfAccountType($mode, $destinationType);
@@ -117,7 +128,9 @@ class Validator extends Base\Validator
         {
             $cardIssuer = $attempt->card->getIssuer();
 
-            Mode::validateModeOfIssuer($mode, $cardIssuer);
+            $networkCode = $attempt->card->getNetworkCode();
+
+            Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
 
         $channel = $attempt->getChannel();

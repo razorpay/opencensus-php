@@ -784,7 +784,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantDetails($input);
+        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantDetailsForActivation($input);
 
         return ApiResponse::json($response);
     }
@@ -1318,6 +1318,24 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->resetSettlementSchedule($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function change2faSetting()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->change2faSetting($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function applyRestrictedSettings()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->applyRestrictedSettings($input);
 
         return ApiResponse::json($response);
     }

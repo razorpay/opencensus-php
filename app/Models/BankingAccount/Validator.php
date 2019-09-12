@@ -14,32 +14,56 @@ class Validator extends Base\Validator
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
     const YESBANK_CREATE        = 'yesbank_create';
     const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
+    const ACTIVATED_STATUS      = 'activated_status';
 
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
     ];
 
     protected static $yesbankCreateRules = [
-        Entity::ACCOUNT_NUMBER      => 'required|string|between:5,40',
-        Entity::ACCOUNT_IFSC        => 'required|string|size:11',
-        Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
-        Entity::ACCOUNT_TYPE        => 'required|string|in:nodal',
+        Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,40',
+        Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
+        Entity::FTS_FUND_ACCOUNT_ID             => 'sometimes|nullable|string|size:14',
+        Entity::ACCOUNT_TYPE                    => 'sometimes|string|in:nodal',
+        Entity::STATUS                          => 'sometimes|in:created',
+        Entity::BENEFICIARY_PIN                 => 'sometimes|nullable|integer|digits:6',
+        Entity::BENEFICIARY_CITY                => 'sometimes|nullable|max:30|alpha_space',
+        Entity::BENEFICIARY_COUNTRY             => 'sometimes|nullable|in:IN',
+        Entity::BENEFICIARY_STATE               => 'sometimes|nullable|max:2',
+        Entity::BENEFICIARY_ADDRESS1            => 'sometimes|nullable|max:30',
+        Entity::BENEFICIARY_ADDRESS2            => 'sometimes|nullable|max:30',
+        Entity::BENEFICIARY_ADDRESS3            => 'sometimes|nullable|max:60',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|numeric|digits_between:10,12',
+        Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|email',
+        Entity::BENEFICIARY_NAME                => 'sometimes|nullable|between:1,120|string',
+    ];
+
+    protected static $createRules = [
+        Entity::CHANNEL                         => 'required|string|custom',
+        Entity::STATUS                          => 'sometimes|in:created',
+        Entity::BANK_REFERENCE_NUMBER           => 'required_if:channel,rbl',
+        Entity::PINCODE                         => 'required_if:channel,rbl',
+        Entity::ACCOUNT_IFSC                    => 'sometimes|nullable|string|size:11',
+        Entity::FTS_FUND_ACCOUNT_ID             => 'sometimes|nullable|string|size:14',
+        Entity::ACCOUNT_TYPE                    => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER                  => 'sometimes|string|max:40',
+        Entity::BENEFICIARY_PIN                 => 'sometimes|nullable|integer|digits:6',
+        Entity::BENEFICIARY_CITY                => 'sometimes|nullable|string',
+        Entity::BENEFICIARY_COUNTRY             => 'sometimes|nullable|string',
+        Entity::BENEFICIARY_STATE               => 'sometimes|nullable|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'sometimes|integer',
+        Entity::BENEFICIARY_ADDRESS1            => 'sometimes|nullable|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'sometimes|nullable|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'sometimes|nullable|string',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|string',
+        Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|string',
+        Entity::BENEFICIARY_NAME                => 'sometimes|nullable|string',
     ];
 
     protected static $rblCreateRules = [
         Entity::CHANNEL               => 'required|string|custom',
         Entity::BANK_REFERENCE_NUMBER => 'required|integer|digits:5',
         Entity::PINCODE               => 'required|string',
-    ];
-
-    protected static $createRules = [
-        Entity::CHANNEL               => 'required|string|custom',
-        Entity::BANK_REFERENCE_NUMBER => 'required_if:channel,rbl',
-        Entity::PINCODE               => 'required_if:channel,rbl',
-        Entity::ACCOUNT_IFSC          => 'sometimes|nullable|string|size:11',
-        Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|nullable|string|size:14',
-        Entity::ACCOUNT_TYPE          => 'required|string|custom',
-        Entity::ACCOUNT_NUMBER        => 'sometimes|nullable|string|max:40',
     ];
 
     protected static $editRules = [
@@ -63,6 +87,7 @@ class Validator extends Base\Validator
         Entity::USERNAME                        => 'filled|string',
         Entity::PASSWORD                        => 'filled|string',
         Entity::REFERENCE1                      => 'filled|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255'
     ];
 
     protected static $internalEditRules = [
@@ -80,6 +105,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'filled|string',
         Entity::BENEFICIARY_EMAIL               => 'filled|string',
         Entity::BENEFICIARY_NAME                => 'filled|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
     ];
 
     protected static $internalEditValidators = [
@@ -102,6 +128,21 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'required|string',
         Entity::BENEFICIARY_EMAIL               => 'required|string',
         Entity::BENEFICIARY_NAME                => 'required|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
+    ];
+
+    protected static $activatedStatusRules = [
+        Entity::BENEFICIARY_PIN                 => 'sometimes|string',
+        Entity::BENEFICIARY_CITY                => 'sometimes|string',
+        Entity::BENEFICIARY_COUNTRY             => 'sometimes|string',
+        Entity::BENEFICIARY_STATE               => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS1            => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'sometimes|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'sometimes|string',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|string',
+        Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
+        Entity::BENEFICIARY_NAME                => 'sometimes|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
     ];
 
     protected static $serviceablePincodeRules = [

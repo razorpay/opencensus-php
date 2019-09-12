@@ -68,9 +68,9 @@ class PublicCollection extends Collection
         return $this->itemsToArrayHosted();
     }
 
-    public function toArrayPublicCustomer()
+    public function toArrayPublicCustomer(bool $populateMessages = false)
     {
-        return $this->itemsToArrayPublicCustomer();
+        return $this->itemsToArrayPublicCustomer($populateMessages);
     }
 
     public function toArrayPartner(): array
@@ -188,11 +188,11 @@ class PublicCollection extends Collection
         }, $this->items);
     }
 
-    public function itemsToArrayPublicCustomer()
+    public function itemsToArrayPublicCustomer(bool $populateMessages = false)
     {
-        return array_map(function($item)
+        return array_map(function($item) use ($populateMessages)
         {
-            return $item->toArrayPublicCustomer();
+            return $item->toArrayPublicCustomer($populateMessages);
         }, $this->items);
     }
 

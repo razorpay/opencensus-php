@@ -410,6 +410,31 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SPrivateAuthJsonPayment($payment = null, $server = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SRecurringPayment($payment = null, $server = null)
     {
         if ($payment === null)
@@ -615,7 +640,15 @@ trait PaymentTrait
             'method'    => 'POST',
         ];
 
-        return $this->sendRequest($request);
+        $response = $this->sendRequest($request);
+
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response);
+
+        $this->ba->publicAuth();
+
+        $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+
+        return $this->submitPaymentCallbackRequest($request);
     }
 
     protected function makeS2sCallbackAndGetContent($content, $gateway = null)
@@ -893,9 +926,17 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false)
+    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false, $auth = [])
     {
-        $this->ba->privateAuth();
+        if ((empty($auth['key']) === false) and
+            (empty($auth['secret']) === false))
+        {
+            $this->ba->privateAuth($auth['key'], $auth['secret']);
+        }
+        else
+        {
+            $this->ba->privateAuth();
+        }
 
         $content = [];
 
@@ -917,6 +958,11 @@ trait PaymentTrait
         if ($reverseAll === true)
         {
             $content['reverse_all'] = true;
+        }
+
+        if (empty($data['notes']) === false)
+        {
+            $content['notes'] = $data['notes'];
         }
 
         $request = [
@@ -961,6 +1007,11 @@ trait PaymentTrait
             $input['is_fta'] = true;
         }
 
+        if (isset($data['fta_data']) === true)
+        {
+            $input['fta_data'] = $data['fta_data'];
+        }
+
         $this->ba->scroogeAuth();
 
         $request = array(
@@ -994,6 +1045,16 @@ trait PaymentTrait
 
             switch ($refund['amount'])
             {
+                case 200:
+                    $failed = $data['failed'] ?? false;
+
+                    if ($failed === false)
+                    {
+                        $event = 'processed_event';
+                    }
+
+                    break;
+
                 case 3459:
                     $event = 'failed_event';
                     break;
@@ -1125,7 +1186,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $paymentId = null, $content = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [])
     {
         $this->ba->adminAuth();
 
@@ -1142,6 +1203,11 @@ trait PaymentTrait
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
             $response['attempts'] = 1;
+
+            if (isset($data['amount']) === true)
+            {
+                $response['amount'] = $data['amount'];
+            }
 
             $this->scroogeRefund($response, $content);
         }
@@ -1917,6 +1983,7 @@ trait PaymentTrait
                     $bin = $payment->card->getIin();
 
                     $binRiskMapping = [
+                        '341111' => '22.0',
                         '510510' => '22.0',
                         '401201' => '15.3',
                         '555555' => '2.4',
@@ -2037,52 +2104,6 @@ trait PaymentTrait
             }
 
         });
-    }
-
-    protected function mockCardVault($callable = null)
-    {
-        $app = App::getFacadeRoot();
-
-        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
-
-        $this->app->instance('card.cardVault', $cardVault);
-
-        $callable = $callable ?: function ($route, $method, $input)
-        {
-            $response = [
-                'error' => '',
-                'success' => true,
-            ];
-
-            switch ($route)
-            {
-                case 'tokenize':
-                    $response['token'] = base64_encode($input['secret']);
-                    break;
-
-                case 'detokenize':
-                    $response['value'] = base64_decode($input['token']);
-                    break;
-
-                case 'validate':
-                    if ($input['token'] === 'fail')
-                    {
-                        $response['success'] = false;
-                    }
-                    break;
-
-                case 'delete':
-                    break;
-            }
-
-            return $response;
-        };
-
-        $cardVault->shouldReceive('sendRequest')
-                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-                  ->andReturnUsing($callable);
-
-        $this->app->instance('card.cardVault', $cardVault);
     }
 
     protected function mockShield()

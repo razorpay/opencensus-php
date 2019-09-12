@@ -297,6 +297,18 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
+    public function testWorkflowCloseActionWhenEsSyncFails()
+    {
+        // This will create a wf action in Mysql and ES, not using default workflow.
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testWorkflowCanOnlyBeClosedByMaker()
     {
         // This will create a wf action in Mysql and ES, not using default workflow.

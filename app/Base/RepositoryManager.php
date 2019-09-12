@@ -27,6 +27,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Order\Repository                      $order
  * @property Models\Payment\Analytics\Repository          $payment_analytics
  * @property Models\Transaction\Repository                $transaction
+ * @property Models\Card\Repository                       $card
  * @property Models\Vpa\Repository                        $vpa
  * @property Models\Contact\Repository                    $contact
  * @property Models\FundAccount\Repository                $fund_account
@@ -35,6 +36,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\FundAccount\Repository                $customer_balance
  * @property Models\FundAccount\Validation\Repository     $fund_account_validation
  * @property Models\FundTransfer\Attempt\Repository       $fund_transfer_attempt
+ * @property Models\Reversal\Repository                   $reversal
  * @property Models\Payout\Repository                     $payout
  * @property Models\Merchant\Detail\Repository            $merchant_detail
  * @property Models\BankingAccount\Repository             $banking_account
@@ -46,6 +48,9 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Workflow\Repository                   $workflow
  * @property Models\Workflow\Action\Checker\Repository    $action_checker
  * @property Models\Workflow\PayoutAmountRules\Repository $workflow_payout_amount_rules
+ * @property Models\Settlement\bucket\Repository          $settlement_bucket
+ * @property Models\Mpan\Repository                       $mpan
+ * @property Models\Merchant\Document\Repository          $merchant_document
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

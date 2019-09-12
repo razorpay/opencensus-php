@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
     const PENDING_AT             = 'pending_at';
     const PROCESSED_AT           = 'processed_at';
     const REVERSED_AT            = 'reversed_at';
+    const FAILED_AT              = 'failed_at';
     const REJECTED_AT            = 'rejected_at';
     const QUEUED_AT              = 'queued_at';
     const CANCELLED_AT           = 'cancelled_at';
@@ -83,6 +84,7 @@ class Entity extends Base\PublicEntity
     const NARRATION              = 'narration';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const BATCH_ID               = 'batch_id';
+    const IDEMPOTENCY_KEY        = 'idempotency_key';
     const INITIATED_AT           = 'initiated_at';
 
     // Public attribute
@@ -159,6 +161,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::FAILED_AT,
         self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
@@ -167,6 +170,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::REFERENCE_ID,
         self::NARRATION,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $visible = [
@@ -198,6 +202,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::FAILED_AT,
         self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
@@ -213,6 +218,7 @@ class Entity extends Base\PublicEntity
         self::INITIATED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $public = [
@@ -247,6 +253,7 @@ class Entity extends Base\PublicEntity
         self::PENDING_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::FAILED_AT,
         self::REJECTED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
@@ -285,6 +292,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::FAILED_AT,
         self::REJECTED_AT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
@@ -307,6 +315,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION         => null,
         self::FEES              => 0,
         self::TAX               => 0,
+        self::IDEMPOTENCY_KEY   => null,
     ];
 
     protected $amounts = [
@@ -327,6 +336,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::FAILED_AT,
         self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
@@ -571,6 +581,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REVERSED_AT);
     }
 
+    public function getFailedAt()
+    {
+        return $this->getAttribute(self::FAILED_AT);
+    }
+
     public function getRejectedAt()
     {
         return $this->getAttribute(self::REJECTED_AT);
@@ -606,6 +621,18 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::REVERSED);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement either `isStatusFailed` or `isStatusReversedOrFailed`
+     * function, to send out summary emails and stuff in bulkRecon.
+     *
+     * @return bool
+     */
+    public function isStatusReversedOrFailed()
+    {
+        return ($this->isStatusReversed() or $this->isStatusFailed());
+    }
+
     public function isStatusQueued()
     {
         return ($this->getStatus() === Status::QUEUED);
@@ -623,14 +650,14 @@ class Entity extends Base\PublicEntity
 
     /**
      * This is required for the FTA module.
-     * FTA requires the sources to implement `isStatusFailed`
+     * FTA requires the sources to implement either `isStatusFailed` or `isStatusReversedOrFailed`
      * function, to send out summary emails and stuff in bulkRecon.
      *
      * @return bool
      */
     public function isStatusFailed()
     {
-        return ($this->getStatus() === Status::REVERSED);
+        return ($this->getStatus() === Status::FAILED);
     }
 
     public function isStatusProcessedOrReversed(): bool
@@ -752,6 +779,11 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    protected function setStatusAttribute($status)
+    {
+        $this->attributes[self::STATUS] = $status;
 
         if (in_array($status, Status::$timestampedStatuses, true) === true)
         {
@@ -823,6 +855,11 @@ class Entity extends Base\PublicEntity
     public function setReversedAt($date)
     {
         $this->setAttribute(self::REVERSED_AT, $date);
+    }
+
+    public function setFailedAt($date)
+    {
+        $this->setAttribute(self::FAILED_AT, $date);
     }
 
     public function setRejectedAt(int $date = null)
@@ -1011,6 +1048,11 @@ class Entity extends Base\PublicEntity
         $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
     }
 
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
+    }
+
     public function setPublicFundAccountAttribute(array & $attributes)
     {
         //
@@ -1058,7 +1100,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicFailureReasonAttribute(array & $attributes)
     {
-        if ($this->isStatusReversed() === false)
+        if ($this->isStatusReversedOrFailed() === false)
         {
             $attributes[self::FAILURE_REASON] = null;
         }
@@ -1203,6 +1245,22 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::REVERSED_AT]);
+        }
+    }
+
+    public function setPublicFailedAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::FAILED_AT]);
         }
     }
 

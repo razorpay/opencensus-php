@@ -29,6 +29,8 @@ use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 
 class Core extends Base\Core
 {
+    const FTS_DISPATCH_DELAY = 5;
+
     public function createWithBankAccount(
         Base\PublicEntity $source,
         BankAccountEntity $bankAccount,
@@ -135,8 +137,8 @@ class Core extends Base\Core
 
     /**
      * @param array $input
-     *
      * @return array
+     * @throws LogicException
      */
     public function nodalFileUploadThroughBeam(array $input): array
     {
@@ -154,10 +156,10 @@ class Core extends Base\Core
 
         $jobName  = $this->getJobNameForBeamPush($channel, $fileType);
 
-        $this->sendFile($filePath, $jobName, $fileType, $channel);
+        $response = $this->sendFile($filePath, $jobName, $fileType, $channel);
 
         return [
-            'status' => 'Nodal file upload request sent to beam'
+            'response' => $response
         ];
     }
 
@@ -212,6 +214,29 @@ class Core extends Base\Core
     protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, CardEntity $card = null): array
     {
         $redis = $this->app['redis']->connection();
+
+        $iin = null;
+
+        if ($card !== null)
+        {
+            $iin = $card->iinRelation;
+        }
+
+        if ($iin !== null)
+        {
+            $issuer = $iin->getIssuer();
+
+            $networkCode = $card->getNetworkCode();
+
+            $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
+
+            // Checking specifically for IMPS as IMPS refund should be sent to ICICI channel FTS
+            if ((in_array(Mode::IMPS, $supportedModes, true) === false) or
+                (in_array(Mode::UPI, $supportedModes, true) === true))
+            {
+                return [false, Settlement\Channel::YESBANK];
+            }
+        }
 
         if (in_array($sourceType, AttemptConstants::ALLOWED_PRODUCTS_ON_FTS, true) === true)
         {
@@ -369,6 +394,9 @@ class Core extends Base\Core
                     case Settlement\Channel::ICICI:
                         return BeamConstants::ICICI_SETTLEMENT_JOB_NAME;
 
+                    case Settlement\Channel::AXIS2:
+                        return BeamConstants::AXIS2_SETTLEMENT_JOB_NAME;
+
                     default:
                         throw new LogicException('Invalid settlement channel', null, $channel);
                 }
@@ -378,6 +406,9 @@ class Core extends Base\Core
                 {
                     case Settlement\Channel::ICICI:
                         return BeamConstants::ICICI_BENEFICIARY_JOB_NAME;
+
+                    case Settlement\Channel::AXIS2:
+                        return BeamConstants::AXIS2_BENEFICIARY_JOB_NAME;
 
                     default:
                         throw new LogicException('Invalid Beneficiary channel', null, $channel);
@@ -395,6 +426,7 @@ class Core extends Base\Core
      * @param string $jobName
      * @param string $fileType
      * @param string $channel
+     * @return mixed
      */
     protected function sendFile(string $filename, string $jobName, string $fileType, string $channel)
     {
@@ -416,7 +448,7 @@ class Core extends Base\Core
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
     }
 
     /**
@@ -447,7 +479,7 @@ class Core extends Base\Core
                 return;
             }
 
-            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered);
+            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered)->delay(self::FTS_DISPATCH_DELAY);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
@@ -549,7 +581,7 @@ class Core extends Base\Core
     {
         $channel = $fta->getChannel();
 
-        if ($fta->shouldUseGateway() === true)
+        if ($fta->shouldUseGateway($fta->getMode()) === true)
         {
             return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
         }
@@ -613,6 +645,15 @@ class Core extends Base\Core
 
         $this->postFtaRecon($fta->source, $ftaData);
 
+        if (($fta->getSourceType() === Type::REFUND) and ($fta->getStatus() !== Status::PROCESSED))
+        {
+            //
+            // For refund fta, not updating transaction entity if fta is not processed.
+            // Do not want to set recon details of transaction entity for non-processed refunds
+            //
+            return;
+        }
+
         $this->updateTransactionEntity($fta->source);
     }
 
@@ -649,6 +690,17 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+            $slackData = [
+                'headLine'  => 'fta source processing failed',
+                'fta_id'    => $ftaData['fta_id'],
+                'status'    => $ftaData['fta_status'],
+                'source_id' => $ftaData['source_id'],
+            ];
+
+            $alerts = new Alerts();
+
+            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
@@ -673,9 +725,18 @@ class Core extends Base\Core
 
         $this->sourceReconByFta($fta->source, $ftaData);
 
-        if (($fta->getSourceType() == Type::PAYOUT) and
+        if (($fta->getSourceType() === Type::PAYOUT) and
             (in_array($fta->getChannel(), Settlement\Channel::getNonTransactionChannels(), true) === true))
         {
+            return;
+        }
+
+        if (($fta->getSourceType() === Type::REFUND) and ($fta->getStatus() !== Status::PROCESSED))
+        {
+            //
+            // For refund fta, not updating transaction entity if fta is not processed.
+            // Do not want to set recon details of transaction entity for non-processed refunds
+            //
             return;
         }
 

@@ -8,6 +8,7 @@ class Table
     const P2P                   = 'p2p';
     const VPA                   = 'vpas';
     const IIN                   = 'iins';
+    const MPAN                  = 'mpan';
     const KEY                   = 'keys';
     const RISK                  = 'risk';
     const PLAN                  = 'plans';
@@ -69,6 +70,7 @@ class Table
     const TRANSACTION               = 'transactions';
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
+    const SETTLEMENT_BUCKET         = 'settlement_bucket';
 
     // Subscriptions Tables
     const SUBSCRIPTION                   = 'subscriptions';
@@ -106,6 +108,7 @@ class Table
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempts';
     const FUND_ACCOUNT_VALIDATION   = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registrations';
+    const MERCHANT_DOCUMENT         = 'merchant_documents';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other

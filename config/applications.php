@@ -138,7 +138,7 @@ return [
     ],
 
     'rbl' => [
-        'secret' => env('RBL_SECRET'),
+        'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
     ],
 
     'bharatqr' => [
@@ -258,6 +258,10 @@ return [
         'url'      => env('RAZORX_URL'),
         'username' => 'rzp_api',
         'secret'   => env('RAZORX_SECRET'),
+    ],
+
+    'user_2fa' => [
+        'max_incorrect_tries' => env('USER_2FA_MAX_INCORRECT_TRIES', 9),
     ],
 
     'kubernetes_client' => [

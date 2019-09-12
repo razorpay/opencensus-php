@@ -170,6 +170,12 @@ class Validator extends Base\Validator
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
     ];
 
+    protected static $iinNpciRupayCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:4096' . self::DEFAULT_MIME_RULE,
+    ];
+
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -205,14 +211,22 @@ class Validator extends Base\Validator
     ];
 
     protected static $subMerchantCreateRules = [
-        Entity::TYPE           => 'required|in:sub_merchant',
-        Entity::NAME           => 'filled|string|max:255',
-        Entity::FILE           => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
-        ME::AUTO_SUBMIT        => 'filled|boolean',
-        ME::AUTOFILL_DETAILS   => 'filled|boolean',
-        ME::AUTO_ACTIVATE      => 'filled|boolean',
-        ME::USE_EMAIL_AS_DUMMY => 'filled|boolean',
-        ME::PARTNER_ID         => 'required|string|size:14',
+        Entity::TYPE   => 'required|in:sub_merchant',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'filled|array',
+    ];
+
+    protected static $subMerchantConfigRules = [
+        ME::AUTO_SUBMIT               => 'filled|boolean',
+        ME::INSTANTLY_ACTIVATE        => 'filled|boolean',
+        ME::AUTOFILL_DETAILS          => 'filled|boolean',
+        ME::AUTO_ACTIVATE             => 'filled|boolean',
+        ME::USE_EMAIL_AS_DUMMY        => 'filled|boolean',
+        ME::PARTNER_ID                => 'required|string|size:14',
+        ME::AUTO_ENABLE_INTERNATIONAL => 'filled|boolean',
+        ME::SKIP_BA_REGISTRATION      => 'filled|boolean',
+        ME::CREATE_SUBMERCHANT        => 'filled|boolean',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [
@@ -725,10 +739,14 @@ class Validator extends Base\Validator
 
         if ($totalPayoutAmount > $bankingBalance)
         {
-            throw new BadRequestValidationFailureException(
-                'Total payout amount in uploaded file exceeds available account balance',
-                Entity::FILE,
-                compact('totalPayoutAmount', 'bankingBalance'));
+            // For now, we are not handling balance validations for rbl merchants.
+            if ($merchant->isFeatureEnabled(Feature::X_PRO_INVITE) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Total payout amount in uploaded file exceeds available account balance',
+                    Entity::FILE,
+                    compact('totalPayoutAmount', 'bankingBalance'));
+            }
         }
     }
 
@@ -793,8 +811,12 @@ class Validator extends Base\Validator
 
     protected function validateSubMerchantEntries(array & $entries, array $params, ME $merchant)
     {
+        $this->validateInput('subMerchantConfig', $params[Entity::CONFIG] ?? []);
+
+        $partnerId = $params[Entity::CONFIG][ME::PARTNER_ID] ?? null;
+
         /** @var Merchant\Entity $partner */
-        $partner = (new Merchant\Repository)->findOrFailPublic($params[ME::PARTNER_ID]);
+        $partner = (new Merchant\Repository)->findOrFailPublic($partnerId);
 
         if ($partner->isNonPurePlatformPartner() === false)
         {

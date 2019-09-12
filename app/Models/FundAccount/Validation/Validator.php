@@ -12,6 +12,7 @@ class Validator extends Base\Validator
         Entity::NOTES        => 'sometimes|notes',
         Entity::CURRENCY     => 'filled|string|in:INR',
         Entity::RECEIPT      => 'sometimes|string|min:1|max:40',
+        Entity::BALANCE_ID   => 'sometimes|unsigned_id',
     ];
 
     protected static $retryRules = [

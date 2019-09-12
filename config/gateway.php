@@ -32,6 +32,7 @@ return [
         'kotak',
         'mobikwik',
         'netbanking_sib',
+        'netbanking_cbi',
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
@@ -52,10 +53,13 @@ return [
         'netbanking_equitas',
         'netbanking_sbi',
         'netbanking_cub',
+        'netbanking_ibk',
+        'netbanking_idbi',
         'netbanking_yesb',
         'paytm',
         'sharp',
         'upi_airtel',
+        'upi_citi',
         'upi_axis',
         'upi_icici',
         'upi_mindgate',
@@ -76,6 +80,7 @@ return [
         'wallet_openwallet',
         'wallet_mpesa',
         'wallet_phonepe',
+        'wallet_paypal',
         'bt_yesbank',
         'bt_kotak',
         'bajajfinserv',
@@ -102,6 +107,7 @@ return [
     'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
     'mock_paytm'                  => env('PAYTM_MOCK'),
     'mock_netbanking_sib'         => env('NETBANKING_SIB_MOCK'),
+    'mock_netbanking_cbi'         => env('NETBANKING_CBI_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
@@ -121,6 +127,8 @@ return [
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
     'mock_netbanking_cub'         => env('NETBANKING_CUB_MOCK'),
+    'mock_netbanking_ibk'         => env('NETBANKING_IBK_MOCK'),
+    'mock_netbanking_idbi'        => env('NETBANKING_IDBI_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_netbanking_yesb'        => env('NETBANKING_YESB_MOCK'),
@@ -155,8 +163,10 @@ return [
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
     'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
+    'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
+    'mock_upi_citi'               => env('UPI_CITI_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -766,6 +776,9 @@ return [
             'gateway_terminal_password'  => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD'),
             'gateway_terminal_password2' => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD2'),
         ],
+        'netbanking_cbi' => [
+            'account_number'         => env('CBI_NODAL_ACCOUNT_NUMBER'),
+        ],
         'razorpayx' => [
             'direct' => [
                 'rbl' => [
@@ -776,6 +789,9 @@ return [
                     'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER'),
                 ],
             ]
+        ],
+        'upi_citi' => [
+            'allowed_s2p_client_ips'      => env('UPI_CITI_ALLOWED_S2S_CLIENT_IPS'),
         ],
     ],
 

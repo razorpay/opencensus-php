@@ -4,6 +4,8 @@ namespace RZP\Models\FundTransfer\Yesbank\Request;
 
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Network;
+use RZP\Models\FundAccount\Type;
 use RZP\Models\Settlement\Metric;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\SlackNotification;
@@ -16,6 +18,18 @@ class Beneficiary extends Base
     const RECORD_EXIST_PENDING_APPROVAL = 'Record already exists but pending for approval';
 
     protected $urlIdentifier;
+
+    protected $ifscCode;
+
+    protected $beneficiaryCd;
+
+    protected $maskedBody = null;
+
+    protected $normalizedBeneName;
+
+    protected $normalizedBankName;
+
+    protected $entityAccountNumber;
 
     protected $requestTraceCode  = TraceCode::NODAL_BEN_ADD_REQUEST;
 
@@ -44,8 +58,13 @@ class Beneficiary extends Base
                   . '</soap:Body>'
                   . '</soap:Envelope>';
 
-         //requestTrace can have masked body as well for logging
          $this->requestTrace = $body;
+
+         //requestTrace can have masked body as well for logging
+         if (empty($this->maskedBody) === false)
+         {
+             $this->requestTrace = $this->maskedBody;
+         }
 
          return $body;
     }
@@ -57,19 +76,26 @@ class Beneficiary extends Base
      */
     protected function getContent(): string
     {
-        $beneName = $this->entity->getBeneficiaryName();
+        switch ($this->entityType)
+        {
+            case Type::BANK_ACCOUNT:
+                $this->setContentForBankAccount();
 
-        $normalizedBeneName =  $this->normalizeBeneficiaryName($beneName);
+                break;
 
-        $bankName = $this->entity->getBankName();
+            case Type::CARD:
+                $this->setContentForCard();
 
-        $normalizedBankName =  $this->normalizeBeneficiaryBankName($bankName);
+                break;
+        }
+
+        $this->setMaskedBeneficiaryRegisterRequestBody();
 
         return '<CustId>'
              . $this->customerId
              . '</CustId>'
              . '<BeneficiaryCd>'
-             . $this->entity->getId()
+             . $this->beneficiaryCd
              . '</BeneficiaryCd>'
              . '<SrcAccountNo>'
              . $this->accountNumber
@@ -78,19 +104,19 @@ class Beneficiary extends Base
              . Constants::BENE_PAYMENT_TYPE
              . '</PaymentType>'
              . '<BeneName>'
-             . $normalizedBeneName
+             . $this->normalizedBeneName
              . '</BeneName>'
              . '<BeneType>'
              . Constants::BENE_TYPE
              . '</BeneType>'
              . '<BankName>'
-             . $normalizedBankName
+             . $this->normalizedBankName
              . '</BankName>'
              . '<IfscCode>'
-             . $this->entity->getIfscCode()
+             . $this->ifscCode
              . '</IfscCode>'
              . '<BeneAccountNo>'
-             . $this->entity->getAccountNumber()
+             . $this->entityAccountNumber
              . '</BeneAccountNo>'
              . '<Action>'
              . Constants::BENE_FLAG
@@ -270,10 +296,10 @@ class Beneficiary extends Base
             . $this->customerId
             . '</CustId>'
             . '<BeneficiaryCd>'
-            . $this->entity->getId()
+            . $this->beneficiaryCd
             . '</BeneficiaryCd>'
             . '<SrcAccountNo>'
-            . $this->entity->getAccountNumber()
+            . $this->entityAccountNumber
             . '</SrcAccountNo>'
             . '<PaymentType>'
             . Constants::BENE_PAYMENT_TYPE
@@ -307,10 +333,10 @@ class Beneficiary extends Base
                 . $this->customerId
                 . '</CustId>'
                 . '<BeneficiaryCd>'
-                . $this->entity->getId()
+                . $this->beneficiaryCd
                 . '</BeneficiaryCd>'
                 . '<SrcAccountNo>'
-                . $this->entity->getAccountNumber()
+                . $this->entityAccountNumber
                 . '</SrcAccountNo>'
                 . '<PaymentType>'
                 . Constants::BENE_PAYMENT_TYPE
@@ -345,5 +371,125 @@ class Beneficiary extends Base
     protected function mockGenerateSuccessResponseForGateway(): array
     {
         throw new LogicException("should not be implemented for this");
+    }
+
+    /**
+     * Sets payload content for Bank Account Entity type
+     */
+    protected function setContentForBankAccount()
+    {
+        $this->beneficiaryCd = $this->entity->getId();
+
+        $beneName = $this->entity->getBeneficiaryName();
+
+        $this->normalizedBeneName = $this->normalizeBeneficiaryName($beneName);
+
+        $bankName = $this->entity->getBankName();
+
+        $this->normalizedBankName = $this->normalizeBeneficiaryBankName($bankName);
+
+        $this->ifscCode = $this->entity->getIfscCode();
+
+        $this->entityAccountNumber = $this->entity->getAccountNumber();
+    }
+
+    /**
+     * Sets Payload content for Card Entity type
+     * @throws \Exception
+     */
+    protected function setContentForCard()
+    {
+        $this->beneficiaryCd = 'card' . $this->entity->getId();
+
+        $beneName = $this->entity->getName();
+
+        $this->normalizedBeneName = $this->normalizeBeneficiaryName($beneName);
+
+        $iin = $this->entity->iinRelation;
+
+        $bankName = $iin->getIssuer();
+
+        $networkCode = $this->entity->getNetworkCode();
+
+        $this->normalizedBankName = $this->normalizeBeneficiaryBankName($bankName);
+
+        $this->ifscCode = $this->getIfscCodeUsingCardInfo($this->entity);
+
+        $vaultToken = $this->getCardVaultToken($this->entity);
+
+        $this->entityAccountNumber = $this->app['card.cardVault']->detokenize($vaultToken);
+
+        if ($networkCode === Network::DICL)
+        {
+            $this->entityAccountNumber = '00' . $this->entityAccountNumber;
+        }
+    }
+
+    /**
+     * Sets masked body for logging purpose.
+     */
+    protected function setMaskedBeneficiaryRegisterRequestBody()
+    {
+        $this->maskedBody = '`<CustId>'
+            . $this->customerId
+            . '</CustId>'
+            . '<BeneficiaryCd>'
+            . $this->beneficiaryCd
+            . '</BeneficiaryCd>'
+            . '<SrcAccountNo>'
+            . $this->accountNumber
+            . '</SrcAccountNo>'
+            . '<PaymentType>'
+            . Constants::BENE_PAYMENT_TYPE
+            . '</PaymentType>'
+            . '<BeneName>'
+            . $this->normalizedBeneName
+            . '</BeneName>'
+            . '<BeneType>'
+            . Constants::BENE_TYPE
+            . '</BeneType>'
+            . '<BankName>'
+            . $this->normalizedBankName
+            . '</BankName>'
+            . '<IfscCode>'
+            . $this->ifscCode
+            . '</IfscCode>'
+            . '<BeneAccountNo>'
+            . mask_except_last4($this->entityAccountNumber)
+            . '</BeneAccountNo>'
+            . '<Action>'
+            . Constants::BENE_FLAG
+            . '</Action>';
+    }
+
+    /**
+     * Mask the card no/bank account no in response
+     * @param $responseBody
+     * @return string|string[]|null
+     */
+    protected function getMaskedResponseBody($responseBody)
+    {
+        $tagOne = '<BeneAccountNo>';
+
+        $tagTwo = '</BeneAccountNo>';
+
+        $startTagPos = strrpos($responseBody, $tagOne);
+
+        if (empty($startTagPos) === true)
+        {
+            return $responseBody;
+        }
+
+        $startTagPos = $startTagPos + strlen($tagOne);
+
+        $endTagPos = strrpos($responseBody, $tagTwo);
+
+        $maskedStringLength = $endTagPos - $startTagPos;
+
+        $substr = substr($responseBody, $startTagPos, $maskedStringLength);
+
+        $replacement = mask_except_last4($substr);
+
+        return substr_replace($responseBody, $replacement, $startTagPos, $maskedStringLength);
     }
 }

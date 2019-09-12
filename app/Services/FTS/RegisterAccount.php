@@ -81,7 +81,7 @@ class RegisterAccount extends Base
                     Entity::REGISTRATION_STATUS => $value['status'],
                 ];
 
-                (new NodalCore)->create($nodalBeneficiary);
+                (new NodalCore)->createWithBankAccount($nodalBeneficiary);
             }
             catch (\Throwable $e)
             {

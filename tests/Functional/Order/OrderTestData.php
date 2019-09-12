@@ -612,6 +612,96 @@ return [
             ],
         ],
     ],
+    'testTokenRegistrationOrderWithDifferentMethod' =>
+    [
+        'request' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'UTIB',
+                'customer_id'    => 'cust_100000customer',
+                'token'          => [
+                    'method'                => 'card',
+                    'expire_at'             => 1880118306,
+                    'first_payment_amount'  => 100,
+                    'bank_account' => [
+                        'bank_name'          => 'HDFC Bank',
+                        'ifsc_code'          => 'HDFC0001233',
+                        'account_number'     => '123312563456',
+                        'account_type'       => 'savings',
+                        'beneficiary_name'   => 'test',
+                        'beneficiary_email'  => 'test@razorpay.com',
+                        'beneficiary_mobile' => '9999999999'
+                    ],
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'order method doesn\'t match with token method',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+    'testTokenRegistrationOrderWithoutMethod' =>
+    [
+        'request' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'UTIB',
+                'customer_id'    => 'cust_100000customer',
+                'token'          => [
+                    'expire_at'             => 1880118306,
+                    'first_payment_amount'  => 100,
+                    'bank_account' => [
+                        'bank_name'          => 'HDFC Bank',
+                        'ifsc_code'          => 'HDFC0001233',
+                        'account_number'     => '123312563456',
+                        'account_type'       => 'savings',
+                        'beneficiary_name'   => 'test',
+                        'beneficiary_email'  => 'test@razorpay.com',
+                        'beneficiary_mobile' => '9999999999'
+                    ],
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'token'          =>   [
+                    'expire_at'             => 1880118306,
+                    'first_payment_amount'  => 100,
+                    'bank_account' => [
+                        'bank_name'          => 'HDFC Bank',
+                        'ifsc'          => 'HDFC0001233',
+                        'account_number'     => '123312563456',
+                        'account_type'       => 'savings',
+                        'name'   => 'test',
+                        'beneficiary_email'  => 'test@razorpay.com',
+                        'beneficiary_mobile' => '9999999999'
+                    ],
+                ]
+            ],
+        ],
+    ],
     'testEmandateRegistrationOrderWithoutZeroRupee' => [
         'request' => [
             'content' => [

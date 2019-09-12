@@ -53,6 +53,13 @@ class Core extends Base\Core
 
         $external = (new Entity)->build($input);
 
+        $utr = $basEntity->getUtrFromDescription();
+
+        if (empty($utr) === false)
+        {
+            $external->setUtr($utr);
+        }
+
         $external->bankingAccountStatement()->associate($basEntity);
 
         $external->merchant()->associate($basEntity->merchant);

@@ -45,7 +45,7 @@ class StatusProcessor extends BaseRowProcessor
      */
     protected function processRow()
     {
-        $gateway = $this->row->shouldUseGateway();
+        $gateway = $this->row->shouldUseGateway($this->row->getMode());
 
         $type = $this->getRequestType($this->row);
 

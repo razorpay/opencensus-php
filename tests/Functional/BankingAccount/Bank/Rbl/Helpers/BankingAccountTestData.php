@@ -131,6 +131,58 @@ return [
         ],
     ],
 
+    'testUpdatedStatusFromCreatedToCancelled' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
+            ],
+        ],
+    ],
+
+    'testUpdatedStatusFromProcessingToRejected' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::REJECTED,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::REJECTED,
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountToInitiatedWithInternalComments' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS            => BankingAccount\Status::INITIATED,
+                BankingAccount\Entity::INTERNAL_COMMENT  => 'Sending Application to Bank'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
+            ],
+        ],
+    ],
+
     'testUpdateAccountInfoWebhookInternally'  => [
         'request'  => [
             'url'     => '/banking_accounts/internal/webhooks/account_info/rbl',
@@ -546,6 +598,133 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testBankingAccountFetch' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForAccountNumber' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+                'account_number' => '1234567808',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountRequests' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@rzp.com'
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForCurrentAccount' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items' => [
+                    [
+                        'status'        => 'created',
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@rzp.com'
+                            ]
+                        ]
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountsOfCreatedStatus'  => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+                'status' => 'created',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'admin'  => true,
+                'items' => [
+                    [
+                        'status'        => 'created',
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@rzp.com'
+                            ]
+                        ]
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForCurrentAccountFailure' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand'       => ['merchant','merchant.merchantDetail'],
+                'account_type' => 'current',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'admin'  => true,
+                'items'  => [],
+            ],
         ],
     ]
 ];

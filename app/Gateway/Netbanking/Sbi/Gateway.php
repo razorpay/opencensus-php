@@ -2,20 +2,25 @@
 
 namespace RZP\Gateway\Netbanking\Sbi;
 
-use phpseclib\Crypt\AES;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Customer\Token;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Base\Entity as GatewayEntity;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     const ENCRYPTION_METHOD = 'aes-256-gcm';
 
     protected $gateway = Payment\Gateway::NETBANKING_SBI;
@@ -26,15 +31,21 @@ class Gateway extends Base\Gateway
         /**
          * Fields from authorize request used to create gateway payment entity
          */
-        RequestFields::AMOUNT        => Base\Entity::AMOUNT,
-        RequestFields::MERCHANT_CODE => Base\Entity::MERCHANT_CODE,
+        RequestFields::AMOUNT                => Base\Entity::AMOUNT,
+        RequestFields::MERCHANT_CODE         => Base\Entity::MERCHANT_CODE,
 
         /**
          * Fields from the authorize response
          */
-        Base\Entity::RECEIVED           => Base\Entity::RECEIVED,
-        ResponseFields::BANK_REF_NO     => Base\Entity::BANK_PAYMENT_ID,
-        ResponseFields::STATUS          => Base\Entity::STATUS,
+        Base\Entity::RECEIVED                => Base\Entity::RECEIVED,
+        ResponseFields::BANK_REF_NO          => Base\Entity::BANK_PAYMENT_ID,
+        ResponseFields::STATUS               => Base\Entity::STATUS,
+
+        /**
+         *  Fields from emandate authorize response
+         */
+        ResponseFields::MANDATE_SBI_STATUS   => Base\Entity::STATUS,
+        ResponseFields::MANDATE_SBI_REF      => Base\Entity::BANK_PAYMENT_ID,
     ];
 
     /**
@@ -57,9 +68,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes);
 
-        $request = $this->getAuthorizeRequest($input);
-
-        return $request;
+        return $this->getAuthorizeRequest($input);
     }
 
     public function callback(array $input)
@@ -76,9 +85,15 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            return $this->handleFirstRecurringPaymentCallback($input, $gatewayInput);
+        }
+
         $this->assertPaymentId($input['payment']['id'], $gatewayInput[ResponseFields::REF_NO]);
 
         $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
+
         $actualAmount = $this->formatAmount($gatewayInput[ResponseFields::AMOUNT]);
 
         $this->assertAmount($expectedAmount, $actualAmount);
@@ -88,8 +103,7 @@ class Gateway extends Base\Gateway
         /**
          * @var $gatewayPayment GatewayEntity
          */
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         $this->checkCallbackStatus($gatewayInput, $gatewayPayment);
 
@@ -178,15 +192,27 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequest(array $input)
     {
-        $request = $this->getStandardRequestArray();
+        $request = $this->getStandardRequestArray([], 'post', $this->action . '_' . $this->mode);
 
-        $requestArray = [
-            RequestFields::REF_NO       => $input['payment'][Payment\Entity::ID],
-            RequestFields::AMOUNT       => $input['payment'][Payment\Entity::AMOUNT] / 100,
-            RequestFields::PAYMENT_ID   => $input['payment'][Payment\Entity::ID],
-            RequestFields::REDIRECT_URL => $input['callbackUrl'],
-            RequestFields::CANCEL_URL   => $input['callbackUrl'],
-        ];
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            $requestArray = $this->getEmandateParams($input);
+        }
+        else
+        {
+            $requestArray = [
+                RequestFields::REF_NO       => $input['payment'][Payment\Entity::ID],
+                RequestFields::AMOUNT       => $input['payment'][Payment\Entity::AMOUNT] / 100,
+                RequestFields::PAYMENT_ID   => $input['payment'][Payment\Entity::ID],
+                RequestFields::REDIRECT_URL => $input['callbackUrl'],
+                RequestFields::CANCEL_URL   => $input['callbackUrl'],
+            ];
+
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+                $requestArray[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+            }
+        }
 
         $contentToEncrypt = $this->getFormattedRequest($requestArray);
 
@@ -215,7 +241,71 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function isFirstRecurringPayment(array $input): bool
+    {
+        return ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL);
+    }
+
+    protected function getEmandateParams($input)
+    {
+        $token   = $input['token'];
+        $payment = $input['payment'];
+
+        $startDate = Carbon::createFromTimestamp($payment[Payment\Entity::CREATED_AT], Timezone::IST)
+                             ->format('d/m/Y');
+
+        $finalCollection = Carbon::createFromTimestamp($token->getExpiredAt(), Timezone::IST)
+                                   ->format('d/m/Y');
+
+        return [
+            RequestFields::MANDATE_HOLDER_NAME     => $token->getBeneficiaryName(),
+            RequestFields::FREQUENCY               => Emandate\Constants::FREQUENCY,
+            RequestFields::MANDATE_AMOUNT          => number_format(
+                                                            $token->getMaxAmount() / 100,
+                                                            2,
+                                                            '.',
+                                                            ''),
+            RequestFields::MANDATE_END_DATE        => $finalCollection,
+            RequestFields::MANDATE_START_DATE      => $startDate,
+            RequestFields::MANDATE_PAYMENT_ID      => $payment['id'],
+            RequestFields::DEBIT_ACCOUNT_NUMBER    => $token->getAccountNumber(),
+            RequestFields::MANDATE_RETURN_URL      => $input['callbackUrl'],
+            RequestFields::MANDATE_AMOUNT_TYPE     => Emandate\Constants::MAXIMUM,
+            RequestFields::TOKEN_ID                => $token['id'],
+            RequestFields::MANDATE_TXN_AMOUNT      => Emandate\Constants::TXN_AMOUNT,
+            RequestFields::MANDATE_ERROR_URL       => $input['callbackUrl'],
+            RequestFields::MANDATE_MODE            => 55454
+        ];
+    }
+
     //------------------- Callback helpers ----------------------------------//
+
+    protected function handleFirstRecurringPaymentCallback($input, $gatewayInput)
+    {
+        $this->assertPaymentId($input['payment']['id'], $gatewayInput[ResponseFields::MANDATE_PAYMENT_ID]);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $gatewayInput[Base\Entity::RECEIVED] = true;
+
+        // unsetting here as we do not want the amount to be updated again
+        unset($gatewayInput[ResponseFields::AMOUNT]);
+
+        $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayInput);
+
+        $this->checkCallbackStatusRecurring($gatewayInput);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            $recurringData = $this->getRecurringData($gatewayPayment);
+
+            $acquirerData = array_merge($acquirerData, $recurringData);
+        }
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
 
     protected function checkCallbackStatus(array $content, $gatewayPayment)
     {
@@ -236,6 +326,32 @@ class Gateway extends Base\Gateway
                     'gateway'           => $this->gateway
                 ]);
         }
+    }
+
+    protected function checkCallbackStatusRecurring(array $content)
+    {
+        if ((empty($content[ResponseFields::MANDATE_SBI_STATUS]) === true) or
+            ($content[ResponseFields::MANDATE_SBI_STATUS] !== Status::SUCCESS))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $content[ResponseFields::MANDATE_SBI_STATUS] ?? '',
+                $content[ResponseFields::MANDATE_SBI_DESCRIPTION],
+                [
+                    'callback_response' => $content,
+                    'payment_id'        => $this->input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
+    }
+
+    protected function getRecurringData($gatewayPayment)
+    {
+        $recurringData = [
+            Token\Entity::RECURRING_STATUS         => Token\RecurringStatus::INITIATED,
+        ];
+
+        return $recurringData;
     }
 
     //------------------- Verify Helpers ------------------------------------//
@@ -269,27 +385,39 @@ class Gateway extends Base\Gateway
 
     private function getVerifyRequestData($verify)
     {
-        $request = $this->getStandardRequestArray();
-
         $requestArray = [
             RequestFields::REF_NO   => $verify->input['payment']['id'],
             RequestFields::AMOUNT   => $verify->input['payment']['amount'] / 100,
         ];
 
+        $type = $this->action . '_' . $this->mode;
+
+        if ($verify->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            $requestArray = [
+                RequestFields::MANDATE_PAYMENT_ID            => $verify->input['payment']['id'],
+                RequestFields::MANDATE_VERIFY_TXN_AMOUNT     => Emandate\Constants::TXN_AMOUNT,
+            ];
+
+            $type = 'verify_mandate'. '_' . $this->mode;
+        }
+
         $stringToEncrypt = $this->getFormattedRequest($requestArray);
 
-        $request['content'] = [
+        $content = [
             RequestFields::ENCDATA          => $this->encrypt($stringToEncrypt),
             RequestFields::MERCHANT_CODE    => $this->getMerchantId(),
         ];
 
+        $request = $this->getStandardRequestArray($content, 'post', $type);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'data'       => $requestArray,
-                'encrypted'  => $request['content'],
-                'payment_id' => $verify->input['payment']['id'],
-                'gateway'    => $this->gateway
+                'formatted_request' => $stringToEncrypt,
+                'encrypted'         => $request['content'],
+                'payment_id'        => $verify->input['payment']['id'],
+                'gateway'           => $this->gateway
             ]);
 
         return $request;
@@ -306,16 +434,32 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if ((isset($content[ResponseFields::STATUS]) === true) and
-            ($content[ResponseFields::STATUS] === Status::SUCCESS))
+        if ($verify->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
-            $verify->gatewaySuccess = true;
+            if ((isset($content[ResponseFields::MANDATE_SBI_STATUS]) === true) and
+                ($content[ResponseFields::MANDATE_SBI_STATUS] === Status::SUCCESS))
+            {
+                $verify->gatewaySuccess = true;
+            }
+        }
+        else
+        {
+            if ((isset($content[ResponseFields::STATUS]) === true) and
+                ($content[ResponseFields::STATUS] === Status::SUCCESS))
+            {
+                $verify->gatewaySuccess = true;
+            }
         }
     }
 
     protected function setVerifyAmountMismatch(Verify $verify)
     {
         $input = $verify->input;
+
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return;
+        }
 
         $content = $verify->verifyResponseContent;
 
@@ -332,8 +476,6 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyAttributesToSave($content, $gatewayPayment)
     {
-        $content[ResponseFields::AMOUNT] = $content[ResponseFields::AMOUNT] * 100;
-
         $attributesToSave = $this->getMappedAttributes($content);
 
         $attributesToSave[Base\Entity::RECEIVED] = true;

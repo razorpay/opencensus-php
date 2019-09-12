@@ -4,7 +4,6 @@ namespace RZP\Models\Pricing;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -16,6 +15,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Constants\Entity as EntityConstants;
 
 use Carbon\Carbon;
 
@@ -33,18 +33,6 @@ class Fee extends Base\Core
     const DEFAULT_EMI_PLAN_ID           = 'ArGUUem5z3UADv';
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
     const DEFAULT_BANKING_PLAN_ID       = 'BTo98voDY05ueB';
-
-    // Delete this after 31st Jan
-    const DIWALI_END_TIMESTAMP = 1548916199;
-
-    // Delete this after 31st Jan
-    protected static $promotionalMethods = [
-        'card',
-        'emi',
-        'netbanking',
-        'upi',
-        'wallet',
-    ];
 
     public function __construct()
     {
@@ -115,17 +103,9 @@ class Fee extends Base\Core
 
         $merchant = $entity->merchant;
 
-        if ((($entity instanceof Payment\Entity) === true) and
-            ($merchant->isFeatureEnabled(Feature::DIWALI_PROMOTIONAL_PLAN) === true) and
-            ($currentTimeStamp < self::DIWALI_END_TIMESTAMP) and
-            (in_array($entity->getMethod(), self::$promotionalMethods, true) === true))
-        {
-            $pricingPlanId = Pricing\DefaultPlan::DIWALI_PROMOTIONAL_PLAN_ID;
-        }
-
         $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
-        $pricing = $this->addFallbackPricingRules($pricing, $entity->merchant);
+        $pricing = $this->addFallbackPricingRules($pricing, $entity);
 
         return $calculator->calculate($pricing);
     }
@@ -209,13 +189,15 @@ class Fee extends Base\Core
      * Merges fallback pricing plans for methods that
      * do not have a pricing rule defined for them.
      *
-     * @param Plan            $pricingPlan
-     * @param Merchant\Entity $merchant
+     * @param Plan              $pricingPlan
+     * @param Base\PublicEntity $entity
      *
      * @return Plan
      */
-    protected function addFallbackPricingRules(Plan $pricingPlan, Merchant\Entity $merchant)
+    protected function addFallbackPricingRules(Plan $pricingPlan, Base\PublicEntity $entity)
     {
+        $merchant = $entity->merchant;
+
         // for other orgs we don't merge any pricing plans
         if ($merchant->org->getId() !== Org\Entity::RAZORPAY_ORG_ID)
         {
@@ -255,26 +237,50 @@ class Fee extends Base\Core
             $pricingPlan = $pricingPlan->merge($emiPricing);
         }
 
-        $pricingPlan = $this->addBankingFallbackRulesIfApplicable($pricingPlan, $merchant);
+        $pricingPlan = $this->addBankingFallbackRulesIfApplicable($pricingPlan, $entity);
 
         return $pricingPlan;
     }
 
-    protected function addBankingFallbackRulesIfApplicable(Plan $pricingPlan, Merchant\Entity $merchant)
+    protected function addBankingFallbackRulesIfApplicable(Plan $pricingPlan, Base\PublicEntity $entity)
     {
-        if ($merchant->isBusinessBankingEnabled() === false)
+        $merchant = $entity->merchant;
+
+        //
+        // Business banking rules are applied only business banking is enabled and feature is payout
+        //
+        if (($entity->getEntityName() !== EntityConstants::PAYOUT) or
+            ($merchant->isBusinessBankingEnabled() === false))
         {
             return $pricingPlan;
         }
 
+        $pricingPlan = $this->addBankingPayoutFallbackRules($pricingPlan, $merchant);
+
+        return $pricingPlan;
+    }
+
+    protected function addBankingPayoutFallbackRules(Plan $pricingPlan, Merchant\Entity $merchant)
+    {
         //
-        // Add default pricing rules, only when no rules are already defined.
+        // Add default pricing rules, only when no rules are already defined for Shared accounts.
         // If ANY custom pricing rules have been added for banking payouts, we do not attach
         // default pricing rules
         //
-        if ($pricingPlan->hasBankingPayoutRule() === false)
+        if ($pricingPlan->hasBankingSharedAccountPayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingSharedAccountDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
+        }
+
+        //
+        // Add default pricing rules, only when no rules are already defined for Direct accounts.
+        // If ANY custom pricing rules have been added for banking payouts, we do not attach
+        // default pricing rules
+        //
+        if ($pricingPlan->hasBankingDirectAccountPayoutRule() === false)
+        {
+            $rules       = $this->repo->getBankingDirectAccountDefaultPricingRules(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 

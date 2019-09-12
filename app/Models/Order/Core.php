@@ -167,6 +167,8 @@ class Core extends Base\Core
             Entity::FIRST_PAYMENT_MIN_AMOUNT => $order->getFirstPaymentMinAmount(),
         ];
 
+        $orderMethod = $order->getMethod();
+
         if ($merchant->isTPVRequired() === true)
         {
             // TODO: Change this after creating bank account entities for all the previous TPV orders
@@ -176,8 +178,6 @@ class Core extends Base\Core
                 Entity::BANK           => $order->getBank(),
                 Entity::ACCOUNT_NUMBER => $this->getMaskedAccountNumber($accountNumber),
             ];
-
-            $orderMethod = $order->getMethod();
 
             if ($orderMethod !== null)
             {
@@ -195,6 +195,11 @@ class Core extends Base\Core
 
         if ($tokenRegistration !== null)
         {
+            if ($orderMethod !== null)
+            {
+                $data += [Entity::METHOD => $orderMethod];
+            }
+
             if ( ($tokenRegistration->getEntityType() === Entity::BANK_ACCOUNT) === true )
             {
                 $bankAccount = $tokenRegistration->bankAccount;

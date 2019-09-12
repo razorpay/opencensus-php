@@ -154,6 +154,14 @@ class Creator extends Base\Core
      *
      * @var string
      */
+
+    /**
+     * s3 related additional parameters specific to s3 object.
+     * key should be exactly same as s3 putobject params.
+     * @var null
+     */
+    protected $additionalParameters = null;
+
     protected $sheetName = 'Sheet 1';
 
     const DEFAULT_STORE    = 's3';
@@ -422,6 +430,16 @@ class Creator extends Base\Core
         return $this;
     }
 
+    public function additionalParameters(array $additionalParameters)
+    {
+        if (empty($additionalParameters) === false)
+        {
+            $this->additionalParameters = $additionalParameters;
+        }
+
+        return $this;
+    }
+
     /**
      * Set the delimiter used for creation of file
      *
@@ -680,6 +698,11 @@ class Creator extends Base\Core
             'mime'      => $this->file->getMime(),
             'metadata'  => $this->file->getMetadata(),
         ];
+
+        if (empty($this->additionalParameters) === false)
+        {
+            $fileDetails['additional_parameters'] = $this->additionalParameters;
+        }
 
         $location = $this->storageHandler->save($bucketConfig, $fileDetails);
 

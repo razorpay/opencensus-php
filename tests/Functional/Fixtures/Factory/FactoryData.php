@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Models;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Document\Entity;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
@@ -36,6 +37,30 @@ final class FactoryData
             'risk_rating'              => 3,
             'invoice_code'             => '123456789011',
             'activated_at'             => time(),
+        ]);
+
+        $factory(Entity::class, [
+            'id'            => $faker->uniqueid,
+            'merchant_id'   => '10000000000000',
+            'file_store_id' => 'abcdef',
+            'document_type' => 'address',
+            'entity_type'   => 'merchant',
+        ]);
+
+        /**
+         * Entity data type of merchant_email
+         */
+        $factory(\RZP\Models\Merchant\Email\Entity::class, [
+            'id'                       => $faker->uniqueid,
+            'type'                     => 'refund',
+            'email'                    => $faker->email,
+            'phone'                    => '9732097320',
+            'policy'                   => 'tech',
+            'url'                      => $faker->url,
+            'merchant_id'              => '10000000000000',
+            'verified'                 => 0,
+            'created_at'               => $faker->timestamp,
+            'updated_at'               => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Terminal\Entity::class, [
@@ -1089,6 +1114,10 @@ final class FactoryData
             'channel'           => 'rbl',
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Mpan\Entity::class, [
+
         ]);
     }
 }

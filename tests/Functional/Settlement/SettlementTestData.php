@@ -35,6 +35,27 @@ return [
         ]
     ],
 
+    'testSettleToPartnerWithDefaultConfig' => [
+        'axis' => [
+            'count'     => 2,
+            'txnCount'  => 4,
+        ]
+    ],
+
+    'testSettleToPartnerWithOverriddenConfig' => [
+        'axis' => [
+            'count'     => 2,
+            'txnCount'  => 4,
+        ]
+    ],
+
+    'testSettleToPartnerWhenNoMerchantBA' => [
+        'axis2' => [
+            'count'     => 2,
+            'txnCount'  => 4,
+        ]
+    ],
+
     'testSettlementForReversalOfDirectTransfer' => [
         'method'  => 'POST',
         'url'     => '/schedules/update_next_run/',

@@ -3,9 +3,11 @@
 namespace RZP\Models\User;
 
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Exception\LogicException;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestException;
 
 class Role
 {
@@ -76,6 +78,15 @@ class Role
         self::RBL_AGENT
     ];
 
+    /**
+     * Only Owner/Admin can update some user details
+     * such as mobile number, unlock user account.
+     */
+    const USER_DETAILS_UPDATE_ROLES = [
+        self::OWNER,
+        self::ADMIN,
+    ];
+
     public static function getPrimaryRoles(): array
     {
         return array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES);
@@ -110,5 +121,15 @@ class Role
         $allRoles = array_merge(self::ALL_ROLES, BankingRole::getAllRoles());
 
         return array_diff($allRoles, self::PL_ROLES);
+    }
+
+    public function validateMerchantUserRoleForUpdateUserDetails(string $role)
+    {
+        if (in_array($role, self::USER_DETAILS_UPDATE_ROLES, true) === true)
+        {
+            return;
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
     }
 }

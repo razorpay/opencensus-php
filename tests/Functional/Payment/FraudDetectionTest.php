@@ -1,10 +1,13 @@
 <?php
 
 namespace RZP\Tests\Functional\Payment;
+use Mockery;
 
 use RZP\Error\ErrorCode;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Feature;
 use RZP\Models\Risk;
+use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -194,5 +197,81 @@ class FraudDetectionTest extends TestCase
         $response = $this->doAuthPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    /*
+     * In this test case, we simulate a failure to detect fraud on Shield(validateFraudDetectionV2).
+     * In this case, we still want a fraud check to happen via Maxmind(validateFraudDetection)
+     */
+    public function testFraudDetectionFailedByShieldDetectedByMaxMind()
+    {
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload){
+                throw new IntegrationException(ErrorCode::SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED,
+                    ErrorCode::SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED);
+            });
+
+        $this->app['shield'] = $shieldClient;
+
+        $this->mockMaxmind();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '341111111111111';
+
+        $payment['card']['cvv'] = '1234';
+
+        $data = $this->testData['testFraudDetectionFailedByShieldDetectedByMaxMind'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND,
+            $riskEntity['reason']
+        );
+    }
+
+    public function testFraudDetectionFailedByShieldSkippedByMaxmind()
+    {
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload){
+                throw new IntegrationException(ErrorCode::SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED,
+                    ErrorCode::SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED);
+            });
+
+        $this->app['shield'] = $shieldClient;
+
+        $this->mockMaxmind();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('payment_id', $response);
     }
 }

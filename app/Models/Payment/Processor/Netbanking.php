@@ -98,10 +98,13 @@ class Netbanking
         IFSC::ALLA,
         IFSC::CNRB,
         IFSC::CIUB,
+        IFSC::IDIB,
         IFSC::ESFB,
         IFSC::SBIN,
+        IFSC::CBIN,
         IFSC::VIJB,
         IFSC::YESB,
+        IFSC::IBKL,
         IFSC::SIBL,
         self::PUNB_R,
         self::BARB_R,
@@ -128,6 +131,9 @@ class Netbanking
         IFSC::SIBL,
         IFSC::YESB,
         IFSC::CIUB,
+        IFSC::IDIB,
+        IFSC::CBIN,
+        IFSC::SBIN,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -436,6 +442,14 @@ class Netbanking
                 IFSC::SIBL
             ]
         ],
+        Gateway::NETBANKING_CBI => [
+            'retail' => [
+                IFSC::CBIN
+            ],
+            'tpv' => [
+                IFSC::CBIN
+            ]
+        ],
         Gateway::NETBANKING_IDFC => [
             'retail' => [
                 IFSC::IDFB
@@ -483,6 +497,19 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::CIUB
+            ],
+        ],
+        Gateway::NETBANKING_IBK => [
+            'retail' => [
+                IFSC::IDIB,
+            ],
+            'tpv' => [
+                IFSC::IDIB
+            ],
+        ],
+        Gateway::NETBANKING_IDBI => [
+            'retail' => [
+                IFSC::IBKL,
             ],
         ],
         Gateway::NETBANKING_FEDERAL => [
@@ -547,6 +574,9 @@ class Netbanking
         Gateway::NETBANKING_SBI => [
             'retail' => [
                 IFSC::SBIN,
+            ],
+            'tpv' => [
+                IFSC::SBIN
             ]
         ],
 

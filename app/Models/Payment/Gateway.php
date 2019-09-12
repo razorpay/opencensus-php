@@ -23,6 +23,7 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const ATOS                   = 'atos';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -44,6 +45,7 @@ class Gateway
     const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_SIB         = 'netbanking_sib';
+    const NETBANKING_CBI         = 'netbanking_cbi';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
@@ -53,6 +55,8 @@ class Gateway
     const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CUB         = 'netbanking_cub';
+    const NETBANKING_IBK         = 'netbanking_ibk';
+    const NETBANKING_IDBI        = 'netbanking_idbi';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
@@ -79,6 +83,7 @@ class Gateway
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
+    const UPI_CITI               = 'upi_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -93,6 +98,7 @@ class Gateway
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PHONEPE     = 'wallet_phonepe';
+    const WALLET_PAYPAL      = 'wallet_paypal';
 
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
@@ -206,6 +212,7 @@ class Gateway
         self::PAYTM             => self::PAYTM,
         self::UPI_AXIS          => self::AXIS,
         self::UPI_MINDGATE      => self::HDFC,
+        self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
     ];
 
     /**
@@ -261,6 +268,7 @@ class Gateway
      * and be allowed to perform it.
      * */
     const REFUND_RETRY_GATEWAYS = [
+        Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::EBS,
@@ -290,6 +298,7 @@ class Gateway
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::PAYTM,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -302,6 +311,8 @@ class Gateway
         IFSC::CBIN,
         IFSC::CIUB,
         IFSC::DEUT,
+        IFSC::ESFB,
+        IFSC::FDRL,
         IFSC::HDFC,
         IFSC::IBKL,
         IFSC::ICIC,
@@ -312,6 +323,7 @@ class Gateway
         IFSC::MAHB,
         IFSC::PYTM,
         IFSC::RATN,
+        IFSC::SIBL,
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTIB,
@@ -324,6 +336,7 @@ class Gateway
         IFSC::ICIC,
         IFSC::UTIB,
         IFSC::HDFC,
+        IFSC::SBIN
     ];
 
     // The 2 commented banks are mentioned at the bottom
@@ -565,6 +578,7 @@ class Gateway
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::ATOM,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     public static $channels = [
@@ -637,9 +651,12 @@ class Gateway
             self::EBS,
             self::ATOM,
             self::NETBANKING_SIB,
+            self::NETBANKING_CBI,
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
             self::NETBANKING_CUB,
+            self::NETBANKING_IBK,
+            self::NETBANKING_IDBI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
             self::NETBANKING_CORPORATION,
@@ -690,6 +707,7 @@ class Gateway
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
             self::WALLET_PHONEPE,
+            self::WALLET_PAYPAL,
         ],
 
         Method::EMI => [
@@ -822,6 +840,7 @@ class Gateway
         self::UPI_RBL,
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
+        self::UPI_CITI,
     ];
 
     public static $headless = [
@@ -962,6 +981,7 @@ class Gateway
         Wallet::MPESA       => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
         Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
+        Wallet::PAYPAL      => Gateway::WALLET_PAYPAL,
     ];
 
     public static $upiToGatewayMap = [
@@ -1028,6 +1048,7 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
+        self::NETBANKING_CBI,
         self::CARDLESS_EMI,
     ];
 
@@ -1076,6 +1097,7 @@ class Gateway
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_SBI,
         Gateway::ESIGNER_DIGIO,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
@@ -1115,6 +1137,7 @@ class Gateway
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
+            Gateway::NETBANKING_SBI,
             Gateway::ENACH_NPCI_NETBANKING,
         ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
@@ -1172,6 +1195,7 @@ class Gateway
         IFSC::SIBL,
         IFSC::ESFB,
         IFSC::ACUX,
+        IFSC::SBIN,
     ];
 
     /**
@@ -1186,6 +1210,7 @@ class Gateway
         Gateway::NETBANKING_ICICI      => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS       => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC       => [IFSC::HDFC],
+        Gateway::NETBANKING_SBI        => [IFSC::SBIN],
         Gateway::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING_BANKS,
         Gateway::ENACH_RBL             => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
@@ -1208,6 +1233,7 @@ class Gateway
         Gateway::NETBANKING_AXIS,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1219,6 +1245,7 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1245,6 +1272,7 @@ class Gateway
         Gateway::UPI_YESBANK,
         Gateway::UPI_AIRTEL,
         Gateway::WALLET_PHONEPE,
+        Gateway::UPI_CITI,
     ];
 
     /**
@@ -1307,6 +1335,7 @@ class Gateway
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
         IFSC::SIBL         => Gateway::NETBANKING_SIB,
+        IFSC::CBIN         => Gateway::NETBANKING_CBI,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB         => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
@@ -1314,6 +1343,8 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CIUB         => Gateway::NETBANKING_CUB,
+        IFSC::IDIB         => Gateway::NETBANKING_IBK,
+        IFSC::IBKL         => Gateway::NETBANKING_IDBI,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
@@ -1323,6 +1354,7 @@ class Gateway
         IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::SBIN         => Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1332,21 +1364,24 @@ class Gateway
      * @var array
      */
     public static $refundFileNetbankingGateways = [
-        IFSC::ICIC => Gateway::NETBANKING_ICICI,
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
-        IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-        IFSC::ALLA => Gateway::NETBANKING_ALLAHABAD,
-        IFSC::CNRB => Gateway::NETBANKING_CANARA,
-        IFSC::IDFB => Gateway::NETBANKING_IDFC,
-        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
-        IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
-        Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
-        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::ICIC          => Gateway::NETBANKING_ICICI,
+        IFSC::IDIB          => Gateway::NETBANKING_IBK,
+        IFSC::HDFC          => Gateway::NETBANKING_HDFC,
+        IFSC::CBIN          => Gateway::NETBANKING_CBI,
+        IFSC::CORP          => Gateway::NETBANKING_CORPORATION,
+        IFSC::KKBK          => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB          => Gateway::NETBANKING_AXIS,
+        IFSC::FDRL          => Gateway::NETBANKING_FEDERAL,
+        IFSC::RATN          => Gateway::NETBANKING_RBL,
+        IFSC::INDB          => Gateway::NETBANKING_INDUSIND,
+        IFSC::ALLA          => Gateway::NETBANKING_ALLAHABAD,
+        IFSC::CNRB          => Gateway::NETBANKING_CANARA,
+        IFSC::IDFB          => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB          => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB          => Gateway::NETBANKING_VIJAYA,
+        Netbanking::PUNB_R  => Gateway::NETBANKING_PNB,
+        Netbanking::BARB_R  => Gateway::NETBANKING_BOB,
+        IFSC::SBIN          => Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1369,6 +1404,7 @@ class Gateway
         IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
         IFSC::ORBC => Gateway::NETBANKING_OBC,
         IFSC::CSBK => Gateway::NETBANKING_CSB,
+        IFSC::CBIN => Gateway::NETBANKING_CBI,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1481,6 +1517,10 @@ class Gateway
 
     public static $cardlessEmiRedirectFlowProvider = [
         CardlessEmi::FLEXMONEY,
+    ];
+
+    public static $verifyClientOnS2s = [
+        Gateway::UPI_CITI,
     ];
 
     public static function isNonTerminalGateway(string $gateway)

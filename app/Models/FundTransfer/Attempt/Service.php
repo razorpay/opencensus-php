@@ -6,6 +6,12 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Admin\ConfigKey;
+use Razorpay\Trace\Logger as Trace;
+use http\Exception\RuntimeException;
+use RZP\Models\FundTransfer\Attempt\Core;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Attempt\Validator;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 class Service extends Base\Service
@@ -19,9 +25,23 @@ class Service extends Base\Service
                 'channel'   => $channel
             ]);
 
-        $data = (new Initiator)->initiateFundTransfers($input, $channel);
+        if($input['purpose'] === Purpose::SETTLEMENT)
+        {
+            $channelState = $this->getChannelState();
 
-        return $data;
+            if((isset($channelState[$channel]) === true) and $channelState[$channel] === Constants::DISABLE)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_TRANSFER_DISABLED,
+                    [
+                        'channel' => $channel,
+                    ]);
+
+                return ['status' => 'failed'];
+            }
+        }
+
+        return (new Initiator)->initiateFundTransfers($input, $channel);
     }
 
     public function reconcileFundTransfers(array $input, string $channel): array
@@ -272,5 +292,68 @@ class Service extends Base\Service
     public function healthCheck(string $channel, array $input): array
     {
         return $this->core()->healthCheck($channel, $input);
+    }
+
+    public function setChannelState(string $channel,string $action)
+    {
+        (new Validator)->validateInput('fta_control', [
+            Entity::CHANNEL => $channel,
+            'action'        => $action,
+        ]);
+
+        $redis = $this->app['redis']->connection();
+
+        $user = $this->core()->getInternalUsernameOrEmail();
+
+        $status = false;
+
+        try
+        {
+            $redis->HMSET(ConfigKey::FTA_CHANNELS, [$channel => $action]);
+
+            $data = [
+                'channel'           => $channel,
+                'user'              => $user ,
+                'action'            => $action,
+                'mode'              => $this->mode,
+            ];
+
+            (new SlackNotification)->send('fta_control', $data, null, 1, SlackNotification::SETTLEMENT);
+
+            $status = true;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::SET_CHANNEL_STATE_FAILED
+                );
+        }
+
+        return [
+            'status' => $status,
+        ];
+    }
+
+    public function getChannelState(): array
+    {
+        $redis = $this->app['redis']->connection();
+
+        $values = [];
+
+        try
+        {
+            $values = $redis->HGETALL(ConfigKey::FTA_CHANNELS);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::GET_CHANNEL_STATE_FAILED
+            );
+        }
+
+        return $values;
     }
 }

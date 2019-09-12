@@ -1,7 +1,6 @@
 <?php
 namespace RZP\Http\Controllers;
 
-use Razorpay\Api\Api;
 use Request;
 use ApiResponse;
 
@@ -90,6 +89,33 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function checkUserAccess()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->checkUserAccess($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function setup2faMobileOnLogin()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setup2faMobileOnLogin($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function setup2faVerifyMobileOnLogin()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setup2faVerifyMobileOnLogin($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getUser(string $id)
     {
         $data = $this->service()->get($id);
@@ -152,5 +178,58 @@ class UserController extends Controller
         $response = $this->service()->resetUserPassword($id, $input);
 
         return ApiResponse::json($response);
+    }
+
+    public function change2faSetting()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->change2faSetting($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     *  User is updating his/her own contact Mobile
+     * @return mixed
+     */
+    public function editContactMobile()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editContactMobile($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Update contact mobile of a user using userId
+     * by Restricted Merchant or Admin
+     * @return mixed
+     */
+    public function updateContactMobile()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateContactMobile($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Lock/Unlock action for user account
+     *
+     * @param string $id
+     * @param string $action
+     *
+     * @return mixed
+     */
+    public function accountLockUnlock(string $id, string $action)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->accountLockUnlock($id, $action);
+
+        return ApiResponse::json($data);
     }
 }

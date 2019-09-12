@@ -20,7 +20,22 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        return $row[Constants::COLUMN_PAYMENT_ID] ?? null;
+        $paymentId = $row[Constants::COLUMN_PAYMENT_ID] ?? null;
+
+        if ($paymentId === Constants::HEADER_MERCHANTREFRENCE)
+        {
+            //
+            // This is the header row, ignore this.
+            // Note : Sometimes we get the first line as header and sometimes
+            // the file starts with data on the first line itself. So we can't
+            // skip the first line. Handling both the cases here.
+            //
+            $this->setFailUnprocessedRow(false);
+
+            return null;
+        }
+
+        return $paymentId;
     }
 
     protected function getReferenceNumber($row)
@@ -28,7 +43,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[Constants::COLUMN_BANK_PAYMENT_ID] ?? null;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->netbankingRepo->findByPaymentIdAndAction($paymentId,
             Action::AUTHORIZE);

@@ -26,6 +26,8 @@ class AcknowledgeTest extends TestCase
      */
     public function testAcknowledgeCapturedPayment()
     {
+        $this->app['rzp.mode'] = 'test';
+
         $payment = $this->fixtures->create('payment:captured', [
             'notes' => [
                 'merchant_order_id' => 'order_5176',
