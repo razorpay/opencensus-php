@@ -2,13 +2,11 @@
 
 namespace RZP\Models\Payout\Processor;
 
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\FundAccount;
 use RZP\Models\Payout;
-use RZP\Models\Settlement;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class FundAccountPayout extends Base
 {

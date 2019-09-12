@@ -3,7 +3,6 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
-use RZP\Models\Contact\Entity;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Batch;

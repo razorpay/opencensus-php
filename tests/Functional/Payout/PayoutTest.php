@@ -35,10 +35,14 @@ class PayoutTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
         $this->fixtures->create(
             'fund_account',
             [
                 'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
                 'account_type' => 'bank_account',
                 'account_id'   => '1000000lcustba'
             ]);
@@ -54,6 +58,8 @@ class PayoutTest extends TestCase
             'fund_account',
             [
                 'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
                 'account_type' => 'bank_account',
                 'account_id'   => '1000000lcustba'
             ]);
@@ -471,6 +477,8 @@ class PayoutTest extends TestCase
             [
                 'id'           => '100000000002fa',
                 'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
                 'account_id'   => '10000000ICcard',
                 'active'       => 1,
             ]);
@@ -485,13 +493,15 @@ class PayoutTest extends TestCase
             [
                 'id'           => '100000000002fa',
                 'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
                 'account_id'   => '100000000lcard',
                 'active'       => 1,
             ]);
 
         $this->startTest();
     }
-    
+
     public function testCreatePayoutToInactiveContactFundAccount()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'active' => 0]);
