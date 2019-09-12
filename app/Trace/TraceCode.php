@@ -112,6 +112,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_UPDATE_RRN_SUMMARY                             = 'REFUND_UPDATE_RRN_SUMMARY';
     const REFUND_UPDATE_REFERENCE1                              = 'REFUND_UPDATE_REFERENCE1';
     const REFUND_UPDATE_REFERENCE1_SUMMARY                      = 'REFUND_UPDATE_REFERENCE1_SUMMARY';
+    const REFUND_PROCESSED_TO_CREATED                           = 'REFUND_PROCESSED_TO_CREATED';
     const RESET_SCHEDULES_SUMMARY                               = 'RESET_SCHEDULES_SUMMARY';
     const PAYMENT_TIMED_OUT                                     = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                                 = 'PAYMENT_VERIFY_FAILED';

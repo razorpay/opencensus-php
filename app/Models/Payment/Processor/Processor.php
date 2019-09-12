@@ -3119,6 +3119,17 @@ class Processor
         2000);
     }
 
+    public function revertProcessedRefundToCreatedState(Payment\Refund\Entity &$refund)
+    {
+        $refund->setStatus(Payment\Refund\Status::CREATED);
+
+        $refund->setReference1();
+
+        $refund->setProcessedAt(null);
+
+        $refund->setGatewayRefunded(null);
+    }
+
     protected function resetPaymentStatusAndRefundStatus(Payment\Entity $payment)
     {
         // If total amount refund is 0, setting payment's refund status to null

@@ -921,6 +921,7 @@ final class Route
         'scrooge_refunds_enqueue'                  => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                         ],
         'scrooge_refunds_download_gateway_file'    => ['post',     'scrooge/refunds/download-gateway-file',          'ScroogeController@downloadGatewayRefundsFile'                      ],
         'set_scrooge_refund_dark'                  => ['post',     'scrooge/refunds/{id}/dark/{action}',             'ScroogeController@setRefundDark'                                   ],
+        'scrooge_processed_refunds_state_change'   => ['post',     'scrooge/refunds/processed-refunds-state-change', 'ScroogeController@bulkStatusUpdate'                                ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -2213,6 +2214,7 @@ final class Route
         'scrooge_reports_get_multiple',
         'scrooge_refunds_update_multiple',
         'scrooge_refunds_bulk_reference1_update',
+        'scrooge_processed_refunds_state_change',
         'scrooge_refunds_enqueue',
         'scrooge_refunds_get_multiple',
         'scrooge_refunds_download',
@@ -2609,6 +2611,7 @@ final class Route
         'scrooge_reports_get_multiple'             => '*',
         'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
         'scrooge_refunds_bulk_reference1_update'   => Permission::UPDATE_SCROOGE_REFUND_REFERENCE1,
+        'scrooge_processed_refunds_state_change'   => Permission::UPDATE_SCROOGE_REFUND_REFERENCE1,
         'scrooge_refunds_enqueue'                  => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download'                 => Permission::VIEW_SCROOGE_REFUNDS,

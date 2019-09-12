@@ -1096,7 +1096,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $event)
+    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1113,6 +1113,7 @@ trait PaymentTrait
         }
 
         $input['event'] = $event;
+        $input['status'] = $status;
 
         $this->ba->scroogeAuth();
 
