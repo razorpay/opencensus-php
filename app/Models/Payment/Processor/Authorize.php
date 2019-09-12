@@ -303,18 +303,7 @@ trait Authorize
             {
                 if ($this->canRunOtpPaymentFlow($payment, $terminalGatewayInput) === true)
                 {
-                    // If the appToken and walletToken is set then for a power wallet, run the
-                    // power wallet flow. Run otp flow if appToken and walletToken are set
-                    // but the wallet is not a power wallet.
-                    if (($payment->getGlobalTokenId() !== null) and
-                        (Payment\Gateway::isPowerWalletSupported($payment) === true))
-                    {
-                        $request = $this->runPowerWalletFlow($terminalGatewayInput, $payment);
-                    }
-                    else
-                    {
-                        $request = $this->runOtpPaymentFlow($payment, $terminalGatewayInput);
-                    }
+                    $request = $this->runOtpPaymentFlow($payment, $terminalGatewayInput);
                 }
                 else
                 {
@@ -378,7 +367,7 @@ trait Authorize
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
-                $this->updatePaymentAuthFailedAndThrowException($e);
+                $this->updatePaymentOnExceptionAndThrow($e);
             }
             finally
             {
@@ -393,7 +382,20 @@ trait Authorize
 
     protected function runOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput)
     {
-        $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
+        //
+        // If the appToken and walletToken is set then for a power wallet, run the
+        // power wallet flow. Run otp flow if appToken and walletToken are set
+        // but the wallet is not a power wallet.
+        //
+        if ((Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true) and
+            ($payment->getGlobalTokenId() !== null))
+        {
+            $request = $this->runAutoDebitFlow($payment, $gatewayInput);
+        }
+        else
+        {
+            $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
+        }
 
         return $request;
     }
@@ -1699,7 +1701,7 @@ trait Authorize
     protected function associateWalletTokenIfApplicable(Payment\Entity $payment)
     {
         if (($payment->getGlobalCustomerId() !== null) and
-            (Payment\Gateway::isPowerWalletSupported($payment) === true))
+            (Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true))
         {
             $terminalId = $payment->getTerminalId();
             $wallet = $payment->getWallet();
@@ -1707,7 +1709,7 @@ trait Authorize
 
             $token = (new Token\Repository)->getByWalletTerminalAndCustomerId($wallet, $terminalId, $customerId);
 
-            if (($token !== null) and ($token->getExpiredAt() > time()))
+            if ($token !== null)
             {
                 $payment->globalToken()->associate($token);
             }
@@ -3015,6 +3017,8 @@ trait Authorize
         else if ($payment->isWallet() === true)
         {
             $payment->setWallet($token->getWallet());
+
+            $payment->globalToken()->associate($token);
         }
         else if ($payment->isEmandate() === true)
         {
@@ -4866,11 +4870,8 @@ trait Authorize
         return false;
     }
 
-    protected function runPowerWalletFlow(array $gatewayInput, Payment\Entity $payment)
+    protected function runAutoDebitFlow(Payment\Entity $payment, array $gatewayInput)
     {
-        $gatewayInput['customer'] = $payment->globalCustomer;
-        $gatewayInput['token'] = $payment->globalToken;
-        $gatewayInput['isPowerWalletFlow'] = true;
         $this->trace->info(
             TraceCode::PAYMENT_POWER_WALLET_INITIATED,
             [
@@ -4878,73 +4879,28 @@ trait Authorize
                 'gateway'     => $payment->getGateway(),
                 'terminal_id' => $payment->getTerminalId(),
             ]);
+
         try
         {
-            $this->callGatewayFunction('checkBalance', $gatewayInput);
+            $this->callGatewayFunction(Action::CHECK_BALANCE, $gatewayInput);
         }
         catch (Exception\GatewayErrorException $e)
         {
             $error = $e->getError();
+
             //
             // If the accessToken for the wallet is invalid, run the
             // otpGenerate flow for it.
             //
-            if ($this->isGatewayTokenInvalid($error) === true)
+            if ($error->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN)
             {
                 return $this->runOtpPaymentFlow($payment, $gatewayInput);
             }
-            // @todo: Refactor it and move it to ApiResponse
-            // Return a co-proto request to add funds.
-            if ($this->shouldPowerWalletTopup($error) === true)
-            {
-                $this->trace->info(
-                    TraceCode::PAYMENT_POWER_WALLET_TOPUP,
-                    [
-                        'gateway'     => $payment->getGateway(),
-                        'payment_id'  => $payment->getId(),
-                        'terminal_id' => $payment->getTerminalId(),
-                    ]);
-                $this->repo->saveOrFail($payment);
-                //return $this->topup($payment->getPublicId(), $payment);
-                $this->processPaymentCallbackException($e);
-            }
+
             throw $e;
         }
-        $response = $this->callGatewayFunction('autoDebit', $gatewayInput);
-        return $this->processPowerWalletFlowResponse($response, $payment);
-    }
 
-    protected function processPowerWalletFlowResponse($request, $payment)
-    {
-        $this->updateAndNotifyPaymentAuthorized();
-        $this->updateTwoFactorAuthForOneStepPayment();
-        $payment = $this->payment;
-        $this->postPaymentAuthorizeProcessing($payment);
-        return null;
-    }
-
-    protected function isGatewayTokenInvalid($error)
-    {
-        $errorCode = $error->getInternalErrorCode();
-        switch($errorCode)
-        {
-            case ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    protected function shouldPowerWalletTopup($error)
-    {
-        $errorCode = $error->getInternalErrorCode();
-        switch($errorCode)
-        {
-            case ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE:
-                return true;
-            default:
-                return false;
-        }
+        return $this->callGatewayFunction(Action::DEBIT, $gatewayInput);
     }
 
     protected function callGatewayOtpGenerate(array $data, Payment\Entity $payment, $otpResend = false)
