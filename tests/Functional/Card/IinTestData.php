@@ -345,6 +345,29 @@ return [
         ],
     ],
 
+    'testBatchServiceIinUpdate' => [
+        'request' => [
+            'url' => '/iins/iin_npci_rupay/process',
+            'method' => 'post',
+            'content' => [
+                'row'   => 'ABHY065000160726100060726199916S010101E&M01D356IN140513000000N'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'           => 607261,
+                'category'      => null,
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'sub_type'      => 'consumer',
+                'country'       => 'IN',
+                'issuer'        => 'ABHY',
+                'issuer_name'   => 'Abhyudaya Co-operative Bank',
+            ]
+        ],
+    ],
+
+
     'testGetIins' => [
         'request' => [
             'url' => '/admin/iin',

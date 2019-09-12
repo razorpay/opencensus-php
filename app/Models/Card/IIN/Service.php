@@ -204,6 +204,16 @@ class Service extends Base\Service
         }
     }
 
+    public function processRecord(string $type, array $input)
+    {
+        // hardcoding for now
+        $this->processor = new Batch\NpciRupay;
+
+        $this->processor->preprocess($input);
+
+        return $this->processor->process();
+    }
+
     protected function formatEditInput(Entity $iin, array & $input)
     {
         if (isset($input[Entity::FLOWS]) === false)

@@ -176,6 +176,7 @@ final class Route
         'iin_edit'                                 => ['put',      'iins/{id}',                                      'IinController@editIin'                                             ],
         'iin_edit_bulk'                            => ['patch',    'iins/bulk',                                      'IinController@editIinBulk'                                         ],
         'iin_generate_post'                        => ['post',     'iins/import/generate',                           'IinController@postIinGenerate'                                     ],
+        'iin_batch_process_record'                 => ['post',     'iins/{type}/process',                            'IinController@processRecord'                                       ],
         'merchant_public_get_banks'                => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                          => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                       => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
@@ -1653,6 +1654,7 @@ final class Route
         'get_setl_amount',
         'cps_sync_gateway_entities_cron',
         'scrooge_refund_reference1_bulk_update',
+        'iin_batch_process_record',
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
     ];
@@ -3139,6 +3141,7 @@ final class Route
             'bulk_contact_create',
             'payout_bulk_create',
             'partner_submerchant_map',
+            'iin_batch_process_record',
         ],
 
         'stork' => [

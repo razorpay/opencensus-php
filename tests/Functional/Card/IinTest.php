@@ -109,6 +109,13 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchServiceIinUpdate()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testGetPaymentFlows()
     {
         $this->testAddIin();
