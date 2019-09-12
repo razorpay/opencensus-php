@@ -3,17 +3,19 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Redis;
 
+
+use Razorpay\Trace\Logger;
 use RZP\Services;
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\DowntimeMetric as DowntimeMetric;
 
 class Core extends Base\Core
 {
@@ -257,7 +259,6 @@ class Core extends Base\Core
      * @param string $gateway
      * @param array $gatewayData
      * @param int $duration
-     * @throws Exception\BadRequestException
      */
     protected function attemptDowntimeCreation(string $gateway, array $gatewayData, int $duration)
     {
@@ -267,7 +268,7 @@ class Core extends Base\Core
         // It's possible that multiple failures at the same time will get past
         // the uniqueness check in create (since we do the DB query before the
         // creation). For this reason, we're adding a mutex lock around creation.
-        // If aquisition fails, that's fine, we don't need to retry since the
+        // If acquisition fails, that's fine, we don't need to retry since the
         // parallel process will end up creating the same gateway downtime anyway.
         //
         if ($this->mutex->acquire($resource) === false)
@@ -304,6 +305,11 @@ class Core extends Base\Core
                     Entity::COMMENT,
                 ],
                 false);
+        }
+        catch (\Throwable $e)
+        {
+            // This can happen due to duplicate downtime creation.
+            $this->trace->traceException($e, Logger::WARNING);
         }
         finally
         {
@@ -469,30 +475,52 @@ class Core extends Base\Core
         return $mode;
     }
 
+    protected function getGatewayDowntimeMetric(): DowntimeMetric
+    {
+        return $this->app['gateway_downtime_metric'];
+    }
+
     /**
      * This function creates the downtime and
      * update the required metric for downtime detection,
      * if $gatewayDowntimeError is present. Otherwise
      * it just update the required metric for downtime detection.
-     * @param string $gateway
      * @param array $gatewayData
-     * @param bool $gatewayDowntimeError
-     * @throws Exception\BadRequestException
      */
-    public function createDowntimeIfApplicable(string $gateway, array $gatewayData, bool $gatewayDowntimeError)
+    public function createDowntimeIfApplicable(array $gatewayData)
     {
-        if ($gatewayDowntimeError == true)
-        {
-            $durations = (new GatewayDowntimeDetection($gateway))->gatewayDowntimeDurations();
+        $metrics = $this->getGatewayDowntimeMetric()->getMetrics();
 
-            foreach ($durations as $duration)
-            {
-                $this->attemptDowntimeCreation($gateway, $gatewayData, $duration);
-            }
-        }
-        else
+        foreach ($metrics as $gateway => $metric)
         {
-            (new GatewayDowntimeDetection($gateway))->incrementTotalAttempts();
+            $downtimeMetric = [];
+
+            if (isset($metric[DowntimeMetric::Success]) === true)
+            {
+                $downtimeMetric = $metric[DowntimeMetric::Success];
+            }
+
+            if (isset($metric[DowntimeMetric::Failure]) === true)
+            {
+                $downtimeMetric = array_merge($downtimeMetric, $metric[DowntimeMetric::Failure]);
+            }
+
+            foreach ($downtimeMetric as $errorCode => $count)
+            {
+                if (Error::isGatewayDowntimeErrorCode($errorCode) === true)
+                {
+                    $durations = (new GatewayDowntimeDetection($gateway))->gatewayDowntimeDurations($count);
+
+                    foreach ($durations as $duration)
+                    {
+                        $this->attemptDowntimeCreation($gateway, $gatewayData, $duration);
+                    }
+                }
+                else
+                {
+                    (new GatewayDowntimeDetection($gateway))->incrementTotalAttempts($count);
+                }
+            }
         }
     }
 }
