@@ -612,6 +612,7 @@ final class Route
         'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_downtime_detection_purge_keys'    => ['post',     'gateway/downtimes/detection/keys/purge',         'GatewayController@purgeGatewayDowntimeDetectionKeys'               ],
+        'gateway_downtime_detection_get_stats'     => ['get',      'gateway/downtimes/detection/keys/stats',         'GatewayController@statsGatewayDowntimeDetection'                   ],
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                      => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
@@ -2318,6 +2319,8 @@ final class Route
         // AuthLink
         'token_registration_token_associate',
         'token_registration_tokens_authenticate',
+
+        'gateway_downtime_detection_get_stats',
     ];
 
     public static $routePermission = [
@@ -2784,6 +2787,8 @@ final class Route
         'p2p_admin_manage_banks'                    => Permission::P2P_MANAGE_MERCHANT,
         'recon_fetch_batchs_files_multiple'         => '*',
         'recon_fetch_files_count'                   => '*',
+
+        'gateway_downtime_detection_get_stats'      => '*',
     ];
 
     public static $direct = [

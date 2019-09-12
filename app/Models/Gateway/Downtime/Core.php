@@ -6,7 +6,6 @@ use Carbon\Carbon;
 
 
 use Razorpay\Trace\Logger;
-use RZP\Mail\System\Trace;
 use RZP\Services;
 use RZP\Exception;
 use RZP\Error\Error;
