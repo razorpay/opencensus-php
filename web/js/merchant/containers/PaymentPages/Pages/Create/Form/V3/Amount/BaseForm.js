@@ -95,7 +95,7 @@ export default class BaseForm extends React.PureComponent {
           <div>
             <ModalHeader title="Currency change?" />
 
-            <div className="modal-body">
+            <div class="modal-body">
               <div>
                 You're changing currency from <b>{this.props.currency}</b> to{' '}
                 <b>{selectedCurrency.name}</b>.
@@ -148,7 +148,7 @@ export default class BaseForm extends React.PureComponent {
         : 'No Limit';
 
       inputField = (
-        <div className="Input">
+        <div class="Input">
           {inputField}
           <Popover
             align="top"
@@ -170,7 +170,7 @@ export default class BaseForm extends React.PureComponent {
       <Input.Group class="InputGroup--inline InputGroup--full">
         <div class="Input-content">
           {field.image_url && (
-            <div className="Input Input--img">
+            <div class="Input Input--img">
               <img src={field.image_url} />
             </div>
           )}
@@ -225,10 +225,10 @@ export default class BaseForm extends React.PureComponent {
             {this.getREP_Amount()}
 
             {/* Add dummy Counter */}
-            <div className="Input-counterTooltip">
-              <div className="Field--counter Field--small Input--disabled">
+            <div class="Input-counterTooltip">
+              <div class="Field--counter Field--small Input--disabled">
                 <div
-                  className="Field-wrapper Field-wrapper--counter"
+                  class="Field-wrapper Field-wrapper--counter"
                   style={{
                     display: 'inline-block',
                     pointerEvents: 'none',
@@ -323,7 +323,8 @@ export default class BaseForm extends React.PureComponent {
             )}
           >
             <span class="mirror-title">{mirrorDisplayName}</span>
-            {mirrorDisplayName && <span class="symbol--red">*</span>}
+            {mirrorDisplayName &&
+              !this.isMandatory && <div class="text-optional">(Optional)</div>}
           </div>
         </Input.TextareaAutoResize>
 
