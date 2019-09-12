@@ -4,6 +4,7 @@
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\FundAccount\Type;
 
 class VerifyBeneficiary extends Beneficiary
 {
@@ -19,19 +20,25 @@ class VerifyBeneficiary extends Beneficiary
      */
     protected function getContent(): string
     {
-        $beneName = $this->entity->getBeneficiaryName();
+        switch ($this->entityType)
+        {
+            case Type::BANK_ACCOUNT:
+                $this->setContentForBankAccount();
 
-        $normalizedBeneName =  $this->normalizeBeneficiaryName($beneName);
+                break;
 
-        $bankName = $this->entity->getBankName();
+            case Type::CARD:
+                $this->setContentForCard();
+                break;
+        }
 
-        $normalizedBankName =  $this->normalizeBeneficiaryBankName($bankName);
+        $this->setMaskedBeneficiaryVerifyRequestBody();
 
         return '<CustId>'
             . $this->customerId
             . '</CustId>'
             . '<BeneficiaryCd>'
-            . $this->entity->getId()
+            . $this->beneficiaryCd
             . '</BeneficiaryCd>'
             . '<SrcAccountNo>'
             . $this->accountNumber
@@ -40,19 +47,19 @@ class VerifyBeneficiary extends Beneficiary
             . Constants::BENE_PAYMENT_TYPE
             . '</PaymentType>'
             . '<BeneName>'
-            . $normalizedBeneName
+            . $this->normalizedBeneName
             . '</BeneName>'
             . '<BeneType>'
             . Constants::BENE_TYPE
             . '</BeneType>'
             . '<BankName>'
-            . $normalizedBankName
+            . $this->normalizedBankName
             . '</BankName>'
             . '<IfscCode>'
-            . $this->entity->getIfscCode()
+            . $this->ifscCode
             . '</IfscCode>'
             . '<BeneAccountNo>'
-            . $this->entity->getAccountNumber()
+            . $this->entityAccountNumber
             . '</BeneAccountNo>'
             . '<Action>'
             . Constants::VERIFY_BENE_FLAG
@@ -86,10 +93,10 @@ class VerifyBeneficiary extends Beneficiary
             . $this->customerId
             . '</CustId>'
             . '<BeneficiaryCd>'
-            . $this->entity->getId()
+            . $this->beneficiaryCd
             . '</BeneficiaryCd>'
             . '<SrcAccountNo>'
-            . $this->entity->getAccountNumber()
+            . $this->entityAccountNumber
             . '</SrcAccountNo>'
             . '<PaymentType>'
             . Constants::BENE_PAYMENT_TYPE
@@ -120,10 +127,10 @@ class VerifyBeneficiary extends Beneficiary
             . $this->customerId
             . '</CustId>'
             . '<BeneficiaryCd>'
-            . $this->entity->getId()
+            . $this->beneficiaryCd
             . '</BeneficiaryCd>'
             . '<SrcAccountNo>'
-            . $this->entity->getAccountNumber()
+            . $this->entityAccountNumber
             . '</SrcAccountNo>'
             . '<PaymentType>'
             . Constants::BENE_PAYMENT_TYPE
@@ -148,5 +155,42 @@ class VerifyBeneficiary extends Beneficiary
             . '</NS1:maintainBeneResponse>'
             . '</soapenv:Body>'
             . '</soapenv:Envelope>';
+    }
+
+    /**
+     * Sets masked body for logging purpose.
+     */
+    protected function setMaskedBeneficiaryVerifyRequestBody()
+    {
+        $this->maskedBody = '<CustId>'
+            . $this->customerId
+            . '</CustId>'
+            . '<BeneficiaryCd>'
+            . $this->beneficiaryCd
+            . '</BeneficiaryCd>'
+            . '<SrcAccountNo>'
+            . $this->accountNumber
+            . '</SrcAccountNo>'
+            . '<PaymentType>'
+            . Constants::BENE_PAYMENT_TYPE
+            . '</PaymentType>'
+            . '<BeneName>'
+            . $this->normalizedBeneName
+            . '</BeneName>'
+            . '<BeneType>'
+            . Constants::BENE_TYPE
+            . '</BeneType>'
+            . '<BankName>'
+            . $this->normalizedBankName
+            . '</BankName>'
+            . '<IfscCode>'
+            . $this->ifscCode
+            . '</IfscCode>'
+            . '<BeneAccountNo>'
+            . mask_except_last4($this->entityAccountNumber)
+            . '</BeneAccountNo>'
+            . '<Action>'
+            . Constants::VERIFY_BENE_FLAG
+            . '</Action>';
     }
 }

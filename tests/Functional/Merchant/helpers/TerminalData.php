@@ -148,6 +148,27 @@ return [
         ]
     ],
 
+    'testCreateSbiTpvTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_sbi',
+                'gateway_merchant_id'       => 'netbanking_sbi_merchant_id',
+                'gateway_secure_secret'     => 'random_secret',
+                'netbanking'                => '1',
+                'tpv'                       => '1',
+                'network_category'          => 'ecommerce',
+                ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => 'netbanking_sbi_merchant_id',
+                'enabled'              => true,
+                'tpv'                  => 1
+            ]
+        ]
+    ],
+
     'testBankAccountTerminalValidationRules' => [
         'request' => [
             'content' => [
@@ -983,6 +1004,28 @@ return [
         ]
     ],
 
+    'testCreateUpiCitiTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_citi',
+                'gateway_merchant_id'       => 'CITI0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl',
+                'type'                      => [
+                    'collect'               => 1,
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'CITI0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
@@ -1338,6 +1381,26 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE ,
         ],
+    ],
+
+    'testTerminalSecretCheck' => [
+        'request' => [
+            'content' => [
+                'gateway_terminal_password'  => '1234',
+                'gateway_terminal_password2' => '21234',
+                'gateway_secure_secret'      => '0123',
+                'gateway_secure_secret2'     => '201235',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_terminal_password'  => true,
+                'gateway_terminal_password2' => true,
+                'gateway_secure_secret'      => true,
+                'gateway_secure_secret2'     => false,
+            ]
+        ]
     ],
 
     'testAddAmazonPayTerminal' => [
@@ -2000,6 +2063,27 @@ return [
         ]
     ],
 
+    'testCreateWalletPaypalTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_terminal_password2'=> 'terminal_password2',
+                'gateway_terminal_password' => 'terminal_password',
+                'type'                      => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingSibTerminal'  => [
         'request' => [
             'content' => [
@@ -2180,7 +2264,7 @@ return [
             'content'  => [
                 'count'   => 2,
                 'entity'  => 'collection',
-                'items'   => [  
+                'items'   => [
                     [
                         'entity'  => "terminal",
                         'status'  => "activated",

@@ -76,6 +76,12 @@ class CreateGatewayRules extends Migration
             $table->string(Rule::METHOD_TYPE, 10)
                   ->nullable();
 
+            $table->string(Rule::METHOD_SUBTYPE, 10)
+                  ->nullable();
+
+            $table->string(Rule::CARD_CATEGORY, 255)
+                  ->nullable();
+
             $table->string(Rule::ISSUER)
                   ->nullable();
 

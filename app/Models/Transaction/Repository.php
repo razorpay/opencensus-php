@@ -1592,9 +1592,11 @@ class Repository extends Base\Repository
 
         $results = $query->get();
 
-        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
-
-        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
+            [
+                'time_taken' => get_diff_in_millisecond($txnFetchStartTime),
+            ]);
 
         return $results;
     }
@@ -1623,7 +1625,7 @@ class Repository extends Base\Repository
                 Transaction\Entity::SETTLED_AT,
                 Transaction\Entity::CREDITS,
                 Transaction\Entity::CREDIT_TYPE
-            ],$columns);
+            ], $columns);
 
         }
 
@@ -1641,6 +1643,21 @@ class Repository extends Base\Repository
                     ->select(Entity::ID)
                     ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
                     ->count();
+    }
+
+    public function getTransactionBalanceType(string $transactionId)
+    {
+        $id                     = $this->dbColumn(Entity::ID);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+                    ->select($balanceTypeColumn)
+                    ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                    ->where($id , $transactionId)
+                    ->value(Entity::TYPE);
     }
 
     /**
@@ -1694,5 +1711,75 @@ class Repository extends Base\Repository
         // Additionally, checks if transaction is on banking balance. Others are not required as of now.
         return ((($entity === null) or ($entity->isBalanceTypeBanking() === true)) and
                 (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
+    }
+
+    /**
+     * @param $timestamp
+     * @param array $inMerchantIds
+     * @param array $notInMerchantIds
+     * @return mixed
+     * Activated merchants are those whose hold fund is zero and the activated field is notNull
+     * Since we require only the amount with respect to channel thus we use $transactionChannel
+     * Sum the amount which is then grouped by the channel which lead to the amount per channel
+     * Since transactionChannel is the index thus the query gives faster result
+     * Query
+     * SELECT $ransactionChannel, $amount( (SUM($transactionCredit) - SUM($transactionDebit))/100 ) FROM TRANSACTIONS
+     * INNER JOIN
+     * {
+     *  SELECT $merchantId FROM MERCHANTS where $merchantsHoldFund = 0
+     *                                          AND $merchantActivatedAt != NULL
+     *                                          AND $merchantId not in $notMerchantId
+     * as $settle_merchants ON $settle_merchants_id = $transactions_merchant_id
+     * }
+     * LEFT JOIN
+     * {
+     * balance ON $balanceId = $transactionsBalanceId WHERE $transactionBalanceId is NULL
+     *                                                     OR $balanceType is $primary
+     * }
+     * AND $transactionSettledAt <= $timestamp
+     * AND $transactionsOnHold = 0
+     * AND $transactionSettled = 0
+     * AND $transactionType != settlement
+     * GroupBy $transactionChannel
+     */
+    public function getAmountForNextSettlement(
+        $timestamp, array $inMerchantIds = [], array $notInMerchantIds = [])
+    {
+        $activatedMerchants = $this->repo->merchant->fetchMerchantsForSettlement($inMerchantIds, $notInMerchantIds);
+
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $settlementCredit       = $this->dbColumn(Entity::CREDIT);
+        $settlementDebit        = $this->dbColumn(Entity::DEBIT);
+
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+
+        $query = $this->newQuery()
+                ->select($transactionChannel,DB::raw("(SUM($settlementCredit)-SUM($settlementDebit))/100 as amount"))
+                ->joinSub($activatedMerchants->toSql(), 'settle_merchants', function($join)
+                    {
+                         $join->on('settle_merchants.id', '=', 'transactions.merchant_id');
+                    })
+                ->mergeBindings($activatedMerchants->getQuery())
+                ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+                    {
+                        $query->whereNull($transactionBalanceId)
+                              ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+                    })
+                ->where($transactionSettledAt, '<=', $timestamp)
+                ->where($transactionOnHold, 0)
+                ->where($transactionSettled, 0)
+                ->where($transactionType, '!=', Type::SETTLEMENT)
+                ->groupBy($transactionChannel);
+
+        $results = $query->get()->toArray();
+
+        return $results;
     }
 }

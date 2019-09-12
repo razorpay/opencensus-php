@@ -18,5 +18,14 @@ class Issuer
     const SBIN = 'SBIN';
     const UTIB = 'UTIB';
     const INDB = 'INDB';
-    const SCBL = 'SCBL';
+    const SCBL = 'SCBL';    //SCBL can be the issuer of Amex cards as well and Standard Chartered cards
+    const HSBC = 'HSBC';
+    const CNRB = 'CNRB';
+    const UBIN = 'UBIN';
+    const RATN = 'RATN';
+    const YESB = 'YESB';
+    const IOBA = 'IOBA';
+    const SYNB = 'SYNB';
+    const CORP = 'CORP';
+    const BKID = 'BKID';
 }

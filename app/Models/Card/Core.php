@@ -11,6 +11,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer;
+use RZP\Models\BankAccount\Beneficiary;
+use RZP\Models\FundAccount\Type as FundAccountType;
 
 class Core extends Base\Core
 {
@@ -38,7 +40,7 @@ class Core extends Base\Core
 
     public function createForFundAccount($input, $merchant)
     {
-        return $this->repo->transaction(
+        $card = $this->repo->transaction(
             function() use ($input, $merchant)
             {
                 $input[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
@@ -65,6 +67,10 @@ class Core extends Base\Core
 
                 return $card;
             });
+
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($card, FundAccountType::CARD);
+
+        return $card;
     }
 
     public function edit($card, $input)
@@ -153,6 +159,10 @@ class Core extends Base\Core
 
         $type = null;
 
+        $subtype = null;
+
+        $category = null;
+
         if ($iin)
         {
             $iinNetwork = $iin->getNetwork();
@@ -169,6 +179,10 @@ class Core extends Base\Core
             }
 
             $type = $iin['type'];
+
+            $subtype = $iin[Card\IIN\Entity::SUBTYPE];
+
+            $category = $iin[Card\IIN\Entity::CATEGORY];
 
             $emi = IIN\IIN::isEmiAvailableForCard($iin, $input['number']);
 
@@ -203,6 +217,10 @@ class Core extends Base\Core
 
         $type = Card\Type::getType($type, $network);
         $card->setType($type);
+
+        $card->setSubtype($subtype);
+
+        $card->setCategory($category);
 
         $this->checkCvvLength($card, $input);
 

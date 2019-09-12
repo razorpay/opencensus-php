@@ -283,28 +283,22 @@ class Gateway
 
             $previousExc = $exc->getPrevious();
 
-            if (property_exists($exc, 'isPropagatedException') === false)
-            {
-                if (($previousExc instanceof \Requests_Exception) and
+            if (($previousExc instanceof \Requests_Exception) and
                     ($previousExc->getType() === 'curlerror'))
+            {
+                $excData = curl_errno($previousExc->getData());
+
+                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+            }
+            else
+            {
+                $excData = 'UKNOWN';
+
+                if($exc instanceof Exception\BaseException)
                 {
-                    $excData = curl_errno($previousExc->getData());
-
-                    $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
-
-                    $exc->isPropagatedException = true;
+                    $excData = $exc->getError()->getClass();
                 }
-                else
-                {
-                    $excData = 'UKNOWN';
-                    if($exc instanceof Exception\BaseException)
-                    {
-                        $excData = $exc->getError()->getClass();
-                    }
-                    $this->pushDimensions($action, $input, Metric::FAILED, $excData);
-
-                    $exc->isPropagatedException = true;
-                }
+                $this->pushDimensions($action, $input, Metric::FAILED, $excData);
             }
 
             throw $exc;

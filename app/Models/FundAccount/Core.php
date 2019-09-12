@@ -126,7 +126,7 @@ class Core extends Base\Core
                 break;
 
             case Type::VPA:
-                $account = (new Vpa\Core)->createForBankingSource($accountInput, $source);
+                $account = (new Vpa\Core)->createForSource($accountInput, $source);
                 break;
 
             case Type::CARD:

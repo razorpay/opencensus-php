@@ -196,7 +196,7 @@ class Gateway extends Upi\Gateway
 
     protected function getUpiRequestId()
     {
-        $prefix = $this->config['merchant_unique_prefix'] ?? 'BJJ';
+        $prefix = $this->getHandlePrefix();
 
         return $prefix . $this->request->getId();
     }

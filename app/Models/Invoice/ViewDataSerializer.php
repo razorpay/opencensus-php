@@ -177,6 +177,16 @@ class ViewDataSerializer extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBL_PL_NON_DEL_CUST:
+                $customLabels = [
+                    'receipt_number'            =>  'LOAN ACCOUNT NUMBER',
+                    'amount'                    =>  'TOTAL PAYABLE AMOUNT',
+                    'expire_by'                 =>  'EMI DUE DATE',
+                    'first_payment_min_amount'  =>  'EMI AMOUNT',
+                ];
+
+                break;
+
         }
 
         return $customLabels;
@@ -346,6 +356,21 @@ class ViewDataSerializer extends Base\Core
         if (($this->invoice->isNotTypeInvoice() === true) and (blank($serialized[Entity::DESCRIPTION]) === true))
         {
             $serialized[Entity::DESCRIPTION] = optional($this->invoice->lineItems->first())->getDescriptionElseName();
+        }
+
+        switch ($this->merchant->getId())
+        {
+            case Preferences::MID_RBL_RETAIL_ASSETS:
+
+                $serialized['rbl_emandate_retail_asset'] = true;
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS:
+
+                $serialized['rbl_emandate_interim_process'] = true;
+
+                break;
         }
     }
 

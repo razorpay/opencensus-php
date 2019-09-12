@@ -149,6 +149,8 @@ class Payment extends Base
 
         $issuer = $payment->card->getIssuer();
 
+        $subtype = $payment->card->getSubtype();
+
         // Current Implementation
         // * Filter based on receiver type
         // * Filter based on international
@@ -193,11 +195,11 @@ class Payment extends Base
         }
 
         // If network is not amex, we can check for AMOUNT RANGE FILTERS
-
         $filters2 = [
-            [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
-            [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
-            [Pricing\Entity::PAYMENT_ISSUER,        $issuer,        true,   null    ],
+            [Pricing\Entity::PAYMENT_METHOD_TYPE,       $cardType,      true,   null    ],
+            [Pricing\Entity::PAYMENT_METHOD_SUBTYPE,    $subtype,       true,   null    ],
+            [Pricing\Entity::AUTH_TYPE,                 $authType,      true,   null    ],
+            [Pricing\Entity::PAYMENT_ISSUER,            $issuer,        true,   null    ],
         ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);

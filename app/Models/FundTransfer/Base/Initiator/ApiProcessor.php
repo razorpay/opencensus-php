@@ -8,7 +8,11 @@ use Requests;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Card\Entity as CardEntity;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Attempt\Constants as FundTransferConstants;
 
 abstract class ApiProcessor extends NodalAccount
 {
@@ -71,6 +75,11 @@ abstract class ApiProcessor extends NodalAccount
      * @var string
      */
     protected $requestTraceCode = TraceCode::SETTLEMENT_API_REQUEST;
+
+    /**
+     * @var string
+     */
+    protected $maskedResponseBody = null;
 
     /**
      * @var bool
@@ -209,6 +218,8 @@ abstract class ApiProcessor extends NodalAccount
 
         $this->traceRequest();
 
+        $startTime = millitime();
+
         if (($this->config['mock'] === true) or ($this->mode === Mode::TEST))
         {
             $response = $this->sendMockRequest();
@@ -244,6 +255,8 @@ abstract class ApiProcessor extends NodalAccount
 
         $response = $this->handleEmptyResponse($response);
 
+        $this->traceResponseTime($response->status_code, $startTime);
+
         $this->traceResponse($response);
 
         return $this->processResponse($response);
@@ -262,6 +275,8 @@ abstract class ApiProcessor extends NodalAccount
     protected function makeRequestOnGateway(): array
     {
         $response = [];
+
+        $startTime = millitime();
 
         if ($this->config['mock'] === true)
         {
@@ -298,6 +313,8 @@ abstract class ApiProcessor extends NodalAccount
             }
         }
 
+        $this->traceResponseTime($response[Metric::STATUS_CODE] ?? null, $startTime);
+
         $this->traceGatewayResponse($response);
 
         return $this->processGatewayResponse($response);
@@ -321,14 +338,21 @@ abstract class ApiProcessor extends NodalAccount
      *
      * @param \Requests_Response $response
      */
-    private function traceResponse(\Requests_Response $response)
+    protected function traceResponse(\Requests_Response $response)
     {
+        $this->maskedResponseBody = $this->getMaskedResponseBody($response->body);
+
+        if (empty($this->maskedResponseBody) === true)
+        {
+            $this->maskedResponseBody = $response->body;
+        }
+
         $this->trace->info(
             $this->responseTraceCode,
             [
                 'fta_id'        => $this->ftaId,
                 'channel'       => $this->channel,
-                'response_body' => $response->body,
+                'response_body' => $this->maskedResponseBody,
                 'status_code'   => $response->status_code,
             ]);
 
@@ -337,6 +361,25 @@ abstract class ApiProcessor extends NodalAccount
             'channel'     => $this->channel,
             'status_code' => $response->status_code,
         ]);
+    }
+
+    protected function getMaskedResponseBody($responseBody)
+    {
+        return $responseBody;
+    }
+
+    private function traceResponseTime($status_code, int $startTime)
+    {
+        $duration = millitime() - $startTime;
+
+        $dimensions = [
+            Metric::CHANNEL            => $this->channel,
+            Metric::STATUS_CODE        => $status_code,
+            Metric::REQUEST_TRACE_CODE => $this->requestTraceCode,
+            Metric::MODE               => $this->mode,
+        ];
+
+        $this->trace->histogram(Metric::NODAL_RESPONSE_TIME, $duration, $dimensions);
     }
 
     private function traceGatewayResponse(array $response)
@@ -566,5 +609,73 @@ abstract class ApiProcessor extends NodalAccount
     public function isLogEnabled(): bool
     {
         return $this->useLogging;
+    }
+
+    /**
+     * Gets ifsc code for card issuer using BANK_IFSC constant array.
+     *
+     * @param CardEntity $cardObj
+     * @return mixed
+     */
+    protected function getIfscCodeUsingCardInfo(CardEntity $cardObj)
+    {
+        $cardIssuer = trim($cardObj->getIssuer());
+
+        $cardNetworkCode = trim($cardObj->getNetworkCode());
+
+        $issuerList = array_keys(FundTransferConstants::BANK_IFSC);
+
+        if (in_array($cardIssuer, $issuerList, true) === true)
+        {
+            if (array_key_exists($cardNetworkCode, array_keys(FundTransferConstants::BANK_IFSC[$cardIssuer])) === true)
+            {
+                return FundTransferConstants::BANK_IFSC[$cardIssuer][$cardNetworkCode];
+            }
+
+            return FundTransferConstants::BANK_IFSC[$cardIssuer][FundTransferConstants::DEFAULT_NETWORK];
+        }
+        else
+        {
+            (new SlackNotification)->send('Card payout not supported for issuer',
+                [
+                    'id'     => $this->entity->getId(),
+                    'issuer' => $cardIssuer,
+                ], null, 1);
+
+            new LogicException('IFSC code does not exist for this card issuer');
+        }
+    }
+
+    /**
+     * If card is used for the 1st time on a RZP gateway then a vault token is generated in card entity.
+     * If vault has been already encountered then vault token is null and a global card id is present.
+     * This contains the vault token generated.
+     * If no vault token is present then null is returned to mark fta as failed.
+     *
+     * @param CardEntity $card
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function getCardVaultToken(CardEntity $card)
+    {
+        $token = $card->getCardVaultToken();
+
+        if ($token === null)
+        {
+            $this->trace->error(
+                TraceCode::CARD_TOKEN_IS_NOT_AVAILABLE,
+                [
+                    'card_id' => $card->getId()
+                ]);
+
+            (new SlackNotification())->send(
+                'Vault token missing',
+                [
+                    'card_id' => $card->getId()
+                ],
+                null, 1);
+        }
+
+        return $token;
     }
 }

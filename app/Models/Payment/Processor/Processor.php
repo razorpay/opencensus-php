@@ -274,6 +274,8 @@ class Processor
 
             if ($ret !== null)
             {
+                $this->logPaymentRespawnEvent($input, $ret);
+
                 return $ret;
             }
 
@@ -331,6 +333,24 @@ class Processor
         {
             (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
         }
+    }
+
+    protected function logPaymentRespawnEvent(array $request, array $data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $properties = [
+            'payment' => $request,
+            'reason'  => $data['missing'] ?? "Unknown",
+            'merchant'     => [
+                'id'        => $merchant->getId(),
+                'name'      => $merchant->getBillingLabel(),
+                'mcc'       => $merchant->getCategory(),
+                'category'  => $merchant->getCategory2(),
+            ],
+        ];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
     }
 
     public function getPayment(): Payment\Entity
@@ -459,6 +479,19 @@ class Processor
             return;
         }
 
+        $payment = $this->repo->transaction(function() use ($input, $payment)
+        {
+            $payment = $this->createPaymentEntity($input, $payment);
+
+            $payment->setBaseAmount($payment->getAmount());
+
+            $this->repo->saveOrFail($payment);
+
+            return $payment;
+        });
+
+        $input['payment_id'] = $payment->getPublicId();
+
         if ((empty($input['emi_duration']) === false) and
             (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
         {
@@ -486,6 +519,8 @@ class Processor
 
             $coproto['missing'][] = 'contact';
 
+            $coproto['payment_id'] = $payment->getPublicId();
+
             unset($coproto['request']['content']['contact']);
 
             return $coproto;
@@ -496,16 +531,45 @@ class Processor
                          ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::CARDLESS_EMI);
+        try
+        {
+            $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+        }
+        catch (Exception\GatewayErrorException $exception)
+        {
+            $this->payment->setStatus(Payment\Status::FAILED);
 
-        $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+            $error = $exception->getError();
+
+            if ($error === null)
+            {
+                $this->payment->setError(null, null, null);
+            }
+            else
+            {
+                $errorCode = $error->getGatewayErrorCode();
+
+                $errorDescription = $error->getDescription();
+
+                $internalErrorCode = $error->getInternalErrorCode();
+
+                $this->payment->setError($errorCode, $errorDescription, $internalErrorCode);
+            }
+
+
+            $this->payment->saveOrFail();
+
+            throw $exception;
+        }
 
         $coproto = [
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                    'method'   => 'cardless_emi',
-                    'provider' => $input['provider']
+                    'method'     => 'cardless_emi',
+                    'provider'   => $input['provider'],
+                    'payment_id' => $input['payment_id'],
                 ]),
                 'method'  => 'POST',
                 'content' => $input,
@@ -532,6 +596,8 @@ class Processor
 
             $coproto['resend_url'] = $this->route->getUrlWithPublicAuth('otp_post');
         }
+
+        $coproto['payment_id'] = $payment->getPublicId();
 
         return $coproto;
     }
@@ -806,7 +872,7 @@ class Processor
         }
 
         $host = $this->route->getHost();
-        
+
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -1862,6 +1928,15 @@ class Processor
     {
         $this->tracePaymentNewRequest($input);
 
+        if (($input['method'] === Payment\Method::CARDLESS_EMI) === true)
+        {
+            if ((isset($input['ott']) === true) and
+                (isset($input['payment_id']) === true))
+            {
+                $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
+            }
+        }
+
         if ($payment == null)
         {
             $payment = $this->buildPaymentEntity($input);
@@ -2399,7 +2474,13 @@ class Processor
             return false;
         }
 
-        if ($payment->isDirectSettlement() === true)
+        //
+        // We do an auto capture direct settlement payment only if payment is not associated with an order.
+        //
+        // Later we are checking if the payment is associated with order and order status is paid then don't
+        // capture this late auth payment since order is fullfilled by some other payment made for this order.
+        if (($payment->isDirectSettlement() === true) and
+            ($payment->hasOrder() === false))
         {
             return true;
         }
@@ -2549,6 +2630,13 @@ class Processor
         // An order must not have more than one captured payment.
         //
         $this->repo->reload($order);
+
+        // If order status is not paid yet and if the payment is direct settlement then capture
+        if (($order->isPaid() === false) and
+            ($payment->isDirectSettlement()))
+        {
+            return true;
+        }
 
         if (($order->isPaid() === true) or
             ($order->getPaymentCapture() === false))
@@ -2913,18 +3001,13 @@ class Processor
 
         $key = $payment->getCacheInputKey();
 
-        $inputDetails = $this->cache->get($key);
+        $inputDetails = $this->getInputDetails($payment, $key);
 
         if ($inputDetails === null)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
             );
-        }
-
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
-        {
-            $this->setCardNumberAndCvv($inputDetails);
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -2947,7 +3030,19 @@ class Processor
 
                 $this->repo->saveOrFail($payment);
 
-                return $this->authorize($payment, $inputDetails);
+                // temporary code
+                if (empty($inputDetails['gateway_input']) === true)
+                {
+                    return $this->authorize($payment, $inputDetails);
+                }
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                $gatewayInput['selected_terminals_ids'] = [$payment->getTerminalId()];
+
+                unset($inputDetails['gatewayInput']);
+
+                return $this->gatewayRelatedProcessing($payment, $inputDetails, $gatewayInput);
             },
             120,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,

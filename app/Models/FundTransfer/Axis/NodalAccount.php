@@ -172,6 +172,13 @@ class NodalAccount extends NodalBase\FileProcessor
 
         foreach ($entities as $entity)
         {
+            //if BA is not present for attempt
+            // marking FTA as failed, if source is settlement
+            if($this->markFailedIfBANotExists($entity) === true)
+            {
+                continue;
+            }
+
             $source = $entity->source;
 
             $amount = ($source->getAmount() / 100);
@@ -271,11 +278,12 @@ class NodalAccount extends NodalBase\FileProcessor
         $timelines = [15, 30, 45, 60, 90, 120, 150, 180];
 
         $mailInfo = [
-            'fileInfo'  => $fileInfo,
-            'channel'   => $this->channel,
-            'filetype'  => self::BEAM_FILE_TYPE,
-            'subject'   => 'Axis Settlement File Send Failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS]
+            'fileInfo'              => $fileInfo,
+            'channel'               => $this->channel,
+            'filetype'              => self::BEAM_FILE_TYPE,
+            'subject'               => 'Axis Settlement File Send Failure',
+            'recipient'             => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS],
+            'batchFundTransferId'   => $this->batchFundTransfer->getId(),
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);

@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
 
 class CorePaymentService
 {
@@ -42,6 +43,10 @@ class CorePaymentService
     protected $request;
 
     protected $action;
+
+    protected $gateway;
+
+    protected $input;
 
     public function __construct($app)
     {
@@ -74,9 +79,18 @@ class CorePaymentService
     {
         $this->action = $action;
 
+        $this->gateway = $gateway;
+
+        $this->input = $input;
+
         if (empty($input[Entity::TERMINAL]) === false)
         {
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
+        }
+
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
         }
 
         $content = [
@@ -113,6 +127,34 @@ class CorePaymentService
         return $response;
     }
 
+    public function syncCron(array $data = [])
+    {
+        $count = $data['count'] ?? 100;
+
+        $request = [
+            'url'     => 'sync',
+            'method'  => 'POST',
+            'content' => [
+                'count'       => intval($count),
+                'payment_ids' => $data['payment_ids'] ?? [],
+            ],
+            'headers' => [
+                self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
+                self::X_REQUEST_ID             => $this->app['request']->getId(),
+            ],
+        ];
+
+        $this->traceRequest($request);
+
+        $response = $this->sendRawRequest($request);
+
+        $response = $this->processResponse($response);
+
+        $this->traceResponse($response);
+
+        return $response;
+    }
+
     protected function sendRawRequest($request)
     {
         $retryCount = 0;
@@ -121,10 +163,17 @@ class CorePaymentService
         {
             try
             {
+                $content = $request['content'];
+
+                if ($request['method'] === 'POST')
+                {
+                    $content = json_encode($request['content']);
+                }
+
                 $response = $this->request->request(
                     $request['url'],
                     $request['headers'],
-                    json_encode($request['content']),
+                    $content,
                     $request['method']);
 
                 break;
@@ -227,12 +276,58 @@ class CorePaymentService
 
         if ($this->isSuccessResponse($code, $responseBody))
         {
+            if ($this->action === Action::VERIFY)
+            {
+                return $this->processVerifyResponse($responseBody);
+            }
+
             return $responseBody[self::DATA];
         }
         else
         {
             $this->checkForErrors($responseBody);
         }
+    }
+
+    protected function processVerifyResponse($responseBody)
+    {
+        $errorCode = $responseBody[self::ERROR]['internal_error_code'] ?? null;
+
+        $verify = $this->getVerifyObject($responseBody[self::DATA]);
+
+        if ($errorCode === ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+        else if ($errorCode === ErrorCode::SERVER_ERROR_RUNTIME_ERROR)
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment_id' => $this->input[Entity::PAYMENT]['id'],
+                    'gateway'    => $this->gateway
+                ]
+            );
+        }
+
+        return $responseBody[self::DATA];
+    }
+
+    protected function getVerifyObject(array $attributes)
+    {
+        $verify = new Verify($this->gateway, []);
+
+        $verify->apiSuccess = $attributes['apiSuccess'];
+
+        $verify->gatewaySuccess = $attributes['gatewaySuccess'];
+
+        $verify->amountMismatch = $attributes['amountMismatch'];
+
+        $verify->status = $attributes['status'];
+
+        return $verify;
     }
 
     protected function isSuccessResponse($code, $responseBody)

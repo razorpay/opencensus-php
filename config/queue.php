@@ -213,9 +213,21 @@ return [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
+    'terminal_creation_batch' => [
+        'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+        'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+    ],
     'refund_batch' => [
         'test'       => env('AWS_REFUND_QUEUE'),
         'live'       => env('AWS_REFUND_QUEUE'),
+    ],
+    'terminal_batch' => [
+        'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+        'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+    ],
+    'submerchant_assign_batch' => [
+        'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
+        'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),
     ],
     'capture' => [
         'test'       => env('AWS_CAPTURE_TEST_QUEUE'),
@@ -253,6 +265,23 @@ return [
         'test'       => env('AWS_BEAM_TEST_QUEUE'),
         'live'       => env('AWS_BEAM_LIVE_QUEUE'),
     ],
+
+    // settlement related QUEUES
+    'settlement_create' => [
+        'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_CREATE_LIVE_QUEUE'),
+    ],
+    'settlement_bucket' => [
+        'test'       => env('AWS_SETTLEMENT_BUCKET_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_BUCKET_LIVE_QUEUE'),
+    ],
+    'settlement_initiate' => [
+        'test'       => env('AWS_SETTLEMENT_INITIATE_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_INITIATE_LIVE_QUEUE'),
+    ],
+
+    // not using anymore for settlement
+    // but has dependency on FTA
     'settlement_transactions' => [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
@@ -302,8 +331,8 @@ return [
         'live'       => env('AWS_BENEFICIARY_LIVE_QUEUE'),
     ],
     'beneficiary_verifications' => [
-        'test'       => env('AWS_BENEFICIARY_TEST_QUEUE'),
-        'live'       => env('AWS_BENEFICIARY_LIVE_QUEUE'),
+        'test'       => env('AWS_BENEFICIARY_VERIFY_TEST_QUEUE'),
+        'live'       => env('AWS_BENEFICIARY_VERIFY_LIVE_QUEUE'),
     ],
     /*
      | Lists various queues to be used per mailable

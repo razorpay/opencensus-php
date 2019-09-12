@@ -22,6 +22,10 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         self::REFUND_TXN        => BaseReconciliate::REFUND
     ];
 
+    const BLACKLISTED_COLUMNS = [
+        PaymentReconciliate::COLUMN_MERCHANT_NAME,
+    ];
+
     /**
      * Column Transaction Type in excel indicates whether
      * txn is payment or refund

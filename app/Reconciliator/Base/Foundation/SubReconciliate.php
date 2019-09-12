@@ -35,6 +35,15 @@ class SubReconciliate extends Base\Core
     const RECON_STATUS          = 'recon_status';
     const ALREADY_RECONCILED_AT = 'already_reconciled_at';
     const RECON_ERROR_MSG       = 'recon_error_msg';
+    const MERCHANT_ID           = 'merchant_id';
+    const PROCESSED_AT          = 'processed_at';
+    const BATCH_ID              = 'batch_id';
+    const ATTEMPT_NUMBER        = 'attempt_number';
+
+    /**
+     * The list of columns which shouldn't be exposed to specific data sources like qubole.
+     */
+    const BLACKLISTED_COLUMNS = [];
 
     /**
      * The list of payments/refunds attempted to reconcile.
@@ -93,6 +102,8 @@ class SubReconciliate extends Base\Core
     protected $core;
 
     protected $messenger;
+
+    protected $batch;
 
     /**
      * @var array This array will contain MIS row and
@@ -211,6 +222,12 @@ class SubReconciliate extends Base\Core
         }
         finally
         {
+            //
+            // setting the variable null here to free up the memory associated with this variable.
+            // not calling unset as that only removes the reference and the GC will free up the memory.
+            //
+            $fileContents = null;
+
             $this->setReconOutputData($batchProcessor);
 
             if (count(static::$scroogeReconciliate) > 0)
@@ -249,6 +266,9 @@ class SubReconciliate extends Base\Core
         $row[self::RECON_STATUS]            = '';
         $row[self::ALREADY_RECONCILED_AT]   = '';
         $row[self::RECON_ERROR_MSG]         = '';
+        $row[self::MERCHANT_ID]             = '';
+        $row[self::PROCESSED_AT]            = '';
+        $row[self::BATCH_ID]                = '';
 
         static::$reconOutputData[] = $row;
 
@@ -267,7 +287,7 @@ class SubReconciliate extends Base\Core
         static::$currentRowNumber = -1;
     }
 
-    protected function persistReconciledAt($entity)
+    protected function persistReconciledAt($entity, string $reconciledType = ReconciledType::MIS)
     {
         if (($entity->getEntityName() !== Entity::REFUND) or
             ($entity->isScrooge() === false))
@@ -276,7 +296,7 @@ class SubReconciliate extends Base\Core
 
             $time = time();
             $transaction->setReconciledAt($time);
-            $transaction->setReconciledType(ReconciledType::MIS);
+            $transaction->setReconciledType($reconciledType);
 
             $transaction->saveOrFail();
 
@@ -530,6 +550,31 @@ class SubReconciliate extends Base\Core
     }
 
     /**
+     * sets merchantId for the current row in progress
+     * @param string $merchantId
+     */
+    protected function setMerchantIdInOutput(string $merchantId)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::MERCHANT_ID] = $merchantId;
+    }
+
+    protected function setProcessedAtInOutput()
+    {
+        $processed_at = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+        static::$reconOutputData[static::$currentRowNumber][self::PROCESSED_AT] = $processed_at;
+    }
+
+    protected function setBatchIdInOutput($batchId)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::BATCH_ID] = $batchId;
+    }
+
+    protected function setAttemptsInOutput($attemptNumber)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::ATTEMPT_NUMBER] = $attemptNumber;
+    }
+
+    /**
      * For certain rows, where we are not able to successfully identify the payment
      * or refund entity to reconcile, we mark the row processing as success or failure
      * depending on the specific gateway's reconciliator.
@@ -668,5 +713,15 @@ class SubReconciliate extends Base\Core
                 'row'               => $row,
                 'gateway'           => $this->gateway
             ]);
+    }
+
+    /**
+     * @return array
+     * 1. Gateway should override this function to return list of black listed columns which should not
+     * be included in the output file.
+     */
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return static::BLACKLISTED_COLUMNS;
     }
 }

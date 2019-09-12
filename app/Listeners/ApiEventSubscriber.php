@@ -483,6 +483,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onRefundCreated(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onRefundFailed(RefundEntity $refund)
     {
         $payload = $this->getRefundPayload($refund);

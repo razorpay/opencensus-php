@@ -238,9 +238,35 @@ class Reconciliation extends Base
     {
         $gateway = $this->batch->getGateway();
 
-        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+        if ($this->isManualReconFile() === true)
+        {
+            $gatewayReconciliatorClassName = 'RZP\Reconciliator\Base\ManualReconciliate';
+        }
+        else
+        {
+            $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+        }
 
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName($gateway);
+    }
+
+    /**
+     * Checks if this is manual recon file prepared by FinOps.
+     * @return bool
+     */
+    protected function isManualReconFile()
+    {
+        $keyExists = $this->settingsAccessor->exists(RequestProcessor\Base::MANUAL_RECON_FILE);
+
+        $manualReconFile = $this->settingsAccessor->get(RequestProcessor\Base::MANUAL_RECON_FILE);
+
+        //
+        // Note : We can not just use get() and convert the value to bool, bcoz when key does not
+        // exist, then it returns an instance of Dictionary.
+        //
+        $result = ($keyExists === false) ? false : ($manualReconFile === '1');
+
+        return $result;
     }
 
     /**
@@ -491,18 +517,18 @@ class Reconciliation extends Base
         //
         RuntimeManager::setMemoryLimit('1024M');
 
-        //
+        // As now reconciliation runs as K8s job, increasing time limit to 2 hour.
         // The reconciliation can run for a long time.
-        // Hence, changing the script's execution time limit to 1 hour.
+        // Hence, changing the script's execution time limit to 2 hour.
         //
-        RuntimeManager::setTimeLimit(3600);
+        RuntimeManager::setTimeLimit(7200);
 
         //
         // In certain cases XLS parsing takes a long time. We are setting
-        // the execution time to 60 min here to prevent the execution
+        // the execution time to 120 min here to prevent the execution
         // from being terminated.
         //
-        RuntimeManager::setMaxExecTime(3600);
+        RuntimeManager::setMaxExecTime(7200);
     }
 
     /**

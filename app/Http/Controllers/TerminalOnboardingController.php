@@ -10,11 +10,11 @@ class TerminalOnboardingController extends Controller
 {
     protected $service = Onboarding\Service::class;
 
-    public function postCreateTerminal(string $mid)
+    public function postCreateTerminal()
     {
         $input = Request::all();
 
-        $data = $this->service()->create($mid, $input);
+        $data = $this->service()->create($input);
 
         return ApiResponse::json($data);
     }

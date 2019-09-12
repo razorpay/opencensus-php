@@ -89,6 +89,7 @@ class Validator extends Base\Validator
         'offer_id'                      => 'filled|public_id|size:20',
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
+        'payment_id'                    => 'sometimes_if:method,cardless_emi',
     ];
 
     protected static $editAcquirerRules = [

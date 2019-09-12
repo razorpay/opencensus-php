@@ -118,6 +118,13 @@ class Base extends BaseModel\Core
      */
     protected $reconBatchOutputData;
 
+    /**
+     * Holds delimiter for output text file
+     *
+     * @var string
+     */
+    protected $delimiter = '|';
+
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
@@ -147,11 +154,11 @@ class Base extends BaseModel\Core
         return $this;
     }
 
-    public function getBatchContext(): array
+    public function getBatchContext(array $config): array
     {
         $batchContext                        = [];
         $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
-        $batchContext[Batch\Constants::DATA] = $this->params;
+        $batchContext[Batch\Constants::DATA] = $config;
 
         return $batchContext;
     }
@@ -798,7 +805,9 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::TXT:
-                $txt = $this->generateTextWithHeadings($entries, '|', false, array_keys(current($entries)));
+            case FileStore\Format::DAT:
+                $txt = $this->generateTextWithHeadings($entries, $this->delimiter,
+                                       false, array_keys(current($entries)));
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 

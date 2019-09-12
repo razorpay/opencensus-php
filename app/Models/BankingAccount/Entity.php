@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_IFSC                      = 'account_ifsc';
     const ACCOUNT_CURRENCY                  = 'account_currency';
     const ACCOUNT_ACTIVATION_DATE           = 'account_activation_date';
+    const MERCHANT                          = 'merchant';
 
     /**
      * Pincode field is being used to store the pincode entered by Merchant
@@ -80,6 +81,8 @@ class Entity extends Base\PublicEntity
 
     const ACCOUNT_TYPE                      = 'account_type';
 
+    const INTERNAL_COMMENT                  = 'internal_comment';
+
     const VAULT_NAMESPACE                   = 'banking_accounts_creds';
 
     const PINCODES      = 'pincodes';
@@ -119,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
         self::FTS_FUND_ACCOUNT_ID,
+        self::INTERNAL_COMMENT,
     ];
 
     protected $visible = [
@@ -153,6 +157,8 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_EMAIL,
         self::ACCOUNT_ACTIVATION_DATE,
         self::BANK_INTERNAL_REFERENCE_NUMBER,
+        self::MERCHANT,
+        self::INTERNAL_COMMENT,
     ];
 
     protected $public = [
@@ -172,6 +178,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
         self::USERNAME,
+        self::PINCODE,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -208,6 +215,11 @@ class Entity extends Base\PublicEntity
         if ($newStatus === Status::PROCESSED)
         {
             (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $this->toArray());
+        }
+
+        if ($newStatus === Status::ACTIVATED)
+        {
+            (new Validator)->setStrictFalse()->validateInput(Validator::ACTIVATED_STATUS, $this->toArray());
         }
     }
 

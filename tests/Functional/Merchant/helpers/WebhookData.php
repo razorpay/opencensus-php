@@ -484,6 +484,39 @@ return [
         ]
     ],
 
+    'testGetWebhookWithSecret' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'url'         => 'http://www.testUrl.com',
+                'secret'      => 'BestTestSecretEver',
+                'events'      => [
+                    'payment.authorized' => true,
+                ]
+            ]
+        ]
+    ],
+
+    'testGetWebhooksWithSecret' => [
+        'request' => [
+            'url' => '/webhooks',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'url'         => 'http://www.testUrl.com',
+                    'secret'      => 'BestTestSecretEver',
+                    'events'      => [
+                        'payment.authorized' => true,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testGetWebhookEvents' => [
         'request' => [
             'url'   => '/webhooks/events/all',
@@ -1188,6 +1221,80 @@ return [
                         'status'          => 'processed',
                         'speed_requested' => 'normal',
                         'speed_processed' => 'normal',
+                        'acquirer_data'   => [
+                            'arn' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testRefundCreatedWebhookEventData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'refund.created',
+            'contains' => ['refund'],
+            'payload' => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 50000,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
+                        'acquirer_data'   => [
+                            'arn' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantByAggregatorWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testRefundCreatedWebhookForAggregatorModel' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'refund.created',
+            'contains' => ['refund'],
+            'payload' => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 25000,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
                         'acquirer_data'   => [
                             'arn' => null,
                         ],
