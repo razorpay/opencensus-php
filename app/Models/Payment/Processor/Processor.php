@@ -1080,6 +1080,14 @@ class Processor
                 'razorx_variant' => $variant,
             ]);
 
+            // Hardcoding this till wallet phonepe intent is moved to cps.
+            if (($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and ($gatewayInput['wallet']['flow'] === 'intent'))
+            {
+                $payment->disableCpsRoute();
+
+                return;
+            }
+
             if (strtolower($variant) === 'cps')
             {
                 $payment->enableCpsRoute();

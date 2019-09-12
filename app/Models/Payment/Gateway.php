@@ -841,6 +841,7 @@ class Gateway
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
         self::UPI_CITI,
+        self::WALLET_PHONEPE,
     ];
 
     public static $headless = [
