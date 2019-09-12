@@ -17,6 +17,7 @@ import {
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
+  trackTaboola,
 } from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
@@ -664,10 +665,7 @@ export default class ActivationWizard extends React.Component {
           });
         }
 
-        window.rzpAnalytics({
-          name: 'taboola',
-          event: 'l2_submission',
-        });
+        trackTaboola('l2_submission');
 
         updateHubSpotContactsProperties(
           {

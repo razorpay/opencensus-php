@@ -19,6 +19,7 @@ import User from 'merchant/models/User';
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
+  trackTaboola,
 } from 'rzp/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
@@ -232,10 +233,7 @@ export default class ActivationWizard extends React.Component {
           completed: true,
         });
 
-        window.rzpAnalytics({
-          name: 'taboola',
-          event: 'l1_activation',
-        });
+        trackTaboola('l1_activation');
 
         const {
           isWhitelistFlow,
