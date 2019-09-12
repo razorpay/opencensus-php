@@ -758,9 +758,11 @@ return [
         'merchant_id'       => env('PAYSECURE_TEST_MERCHANT_ID'),
     ],
     'netbanking_sbi' => [
-        'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_SBI_TEST_HASH_SECRET'),
-        'iv'                => env('NETBANKING_SBI_IV'),
+        'test_merchant_id'            => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
+        'test_merchant_id_recurring'  => env('NETBANKING_SBI_TEST_MERCHANT_ID_RECURRING'),
+        'test_hash_secret'            => env('NETBANKING_SBI_TEST_HASH_SECRET'),
+        'test_hash_secret_recurring'  => env('NETBANKING_SBI_TEST_HASH_SECRET_RECURRING'),
+        'iv'                          => env('NETBANKING_SBI_IV'),
     ],
 
     'mozart' => [
