@@ -53,14 +53,12 @@ return array(
                 'port'     => env('SLAVE_DB_LIVE_PORT'),
                 'username' => env('SLAVE_DB_LIVE_USERNAME'),
                 'password' => env('SLAVE_DB_LIVE_PASSWORD'),
-                'unix_socket' => '/tmp/mysql.sock'
             ],
             'write' => [
                 'host'     => env('DB_LIVE_HOST'),
                 'port'     => env('DB_LIVE_PORT'),
                 'username' => env('DB_LIVE_USERNAME'),
                 'password' => env('DB_LIVE_PASSWORD'),
-                'unix_socket' => '/tmp/mysql.sock'
             ],
             'sticky'    => true,
             'database'  => env('DB_LIVE_DATABASE'),
@@ -68,7 +66,6 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'unix_socket' => '/tmp/mysql.sock',
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
@@ -97,7 +94,7 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
         ],
 
         'test' => [
@@ -106,14 +103,12 @@ return array(
                 'port'     => env('SLAVE_DB_TEST_PORT'),
                 'username' => env('SLAVE_DB_TEST_USERNAME'),
                 'password' => env('SLAVE_DB_TEST_PASSWORD'),
-                'unix_socket' => '/tmp/mysql.sock'
             ],
             'write' => [
                 'host'     => env('DB_TEST_HOST'),
                 'port'     => env('DB_TEST_PORT'),
                 'username' => env('DB_TEST_USERNAME'),
                 'password' => env('DB_TEST_PASSWORD'),
-                'unix_socket' => '/tmp/mysql.sock'
             ],
             'sticky'    => true,
             'database'  => env('DB_TEST_DATABASE'),
@@ -121,7 +116,6 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'unix_socket' => '/tmp/mysql.sock',
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
@@ -150,7 +144,7 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
         ],
 
         'slave-live' => [
@@ -164,8 +158,7 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true,
-            'unix_socket' => '/tmp/mysql.sock'
+            'strict'    => true
         ],
 
         'slave-test' => [
@@ -178,8 +171,7 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true,
-            'unix_socket' => '/tmp/mysql.sock'
+            'strict'    => true
         ],
 
         'auth' => [
@@ -192,8 +184,7 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true,
-            'unix_socket' => '/tmp/mysql.sock'
+            'strict'    => true
         ],
     ],
 

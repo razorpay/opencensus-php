@@ -164,7 +164,6 @@ class Database
             'database' => null,
             'username' => env('DB_LIVE_USERNAME'),
             'password' => env('DB_LIVE_PASSWORD'),
-            'unix_socket' => '/tmp/mysql.sock'
         ];
 
         $this->config->set('database.connections.mysql_init', $tempMysqlConf);
