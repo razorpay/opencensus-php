@@ -60,7 +60,7 @@ export default ({ paymentPages, loading }) => {
                     {item.payment_page_items.slice(0, 2).map((pi, ix) => (
                       <tr key={ix}>
                         <td>
-                          <span class="item-ellipsis">{pi.item.title}</span>
+                          <span class="item-ellipsis">{pi.item.name}</span>
                         </td>
                       </tr>
                     ))}
@@ -83,13 +83,15 @@ export default ({ paymentPages, loading }) => {
                     {item.payment_page_items.slice(0, 2).map((pi, ix) => (
                       <tr key={ix}>
                         <td>
-                          {Number(pi.times_paid)}
-                          {!!pi.quantity_available && (
-                            <span style={{ opacity: 0.7 }}>
-                              {' '}
-                              of {Number(pi.quantity_available)}
-                            </span>
-                          )}
+                          <span class="item-ellipsis">
+                            {Number(pi.quantity_sold)}
+                            {!!pi.quantity_sold && (
+                              <span style={{ opacity: 0.7 }}>
+                                {' '}
+                                of {Number(pi.stock)}
+                              </span>
+                            )}
+                          </span>
                         </td>
                       </tr>
                     ))}

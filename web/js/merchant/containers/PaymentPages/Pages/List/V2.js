@@ -16,8 +16,8 @@ export default ({ paymentPages, loading }) => {
         <thead>
           <tr>
             <th>Title</th>
-            <th class="text-right">Amount</th>
-            <th class="text-right">Total Sales</th>
+            <th>Amount</th>
+            <th>Total Sales</th>
             <th>Quantity Sold</th>
             <th>Page Url</th>
             <th>Created On</th>
@@ -58,10 +58,13 @@ export default ({ paymentPages, loading }) => {
               </td>
 
               <td>
-                {Number(item.times_paid)}
-                <span style={{ opacity: 0.7 }}>
-                  {!!item.times_payable && ' of ' + Number(item.times_payable)}
-                </span>
+                {Number(item.payment_page_items[0].quantity_sold)}
+                {!!item.payment_page_items[0].quantity_sold && (
+                  <span style={{ opacity: 0.7 }}>
+                    {' '}
+                    of {Number(item.payment_page_items[0].stock)}
+                  </span>
+                )}
               </td>
 
               <td>
