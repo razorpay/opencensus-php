@@ -304,7 +304,7 @@ return [
                 'type'           => 'credit',
                 'country'        => 'IN',
                 'issuer'         => 'HDFC',
-                'issuer_name'    => 'HDFC',
+                'issuer_name'    => 'HDFC Bank',
                 'emi'            => true,
                 'message_type'   => 'SMS',
                 'recurring'      => false,
@@ -339,7 +339,8 @@ return [
                 'network'       => 'RuPay',
                 'type'          => 'debit',
                 'country'       => 'IN',
-                'issuer_name'   => 'PUNJAB NATIONAL BANK',
+                'issuer'        => 'SBIN',
+                'issuer_name'   => 'State Bank of India',
                 'trivia'        => 'random trivia'
             ]
         ],

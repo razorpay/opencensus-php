@@ -454,7 +454,7 @@ class IinTest extends TestCase
                     'type'           => 'credit',
                     'country'        => 'IN',
                     'issuer'         => 'HDFC',
-                    'issuer_name'    => 'HDFC',
+                    'issuer_name'    => 'HDFC Bank',
                     'emi'            => true,
                     'message_type'   => 'SMS',
                     'recurring'      => false,
