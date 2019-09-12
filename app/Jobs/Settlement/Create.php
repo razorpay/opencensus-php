@@ -59,7 +59,7 @@ class Create extends Job
     {
         parent::handle();
 
-        $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
+        $merchant = null;
 
         try
         {
@@ -68,8 +68,9 @@ class Create extends Job
                 [
                     'merchant_id'       => $this->merchantId,
                     'settlement_bucket' => $this->settlementBucket,
-                ]
-            );
+                ]);
+
+            $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
 
             $startTime = microtime(true);
 
@@ -81,11 +82,6 @@ class Create extends Job
                 'channel'       => $merchant->getChannel(),
                 'time_taken'    => get_diff_in_millisecond($startTime),
             ] + $setlResponse;
-
-            $this->trace->count(
-                Metric::TIME_TAKEN_TO_CREATE_MERCHANT_SETTLEMENT,
-                [],
-                $response['time_taken']);
 
             $this->trace->info(
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
@@ -110,8 +106,16 @@ class Create extends Job
         }
         finally
         {
+            $this->delete();
+
             // reduce the total count once the processing is done
             Cache::decrement(self::TOTAL_MERCHANT_COUNT);
+
+            $this->trace->count(
+                Metric::MERCHANT_SETTLEMENT_PROCESSED,
+                [
+                    'channel' => $merchant->getChannel(),
+                ]);
 
             $this->dispatchForSettlementInitiateIfRequired($merchant->getChannel());
         }
@@ -141,7 +145,7 @@ class Create extends Job
         }
 
         // if there total merchant count is zero that means settlement creation process completed
-        $isCompleted = (((int)Cache::get(self::TOTAL_MERCHANT_COUNT)) === 0);
+        $isCompleted = (((int) Cache::get(self::TOTAL_MERCHANT_COUNT)) === 0);
 
         // if process is not complete then do not initiate transfer
         if ($isCompleted === false)
@@ -154,7 +158,7 @@ class Create extends Job
         // If there any channel with pending settlement initiate then dispatch it for the same
         foreach ($channelCount as $ch => $count)
         {
-            if ($count !== 0)
+            if (((int) $count) !== 0)
             {
                 $this->dispatchForSettlementInitiate($redis, $ch, $count);
             }
@@ -177,6 +181,12 @@ class Create extends Job
             [
                 'channel' => $channel,
                 'count'   => $count,
+            ]);
+
+        $this->trace->count(
+            Metric::DISPATCH_FOR_SETTLEMENT_INITIATE,
+            [
+                'channel' => $channel,
             ]);
 
         // decrement the size by count as those are dispatched to initiate
