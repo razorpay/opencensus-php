@@ -107,7 +107,7 @@ class Gateway extends AxisMigs\Gateway
 
         $threeDSstatus = $input['gateway']['vpc_3DSstatus'] ?? null;
 
-        $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED;
+        $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED;
 
         if ($threeDSenrolled !== 'Y')
         {

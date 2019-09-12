@@ -5320,3 +5320,11 @@ ALTER TABLE `external`
 ALTER TABLE adjustment
     ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
     ADD INDEX `adjustment_balance_id_index` (`balance_id`);
+
+ALTER TABLE nodal_beneficiaries
+    MODIFY COLUMN `bank_account_id` CHAR(14) DEFAULT NULL,
+    DROP INDEX `nodal_beneficiaries_bank_account_id_channel_unique`,
+    ADD COLUMN `card_id` CHAR(14) DEFAULT NULL AFTER `bank_account_id`,
+    ADD INDEX `nodal_beneficiaries_card_id_index` (`card_id`);
+
+ALTER TABLE nodal_beneficiaries ADD INDEX nodal_beneficiaries_bank_account_id_channel_index(bank_account_id, channel);

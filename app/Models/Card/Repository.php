@@ -224,4 +224,17 @@ class Repository extends Base\Repository
 
         $query->select($query->getModel()->getTable().'.*');
     }
+
+    /**
+     * Fetches the details of card for the given id
+     *
+     * @param string $cardId
+     * @return mixed
+     */
+    public function getCardById(string $cardId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, $cardId)
+                    ->first();
+    }
 }

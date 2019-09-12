@@ -304,15 +304,19 @@ class Service extends Base\Service
 
     public function checkUserAccess(array $input)
     {
+        if (empty($input['merchant_id']) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
         $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($input['merchant_id']);
 
         $user = $this->auth->getUser();
 
-        $userId = $user->getId();
-
         $product = $this->auth->getRequestOriginProduct();
 
-        return $this->core()->checkUserAccess($userId, $merchantId, $product);
+        return $this->core()->checkAccessForMerchant($user, $merchantId, $product);
+
     }
 
     public function setup2faMobileOnLogin(array $input): array

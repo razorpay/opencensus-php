@@ -19,6 +19,8 @@ class BharatQrHulkGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__ . '/BharatQrHulkGatewayTestData.php';
 
         parent::setUp();

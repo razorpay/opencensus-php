@@ -2005,7 +2005,7 @@ class Gateway extends Base\Gateway
         );
     }
 
-    protected function traceGatewayEnrollRequest(
+    protected function traceGatewayRequest(
         array $request,
         array $input,
         $traceCode = TraceCode::GATEWAY_ENROLL_REQUEST)
@@ -2273,7 +2273,7 @@ class Gateway extends Base\Gateway
 
     protected function authorizeEnrolled(array $input, $gatewayPayment, $authorizeRequest)
     {
-        $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+        $this->traceGatewayRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
         $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
@@ -2488,7 +2488,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getEnrollRequest($input);
 
-        $this->traceGatewayEnrollRequest($request, $input);
+        $this->traceGatewayRequest($request, $input);
 
         $this->getCardCacheKey($input);
 

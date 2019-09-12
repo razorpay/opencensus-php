@@ -240,6 +240,12 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                 );
             }
 
+            //
+            // setting the variable null here to free up the memory associated with this variable.
+            // not calling unset as that only removes the reference and the GC will free up the memory.
+            //
+            $fileContents = null;
+
             $this->setReconOutputData($batchProcessor);
 
             if (count(static::$scroogeReconciliate) > 0)

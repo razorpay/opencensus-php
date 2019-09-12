@@ -104,12 +104,20 @@ abstract class RowProcessor extends Base\Core
     {
         $batchFta = $this->reconEntity->batchFundTransfer;
 
+        $batchFtaId = null;
+
+        //BatchFTA can be null in test mode
+        if (empty($batchFta) === false)
+        {
+            $batchFtaId = $batchFta->getId();
+        }
+
         $customProperties = [
             'channel'                           => $this->reconEntity->getChannel(),
             'purpose'                           => $this->reconEntity->getPurpose(),
             'fund_transfer_attempt_id'          => $this->reconEntity->getId(),
-            'batch_fund_transfer_attempt_id'    => $batchFta->getId(),
             'utr'                               => $utr,
+            'batch_fund_transfer_attempt_id'    => $batchFtaId,
             'source_type'                       => $this->reconEntity->getSourceType(),
             'fund_transfer_attempt_mode'        => $this->reconEntity->getMode(),
             'fund_transfer_attempt_status'      => $this->reconEntity->getStatus(),
@@ -228,11 +236,19 @@ abstract class RowProcessor extends Base\Core
 
         $batchFta = $this->reconEntity->batchFundTransfer;
 
+        $batchFtaId = null;
+
+        //BatchFTA can be null in test mode
+        if (empty($batchFta) === false)
+        {
+            $batchFtaId = $batchFta->getId();
+        }
+
         $customProperties = [
             'channel'                           => $this->reconEntity->getChannel(),
             'purpose'                           => $this->reconEntity->getPurpose(),
             'fund_transfer_attempt_id'          => $this->reconEntity->getId(),
-            'batch_fund_transfer_attempt_id'    => $batchFta->getId(),
+            'batch_fund_transfer_attempt_id'    => $batchFtaId,
             'utr'                               => $this->reconEntity->getUtr(),
             'source_type'                       => $this->reconEntity->getSourceType(),
             'fund_transfer_attempt_mode'        => $this->reconEntity->getMode(),

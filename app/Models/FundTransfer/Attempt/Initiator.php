@@ -228,33 +228,10 @@ class Initiator extends Base\Core
                 (new SlackNotification)->send('setl_initiate', $slackData);
             }
 
-            $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
-
-            $batchFTaId = $batchFundTransfer->getId();
-
-            $batchAmount = $batchFundTransfer->getAmount();
-
-            $transactionCount = $batchFundTransfer->getTransactionCount();
-
-            $ftaCountInBatch = $batchFundTransfer->getTotalCount();
-
-            $customProperties = [
-                'channel'                               => $channel,
-                'fund_transfer_attempt_count'           => $ftaCountInBatch,
-                'purpose'                               => $purpose,
-                'fund_transfer_attempt_medium'          => $medium,
-                'batch_fund_transfer_id'                => $batchFTaId,
-                'batch_fund_transfer_attempt_amount'    => $batchAmount,
-                'transaction_count'                     => $transactionCount,
-            ];
-
-            $this->raiseSettlementEvent(
-                EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
-                null,
-                null,
-                $customProperties
-            );
-
+            if(empty($attemptedFTAs) === false)
+            {
+                $this->raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium);
+            }
         }
         catch (\Exception $exception)
         {
@@ -274,6 +251,47 @@ class Initiator extends Base\Core
         }
 
         return $data;
+    }
+
+    protected function raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium)
+    {
+        $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
+
+        $batchFTaId = null;
+
+        $batchAmount = null;
+
+        $transactionCount = null;
+
+        $ftaCountInBatch = null;
+
+        if(empty($batchFundTransfer) === false)
+        {
+            $batchFTaId = $batchFundTransfer->getId();
+
+            $batchAmount = $batchFundTransfer->getAmount();
+
+            $transactionCount = $batchFundTransfer->getTransactionCount();
+
+            $ftaCountInBatch = $batchFundTransfer->getTotalCount();
+        }
+
+        $customProperties = [
+            'channel'                               => $channel,
+            'fund_transfer_attempt_count'           => $ftaCountInBatch,
+            'purpose'                               => $purpose,
+            'fund_transfer_attempt_medium'          => $medium,
+            'batch_fund_transfer_id'                => $batchFTaId,
+            'batch_fund_transfer_attempt_amount'    => $batchAmount,
+            'transaction_count'                     => $transactionCount,
+        ];
+
+        $this->raiseSettlementEvent(
+            EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
+            null,
+            null,
+            $customProperties
+        );
     }
 
     protected function dispatchFtaForStatusCheckProcess(Entity $attempt)
@@ -373,7 +391,7 @@ class Initiator extends Base\Core
      * @param string $channel
      * @return int|null
      */
-    protected function getLimitForChannel(string $channel)
+    public function getLimitForChannel(string $channel): int
     {
         switch ($channel)
         {
@@ -384,10 +402,10 @@ class Initiator extends Base\Core
                 return 100;
 
             case Channel::ICICI:
-                return null;
+                return 400;
 
             case Channel::KOTAK:
-                return null;
+                return 0;
 
             case Channel::AXIS2:
                 return 400;

@@ -113,8 +113,8 @@ class Type
      * @var array
      */
     public static $retryInProcessingBatchTypes = [
-        // 2 hours gap for Recon batches
-        self::RECONCILIATION    => 7200,
+        // 1 hour gap for Recon batches
+        self::RECONCILIATION    => 3600,
     ];
 
     /**

@@ -31,6 +31,12 @@ class Service extends Base\Service
 
             if((isset($channelState[$channel]) === true) and $channelState[$channel] === Constants::DISABLE)
             {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_TRANSFER_DISABLED,
+                    [
+                        'channel' => $channel,
+                    ]);
+
                 return ['status' => 'failed'];
             }
         }

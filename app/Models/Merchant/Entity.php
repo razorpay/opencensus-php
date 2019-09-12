@@ -570,6 +570,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_OMNICHANNEL);
     }
 
+    public function isPhonePeIntentEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::PHONEPE_INTENT);
+    }
+
     public function canHoldPayment(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::PAYMENT_ONHOLD);
@@ -1651,6 +1656,11 @@ class Entity extends Base\PublicEntity
     public function getHoldFunds()
     {
         return $this->getAttribute(self::HOLD_FUNDS);
+    }
+
+    public function isFundsOnHold(): bool
+    {
+        return (bool) $this->getHoldFunds();
     }
 
     public function holdFunds()

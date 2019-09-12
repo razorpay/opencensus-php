@@ -383,7 +383,7 @@ final class Route
         'setl_initiate'                            => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
         'setl_initiate_daily'                      => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_initiate_adhoc'                      => ['post',     'settlements/initiate_adhoc',                     'SettlementController@processAdhocSettlements'                      ],
-        'setl_initiate_action'                     => ['post',     'settlements/initiate_action/{channel?}',         'SettlementController@postSettlementInitiate'                     ],
+        'setl_initiate_action'                     => ['post',     'settlements/initiate_action/{channel?}',         'SettlementController@postSettlementInitiate'                       ],
         'setl_retry'                               => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                       => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileFileGenerate'          ],
@@ -475,6 +475,8 @@ final class Route
         'emandate_debit_reconcile'                 => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
+        'recon_fetch_batchs_files_multiple'        => ['get',      'reconciliate/batches',                           'ReconciliatorController@getReconBatches'],
+        'recon_fetch_files_count'                  => ['get',      'reconciliate/files',                             'ReconciliatorController@getReconFiles'],
         'refunds_reconcile_bulk'                   => ['post',     'reconciliate/refunds/bulk',                      'ReconciliatorController@postBulkRefundsReconciliation'             ],
         'dummy_return_callback'                    => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                     => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
@@ -1651,6 +1653,8 @@ final class Route
         'get_setl_amount',
         'cps_sync_gateway_entities_cron',
         'scrooge_refund_reference1_bulk_update',
+        'recon_fetch_batchs_files_multiple',
+        'recon_fetch_files_count',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2778,6 +2782,8 @@ final class Route
         'p2p_admin_add_handle'                      => Permission::P2P_MANAGE_MERCHANT,
         'p2p_admin_update_handle'                   => Permission::P2P_MANAGE_MERCHANT,
         'p2p_admin_manage_banks'                    => Permission::P2P_MANAGE_MERCHANT,
+        'recon_fetch_batchs_files_multiple'         => '*',
+        'recon_fetch_files_count'                   => '*',
     ];
 
     public static $direct = [

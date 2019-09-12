@@ -336,6 +336,11 @@ class Core extends Merchant\Core
 
     protected function upsertMerchantEmails(Merchant\Entity $subMerchant, array $input)
     {
+        if (isset($input[Constants::PROFILE]) === false)
+        {
+            return;
+        }
+
         $fieldNames = [
             Constants::SUPPORT,
             Constants::CHARGEBACK,
