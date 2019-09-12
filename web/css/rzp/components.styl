@@ -870,6 +870,27 @@ dl.rzp-definition {
           transform: rotate(-45deg);
         }
       }
+
+      &.danger .Accordion__title {
+        border: 1px solid #f35d5d
+        background: lighten($primary-color, 70%);
+
+        .accordion__arrow {
+          &::after,&::before {
+            background-color: #f35d5d
+          }
+        }
+      }
+
+      &.primary .Accordion__title {
+        border: 1px solid $primary-color
+
+        .accordion__arrow {
+          &::after,&::before { 
+            background-color: $primary-color
+          }
+        }
+      }
     }
 
     &.open {

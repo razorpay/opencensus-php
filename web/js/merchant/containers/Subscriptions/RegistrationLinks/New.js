@@ -5,7 +5,7 @@ import { rupeesToPaise } from 'rzp/utils/rzp-utils';
 import { titleCase } from 'common/util';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal, openModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { showNotification } from 'rzp/modules/notifications';
 import {
@@ -18,7 +18,7 @@ import Form from 'component/Form';
 import Spinner from 'rzp/ui/Spinner';
 import Button, { AsyncBtn } from 'component/Button';
 import { ModalAsideNav } from 'component/Wizard';
-import { Modal, ModalContent } from 'component/Modal';
+import { Modal, ModalMask, ModalContent } from 'component/Modal';
 
 import CustomerDetailsForm, {
   validatePhone,
@@ -27,6 +27,7 @@ import CustomerDetailsForm, {
 import PaymentDetailsForm, {
   checkIfAmount,
 } from 'merchant/components/Subscriptions/RegistrationLinksForm/PaymentDetails';
+import UploadNACHForm from 'merchant/components/Subscriptions/UploadNACHForm';
 import TokenDetailsForm from 'merchant/components/Subscriptions/RegistrationLinksForm/TokenDetails';
 
 const CustomerDetailsMandatoryFields = [
@@ -54,6 +55,7 @@ const CardMandatoryFields = [{ name: 'amount', validator: checkIfAmount }];
 
 @withRouter
 @connect(null, {
+  openModal,
   closeModal,
   saveInvoice,
   updatePLInReduxList,
@@ -207,6 +209,14 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     return isAllFieldsPresent;
   };
 
+  openNACHFormUploadModal = () => {
+    return (
+      <ModalMask>
+        <UploadNACHForm />
+      </ModalMask>
+    );
+  };
+
   prepareDataForRequest = () => {
     const data = { ...this.state.formFields },
       notes = data.notes.reduce(
@@ -220,7 +230,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       receipt: data.receipt,
       expire_by: !Number(data.hasNoExpiry) ? data.expireAt : undefined,
       currency: data.currency,
-      amount: this.isEmandatePayment ? 0 : rupeesToPaise(data.amount),
+      amount: !!data.amount ? rupeesToPaise(data.amount) : 0,
       sms_notify: data.configSmsNotify,
       email_notify: data.emailNotify,
       notes: notes || undefined,
@@ -231,10 +241,9 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       },
       subscription_registration: {
         method: data.mandateMethod,
-        max_amount:
-          this.isEmandatePayment && !!data.mandateMaxAmount
-            ? rupeesToPaise(data.mandateMaxAmount)
-            : undefined,
+        max_amount: !!data.mandateMaxAmount
+          ? rupeesToPaise(data.mandateMaxAmount)
+          : undefined,
         auth_type: !data.skipBankDetails ? 'netbanking' : undefined, //hardcoded after aadhaar was disabled temporarily
         expire_at: !Number(data.tokenHasNoExpiry)
           ? data.mandateExpireAt
@@ -243,20 +252,25 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       },
     };
 
-    if (
-      (this.isEmandatePayment && !data.skipBankDetails) ||
-      this.isNACHPayment
-    ) {
-      payload.subscription_registration.bank_account = {
-        bank_name: data.bankName,
-        ifsc_code: data.bankAccountIFSC,
-        account_number: data.bankAccountNumber,
-        beneficiary_name: data.beneficiaryName,
-        account_type: data.accountType || 'savings', // hardcoded after aadhaar was disabled temporarily
+    const bankAccountDetails = {
+      bank_name: data.bankName,
+      ifsc_code: data.bankAccountIFSC,
+      account_number: data.bankAccountNumber,
+      beneficiary_name: data.beneficiaryName,
+      account_type: data.accountType || 'savings', // hardcoded after aadhaar was disabled temporarily
+    };
+
+    if (this.isEmandatePayment && !data.skipBankDetails) {
+      payload.subscription_registration.bank_account = bankAccountDetails;
+    }
+
+    if (this.isNACHPayment) {
+      payload.subscription_registration.paper_mandate = {
+        bank_account: bankAccountDetails,
       };
     }
 
-    if (data.mandateMethod === 'emandate') {
+    if (this.isEmandatePayment || this.isNACHPayment) {
       payload.subscription_registration.first_payment_amount =
         rupeesToPaise(data.firstPaymentAmount) || 0;
     }
@@ -488,6 +502,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   render() {
     const isModalView = this.props.onClose;
 
+    // return this.openNACHFormUploadModal();
     if (isModalView) {
       return (
         <Modal
