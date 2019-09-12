@@ -116,22 +116,26 @@ export function getIsAllowedResetInvoicesOnBoarding({ invoices, items }) {
   return getIsAllowedResetBoarding(RZPFeatures.INVOICE);
 }
 
+function setInvoiceOnboardingData({ invoices, items }) {
+  const isEnabled = Boolean(invoices.invoices.length || items.items.length);
+
+  setOnBoardingDataInLocalState({
+    feature: RZPFeatures.INVOICE,
+    data: {
+      isEnabled,
+      lastVisitedTime: isEnabled && Date.now(),
+    },
+  });
+}
+
 export function getIsInvoicesEnabled({ user, invoices, items }) {
-  if (user.isInvoicesEnabled || invoices.loading || items.loading) {
-    return true;
+  if (user.isInvoicesEnabled === undefined) {
+    if (invoices.loading || items.loading) {
+      return true;
+    }
+
+    setInvoiceOnboardingData({ invoices, items });
   }
 
-  if (invoices.invoices.length || items.items.length) {
-    setOnBoardingDataInLocalState({
-      feature: RZPFeatures.INVOICE,
-      data: {
-        isEnabled: true,
-        lastVisitedTime: Date.now(),
-      },
-    });
-
-    return true;
-  }
-
-  return false;
+  return user.isInvoicesEnabled;
 }
