@@ -11,7 +11,7 @@ class GovernorControllerV1 extends Controller
     {
         $input = Request::all();
 
-        $response = $this->app['governor']->sendRequest(GovernorService::CREATE_NAMESPACE_V1, $input);
+        $response = $this->app['governor']->sendRequest(GovernorService::GET_CLIENTS_V1, $input);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
