@@ -450,12 +450,12 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreatePayoutToCardFundAccount()
+    public function testCreatePayoutToFundAccountWithoutContact()
     {
         $this->fixtures->create(
             'fund_account',
             [
-                'id'           => '100000000002fa',
+                'id'           => '100000000004ff',
                 'account_type' => 'card',
                 'account_id'   => '100000000lcard',
                 'active'       => 1,
@@ -478,6 +478,20 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutToCardFundAccount()
+    {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'account_id'   => '100000000lcard',
+                'active'       => 1,
+            ]);
+
+        $this->startTest();
+    }
+    
     public function testCreatePayoutToInactiveContactFundAccount()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'active' => 0]);
