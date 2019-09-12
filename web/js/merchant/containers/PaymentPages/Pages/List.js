@@ -2,15 +2,9 @@ import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import { NavLink } from 'react-router-dom';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import { RZPFeatures } from 'rzp/utils/constants';
-import RTracking from 'react-tracking';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Spinner from 'rzp/ui/Spinner';
-import ListContainer from 'merchant/containers/ListContainer';
-import ListFilter from 'merchant/components/ListFilter';
-import { fetchPaymentPagesList } from './model';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import Time from 'rzp/ui/Time';

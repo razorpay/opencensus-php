@@ -5,7 +5,7 @@ import RTracking from 'react-tracking';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import { RZPFeatures } from 'rzp/utils/constants';
 
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 
