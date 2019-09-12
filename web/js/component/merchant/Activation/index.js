@@ -17,6 +17,7 @@ import {
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
+  trackTaboola,
 } from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
@@ -663,6 +664,8 @@ export default class ActivationWizard extends React.Component {
             twiData: txnId,
           });
         }
+
+        trackTaboola('l2_submission');
 
         updateHubSpotContactsProperties(
           {
