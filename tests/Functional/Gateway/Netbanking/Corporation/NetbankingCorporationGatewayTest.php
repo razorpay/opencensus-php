@@ -46,7 +46,7 @@ class NetbankingCorporationGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->doNetbankingCorporationAuthAndCapturePayment();
+        $this->doNetbankingCorporationAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
 
