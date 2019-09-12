@@ -11,7 +11,7 @@ class Factory extends Base\Factory
      *
      * @var string
      */
-    public static $factoriesPath = 'tests/Functional/Fixtures/Factory';
+    public static $factoriesPath = '/Users/paridhiyadav/razorpay/api/tests/Functional/Fixtures/Factory';
 
     /**
      * The user registered factories.

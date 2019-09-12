@@ -1150,7 +1150,7 @@ final class Route
 
         // Governor Proxy APIs - Client
 
-        'governor_get_client'                     => ['get',      'clients',                                                                                                       'GovernorControllerV1@getClients'            ],
+        'governor_get_client'                     => ['get',      'clients',                                                                                                       'GovernorControllerV1@getClients'          ],
 
         // Governor Proxy APIs - Namespace
         'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                                                                                'GovernorController@createNamespace'       ],
