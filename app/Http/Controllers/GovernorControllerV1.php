@@ -7,6 +7,15 @@ use RZP\Services\GovernorService;
 
 class GovernorControllerV1 extends Controller
 {
+    public function getClients()
+    {
+        $input = Request::all();
+
+        $response = $this->app['governor']->sendRequest(GovernorService::CREATE_NAMESPACE_V1, $input);
+
+        return response()->json($response['response_body'])->setStatusCode($response['response_code']);
+    }
+
     public function createNamespace($source, $client_id)
     {
         $input = Request::all();
