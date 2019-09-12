@@ -23,6 +23,11 @@ class GovernorService
     // request and response fields
     const ERROR     = 'error';
 
+    const GET_CLIENTS_V1  =   [
+        'url'       =>  "clients",
+        'method'    =>  "GET",
+    ];
+
     const CREATE_NAMESPACE  =   [
         'url'       =>  "rule_engine/namespace",
         'method'    =>  "POST",

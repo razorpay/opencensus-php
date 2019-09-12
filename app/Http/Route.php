@@ -1148,6 +1148,10 @@ final class Route
         'credit_note_get'                          => ['get',      'creditnote/{id}',                                'CreditNoteController@get'                                          ],
         'credit_note_apply'                        => ['post',     'creditnote/{id}/apply',                          'CreditNoteController@apply'                                        ],
 
+        // Governor Proxy APIs - Client
+
+        'governor_get_client'                     => ['get',      '{source}/clients',                                                                                              'GovernorControllerV1@getClients'            ],
+
         // Governor Proxy APIs - Namespace
         'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                                                                                'GovernorController@createNamespace'       ],
 
