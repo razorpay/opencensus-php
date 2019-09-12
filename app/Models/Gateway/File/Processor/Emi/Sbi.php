@@ -453,7 +453,9 @@ class Sbi extends Base
     protected function getFileToWriteName()
     {
         // This assumes we won't be sending more than 9 files after retry.
-        $count = $this->repo->gateway_file->fetchTodaysFileSentCount(Type::EMI, GatewayFileConstants::SBI);
+        $start = Carbon::now()->setTimezone(Timezone::IST)->startOfDay()->getTimestamp();
+
+        $count = $this->repo->gateway_file->fetchTodaysFileSentCount(Type::EMI, GatewayFileConstants::SBI, $start);
 
         return static::FILE_NAME . (string)($count + 1) . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
     }
