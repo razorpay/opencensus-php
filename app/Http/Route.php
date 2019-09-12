@@ -1147,7 +1147,7 @@ final class Route
         'credit_note_list'                         => ['get',      'creditnote',                                     'CreditNoteController@list'                                         ],
         'credit_note_get'                          => ['get',      'creditnote/{id}',                                'CreditNoteController@get'                                          ],
         'credit_note_apply'                        => ['post',     'creditnote/{id}/apply',                          'CreditNoteController@apply'                                        ],
-
+        
         // Governor Proxy APIs - Client
 
         'governor_get_client'                     => ['get',      'clients',                                                                                                       'GovernorControllerV1@getClients'          ],
