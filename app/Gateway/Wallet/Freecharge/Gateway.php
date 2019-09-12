@@ -228,7 +228,6 @@ class Gateway extends Base\Gateway
             return $this->topupCallbackVerify($input);
         }
 
-
         $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
@@ -490,8 +489,6 @@ class Gateway extends Base\Gateway
         return $verify->getDataToTrace();
     }
 
-
-
     public function verifyRefund(array $input)
     {
         if ($this->isUnprocessedRefund($input) === true)
@@ -521,6 +518,7 @@ class Gateway extends Base\Gateway
     public function autoDebit(array $input)
     {
         $this->input = $input;
+
         // Create a gateway payment entity similar to otpGenerate
         $contentToSave = [
             RequestFields::MERCHANT_ID   => $this->getMerchantId($input['terminal']),
@@ -528,7 +526,9 @@ class Gateway extends Base\Gateway
             RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
             RequestFields::AMOUNT        => $input['payment']['amount'],
         ];
+
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
+
         return $this->debit($input);
     }
 
@@ -931,7 +931,9 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_CHECK_BALANCE_RESPONSE);
 
-        if(isset($input['isPowerWalletFlow']) === true and $input['isPowerWalletFlow'] === true){
+        if ((isset($input['isPowerWalletFlow']) === true) and
+            ($input['isPowerWalletFlow'] === true))
+        {
             $contentToSave = [
                 RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
                 RequestFields::EMAIL         => $input['payment']['email'],
@@ -1095,13 +1097,13 @@ class Gateway extends Base\Gateway
 
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
-            RequestFields::AMOUNT       => (string) $topupAmount,
-            RequestFields::SURL         => $input['callbackUrl'],
-            RequestFields::FURL         => $input['callbackUrl'],
-            RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
-            RequestFields::LOGIN_TOKEN  => '',
-            RequestFields::MERCHANT_ID  => $this->getMerchantId1($input['terminal']),
-            RequestFields::METADATA     => $input['payment']['public_id'],
+            RequestFields::AMOUNT          => (string) $topupAmount,
+            RequestFields::SURL            => $input['callbackUrl'],
+            RequestFields::FURL            => $input['callbackUrl'],
+            RequestFields::CHANNEL         => self::DEFAULT_TXN_CHANNEL,
+            RequestFields::LOGIN_TOKEN     => '',
+            RequestFields::MERCHANT_ID     => $this->getMerchantId1($input['terminal']),
+            RequestFields::METADATA        => $input['payment']['public_id'],
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
         );
 
