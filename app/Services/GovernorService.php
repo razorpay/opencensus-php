@@ -206,7 +206,7 @@ class GovernorService
         return $request;
     }
 
-    public function sendRequest(array $requestSchema, $data, $source, $namespace = null, $getEntityIdentifier = null, array $queryParams = [], $client_id = null, $namespace_id =null, $client = null, $rule_chain_id = null, $rule_group_id = null, $rule_id =null)
+    public function sendRequest(array $requestSchema, $data, $source, $namespace = null, $getEntityIdentifier = null, array $queryParams = [], $client_id = null, $namespace_id = null, $client = null, $rule_chain_id = null, $rule_group_id = null, $rule_id = null)
     {
         $url = $this->getUrl($requestSchema, $namespace, $getEntityIdentifier, $client_id, $namespace_id, $client, $rule_chain_id, $rule_group_id, $rule_id);
 
@@ -314,13 +314,13 @@ class GovernorService
     {
         $baseUrl = $this->getBaseUrl();
 
-        $url = $baseUrl . str_replace_first(':namespace', $namespace, $requestArray['url']);
+        $url = $baseUrl . str_replace_first(':namespace_id', $namespace_id, $requestArray['url']);
+
+        $url = str_replace_first(':namespace', $namespace, $url);
 
         $url = str_replace_first(':entity_identifier', $getEntityIdentifier, $url);
 
         $url = str_replace_first(':client_id', $client_id, $url);
-
-        $url = str_replace_first(':namespace_id', $namespace_id, $url);
 
         $url = str_replace_first(':client', $client, $url);
 
