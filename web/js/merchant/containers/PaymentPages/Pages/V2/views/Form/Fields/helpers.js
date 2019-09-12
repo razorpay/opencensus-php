@@ -84,7 +84,14 @@ export function mapFieldToIndex(field) {
   let selectedIndexInOptions = null;
 
   // Removing the fixed schema fields
-  const { title, name, required, description, ...schemaFields } = field;
+  const {
+    title,
+    name,
+    required,
+    description,
+    settings,
+    ...schemaFields
+  } = field;
 
   const fieldTypes = flattenFIELD_TYPES();
 
@@ -253,6 +260,7 @@ export function _areKeysSupported(keys) {
     'maximum',
     'enum',
     'options',
+    'settings',
   ];
 
   for (let k = 0; k < keys.length; k++) {
