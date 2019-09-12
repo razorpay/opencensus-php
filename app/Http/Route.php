@@ -1170,7 +1170,7 @@ final class Route
         'governor_rule_list'                      => ['get',      '{source}/rule_engine/rule/{namespace}',                                                                         'GovernorController@getRules'              ],
         'governor_get_rule'                       => ['get',      '{source}/rule_engine/rule/{namespace}/{rulename}',                                                              'GovernorController@getRule'               ],
 
-        'governor_create_rule_v1'                 => ['post',     '{source}/namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id/rules}',              'GovernorControllerV1@createRule'          ],
+        'governor_create_rule_v1'                 => ['post',     '{source}/namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',              'GovernorControllerV1@createRule'          ],
         'governor_list_rule_v1'                   => ['get',      '{source}/namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',              'GovernorControllerV1@listRule'            ],
         'governor_get_rule_v1'                    => ['get',      '{source}/namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorControllerV1@getRule'             ],
         'governor_delete_rule_v1'                 => ['delete',   '{source}/namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorControllerV1@deleteRule'           ],
