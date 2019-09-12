@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
+use RZP\Models\Contact\Entity;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -386,9 +387,16 @@ class Base extends BaseCore
                 Payout\Entity::FUND_ACCOUNT_ID);
         }
 
+        $this->validateFundAccountContact($fundAccount);
+
         $payout->fundAccount()->associate($fundAccount);
 
         $this->fundTransferDestination = $fundAccount->account;
+    }
+
+    public function validateFundAccountContact(FundAccount\Entity $fundAccount)
+    {
+        return;
     }
 
     /**
