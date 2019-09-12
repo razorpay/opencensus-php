@@ -731,10 +731,11 @@ class Processor extends Base\Core
      */
     protected function pushMerchantsToSettlementQueue(array $merchantIds, $bucketTimestamp = null): array
     {
-        $totalCount = [
+        $result = [
             'total_merchants' => count($merchantIds),
             'enqueued'        => 0,
             'enqueue_failed'  => 0,
+            'time_taken'      => get_diff_in_millisecond($startTime),
         ];
 
         $this->trace->info(
@@ -749,7 +750,7 @@ class Processor extends Base\Core
         //
         Cache::increment(Create::TOTAL_MERCHANT_COUNT, count($merchantIds));
 
-        $startTime = time();
+        $startTime = microtime(true);
 
         foreach ($merchantIds as $merchantId)
         {
@@ -770,11 +771,11 @@ class Processor extends Base\Core
 
                 $this->trace->count(Metric::NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT);
 
-                $totalCount['enqueued'] += 1;
+                $result['enqueued'] += 1;
             }
             catch(\Throwable $e)
             {
-                $totalCount['enqueue_failed'] += 1;
+                $result['enqueue_failed'] += 1;
 
                 //
                 // in case of failures decremenet the total count stored
@@ -794,18 +795,13 @@ class Processor extends Base\Core
             }
         }
 
-        // trace metric to get idea on time taken
-        $this->trace->count(
-            Metric::TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT,
-            [
-                'total_count' => $totalCount,
-            ], get_diff_in_millisecond($startTime));
+        $result['time_taken'] = get_diff_in_millisecond($startTime);
 
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE,
-            $totalCount);
+            $result);
 
-        return $totalCount;
+        return $result;
     }
 
     public function fetchAndProcessTransactionsForSettlement(MerchantModel\Entity $merchant)
@@ -864,16 +860,18 @@ class Processor extends Base\Core
         // If there are no transactions to settle then return
         if ($txns->count() === 0)
         {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'No transactions to settle',
+                ]);
+
             return [
                 'settlement_count'  => 0,
                 'attempt_count'     => 0,
                 'txn_count'         => 0,
             ];
         }
-
-        $merchantIds = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
-
-        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
 
         $this->merchants = $this->repo
                                 ->merchant
