@@ -32,7 +32,7 @@ export const getOnBoardingDataFromLocalState = feature => {
   return state
     ? JSON.parse(state)
     : {
-        isEnabled: false,
+        isEnabled: undefined,
         lastVisitedScreen: 0,
         lastVisitedTime: null,
       };

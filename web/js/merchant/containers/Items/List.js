@@ -12,6 +12,7 @@ import ItemCreation from 'merchant/containers/Items/New';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as ModalActions from 'rzp/modules/modals';
 import * as ItemActions from 'merchant/modules/items';
+import { fetchInvoices } from 'merchant/modules/invoices/list';
 import { luminateRow } from 'merchant/modules/app';
 import {
   handleProductQuickGuide,
@@ -30,7 +31,13 @@ import { stringifyQueryParams } from '../../../rzp/utils/rzp-utils';
       RZPFeatures.INVOICE
     ),
   }),
-  { ...ItemActions, ...ModalActions, luminateRow, handleProductQuickGuide }
+  {
+    ...ItemActions,
+    ...ModalActions,
+    luminateRow,
+    handleProductQuickGuide,
+    fetchInvoices,
+  }
 )
 @reduxForm({
   form: 'newItem',
@@ -41,6 +48,10 @@ export default class ItemsListContainer extends ListContainer {
       eventCategory: 'Dashboard - Invoices',
       eventAction: 'Go To - Items',
     });
+
+    if (this.props.isInvoiceView) {
+      this.props.fetchInvoices({ count: 25 });
+    }
   }
 
   componentWillUnmount() {

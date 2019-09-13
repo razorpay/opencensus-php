@@ -194,41 +194,6 @@ export default class Toggle2FA extends Component {
         this.confirmDisable({ action: verifyPassword, flag });
       }
     });
-
-    function showAllUsers2faSetupRequired() {
-      this.context.confirm({
-        header: '2-step verification',
-        message:
-          'To enable 2-step verification all your team members should have phone numbers associated to their account.',
-        abortLabel: 'Close',
-        affirmativeLabel: 'Okay',
-        abort,
-        action: abort,
-      });
-    }
-
-    function confirmEnable({ action }) {
-      this.context.confirm({
-        header: 'Enable 2-step verification',
-        message:
-          'Are you sure you want to enable 2-step verification to all your team members?',
-        affirmativeLabel: 'Yes, enable it',
-        abort,
-        action,
-      });
-    }
-
-    function confirmDisable({ action }) {
-      this.context.confirm({
-        header: 'Disable 2-step verification',
-        message:
-          'Are you want to disable 2-step verification to all your team members?',
-        affirmativeLabel: 'Yes, disable it',
-        abortLabel: "No, Don't!",
-        abort,
-        action,
-      });
-    }
   };
 
   render() {
