@@ -2303,6 +2303,7 @@ final class Route
         'banking_account_webhook_account_info_internal',
 
         'governor_create_namespace_v1',
+        'governor_get_client_v1',
         'governor_list_namespace_v1',
         'governor_get_namespace_v1',
         'governor_update_namespace_v1',
@@ -2316,6 +2317,7 @@ final class Route
         'governor_create_rule_group_v1',
         'governor_get_rule_group_v1',
         'governor_delete_rule_group_v1',
+        'governor_update_rule_group_v1',
 
         // throttle settings routes
         'fetch_throttle_settings',
@@ -2779,6 +2781,7 @@ final class Route
         'webhook_fire'                             => Permission::MAKE_API_CALL,
 
         'governor_create_namespace_v1'             => Permission::CREATE_GATEWAY_RULE,
+        'governor_get_client_v1'                   => Permission::VIEW_GATEWAY_RULE,
         'governor_list_namespace_v1'               => Permission::VIEW_GATEWAY_RULE,
         'governor_get_namespace_v1'                => Permission::VIEW_GATEWAY_RULE,
         'governor_update_namespace_v1'             => Permission::EDIT_GATEWAY_RULE,
@@ -2792,6 +2795,7 @@ final class Route
         'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
         'governor_get_rule_group_v1'               => Permission::VIEW_GATEWAY_RULE,
         'governor_delete_rule_group_v1'            => Permission::DELETE_GATEWAY_RULE,
+        'governor_update_rule_group_v1'            => Permission::EDIT_GATEWAY_RULE,
 
 
         //Enable maker/checker for payouts
