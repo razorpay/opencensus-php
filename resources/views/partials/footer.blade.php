@@ -18,7 +18,13 @@
                 };
     //Above code doesn't perform any function, can avoid application breakage if the library is
     //removed, not loaded or library code breaks anytime.
-    var isLocal = undefined; //Maintaining this for legacy reason.
+    //For any environment where we want to disable tracking other than LJ turn isLocal to true.
+    var isLocal = undefined;
+    //Maintaining this for legacy reason. Should ideally be defined by the environments.
+    //Below peice of code will turn off trackers other than LJ in non-prod environments, since LJ is environment specific we do not have to follow this approach.
+    if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
+        isLocal = true;
+    }
     var disableEventEmitters = false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname=="dashboard.razorpay.com" ? 'prod' : 'stage';
     if(analytics){
