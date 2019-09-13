@@ -1818,8 +1818,6 @@ class Repository extends Base\Repository
             $query->where($transactionSettledAt, '<=', $end);
         }
 
-        $results = $query->get()->toArray();
-
-        return $results;
+        return $query->get();
     }
 }

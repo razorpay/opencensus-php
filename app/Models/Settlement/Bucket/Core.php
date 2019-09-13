@@ -6,10 +6,10 @@ use Cache;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Balance\Type;
-use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -43,8 +43,7 @@ class Core extends Base\Core
             [
                 'start' => $startTime,
                 'end'   => $endTime,
-            ]
-        );
+            ]);
 
         $featuredMids = $this->repo->feature->findMerchantsHavingFeatures([
             'es_automatic',
@@ -57,15 +56,24 @@ class Core extends Base\Core
 
         $result = $this->repo->transaction->getMerchantSettledAtTime($featuredMids, $startTime, $endTime);
 
-        foreach ($result as $record)
+        foreach ($result->toArray() as $record)
         {
-            $this->addMerchantToSettlementBucket(0, $record['merchant_id'], $record['settled_at']);
+            $status = $this->addMerchantToSettlementBucket("", $record['merchant_id'], $record['settled_at']);
+
+            // Adding this to debug the issues,
+            // should be removed once the bucketing is fixed and bucket/fill route is removed.
+            if ($status === true)
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_ADDED_TO_BUCKET,
+                    $record);
+            }
         }
 
         $this->trace->info(
             TraceCode::BUCKETING_DONE,
             [
-                'count' => count($result),
+                'count' => $result->count(),
                 'start' => $startTime,
                 'end'   => $endTime,
             ]
@@ -113,16 +121,25 @@ class Core extends Base\Core
      * @param string $transactionId
      * @param string $merchantId
      * @param        $settlementTime
+     * @return bool
      */
-    public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime)
+    public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime): bool
     {
+        // check is the transaction can be settled
+        $status = $this->isSettleableTransaction($transactionId);
+
+        if ($status === false)
+        {
+            return false;
+        }
+
         // check merchant specific conditions
         $status = $this->preference
                        ->skipMerchantSettlement($merchantId);
 
         if ($status === true)
         {
-            return;
+            return false;
         }
 
         // check early settlement preferences
@@ -131,9 +148,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            $this->addToBucket($merchantId, $timestamp);
-
-            return;
+            return $this->addToBucket($merchantId, $timestamp);
         }
 
         // check merchant preference
@@ -142,9 +157,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            $this->addToBucket($merchantId, $timestamp);
-
-            return;
+            return $this->addToBucket($merchantId, $timestamp);
         }
 
         $currentTimestamp = Carbon::now(Timezone::IST);
@@ -153,7 +166,7 @@ class Core extends Base\Core
             Preference::getNextBucket($currentTimestamp->getTimestamp()) :
             Preference::getNextBucket($settlementTime);
 
-        $this->addToBucket($merchantId, $bucketTimestamp);
+        return $this->addToBucket($merchantId, $bucketTimestamp);
     }
 
     /**
@@ -198,6 +211,13 @@ class Core extends Base\Core
      */
     protected function isSettleableTransaction(string $transactionId): bool
     {
+        // this is added only for back filling purpose.
+        // should remove once done.
+        if (empty($transactionId) === true)
+        {
+            return true;
+        }
+
         $balanceType = $this->repo
                             ->transaction
                             ->getTransactionBalanceType($transactionId);
@@ -220,8 +240,9 @@ class Core extends Base\Core
      *
      * @param string $merchantId
      * @param int    $bucketTimestamp
+     * @return bool
      */
-    public function addToBucket(string $merchantId, int $bucketTimestamp)
+    public function addToBucket(string $merchantId, int $bucketTimestamp): bool
     {
         $data = [
             Entity::MERCHANT_ID      => $merchantId,
@@ -234,11 +255,13 @@ class Core extends Base\Core
 
             $entity->fill($data);
 
-            $entity->save();
+            return $entity->save();
         }
         catch (\Throwable $e)
         {
             // todo: use insert ignore or ignore this error
         }
+
+        return false;
     }
 }
