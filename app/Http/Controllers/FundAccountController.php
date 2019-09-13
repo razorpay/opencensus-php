@@ -33,7 +33,9 @@ class FundAccountController extends Controller
     public function createFundAccountBulk()
     {
         $input = Request::all();
+
         $response = $this->service()->createBulkFundAccount($input);
+
         return ApiResponse::json($response);
     }
 }

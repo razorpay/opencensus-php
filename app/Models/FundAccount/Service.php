@@ -59,7 +59,7 @@ class Service extends Base\Service
 
             if (empty($fundAccount) === false)
             {
-                return $fundAccount->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+                return $fundAccount->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()];
             }
         }
 

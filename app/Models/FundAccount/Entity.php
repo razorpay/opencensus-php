@@ -143,6 +143,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_ID);
     }
 
+    public function getIdempotencyKey()
+    {
+        return $this->getAttribute(self::IDEMPOTENCY_KEY);
+    }
+
     public function getActive(): bool
     {
         return $this->getAttribute(self::ACTIVE);
