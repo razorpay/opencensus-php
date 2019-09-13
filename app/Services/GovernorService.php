@@ -23,39 +23,9 @@ class GovernorService
     // request and response fields
     const ERROR     = 'error';
 
-    const GET_CLIENTS_V1  =   [
-        'url'       =>  "clients",
-        'method'    =>  "GET",
-    ];
-
     const CREATE_NAMESPACE  =   [
         'url'       =>  "rule_engine/namespace",
         'method'    =>  "POST",
-    ];
-
-    const CREATE_NAMESPACE_V1  =   [
-        'url'       =>  "clients/:client_id/namespaces",
-        'method'    =>  "POST",
-    ];
-
-    const LIST_NAMESPACES_V1  =   [
-        'url'       =>  "clients/:client_id/namespaces",
-        'method'    =>  "GET",
-    ];
-
-    const GET_NAMESPACE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id",
-        'method'    =>  "GET",
-    ];
-
-    const UPDATE_NAMESPACE_V1  =   [
-        'url'       =>  "clients/:client_id/namespaces/:namespace_id",
-        'method'    =>  "PUT",
-    ];
-
-    const DELETE_NAMESPACE_V1  =   [
-        'url'       =>  "client/:client/namespaces/:namespace_id",
-        'method'    =>  "DELETE",
     ];
 
     const DOMAIN_MODEL_LIST  =   [
@@ -103,26 +73,6 @@ class GovernorService
         'method'    =>  "GET",
     ];
 
-    const CREATE_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules",
-        'method'    =>  "POST",
-    ];
-
-    const LIST_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules",
-        'method'    =>  "GET",
-    ];
-
-    const GET_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
-        'method'    =>  "GET",
-    ];
-
-    const DELETE_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
-        'method'    =>  "DELETE",
-    ];
-
     const CREATE_RULE_CHAIN  =   [
         'url'       =>  "rule_engine/rule_chain/:namespace",
         'method'    =>  "POST",
@@ -140,14 +90,60 @@ class GovernorService
         'method'    =>  "GET",
     ];
 
-    const LIST_RULE_CHAIN_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains",
-        'method'    =>  "GET",
-    ];
-
     const EXECUTE_CHAINS  =   [
         'url'       =>  "rule_engine/execute/rule_chain/:namespace",
         'method'    =>  "POST",
+    ];
+
+    // For new proxy APIs
+
+    const GET_CLIENTS_V1  =   [
+        'url'       =>  "clients",
+        'method'    =>  "GET",
+    ];
+
+    const CREATE_NAMESPACE_V1  =   [
+        'url'       =>  "clients/:client_id/namespaces",
+        'method'    =>  "POST",
+    ];
+
+    const LIST_NAMESPACES_V1  =   [
+        'url'       =>  "clients/:client_id/namespaces",
+        'method'    =>  "GET",
+    ];
+
+    const GET_NAMESPACE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id",
+        'method'    =>  "GET",
+    ];
+
+    const UPDATE_NAMESPACE_V1  =   [
+        'url'       =>  "clients/:client_id/namespaces/:namespace_id",
+        'method'    =>  "PUT",
+    ];
+
+    const DELETE_NAMESPACE_V1  =   [
+        'url'       =>  "client/:client/namespaces/:namespace_id",
+        'method'    =>  "DELETE",
+    ];
+    const LIST_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules",
+        'method'    =>  "GET",
+    ];
+
+    const GET_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
+        'method'    =>  "GET",
+    ];
+
+    const DELETE_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
+        'method'    =>  "DELETE",
+    ];
+
+    const LIST_RULE_CHAIN_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains",
+        'method'    =>  "GET",
     ];
 
     const LIST_RULE_GROUPS_V1  =   [
@@ -170,6 +166,15 @@ class GovernorService
         'method'    =>  "DELETE",
     ];
 
+    const UPDATE_RULE_GROUP_V1 =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id",
+        'method'    =>  "PUT",
+    ];
+
+    const CREATE_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules",
+        'method'    =>  "POST",
+    ];
 
     /**
      * The application instance.
@@ -228,6 +233,38 @@ class GovernorService
                 $url .= $key . '=' . $value . '&';
             }
         }
+
+        $request = [
+            'url'     => $url,
+            'method'  => $method,
+            'content' => $data,
+            'headers' => [
+                self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
+            ]
+        ];
+
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_REQUEST, $request);
+
+        $request['options'] = [
+            'auth' => $auth
+        ];
+
+        $response = $this->sendRawRequest($request);
+
+        $parsedResponse = $this->processResponse($response);
+
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse['response_body'] ?? []);
+
+        return $parsedResponse;
+    }
+
+    public function sendRequestV1(array $requestSchema, $data, $client_id = null, $namespace_id = null, $client = null, $rule_chain_id = null, $rule_group_id = null, $rule_id = null)
+    {
+        $url = $this->getUrlV1($requestSchema, $client_id, $namespace_id, $client, $rule_chain_id, $rule_group_id, $rule_id);
+
+        $auth = $this->getAuthDetailsV1();
+
+        $method = $this->getMethod($requestSchema);
 
         $request = [
             'url'     => $url,
@@ -315,15 +352,22 @@ class GovernorService
         return $baseUrl;
     }
 
-    protected function getUrl($requestArray, $namespace = '', $getEntityIdentifier = '', $client_id = '', $namespace_id = '', $client = '', $rule_chain_id = '', $rule_group_id = '', $rule_id = ''): string
+    protected function getUrl($requestArray, $namespace = '', $getEntityIdentifier = ''): string
+    {
+        $baseUrl = $this->getBaseUrl();
+
+        $url = $baseUrl . str_replace_first(':namespace', $namespace, $requestArray['url']);
+
+        $url = str_replace_first(':entity_identifier', $getEntityIdentifier, $url);
+
+        return $url;
+    }
+
+    protected function getUrlV1($requestArray, $client_id = '', $namespace_id = '', $client = '', $rule_chain_id = '', $rule_group_id = '', $rule_id = ''): string
     {
         $baseUrl = $this->getBaseUrl();
 
         $url = $baseUrl . str_replace_first(':namespace_id', $namespace_id, $requestArray['url']);
-
-        $url = str_replace_first(':namespace', $namespace, $url);
-
-        $url = str_replace_first(':entity_identifier', $getEntityIdentifier, $url);
 
         $url = str_replace_first(':client_id', $client_id, $url);
 
@@ -426,5 +470,14 @@ class GovernorService
             default:
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
+    }
+
+    public function getAuthDetailsV1() {
+
+        return [
+            $this->config['adminapi']['username'],
+            $this->config['adminapi']['password']
+        ];
+
     }
 }
