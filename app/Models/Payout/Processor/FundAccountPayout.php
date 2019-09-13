@@ -52,7 +52,7 @@ class FundAccountPayout extends Base
         }
 
         throw new BadRequestValidationFailureException(
-            'Payouts cannot be created on an fund account without contact',
+            'Payouts cannot be created on an fund account without contact or inactive contact',
             Payout\Entity::FUND_ACCOUNT_ID);
     }
 }
