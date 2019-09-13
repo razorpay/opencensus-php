@@ -368,19 +368,25 @@ class Service extends Base\Service
     {
         $redis = $this->app['redis']->connection();
 
+        $countKey            = sprintf(Create::TOTAL_MERCHANT_COUNT, $this->mode);
+        $channelWiseCountKey = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
         return [
-            'pending_merchants'    => Cache::get(Create::TOTAL_MERCHANT_COUNT),
-            'channel_wise_process' => $redis->HGETALL(Create::CHANNEL_WISE_COUNT),
+            'pending_merchants'    => Cache::get($countKey),
+            'channel_wise_process' => $redis->HGETALL($channelWiseCountKey),
         ];
     }
 
     public function resetProcessDetails()
     {
-        Cache::forget(Create::TOTAL_MERCHANT_COUNT);
+        $countKey            = sprintf(Create::TOTAL_MERCHANT_COUNT, $this->mode);
+        $channelWiseCountKey = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
+        Cache::forget($countKey);
 
         $redis = $this->app['redis']->connection();
 
-        $redis->del(Create::CHANNEL_WISE_COUNT);
+        $redis->del($channelWiseCountKey);
 
         return $this->getProcessDetails();
     }
