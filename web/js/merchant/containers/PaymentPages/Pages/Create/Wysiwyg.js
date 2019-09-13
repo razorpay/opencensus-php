@@ -368,15 +368,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           item: {
             name,
             description,
-            amount: amount * 100, // Convert in paisa (smaller unit)
+            amount: amount ? amount * 100 : null, // Convert in paisa (smaller unit)
           },
           settings, // Contains position
           image_url,
           mandatory,
           min_purchase,
           max_purchase,
-          min_amount,
-          max_amount,
+          min_amount: min_amount ? min_amount * 100 : null,
+          max_amount: max_amount ? max_amount * 100 : null,
           stock,
         };
 

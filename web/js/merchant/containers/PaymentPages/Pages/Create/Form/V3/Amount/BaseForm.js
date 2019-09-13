@@ -210,7 +210,9 @@ export default class BaseForm extends React.PureComponent {
                 theme="dark"
                 parentQuerySelector=".Modal-container"
               >
-                <PopoverBody>Customer can unselect Item</PopoverBody>
+                <PopoverBody>
+                  Customer can select or unselect this Item
+                </PopoverBody>
               </Popover>
             </div>
           </React.Fragment>

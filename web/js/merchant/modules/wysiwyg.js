@@ -156,7 +156,9 @@ export default function(state = initialState, action) {
         // For V2, mapping new format to old format for FE to handle. Only 1 item must exist in payment_page_items.
         const amountItem = entityData.payment_page_items[0];
 
-        entityData.amount = amountItem.item.amount / 100; // Convert in Rupees (or bigger unit)
+        entityData.amount = amountItem.item.amount
+          ? amountItem.item.amount / 100
+          : null; // Convert in Rupees (or bigger unit)
         entityData.quantity = amountItem.quantity;
 
         formItems = udfSchema;
