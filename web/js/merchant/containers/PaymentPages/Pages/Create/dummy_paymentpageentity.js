@@ -4,7 +4,7 @@ const paymentpage_data = {
   id: 'pl_CxsGo6esgKIDt1',
   currency: 'INR',
   currency_symbol: '₹',
-  title: 'PP Title',
+  name: 'PP Title',
   description: null,
   expire_by: null,
   status: 'active',
@@ -27,8 +27,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbA',
       item: {
-        title: 'Simple Item',
-        name: 'amount_field_0', // TODO: Amount fields won't have name
+        name: 'Simple Item',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -45,8 +44,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbB',
       item: {
-        title: 'Simple Item optional',
-        name: 'amount_field_0_1',
+        name: 'Simple Item optional',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -62,8 +60,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbB',
       item: {
-        title: 'Simple Item + Stock',
-        name: 'amount_field_0_1',
+        name: 'Simple Item + Stock',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -81,8 +78,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbB',
       item: {
-        title: 'Simple Item optional+ Stock',
-        name: 'amount_field_0_1',
+        name: 'Simple Item optional+ Stock',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -99,7 +95,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbC',
       item: {
-        title: 'Min purchase with Limited Stock',
+        name: 'Min purchase with Limited Stock',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -116,7 +112,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbE',
       item: {
-        title: 'Min-Max purchase with Limited Stock',
+        name: 'Min-Max purchase with Limited Stock',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -133,7 +129,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbK',
       item: {
-        title: 'Min purchase + Unlimited Stock',
+        name: 'Min purchase + Unlimited Stock',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -150,7 +146,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbM',
       item: {
-        title: 'Min-Max purchase + Unlimited Stock',
+        name: 'Min-Max purchase + Unlimited Stock',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -168,7 +164,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbO',
       item: {
-        title: 'Item with user defined amount (Min + Max)',
+        name: 'Item with user defined amount (Min + Max)',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -186,7 +182,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbO',
       item: {
-        title: 'Item with user defined amount (No Min + Max)',
+        name: 'Item with user defined amount (No Min + Max)',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -204,7 +200,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbO',
       item: {
-        title: 'Item with user defined amount (Min + No Max)',
+        name: 'Item with user defined amount (Min + No Max)',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
@@ -222,7 +218,7 @@ const paymentpage_data = {
     {
       id: 'ppi_D2D7GpbxDsPIbO',
       item: {
-        title: 'Item with user defined amount (No Min + No Max)',
+        name: 'Item with user defined amount (No Min + No Max)',
         currency: 'INR',
         description: 'Some description of the field',
         type: 'payment_page',
