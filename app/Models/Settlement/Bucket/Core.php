@@ -24,8 +24,11 @@ class Core extends Base\Core
 
     public function backfillSettlementBucket(array $input)
     {
-        $startTime = Carbon::now(Timezone::IST)->getTimestamp();
+        $currentTime = Carbon::now(Timezone::IST);
 
+        $startTime = $currentTime->subMinutes($currentTime->minute)
+                                 ->subSecond($currentTime->second)
+                                 ->getTimestamp();
         $endTime = null;
 
         if (empty($input['start']) === false)

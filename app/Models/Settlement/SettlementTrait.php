@@ -126,7 +126,9 @@ trait SettlementTrait
                 $merchant,
                 [
                     'reason'               => 'bank account created yesterday',
-                    'bank_account_created' => Carbon::createFromTimestamp($txn->getCreatedAt(), Timezone::IST)->format('Y-m-d H:i:s'),
+                    'bank_account_created' => Carbon::createFromTimestamp(
+                                                $merchant->bankAccount->getCreatedAt(),
+                                                Timezone::IST)->format('Y-m-d H:i:s'),
                 ]);
 
             return false;
