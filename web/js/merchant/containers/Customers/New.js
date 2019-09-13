@@ -62,6 +62,7 @@ export default class AddCustomer extends Component {
         editedBillingAddress: {
           country: this.DEFAULT_COUNTRY,
         },
+        editedShippingAddress: {},
         states: Countries[this.DEFAULT_COUNTRY],
         billingAddressStates: Countries[this.DEFAULT_COUNTRY],
         shippingAddressStates: Countries[this.DEFAULT_COUNTRY],
@@ -265,7 +266,7 @@ export default class AddCustomer extends Component {
       return;
     }
 
-    if (this.state.errors.length) {
+    if (this.state.errors && this.state.errors.length) {
       this.setState({
         errors: [],
       });
