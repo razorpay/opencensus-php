@@ -3,7 +3,11 @@ import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
 
 import { sortableHandle } from 'react-sortable-hoc';
-const DragHandle = sortableHandle(() => <span class="dragHandle">::</span>);
+const DragHandle = sortableHandle(() => (
+  <span class="dragHandle">
+    <i class="i-dotter" />
+  </span>
+));
 
 const displayField = ({
   field,

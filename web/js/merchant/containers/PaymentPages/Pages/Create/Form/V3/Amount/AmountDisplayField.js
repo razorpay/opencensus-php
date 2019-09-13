@@ -7,7 +7,11 @@ import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import { getCurrency } from 'rzp/ui/Amount';
 
 import { sortableHandle } from 'react-sortable-hoc';
-const DragHandle = sortableHandle(() => <span class="dragHandle">::</span>);
+const DragHandle = sortableHandle(() => (
+  <span class="dragHandle">
+    <i class="i-dotter" />
+  </span>
+));
 
 const displayField = ({
   field,

@@ -86,9 +86,7 @@ class SortableFormItemsList extends React.Component {
 export default class View extends React.PureComponent {
   state = {
     isListSorting: false,
-    hasAmountItem: this.props.payment_page_id
-      ? this.props.paymentPageEntity.payment_page_items.length
-      : 0,
+    hasAmountItem: null,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -200,10 +198,16 @@ export default class View extends React.PureComponent {
       );
     }
 
+    const hasAmountItem =
+      this.state.hasAmountItem !== null
+        ? this.state.hasAmountItem
+        : paymentPageEntity.payment_page_items &&
+          paymentPageEntity.payment_page_items.length;
+
     return (
       <React.Fragment>
         <div class="UI-form">
-          {!this.state.hasAmountItem && (
+          {!hasAmountItem && (
             <div className="Field Field-dummyAmount">
               <div className="Field-label" style={{ opacity: 0.6 }}>
                 Amount
