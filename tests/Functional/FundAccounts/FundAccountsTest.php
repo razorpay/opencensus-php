@@ -241,4 +241,47 @@ class FundAccountsTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testBulkFundAccount()
+    {
+        $this->ba->batchAuth();
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->startTest();
+    }
+    public function testBulkFundAccountWithInvalidContactId()
+    {
+        $this->ba->batchAuth();
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->startTest();
+    }
+    public function testBulkFundAccountWithValidContactId()
+    {
+        $this->ba->batchAuth();
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
+        $this->startTest();
+    }
+    public function testBulkFundAccountWithSameIdempotencyKey()
+    {
+        $this->ba->batchAuth();
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
+        $this->startTest();
+    }
 }

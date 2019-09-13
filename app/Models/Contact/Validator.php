@@ -23,11 +23,6 @@ class Validator extends Base\Validator
 
     const MAX_TYPES_ALLOWED = 100;
 
-    /**
-     * Rate limit on items sending for bulk contact create.
-     */
-    const MAX_BULK_CONTACTS_LIMIT = 15;
-
     protected static $createRules = [
         Entity::NAME                    => 'required|string|max:50|nullable|custom',
         Entity::CONTACT                 => 'sometimes|nullable|contact_syntax',
@@ -61,24 +56,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The name field is invalid.',
                 Entity::NAME);
-        }
-    }
-
-    /**
-     * @param array $input
-     * Rate limit on number of contact creation in Bulk Route
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    public function validateBulkContactCount(array $input)
-    {
-        if (count($input) > self::MAX_BULK_CONTACTS_LIMIT)
-        {
-            throw new BadRequestValidationFailureException(
-                'Current batch size ' . count($input) . ', max limit of Bulk Contact is ' . self::MAX_BULK_CONTACTS_LIMIT,
-                null,
-                null
-            );
         }
     }
 }

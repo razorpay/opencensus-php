@@ -3,9 +3,9 @@
 namespace RZP\Models\Contact;
 
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 
 /**
  * Class Core
@@ -17,7 +17,6 @@ class Core extends Base\Core
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        Batch\Entity $batch = null,
         string $batchId = null): Entity
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
@@ -38,7 +37,10 @@ class Core extends Base\Core
 
         $contact->merchant()->associate($merchant);
 
-        $batchId ? ($contact->setBatchId($batchId)) : ($contact->batch()->associate($batch));
+        if (empty($batchId) === false)
+        {
+            $contact->setBatchId($batchId);
+        }
 
         $this->setTypeIfApplicable($contact, $input);
 
@@ -82,5 +84,23 @@ class Core extends Base\Core
         }
 
         (new Type)->setTypeForContact($contact, $type);
+    }
+
+    public function processEntryForContact(
+        array $entry,
+        string $idempotencyKey,
+        string $batchId)
+    {
+        $contactId = (isset($entry[ContactBatchHelper::CONTACT][ContactBatchHelper::ID]) === true) ?
+            $entry[ContactBatchHelper::CONTACT][ContactBatchHelper::ID] :
+            null;
+        if (empty($contactId) === false)
+        {
+            return $this->repo->contact->findByPublicIdAndMerchant($contactId, $this->merchant);
+        }
+        $input = ContactBatchHelper::getContactInput($entry);
+        $contact = $this->repo->contact->getContactWithSimilarDetails($input, $this->merchant);
+        $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
+        return $contact ?: $this->create($input, $this->merchant, $batchId);
     }
 }

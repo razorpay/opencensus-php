@@ -4,7 +4,6 @@ namespace RZP\Models\Payout;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\Mutex;
@@ -127,7 +126,6 @@ class Core extends Base\Core
      */
     public function createPayoutToFundAccount(array $input,
                                               Merchant\Entity $merchant,
-                                              Batch\Entity $batch = null,
                                               string $batchId = null): Entity
     {
         $this->trace->info(
@@ -148,12 +146,9 @@ class Core extends Base\Core
             }
         }
 
-        // TODO: remove batch entity handling once ramped to 100%
-        $batchIdOrBatch = $batchId === null ? $batch : $batchId;
-
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
-                       ->setBatch($batchIdOrBatch)
+                       ->setBatch($batchId)
                        ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);

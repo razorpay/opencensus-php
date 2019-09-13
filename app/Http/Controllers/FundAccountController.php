@@ -24,4 +24,16 @@ class FundAccountController extends Controller
 
         return ApiResponse::json($entity);
     }
+
+
+    /**
+     *  Route to create bulk contacts.
+     *  Currently it is used by batch Service
+     */
+    public function createFundAccountBulk()
+    {
+        $input = Request::all();
+        $response = $this->service()->createBulkFundAccount($input);
+        return ApiResponse::json($response);
+    }
 }

@@ -31,6 +31,8 @@ class BatchTest extends TestCase
 
     public function testCreateBatchOfFundAccountType()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create(
             'contact',
             [
@@ -73,6 +75,8 @@ class BatchTest extends TestCase
 
     public function testCreateBatchOfPayoutType()
     {
+        $this->markTestSkipped();
+
         $this->setUpMerchantForBusinessBanking(false, 5000);
 
         $this->createContact();
@@ -120,6 +124,8 @@ class BatchTest extends TestCase
 
     public function testSendMailFromBatchService()
     {
+        $this->markTestSkipped();
+
         Mail::fake();
 
         $this->ba->appAuth();

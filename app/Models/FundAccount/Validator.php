@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Feature;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Validator
@@ -21,6 +22,11 @@ class Validator extends Base\Validator
      * 1lac in paise
      */
     const MAX_UPI_AMOUNT = 10000000;
+
+    /**
+     * Rate limit on items sending for bulk fund_account create.
+     */
+    const MAX_BULK_FUND_ACCOUNT_LIMIT = 15;
 
     protected static $createRules = [
         Entity::CUSTOMER_ID                         => 'sometimes|public_id',
@@ -117,6 +123,23 @@ class Validator extends Base\Validator
                 [
                     'message' => 'payout_to_cards feature not enabled',
                 ]);
+        }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of fund account creation in Bulk Route
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkFundAccountCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_FUND_ACCOUNT_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Current batch size ' . count($input) . ', max limit of Bulk Fund Account is ' . self::MAX_BULK_FUND_ACCOUNT_LIMIT,
+                null,
+                null
+            );
         }
     }
 }

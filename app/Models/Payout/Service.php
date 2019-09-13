@@ -19,7 +19,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Contact\Service as ContactService;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 
 use Razorpay\Trace\Logger as Trace;
@@ -28,7 +28,10 @@ class Service extends Base\Service
 {
     use Base\Traits\ProcessAccountNumber;
 
-    protected $contactService;
+    /**
+     * @var FundAccountService
+     */
+    protected $fundAccountService;
 
     public function __construct()
     {
@@ -36,7 +39,7 @@ class Service extends Base\Service
 
         $this->core = new Payout\Core;
 
-        $this->contactService = new ContactService;
+        $this->fundAccountService = new FundAccountService;
     }
 
     public function fundAccountPayout(array $input): array
@@ -452,14 +455,9 @@ class Service extends Base\Service
                     // If fund_account is null then, it is not created before
                     if ($fundAccount === null)
                     {
-                        $contact = $this->contactService->processEntryForContact($item,
-                                                                                 $idempotencyKey,
-                                                                                 $batchId);
-
-                        $fundAccount = $this->contactService->processEntryForContactsFundAccount($item,
-                                                                                                 $contact,
-                                                                                                 $idempotencyKey,
-                                                                                                 $batchId);
+                        $fundAccount = $this->fundAccountService->create($item,
+                                                                         $batchId,
+                                                                         $idempotencyKey);
                     }
                     else
                     {
@@ -530,6 +528,6 @@ class Service extends Base\Service
 
         $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
 
-        return $this->core->createPayoutToFundAccount($input, $this->merchant, null, $batchId);
+        return $this->core->createPayoutToFundAccount($input, $this->merchant, $batchId);
     }
 }

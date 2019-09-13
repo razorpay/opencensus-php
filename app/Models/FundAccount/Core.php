@@ -2,7 +2,6 @@
 
 namespace RZP\Models\FundAccount;
 
-use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -23,14 +22,13 @@ class Core extends Base\Core
      * @param array                  $input
      * @param Merchant\Entity        $merchant
      * @param Base\PublicEntity|null $source
-     * @param Batch\Entity|null      $batch
+     * @param string                 $batchId
      *
      * @return Entity
      */
     public function create(array $input,
                            Merchant\Entity $merchant,
                            Base\PublicEntity $source = null,
-                           Batch\Entity $batch = null,
                            string $batchId = null): Entity
     {
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
@@ -56,7 +54,7 @@ class Core extends Base\Core
         $fundAccount = $fundAccount->build($input);
 
         $this->repo->transaction(
-            function() use ($input, $merchant, $source, $fundAccount, $batch, $batchId)
+            function() use ($input, $merchant, $source, $fundAccount, $batchId)
             {
                 $account = $this->createAccount($input, $merchant, $source);
 
@@ -64,7 +62,10 @@ class Core extends Base\Core
 
                 $fundAccount->account()->associate($account);
 
-                $batchId ? ($fundAccount->setBatchId($batchId)) : ($fundAccount->batch()->associate($batch));
+                if (empty($batchId) === false)
+                {
+                    $fundAccount->setBatchId($batchId);
+                }
 
                 $this->repo->saveOrFail($fundAccount);
             });
