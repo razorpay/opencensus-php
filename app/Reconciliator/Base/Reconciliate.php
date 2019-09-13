@@ -99,25 +99,42 @@ class Reconciliate extends Base\Core
 
 
     const ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS = [
-        RequestProcessor\Base::NETBANKING_HDFC,
-        RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::EBS,
         RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::AXIS,
+        RequestProcessor\Base::MPESA,
+        RequestProcessor\Base::KOTAK,
+        RequestProcessor\Base::AIRTEL,
+        RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::PHONEPE,
+        RequestProcessor\Base::PAYZAPP,
+        RequestProcessor\Base::OLAMONEY,
         RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::JIOMONEY,
+        RequestProcessor\Base::BILLDESK,
+        RequestProcessor\Base::MOBIKWIK,
+        RequestProcessor\Base::AMAZONPAY,
+        RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::CARD_FSS_HDFC,
         RequestProcessor\Base::NETBANKING_SIB,
-        RequestProcessor\Base::NETBANKING_ICICI,
-        RequestProcessor\Base::NETBANKING_FEDERAL,
-        RequestProcessor\Base::NETBANKING_CORPORATION,
-        RequestProcessor\Base::NETBANKING_YESB,
         RequestProcessor\Base::NETBANKING_CUB,
         RequestProcessor\Base::NETBANKING_CSB,
-        RequestProcessor\Base::NETBANKING_IDFC,
-        RequestProcessor\Base::NETBANKING_INDUSIND,
         RequestProcessor\Base::NETBANKING_OBC,
+        RequestProcessor\Base::NETBANKING_RBL,
+        RequestProcessor\Base::NETBANKING_BOB,
+        RequestProcessor\Base::NETBANKING_IDFC,
+        RequestProcessor\Base::NETBANKING_YESB,
+        RequestProcessor\Base::NETBANKING_HDFC,
+        RequestProcessor\Base::NETBANKING_AXIS,
+        RequestProcessor\Base::NETBANKING_ICICI,
         RequestProcessor\Base::NETBANKING_VIJAYA,
+        RequestProcessor\Base::NETBANKING_CANARA,
+        RequestProcessor\Base::NETBANKING_FEDERAL,
+        RequestProcessor\Base::NETBANKING_EQUITAS,
+        RequestProcessor\Base::NETBANKING_INDUSIND,
         RequestProcessor\Base::NETBANKING_ALLAHABAD,
-        RequestProcessor\Base::EBS,
-        RequestProcessor\Base::UPI_ICICI,
-
+        RequestProcessor\Base::NETBANKING_CORPORATION,
     ];
 
     /*********************
@@ -273,7 +290,9 @@ class Reconciliate extends Base\Core
 
         $attempt = $batch->getAttempts();
 
-        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData(), $batchId, $attempt);
+        $data = $batchProcessor->getReconBatchOutputData();
+
+        $this->getOutputWithRemovedBlackListedColumns($data, $batchId, $attempt);
 
         $sheetName = null;
 
@@ -392,28 +411,24 @@ class Reconciliate extends Base\Core
      * @param $reconOutputData
      * @param $batchId
      * @param $attemptNumber
-     * @return array
      * removes blacklisted columns if present. otherwise adds processed_at column for each row.
      */
 
-    protected function getOutputWithRemovedBlackListedColumns($reconOutputData, $batchId, $attemptNumber)
+    protected function getOutputWithRemovedBlackListedColumns(&$reconOutputData, $batchId, $attemptNumber)
     {
         $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
 
-        $updatedData = [];
-
-        foreach ($reconOutputData as $row)
+        foreach ($reconOutputData as &$row)
         {
-            $row = array_diff_key($row, array_flip($blackListedColumns));
+            foreach ($blackListedColumns as $column)
+            {
+                unset($row[$column]);
+            }
 
             $row['batch_id'] = $batchId;
 
             $row['attempt_number'] = $attemptNumber;
-
-            array_push($updatedData, $row);
         }
-
-        return $updatedData;
     }
 
     /**

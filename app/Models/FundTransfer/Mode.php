@@ -3,9 +3,14 @@
 namespace RZP\Models\FundTransfer;
 
 use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use RZP\Models\FundAccount\Type;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Mode
+ * @package RZP\Models\FundTransfer
+ */
 class Mode
 {
     const RTGS = 'RTGS';
@@ -36,6 +41,7 @@ class Mode
         Type::CARD => [
             self::IMPS,
             self::UPI,
+            self::NEFT,
         ]
     ];
 
@@ -47,23 +53,128 @@ class Mode
      * @var array
      */
     protected static $issuerModeMap = [
-        Issuer::UTIB    => [
-            self::IMPS
+        Issuer::ICIC => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::UPI,
+                self::NEFT
+            ]
         ],
-        Issuer::HDFC    => [
-            self::IMPS
+        Issuer::UTIB => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::IMPS,
+                self::NEFT
+            ]
         ],
-        Issuer::INDB    => [
-            self::IMPS
+        Issuer::HDFC => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::IMPS,
+                self::NEFT
+            ]
         ],
-        Issuer::KKBK    => [
-            self::IMPS
+        Issuer::KKBK => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::IMPS,
+                self::NEFT
+            ]
         ],
-        Issuer::ANDB    => [
-            self::IMPS
+        Issuer::ANDB => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::IMPS,
+                self::NEFT
+            ]
         ],
-        Issuer::ICIC    => [
-            self::UPI
+        Issuer::INDB => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::IMPS,
+                self::NEFT
+            ]
+        ],
+        Issuer::SCBL => [
+            //Adding Networkcode as a key since Amex card network uses SCBL issuer internally
+            //and It can have other issuers as well. Also by this we distinguish with other cards issued by SCBL
+            Network::AMEX                      => [
+                self::UPI,
+                self::IMPS,
+                self::NEFT
+            ],
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::CITI => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::HSBC => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::PUNB => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::CNRB => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::UBIN => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::BKID => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::CORP => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::SYNB => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::IOBA => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::BOFA => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::IBKL => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::BARB => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::YESB => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::SBIN => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+        Issuer::RATN => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
         ],
     ];
 
@@ -77,6 +188,28 @@ class Mode
         return array_keys(self::$issuerModeMap);
     }
 
+    /**
+     *  if the network exists in issuer mode map then consider the mode given for the same
+     *  else consider default
+     *
+     *  if not found return empty array
+     *
+     * @param $issuer
+     * @param $networkCode
+     *
+     * @return mixed|array
+     */
+    public static function getSupportedModes($issuer, $networkCode): array
+    {
+        if(array_key_exists($issuer, self::$issuerModeMap) === true)
+        {
+            return array_key_exists($networkCode, self::$issuerModeMap[$issuer]) === true ?
+                self::$issuerModeMap[$issuer][$networkCode] : self::$issuerModeMap[$issuer][Attempt\Constants::DEFAULT_NETWORK];
+        }
+
+        return [];
+    }
+
     public static function validateModeOfAccountType($mode, $accountType)
     {
         if ((isset(self::$modeAccountTypeMap[$accountType]) === false) or
@@ -86,10 +219,18 @@ class Mode
         }
     }
 
-    public static function validateModeOfIssuer(string $mode = null, string $issuer = null)
+    /**
+     * @param string $mode
+     * @param string $issuer
+     * @param string $networkCode
+     * @throws BadRequestValidationFailureException
+     */
+    public static function validateModeOfIssuer(string $mode , string $issuer, string $networkCode)
     {
-        if ((isset(self::$issuerModeMap[$issuer]) === false) or
-            (in_array($mode, self::$issuerModeMap[$issuer], true) === false))
+        $supportedModes = self::getSupportedModes($issuer, $networkCode);
+
+        if ((isset($supportedModes) === false) or
+            (in_array($mode, $supportedModes, true) === false))
         {
             throw new BadRequestValidationFailureException("$mode is not a valid mode for issuer $issuer");
         }

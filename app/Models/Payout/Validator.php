@@ -183,7 +183,9 @@ class Validator extends Base\Validator
         {
             $cardIssuer = $fundAccount->account->getIssuer();
 
-            Mode::validateModeOfIssuer($mode, $cardIssuer);
+            $networkCode = $fundAccount->account->getNetworkCode();
+
+            Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
     }
 

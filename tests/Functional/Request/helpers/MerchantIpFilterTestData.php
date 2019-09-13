@@ -75,7 +75,7 @@ return [
                 'network'     => 'RuPay',
                 'type'        => 'debit',
                 'country'     => 'IN',
-                'issuer_name' => 'PUNJAB NATIONAL BANK',
+                'issuer_name' => 'State Bank of India',
                 'trivia'      => 'random trivia'
             ]
         ],

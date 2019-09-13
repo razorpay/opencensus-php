@@ -76,7 +76,9 @@ class Preference extends Base\Core
                                      [
                                          Feature\Constants::BLOCK_SETTLEMENTS,
                                          Feature\Constants::DAILY_SETTLEMENT
-                                     ]);
+                                     ])
+                                 ->pluck(Feature\Entity::NAME)
+                                 ->toArray();
 
         return (empty($isFeatureEnabled) === false);
     }
@@ -197,7 +199,9 @@ class Preference extends Base\Core
                                 [
                                     Feature\Constants::ES_AUTOMATIC,
                                     Feature\Constants::ES_AUTOMATIC_THREE_PM,
-                                ]);
+                                ])
+                            ->pluck(Feature\Entity::NAME)
+                            ->toArray();;
 
         return $featureList;
     }

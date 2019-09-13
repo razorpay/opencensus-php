@@ -11,6 +11,7 @@ use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service;
 use RZP\Encryption\PGPEncryption;
@@ -18,6 +19,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\FundAccount\Type as FundAccountType;
 use RZP\Models\FundTransfer\Base\Beneficiary\FileProcessor;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
@@ -52,10 +54,12 @@ class Beneficiary extends FileProcessor
      *                         'file_name'
      *                         'merchants_count'
      */
-    public function register(PublicCollection $bankAccounts, array $input = []): array
+    public function register(PublicCollection $bankAccounts, $accountType = FundAccountType::BANK_ACCOUNT, array $input = []): array
     {
         try
         {
+            $this->increaseAllowedSystemLimits();
+
             $rows = $this->getData($bankAccounts);
 
             $this->trace->info(TraceCode::FTA_ROWS_FETCHED_FOR_FILE);
@@ -231,5 +235,14 @@ class Beneficiary extends FileProcessor
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(900);
+
+        RuntimeManager::setMaxExecTime(900);
     }
 }

@@ -99,4 +99,13 @@ class IinController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function processRecord(string $type)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processRecord($type, $input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -77,7 +77,7 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
-            $gateway = $attempt->shouldUseGateway();
+            $gateway = $attempt->shouldUseGateway($attempt->getMode());
 
             $this->doRequiredChecks($gateway);
 

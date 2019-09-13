@@ -31,6 +31,11 @@ class EventCode
         'name'  => 'payment.input.validations.processed'
     ];
 
+    const PAYMENT_CREATION_RESPAWN                      = [
+        'group' => 'initiation',
+        'name'  => 'payment.creation.respawn'
+    ];
+
     const PAYMENT_CARDSAVING_INITIATED                  = [
         'group' => 'internal_checks',
         'name'  => 'payment.cardsaving.initiated'
@@ -265,7 +270,7 @@ class EventCode
 
     const FTA_CREATION_SUCCESS = [
         'group' => 'success',
-        'name'  => 'fta.creation.initiated'
+        'name'  => 'fta.creation.success'
     ];
 
     const FTA_CREATION_FAILED = [
@@ -306,6 +311,11 @@ class EventCode
     const FTA_UTR_UPDATED = [
         'group' => 'update',
         'name'  => 'fta.utr.updated'
+    ];
+
+    const FTA_DATA_UPDATED_FROM_REVERSE_FEED = [
+        'group' => 'update',
+        'name'  => 'fta.data.updated.reverse.feed'
     ];
 
     const FTA_STATUS_UPDATED = [

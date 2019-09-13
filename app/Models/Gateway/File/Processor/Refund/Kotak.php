@@ -11,6 +11,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
+//This code is not being used to generate refund file go to app/Gateway/Netbanking/Kotak/RefundFile.php
+
 class Kotak extends Base
 {
     use FileHandler;

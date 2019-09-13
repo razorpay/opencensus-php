@@ -90,7 +90,7 @@ class RefundFile extends Base\RefundFile
                 $i++,
                 $row['gateway']['merchant_code'],
                 $date,
-                $row['gateway']['int_payment_id'],
+                $row['gateway']['int_payment_id'] ?: $row['gateway']['verification_id'],
                 $row['refund']['amount'] / 100,
                 $row['gateway']['bank_payment_id'],
             );

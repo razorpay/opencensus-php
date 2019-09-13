@@ -110,7 +110,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        $this->validateNetwork($input, $this->entity->getIin(), true);
+        $this->validateNetwork($input, $this->entity->getIin());
     }
 
     /**
@@ -122,7 +122,7 @@ class Validator extends Base\Validator
      *             defined in $networkRegexes in Models/Card/Network.php
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function validateNetwork($input, $iin, $skipNetworkRegexValidation = false)
+    protected function validateNetwork($input, $iin)
     {
         $network = $input[Entity::NETWORK];
 
@@ -130,20 +130,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid network name: ' . $input[Entity::NETWORK]);
-        }
-
-        $detected = Card\Network::detectNetwork($iin);
-        $fullName = Card\Network::getFullName($detected);
-
-        if (($fullName !== 'Unknown') and
-            ($fullName !== $network))
-        {
-            if ($skipNetworkRegexValidation === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Card network given does not match the regex one: ' . $fullName);
-            }
-
         }
     }
 
@@ -165,7 +151,7 @@ class Validator extends Base\Validator
     {
         Card\SubType::checkSubType($subtype);
     }
-  
+
     protected function validateIssuer($input)
     {
         if (isset($input[Entity::ISSUER]) === false)

@@ -88,6 +88,11 @@ class CorePaymentService
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
         }
 
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+        }
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,

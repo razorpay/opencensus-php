@@ -198,13 +198,13 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         if (in_array($cardLocale, [BaseReconciliate::DOMESTIC, BaseReconciliate::INTERNATIONAL]) === false)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'message'         => 'unable to figure out card locale',
-                    'recon_card_type' => $cardLocale,
-                    'row'             => $row,
-                    'gateway'         => $this->gateway
+                    'info_code'  => InfoCode::UNEXPECTED_CARD_LOCALE,
+                    'payment_id' => $paymentId,
+                    'gateway'    => $this->gateway,
+                    'message'    => 'unable to figure out card locale'
                 ]);
 
             return null;

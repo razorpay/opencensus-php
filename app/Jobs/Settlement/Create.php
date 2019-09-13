@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Metric;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Models\Settlement\Processor as SettlementProcessor;
@@ -58,7 +59,7 @@ class Create extends Job
     {
         parent::handle();
 
-        $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
+        $merchant = null;
 
         try
         {
@@ -67,8 +68,9 @@ class Create extends Job
                 [
                     'merchant_id'       => $this->merchantId,
                     'settlement_bucket' => $this->settlementBucket,
-                ]
-            );
+                ]);
+
+            $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
 
             $startTime = microtime(true);
 
@@ -104,8 +106,16 @@ class Create extends Job
         }
         finally
         {
+            $this->delete();
+
             // reduce the total count once the processing is done
             Cache::decrement(self::TOTAL_MERCHANT_COUNT);
+
+            $this->trace->count(
+                Metric::MERCHANT_SETTLEMENT_PROCESSED,
+                [
+                    'channel' => $merchant->getChannel(),
+                ]);
 
             $this->dispatchForSettlementInitiateIfRequired($merchant->getChannel());
         }
@@ -135,7 +145,7 @@ class Create extends Job
         }
 
         // if there total merchant count is zero that means settlement creation process completed
-        $isCompleted = (((int)Cache::get(self::TOTAL_MERCHANT_COUNT)) === 0);
+        $isCompleted = (((int) Cache::get(self::TOTAL_MERCHANT_COUNT)) === 0);
 
         // if process is not complete then do not initiate transfer
         if ($isCompleted === false)
@@ -146,9 +156,9 @@ class Create extends Job
         $channelCount = $redis->hgetall(self::CHANNEL_WISE_COUNT);
 
         // If there any channel with pending settlement initiate then dispatch it for the same
-        foreach($channelCount as $ch => $count)
+        foreach ($channelCount as $ch => $count)
         {
-            if ($count !== 0)
+            if (((int) $count) !== 0)
             {
                 $this->dispatchForSettlementInitiate($redis, $ch, $count);
             }
@@ -171,6 +181,12 @@ class Create extends Job
             [
                 'channel' => $channel,
                 'count'   => $count,
+            ]);
+
+        $this->trace->count(
+            Metric::DISPATCH_FOR_SETTLEMENT_INITIATE,
+            [
+                'channel' => $channel,
             ]);
 
         // decrement the size by count as those are dispatched to initiate

@@ -16,6 +16,9 @@ local time                  = redis.call("time")
 --timeInMicroseconds
 local now    = time[1] * 1000000 + time[2]
 
+
+local purgeCount = 0
+
 local purgeKeys = function(windowLength, now, hashKey)
     local allKeys = redis.call('HKEYS', hashKey)
 
@@ -26,6 +29,7 @@ local purgeKeys = function(windowLength, now, hashKey)
     for i, hashKey in ipairs(allKeys) do
         hashKey =  tonumber(hashKey)
         if hashKey <= (now - windowLength) then
+            purgeCount = purgeCount + 1
             found = true
             table.insert(keysToDelete, hashKey)
         end
@@ -52,4 +56,4 @@ for i,v in ipairs(windowLengths) do
     purgeKeys(windowLength, now, purgeFailureAttemptsKey)
 end
 
-return;
+return purgeCount

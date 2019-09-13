@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        $this->wasGatewayHit = true;
+
         if ($this->isBharatQrPayment() === true)
         {
             return null;
@@ -241,6 +243,8 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        $this->wasGatewayHit = true;
 
         if (($input['payment']['method'] === 'card') and
             ($input['card']['iin'] === '501010') and

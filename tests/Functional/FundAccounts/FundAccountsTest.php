@@ -153,6 +153,48 @@ class FundAccountsTest extends TestCase
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
     }
 
+    public function testCreateCardBeneficiaryVerified()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+
+        $card = $this->getLastEntity('card', true);
+
+        $expectedCardAttrs = [
+            'merchant_id'   => '10000000000000',
+            'expiry_month'  => 4,
+            'expiry_year'   => 2025,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
+    }
+
+    public function testCreateCardBeneficiaryFailed()
+    {
+        $this->fixtures->create('contact', ['id' => 'invalidcontact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+
+        $card = $this->getLastEntity('card', true);
+
+        $expectedCardAttrs = [
+            'merchant_id'   => '10000000000000',
+            'expiry_month'  => 4,
+            'expiry_year'   => 2025,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
+    }
+
     public function testCreateCardAndVpa()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);

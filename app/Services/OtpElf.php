@@ -19,6 +19,7 @@ class OtpElf
     const BANK_ERROR                = 'BANK_ERROR';
     const PAYMENT_TIMEOUT           = 'PAYMENT_TIMEOUT';
     const BANK_SERVICE_DOWN         = 'BANK_SERVICE_DOWN';
+    const NO_AVAILABLE_ACTIONS      = 'NO_AVAILABLE_ACTIONS';
 
 
     public static $otpElfErrors = [

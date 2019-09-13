@@ -50,23 +50,18 @@ class UpiAxisReconTest extends TestCase
 
         $entries[] = $this->overrideUpiAxisPayment($upiEntity);
 
-        $file = $this->writeToExcelFile($entries, 'Razorpay Software Pvt Ltd');
+        $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
+    }
 
-        $uploadedFile = $this->createUploadedFile($file);
+    public function testUpiAxisDirectSettlementPaymentFile()
+    {
+        $this->payment = $this->getDefaultUpiPaymentArray();
 
-        $this->reconcile($uploadedFile, 'UpiAxis');
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
 
-        $this->assertBatchStatus(Status::PROCESSED);
+        $entries[] = $this->overrideUpiAxisPayment($upiEntity);
 
-        $transactionEntity = $this->getDbLastEntity('transaction');
-
-        $this->assertNotNull($transactionEntity['reconciled_at']);
-
-        $upiEntity = $this->getDbLastEntityToArray('upi');
-
-        $this->assertEquals($entries[0]['RRN'], $upiEntity['npci_reference_id']);
-
-        $this->assertEquals($entries[0]['TXNID'], $upiEntity['gateway_payment_id']);
+        $this->createFileAndReconcile('Razorpay Software Private Limited.xlsx', $entries);
     }
 
     public function testUpiAxisNewPaymentFile()
@@ -77,9 +72,14 @@ class UpiAxisReconTest extends TestCase
 
         $entries[] = $this->overrideNewUpiAxisPayment($upiEntity);
 
-        $file = $this->writeToExcelFile($entries, 'Razorpay Software Pvt Ltd');
+        $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
+    }
 
-        $uploadedFile = $this->createUploadedFile($file);
+    protected function createFileAndReconcile($fileName = '', $entries = [])
+    {
+        $file = $this->writeToExcelFile($entries, $fileName);
+
+        $uploadedFile = $this->createUploadedFile($file, $fileName);
 
         $this->reconcile($uploadedFile, 'UpiAxis');
 
@@ -106,7 +106,7 @@ class UpiAxisReconTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'Razorpay Software Pvt Ltd');
 
-        $uploadedFile = $this->createUploadedFile($file);
+        $uploadedFile = $this->createUploadedFile($file, 'Razorpay Software Pvt Ltd.xlsx');
 
         $this->reconcile($uploadedFile, 'UpiAxis', [], true);
 
@@ -129,12 +129,12 @@ class UpiAxisReconTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'Razorpay Software Pvt Ltd');
 
-        $uploadedFile = $this->createUploadedFile($file);
+        $uploadedFile = $this->createUploadedFile($file, 'Razorpay Software Pvt Ltd.xlsx');
 
         // set the payment status to 'failed' and try to reconcile it with force authorise
         $this->fixtures->edit('payment', $upiEntity['payment_id'], ['status' => Payment\Status::FAILED]);
 
-        $this->reconcile($uploadedFile, 'UpiAxis', ['pay_'. $upiEntity['payment_id']]);
+        $this->reconcile($uploadedFile, 'UpiAxis', ['pay_' . $upiEntity['payment_id']]);
 
         $this->assertBatchStatus(Status::PROCESSED);
 
@@ -315,13 +315,13 @@ class UpiAxisReconTest extends TestCase
         return $array;
     }
 
-    public function createUploadedFile(string $url): UploadedFile
+    public function createUploadedFile(string $url, string $file_name): UploadedFile
     {
         $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
         return new UploadedFile(
             $url,
-            'Razorpay Software Pvt Ltd.xlsx',
+            $file_name,
             $mime,
             filesize($url),
             null,

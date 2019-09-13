@@ -41,6 +41,11 @@ class SubReconciliate extends Base\Core
     const ATTEMPT_NUMBER        = 'attempt_number';
 
     /**
+     * The list of columns which shouldn't be exposed to specific data sources like qubole.
+     */
+    const BLACKLISTED_COLUMNS = [];
+
+    /**
      * The list of payments/refunds attempted to reconcile.
      *
      * @var array
@@ -217,6 +222,12 @@ class SubReconciliate extends Base\Core
         }
         finally
         {
+            //
+            // setting the variable null here to free up the memory associated with this variable.
+            // not calling unset as that only removes the reference and the GC will free up the memory.
+            //
+            $fileContents = null;
+
             $this->setReconOutputData($batchProcessor);
 
             if (count(static::$scroogeReconciliate) > 0)
@@ -711,6 +722,6 @@ class SubReconciliate extends Base\Core
      */
     public function getBlackListedColumnHeadersForOutputFile()
     {
-        return [];
+        return static::BLACKLISTED_COLUMNS;
     }
 }

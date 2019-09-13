@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card\IIN\Batch;
 
+use RZP\Base\JitValidator;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
 use RZP\Models\Base\Core as BaseCore;
@@ -13,6 +14,8 @@ abstract class Base extends BaseCore
     protected $iin;
 
     protected $entry;
+
+    protected $rules = [];
 
     public function __construct()
     {
@@ -26,15 +29,34 @@ abstract class Base extends BaseCore
         $this->entry = $entry;
 
         $this->input = [];
+
+        $this->validate($entry);
     }
 
     public function process()
     {
+        if ($this->shouldSkip() === true)
+        {
+            return;
+        }
+
         $this->parseEntry();
 
         $data = $this->iinService->addOrUpdate($this->iin, $this->input);
 
         return $data;
+    }
+
+    public function shouldSkip()
+    {
+        return false;
+    }
+
+    protected function validate()
+    {
+        (new JitValidator)->rules($this->rules)
+                          ->input($this->entry)
+                          ->validate();
     }
 
     protected function parseEntry()

@@ -703,6 +703,22 @@ return [
         ],
     ],
 
+    'testEditPhoneNumber' => [
+        'request'  => [
+            'url'     => '/accounts/{id}',
+            'method'  => 'PATCH',
+            'content' => [
+                'phone'           => '8888888888',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'account',
+                'phone'   => '8888888888',
+            ],
+        ],
+    ],
+
     'testFetchAccount' => [
         'request' => [
             'url'    => '/accounts/{accountId}',

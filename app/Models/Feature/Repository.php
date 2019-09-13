@@ -59,15 +59,14 @@ class Repository extends BaseRepository
                     ->get();
     }
 
-    public function findMerchantWithFeatures(string $merchantId, array $featureNames): array
+    public function findMerchantWithFeatures(string $merchantId, array $featureNames)
     {
         return $this->newQuery()
                     ->select(Entity::NAME)
                     ->whereIn(Entity::NAME, $featureNames)
                     ->where(Entity::ENTITY_TYPE, 'merchant')
                     ->where(Entity::ENTITY_ID, $merchantId)
-                    ->pluck(Entity::NAME)
-                    ->toArray();
+                    ->get();
     }
 
     public function findMerchantIdsHavingFeatures(array $featureNames): array

@@ -8,7 +8,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ADDRESS => 'required|string|between:3,100|regex:"[a-z0-9][a-z0-9\.-]{2,}@[a-zA-Z]+"|custom',
+        Entity::ADDRESS => 'required|string|between:3,100|regex:"[a-zA-Z0-9][a-zA-Z0-9\.-]{2,}@[a-zA-Z]+"|custom',
     ];
 
     public function validateAddress(string $attribute, string $address)
