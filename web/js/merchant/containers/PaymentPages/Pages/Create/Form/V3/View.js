@@ -20,6 +20,7 @@ import { arrayMove } from 'common/util';
 import CreatorModal from '../V3/CreatorModal';
 import Input from 'component/Input';
 import Button from 'component/Button';
+import { classList } from 'common/util';
 
 const Sortable_UDFDisplayField = sortableElement(UDFDisplayField);
 const Sortable_AmountDisplayField = sortableElement(AmountDisplayField);
@@ -208,12 +209,12 @@ export default class View extends React.PureComponent {
       <React.Fragment>
         <div class="UI-form">
           {!hasAmountItem && (
-            <div className="Field Field-dummyAmount">
-              <div className="Field-label" style={{ opacity: 0.6 }}>
+            <div class="Field Field-dummyAmount">
+              <div class="Field-label" style={{ opacity: 0.6 }}>
                 Amount
               </div>
 
-              <div className="Field-content">
+              <div class="Field-content">
                 <AddAmountButton
                   field={{ item: { name: 'Amount' } }}
                   currency={paymentPageEntity.currency}
@@ -275,6 +276,7 @@ export default class View extends React.PureComponent {
             currency={paymentPageEntity.currency}
             paymentButtonLabel={paymentPageEntity.settings.payment_button_label}
             updateData={this.props.updateData}
+            isListSorting={this.state.isListSorting}
           />
 
           <div id="draggableElementsContainer" />
@@ -322,24 +324,23 @@ class FormFooter extends React.PureComponent {
   };
 
   render() {
-    const { currency } = this.props;
+    const { currency, isListSorting } = this.props;
     const { isEditModalOpened, paymentButtonLabel } = this.state;
 
     const content = (
-      <div className="form-footer-payment">
+      <div class="form-footer-payment">
         <img
           id="fin-logo"
           alt="pay-methods"
           src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
         />
 
-        <button className="btn">
+        <button class="btn">
           {isEditModalOpened
             ? paymentButtonLabel
             : this.props.paymentButtonLabel}{' '}
           <span style={{ marginLeft: 4 }}>
-            <b className="currency-symbol">{getCurrency(currency).symbol}</b>{' '}
-            000.00
+            <b class="currency-symbol">{getCurrency(currency).symbol}</b> 000.00
           </span>
         </button>
       </div>
@@ -384,11 +385,14 @@ class FormFooter extends React.PureComponent {
         )}
 
         <EditLayer
-          class="edit-layer--formFooter"
+          class={classList(
+            'edit-layer--formFooter',
+            isListSorting && 'disable-hover'
+          )}
           onClick={_ => this.toggleModal(true)}
         >
           {content}
-          <i className="i i-edit" />
+          <i class="i i-edit" />
         </EditLayer>
       </div>
     );

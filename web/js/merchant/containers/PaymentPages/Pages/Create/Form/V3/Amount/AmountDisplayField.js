@@ -9,7 +9,7 @@ import { getCurrency } from 'rzp/ui/Amount';
 import { sortableHandle } from 'react-sortable-hoc';
 const DragHandle = sortableHandle(() => (
   <span class="dragHandle">
-    <i class="i-dotter" />
+    <i class="i i-dotter" />
   </span>
 ));
 

@@ -50,14 +50,19 @@
 
   .wysiwyg-edit-layer
     .dragHandle
-      font-size: 16px
       position: absolute
-      left: 20px
-      letter-spacing: 2px
-      font-weight: 600
-      line-height: 16px
-      visibility: hidden
-      cursor: ns-resize
+      left: 4px
+      top: 16px
+      .i
+        position: absolute
+        left: 0
+        top: 0
+        font-size: 16px
+        letter-spacing: 2px
+        line-height: 16px
+        font-weight: 600
+        visibility: hidden
+        cursor: ns-resize
 
     &:not(.disable-hover):hover
       .Input-info
