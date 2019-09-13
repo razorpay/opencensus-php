@@ -55,14 +55,14 @@ export function getBaseFieldForAmountFieldType(amountFieldType) {
         item: {},
         mandatory: false, // By default non-mandatory because customer can enter amount value = 0
         // As per currency
-        min_amount: 0, // This is in Rupees (bigger unit) To convert in paisa (small unit) before making api call
+        min_amount: null, // This is in Rupees (bigger unit) To convert in paisa (small unit) before making api call. null is because BE doesn't want 0
       };
 
     case FIELD_TYPES.multiple_purchase.key:
       return {
         item: {},
         mandatory: false, // By default non-mandatory because min_purchase = 0
-        min_purchase: 0,
+        min_purchase: 0, // it cannot be null because field definition of optional counter field will become same as fixed price optional field otherwise.
       };
   }
 }
@@ -97,6 +97,7 @@ export function constructAmountField(fieldData) {
       typeof mandatory === 'boolean' ? mandatory : Boolean(Number(mandatory)); // BOOL
   }
 
+  // Redundant cuz already handled some part in CreatorManager onSaveAdvancedForm, however safe call to reset to null if empty string
   if (restProps.min_amount === '') {
     restProps.min_amount = null;
   }

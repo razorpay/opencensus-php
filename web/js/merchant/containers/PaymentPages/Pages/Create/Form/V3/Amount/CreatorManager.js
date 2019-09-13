@@ -113,11 +113,28 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       }
 
       if (formData.hasOwnProperty('min_purchase') && !formData.min_purchase) {
-        formData.min_purchase = 0; // Setting to default value 0 (null/empty string also works fine, but 0 is more apt default value)
+        formData.min_purchase = 0; // Cannot be null (inorder to differentiate field definition from fixed price optional field)
       }
 
-      if (formData.hasOwnProperty('min_amount') && !formData.min_amount) {
-        formData.min_amount = 0; // Setting to default value 0 (null/empty string also works fine, but 0 is more apt default value)
+      if (
+        formData.hasOwnProperty('max_purchase') &&
+        !Number(formData.max_purchase)
+      ) {
+        formData.max_purchase = null;
+      }
+
+      if (
+        formData.hasOwnProperty('min_amount') &&
+        !Number(formData.min_amount)
+      ) {
+        formData.min_amount = null; // Has to be null, not 0 for proper validation at BE
+      }
+
+      if (
+        formData.hasOwnProperty('max_amount') &&
+        !Number(formData.max_amount)
+      ) {
+        formData.max_amount = null;
       }
 
       this.setState({

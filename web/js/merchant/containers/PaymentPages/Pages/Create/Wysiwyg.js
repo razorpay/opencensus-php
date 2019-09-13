@@ -364,7 +364,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         } = fi;
         const { name, description, amount } = item;
 
-        const filterFi = {
+        const prunedFi = {
           item: {
             name,
             description,
@@ -380,14 +380,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           stock,
         };
 
-        if (!isEditExistingId) {
+        if (isEditExistingId) {
           if (fi.item.currency === currency) {
-            filterFi.id = id; // If currency is changed then the item becomes different, so id isn't required then.
+            prunedFi.id = id; // If currency is changed then the item becomes different, so id isn't required then.
           } else {
-            filterFi.item.currency = currency; // If currency is edited, then treat as different payment_page_item
+            prunedFi.item.currency = currency; // If currency is edited, then treat as different payment_page_item
           }
         } else {
-          filterFi.item.currency = currency; // Always currency is edited, then treat as different payment_page_item
+          prunedFi.item.currency = currency; // Always currency is edited, then treat as different payment_page_item
         }
 
         /*
@@ -395,7 +395,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         * Currency of each payment_page_item is ignored in general, and is being added here only for the reason that blueprint of line_items of invoices is reused for PP in BE.
         * */
 
-        paymentPageItems.push(filterFi);
+        paymentPageItems.push(prunedFi);
       } else {
         udf_schema.push(fi);
       }
