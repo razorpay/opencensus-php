@@ -387,9 +387,4 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             Base\Reconciliate::REFERENCE_NUMBER => $this->getReferenceNumber($row),
         ];
     }
-
-    public function getBlackListedColumnHeadersForOutputFile()
-    {
-        return self::BLACKLISTED_COLUMNS;
-    }
 }

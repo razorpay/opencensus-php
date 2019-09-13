@@ -102,9 +102,4 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[Constants::COLUMN_PAYMENT_AMOUNT]);
     }
-
-    public function getBlackListedColumnHeadersForOutputFile()
-    {
-        return Constants::BLACKLISTED_COLUMN_HEADERS;
-    }
 }

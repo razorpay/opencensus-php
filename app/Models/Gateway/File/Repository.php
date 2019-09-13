@@ -13,4 +13,14 @@ class Repository extends Base\Repository
         Entity::TYPE   => 'filled|string|max:20',
         Entity::STATUS => 'filled|string|max:20',
     ];
+
+    public function fetchFileSentCountFromStart($type, $target, $start)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TYPE, '=', $type)
+                    ->where(Entity::TARGET, '=', $target)
+                    ->where(Entity::STATUS, Status::FILE_SENT)
+                    ->where(Entity::SENT_AT, '>', $start)
+                    ->count();
+    }
 }

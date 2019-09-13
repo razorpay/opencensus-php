@@ -7,17 +7,17 @@ use RZP\Exception\BadRequestException;
 
 class MccPricing
 {
-    const MCC_CODE='mcc_code';
-    const MCC_NAME='mcc_name';
-    const MANDATORY_FLAG='mandatory_flag';
-    const DEBIT_CARD_QR_ONUS='debit_card_qr_onus';
-    const DEBIT_CARD_QR_OFFUS='debit_card_qr_offus';
-    const CREDIT_CARD_PREMIUM_ONUS='credit_card_premium_onus';
-    const CREDIT_CARD_PREMIUM_OFFUS='credit_card_premium_offus';
-    const CREDIT_CARD_NON_PREMIUM_ONUS='credit_card_non_premium_onus';
-    const CREDIT_CARD_NON_PREMIUM_OFFUS='credit_card_non_premium_offus';
-    const AXIS_UPI_MSF_L20K='axis_upi_msf_l20k';
-    const AXIS_UPI_MSF_G20K='axis_upi_msf_g20k';
+    const MCC_CODE                      = 'mcc_code';
+    const MCC_NAME                      = 'mcc_name';
+    const MANDATORY_FLAG                = 'mandatory_flag';
+    const DEBIT_CARD_QR_ONUS            = 'debit_card_qr_onus';
+    const DEBIT_CARD_QR_OFFUS           = 'debit_card_qr_offus';
+    const CREDIT_CARD_PREMIUM_ONUS      = 'credit_card_premium_onus';
+    const CREDIT_CARD_PREMIUM_OFFUS     = 'credit_card_premium_offus';
+    const CREDIT_CARD_NON_PREMIUM_ONUS  = 'credit_card_non_premium_onus';
+    const CREDIT_CARD_NON_PREMIUM_OFFUS = 'credit_card_non_premium_offus';
+    const AXIS_UPI_MSF_L20K             = 'axis_upi_msf_l20k';
+    const AXIS_UPI_MSF_G20K             = 'axis_upi_msf_g20k';
 
     const MCC_PRICING = [
         0    => [
@@ -67,11 +67,11 @@ class MccPricing
     {
         if (self::MCC_PRICING[$mccCode])
         {
-            return self::MCC_TCC_MAPPING[$mccCode];
+            return self::MCC_PRICING[$mccCode];
         }
         else
         {
-            return self::MCC_TCC_MAPPING[0];
+            return self::MCC_PRICING[0];
         }
     }
 }

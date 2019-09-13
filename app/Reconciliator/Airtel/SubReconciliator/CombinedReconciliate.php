@@ -7,9 +7,14 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
-    const COLUMN_ENTITY_TYPE  = 'transaction_status';
-    const COLUMN_PAYMENT      = 'Sale';
-    const COLUMN_REFUND       = 'Refund';
+    const COLUMN_ENTITY_TYPE        = 'transaction_status';
+    const COLUMN_PAYMENT            = 'Sale';
+    const COLUMN_REFUND             = 'Refund';
+    const COLUMN_CUSTOMER_MOBILE_NO = 'customer_mobile_no';
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_CUSTOMER_MOBILE_NO,
+    ];
 
     protected function getReconciliationTypeForRow($row)
     {

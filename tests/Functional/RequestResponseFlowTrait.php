@@ -444,5 +444,8 @@ trait RequestResponseFlowTrait
     {
         // Per HTTP request we expect fresh $this->merchant to be set in repository manager instead of keeping last one.
         $this->app->forgetInstance('repo');
+
+        // Per HTTP request we expect fresh $this->gateway_downtime_metric to be set.
+        $this->app->forgetInstance('gateway_downtime_metric');
     }
 }

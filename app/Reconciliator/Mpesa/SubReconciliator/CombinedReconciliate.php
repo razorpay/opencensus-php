@@ -11,6 +11,14 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     const COLUMN_PAYMENT            = 'Online Payment';
     const COLUMN_REFUND             = 'Txn. ID based reversals';
 
+    const COLUMN_SENDER_NAME        = 'sender_name';
+    const COLUMN_SENDER_MOBILE_NO   = 'sender_mobile_no';
+
+    const BLACKLISTED_COLUMNS       = [
+        self::COLUMN_SENDER_NAME,
+        self::COLUMN_SENDER_MOBILE_NO,
+    ];
+
     protected function getReconciliationTypeForRow($row)
     {
         if (isset($row[self::COLUMN_TRANSACTION_TYPE]) === false)

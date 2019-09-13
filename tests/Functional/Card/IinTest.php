@@ -109,6 +109,13 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchServiceIinUpdate()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testGetPaymentFlows()
     {
         $this->testAddIin();
@@ -447,7 +454,7 @@ class IinTest extends TestCase
                     'type'           => 'credit',
                     'country'        => 'IN',
                     'issuer'         => 'HDFC',
-                    'issuer_name'    => 'HDFC',
+                    'issuer_name'    => 'HDFC Bank',
                     'emi'            => true,
                     'message_type'   => 'SMS',
                     'recurring'      => false,

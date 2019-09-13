@@ -15,9 +15,6 @@ use RZP\Http\BasicAuth\BasicAuth;
 
 class Authenticate
 {
-    // Lists of metrics
-    const METRIC_AUTH_HANDLE_MILLISECONDS = 'authenticate_handle_milliseconds.histogram';
-
     /**
      * Application instance
      *
@@ -63,8 +60,6 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        $startAt = millitime();
-
         $route = $this->router->currentRouteName();
 
         $this->ba->init();
@@ -84,11 +79,6 @@ class Authenticate
         {
             $ret = $this->authenticateBasicAuth($route);
         }
-
-        app()->trace->histogram(
-            self::METRIC_AUTH_HANDLE_MILLISECONDS,
-            millitime() - $startAt,
-            $this->ba->getRequestMetricDimensions());
 
         // Post process after authentication completes
         $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);

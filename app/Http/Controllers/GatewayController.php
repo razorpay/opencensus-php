@@ -968,4 +968,13 @@ class GatewayController extends Controller
             'success' => true
         ]);
     }
+
+    protected function statsGatewayDowntimeDetection(Downtime\Service $service)
+    {
+        $data = $service->stats();
+
+        return ApiResponse::json([
+            'stats' => $data
+        ]);
+    }
 }
