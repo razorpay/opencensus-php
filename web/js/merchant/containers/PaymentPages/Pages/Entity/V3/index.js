@@ -28,7 +28,7 @@ import PaymentsList from './PaymentsList';
 
 import Button from 'component/Button';
 
-import dummyEntityData from '../../Create/dummy_paymentpageentity';
+// import dummyEntityData from '../../Create/dummy_paymentpageentity';
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
@@ -107,7 +107,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       reActivateLink,
     } = this.props;
 
-    paymentPageEntity = dummyEntityData;
+    // paymentPageEntity = dummyEntityData;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
