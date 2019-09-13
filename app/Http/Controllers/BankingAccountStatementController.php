@@ -17,14 +17,14 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
-    /***
+    /**
      * Expected Input:
      * 'format' : pdf/xlsx/csv
      * 'send_email'  : true/false
      * 'account_number' : '<account_number>',
      * 'channel'        : '<channel>',
-     * from_date        : '2019-01-01'
-     * to_date          : '2019-04-01'
+     * from_date        : '1568270179'
+     * to_date          : '1568270250'
      * @return mixed
      */
     public function generate()

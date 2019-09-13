@@ -21,19 +21,19 @@ class Pdf extends Generator
 
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $input);
 
-        $pdfAccountStatement  = $this->getPdfContent($htmlAccountStatement);
+        $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
 
-        $fileName             = $this->accountNumber;
+        $fileName = $this->accountNumber;
 
-        $fileStoreHandle      = (new FileStore\Creator())
-            ->name($fileName)
-            ->content($pdfAccountStatement)
-            ->extension(FileStore\Format::PDF)
-            ->mime(self::PDF_MIME_TYPE)
-            ->store(FileStore\Store::S3)
-            ->type(FileStore\Type::RBL_STATEMENT)
-            ->save()
-            ->getFileInstance();
+        $fileStoreHandle = (new FileStore\Creator())
+                                        ->name($fileName)
+                                        ->content($pdfAccountStatement)
+                                        ->extension(FileStore\Format::PDF)
+                                        ->mime(self::PDF_MIME_TYPE)
+                                        ->store(FileStore\Store::S3)
+                                        ->type(FileStore\Type::RBL_STATEMENT)
+                                        ->save()
+                                        ->getFileInstance();
 
         return $fileStoreHandle;
     }

@@ -62,7 +62,7 @@ class Core extends Base\Core
         return ['processed' => true];
     }
 
-    /***
+    /**
      * This would take in the following parameters
      * @param channel channel name
      * @param account_number
@@ -125,13 +125,13 @@ class Core extends Base\Core
         }
     }
 
-    protected function getGenerator($accountNUmber, $channel, $format, $fromDate, $toDate)
+    protected function getGenerator($accountNumber, $channel, $format, $fromDate, $toDate)
     {
         $statementGeneratorNamespace = __NAMESPACE__ . '\\' . 'Generator\\Gateway\\' . studly_case($channel);
 
         $statementGenerator = $statementGeneratorNamespace . '\\' . studly_case($format);
 
-        return new $statementGenerator($accountNUmber, $channel, $fromDate, $toDate);
+        return new $statementGenerator($accountNumber, $channel, $fromDate, $toDate);
     }
 
     protected function getProcessor(string $channel, string $accountNumber): Processor\Base
