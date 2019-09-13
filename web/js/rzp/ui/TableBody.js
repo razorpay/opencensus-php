@@ -11,6 +11,7 @@ export default props => {
     rows,
     className,
     children,
+    EmptyComponent,
   } = props;
 
   if (isLoading) {

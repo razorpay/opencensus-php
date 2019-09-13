@@ -17,6 +17,7 @@ use App\Trace\TraceCode;
 use App\MerchantDetails;
 use App\Providers\GenericUser;
 use App\Session as SessionTable;
+use App\Merchant\GenericMerchant;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
@@ -106,14 +107,39 @@ class Service extends Base\Service
      *
      * @return array
      */
+    public function postSetup2faVerifyMobile(array $input)
+    {
+        $res = null;
+
+        list($error, $genericUser) = $this->loginOnApiBy2faSetupSuccessful($input);
+
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    /**
+     * @param  array  $input [description]
+     *
+     * @return array
+     */
     public function login(array $input)
     {
         $res = null;
 
         list($error, $genericUser) = $this->loginOnApi($input);
 
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    protected function handleLoginResponse($error, $genericUser)
+    {
         if (empty($error) === false)
         {
+            if ((array_key_exists('internal_error_code', $error) === true) and
+                (empty($error['internal_error_code']) === false))
+            {
+                return [[$error], null];
+            }
+
             return [['Email or password is invalid.'], null];
         }
 
@@ -121,18 +147,15 @@ class Service extends Base\Service
 
         $this->app['session']->put('dashboard_user_payload', $genericUser);
 
-        if (empty($error))
+        $res = [
+            'id' => $genericUser->id,
+        ];
+        $merchantIds = [];
+        foreach ($genericUser->merchants as $merchant)
         {
-            $res = [
-                'id' => $genericUser->id,
-            ];
-            $merchantIds = [];
-            foreach ($genericUser->merchants as $merchant)
-            {
-                $merchantIds[] = $merchant->id;
-            }
-            $res['merchantIds'] = $merchantIds;
+            $merchantIds[] = $merchant->id;
         }
+        $res['merchantIds'] = $merchantIds;
 
         $user = Auth::user();
 
@@ -175,28 +198,22 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $genericUser) = $this->getUserFromApi($user->id);
+        list($error) = $this->checkAccessOfUserOnMerchant($merchantId);
 
         if (empty($error) === true)
         {
-            $currentMerchant = $genericUser->merchants
-                                           ->where('id', $merchantId)
-                                           ->first();
 
-            if ($currentMerchant !== null)
-            {
-                Session::put('current_merchant_id', $currentMerchant->id);
+            Session::put('current_merchant_id', $merchantId);
 
-                $traceData = [
-                    'id'          => $genericUser->id,
-                    'email'       => $genericUser->email,
-                    'merchant_id' => $currentMerchant->id,
-                ];
+            $traceData = [
+                'id'          => $user->id,
+                'email'       => $user->email,
+                'merchant_id' => $merchantId,
+            ];
 
-                $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
+            $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
 
-                return [];
-            }
+            return [];
         }
 
         return ["Couldn't find the merchant you are looking for."];
@@ -444,6 +461,10 @@ class Service extends Base\Service
 
                     $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
                     $data['experiments']['sellerapp_plus'] = $merchantService->getTreatment('sellerapp_plus');
+                    $data['experiments']['post_activation_hotjar_survey'] = $merchantService->getTreatment('post_activation_hotjar_survey');
+                    $data['experiments']['second_factor_auth'] = $merchantService->getTreatment('second_factor_auth');
+                    $data['experiments']['disable-view-reports'] = $merchantService->getTreatment('disable-view-reports');
+                    $data['experiments']['mobile_hotjar_survey'] = $merchantService->getTreatment('mobile_hotjar_survey');
 
                     $data['current'] = $currentMerchantId;
 
@@ -570,11 +591,11 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function loginOnApi(array $input)
+    public function loginOnApiOnRoute(array $input, string $route, string $httpVerb)
     {
         $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $request->processInput($input)->send('users/login', 'POST');
+        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
 
         $genericUser = null;
 
@@ -592,6 +613,19 @@ class Service extends Base\Service
 
 
         return [$error, $genericUser];
+    }
+
+    public function loginOnApi(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/login', 'POST');
+    }
+
+    // Another route for a successful login. If a uses 2fa is not setup
+    // this will allow to set up 2fa while logging in. And if setup is success
+    // api returns user object. And dashboard needs to start the session.
+    public function loginOnApiBy2faSetupSuccessful(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/2fa_setup/verify-mobile', 'POST');
     }
 
     public function getUserFromApi($userId)
@@ -618,9 +652,49 @@ class Service extends Base\Service
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
+
+            $currentMerchantId = Session::get('current_merchant_id');
+
+            if ($currentMerchantId !== null and empty($adminUser) === true)
+            {
+                $currentMerchant = $genericUser
+                    ->merchants
+                    ->where('id', $currentMerchantId)
+                    ->first();
+
+                // if currentMerchant is not in merchants array
+                // then check user's access on it using checkAccessOfUserOnMerchant
+                // if no error push the returned merchant object in merchants array
+                if ($currentMerchant === null)
+                {
+                    list($error, $data) = $this->checkAccessOfUserOnMerchant($currentMerchantId);
+
+                    if (empty($error) === true)
+                    {
+                        $genericUser->merchants->push(new GenericMerchant($data['merchant']));
+                        Auth::login($genericUser, false);
+                        Session::put('dashboard_user_payload', $genericUser);
+                    }
+                }
+
+            }
+
         }
 
         return [$error, $genericUser];
+    }
+
+    protected function checkAccessOfUserOnMerchant($merchantId)
+    {
+        $request = new \App\Admin\ApiRequestAny();
+
+        $queryParams = [
+            'merchant_id'   => $merchantId,
+        ];
+
+        $path = 'users/access';
+
+        return $request->send($path.'?'.http_build_query($queryParams), 'GET');
     }
 
     /**

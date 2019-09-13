@@ -1,29 +1,55 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import { NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Spinner from 'rzp/ui/Spinner';
+import { withRouter } from 'react-router-dom';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
-import { fetchPaymentPagesList } from '../model';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { showNotification } from 'rzp/modules/notifications';
+
 import ShowWhen from 'merchant/components/ShowWhen';
+import EmptyList from 'merchant/components/EmptyList';
+import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
 import PaymentPagesV2List from './V2';
 import PaymentPagesV3List from './V3';
 
 import { populateRPLReduxList } from 'merchant/modules/invoices/list';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
 
-import OnboardingPP from '../OnboardingPP';
+import {
+  getIsPaymentPagesEnabled,
+  getIsAllowedPaymentPagesResetOnBoarding,
+} from '../../OnBoarding';
+import { getPaymentPageQuickGuideIsClosed } from '../../QuickGuide';
+
+import { fetchPaymentPagesList } from '../model';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { showNotification } from 'rzp/modules/notifications';
 import { trackListActions } from '../ga';
+import { RZPFeatures } from 'rzp/utils/constants';
 
-@connect(state => ({ ...state.invoices, ...state.session }), {
-  showNotification,
-  populateRPLReduxList,
-})
+@withRouter
+@connect(
+  state => ({
+    ...state.invoices,
+    ...state.session,
+    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.PP
+    ),
+  }),
+  {
+    showNotification,
+    populateRPLReduxList,
+    handleProductQuickGuide,
+  }
+)
 export default class PaymentPagesContainer extends ListContainer {
   state = {
     loading: true,
@@ -32,6 +58,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
   componentDidMount() {
     this.fetchAllEntityList();
+    this.initPaymentPagesOnboarding();
   }
 
   componentWillReceiveProps(nextProps, nextState) {
@@ -43,6 +70,10 @@ export default class PaymentPagesContainer extends ListContainer {
           totalPaymentPagesLength: newLength,
         });
       }
+    }
+
+    if (nextProps.loading !== this.props.loading) {
+      this.initPaymentPagesOnboarding(nextProps);
     }
 
     super.componentWillReceiveProps(nextProps);
@@ -64,6 +95,8 @@ export default class PaymentPagesContainer extends ListContainer {
           });
         }
 
+        this.initPaymentPagesOnboarding();
+
         return resp;
       })
       .catch(() => {});
@@ -77,6 +110,8 @@ export default class PaymentPagesContainer extends ListContainer {
         }
 
         this.setState({ loading: false });
+
+        this.initPaymentPagesOnboarding();
 
         return resp;
       })
@@ -101,6 +136,58 @@ export default class PaymentPagesContainer extends ListContainer {
     trackListActions('Clear');
   };
 
+  componentWillUnmount() {
+    const { paymentPageProductOnBoarding } = this.props;
+
+    if (paymentPageProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...paymentPageProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: this.state.isPaymentPageWysiwyg,
+        isTour: this.state.isPaymentPageWysiwyg,
+      });
+    }
+  }
+
+  handleProductQuickGuide = () => {
+    this.setState(
+      {
+        isPaymentPageWysiwyg: true,
+      },
+      () => {
+        this.props.history.push('/paymentpages/new');
+      }
+    );
+  };
+
+  initPaymentPagesOnboarding = (props = this.props) => {
+    if (props.paymentPageProductOnBoarding.isTour) {
+      return;
+    }
+
+    const data = {
+      user: props.user,
+      paymentPages: props.paymentPages,
+      loading: this.state.loading || this.state.loadingAllList,
+    };
+
+    const isPaymentPagesEnabled = getIsPaymentPagesEnabled(data);
+
+    let showOnboarding = !isPaymentPagesEnabled;
+
+    if (isPaymentPagesEnabled) {
+      showOnboarding = getIsAllowedPaymentPagesResetOnBoarding(data);
+    }
+
+    let paymentPageProductOnBoarding = {
+      ...props.paymentPageProductOnBoarding,
+      showOnboarding,
+      isQuickGuideOpen: !getPaymentPageQuickGuideIsClosed(props),
+    };
+
+    this.props.handleProductQuickGuide(paymentPageProductOnBoarding);
+  };
+
   render() {
     const { loading, loadingAllList, totalPaymentPagesLength } = this.state;
     const { paymentPages, user } = this.props;
@@ -122,7 +209,7 @@ export default class PaymentPagesContainer extends ListContainer {
       !paymentPages.length
     ) {
       // !paymentPages check is required so that while creation first time, the list would be updated while totalPaymentPagesLength still = 0
-      content = <OnboardingPP />;
+      content = <EmptyComponent />;
     } else {
       content = (
         <React.Fragment>
@@ -188,6 +275,8 @@ export default class PaymentPagesContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <TakeATourButton feature={RZPFeatures.PP} />
+
             <ShowWhen
               additionalCondition={user =>
                 user.isOrgAllowedFunctionality('external_links')
@@ -203,10 +292,13 @@ export default class PaymentPagesContainer extends ListContainer {
             </ShowWhen>
 
             {isRoleAllowedEdit && (
-              <NavLink class="btn btn-primary" to="/paymentpages/new">
+              <span
+                class="btn btn-primary"
+                onClick={this.handleProductQuickGuide}
+              >
                 <i class="i i-plus" />
                 <span>Create Payment Page</span>
-              </NavLink>
+              </span>
             )}
           </div>
         </HeaderAction>
@@ -216,3 +308,14 @@ export default class PaymentPagesContainer extends ListContainer {
     );
   }
 }
+
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no payment pages yet!!</div>
+        <div>Start creating new links now.</div>
+      </React.Fragment>
+    }
+  />
+);

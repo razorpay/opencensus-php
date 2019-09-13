@@ -1,11 +1,14 @@
-import React, { Component } from 'react';
-import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
-import ListContainer from 'merchant/containers/ListContainer';
-import PaymentsListFilter from 'merchant/components/Payments/PaymentsListFilter';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import DocsLink from 'merchant/components/DocsLink';
-
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
+import HeaderAction from 'rzp/ui/HeaderAction';
+
+import DocsLink from 'merchant/components/DocsLink';
+import EmptyList from 'merchant/components/EmptyList';
+import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import PaymentsListFilter from 'merchant/components/Payments/PaymentsListFilter';
+
+import ListContainer from 'merchant/containers/ListContainer';
 
 export default class PaymentsListContainer extends ListContainer {
   constructor(props) {
@@ -50,17 +53,18 @@ export default class PaymentsListContainer extends ListContainer {
   };
 
   render() {
-    const { docUrl } = this.props;
+    const { docUrl, quickTourFeature, isRoute } = this.props;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          {docUrl && (
-            <div class="btn-toolbar pull-right">
-              <DocsLink url={docUrl} />
-            </div>
-          )}
+          <div class="btn-toolbar pull-right">
+            {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
+
+            {docUrl && <DocsLink url={docUrl} />}
+          </div>
         </HeaderAction>
+
         <PaymentsListFilter
           form="paymentListFilter"
           count={this.state.count}
@@ -73,9 +77,21 @@ export default class PaymentsListContainer extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
+          EmptyComponent={isRoute && EmptyComponent}
           {...this.props}
         />
       </div>
     );
   }
 }
+
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no payments yet!!</div>
+        <div>Create a linked account first to route payments.</div>
+      </React.Fragment>
+    }
+  />
+);

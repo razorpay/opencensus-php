@@ -1,11 +1,11 @@
 import { Component } from 'react';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required } from 'rzp/utils/validators';
-
 import { trackLinkClick } from './ga';
 
 @connect(state => state.session, null)
@@ -48,32 +48,71 @@ export default class SubmitForm extends Component {
                 <label for="agree_terms" class="icon i-check">
                   <div class="submit-label">
                     I have read and understood the{' '}
-                    <a
-                      href="https://razorpay.com/terms/"
-                      target="_blank"
-                      class="highlight"
-                      onClick={this._trackLinkClick('Terms of Use')}
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
                     >
-                      terms and conditions
-                    </a>
+                      <a
+                        href="https://razorpay.com/terms/"
+                        target="_blank"
+                        class="highlight"
+                        onClick={this._trackLinkClick('Terms of Use')}
+                      >
+                        terms and conditions
+                      </a>
+                    </ShowWhen>
+                    <ShowWhen
+                      additionalCondition={user =>
+                        !user.isOrgAllowedFunctionality('external_links')
+                      }
+                    >
+                      <span class="highlight">terms and conditions</span>
+                    </ShowWhen>
                     , the{' '}
-                    <a
-                      href="https://razorpay.com/agreement/"
-                      target="_blank"
-                      class="highlight"
-                      onClick={this._trackLinkClick('Merchant Agreement')}
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
                     >
-                      merchant agreement
-                    </a>
+                      <a
+                        href="https://razorpay.com/agreement/"
+                        target="_blank"
+                        class="highlight"
+                        onClick={this._trackLinkClick('Merchant Agreement')}
+                      >
+                        merchant agreement
+                      </a>
+                    </ShowWhen>
+                    <ShowWhen
+                      additionalCondition={user =>
+                        !user.isOrgAllowedFunctionality('external_links')
+                      }
+                    >
+                      <span class="highlight">merchant agreement</span>
+                    </ShowWhen>
                     , and the{' '}
-                    <a
-                      href="https://razorpay.com/privacy/"
-                      target="_blank"
-                      class="highlight"
-                      onClick={this._trackLinkClick('Privacy Policy')}
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
                     >
-                      privacy policy
-                    </a>{' '}
+                      <a
+                        href="https://razorpay.com/privacy/"
+                        target="_blank"
+                        class="highlight"
+                        onClick={this._trackLinkClick('Privacy Policy')}
+                      >
+                        privacy policy
+                      </a>
+                    </ShowWhen>
+                    <ShowWhen
+                      additionalCondition={user =>
+                        !user.isOrgAllowedFunctionality('external_links')
+                      }
+                    >
+                      <span class="highlight">privacy policy</span>
+                    </ShowWhen>{' '}
                     and agree to abide by them at all times.
                   </div>
                 </label>

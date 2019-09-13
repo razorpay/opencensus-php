@@ -1,17 +1,25 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, NavLink } from 'react-router-dom';
-import HeaderAction from 'rzp/ui/HeaderAction';
+
+import { RZPFeatures } from 'rzp/utils/constants';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'rzp/ui/HeaderAction';
+
+import * as InvoiceActions from 'merchant/modules/invoices/list';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
-import ListContainer from 'merchant/containers/ListContainer';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
-import * as InvoiceActions from 'merchant/modules/invoices/list';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
+import ListContainer from 'merchant/containers/ListContainer';
+
+import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 @withRouter
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
@@ -76,7 +84,10 @@ export default class PaymentLinksContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <TakeATourButton feature={RZPFeatures.PL} />
+
             <DocsLink url="https://razorpay.com/docs/payment-links/" />
+
             <ShowWhen
               additionalCondition={user =>
                 (mode !== 'live' || !user.isRejected) &&
@@ -109,6 +120,7 @@ export default class PaymentLinksContainer extends ListContainer {
           type="link"
           onCopy={this.onCopy}
           onDuplicate={this.onDuplicate}
+          EmptyList={EmptyComponent}
         />
 
         <Pager
@@ -121,3 +133,16 @@ export default class PaymentLinksContainer extends ListContainer {
     );
   }
 }
+
+// TODO: Update colSpan if no of columns are changes
+const EmptyComponent = () => (
+  <EmptyListWithTableRow
+    colSpan={8}
+    description={
+      <React.Fragment>
+        <div>There are no payment links yet!!</div>
+        <div>Start creating new links now.</div>
+      </React.Fragment>
+    }
+  />
+);

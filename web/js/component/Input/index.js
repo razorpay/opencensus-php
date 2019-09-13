@@ -559,6 +559,7 @@ Field.File = _ => {
           accept={_._accept}
           showAcceptInfo={_._showAcceptInfo}
           showStagedFileStatus={_._showStagedFileStatus}
+          onCloseClick={_.onCloseClick}
         />
         <Description text={description} />
       </div>

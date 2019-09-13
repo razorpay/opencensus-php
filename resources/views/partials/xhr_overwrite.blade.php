@@ -21,16 +21,19 @@
                         }
                     }
 
-                    try {
-                        s = JSON.stringify(x);
-                    } catch (stringifyErr) {}
+                    
 
                     if (x['action'] && (x['action'] === 'create_poll_response' || x['action'] === 'update_poll_response')) {
                         if (x['response_content']) {
                             if (typeof x['response_content'] === 'string') {
                                 try {
+                                    
                                     var rc = JSON.parse(x['response_content']);
                                     if (rc['answers'] && rc['answers'].length) {
+                                        // Add mid to poll response
+                                        rc['answers'][0]['answer'] += ' MID - ' + window.rzp_user.id;
+                                        x['response_content'] = JSON.stringify(rc);
+    
                                         var d = {
                                             mid: window.rzp_user.current,
                                             uid: window.rzp_user.user.id,
@@ -55,6 +58,9 @@
                             }
                         }
                     }
+                    try {
+                        s = JSON.stringify(x);
+                    } catch (stringifyErr) {}
                 } catch (e) {}
                 origSend.apply(this, [s]);
             }

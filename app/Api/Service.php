@@ -64,7 +64,7 @@ class Service extends Base\Service
             'mode'          => $mode
         ]);
 
-        for ($i = 0; $i < 5; $i++)
+        for ($i = 0; $i < 10; $i++)
         {
             $offsets = [
                 'skip'  => $i * $count,

@@ -3116,7 +3116,7 @@
     "name": "Western"
   }],
   "Kiribati": [],
-  "Korea North": [{
+  "North Korea": [{
     "name": "Chagang"
   }, {
     "name": "North Hamgyong"
@@ -3143,7 +3143,7 @@
   }, {
     "name": "Pyongyang"
   }],
-  "Korea South": [{
+  "South Korea": [{
     "name": "Seoul"
   }, {
     "name": "Busan City"
@@ -6759,7 +6759,287 @@
   }, {
     "name": "Umm al Qaywayn"
   }],
-  "United Kingdom": [],
+  "United Kingdom": [
+    {
+      "name": "Avon"
+    },
+    {
+      "name": "Bedfordshire"
+    },
+    {
+      "name": "Berkshire"
+    },
+    {
+      "name": "Buckinghamshire"
+    },
+    {
+      "name": "Cambridgeshire"
+    },
+    {
+      "name": "Cheshire"
+    },
+    {
+      "name": "Cleveland"
+    },
+    {
+      "name": "Cornwall"
+    },
+    {
+      "name": "Cumbria"
+    },
+    {
+      "name": "Derbyshire"
+    },
+    {
+      "name": "Devon"
+    },
+    {
+      "name": "Dorset"
+    },
+    {
+      "name": "Durham"
+    },
+    {
+      "name": "East Sussex"
+    },
+    {
+      "name": "Essex"
+    },
+    {
+      "name": "Gloucestershire"
+    },
+    {
+      "name": "Hampshire"
+    },
+    {
+      "name": "Herefordshire"
+    },
+    {
+      "name": "Hertfordshire"
+    },
+    {
+      "name": "Isle of Wight"
+    },
+    {
+      "name": "Kent"
+    },
+    {
+      "name": "Lancashire"
+    },
+    {
+      "name": "Leicestershire"
+    },
+    {
+      "name": "Lincolnshire"
+    },
+    {
+      "name": "London"
+    },
+    {
+      "name": "Merseyside"
+    },
+    {
+      "name": "Norfolk"
+    },
+    {
+      "name": "Northamptonshire"
+    },
+    {
+      "name": "Northumberland"
+    },
+    {
+      "name": "North Yorkshire"
+    },
+    {
+      "name": "Nottinghamshire"
+    },
+    {
+      "name": "Oxfordshire"
+    },
+    {
+      "name": "Rutland"
+    },
+    {
+      "name": "Shropshire"
+    },
+    {
+      "name": "Somerset"
+    },
+    {
+      "name": "South Yorkshire"
+    },
+    {
+      "name": "Staffordshire"
+    },
+    {
+      "name": "Suffolk"
+    },
+    {
+      "name": "Surrey"
+    },
+    {
+      "name": "Tyne and Wear"
+    },
+    {
+      "name": "Warwickshire"
+    },
+    {
+      "name": "West Midlands"
+    },
+    {
+      "name": "West Sussex"
+    },
+    {
+      "name": "West Yorkshire"
+    },
+    {
+      "name": "Wiltshire"
+    },
+    {
+      "name": "Worcestershire"
+    },
+    {
+      "name": "Clwyd"
+    },
+    {
+      "name": "Dyfed"
+    },
+    {
+      "name": "Gwent"
+    },
+    {
+      "name": "Gwynedd"
+    },
+    {
+      "name": "Mid Glamorgan"
+    },
+    {
+      "name": "Powys"
+    },
+    {
+      "name": "South Glamorgan"
+    },
+    {
+      "name": "West Glamorgan"
+    },
+    {
+      "name": "Aberdeenshire"
+    },
+    {
+      "name": "Angus"
+    },
+    {
+      "name": "Argyll"
+    },
+    {
+      "name": "Ayrshire"
+    },
+    {
+      "name": "Banffshire"
+    },
+    {
+      "name": "Berwickshire"
+    },
+    {
+      "name": "Bute"
+    },
+    {
+      "name": "Caithness"
+    },
+    {
+      "name": "Clackmannanshire"
+    },
+    {
+      "name": "Dumfriesshire"
+    },
+    {
+      "name": "Dunbartonshire"
+    },
+    {
+      "name": "East Lothian"
+    },
+    {
+      "name": "Fife"
+    },
+    {
+      "name": "Inverness-shire"
+    },
+    {
+      "name": "Kincardineshire"
+    },
+    {
+      "name": "Kinross-shire"
+    },
+    {
+      "name": "Kirkcudbrightshire"
+    },
+    {
+      "name": "Lanarkshire"
+    },
+    {
+      "name": "Midlothian"
+    },
+    {
+      "name": "Moray"
+    },
+    {
+      "name": "Nairnshire"
+    },
+    {
+      "name": "Orkney"
+    },
+    {
+      "name": "Peeblesshire"
+    },
+    {
+      "name": "Perthshire"
+    },
+    {
+      "name": "Renfrewshire"
+    },
+    {
+      "name": "Ross-shire"
+    },
+    {
+      "name": "Roxburghshire"
+    },
+    {
+      "name": "Selkirkshire"
+    },
+    {
+      "name": "Shetland"
+    },
+    {
+      "name": "Stirlingshire"
+    },
+    {
+      "name": "Sutherland"
+    },
+    {
+      "name": "West Lothian"
+    },
+    {
+      "name": "Wigtownshire"
+    },
+    {
+      "name": "Antrim"
+    },
+    {
+      "name": "Armagh"
+    },
+    {
+      "name": "Down"
+    },
+    {
+      "name": "Fermanagh"
+    },
+    {
+      "name": "Londonderry"
+    },
+    {
+      "name": "Tyrone"
+    }
+  ],
   "United States": [{
     "name": "Alabama"
   }, {

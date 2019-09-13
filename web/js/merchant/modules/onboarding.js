@@ -3,7 +3,31 @@ import { set } from 'rzp/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const FEATURE_ONBOARDING_SAVE = 'FEATURE_ONBOARDING_SAVE';
-const FEATURE_ONBOARDING_FETCH_RESPONSES = 'FEATURE_ONBOARDING_FETCH_RESPONSES';
+const QUICK_GUIDE = 'QUICK_GUIDE';
+
+export const handleProductQuickGuide = data => {
+  return {
+    type: QUICK_GUIDE,
+    payload: {
+      feature: data.feature,
+      showOnboarding: data.showOnboarding,
+      isQuickGuideOpen: data.isQuickGuideOpen,
+      isTour: data.isTour,
+      lastElementId: data.lastElementId,
+    },
+  };
+};
+
+export const getCurrentProductOnBoardingDetails = (state, feature) => {
+  return (
+    state.onboarding.products[feature] || {
+      feature,
+      showOnboarding: false,
+      isQuickGuideOpen: false,
+      isTour: false,
+    }
+  );
+};
 
 // Save onboarding questions
 export const saveOnboarding = (
@@ -46,3 +70,21 @@ export const getOnboardingResponse = (feature, type = 'product') => {
       mode: 'live',
     });
 };
+
+let initialState = {
+  products: {},
+};
+
+export default function(state = initialState, action) {
+  switch (action.type) {
+    case QUICK_GUIDE: {
+      return set(state, 'products', {
+        ...state.products,
+        [action.payload.feature]: action.payload,
+      });
+    }
+
+    default:
+      return state;
+  }
+}

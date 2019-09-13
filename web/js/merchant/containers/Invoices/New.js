@@ -2172,10 +2172,7 @@ export default class InvoicesNewContainer extends Component {
                 <ShowWhen
                   additionalCondition={user => user.isAllowedEdit('invoices')}
                 >
-                  <div
-                    class="col-md-4 col-sm-4 invoices--side"
-                    style={{ marginTop: '48px' }}
-                  >
+                  <div class="col-md-4 col-sm-4 invoices--side">
                     {!locked && (
                       <div class="inv__cta">
                         <div class="btn-group-vertical">

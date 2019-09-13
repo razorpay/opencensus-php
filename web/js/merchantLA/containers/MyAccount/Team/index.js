@@ -50,7 +50,6 @@ export default class TeamContainer extends Component {
             </a>
           </div>
         </HeaderAction>
-
         <div class="content-wrapper content-sm">
           <NewInvitation />
 
