@@ -293,7 +293,7 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getReconFilesCountByGateway($from, $to)
+    public function getReconFilesCountByGateway(array $params)
     {
         $fileEntityIdColumn    = $this->repo->file_store->dbColumn(FileStore\Entity::ENTITY_ID);
 
@@ -317,8 +317,6 @@ class Repository extends Base\Repository
 
         $batchFailureCount     = $this->dbColumn(Entity::FAILURE_COUNT);
 
-        $batchCreatedAt        = $this->dbColumn(Entity::CREATED_AT);
-
         $query = $this->newQuery();
 
         $query->selectRaw($batchGatewayColumn.','.$batchStatusColumn.','
@@ -328,19 +326,8 @@ class Repository extends Base\Repository
               ->join(Table::FILE_STORE, $batchIdColumn, '=', $fileEntityIdColumn)
               ->where($batchTypeColumn, '=', Batch\Type::RECONCILIATION)
               ->where($fileTypeColumn, '=', FileStore\Type::RECONCILIATION_BATCH_INPUT);
-        
-        if ((empty($from) === false) && (empty($to) === false))
-        {
-            $query->whereBetween($batchCreatedAt, [$from, $to]);
-        }
-        else
-        {
-            $from = Carbon::today(Timezone::IST)->getTimestamp();
 
-            $to = Carbon::now(Timezone::IST)->getTimestamp();
-
-            $query->whereBetween($batchCreatedAt, [$from, $to]);
-        }
+        $this->buildQueryWithParams($query, $params);
 
         $query->groupBy([$batchGatewayColumn, $batchStatusColumn]);
 

@@ -110,9 +110,4 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         //
         $this->allowForceAuthorization = true;
     }
-
-    public function getBlackListedColumnHeadersForOutputFile()
-    {
-        return self::BLACKLISTED_COLUMNS;
-    }
 }

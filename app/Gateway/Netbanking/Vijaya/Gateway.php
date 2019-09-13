@@ -68,7 +68,9 @@ class Gateway extends Base\Gateway
 
         $this->verifyCallback($input, $gatewayPayment);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     protected function verifyCallback(array $input, $gatewayPayment)

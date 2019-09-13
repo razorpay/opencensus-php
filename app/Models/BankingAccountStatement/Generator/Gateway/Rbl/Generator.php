@@ -34,32 +34,31 @@ abstract class Generator extends Base
                                ->banking_account
                                ->findByAccountNumberAndChannel($this->accountNumber, $this->channel);
 
-        $all_bank_account_transactions = $this->repo
-                                               ->banking_account_statement
-                                               ->findByAccountNumberWithInPeriod($this->accountNumber,
-                                                                                 $this->fromDate,
-                                                                                 $this->toDate);
+        $allBankAccountTransactions = $this->repo
+                                           ->banking_account_statement
+                                           ->findByAccountNumberWithInPeriod($this->accountNumber,
+                                                                             $this->fromDate,
+                                                                             $this->toDate);
 
-        $merchant = $bankingAccount->merchant;
+        $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(),
+                                                         Timezone::IST)
+                                                          ->format(self::DATE_FORMAT);
 
-        $merchantDetails = $merchant->merchantDetail;
+        $fromDateReadable = Carbon::createFromTimestamp($this->fromDate,
+                                                       Timezone::IST)
+                                                       ->format(self::DATE_FORMAT);
 
-        $account_opening_date = Carbon::createFromTimestamp($bankingAccount->account_activation_date, Timezone::IST)
-                                      ->format(self::DATE_FORMAT);
+        $toDateReadable = Carbon::createFromTimestamp($this->toDate,
+                                                     Timezone::IST)
+                                                      ->format(self::DATE_FORMAT);
 
-        $fromDateReadable = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)
-                                  ->format(self::DATE_FORMAT);
+        $statementPeriod = $fromDateReadable . ' - ' . $toDateReadable;
 
-        $toDateReadable   = Carbon::createFromTimestamp($this->toDate, Timezone::IST)
-                                  ->format(self::DATE_FORMAT);
+        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount, $accountOpeningDate, $statementPeriod);
 
-        $statementPeriod  = $fromDateReadable . ' - ' . $toDateReadable;
+        $transactions = $this->serializeTransactions($allBankAccountTransactions);
 
-        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount, $account_opening_date, $statementPeriod);
-
-        $transactions     = $this->serializeTransactions($all_bank_account_transactions);
-
-        $statementSummary = $this->getAccountStatementSummary($all_bank_account_transactions);
+        $statementSummary = $this->getAccountStatementSummary($allBankAccountTransactions);
 
         return [
             AccountStatementData::ACCOUNT_OWNER_INFO => $accountOwnerInfo,
@@ -70,7 +69,7 @@ abstract class Generator extends Base
         ];
     }
 
-    protected function getAccountStatementSummary($bank_account_statements)
+    protected function getAccountStatementSummary($bankAccountStaments)
     {
         $opening_balance   = 0;
 
@@ -78,17 +77,17 @@ abstract class Generator extends Base
 
         $effective_balance = 0;
 
-        $lien_amount       = 0;
+        $lien_amount = 0;
 
-        $debit_count       = 0;
+        $debit_count = 0;
 
-        $credit_count      = 0;
+        $credit_count = 0;
 
-        if ($bank_account_statements->count())
+        if ($bankAccountStaments->count())
         {
-            $opening_balance   = $bank_account_statements[0]->balance;
+            $opening_balance   = $bankAccountStaments[0]->balance;
 
-            $closing_balance   = $bank_account_statements[count($bank_account_statements) - 1]->balance;
+            $closing_balance   = $bankAccountStaments[count($bankAccountStaments) - 1]->balance;
 
             $effective_balance = $closing_balance;
 
@@ -98,7 +97,7 @@ abstract class Generator extends Base
 
             $credit_count      = 0;
 
-            foreach ($bank_account_statements as $transaction)
+            foreach ($bankAccountStaments as $transaction)
             {
                 if ($transaction->type == StatementType::CREDIT)
                 {
@@ -131,24 +130,26 @@ abstract class Generator extends Base
         ];
     }
 
-    protected function serializeTransactions($bank_account_statements)
+    protected function serializeTransactions($bankAccountStaments)
     {
         $transactions = [];
 
-        foreach ($bank_account_statements as $transaction)
+        foreach ($bankAccountStaments as $transaction)
         {
             $lineItem = [
-                TransactionLineItem::TRANSACTION_DATE    => Carbon::createFromTimestamp($transaction->transaction_date,
-                                                                                        Timezone::IST)
-                                                                    ->format(TransactionLineItem::ITEM_DATE_FORMAT),
+                TransactionLineItem::TRANSACTION_DATE    => Carbon::createFromTimestamp(
+                                                             $transaction->transaction_date,
+                                                             Timezone::IST)
+                                                              ->format(TransactionLineItem::ITEM_DATE_FORMAT),
 
                 TransactionLineItem::TRANSACTION_DETAILS => $transaction->description,
 
                 TransactionLineItem::CHEQUE_ID           => $transaction->bank_instrument_id,
 
-                TransactionLineItem::VALUE_DATE          => Carbon::createFromTimestamp($transaction->transaction_date,
-                                                                                        Timezone::IST)
-                                                                    ->format(TransactionLineItem::ITEM_DATE_FORMAT),
+                TransactionLineItem::VALUE_DATE          => Carbon::createFromTimestamp(
+                                                               $transaction->transaction_date,
+                                                              Timezone::IST)
+                                                               ->format(TransactionLineItem::ITEM_DATE_FORMAT),
 
                 TransactionLineItem::BALANCE             => (float) $transaction->balance / 100
             ];
@@ -174,12 +175,12 @@ abstract class Generator extends Base
 
     /**
      * @param BankingAccountEntity $bankingAccount
-     * @param string $account_opening_date
+     * @param string $accountOpeningDate
      * @param string $statementPeriod
      * @return array
      */
     protected function getAccountOwnerInfo(BankingAccountEntity $bankingAccount,
-                                           string $account_opening_date,
+                                           string $accountOpeningDate,
                                            string $statementPeriod): array
     {
         $ifscCode = $bankingAccount->getAccountIfsc();
@@ -223,7 +224,7 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::CURRENCY             => Currency::INR,
 
-            AccountOwnerInfo::ACCOUNT_OPENING_DATE => $account_opening_date,
+            AccountOwnerInfo::ACCOUNT_OPENING_DATE => $accountOpeningDate,
 
             AccountOwnerInfo::HOME_BRANCH_NAME     => $bankInformation->getBankName(),
 

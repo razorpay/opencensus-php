@@ -78,7 +78,7 @@ class Preference extends Base\Core
                                          Feature\Constants::DAILY_SETTLEMENT
                                      ])
                                  ->pluck(Feature\Entity::NAME)
-                                 ->toArray();;
+                                 ->toArray();
 
         return (empty($isFeatureEnabled) === false);
     }

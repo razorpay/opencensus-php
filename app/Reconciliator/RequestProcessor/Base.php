@@ -142,7 +142,7 @@ class Base extends Core
         self::NETBANKING_VIJAYA      => [], //TODO: add this value when shared post UAT
         self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_HDFC        => [],
-        self::NETBANKING_SBI         => [],
+        self::NETBANKING_SBI         => ['fssrecon.inbdau@sbi.co.in'],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],

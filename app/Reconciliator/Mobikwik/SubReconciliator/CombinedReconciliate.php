@@ -14,6 +14,12 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
     const VALUE_REFUND_DATE   = 'None';
 
+    const COLUMN_USER_EMAIL = 'useremail';
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_USER_EMAIL,
+    ];
+
     /**
      * There is no column defining whether the row is refund or payment
      * Hence we check the value of 'COLUMN_REFUND_AMOUNT'

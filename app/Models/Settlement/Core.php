@@ -171,10 +171,18 @@ class Core extends Base\Core
 
         $batchFta = $entity->batchFundTransfer;
 
+        $batchFtaId = null;
+
+        //BatchFTA can be null in test mode
+        if (empty($batchFta) === false)
+        {
+            $batchFtaId = $batchFta->getId();
+        }
+
         $customProperties = [
             'channel'                           => $entity->getChannel(),
             'fund_transfer_attempt_id'          => $ftaData['fta_id'],
-            'batch_fund_transfer_attempt_id'    => $batchFta->getId(),
+            'batch_fund_transfer_attempt_id'    => $batchFtaId,
             'fund_transfer_attempt_mode'        => $ftaData['mode'],
             'fund_transfer_attempt_amount'      => $entity->getAmount(),
             'settlement_id'                     => $entity->getId(),

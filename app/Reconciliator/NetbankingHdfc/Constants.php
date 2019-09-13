@@ -37,7 +37,7 @@ class Constants
         self::ERROR_DESCRIPTION,
     ];
 
-    const BLACKLISTED_COLUMN_HEADERS = [
+    const BLACKLISTED_COLUMNS = [
         self::COLUMN_CUSTOMER_EMAIL,
     ];
 }

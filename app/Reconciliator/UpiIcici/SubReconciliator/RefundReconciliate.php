@@ -153,9 +153,4 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         // We will only update the RRN if it is empty
         $gatewayRefund->setNpciReferenceId($referenceNumber);
     }
-
-    public function getBlackListedColumnHeadersForOutputFile()
-    {
-        return self::BLACKLISTED_COLUMNS;
-    }
 }

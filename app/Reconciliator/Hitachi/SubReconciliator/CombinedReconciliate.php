@@ -22,7 +22,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         self::REFUND_TXN        => BaseReconciliate::REFUND
     ];
 
-    const BLACKLISTED_COLUMN_HEADERS = [
+    const BLACKLISTED_COLUMNS = [
         PaymentReconciliate::COLUMN_MERCHANT_NAME,
     ];
 
@@ -49,10 +49,5 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         $transactionType = $row[self::COLUMN_TRANSACTION_TYPE];
 
         return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? self::NA;
-    }
-
-    public function getBlackListedColumnHeadersForOutputFile()
-    {
-        return self::BLACKLISTED_COLUMN_HEADERS;
     }
 }

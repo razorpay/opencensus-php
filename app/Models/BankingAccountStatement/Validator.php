@@ -27,21 +27,21 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_DATE    => 'required|integer',
     ];
 
-    protected static  $accountStatementGenerateRules = [
+    protected static $accountStatementGenerateRules = [
         Entity::CHANNEL        => 'required|string|custom',
-        Entity::ACCOUNT_NUMBER => 'required|string|max:40',
-        Entity::FROM_DATE      => 'required|integer',
-        Entity::TO_DATE        => 'required|integer',
+        Entity::ACCOUNT_NUMBER => 'required|string|between:5,40',
+        Entity::FROM_DATE      => 'required|epoch',
+        Entity::TO_DATE        => 'required|epoch',
         Entity::FORMAT         => 'required|string|custom',
         Entity::SEND_EMAIL     => 'required|boolean',
         Entity::TO_EMAIL_LIST  => 'required'
     ];
 
-    protected function validateFormat($attribute, $channel)
+    protected function validateFormat($attribute, $format)
     {
-        if (!in_array($channel, SupportedFormats::ALL_VALID_FORMATS))
+        if (in_array($format, SupportedFormats::ALL_VALID_FORMATS, true) === false)
         {
-            throw new BadRequestValidationFailureException('Not a valid format: ' . $channel);
+            throw new BadRequestValidationFailureException('Not a valid format: ' . $format);
         }
     }
 

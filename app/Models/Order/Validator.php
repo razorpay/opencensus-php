@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::OFFERS                             => 'sometimes|array',
         Entity::BANK_ACCOUNT                       => 'sometimes|array',
         Entity::BANK_ACCOUNT
-        . '.' . BankAccount\Entity::NAME           => 'sometimes|max:40|string',
+        . '.' . BankAccount\Entity::NAME           => 'sometimes|max:60|string',
         Entity::BANK_ACCOUNT
         . '.' . BankAccount\Entity::IFSC           => 'required_with:bank_account|alpha_num|size:11',
         Entity::BANK_ACCOUNT

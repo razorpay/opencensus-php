@@ -273,13 +273,21 @@ class NodalAccount extends NodalBase\FileProcessor
         // In seconds
         $timelines = [15, 30, 45, 60, 90, 120, 150, 180];
 
+        $batchFTAId = null;
+
+        //Batchfta can be null in case of test mode
+        if(empty($this->batchFundTransfer) === false)
+        {
+            $batchFTAId = $this->batchFundTransfer->getId();
+        }
+
         $mailInfo = [
             'fileInfo'              => $fileInfo,
             'channel'               => $this->channel,
             'filetype'              => self::BEAM_FILE_TYPE,
             'subject'               => 'Axis2 Settlement File Send Failure',
             'recipient'             => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS],
-            'batchFundTransferId'   => $this->batchFundTransfer->getId(),
+            'batchFundTransferId'   => $batchFTAId
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);

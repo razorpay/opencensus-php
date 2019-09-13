@@ -1096,7 +1096,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $event)
+    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1113,6 +1113,7 @@ trait PaymentTrait
         }
 
         $input['event'] = $event;
+        $input['status'] = $status;
 
         $this->ba->scroogeAuth();
 
@@ -1602,6 +1603,8 @@ trait PaymentTrait
 
         if ($this->isPaymentCreationUrl($url))
         {
+            $this->resetSingletons();
+
             $response = $this->handlePaymentCreationFlow($response, $request, $callback);
         }
 
