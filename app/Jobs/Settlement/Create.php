@@ -63,6 +63,9 @@ class Create extends Job
 
         try
         {
+            // reduce the total count once the processing is done
+            Cache::decrement(self::TOTAL_MERCHANT_COUNT);
+
             $this->trace->info(
                 TraceCode::SETTLEMENT_JOB_INIT_FOR_MERCHANT,
                 [
@@ -107,9 +110,6 @@ class Create extends Job
         finally
         {
             $this->delete();
-
-            // reduce the total count once the processing is done
-            Cache::decrement(self::TOTAL_MERCHANT_COUNT);
 
             $this->trace->count(
                 Metric::MERCHANT_SETTLEMENT_PROCESSED,

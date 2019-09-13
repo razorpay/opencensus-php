@@ -188,8 +188,8 @@ class Holidays
                 10 => 'Muharram',
             ],
             10 => [
-                2 => 'Mahatma Gandhi Jayanti',
-                8 => 'Dussehra / Vijaya Dasami',
+                2  => 'Mahatma Gandhi Jayanti',
+                8  => 'Dussehra / Vijaya Dasami',
             ],
             12 => [
                 25 => 'Christmas',
