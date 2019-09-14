@@ -185,6 +185,9 @@ jobs:
       DB_USERNAME: mysql
       DB_PASSWORD: mysql
       DB_DATABASE: mysqldb
+      TEST_HOST: localhost
+      TEST_PORT: 9999
+      TEST_URL: http://localhost:9999
 
 workflows:
   version: 2
