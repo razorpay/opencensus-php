@@ -870,10 +870,11 @@ dl.rzp-definition {
           transform: rotate(-45deg);
         }
       }
+    }
 
-      &.danger .Accordion__title {
+    &.danger .Accordion__title {
         border: 1px solid #f35d5d
-        background: lighten($primary-color, 70%);
+        background: lighten(#f35d5d, 90%);
 
         .accordion__arrow {
           &::after,&::before {
@@ -882,16 +883,16 @@ dl.rzp-definition {
         }
       }
 
-      &.primary .Accordion__title {
+    &.primary .Accordion__title {
         border: 1px solid $primary-color
-
+        background: lighten($primary-color, 90%);
+        
         .accordion__arrow {
           &::after,&::before { 
             background-color: $primary-color
           }
         }
       }
-    }
 
     &.open {
       .Accordion__title > .accordion__arrow::before {

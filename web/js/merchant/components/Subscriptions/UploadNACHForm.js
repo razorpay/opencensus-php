@@ -1,4 +1,9 @@
-import { findBy } from 'rzp/utils/rzp-utils';
+import { connect } from 'react-redux';
+import { classList } from 'common/util';
+import { findBy, normalizeDate } from 'rzp/utils/rzp-utils';
+
+import { validateNachFile } from 'merchant/modules/registration_link';
+import { showNotification } from 'rzp/modules/notifications';
 
 import Accordion, {
   AccordionItem,
@@ -6,7 +11,6 @@ import Accordion, {
   AccordionItemContent,
 } from 'rzp/ui/Accordion';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
 import { Modal, ModalContent } from 'component/Modal';
 import Button, { AsyncBtn } from 'component/Button';
 import DocsLink from 'merchant/components/DocsLink';
@@ -27,14 +31,26 @@ const BankAccountFields = [
   'bank_account.account_type',
 ];
 
+const initState = {
+  uploading: false,
+  extractedData: {
+    errors: {
+      not_matching: [],
+    },
+    extracted_data: [],
+    enhanced_image: null,
+  },
+  auth_link_id: 'inv_DHKApkctzcP6FL',
+};
+
+@connect(null, {
+  showNotification,
+})
 export default class UploadNACHForm extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      uploading: false,
-      extractedData: dummyJSON,
-    };
+    this.state = initState;
   }
 
   get errorsList() {
@@ -42,9 +58,11 @@ export default class UploadNACHForm extends React.Component {
   }
 
   get mandateStatus() {
-    const error = MandateFields.every(field => this.errorsList.includes(field));
+    const isError = MandateFields.some(field =>
+      this.errorsList.includes(field)
+    );
 
-    if (error) {
+    if (isError) {
       return 'danger';
     }
 
@@ -52,11 +70,11 @@ export default class UploadNACHForm extends React.Component {
   }
 
   get personalDetailsStatus() {
-    const error = PersonalDetailsFields.every(field =>
+    const isError = PersonalDetailsFields.some(field =>
       this.errorsList.includes(field)
     );
 
-    if (error) {
+    if (isError) {
       return 'danger';
     }
 
@@ -64,11 +82,11 @@ export default class UploadNACHForm extends React.Component {
   }
 
   get bankAccountStatus() {
-    const error = BankAccountFields.every(field =>
+    const isError = BankAccountFields.some(field =>
       this.errorsList.includes(field)
     );
 
-    if (error) {
+    if (isError) {
       return 'danger';
     }
 
@@ -84,29 +102,83 @@ export default class UploadNACHForm extends React.Component {
     };
   };
 
-  handleChange = () => {
+  onCloseClick = () => {
+    this.setState(initState);
+  };
+
+  handleChange = file => {
     this.setState({
       uploading: true,
     });
 
-    setTimeout(() => {
-      this.setState({
-        uploading: false,
-      });
-    }, 3000);
+    return validateNachFile(file, this.state.auth_link_id)
+      .then(resp => {
+        this.setState({
+          extractedData: resp.data,
+          uploading: false,
+        });
+      })
+      .catch(error => {
+        this.setState({
+          uploading: false,
+          extractedData: dummyJSON,
+        });
 
-    return Promise.resolve();
+        this.props.showNotification({
+          type: 'error',
+          message: error.errors,
+        });
+      });
   };
 
   handleSubmit = () => {};
 
+  renderDesc = () => {
+    const { uploading } = this.state;
+
+    if (uploading) {
+      return (
+        <React.Fragment>
+          <i class="i i-info-circle" /> Please weight while we upload NACH form.
+        </React.Fragment>
+      );
+    }
+
+    if (this.errorsList.length) {
+      return (
+        <React.Fragment>
+          <h5 class="text-danger">
+            <i class="i i-info-circle" /> Details do not match
+          </h5>
+          <p>
+            The highlighted details on the uploaded NACH form do not match the
+            entered details. Please ensure you are uploading the correct NACH
+            form.
+          </p>
+        </React.Fragment>
+      );
+    }
+  };
+
   renderNachFieldData = key => {
     const { isError, value } = this.getDataFromExtractedData(key);
 
-    return <div class={isError && 'text-danger'}>{value}</div>;
+    return <div class={classList(isError && 'text-danger')}>{value}</div>;
   };
 
   renderNachDetails = () => {
+    if (
+      !this.state.extractedData.extracted_data.length ||
+      this.state.uploading
+    ) {
+      return;
+    }
+
+    let endAt = this.renderNachFieldData('end_at'),
+      startAt = this.renderNachFieldData('start_at');
+
+    endAt = endAt && normalizeDate(endAt);
+
     return (
       <Accordion>
         <AccordionItem status={this.mandateStatus}>
@@ -120,6 +192,10 @@ export default class UploadNACHForm extends React.Component {
             </EntityDetailRow>
             <EntityDetailRow label="Debit Type">
               {this.renderNachFieldData('debit_type')}
+            </EntityDetailRow>
+            <EntityDetailRow label="Debit from">{startAt}</EntityDetailRow>
+            <EntityDetailRow label="Debit To">
+              {endAt && 'Until cancelled'}
             </EntityDetailRow>
           </AccordionItemContent>
         </AccordionItem>
@@ -157,10 +233,20 @@ export default class UploadNACHForm extends React.Component {
 
   render() {
     const { uploading } = this.state,
-      disabled = uploading || this.errorsList.length;
+      isDataAval = this.state.extractedData.extracted_data.length,
+      disabled =
+        uploading ||
+        !!this.errorsList.length ||
+        !this.state.extractedData.extracted_data.length;
 
     return (
-      <Modal class="ModalForm UploadNACHForm animate-down">
+      <Modal
+        class={classList(
+          'ModalForm UploadNACHForm animate-down',
+          isDataAval && 'UploadNACHForm-fulldata'
+        )}
+        onClose={this.props.closeModal}
+      >
         <ModalContent>
           <div class="NACH--Upload Wizard">
             <main>
@@ -173,6 +259,10 @@ export default class UploadNACHForm extends React.Component {
               </p>
 
               <FileUpload
+                showCloseBtn
+                showFileSize
+                showStagedFileStatus
+                stagedFileStatus="error"
                 maxSize="8000000"
                 accept={[
                   'image/jpeg',
@@ -183,19 +273,10 @@ export default class UploadNACHForm extends React.Component {
                 size="large"
                 uploadedFileName="Upload File here"
                 onFileChange={this.handleChange}
-                // onCloseClick={onCloseClick}
-                // stagedFileStatus={stagedFileStatus}
-                showCloseBtn={true}
-                showStagedFileStatus
-                showFileSize={false}
+                onCloseClick={this.onCloseClick}
               />
 
-              {uploading && (
-                <div>
-                  <i class="i i-info-circle" /> Please weight while we upload
-                  NACH form.
-                </div>
-              )}
+              <div class="Desc">{this.renderDesc()}</div>
 
               <div class="Details">{this.renderNachDetails()}</div>
             </main>

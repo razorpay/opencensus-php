@@ -99,7 +99,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         accountType: '',
       },
       validTabs: [false, false, false],
-      showNachFormModal: false,
+      showNachFormModal: true,
     };
   }
 
@@ -216,10 +216,16 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     return isAllFieldsPresent;
   };
 
+  handleNachModal = () => {
+    this.setState({
+      showNachFormModal: !this.state.showNachFormModal,
+    });
+  };
+
   openNACHFormUploadModal = () => {
     return (
       <ModalMask>
-        <UploadNACHForm />
+        <UploadNACHForm closeModal={this.handleNachModal} />
       </ModalMask>
     );
   };
