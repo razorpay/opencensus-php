@@ -1,7 +1,5 @@
 <?php
 
-namespace OpenCensus\Trace\Ext;
-
 /**
  *
  * @param string $type
