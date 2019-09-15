@@ -221,8 +221,6 @@ class Span
 
         if (array_key_exists('stackTrace', $options)) {
             $this->stackTrace = $this->filterStackTrace($options['stackTrace']);
-        } else {
-            $this->stackTrace = $this->filterStackTrace(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
         }
 
         if (array_key_exists('name', $options)) {
@@ -408,7 +406,8 @@ class Span
     private function generateSpanName(): string
     {
         // Try to find the first stacktrace class entry that doesn't start with OpenCensus\Trace
-        foreach ($this->stackTrace as $st) {
+        $stackTrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        foreach ($stackTrace as $st) {
             $st += ['line' => null];
             if (!array_key_exists('class', $st)) {
                 return implode('/', array_filter(['app', basename($st['file']), $st['function'], $st['line']]));
