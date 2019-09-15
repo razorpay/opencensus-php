@@ -96,18 +96,6 @@ class SpanTest extends TestCase
         $this->assertInstanceOf(\DateTimeInterface::class, $span->spanData()->endTime());
     }
 
-    public function testGeneratesBacktrace()
-    {
-        $span = new Span();
-
-        $stackTrace = $span->spanData()->stackTrace();
-        $this->assertInternalType('array', $stackTrace);
-        $this->assertNotEmpty($stackTrace);
-        $stackframe = $stackTrace[0];
-        $this->assertEquals('testGeneratesBacktrace', $stackframe['function']);
-        $this->assertEquals(self::class, $stackframe['class']);
-    }
-
     public function testOverrideBacktrace()
     {
         $stackTrace = [

@@ -90,16 +90,6 @@ abstract class AbstractTracerTest extends TestCase
         $this->assertEquals('bar', $attributes['foo']);
     }
 
-    public function testPersistsBacktrace()
-    {
-        $tracer = $this->makeTracer();
-        $tracer->inSpan(['name' => 'test'], function () {});
-        $spanData = $tracer->spans()[0];
-        $stackframe = $spanData->stackTrace()[0];
-        $this->assertEquals('testPersistsBacktrace', $stackframe['function']);
-        $this->assertEquals(self::class, $stackframe['class']);
-    }
-
     public function testWithSpan()
     {
         $span = new Span(['name' => 'foo']);
@@ -254,7 +244,7 @@ abstract class AbstractTracerTest extends TestCase
         $this->assertNotEquals(0, $spanData->startTime()->getTimestamp());
     }
 
-    public function testStackTraceShouldBeSet()
+    public function testStackTraceShouldNotBeSet()
     {
         $tracer = $this->makeTracer();
         $tracer->inSpan(['name' => 'foo'], function () {
@@ -266,7 +256,7 @@ abstract class AbstractTracerTest extends TestCase
         $spanData = $spans[0];
 
         $this->assertInternalType('array', $spanData->stackTrace());
-        $this->assertNotEmpty($spanData->stackTrace());
+        $this->assertEmpty($spanData->stackTrace());
     }
 
     public function testAttributesShouldBeSet()
