@@ -4882,6 +4882,7 @@ trait Authorize
 
         try
         {
+            $gatewayInput['isAutoDebitFlow'] = true;
             $this->callGatewayFunction(Action::CHECK_BALANCE, $gatewayInput);
         }
         catch (Exception\GatewayErrorException $e)

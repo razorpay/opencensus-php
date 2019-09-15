@@ -515,23 +515,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function autoDebit(array $input)
-    {
-        $this->input = $input;
-
-        // Create a gateway payment entity similar to otpGenerate
-        $contentToSave = [
-            RequestFields::MERCHANT_ID   => $this->getMerchantId($input['terminal']),
-            RequestFields::EMAIL         => $input['payment']['email'],
-            RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
-            RequestFields::AMOUNT        => $input['payment']['amount'],
-        ];
-
-        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
-
-        return $this->debit($input);
-    }
-
     /**
      * Validate if the refund was successfully processed on freecharge's end
      *
@@ -931,8 +914,8 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_CHECK_BALANCE_RESPONSE);
 
-        if ((isset($input['isPowerWalletFlow']) === true) and
-            ($input['isPowerWalletFlow'] === true))
+        if ((isset($input['isAutoDebitFlow']) === true) and
+            ($input['isAutoDebitFlow'] === true))
         {
             $contentToSave = [
                 RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
