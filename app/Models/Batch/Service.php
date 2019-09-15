@@ -214,11 +214,8 @@ class Service extends Base\Service
 
     public function getReconFilesCount(array $input)
     {
-        $from = $input['from'] ?? null;
 
-        $to   = $input['to'] ?? null;
-
-        $result = $this->repo->batch->getReconFilesCountByGateway($from, $to);
+        $result = $this->repo->batch->getReconFilesCountByGateway($input);
 
         return $result->toArray();
     }

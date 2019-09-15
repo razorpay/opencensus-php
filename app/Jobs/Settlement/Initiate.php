@@ -50,6 +50,12 @@ class Initiate extends Job
 
         try
         {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_INITIATE_JOB,
+                [
+                    'channel'       => $this->channel,
+                ]);
+
             $mutex = App::getFacadeRoot()['api.mutex'];
 
             $resource = sprintf(self::MUTEX_RESOURCE, $this->channel);

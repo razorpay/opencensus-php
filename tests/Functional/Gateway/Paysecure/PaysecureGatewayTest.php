@@ -31,18 +31,11 @@ class PaysecureGatewayTest extends TestCase
 
     protected $terminal;
 
-    /** @var $downtimeMetric DowntimeMetric */
-    protected $downtimeMetric;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
 
         parent::setUp();
-
-        $app = App::getFacadeRoot();
-
-        $this->downtimeMetric = $app['gateway_downtime_metric'];
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
@@ -436,14 +429,11 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertEquals([
             $this->gateway => [
-                DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 1,
-                ],
                 DowntimeMetric::Failure   => [
                     'SERVER_ERROR_INVALID_ARGUMENT' => 1,
                 ]
             ],
-        ], $this->downtimeMetric->getMetrics());
+        ], $this->app['gateway_downtime_metric']->getMetrics());
     }
 
     public function testAuthorizeFailureWithNoErrorMessage()

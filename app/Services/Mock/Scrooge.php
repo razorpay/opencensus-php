@@ -101,6 +101,8 @@ class Scrooge extends BaseScrooge
     public function bulkUpdateRefundStatus(array $input, bool $throwExceptionOnFailure = false): array
     {
         return json_decode('{
+           "success_count": 1,
+           "failure_count": 1,
            "errors": [{
               "refund_id": "abc1234d",
               "code": "INVALID_STATE",

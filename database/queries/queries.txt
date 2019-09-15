@@ -4637,7 +4637,7 @@ ALTER TABLE payouts
     ADD INDEX payouts_processed_at_index (processed_at);
 
 ALTER TABLE bank_accounts
-    ADD COLUMN registered_beneficiary_name VARCHAR(255) DEFAULT NULL after beneficiary_name,
+    ADD COLUMN registered_beneficiary_name VARCHAR(255) DEFAULT NULL after beneficiary_name;
 
 ALTER TABLE transactions
     MODIFY COLUMN type VARCHAR(255) DEFAULT NULL;

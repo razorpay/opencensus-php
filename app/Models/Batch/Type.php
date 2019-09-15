@@ -195,6 +195,8 @@ class Type
         self::AUTH_LINK,
         self::VIRTUAL_BANK_ACCOUNT,
         self::ENTITY_MAPPING,
+        self::LINKED_ACCOUNT,
+        self::LINKED_ACCOUNT_REVERSAL,
     ];
 
     /**

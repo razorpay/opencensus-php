@@ -20,11 +20,12 @@ trait HeadlessOtp
     ];
 
     public static $elfErrorCodeMapping = [
-        OtpElf::CARD_BLOCKED      => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
-        OtpElf::NETWORK_ERROR     => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        OtpElf::BANK_ERROR        => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
-        OtpElf::PAYMENT_TIMEOUT   => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
-        OtpElf::BANK_SERVICE_DOWN => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::CARD_BLOCKED         => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
+        OtpElf::NETWORK_ERROR        => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        OtpElf::BANK_ERROR           => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::PAYMENT_TIMEOUT      => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
+        OtpElf::BANK_SERVICE_DOWN    => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::NO_AVAILABLE_ACTIONS => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
     ];
 
     protected function getNextOtpAction(array $actions)

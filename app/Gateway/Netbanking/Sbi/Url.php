@@ -13,6 +13,5 @@ class Url
 
     const AUTHORIZE_LIVE           = '/merchant/merchantprelogin.htm';
     const VERIFY_LIVE              = '/thirdparties/doubleverification.htm';
-    //TODO
-    const VERIFY_MANDATE_LIVE      = '';
+    const VERIFY_MANDATE_LIVE      = '/thirdparties/doubleverification.htm';
 }
