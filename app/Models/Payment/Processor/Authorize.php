@@ -4895,7 +4895,7 @@ trait Authorize
             //
             if ($error->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN)
             {
-                return $this->runOtpPaymentFlow($payment, $gatewayInput);
+                return $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
             }
 
             throw $e;
