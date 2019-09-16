@@ -259,11 +259,19 @@ export default class PaymentPagesV3Entity extends React.Component {
                         </td>
                         <td>
                           <div>
+                            <div class="title">Revenue</div>
+                            <Amount
+                              value={pi.total_amount_paid}
+                              currency={paymentPageEntity.currency}
+                            />
+                          </div>
+                        </td>
+                        <td>
+                          <div>
                             <div class="title">Units Sold</div>
-
                             <EditQuantity
-                              value={pi.quantity_available}
-                              timesPaid={pi.times_paid}
+                              value={pi.stock}
+                              timesPaid={pi.quantity_sold}
                               editFn={editPaymentPage}
                               entityId={pi.id}
                               trackerFn={trackDetailViewEdits}
