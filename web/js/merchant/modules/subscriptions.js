@@ -1,5 +1,6 @@
 import { set } from 'rzp/utils/immutable';
 import Subscription from 'merchant/models/Subscription';
+import { SubscriptionItem } from 'merchant/models/Item';
 import {
   makeActionCollectionReducer,
   fetchAll,
@@ -11,12 +12,22 @@ import { PLAN_FETCH } from 'merchant/modules/plans';
 import { CUSTOMER_FETCH } from 'merchant/modules/customers';
 import { merchantFetch } from 'merchant/utils/ajax';
 
+const ITEMS_FETCH = 'ITEMS_FETCH';
 const SUBSCRIPTION_CREATE = 'SUBSCRIPTION_CREATE';
 const SUBSCRIPTION_UPDATE = 'SUBSCRIPTION_UPDATE';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
 const SUBSCRIPTION_INVOICES_FETCH = 'SUBSCRIPTION_INVOICES_FETCH';
+
+export const fetchSubscriptionItems = params => {
+  let item = new SubscriptionItem();
+
+  return {
+    type: ITEMS_FETCH,
+    payload: item.fetchAll(params),
+  };
+};
 
 export const fetchSubscriptionCreditNotes = id => {
   return merchantFetch(
