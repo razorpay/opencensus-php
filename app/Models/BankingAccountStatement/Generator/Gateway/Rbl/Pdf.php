@@ -23,19 +23,17 @@ class Pdf extends Generator
 
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
 
-        $fileName = $this->accountNumber;
+        $tmpFileName = $this->accountNumber . '.pdf';
 
-        $fileStoreHandle = (new FileStore\Creator())
-                                        ->name($fileName)
-                                        ->content($pdfAccountStatement)
-                                        ->extension(FileStore\Format::PDF)
-                                        ->mime(self::PDF_MIME_TYPE)
-                                        ->store(FileStore\Store::S3)
-                                        ->type(FileStore\Type::RBL_STATEMENT)
-                                        ->save()
-                                        ->getFileInstance();
+        $tmpFileFullPath = storage_path('tmp/' . $tmpFileName);
 
-        return $fileStoreHandle;
+        $fileHandle = fopen($tmpFileFullPath, 'w');
+
+        fwrite($fileHandle, $pdfAccountStatement);
+
+        fclose($fileHandle);
+
+        return $tmpFileFullPath;
     }
 
     protected function getPdfContent(string $html): string

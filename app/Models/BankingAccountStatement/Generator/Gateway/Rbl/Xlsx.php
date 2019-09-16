@@ -190,7 +190,7 @@ class Xlsx extends Generator
 
         $spreadsheet   = $this->createTableView($statementData);
 
-        $tmpFileName     = $this->accountNumber;
+        $tmpFileName     = $this->accountNumber . '.xlsx';
 
         $tmpFileFullPath = storage_path('tmp/' . $tmpFileName);
 
@@ -198,15 +198,7 @@ class Xlsx extends Generator
 
         $writer->save($tmpFileFullPath);
 
-        $fileStoreHandle = (new FileStore\Creator())->localFilePath($tmpFileFullPath)
-                                                    ->name($tmpFileName)
-                                                    ->mime(self::DEFAULT_XLSX_FORMAT)
-                                                    ->extension(FileStore\Format::XLSX)
-                                                    ->type(FileStore\Type::RBL_STATEMENT)
-                                                    ->save()
-                                                    ->getFileInstance();
-
-        return $fileStoreHandle;
+        return $tmpFileFullPath;
     }
 
     protected function createTableView($statementDate): Spreadsheet
