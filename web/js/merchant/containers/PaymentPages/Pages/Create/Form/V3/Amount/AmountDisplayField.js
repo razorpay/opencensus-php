@@ -82,13 +82,16 @@ const displayField = ({
     }
   }
 
+  const currencySymbol = getCurrency(currency).symbol;
+
   return (
     <EditLayer
       class={classList(
         'Field Field--amount Field--disabled',
         field.mandatory && 'Field--required',
         field.image_url && 'Field--has-image',
-        isListSorting && 'disable-hover'
+        isListSorting && 'disable-hover',
+        `Field--currency-${currencySymbol.length}`
       )}
       onClick={openBaseForm}
       setRef={setRef}
@@ -110,7 +113,7 @@ const displayField = ({
           <span class="Field-addon Field-addon--before">
             <span>
               {field.image_url && <img src={field.image_url} />}
-              <b class="currency-symbol">{getCurrency(currency).symbol}</b>
+              <b class="currency-symbol">{currencySymbol}</b>
             </span>
           </span>
 
