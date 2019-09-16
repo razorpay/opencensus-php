@@ -6,6 +6,7 @@ use Cache;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Preferences;
@@ -49,9 +50,9 @@ class Core extends Base\Core
             ]);
 
         $featuredMids = $this->repo->feature->findMerchantsHavingFeatures([
-            'es_automatic',
-            'daily_settlement',
-            'block_settlements'
+            Feature\Constants::ES_AUTOMATIC,
+            Feature\Constants::DAILY_SETTLEMENT,
+            Feature\Constants::BLOCK_SETTLEMENTS,
         ])->pluck('entity_id')
           ->toArray();
 
