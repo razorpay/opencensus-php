@@ -283,7 +283,7 @@ class GovernorService
 
         $response = $this->sendRawRequest($request);
 
-        $parsedResponse = $this->processResponse($response);
+        $parsedResponse = $this->processResponseV1($response);
 
         $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse['response_body'] ?? []);
 
@@ -454,6 +454,35 @@ class GovernorService
             'response_code' => $response->status_code,
         ];
     }
+
+    protected function processResponseV1($response)
+    {
+        if ( $response->status_code != 200 )
+        {
+            $response_Body = $this->jsonToArray($response->body);
+            if ( $response_Body['error']['error_code'] == "BAD_REQUEST_ERROR"){
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR_GOVERNOR,
+                    null,
+                    [],
+                    $response_Body['error']['error_message']
+                );
+            }
+
+            throw new Exception\ServerErrorException(
+                $response_Body['error']['error_message'],
+                ErrorCode::SERVER_ERROR
+            );
+        }
+
+        return [
+            'response_body' => $this->jsonToArray($response->body),
+            'response_code' => $response->status_code,
+        ];
+
+    }
+
+
 
     public function getAuthDetails(string $source) {
         switch ($source) {
