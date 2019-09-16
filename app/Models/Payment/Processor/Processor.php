@@ -1181,6 +1181,37 @@ class Processor
         throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
+    /*
+     * This is a temporary measure to block payments for certain merchants who have "block_debit_2k" feature enabled
+     * and if the amount is >2k and method is card and type is debit
+     * In the future, this function will have validations for max amount that are method/type/currency etc specific
+     * per merchant
+     */
+    protected function validateForMaxAmount(array $input, Payment\Entity $payment)
+    {
+        if (($this->merchant->isFeatureEnabled(Feature::BLOCK_DEBIT_2K) === false) or
+            ($payment->getMethod() !== Payment\Method::CARD) or
+            ($payment->getAmount() <= 200000)) //INR 2000
+        {
+            return;
+        }
+
+        if ($payment->card === null)
+        {
+            return;
+        }
+
+        if ($payment->card->getType() !== Card\Type::DEBIT)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'Amount exceeds maximum amount allowed.',
+            'amount',
+            ['amount' => $payment->getAmount()]);
+    }
+
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
     {
         $offerId = $input[Payment\Entity::OFFER_ID];

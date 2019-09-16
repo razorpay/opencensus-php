@@ -787,7 +787,7 @@ trait Refund
         }
         catch (\Exception $e)
         {
-            (new TransferMetric)->pushReversalFailedMetrics(e);
+            (new TransferMetric)->pushReversalFailedMetrics($e);
 
             throw $e;
         }

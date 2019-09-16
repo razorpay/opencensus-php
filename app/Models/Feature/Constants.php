@@ -127,6 +127,7 @@ class Constants
     const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
     const PHONEPE_INTENT                  = 'phonepe_intent';
     const ISSUE_MPANS                     = 'issue_mpans';
+    const BLOCK_DEBIT_2K                  = 'block_debit_2k';
 
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
@@ -389,6 +390,7 @@ class Constants
         self::ISSUE_MPANS                     => true,
         self::CUST_CONTACT_EMAIL_NULL         => true,
         self::PHONEPE_INTENT                  => true,
+        self::BLOCK_DEBIT_2K                  => true,
     ];
 
     // Entity type constants
