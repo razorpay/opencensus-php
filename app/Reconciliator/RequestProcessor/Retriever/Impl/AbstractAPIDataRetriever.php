@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\File\File;
 
 abstract class AbstractAPIDataRetriever implements DataRetriever {
 
-
     protected $app;
 
     /**
@@ -33,7 +32,6 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
     const GATEWAY = 'gateway';
     const IDENTIFIER = 'identifier';
 
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -43,16 +41,17 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
         $this->gatewayManager = $this->app['gateway'];
     }
 
-
-    public function fetchData(array $input): array {
+    public function fetchData(array $input): array
+    {
 
         $files = [];
 
-        $requestList = (array) $this->prepareGatewayRequestArray($input);
+        $request = null;
 
         $responseList = [];
 
-        foreach ($requestList as $request)  {
+        while (!empty($request = $this->getNextRequest($input, $request)))
+        {
             $terminal = $this->fetchTerminal($input, $request);
             list($key, $response) = $this->processRequest($input, $request, $terminal);
             $responseList[$key] = $response;
@@ -60,15 +59,15 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
 
         $responseList = $this->refactorResponse($responseList);
 
-        foreach ($responseList as $key => $value)   {
-
+        foreach ($responseList as $key => $value)
+        {
             $fileName = $key."_".$input["gateway"]."_reconcile_".date('Y-m-d_h:i:s');
             array_push($files, $this->prepareFile($fileName, $value));
         }
         return $files;
     }
 
-    protected abstract function prepareGatewayRequestArray(array $input): array;
+    protected abstract function getNextRequest(array $input, $prevRequest): array;
 
     protected function fetchTerminal(array $input, $request)
     {
@@ -88,28 +87,33 @@ abstract class AbstractAPIDataRetriever implements DataRetriever {
 
     protected abstract function refactorResponse(array $responseList): array;
 
-    protected function prepareFile($filename, array $data)  {
+    protected function prepareFile($filename, array $data)
+    {
 
         $f = null;
         $filePath = storage_path('files/filestore') . '/'  . $filename . '.csv';
-        try{
+        try
+        {
             $f = fopen($filePath, 'w');
-            // Header line: the field names (keys in $data)
             fputcsv($f, array_keys($data[0]), ',');
             //fputs($f,PHP_EOL);
-            foreach ($data as $record){
-                // Data line (can use array_values($data) or just $data as the 2nd argument)
+            foreach ($data as $record)
+            {
                 fputcsv($f, array_values($record), ',');
             }
-        }catch(\Exception $e){
+        }
+        catch(\Exception $e)
+        {
             unlink($filePath);
             throw $e;
-        }finally{
-            if($f !== null) {
+        }
+        finally
+        {
+            if($f !== null)
+            {
                 fclose($f);
             }
         }
         return new File($filePath);
     }
-
 }

@@ -8,11 +8,11 @@ use RZP\Reconciliator\RequestProcessor\Retriever\Impl\DefaultDataRetriever;
 
 class DataRetrieverManager
 {
-
     public static function getDataRetriever($gateway): DataRetriever{
         $retriever = camel_case($gateway);
         $gatewayRetrieverClassName = 'RZP\\Reconciliator\\RequestProcessor\\Retriever\\Impl\\' . $retriever . 'DataRetriever';
-        if(class_exists($gatewayRetrieverClassName) === true){
+        if(class_exists($gatewayRetrieverClassName) === true)
+        {
             return new $gatewayRetrieverClassName();
         }
         return new DefaultDataRetriever();

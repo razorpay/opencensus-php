@@ -26,7 +26,8 @@ class Crawler extends Base
 
         $fileCount = 0;
         $input = [];
-        foreach ($files as $file){
+        foreach ($files as $file)
+        {
             $input[self::ATTACHMENT_HYPHEN_PREFIX . ++$fileCount] = $file;
         }
 

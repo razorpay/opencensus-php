@@ -12,33 +12,43 @@ use RZP\Base\RepositoryManager;
 class DefaultDataRetriever extends AbstractAPIDataRetriever
 {
 
-
-    protected function prepareGatewayRequestArray(array $input): array
+    protected function getNextRequest(array $input, $prevRequest): array
     {
-        $requestList = [];
+        if(!empty($prevRequest))
+        {
+            return [];
+        }
         $request = [];
         $request[self::GATEWAY] = $input['gateway'];
         $request[self::IDENTIFIER] = "_";
-        if(isset($input['start_date'])) {
+        if(isset($input['start_date']))
+        {
             $request['start_date'] = $input['start_date'];
-        }else{
+        }
+        else
+        {
             $request['start_date'] = date('Y-m-d', strtotime("-1 days"));
         }
-        if(isset($input['end_date'])) {
+        if(isset($input['end_date']))
+        {
             $request['end_date'] = $input['end_date'];
-        }else{
+        }
+        else
+        {
             $request['end_date'] = date('Y-m-d');
         }
-        if(isset($input['meta_data'])) {
+        if(isset($input['meta_data']))
+        {
             $request['meta_data'] = $input['meta_data'];
         }
-        array_push($requestList, $request);
-        return $requestList;
+        return $request;
     }
 
-    protected function refactorResponse(array $responseList): array{
+    protected function refactorResponse(array $responseList): array
+    {
         $output = [];
-        foreach ($responseList as $key => $value)   {
+        foreach ($responseList as $key => $value)
+        {
             $output[$key] =  $value['data']['records'];
         }
         return $output;
