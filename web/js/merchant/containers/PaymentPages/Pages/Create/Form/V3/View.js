@@ -290,10 +290,14 @@ class FormFooter extends React.PureComponent {
   state = {
     isEditModalOpened: false,
     paymentButtonLabel: this.props.paymentButtonLabel,
+    disableSubmit: false,
   };
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.paymentButtonLabel !== this.props.paymentButtonLabel) {
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      prevProps.paymentButtonLabel !== this.props.paymentButtonLabel ||
+      prevState.isEditModalOpened !== this.state.isEditModalOpened
+    ) {
       this.setState({
         paymentButtonLabel: this.props.paymentButtonLabel,
       });
@@ -308,9 +312,20 @@ class FormFooter extends React.PureComponent {
   };
 
   onChangePaymentButtonLabel = e => {
-    this.setState({
-      paymentButtonLabel: e.target.value,
-    });
+    this.setState(
+      {
+        paymentButtonLabel: e.target.value,
+      },
+      _ => {
+        let disableSubmit =
+          !!this.formFooter.querySelectorAll('.is-invalid').length ||
+          !this.state.paymentButtonLabel;
+
+        this.setState({
+          disableSubmit,
+        });
+      }
+    );
   };
 
   savePaymentButtonLabel = () => {
@@ -323,9 +338,11 @@ class FormFooter extends React.PureComponent {
     this.toggleModal(false);
   };
 
+  setRef = el => (this.formFooter = el);
+
   render() {
     const { currency, isListSorting } = this.props;
-    const { isEditModalOpened, paymentButtonLabel } = this.state;
+    const { isEditModalOpened, paymentButtonLabel, disableSubmit } = this.state;
 
     const content = (
       <div class="form-footer-payment">
@@ -347,7 +364,7 @@ class FormFooter extends React.PureComponent {
     );
 
     return (
-      <div id="form-footer">
+      <div id="form-footer" ref={this.setRef}>
         {isEditModalOpened && (
           <CreatorModal class="CreatorModal-BaseForm" overElement>
             <div>
@@ -376,7 +393,7 @@ class FormFooter extends React.PureComponent {
             <Button.Transparent
               class="base-form-side-btn base-form-save"
               type="button"
-              disabled={!paymentButtonLabel}
+              disabled={disableSubmit}
               onClick={this.savePaymentButtonLabel}
             >
               <span class="icon i-check" />
