@@ -4,6 +4,7 @@ import { findBy, normalizeDate } from 'rzp/utils/rzp-utils';
 
 import { validateNachFile } from 'merchant/modules/registration_link';
 import { showNotification } from 'rzp/modules/notifications';
+import { fetchKeys } from 'merchant/modules/keys';
 
 import Accordion, {
   AccordionItem,
@@ -40,10 +41,12 @@ const initState = {
     extracted_data: [],
     enhanced_image: null,
   },
-  auth_link_id: 'inv_DHKApkctzcP6FL',
+  file: null,
+  errors: {},
 };
 
-@connect(null, {
+@connect(state => ({ keys: state.keys }), {
+  fetchKeys,
   showNotification,
 })
 export default class UploadNACHForm extends React.Component {
@@ -97,6 +100,10 @@ export default class UploadNACHForm extends React.Component {
     return 'primary';
   }
 
+  componentDidMount() {
+    this.props.fetchKeys();
+  }
+
   getDataFromExtractedData = key => {
     const data = findBy(this.state.extractedData.extracted_data, 'key', key);
 
@@ -113,10 +120,10 @@ export default class UploadNACHForm extends React.Component {
         'The attached NACH form will be discarded and you will need to reupload a new image.',
       affirmativeLabel: 'Yes, Remove',
       abort: () => {},
-      action: () => {},
+      action: () => {
+        this.setState(initState);
+      },
     });
-
-    this.setState(initState);
   };
 
   handleChange = file => {
@@ -124,7 +131,9 @@ export default class UploadNACHForm extends React.Component {
       uploading: true,
     });
 
-    return validateNachFile(file, this.state.auth_link_id)
+    const key = this.props.keys.keys[0] || {};
+
+    return validateNachFile(file, this.props.authLinkId, key.id)
       .then(resp => {
         this.setState({
           extractedData: resp.data,
@@ -134,12 +143,7 @@ export default class UploadNACHForm extends React.Component {
       .catch(error => {
         this.setState({
           uploading: false,
-          extractedData: dummyJSON,
-        });
-
-        this.props.showNotification({
-          type: 'error',
-          message: error.errors,
+          errors: getErrorMessage(error.errors),
         });
       });
   };
@@ -147,7 +151,7 @@ export default class UploadNACHForm extends React.Component {
   handleSubmit = () => {};
 
   renderDesc = () => {
-    const { uploading } = this.state;
+    const { uploading, errors } = this.state;
 
     if (uploading) {
       return (
@@ -168,6 +172,18 @@ export default class UploadNACHForm extends React.Component {
             entered details. Please ensure you are uploading the correct NACH
             form.
           </p>
+        </React.Fragment>
+      );
+    }
+
+    if (errors.heading) {
+      return (
+        <React.Fragment>
+          <h5 class={`text-danger`}>
+            <i class="i i-info-circle" />
+            {errors.heading}
+          </h5>
+          <p class="description">{errors.description}</p>
         </React.Fragment>
       );
     }
@@ -245,8 +261,10 @@ export default class UploadNACHForm extends React.Component {
   };
 
   render() {
-    const { uploading } = this.state,
-      isDataAval = this.state.extractedData.extracted_data.length,
+    const { uploading, file } = this.state,
+      isDataAval =
+        this.state.extractedData.extracted_data.length ||
+        this.state.errors.heading,
       disabled =
         uploading ||
         !!this.errorsList.length ||
@@ -284,6 +302,7 @@ export default class UploadNACHForm extends React.Component {
                   'application/x-pdf',
                 ]}
                 size="large"
+                files={file}
                 uploadedFileName="Upload File here"
                 onFileChange={this.handleChange}
                 onCloseClick={this.onCloseClick}
@@ -312,107 +331,21 @@ export default class UploadNACHForm extends React.Component {
   }
 }
 
-const dummyJSON = {
-  success: false,
-  errors: {
-    not_matching: ['customer.name', 'customer.contact'],
-  },
-  enhanced_image: 'https://dummycdn.razorpay.com/logos/D8Xhiby96sNStz.jpg',
-  extracted_data: [
-    {
-      key: 'bank_account.account_number',
-      expected_value: '1111111111111',
-      extracted_value: '1111111111111',
-    },
-    {
-      key: 'bank_account.ifsc_code',
-      expected_value: 'HDFC0001233',
-      extracted_value: 'HDFC0001233',
-    },
-    {
-      key: 'bank_account.account_type',
-      expected_value: 'savings',
-      extracted_value: 'savings',
-    },
-    {
-      key: 'merchant.name',
-      expected_value: 'TEST ACCOUNT',
-      extracted_value: 'TEST ACCOUNT',
-    },
-    {
-      key: 'customer.name',
-      expected_value: 'AVINASH100000POP',
-      extracted_value: 'GAURAV KUMAR',
-    },
-    {
-      key: 'customer.email',
-      expected_value: 'avinash100000pop1@a.c',
-      extracted_value: 'gaurav.kumar12@example.com',
-    },
-    {
-      key: 'customer.contact',
-      expected_value: '9483159238',
-      extracted_value: '9123456780',
-    },
-    {
-      key: 'utility_code',
-      expected_value: 'NACH00000000013149',
-      extracted_value: 'NACH00000000013149',
-    },
-    {
-      key: 'debit_type',
-      expected_value: 'maximum_amount',
-      extracted_value: 'maximum_amount',
-    },
-    {
-      key: 'frequency',
-      expected_value: 'yearly',
-      extracted_value: 'yearly',
-    },
-    {
-      key: 'type',
-      expected_value: 'create',
-      extracted_value: 'create',
-    },
-    {
-      key: 'umrn',
-      expected_value: null,
-      extracted_value: null,
-    },
-    {
-      key: 'amount',
-      expected_value: 10000,
-      extracted_value: 10000,
-    },
-    {
-      key: 'sponsor_bank_code',
-      expected_value: 'RATN0TREASU',
-      extracted_value: 'RATN0TREASU',
-    },
-    {
-      key: 'reference_1',
-      expected_value: '121211212112121121',
-      extracted_value: '121211212112121121',
-    },
-    {
-      key: 'reference_2',
-      expected_value: '121211212112121121',
-      extracted_value: '121211212112121121',
-    },
-    {
-      key: 'created_at',
-      expected_value: '19/08/2019',
-      extracted_value: '19/08/2019',
-    },
-    {
-      key: 'start_at',
-      expected_value: '07/12/2025',
-      extracted_value: '07/12/2025',
-    },
-    {
-      key: 'end_at',
-      expected_value: null,
-      extracted_value: null,
-    },
-  ],
+const getErrorMessage = ([error, status]) => {
+  if (status === 500) {
+    return {
+      heading: 'Apologies, an error occurred on our end',
+      description:
+        'We are experiencing an internal server issue. Please retry uploading the NACH form after sometime.',
+    };
+  }
+
+  if (error.includes('unable to read')) {
+    return {
+      heading: 'NACH form could not be read',
+      description:
+        'Kindly re-upload an image with better quality as the uploaded form could not be read successfully.',
+    };
+  } else if (error.includes('')) {
+  }
 };

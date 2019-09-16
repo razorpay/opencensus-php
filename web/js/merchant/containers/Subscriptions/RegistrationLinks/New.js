@@ -99,7 +99,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         accountType: '',
       },
       validTabs: [false, false, false],
-      showNachFormModal: true,
+      showNachFormModal: false,
     };
   }
 
