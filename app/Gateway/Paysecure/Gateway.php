@@ -433,16 +433,26 @@ class Gateway extends Base\Gateway
 
         $response = $verify->verifyResponseContent;
 
+        $attributes = [];
+
         // If gateway payment does not contain apprcode and if apprcode
         // is present in verify response, update it.
         if ((empty($gatewayPayment[Entity::APPRCODE]) === true) and
             (empty($response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]) === false)
         )
         {
-            $attributes = [
-                Entity::APPRCODE => $response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]
-            ];
+            $attributes[Entity::APPRCODE] = $response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE];
 
+
+        }
+
+        if (empty($response[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS]) === false)
+        {
+            $attributes[Entity::STATUS] = $response[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS];
+        }
+
+        if (empty($attributes) === false)
+        {
             $gatewayPayment->fill($attributes);
 
             $this->repo->saveOrFail($gatewayPayment);
