@@ -85,7 +85,7 @@ trait AttemptTrait
         $content = $this->initiateTransfer($channel, $purpose);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
 
         return $content;
     }
