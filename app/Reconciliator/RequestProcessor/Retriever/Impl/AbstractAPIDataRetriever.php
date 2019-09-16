@@ -47,11 +47,13 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
         $files = [];
 
-        $request = null;
+        $request = [];
+
+        $response = [];
 
         $responseList = [];
 
-        while (!empty($request = $this->getNextRequest($input, $request)))
+        while (!empty($request = $this->getNextRequest($input, $request, $response)))
         {
             $terminal = $this->fetchTerminal($input, $request);
             list($key, $response) = $this->processRequest($input, $request, $terminal);
@@ -68,7 +70,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
         return $files;
     }
 
-    protected abstract function getNextRequest(array $input, $prevRequest): array;
+    protected abstract function getNextRequest(array $input, $prevRequest, $prevResponse): array;
 
     protected function fetchTerminal(array $input, $request)
     {

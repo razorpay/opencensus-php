@@ -11,7 +11,7 @@ use RZP\Base\RepositoryManager;
 class DefaultDataRetriever extends AbstractAPIDataRetriever
 {
 
-    protected function getNextRequest(array $input, $prevRequest): array
+    protected function getNextRequest(array $input, $prevRequest, $prevResponse): array
     {
         if(!empty($prevRequest))
         {
