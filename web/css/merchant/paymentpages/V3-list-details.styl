@@ -83,10 +83,14 @@
         opacity: 0
         animation: move-up .3s ease-in forwards .2s
 
+        td.item-details-units
+          min-width: 148px
+
         td
           background: #f3f4f7
           max-width: 112px
           vertical-align: top
+          min-width: 80px
 
           & > div
             min-height: 64px
@@ -153,6 +157,22 @@
         content: ''
         border-right: 1px solid #a8afc4
         margin: 0 16px
+
+
+@media (max-width: 1023px)
+  .Entity--paymentpage-v3
+    .panel-body
+      display: block
+      width: 100%
+
+      .entity-details, .item-details
+        display: block
+        width: 100%
+
+    &.Entity--paymentpage-collapse
+      .panel
+        max-height: 532px
+
 
 @keyframes move-up
   0%
