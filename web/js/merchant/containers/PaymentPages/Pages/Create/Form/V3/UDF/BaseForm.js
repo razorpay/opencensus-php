@@ -145,11 +145,16 @@ export default class BaseForm extends React.PureComponent {
           name="title"
           defaultValue={field.title}
           placeholder="Enter field label"
-          pattern="^[0-9a-zA-Z ]+"
           onInput={this.onInputTitle}
           validator={function(val) {
             if (!val) {
               return 'Field title is required';
+            }
+
+            const regex = new RegExp(`^[0-9a-zA-Z ]+$`, 'i');
+
+            if (!regex.test(val)) {
+              return 'Please enter valid value';
             }
 
             if (!isNaN(val)) {

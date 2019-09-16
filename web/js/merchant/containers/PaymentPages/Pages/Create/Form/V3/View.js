@@ -355,6 +355,7 @@ class FormFooter extends React.PureComponent {
                 name="payment_button_label"
                 required
                 maxLength="16"
+                pattern="^[0-9a-zA-Z ]+"
                 label="Payment Button Label"
                 value={paymentButtonLabel}
                 onChange={this.onChangePaymentButtonLabel}
