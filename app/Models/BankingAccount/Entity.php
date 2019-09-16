@@ -320,6 +320,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_ADDRESS2);
     }
 
+    public function getBeneficiaryPin()
+    {
+        return $this->getAttribute(self::BENEFICIARY_PIN);
+    }
+
     public function getBeneficiaryCountry()
     {
         return $this->getAttribute(self::BENEFICIARY_COUNTRY);

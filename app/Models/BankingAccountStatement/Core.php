@@ -38,7 +38,7 @@ class Core extends Base\Core
      */
     public function processStatementForAccount(array $input)
     {
-        $channel       = array_pull($input, Entity::CHANNEL);
+        $channel = array_pull($input, Entity::CHANNEL);
 
         $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
 

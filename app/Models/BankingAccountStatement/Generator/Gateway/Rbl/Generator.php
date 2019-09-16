@@ -44,15 +44,15 @@ abstract class Generator extends Base
                                                          Timezone::IST)
                                                           ->format(self::DATE_FORMAT);
 
-        $fromDateReadable = Carbon::createFromTimestamp($this->fromDate,
+        $fromDate = Carbon::createFromTimestamp($this->fromDate,
                                                        Timezone::IST)
-                                                       ->format(self::DATE_FORMAT);
+                                                        ->format(self::DATE_FORMAT);
 
-        $toDateReadable = Carbon::createFromTimestamp($this->toDate,
+        $toDate = Carbon::createFromTimestamp($this->toDate,
                                                      Timezone::IST)
                                                       ->format(self::DATE_FORMAT);
 
-        $statementPeriod = $fromDateReadable . ' - ' . $toDateReadable;
+        $statementPeriod = $fromDate . ' - ' . $toDate;
 
         $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount, $accountOpeningDate, $statementPeriod);
 
@@ -71,9 +71,9 @@ abstract class Generator extends Base
 
     protected function getAccountStatementSummary($bankAccountStaments)
     {
-        $opening_balance   = 0;
+        $opening_balance = 0;
 
-        $closing_balance   = 0;
+        $closing_balance = 0;
 
         $effective_balance = 0;
 
@@ -83,19 +83,19 @@ abstract class Generator extends Base
 
         $credit_count = 0;
 
-        if ($bankAccountStaments->count())
+        if ($bankAccountStaments->count() !== 0)
         {
-            $opening_balance   = $bankAccountStaments[0]->balance;
+            $opening_balance = $bankAccountStaments[0]->balance;
 
-            $closing_balance   = $bankAccountStaments[count($bankAccountStaments) - 1]->balance;
+            $closing_balance = $bankAccountStaments[count($bankAccountStaments) - 1]->balance;
 
             $effective_balance = $closing_balance;
 
-            $lien_amount       = 0;
+            $lien_amount = 0;
 
-            $debit_count       = 0;
+            $debit_count = 0;
 
-            $credit_count      = 0;
+            $credit_count = 0;
 
             foreach ($bankAccountStaments as $transaction)
             {
@@ -140,7 +140,7 @@ abstract class Generator extends Base
                 TransactionLineItem::TRANSACTION_DATE    => Carbon::createFromTimestamp(
                                                              $transaction->transaction_date,
                                                              Timezone::IST)
-                                                              ->format(TransactionLineItem::ITEM_DATE_FORMAT),
+                                                             ->format(TransactionLineItem::ITEM_DATE_FORMAT),
 
                 TransactionLineItem::TRANSACTION_DETAILS => $transaction->description,
 
@@ -214,7 +214,7 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::CUSTOMER_STATE       => $bankingAccount->getBeneficiaryState(),
 
-            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $bankingAccount->getPincode(),
+            AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $bankingAccount->getBeneficiaryPin(),
 
             AccountOwnerInfo::CUSTOMER_MOBILE      => $bankingAccount->getBeneficiaryMobile(),
 

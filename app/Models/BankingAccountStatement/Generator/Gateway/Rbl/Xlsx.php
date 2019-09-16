@@ -213,7 +213,7 @@ class Xlsx extends Generator
     {
         $spreadsheet = new Spreadsheet();
 
-        $sheet       = $spreadsheet->getActiveSheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
         $this->addLogo($sheet);
 
