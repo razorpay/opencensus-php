@@ -779,6 +779,11 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    protected function setStatusAttribute($status)
+    {
+        $this->attributes[self::STATUS] = $status;
 
         if (in_array($status, Status::$timestampedStatuses, true) === true)
         {

@@ -147,6 +147,42 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testFirstDataReconNonInrPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment = $this->getNewPaymentEntity(true, false);
+
+        $this->fixtures->edit('payment',
+            $payment['id'],
+            [
+                'base_amount'       => 7000,
+                'amount'            => 100,
+                'convert_currency'  => 0,
+                'currency'          => 'USD',
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
+
+        $entries[] = $this->overrideFirstDataNonInrPayment($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData');
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+
+        $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $updatedTransaction = $this->getDbLastEntity('transaction');
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertBatchStatus();
+    }
     public function testFirstDataForceAuthorizePayment()
     {
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
@@ -1236,6 +1272,20 @@ class ReconciliationFileTest extends TestCase
         $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID] = $payment['payment_id'];
         $facade[FDPaymentRecon::COLUMN_AUTH_CODE]       = random_integer(6);
         $facade[FDPaymentRecon::COLUMN_ARN]             = str_random(24);
+
+        return array_merge($facade, $forceOverride);
+    }
+
+    private function overrideFirstDataNonInrPayment(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->testData['facades']['first_data'];
+
+        $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID]                = $payment['payment_id'];
+        $facade[FDPaymentRecon::COLUMN_AUTH_CODE]                      = random_integer(6);
+        $facade[FDPaymentRecon::COLUMN_ARN]                            = str_random(24);
+        $facade[FDPaymentRecon::COLUMN_CURRENCY]                       = 'USD';
+        $facade[FDPaymentRecon::COLUMN_PAYMENT_AMOUNT]                 = 70;
+        $facade[FDPaymentRecon::COLUMN_INTERNATIONAL_PAYMENT_AMOUNT]   = 1;
 
         return array_merge($facade, $forceOverride);
     }

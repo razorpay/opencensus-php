@@ -147,4 +147,6 @@ class InfoCode
     const IIN_ISSUER_ABSENT                             = 'IIN_ISSUER_ABSENT';
 
     const CARD_LOCALE_MISMATCH                          = 'CARD_LOCALE_MISMATCH';
+
+    const UNEXPECTED_CARD_LOCALE                        = 'UNEXPECTED_CARD_LOCALE';
 }

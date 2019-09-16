@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Batch;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Base\BuilderEx;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {
@@ -175,11 +178,159 @@ class Repository extends Base\Repository
         }
     }
 
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy($this->dbColumn(Entity::CREATED_AT), 'desc')
+              ->orderBy($this->dbColumn(Entity::ID), 'desc');
+    }
+
     private function ignoreParamCountAndSkip($params): bool
     {
         return (($this->auth->isAdminAuth() === false)
                 && (isset($params['type']))
                 && ($this->app->batchService->isMigratingBatchType($params['type']) === true)
                 && ($this->app->batchService->shouldBatchServiceBeCalled()));
+    }
+
+    private function buildQueryFromParams(array $params, string $merchantId = null, bool $useSlave = false)
+    {
+        // Process params (sanitization, validation, modification, etc.)
+        $this->processFetchParams($params);
+
+        $expands = $this->getExpandsForQueryFromInput($params);
+
+        $query = $this->newQuery();
+
+        if ($useSlave === true)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $query = $query->with($expands);
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        $this->setEsRepoIfExist();
+
+        // Splits the params into mysqlParams and esParams. Check methods doc on
+        // how that happens.
+        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        // If we find that there are es params then we do es search.
+        // Currently (as commented in getMysqlAndEsParams method) we raise bad
+        // request error if we get mix of MySQL and es params. Later we might support
+        // such thing.
+        if (count($esParams) > 0)
+        {
+            return $this->runEsFetch($esParams, $merchantId, $expands);
+        }
+
+        // If above doesn't happen we build query for mysql fetch and return the
+        // result.
+        $query = $this->buildFetchQuery($query, $mysqlParams);
+
+        return $query;
+    }
+
+    public function getReconBatchesWithFiles(array $params, string $merchantId = null)
+    {
+        $query = $this->buildQueryFromParams($params, $merchantId, true);
+
+        $batchIdColumn          = $this->dbColumn(Entity::ID);
+
+        $batchTypeColumn        = $this->dbColumn(Entity::TYPE);
+
+        $batchGatewayColumn     = $this->dbColumn(Entity::GATEWAY);
+
+        $batchProcessingColumn  = $this->dbColumn(Entity::PROCESSING);
+
+        $batchStatusColumn      = $this->dbColumn(Entity::STATUS);
+
+        $batchTotalCount        = $this->dbColumn(Entity::TOTAL_COUNT);
+
+        $batchProcessedCount    = $this->dbColumn(Entity::PROCESSED_COUNT);
+
+        $batchSuccessCount      = $this->dbColumn(Entity::SUCCESS_COUNT);
+
+        $batchFailureCount      = $this->dbColumn(Entity::FAILURE_COUNT);
+
+        $batchFailureReason     = $this->dbColumn(Entity::FAILURE_REASON);
+
+        $batchAttempts          = $this->dbColumn(Entity::ATTEMPTS);
+
+        $batchProcessedAt       = $this->dbColumn(Entity::PROCESSED_AT);
+
+        $batchUpdatedAt         = $this->dbColumn(Entity::UPDATED_AT);
+
+        $batchCreatedAt         = $this->dbColumn(Entity::CREATED_AT);
+
+        $fileIdColumn           = $this->repo->file_store->dbColumn(FileStore\Entity::ID);
+
+        $fileNameColumn         = $this->repo->file_store->dbColumn(FileStore\Entity::NAME);
+
+        $fileSizeColumn         = $this->repo->file_store->dbColumn(FileStore\Entity::SIZE);
+
+        $fileEntityIdColumn     = $this->repo->file_store->dbColumn(FileStore\Entity::ENTITY_ID);
+
+        $fileTypeColumn         = $this->repo->file_store->dbColumn(FileStore\Entity::TYPE);
+
+        $params1 = $batchIdColumn . ' as batch_id,' . $batchGatewayColumn . ',' . $batchProcessingColumn
+                   . ',' . $batchStatusColumn . ',' . $batchTotalCount . ',' . $batchProcessedCount
+                   . ',' . $batchSuccessCount . ',' . $batchFailureCount . ',' . $batchFailureReason;
+
+        $params2 = 'MAX(case when ( ' . $fileTypeColumn . ' = "reconciliation_batch_input") THEN ' . $fileIdColumn . ' ELSE NULL END) as input_file_id, '
+                 . 'MAX(case when ( ' . $fileTypeColumn . ' = "reconciliation_batch_input") THEN ' . $fileNameColumn . ' ELSE NULL END) as input_file_name, '
+                 . 'MAX(case when ( ' . $fileTypeColumn . ' = "reconciliation_batch_input") THEN ' . $fileSizeColumn . ' ELSE NULL END) as input_file_size, '
+                 . 'MAX(case when ( ' . $fileTypeColumn . ' = "reconciliation_batch_output") THEN ' . $fileIdColumn . ' ELSE NULL END) as output_file_id';
+
+        $params3 = $batchAttempts . ',' . $batchProcessedAt . ',' . $batchCreatedAt . ',' . $batchUpdatedAt;
+
+        return $query->selectRaw($params1 . ', ' . $params2 . ', ' . $params3)
+                     ->join(Table::FILE_STORE, $batchIdColumn, '=', $fileEntityIdColumn)
+                     ->where($batchTypeColumn, '=', Batch\Type::RECONCILIATION)
+                     ->orderBy($batchIdColumn)
+                     ->groupBy($batchIdColumn)
+                     ->get();
+    }
+
+    public function getReconFilesCountByGateway(array $params)
+    {
+        $fileEntityIdColumn    = $this->repo->file_store->dbColumn(FileStore\Entity::ENTITY_ID);
+
+        $fileIdColumn          = $this->repo->file_store->dbColumn(FileStore\Entity::ID);
+
+        $fileTypeColumn        = $this->repo->file_store->dbColumn(FileStore\Entity::TYPE);
+
+        $batchTypeColumn       = $this->dbColumn(Entity::TYPE);
+
+        $batchIdColumn         = $this->dbColumn(Entity::ID);
+
+        $batchGatewayColumn    = $this->dbColumn(Entity::GATEWAY);
+
+        $batchStatusColumn     = $this->dbColumn(Entity::STATUS);
+
+        $batchTotalCount       = $this->dbColumn(Entity::TOTAL_COUNT);
+
+        $batchProcessedCount   = $this->dbColumn(Entity::PROCESSED_COUNT);
+
+        $batchSuccessCount     = $this->dbColumn(Entity::SUCCESS_COUNT);
+
+        $batchFailureCount     = $this->dbColumn(Entity::FAILURE_COUNT);
+
+        $query = $this->newQuery();
+
+        $query->selectRaw($batchGatewayColumn.','.$batchStatusColumn.','
+                 .'COUNT('.$fileIdColumn.') as num_of_files,SUM('.$batchTotalCount.') as total_count,SUM('
+                 .$batchProcessedCount.')as processed_count,SUM('.$batchSuccessCount.') as success_count,SUM('
+                 .$batchFailureCount.') as failure_count')
+              ->join(Table::FILE_STORE, $batchIdColumn, '=', $fileEntityIdColumn)
+              ->where($batchTypeColumn, '=', Batch\Type::RECONCILIATION)
+              ->where($fileTypeColumn, '=', FileStore\Type::RECONCILIATION_BATCH_INPUT);
+
+        $this->buildQueryWithParams($query, $params);
+
+        $query->groupBy([$batchGatewayColumn, $batchStatusColumn]);
+
+        return $query->get();
     }
 }

@@ -125,7 +125,9 @@ class Constants
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
+    const PHONEPE_INTENT                  = 'phonepe_intent';
     const ISSUE_MPANS                     = 'issue_mpans';
+    const BLOCK_DEBIT_2K                  = 'block_debit_2k';
 
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
@@ -234,6 +236,7 @@ class Constants
         self::CUSTOMER_ADDRESS,
         self::IRCTC_METHODS,
         self::GOOGLE_PAY_OMNICHANNEL,
+        self::PHONEPE_INTENT,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -386,6 +389,8 @@ class Constants
         self::ASYNC_BALANCE_UPDATE            => true,
         self::ISSUE_MPANS                     => true,
         self::CUST_CONTACT_EMAIL_NULL         => true,
+        self::PHONEPE_INTENT                  => true,
+        self::BLOCK_DEBIT_2K                  => true,
     ];
 
     // Entity type constants

@@ -56,6 +56,7 @@ class Event
     const REFUND_SPEED_CHANGED              = 'refund.speed_changed';
     const REFUND_PROCESSED                  = 'refund.processed';
     const REFUND_FAILED                     = 'refund.failed';
+    const REFUND_CREATED                    = 'refund.created';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -99,6 +100,7 @@ class Event
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
+        self::REFUND_CREATED,
     ];
 
     /**
@@ -148,6 +150,7 @@ class Event
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
+        self::REFUND_CREATED,
     ];
 
     protected static $bitPosition = [
@@ -193,6 +196,7 @@ class Event
         self::REFUND_FAILED                     => 40,
         self::VIRTUAL_ACCOUNT_CLOSED            => 41,
         self::PAYOUT_FAILED                     => 42,
+        self::REFUND_CREATED                    => 43,
     ];
 
     /**
@@ -225,7 +229,7 @@ class Event
         self::PAYMENT_DISPUTE_WON               => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_LOST              => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
-        self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY],
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY, Product::BANKING],
         self::TRANSACTION_CREATED               => [Product::BANKING],
         self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
@@ -238,6 +242,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => [Product::PRIMARY],
         self::REFUND_PROCESSED                  => [Product::PRIMARY],
         self::REFUND_FAILED                     => [Product::PRIMARY],
+        self::REFUND_CREATED                    => [Product::PRIMARY],
     ];
 
     /**
@@ -284,6 +289,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => Entity::REFUND,
         self::REFUND_PROCESSED                  => Entity::REFUND,
         self::REFUND_FAILED                     => Entity::REFUND,
+        self::REFUND_CREATED                    => Entity::REFUND,
     ];
 
     public static $eventsToFeatureMap = [

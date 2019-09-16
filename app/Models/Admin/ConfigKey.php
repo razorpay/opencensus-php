@@ -48,7 +48,8 @@ class ConfigKey
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
     const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
-    const DOWNTIME_DETECTION                    = self::PREFIX . 'downtime:detection';
+    const DOWNTIME_DETECTION                    = self::PREFIX . '{downtime:detection}';
+    const RX_SLA_FOR_IMPS_PAYOUT                = self::PREFIX . 'rx_sla_for_imps_payout';
     const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
     const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
@@ -86,6 +87,7 @@ class ConfigKey
         self::HITACHI_NEW_URL_ENABLED,
         self::PAYSECURE_BLACKLISTED_MCCS,
         self::DOWNTIME_THROTTLE,
+        self::RX_SLA_FOR_IMPS_PAYOUT,
     ];
 
     public static function isSensitive(string $key)

@@ -336,7 +336,7 @@ final class FactoryData
             'network' => 'Visa',
             'type' => 'credit',
             'country' => 'IN',
-            'issuer' => 'SBI',
+            'issuer' => 'SBIN',
             'trivia' => $faker->sentence,
         ]);
 

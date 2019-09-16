@@ -512,6 +512,11 @@ class Entity extends Base\PublicEntity
         return $this->payment->getMethod();
     }
 
+    public function getGatewayRefunded()
+    {
+        $this->getAttribute(self::GATEWAY_REFUNDED);
+    }
+
     protected function getAcquirerDataAttribute()
     {
         $acquirerData = [];
@@ -759,7 +764,7 @@ class Entity extends Base\PublicEntity
         $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
     }
 
-    public function setReference1(string $value)
+    public function setReference1(string $value = null)
     {
         $this->setAttribute(self::REFERENCE1, $value);
     }

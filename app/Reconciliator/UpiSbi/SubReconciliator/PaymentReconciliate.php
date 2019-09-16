@@ -13,11 +13,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * @see https://drive.google.com/drive/u/0/folders/0B1kf6HOmx7JBTmMzTXgwQVRrNm8
      */
 
-    const ORDER_NUMBER       = 'order_no';
-    const TRANS_REF_NUMBER   = 'trans_ref_no';
-    const TRANSACTION_STATUS = 'transaction_status';
-    const TRANSACTION_AMOUNT = 'transaction_amount';
+    const ORDER_NUMBER          = 'order_no';
+    const TRANS_REF_NUMBER      = 'trans_ref_no';
+    const TRANSACTION_STATUS    = 'transaction_status';
+    const TRANSACTION_AMOUNT    = 'transaction_amount';
+    const PAYER_VIRTUAL_ACCOUNT = 'payer_virtual_account';
+    const PAYEE_VIRTUAL_ACCOUNT = 'payee_virtual_account';
 
+    const BLACKLISTED_COLUMNS = [
+        self::PAYEE_VIRTUAL_ACCOUNT,
+        self::PAYER_VIRTUAL_ACCOUNT,
+    ];
     protected function getPaymentId(array $row)
     {
         return $row[self::ORDER_NUMBER];

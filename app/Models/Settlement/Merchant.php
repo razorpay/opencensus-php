@@ -40,6 +40,7 @@ class Merchant
     protected $logging;
     protected $mode;
     protected $env;
+    protected $merchantSettleToPartner;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
@@ -48,7 +49,11 @@ class Merchant
 
     protected $app;
 
-    public function __construct($merchant, $channel, $repo = null, $logging = false)
+    public function __construct($merchant,
+                                $channel,
+                                $repo = null,
+                                $logging = false,
+                                array $merchantSettleToPartner = [])
     {
         $this->app = App::getFacadeRoot();
 
@@ -62,8 +67,10 @@ class Merchant
 
         $this->trace = $this->app['trace'];
 
-        // Get merchant bank account
-        $this->attachMerchantBankAccount();
+        $this->merchantSettleToPartner = $merchantSettleToPartner;
+
+        // Get settlement bank account
+        $this->attachSettlementBankAccount();
 
         $this->logging = $logging;
 
@@ -528,7 +535,6 @@ class Merchant
 
         $fundTransferAttempt->source()->associate($source);
 
-
         $initiateAt = ($initiateAt ?: Carbon::now(Timezone::IST)->getTimestamp());
 
         $values = [
@@ -579,12 +585,15 @@ class Merchant
     /**
      * Attaches bank account to merchant entity
      */
-    protected function attachMerchantBankAccount(): BankAccount\Entity
+    protected function attachSettlementBankAccount(): BankAccount\Entity
     {
         $mode = $this->ba->getMode();
 
+        $mid = $this->merchant->getId();
+
         if (($mode === Mode::TEST) and
-            ($this->merchant->bankAccount === null))
+            ($this->merchant->bankAccount === null) and
+            (isset($this->merchantSettleToPartner[$mid]) === false))
         {
             $ba = $this->attachTestBank($this->merchant);
         }
@@ -592,10 +601,18 @@ class Merchant
         {
             $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
-            if ($ba === null)
+            if ($ba === null and isset($this->merchantSettleToPartner[$mid]) === false)
             {
                 throw new Exception\LogicException(
-                    'Merchant bank account not found');
+                    'Settling bank account not found');
+            }
+            else
+            {
+                if(isset($this->merchantSettleToPartner[$mid]) === true)
+                {
+                    $partnerBankAccountId = $this->merchantSettleToPartner[$mid];
+                    $ba = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+                }
             }
         }
 

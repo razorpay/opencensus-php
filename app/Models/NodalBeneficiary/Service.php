@@ -15,7 +15,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::UPDATE_NODAL_BENEFICIARY, $input);
 
-        $nodalBeneficiary = $this->core()->update($input);
+        $nodalBeneficiary = $this->core()->updateNodalBeneficiaryWithBankAccount($input);
 
         return $nodalBeneficiary->toArrayAdmin();
     }

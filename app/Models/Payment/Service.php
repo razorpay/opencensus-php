@@ -1896,12 +1896,16 @@ class Service extends Base\Service
             $card = $payment->card;
             $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
 
-            $payload['card'] = [
+            $cardDetails = $card->toArrayPublic();
+
+            $cardFormatted = [
                 'number'  => '**** **** **** ' . $card->getLast4(),
                 'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
                 'network' => $card->getNetworkCode(),
                 'color'   => $card->getNetworkColorCode()
             ];
+
+            $payload['card'] = array_merge($cardDetails, $cardFormatted);
         }
 
         if ($payment->hasInvoice() === true)

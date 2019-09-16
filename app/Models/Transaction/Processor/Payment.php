@@ -2,15 +2,11 @@
 
 namespace RZP\Models\Transaction\Processor;
 
-use Carbon\Carbon;
 use RZP\Diag\EventCode;
-use RZP\Models\Pricing;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
-use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseCollection;
 use RZP\Models\Payment as PaymentEntity;
@@ -56,6 +52,8 @@ class Payment extends Base
             $customProperties);
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     private function checkAndSetTxnReconciliation()

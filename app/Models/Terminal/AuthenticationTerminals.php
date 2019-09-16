@@ -241,5 +241,47 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
         ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CARD_FSS,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::AMEX,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::SHARP,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::SHARP,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::SHARP,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::OTP,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::SHARP,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::IVR,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
     ];
 }

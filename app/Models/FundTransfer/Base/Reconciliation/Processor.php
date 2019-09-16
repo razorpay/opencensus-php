@@ -102,9 +102,9 @@ abstract class Processor extends Base\Core
         return $summary;
     }
 
-    public function startReconciliation($data): array
+    public function startReconciliation($data, $reconcileFile = null): array
     {
-        $summary = $this->repo->transaction(function() use ($data)
+        $summary = $this->repo->transaction(function() use ($data, $reconcileFile)
         {
             try
             {
@@ -114,7 +114,7 @@ abstract class Processor extends Base\Core
                     // in case of file based channel and it will be FTA
                     // entity in case of API based channel
 
-                    $entity = $this->reconcileEntity($row);
+                    $entity = $this->reconcileEntity($row, $reconcileFile);
 
                     if ($entity === null)
                     {
@@ -157,13 +157,13 @@ abstract class Processor extends Base\Core
         return $summary;
     }
 
-    protected function reconcileEntity($row)
+    protected function reconcileEntity($row, $reconcileFile = null)
     {
         $this->trace->info(TraceCode::VERIFY_FTA_ROW, ['row' => $row]);
 
         $rowProcessorNamespace = $this->getRowProcessorNamespace($row);
 
-        $fta = (new $rowProcessorNamespace($row))->process();
+        $fta = (new $rowProcessorNamespace($row, $reconcileFile))->process();
 
         return $fta;
     }
