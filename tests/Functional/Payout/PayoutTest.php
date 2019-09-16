@@ -54,6 +54,8 @@ class PayoutTest extends TestCase
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
 
+        $this->fixtures->on('live')->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
         $this->fixtures->on('live')->create(
             'fund_account',
             [
@@ -1156,6 +1158,12 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByContactId()
     {
+        $this->fixtures->create('contact', [
+            'id' => '1000010contact', 'email' => 'test@test5.com',
+            'contact' => '8888888888', 'name' => 'test user',
+            'type' => 'customer'
+        ]);
+
         $this->fixtures->edit(
             'fund_account',
             '100000000000fa',
