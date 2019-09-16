@@ -18,7 +18,7 @@ export default class AdvancedForm extends React.PureComponent {
 
     this.state = {
       disableSubmit: false,
-      hasQuantity: typeof field.quantity_available !== 'undefined',
+      isStockSet: typeof field.stock !== 'undefined',
     };
 
     this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
@@ -40,36 +40,36 @@ export default class AdvancedForm extends React.PureComponent {
     this.props.onSaveForm(formData, this.fieldType);
   };
 
-  toggleAddQuantity = data => {
+  toggleAddStock = data => {
     this.setState({
-      hasQuantity: !this.state.hasQuantity,
+      isStockSet: !this.state.isStockSet,
     });
   };
 
-  get FIELD_availableQuantity() {
-    const { hasQuantity } = this.state;
-    const quantityAvailable = this.props.field.quantity_available || '';
+  get FIELD_availableStock() {
+    const { isStockSet } = this.state;
+    const stock = this.props.field.stock || '';
 
     return (
       <Input.Radio
-        class="Input--hasQuantity Input--vTop"
+        class="Input--isStockSet Input--vTop"
         label={() => (
           <React.Fragment>
             Units Available
             <div class="modal-description">in stock</div>
           </React.Fragment>
         )}
-        onChange={this.toggleAddQuantity}
+        onChange={this.toggleAddStock}
         options={[
           'Unlimited',
           {
             label: (
-              <div class="Input--quantity">
+              <div class="Input--stock">
                 <span>Limited</span>
-                {hasQuantity && (
+                {isStockSet && (
                   <Input
-                    name="quantity_available"
-                    defaultValue={quantityAvailable}
+                    name="stock"
+                    defaultValue={stock}
                     autoFocus
                     step="1"
                     pattern="\d+"
@@ -79,7 +79,7 @@ export default class AdvancedForm extends React.PureComponent {
             ),
           },
         ]}
-        defaultValue={hasQuantity}
+        defaultValue={isStockSet}
       />
     );
   }
@@ -258,19 +258,19 @@ export default class AdvancedForm extends React.PureComponent {
       // Same Advanced Form for both fixed_price and fixed_price_optional
       case FIELD_TYPES.fixed_price.key:
       case FIELD_TYPES.fixed_price_optional.key:
-        return this.FIELD_availableQuantity;
+        return this.FIELD_available;
 
       case FIELD_TYPES.dynamic_price.key:
         return (
           <React.Fragment>
-            {this.FIELD_availableQuantity}
+            {this.FIELD_availableStock}
             {this.FIELD_amountLimits}
           </React.Fragment>
         );
       case FIELD_TYPES.multiple_purchase.key:
         return (
           <React.Fragment>
-            {this.FIELD_availableQuantity}
+            {this.FIELD_availableStock}
             {this.FIELD_purchaseLimits}
           </React.Fragment>
         );
