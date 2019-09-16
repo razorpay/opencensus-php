@@ -143,10 +143,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   componentDidMount() {
-    // Insert script in local
+    // Load color.js
+    let script = document.createElement('script');
+    script.src = 'https://cdn.razorpay.com/static/assets/color.js';
+    document.head.appendChild(script);
 
-    const script = document.createElement('script');
-
+    // Insert wysiwyg script in dashboard to reuse shell and styles as much possible
+    script = document.createElement('script');
     script.onload = () => {
       // Init the Svelte App in wysiwyg-root;
       this.setState({
@@ -162,7 +165,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     // script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
     script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js'; // TODO: Only for Beta testing
-
     document.head.appendChild(script);
 
     document
