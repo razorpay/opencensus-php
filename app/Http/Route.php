@@ -3390,6 +3390,13 @@ final class Route
         'excel_store_page_by_url',
     ];
 
+    const FAILURE_EVENTS_INTERCEPTOR_ROUTES = [
+        'user_register',
+        'merchant_edit_pre_signup_details',
+        'user_confirm_by_data',
+        'merchant_instant_activation_post',
+    ];
+
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
@@ -3693,6 +3700,11 @@ final class Route
         if (in_array($name, self::EXCEL_STORE_PROXY_ROUTES, true) === true)
         {
             $route->middleware('excel_store_proxy');
+        }
+
+        if (in_array($name, self::FAILURE_EVENTS_INTERCEPTOR_ROUTES, true) === true)
+        {
+            $route->middleware('failure_interceptor');
         }
     }
 
