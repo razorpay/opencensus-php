@@ -13,17 +13,19 @@ class CardType
             Type::CREDIT    => 'C',
             Type::DEBIT     => 'D',
             Type::UNKNOWN   => 'C',
+            Type::PREPAID   => 'C',
         ],
         Acquirer::FSS   => [
             Type::CREDIT    => 'CP',
             Type::DEBIT     => 'DP',
             Type::UNKNOWN   => 'CP',
+            Type::PREPAID   => 'C',
         ],
         Acquirer::SBI => [
-            Type::CREDIT        => 'C',
-            Type::DEBIT         => 'D',
-            Type::RUBAY_DEBIT   => 'RDC',
-            Type::UNKNOWN       => 'C',
+            Type::CREDIT    => 'C',
+            Type::DEBIT     => 'D',
+            Type::UNKNOWN   => 'C',
+            Type::PREPAID   => 'C',
         ],
     ];
 

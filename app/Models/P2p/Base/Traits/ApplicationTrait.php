@@ -4,6 +4,8 @@ namespace RZP\Models\P2p\Base\Traits;
 
 use Razorpay\Trace\Logger;
 
+use RZP\Constants\Mode;
+use RZP\Constants\Environment;
 use RZP\Base\RepositoryManager;
 use RZP\Models\P2p\Base\Libraries;
 use Illuminate\Contracts\Foundation\Application;
@@ -66,6 +68,17 @@ trait ApplicationTrait
     protected function environment()
     {
         return $this->app->environment();
+    }
+
+    protected function isProductionAndLive()
+    {
+        return (($this->mode() === Mode::LIVE) and
+                ($this->environment() === Environment::PRODUCTION));
+    }
+
+    protected function isUnitTest()
+    {
+        return $this->app->runningUnitTests();
     }
 
     protected function repo(): RepositoryManager

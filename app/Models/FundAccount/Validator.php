@@ -4,6 +4,7 @@ namespace RZP\Models\FundAccount;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Models\Feature;
 
 /**
@@ -19,29 +20,25 @@ class Validator extends Base\Validator
     /**
      * 1lac in paise
      */
-    const MAX_VPA_AMOUNT = 10000000;
+    const MAX_UPI_AMOUNT = 10000000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID  => 'sometimes|public_id',
-        Entity::CONTACT_ID   => 'sometimes|public_id',
-        Entity::ACCOUNT_TYPE => 'required|string|custom',
-        Entity::VPA          => 'sometimes|associative_array',
-        Entity::BANK_ACCOUNT => 'sometimes|associative_array',
-        Entity::CARD         => 'sometimes|associative_array|custom',
+        Entity::CUSTOMER_ID                         => 'sometimes|public_id',
+        Entity::CONTACT_ID                          => 'sometimes|public_id',
+        Entity::ACCOUNT_TYPE                        => 'required|string|custom',
+        Entity::VPA                                 => 'sometimes|associative_array',
+        Entity::BANK_ACCOUNT                        => 'sometimes|associative_array',
+        Entity::CARD                                => 'sometimes|associative_array|custom',
+        // This is required to even create the card because we need to fill a
+        // dummy cvv and that requires network and that requires card number.
+        // The other card details are validated as part of card creation.
+        Entity::CARD . '.' . Card\Entity::NUMBER    => 'required_with:card|numeric|luhn|digits_between:12,19',
+        Entity::IDEMPOTENCY_KEY                     => 'sometimes|string',
     ];
 
     protected static $beforeCreateRules = [
         Entity::CONTACT_ID  => 'required_without:customer_id|public_id',
         Entity::CUSTOMER_ID => 'required_without:contact_id|public_id',
-    ];
-
-    /**
-     * We allow only card for public fa creation route
-     *
-     * @var array
-     */
-    protected static $publicCreateRules = [
-        Entity::CARD    => 'required|associative_array'
     ];
 
     protected static $editRules = [
@@ -95,6 +92,9 @@ class Validator extends Base\Validator
         // through their frontend itself and the card details don't go through their server.
         // In case of non-public auth, the card details might go through their servers and hence
         // S2S feature needs to be enabled to ensure that the the merchant is PCI-DSS compliant.
+        //
+        // But, of course, it's possible that the merchant takes the card details onto their server
+        // and makes a public auth API call to us from server. Nothing that we can do about it.
         //
         if ((app('basicauth')->isPublicAuth() === false) and
             ($merchant->isFeatureEnabled(Feature\Constants::S2S) === false))

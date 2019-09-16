@@ -57,6 +57,10 @@ class ScroogeReconciliate extends Base\Core
 
     const FAILURE_COUNT             = 'failure_count';
 
+    const CURRENT_SUCCESS_COUNT     = 'current_success_count';
+    const CURRENT_FAILURE_COUNT     = 'current_failure_count';
+    const CURRENT_PROCESSED_COUNT   = 'current_processed_count';
+
     /**
      * @return string
      */
@@ -189,9 +193,12 @@ class ScroogeReconciliate extends Base\Core
         $this->trace->info(
             TraceCode::REFUND_RECON_QUEUE_SCROOGE_DISPATCH_METADATA,
             [
-                self::TOTAL_REFUNDS => count($data),
-                self::TOTAL_CHUNKS  => count($chunks),
-                self::BATCH_ID      => $batch->getId(),
+                self::TOTAL_REFUNDS             => count($data),
+                self::TOTAL_CHUNKS              => count($chunks),
+                self::BATCH_ID                  => $batch->getId(),
+                self::CURRENT_SUCCESS_COUNT     => $batch->getSuccessCount(),
+                self::CURRENT_FAILURE_COUNT     => $batch->getFailureCount(),
+                self::CURRENT_PROCESSED_COUNT   => $batch->getProcessedCount(),
             ]
         );
 

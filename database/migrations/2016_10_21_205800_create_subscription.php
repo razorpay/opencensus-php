@@ -80,6 +80,9 @@ class CreateSubscription extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->string(Entity::SOURCE, 32)
+                  ->nullable();
+
             $table->text(Entity::NOTES);
 
             $table->integer(Entity::CANCEL_AT)
@@ -114,6 +117,12 @@ class CreateSubscription extends Migration
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
+            $table->string(Entity::CUSTOMER_NAME, 255)
+                  ->nullable();
+
+            $table->string(Entity::CUSTOMER_CONTACT, 255)
+                  ->nullable();
+
             $table->index(Entity::CANCEL_AT);
             $table->index(Entity::START_AT);
             $table->index(Entity::END_AT);
@@ -123,6 +132,7 @@ class CreateSubscription extends Migration
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::CUSTOMER_EMAIL);
+            $table->index(Entity::CUSTOMER_CONTACT);
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
             $table->index([Entity::STATUS, Entity::START_AT]);
 

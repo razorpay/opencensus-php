@@ -83,11 +83,18 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::PRODUCT_REF_NUMBER]);
 
-        $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->repo
+                                ->findByPaymentIdAndActionOrFail(
+                                    $content[ResponseFields::PRODUCT_REF_NUMBER],
+                                    Action::AUTHORIZE);
+
+        $this->saveCallbackResponse($content, $gatewayPayment);
 
         $this->checkCallbackStatus($content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -153,14 +160,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function saveCallbackResponse($content)
+    protected function saveCallbackResponse($content, $gatewayPayment)
     {
         $content[NetbankingEntity::RECEIVED] = true;
-
-        $gatewayPayment = $this->repo
-                               ->findByPaymentIdAndActionOrFail(
-                                   $content[ResponseFields::PRODUCT_REF_NUMBER],
-                                   Action::AUTHORIZE);
 
         $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
@@ -170,6 +172,11 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $request = $this->getVerifyRequestData($verify);
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $request['options']['verify'] = $this->getCaInfo();
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -373,6 +380,13 @@ class Gateway extends Base\Gateway
         assert($this->mode === Mode::TEST);
 
         return $this->config['test_hash_secret'];
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
+
+        return $clientCertPath;
     }
 }
 

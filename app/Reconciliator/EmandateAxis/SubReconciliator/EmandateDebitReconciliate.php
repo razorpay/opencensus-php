@@ -31,6 +31,10 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     const STATUS_FAILURE  = 'failure';
     const STATUS_REJECTED = 'rejected';
 
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_CUSTOMER_NAME,
+    ];
+
     protected $allowedStatuses = [
         self::STATUS_SUCCESS,
         self::STATUS_FAILURE,
@@ -53,7 +57,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         return null;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo
                     ->netbanking
@@ -124,7 +128,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         return StatusCode::getEmandateDebitErrorDesc($errorDescription);
     }
 
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
     }

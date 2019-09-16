@@ -52,7 +52,7 @@ class Format
         self::CSV   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values',
                         'text/plain', 'inode/x-empty', 'application/octet-stream', 'application/pgp',
                         'text/x-Algol68'],
-        self::ENC   => ['application/octet-stream', 'application/pgp', 'application/zlib'],
+        self::ENC   => ['application/octet-stream', 'application/pgp', 'application/zlib', 'application/x-object'],
         self::JPG   => ['image/jpeg', 'application/pgp'],
         self::JPEG  => ['image/jpeg', 'application/pgp'],
         self::PDF   => ['application/pdf', 'application/x-pdf', 'application/pgp'],
@@ -62,7 +62,7 @@ class Format
         // Adding all possible type of mime type as current library we are using to create xlsx file will not take
         // care of mime
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
-                        'application/octet-stream', 'text/plain', 'application/zlib', 'image/x-portable-pixmap'],
+                        'application/octet-stream', 'text/plain', 'application/zlib', 'image/x-portable-pixmap',],
         // `text/plain` is being added here because HDFC sends recon CSV files with XLS extension
         // `application/CDFV2-unknown` is being sent as mime_type for FirstData recon files
         self::XLS   => ['application/excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -77,7 +77,7 @@ class Format
         self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
         self::XML   => ['application/xml'],
         self::RPT   => ['text/plain'],
-        self::DAT   => ['text/plain'],
+        self::DAT   => ['text/plain', 'application/octet-stream'],
         self::NONE  => ['text/plain'],
     ];
 

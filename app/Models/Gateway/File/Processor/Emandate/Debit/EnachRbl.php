@@ -72,7 +72,7 @@ class EnachRbl extends Base
         return $rows;
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(array $data)
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 

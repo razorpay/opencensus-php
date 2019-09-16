@@ -3,11 +3,13 @@
 namespace RZP\Models\P2p\Device;
 
 use RZP\Exception;
+use RZP\Events\P2p;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
-
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Beneficiary;
+use RZP\Models\P2p\Transaction;
 
 /**
  * @property Core $core
@@ -90,6 +92,9 @@ class Processor extends Base\Processor
         // We now can put device in context, which will be used in device token
         $this->context()->setDevice($device, true);
 
+        // Now we can fire the event of device verification completed
+        $this->app['events']->fire(new P2p\DeviceVerificationCompleted($this->context(), $device));
+
         // Now we will create the deviceToken, which will have gateway and CL data
         $deviceTokenInput = array_only($deviceData, [
             DeviceToken\Entity::GATEWAY_DATA,
@@ -160,9 +165,10 @@ class Processor extends Base\Processor
         $this->repo()->transaction(
             function()
             {
-                (new Vpa\Core)->delete();
-                (new BankAccount\Core)->delete();
-                (new DeviceToken\Core)->delete();
+                (new Vpa\Core)->deleteAll();
+                (new BankAccount\Core)->deleteAll();
+                (new DeviceToken\Core)->deleteAll();
+                (new Beneficiary\Core)->deleteAll();
             });
 
         return [

@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Kotak\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Base\Action;
 use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -13,6 +14,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      *******************/
     const COLUMN_INT_PAYMENT_ID = 'int_payment_id';
 
+    const BLACKLISTED_COLUMNS = [
+        'contact_no',
+        'customer_name',
+    ];
+
     protected function getPaymentId(array $row)
     {
         $intPaymentId = $row[self::COLUMN_INT_PAYMENT_ID] ?? null;
@@ -21,7 +27,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         try
         {
-            $paymentId = $this->repo->netbanking->findByIntPaymentId($intPaymentId)->getPaymentId();
+            $gatewayPayment = $this->repo->netbanking->findByVerificationIdAndAction($intPaymentId, Action::AUTHORIZE);
+
+            if ($gatewayPayment === null)
+            {
+                $gatewayPayment = $this->repo->netbanking->findByIntPaymentId($intPaymentId);
+            }
+
+            $paymentId = $gatewayPayment->getPaymentId();
         }
         catch (DbQueryException $ex)
         {

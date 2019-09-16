@@ -48,6 +48,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::PHONEPE)
                 ->default(0);
 
+            $table->tinyInteger(Methods::PAYPAL)
+                ->default(0);
+
             $table->tinyInteger(Methods::PAYZAPP)
                   ->default(0);
 
@@ -82,6 +85,13 @@ class CreateMerchantBanks extends Migration
                   ->default(1);
 
             $table->tinyInteger(Methods::DEBIT_CARD)
+                  ->default(1);
+
+            $table->integer(Methods::CARD_SUBTYPE)
+                  ->unsigned()
+                  ->default(1);
+
+            $table->tinyInteger(Methods::PREPAID_CARD)
                   ->default(1);
 
             $table->tinyInteger(Methods::UPI)

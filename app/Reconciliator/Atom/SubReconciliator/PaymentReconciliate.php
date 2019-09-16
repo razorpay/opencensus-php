@@ -28,12 +28,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $paymentId;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }
 
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         if (isset($row[self::COLUMN_AMOUNT]) === true)
         {

@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -19,6 +20,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Jobs\Invoice\BatchJob as InvoiceBatchJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
@@ -80,7 +82,8 @@ class Core extends Base\Core
         Subscription\Entity $subscription = null,
         Batch\Entity $batch = null,
         Base\Entity $externalEntity = null,
-        string $batchId = null): Entity
+        string $batchId = null,
+        Order\Entity $order = null): Entity
     {
         $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
 
@@ -118,11 +121,12 @@ class Core extends Base\Core
             unset($input[Entity::SUBSCRIPTION_ID]);
         }
 
-        $batchIdOrBatch = $batchId === null ? $batch:$batchId;
+        $batchIdOrBatch = $batchId === null ? $batch : $batchId;
 
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
                         ->setExternalEntity($externalEntity)
+                        ->setOrder($order)
                         ->setBatch($batchIdOrBatch)
                         ->setShouldFailOnDuplicateInternalRef($shouldFailOnDuplicateInternalRef)
                         ->generate($input);
@@ -134,7 +138,24 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $pendingDispatch = InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            $response = 'off';
+
+            if (empty($batchIdOrBatch) === false)
+            {
+                $response = $this->app->razorx->getTreatment(
+                    $merchant->getId(),
+                    Merchant\RazorxTreatment::CHANGE_QUEUE_BATCH_INVOICE,
+                    $this->mode);
+            }
+
+            if ((empty($batchIdOrBatch) === false) and ($response === 'on'))
+            {
+                $pendingDispatch = InvoiceBatchJob::dispatch($this->mode, InvoiceBatchJob::ISSUED, $invoice->getId());
+            }
+            else
+            {
+                $pendingDispatch = InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            }
 
             // Internal flow (e.g. via subscription) requires delay to accommodate for time in wrapping txn commit
             if ($invoice->hasSubscription())
@@ -162,7 +183,7 @@ class Core extends Base\Core
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         //
-        // Once basic fill by edit call on entity is done, Based on invoice status,
+        // Once basic fill by edit call on entity is done, based on invoice status,
         // it calls either updateDraftInvoice|updateIssuedInvoice.
         //
         // This was done to maintain flow clean. Because if not now, there are chances
@@ -206,7 +227,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function issue(Entity $invoice, Merchant\Entity $merchant): Entity
+    public function issue(Entity $invoice, Merchant\Entity $merchant, $batchId = null): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_ISSUE_REQUEST,
@@ -225,7 +246,25 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+        $response = 'off';
+
+        if (empty($batchId) === false)
+        {
+            $response = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::CHANGE_QUEUE_BATCH_INVOICE,
+                $this->mode);
+        }
+
+        // route batch jobs to batch invoice queue
+        if ((empty($batchId) === false) and ($response === 'on'))
+        {
+            InvoiceBatchJob::dispatch($this->mode, InvoiceBatchJob::ISSUED, $invoice->getId());
+        }
+        else
+        {
+            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+        }
 
         return $invoice;
     }
@@ -490,7 +529,12 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
 
-        InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
+        $merchant = $invoice->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::INVOICE_NO_EXPIRY_EMAIL) === false)
+        {
+            InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
+        }
 
         // Sends expiration mails to customer asynchronously
         $this->eventService->fire('api.invoice.expired', [$invoice]);
@@ -783,11 +827,15 @@ class Core extends Base\Core
      *
      * @param  Batch\Entity $batch
      */
-    public function cancelInvoicesOfBatch(Batch\Entity $batch)
+    public function cancelInvoicesOfBatch(array $batch)
     {
         (new Validator)->validateCancelInvoicesOfBatch($batch);
 
-        InvoiceBatchCancelJob::dispatch($this->mode, $batch->getId());
+        $batchId = $batch[Batch\Entity::ID];
+
+        Batch\Entity::verifyIdAndStripSign($batchId);
+
+        InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT]);
     }
 
     /**

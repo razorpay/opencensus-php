@@ -23,9 +23,31 @@ class Service extends Base\Service
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input)
+    private function beforeCreate(array $input)
     {
-        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, null, null, $input);
+        $preCreateHooks = new PreCreateHook($input);
+
+        $preCreateHooks->process();
+
+        return;
+    }
+
+    private function afterCreate(array $input, Entity $order): Entity
+    {
+        $postCreateHooks = new PostCreateHook($input, $order);
+
+        $postCreateHooks->process();
+
+        return $order;
+    }
+
+    private function processCreate(array $input): Entity
+    {
+        $properties = $input;
+
+        $properties['user_agent'] = $this->app['request']->header('User-Agent');
+
+        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, null, null, $properties);
 
         try
         {
@@ -45,6 +67,19 @@ class Service extends Base\Service
 
             throw $ex;
         }
+
+        return $order;
+    }
+
+    public function create(array $input)
+    {
+        $this->beforeCreate($input);
+
+        $orderInput = (new Core())->getInputWithoutExtraParams($input);
+
+        $order = $this->processCreate($orderInput);
+
+        $order = $this->afterCreate($input, $order);
 
         return $order->toArrayPublic();
     }

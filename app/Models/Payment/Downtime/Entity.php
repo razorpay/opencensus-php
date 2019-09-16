@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Payment\Method;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as EntityConstants;
 
 class Entity extends Base\PublicEntity
@@ -102,6 +103,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::INSTRUMENT,
+        self::STATUS,
     ];
 
     protected $defaults = [
@@ -141,6 +143,11 @@ class Entity extends Base\PublicEntity
         $array[self::INSTRUMENT] = array_filter($instrument);
     }
 
+    public function setPublicStatusAttribute(array & $array)
+    {
+        $array[self::STATUS] = $this->getStatusByTime();
+    }
+
     // ================= Setters ================
 
     public function setEndNow()
@@ -168,5 +175,34 @@ class Entity extends Base\PublicEntity
     public function getNetwork()
     {
         return $this->getAttribute(self::NETWORK);
+    }
+
+    public function getBegin()
+    {
+        return $this->getAttribute(self::BEGIN);
+    }
+
+    public function getEnd()
+    {
+        return $this->getAttribute(self::END);
+    }
+
+    public function getStatusByTime()
+    {
+        $now   = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $begin = $this->getBegin();
+
+        $end   = $this->getEnd();
+
+        if (($end === null) or
+            ($end > $now))
+        {
+            return (($begin <= $now) ? Status::STARTED : Status::SCHEDULED);
+        }
+        else
+        {
+            return Status::RESOLVED;
+        }
     }
 }

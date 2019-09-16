@@ -19,6 +19,26 @@ class VpaController extends Controller
         return $this->response($response);
     }
 
+    public function createHandle()
+    {
+        $input = $this->request()->all();
+
+        $response = (new P2p\Vpa\Handle\Service)->add($input);
+
+        return $this->response($response);
+    }
+
+    public function updateHandle()
+    {
+        $input = $this->request()->all();
+
+        $input[P2p\Vpa\Handle\Entity::CODE] = $this->request()->route(P2p\Vpa\Handle\Entity::CODE);
+
+        $response = (new P2p\Vpa\Handle\Service)->update($input);
+
+        return $this->response($response);
+    }
+
     public function initiateCreate()
     {
         $input = $this->request()->all();
@@ -57,10 +77,22 @@ class VpaController extends Controller
 
     public function assignBankAccount()
     {
+        $input = $this->request()->all();
+
         $input[Entity::ID] = $this->request()->route('vpa_id');
-        $input[Entity::BANK_ACCOUNT_ID] = $this->request()->route('ba_id');
 
         $response = $this->service->assignBankAccount($input);
+
+        return $this->response($response);
+    }
+
+    public function setDefault()
+    {
+        $input = $this->request()->all();
+
+        $input[Entity::ID] = $this->request()->route('vpa_id');
+
+        $response = $this->service->setDefault($input);
 
         return $this->response($response);
     }

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Models\Merchant;
+use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -67,6 +68,14 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        // Resellers cannot set settle_to_partner attribute sent in the request
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
         $this->startTest();
     }
 
@@ -78,6 +87,13 @@ class PartnerConfigTest extends OAuthTestCase
     }
 
     public function testAddingConfigForPlatformPartnerUsingAppId()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testAddingInvalidConfigForPlatformPartner()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
@@ -265,10 +281,19 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        // Resellers cannot set settle_to_partner attribute sent in the request
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
         $this->fixtures->create(
             'partner_config',
             [
                 'id'                     => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'            => 'application',
                 'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'commissions_enabled'    => 1,
@@ -285,9 +310,127 @@ class PartnerConfigTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testEditingOverriddenConfig()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                   => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'          => 'merchant',
+                'entity_id'            => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'          => 'application',
+                'origin_id'            => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'commissions_enabled'  => 1,
+                'implicit_plan_id'     => '10ZeroPricingP',
+                'explicit_plan_id'     => '10ZeroPricingP',
+                'explicit_refund_fees' => 1,
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Unit test - Merchant\Core::getPartnerBankAccountIdsForSubmerchants()
+     *
+     * Asserts that the function returns the expected array when -
+     *
+     * 1. Partner config is defined only for an application
+     * 2. Partner configs are defined for both - application and submerchant
+     * 3. Partner configs are defined for both - application and submerchant and the submerchant config has
+     * settle_to_flag set to false
+     */
+    public function testSettleToPartner()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $partnerBankAccount = $this->getDbEntity(
+            'bank_account',
+            [
+                'merchant_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            ]);
+
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+                'entity_id'       => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            ]
+        );
+
+        $this->assertNotNull($partnerBankAccount);
+
+        $merchantCore = (new Merchant\Core);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            null,
+            [Entity::SETTLE_TO_PARTNER => true]);
+
+        $merchantIds = [
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+        ];
+
+        $results = $merchantCore->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        $expectedResult = [
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID   => $partnerBankAccount->getId(),
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2 => $partnerBankAccount->getId(),
+        ];
+
+        $this->assertEquals($expectedResult, $results);
+
+        // Overridden config with settle to partner as true
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            [Entity::SETTLE_TO_PARTNER => true]);
+
+        // Overridden config with settle to partner as false
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+            [Entity::SETTLE_TO_PARTNER => false]);
+
+        $results = $merchantCore->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        $expectedResult = [
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID => $partnerBankAccount->getId(),
+        ];
+
+        $this->assertEquals($expectedResult, $results);
+    }
+
     public function testEditingConfigToSubventionModel()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        // Resellers cannot set settle_to_partner attribute sent in the request
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
 
         $this->fixtures->create(
             'partner_config',

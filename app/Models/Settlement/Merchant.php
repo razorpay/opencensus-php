@@ -8,14 +8,15 @@ use Carbon\Carbon;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Constants\Environment;
 use RZP\Models\Settlement\Details as SetlDetails;
-use RZP\Models\FundAccount\Type as FundAccountType;
 use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
@@ -37,15 +38,24 @@ class Merchant
     protected $setlDetailAmounts;
     protected $scheduleTasks;
     protected $logging;
+    protected $mode;
+    protected $env;
+    protected $merchantSettleToPartner;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
     protected $ba;
 
-    public function __construct($merchant, $channel, $repo = null, $logging = false)
+    protected $app;
+
+    public function __construct($merchant,
+                                $channel,
+                                $repo = null,
+                                $logging = false,
+                                array $merchantSettleToPartner = [])
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
         $this->merchant = $merchant;
 
@@ -53,28 +63,34 @@ class Merchant
 
         $this->repo = $repo;
 
-        $this->ba = $app['basicauth'];
+        $this->ba = $this->app['basicauth'];
 
-        $this->trace = $app['trace'];
+        $this->trace = $this->app['trace'];
 
-        // Get merchant bank account
-        $this->attachMerchantBankAccount();
+        $this->merchantSettleToPartner = $merchantSettleToPartner;
+
+        // Get settlement bank account
+        $this->attachSettlementBankAccount();
 
         $this->logging = $logging;
+
+        $this->mode = $this->app['rzp.mode'];
+
+        $this->env = $this->app['env'];
     }
 
-    public function retryFailedSettlement(Settlement\Entity $setl)
+    public function retryFailedSettlement(Settlement\Entity $setl, array $merchantSettleToPartner)
     {
         $this->setl = $setl;
 
-        $this->updateSettlementEntity();
+        $this->updateSettlementEntity($merchantSettleToPartner);
 
         $this->setl->incrementAttempts();
 
         $this->repo->saveOrFail($this->setl);
 
         // Create Settlement attempt entity
-        $this->createSettlementAttemptEntity();
+        $this->createSettlementAttemptEntity(null, $merchantSettleToPartner);
 
         return [$this->setl, $this->bankTransferAtpt];
     }
@@ -86,7 +102,8 @@ class Merchant
         $apiFee,
         $tax,
         $setlTime,
-        array $setlDetailAmounts): Entity
+        array $setlDetailAmounts,
+        array $merchantSettleToPartner): Entity
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
@@ -104,10 +121,10 @@ class Merchant
             $startTime = microtime(true);
         }
 
-        $this->repo->transaction(function()
+        $this->repo->transaction(function() use ($merchantSettleToPartner)
         {
             //create new settlement entity
-            $this->newSettlementEntity();
+            $this->newSettlementEntity($merchantSettleToPartner);
 
             // Create Settlement Details entity
             $this->createSettlementDetailsEntities();
@@ -146,13 +163,13 @@ class Merchant
         });
     }
 
-    public function createSettlementAttempt() : FundTransferAttempt\Entity
+    public function createSettlementAttempt($merchantSettleToPartner) : FundTransferAttempt\Entity
     {
         assert($this->setl->hasTransaction(), true);
 
         $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
 
-        $this->createSettlementAttemptEntity($initiateAt);
+        $this->createSettlementAttemptEntity($initiateAt, $merchantSettleToPartner);
 
         return $this->bankTransferAtpt;
     }
@@ -307,7 +324,7 @@ class Merchant
         return $setlDetailEntity;
     }
 
-    protected function newSettlementEntity()
+    protected function newSettlementEntity($merchantSettleToPartner)
     {
         $setl = (new Settlement\Entity)->generateId();
 
@@ -323,18 +340,51 @@ class Merchant
 
         $setl->merchant()->associate($this->merchant);
 
-        $setl->bankAccount()->associate($this->bankAccount);
+        $mid = $this->merchant->getId();
+
+        if (isset($merchantSettleToPartner[$mid]) === true)
+        {
+            $partnerBankAccountId = $merchantSettleToPartner[$mid];
+
+            $partnerBankAccount = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+
+            $setl->bankAccount()->associate($partnerBankAccount);
+        }
+        else
+        {
+            $setl->bankAccount()->associate($this->bankAccount);
+        }
+
+        // in case of test mode set settlement status to initiated
+        if ($this->doMockAttemptProcessed() === true)
+        {
+            $setl->setStatus(Status::INITIATED);
+        }
 
         $this->setl = $setl;
     }
 
-    protected function updateSettlementEntity()
+    protected function updateSettlementEntity(array $merchantSettleToPartner)
     {
         $setl = $this->setl;
 
-        // try the settlment with current merchant bank account as that might
+        $mid = $this->merchant->getId();
+
+        // add partner bank account to settlement entity if submerchant is settling to partner
+        // else try the settlment with current merchant bank account as that might
         // have been the reason for settlement failure
-        $setl->bankAccount()->associate($this->bankAccount);
+        if(isset($merchantSettleToPartner[$mid]) === true)
+        {
+            $partnerBankAccountId = $merchantSettleToPartner[$mid];
+
+            $partnerBankAccount = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+
+            $setl->bankAccount()->associate($partnerBankAccount);
+        }
+        else
+        {
+            $setl->bankAccount()->associate($this->bankAccount);
+        }
 
         // set the settlement status back to created, and other fields to null
         $setl->setStatus(Status::CREATED);
@@ -356,9 +406,98 @@ class Merchant
         $this->payout->batchFundTransfer()->dissociate();
     }
 
-    protected function createSettlementAttemptEntity(int $initiateAt = null)
+    /**
+     * creates attempt for the settlement
+     * if its run on test mode on prod then it'll also mock the bank response
+     * for success condition
+     *
+     * @param int|null $initiateAt
+     * @param array $merchantSettleToPartner
+     */
+    protected function createSettlementAttemptEntity(int $initiateAt = null, array $merchantSettleToPartner)
     {
-        $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt);
+
+        $customProperties = [
+            'channel'               => $this->channel,
+            'settlement_id'         => $this->setl->getId(),
+            'transaction_count'     => $this->txns ? $this->txns->count() : 0,
+            'settlement_amount'     => $this->setl->getAmount(),
+        ];
+
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::FTA_CREATION_INITIATED,
+            $this->setl,
+            null,
+            $customProperties);
+
+        $fta = $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt, $merchantSettleToPartner);
+
+        if ($this->doMockAttemptProcessed() === true)
+        {
+            $this->updateMockResponse($fta);
+        }
+    }
+
+    /**
+     * It'll check the condition for mocking FTA
+     * It depends on request mode and env
+     * currently we are also considering dev for testing purpose
+     *
+     * @return bool
+     */
+    protected function doMockAttemptProcessed(): bool
+    {
+        // adding dev for local testing purpose
+        // and enabling mocking attempt on on prod
+        if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION], true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * It'll set the mock data required for the FTA to get processed
+     * bank status code been set based on the channel used
+     * utr will be a random string
+     *
+     * @param FundTransferAttempt\Entity $fta
+     */
+    protected function updateMockResponse(FundTransferAttempt\Entity $fta)
+    {
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $channel = $fta->getChannel();
+
+        $status = $this->getStatusInstanceByChannel($channel);
+
+        // set the fist successful status
+        // in case of mock we have to set the only the success response
+        $bankStatusCode = array_keys($status::getSuccessfulStatus())[0];
+
+        $fta->setUtr($currentTimestamp . random_alphanum_string(6));
+
+        $fta->setStatus(FundTransferAttempt\Status::INITIATED);
+
+        $fta->setBankStatusCode($bankStatusCode);
+
+        $this->repo->saveOrFail($fta);
+    }
+
+    /**
+     * It'll return the status object back to the caller
+     *
+     * @param string $channel
+     * @return mixed
+     */
+    protected function getStatusInstanceByChannel(string $channel)
+    {
+        $class = 'RZP\\Models\\FundTransfer\\'
+        . ucfirst($channel)
+        . '\\Reconciliation\\Status';
+
+        return new $class();
     }
 
     protected function createPayoutAttemptEntity(int $initiateAt = null)
@@ -371,7 +510,8 @@ class Merchant
     protected function createFundTransferAttempt(
         Base\Entity $source,
         BankAccount\Entity $bankAccount,
-        int $initiateAt = null)
+        int $initiateAt = null,
+        $merchantSettleToPartner)
     {
         // TODO: this should be in fta core and should be using `create` function to do all this
 
@@ -379,9 +519,21 @@ class Merchant
 
         $fundTransferAttempt->merchant()->associate($this->merchant);
 
-        $fundTransferAttempt->source()->associate($source);
+        $mid = $this->merchant->getId();
 
-        $fundTransferAttempt->bankAccount()->associate($bankAccount);
+        if(isset($merchantSettleToPartner[$mid]) === true)
+        {
+            $partnerBankAccountId = $merchantSettleToPartner[$mid];
+            $partnerBankAccount = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+            $fundTransferAttempt->bankAccount()->associate($partnerBankAccount);
+
+        }
+        else
+        {
+            $fundTransferAttempt->bankAccount()->associate($bankAccount);
+        }
+
+        $fundTransferAttempt->source()->associate($source);
 
         $initiateAt = ($initiateAt ?: Carbon::now(Timezone::IST)->getTimestamp());
 
@@ -400,6 +552,7 @@ class Merchant
 
         $this->bankTransferAtpt = $fundTransferAttempt;
 
+        return $fundTransferAttempt;
         //TODO:: disabled fts flow for settlement
         //(new FundTransferAttempt\Core)->sendFTSFundTransferRequest($fundTransferAttempt, true);
     }
@@ -432,12 +585,15 @@ class Merchant
     /**
      * Attaches bank account to merchant entity
      */
-    protected function attachMerchantBankAccount(): BankAccount\Entity
+    protected function attachSettlementBankAccount(): BankAccount\Entity
     {
         $mode = $this->ba->getMode();
 
+        $mid = $this->merchant->getId();
+
         if (($mode === Mode::TEST) and
-            ($this->merchant->bankAccount === null))
+            ($this->merchant->bankAccount === null) and
+            (isset($this->merchantSettleToPartner[$mid]) === false))
         {
             $ba = $this->attachTestBank($this->merchant);
         }
@@ -445,10 +601,18 @@ class Merchant
         {
             $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
-            if ($ba === null)
+            if ($ba === null and isset($this->merchantSettleToPartner[$mid]) === false)
             {
                 throw new Exception\LogicException(
-                    'Merchant bank account not found');
+                    'Settling bank account not found');
+            }
+            else
+            {
+                if(isset($this->merchantSettleToPartner[$mid]) === true)
+                {
+                    $partnerBankAccountId = $this->merchantSettleToPartner[$mid];
+                    $ba = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+                }
             }
         }
 

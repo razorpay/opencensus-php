@@ -20,6 +20,7 @@ class ProviderCode
      * on the command line to check against
      * the spreadsheet
      */
+    const ABFSPAY            = 'abfspay';
     const AIRTEL             = 'airtel';
     const AIRTELPAYMENTSBANK = 'airtelpaymentsbank';
     const ALBK               = 'albk';
@@ -59,7 +60,7 @@ class ProviderCode
     const FINOBANK           = 'finobank';
     const FREECHARGE         = 'freecharge';
     const HDFCBANK           = 'hdfcbank';
-    const HDFCBANKRZP        = 'hdfcbankrzp';
+    const HDFCBANKJD         = 'hdfcbankjd';
     const HSBC               = 'hsbc';
     const ICICI              = 'icici';
     const ICICIPAY           = 'icicipay';
@@ -146,6 +147,7 @@ class ProviderCode
      * mapping the psp to NPCI code.
      */
     protected static $bankCodes = [
+        self::ABFSPAY            => IFSC::UTBI,
         self::AIRTEL             => IFSC::AIRP,
         self::AIRTELPAYMENTSBANK => IFSC::AIRP,
         self::ALBK               => IFSC::ALLA,
@@ -185,7 +187,7 @@ class ProviderCode
         self::FINOBANK           => IFSC::FINO,
         self::FREECHARGE         => IFSC::UTIB,
         self::HDFCBANK           => IFSC::HDFC,
-        self::HDFCBANKRZP        => IFSC::HDFC,
+        self::HDFCBANKJD         => IFSC::HDFC,
         self::HSBC               => IFSC::HSBC,
         self::ICICI              => IFSC::ICIC,
         self::ICICIPAY           => IFSC::ICIC,

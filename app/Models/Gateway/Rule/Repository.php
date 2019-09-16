@@ -13,6 +13,7 @@ class Repository extends Base\Repository
 
     protected $entityFetchParamRules = [
         Entity::GATEWAY          => 'sometimes|string|max:25',
+        Entity::ORG_ID           => 'sometimes|alpha_num|size:14',
         Entity::MERCHANT_ID      => 'sometimes|alpha_num|size:14',
         Entity::TYPE             => 'sometimes|string|in:sorter,filter',
         Entity::GROUP            => 'sometimes|string|max:50',
@@ -157,7 +158,8 @@ class Repository extends Base\Repository
     {
         if ($params[Entity::MERCHANT_ID] !== Account::SHARED_ACCOUNT)
         {
-            $query->whereIn(Entity::MERCHANT_ID, [$params[Entity::MERCHANT_ID], Account::SHARED_ACCOUNT]);
+            $query->whereIn(Entity::MERCHANT_ID, [$params[Entity::MERCHANT_ID], Account::SHARED_ACCOUNT])
+                  ->orWhereNull(Entity::MERCHANT_ID);
         }
     }
 
@@ -197,6 +199,6 @@ class Repository extends Base\Repository
 
     protected function addQueryAuthType(Querybuilder $query, array $params)
     {
-        $query->whereIn(Entity::AUTH_TYPE, $paras[Entity::AUTH_TYPE]);
+        $query->whereIn(Entity::AUTH_TYPE, $params[Entity::AUTH_TYPE]);
     }
 }

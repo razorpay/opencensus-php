@@ -319,6 +319,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOrg(string $id)
+    {
+        $data = $this->service()->getOrgDetails($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function setBanks($id)
     {
         $input = Request::all();
@@ -777,7 +784,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantDetails($input);
+        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantDetailsForActivation($input);
 
         return ApiResponse::json($response);
     }
@@ -869,6 +876,18 @@ class MerchantController extends Controller
     public function getBusinessCategories()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategories();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Returns clarification reason against each field
+     *
+     * @return mixed
+     */
+    public function getNeedsClarificationReasons()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getNeedsClarificationReasons();
 
         return ApiResponse::json($response);
     }
@@ -1127,6 +1146,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createPartnerSubmerchantMap()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createPartnerSubmerchantMap($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * @param string $merchantId
      *
@@ -1290,6 +1318,24 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->resetSettlementSchedule($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function change2faSetting()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->change2faSetting($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function applyRestrictedSettings()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->applyRestrictedSettings($input);
 
         return ApiResponse::json($response);
     }

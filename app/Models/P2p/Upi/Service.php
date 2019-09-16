@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Upi;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Transaction;
 
 /**
@@ -41,6 +42,21 @@ class Service extends Base\Service
                 $processor = new Transaction\Processor;
 
                 $processor->processAction($context[Base\Entity::ACTION], $callback);
+
+                break;
+
+            case Transaction\Entity::CONCERNS:
+
+                foreach ($callback[Transaction\Entity::CONCERNS] as $concern)
+                {
+                    $processor = new Transaction\Processor;
+
+                    $device = $this->processor->resolveDeviceFromConcern($concern);
+
+                    $processor->processAction($context[Base\Entity::ACTION], [
+                        Transaction\Entity::CONCERN => $concern,
+                    ], $device);
+                }
         }
     }
 }

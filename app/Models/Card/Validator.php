@@ -40,7 +40,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createVaultTokenRules = [
-        'namespace' => 'required|max:30|in:nodal_certs',
+        'namespace' => 'required|max:30|in:nodal_certs,banking_account_creds',
         'secret'    => 'required'
     ];
 

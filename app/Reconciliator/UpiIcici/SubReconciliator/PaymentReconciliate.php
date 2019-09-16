@@ -21,6 +21,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const AMOUNT            = 'amount';
     const PAYER_VPA         = 'payerva';
 
+    const BLACKLISTED_COLUMNS = [
+        self::PAYER_VPA,
+    ];
+
     protected function getPaymentId(array $row)
     {
         if (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false)
@@ -85,7 +89,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         ];
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
     }

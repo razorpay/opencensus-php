@@ -69,6 +69,11 @@ class S2s
         return $this;
     }
 
+    public function mergeUdf(array $udf)
+    {
+        $this->udf = array_merge($this->udf, $udf);
+    }
+
     public function finish()
     {
         return $this->request;

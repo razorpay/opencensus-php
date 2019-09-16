@@ -28,6 +28,34 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postApproveFundAccountPayout(string $id)
+    {
+        $response = $this->service()->approveFundAccountPayout($id, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkApproveFundAccountPayouts()
+    {
+        $response = $this->service()->bulkApproveFundAccountPayouts($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postRejectFundAccountPayout(string $id)
+    {
+        $response = $this->service()->rejectFundAccountPayout($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkRejectFundAccountPayouts()
+    {
+        $response = $this->service()->bulkRejectFundAccountPayout($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantPayoutOnDemand()
     {
         $input = Request::all();
@@ -101,6 +129,20 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getSummary()
+    {
+        $data = $this->service()->getDashboardSummary();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWorkflowSummary()
+    {
+        $data = $this->service()->getWorkflowSummary();
+
+        return ApiResponse::json($data);
+    }
+
     public function processDispatchForQueuedPayouts()
     {
         $input = Request::all();
@@ -115,5 +157,18 @@ class PayoutController extends Controller
         $data = $this->service()->cancelPayout($payoutId);
 
         return ApiResponse::json($data);
+    }
+
+    /**
+     *  Route to create bulk payouts.
+     *  Currently it is used by batch Service
+     */
+    public function createPayoutBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createBulkPayout($input);
+
+        return ApiResponse::json($response);
     }
 }

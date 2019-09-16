@@ -43,15 +43,28 @@ class CreateReversals extends Migration
             $table->integer(Entity::AMOUNT)
                   ->unsigned();
 
+            $table->integer(Entity::FEE)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->integer(Entity::TAX)
+                  ->unsigned()
+                  ->default(0);
+
             $table->char(Entity::CURRENCY, 3);
 
-            // Todo: Remove null-able after code deploy and backfilling
+            // TODO: Remove null-able after code deploy and backfilling
             $table->string(Entity::CHANNEL, 255)
+                  ->nullable();
+
+            // TODO: Figure out uniqueness stuff
+            $table->string(Entity::UTR)
                   ->nullable();
 
             $table->text(Entity::NOTES);
 
-            $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
+            $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Entity::TRANSACTION_TYPE, 255)
                   ->nullable();
@@ -71,6 +84,8 @@ class CreateReversals extends Migration
             $table->index(Entity::UPDATED_AT);
 
             $table->index(Entity::ENTITY_ID);
+
+            $table->index(Entity::UTR);
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 

@@ -3,6 +3,8 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\BankingAccountStatement\Channel;
 
 class DefaultPlan
 {
@@ -11,8 +13,6 @@ class DefaultPlan
     const PROMOTIONAL_PLAN_ID         = '1In3Yh5Mluj605';
     const HDFC_PROMOTIONAL_PLAN_ID    = 'BAJq6FJDNJ4ZqD';
     const BOB_PROMOTIONAL_PLAN_ID     = 'BAJvpnuxy4AUq3';
-    const DIWALI_PROMOTIONAL_PLAN_ID  = 'BI7O6FmHlzLFZm';
-
 
     public static function getPricingSeedData()
     {
@@ -480,13 +480,26 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
-
             [
                 'id'             => '1CEmiPricingR1',
                 'plan_id'        => '10ZeroPricingP',
                 'plan_name'      => 'ZeroPricingPlan',
                 'feature'        => 'payment',
                 'payment_method' => 'cardless_emi',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1PLatPricingR1',
+                'plan_id'        => '10ZeroPricingP',
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'payment',
+                'payment_method' => 'paylater',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
                 'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
@@ -514,6 +527,7 @@ class DefaultPlan
                 'amount_range_min'    => 0,
                 'amount_range_max'    => 100000,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -532,6 +546,7 @@ class DefaultPlan
                 'amount_range_min'    => 100000,
                 'amount_range_max'    => 2500000,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -550,6 +565,7 @@ class DefaultPlan
                 'amount_range_min'    => 2500000,
                 'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_UNSIGNED_INT_MAX,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -568,6 +584,7 @@ class DefaultPlan
                 'amount_range_min'    => 0,
                 'amount_range_max'    => 100000,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -586,6 +603,7 @@ class DefaultPlan
                 'amount_range_min'    => 100000,
                 'amount_range_max'    => 2500000,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -604,6 +622,41 @@ class DefaultPlan
                 'amount_range_min'    => 2500000,
                 'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_UNSIGNED_INT_MAX,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::SHARED,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 0 for rbl current account payouts
+            [
+                'id'                  => 'Bbg7fgaDwax04u',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 0,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::RBL,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 0 for rbl current account payouts
+            [
+                'id'                  => 'Bbg7fgaDwax05u',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 0,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::RBL,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),

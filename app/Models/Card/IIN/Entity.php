@@ -8,13 +8,17 @@ use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Type;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
 {
+    use Cacheable;
+
     const IIN           = 'iin';
     const CATEGORY      = 'category';
     const NETWORK       = 'network';
     const TYPE          = 'type';
+    const SUBTYPE       = 'sub_type';
     const COUNTRY       = 'country';
     const ISSUER        = 'issuer';
     const ISSUER_NAME   = 'issuer_name';
@@ -58,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::NETWORK,
         self::TYPE,
+        self::SUBTYPE,
         self::COUNTRY,
         self::ISSUER,
         self::ISSUER_NAME,
@@ -70,12 +75,13 @@ class Entity extends Base\PublicEntity
         self::RECURRING
     ];
 
-    protected $public = [
+    protected $visible = [
         self::IIN,
         self::ENTITY,
         self::CATEGORY,
         self::NETWORK,
         self::TYPE,
+        self::SUBTYPE,
         self::COUNTRY,
         self::ISSUER,
         self::ISSUER_NAME,
@@ -91,6 +97,18 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    protected $public = [
+        self::IIN,
+        self::ENTITY,
+        self::NETWORK,
+        self::CATEGORY,
+        self::TYPE,
+        self::COUNTRY,
+        self::ISSUER,
+        self::ISSUER_NAME,
+        self::MESSAGE_TYPE
+    ];
+
     protected $publicSetters = [
         self::FLOWS,
     ];
@@ -103,9 +121,13 @@ class Entity extends Base\PublicEntity
         self::ENABLED        => true,
         self::LOCKED         => false,
         self::MESSAGE_TYPE   => null,
+        self::SUBTYPE        => Card\SubType::CONSUMER,
+        self::CATEGORY       => null,
+        self::ISSUER         => null,
     ];
 
     protected $casts = [
+        self::IIN         => 'string',
         self::ENABLED     => 'bool',
         self::LOCKED      => 'bool',
         self::RECURRING   => 'bool',
@@ -161,11 +183,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getSubType()
+    {
+        return $this->getAttribute(self::SUBTYPE);
+    }
+
     public function setType($type)
     {
         Card\Type::checkType($type);
 
         $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setSubType(string $subtype)
+    {
+        Card\SubType::checkSubType($subtype);
+
+        $this->setAttribute(self::SUBTYPE, $subtype);
     }
 
     public function setCountry($countryCode)
@@ -240,9 +274,14 @@ class Entity extends Base\PublicEntity
 
     public function getIssuerName()
     {
-        $dbName = $this->getAttribute(self::ISSUER_NAME);
+        return $this->getAttribute(self::ISSUER_NAME);
+    }
 
-        $issuer = $this->getAttribute(self::ISSUER);
+    protected function getIssuerNameAttribute()
+    {
+        $dbName = $this->attributes[self::ISSUER_NAME];
+
+        $issuer = $this->attributes[self::ISSUER];
 
         if (IFSC::exists($issuer) === true)
         {
@@ -293,11 +332,6 @@ class Entity extends Base\PublicEntity
     protected function getOtpReadAttribute()
     {
         return (bool) $this->attributes[self::OTP_READ];
-    }
-
-    protected function getIssuerAttribute()
-    {
-        return $this->attributes[self::ISSUER];
     }
 
     protected function getInternationalAttribute()

@@ -781,6 +781,57 @@ return [
         ],
     ],
 
+    'testCreateLinkCustomerContactEmailNullOldMerchantFlagDisabled' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'        => 1234,
+                'description'   => 'Sample Description',
+                'type'          => 'link',
+                'customer'      => [],
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateLinkCustomerContactEmailNullOldMerchantFlagEnabled' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'        => 1234,
+                'description'   => 'Sample Description',
+                'type'          => 'link',
+                'customer'      => [],
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateLinkCustomerContactEmailNullNewMerchant' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'        => 1234,
+                'description'   => 'Sample Description',
+                'type'          => 'link',
+                'customer'      => [],
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreateInvoiceWithMultipleLineItems' => [
         'request' => [
             'url' => '/invoices',
@@ -2247,6 +2298,86 @@ return [
                 ],
                 'status'           => 'draft',
             ],
+        ],
+    ],
+
+    'testUpdateDraftInvoiceExpireBy' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'expire_by' => 1518220800,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'inv_1000000invoice',
+                'status'    => 'draft',
+                'expire_by' => 1518220800,
+            ]
+        ],
+    ],
+
+    'testUpdateDraftInvoiceInvalidExpireBy' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'expire_by' => 1517443199,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 15 minutes after current time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateIssuedInvoiceExpireBy' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'expire_by' => 1518220800,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'inv_1000000invoice',
+                'status'    => 'issued',
+                'expire_by' => 1518220800,
+            ]
+        ],
+    ],
+
+    'testUpdateIssuedInvoiceInvalidExpireBy' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'expire_by' => 1517443199,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 15 minutes after current time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

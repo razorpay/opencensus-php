@@ -103,6 +103,30 @@ return [
         ],
     ],
 
+    E::BANKING_ACCOUNT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
+    E::BANKING_ACCOUNT_STATEMENT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
+    E::EXTERNAL => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
     E::BANK_TRANSFER => [
         Type::PRIVILEGE_AUTH => [
             [
@@ -376,6 +400,14 @@ return [
         ],
     ],
 
+    E::FUND_ACCOUNT_VALIDATION => [
+        Type::ADMIN_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
     E::WORKFLOW => [
         Type::ADMIN_AUTH => [
             [
@@ -445,4 +477,8 @@ return [
     E::P2P_CONCERN => [],
 
     E::CUSTOMER => [],
+
+    E::CREDITNOTE => [],
+
+    E::MPAN => [],
 ];

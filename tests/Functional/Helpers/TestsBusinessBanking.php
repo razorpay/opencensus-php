@@ -3,7 +3,8 @@
 namespace RZP\Tests\Functional\Helpers;
 
 use RZP\Models\Payout;
-
+use RZP\Models\Settlement\Channel;
+use RZP\Models\Merchant\Balance\AccountType;
 /**
  * Consists reusable methods to help with business banking related tests.
  */
@@ -43,16 +44,24 @@ trait TestsBusinessBanking
      * Setup merchant for business banking.
      *
      * @param bool $skipFeatureAddition
-     * @param int  $balance
+     * @param int $balance
+     * @param string $balanceType
+     * @param string $channel
      */
-    protected function setUpMerchantForBusinessBanking(bool $skipFeatureAddition = false, int $balance = 0)
+    protected function setUpMerchantForBusinessBanking(
+        bool $skipFeatureAddition = false,
+        int $balance = 0,
+        string $balanceType = AccountType::SHARED,
+        $channel = Channel::YESBANK)
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
         $this->fixtures->merchant->activate();
 
         // Creates banking balance
-        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType($balance);
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balance, '10000000000000',$balanceType, $channel);
 
         // Creates virtual account, its bank account receiver on new banking balance.
         $virtualAccount = $this->fixtures->create('virtual_account');
@@ -80,6 +89,52 @@ trait TestsBusinessBanking
 
         // Additionally, creates a terminal for bank transfer on banking balance.
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Sets instance member variable to be re-usable in other test methods for assertions.
+        $this->bankingBalance = $bankingBalance;
+        $this->virtualAccount = $virtualAccount;
+        $this->bankAccount    = $bankAccount;
+    }
+
+    protected function setUpMerchantForBusinessBankingLive(
+        bool $skipFeatureAddition = false,
+        int $balance = 0,
+        string $balanceType = AccountType::SHARED,
+        $channel = Channel::YESBANK)
+    {
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['business_banking' => 1]);
+        $this->fixtures->on('live')->merchant->activate();
+
+        // Creates banking balance
+        $bankingBalance = $this->fixtures->on('live')->merchant->createBalanceOfBankingType(
+            $balance, '10000000000000',$balanceType, $channel);
+
+        // Creates virtual account, its bank account receiver on new banking balance.
+        $virtualAccount = $this->fixtures->on('live')->create('virtual_account');
+        $bankAccount    = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'             => '1000000lcustba',
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626905',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($bankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        // Updates banking balance's account number after bank account creation.
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
+        // Enables required features on merchant
+        if ($skipFeatureAddition === false)
+        {
+            $this->fixtures->on('live')->merchant->addFeatures(['virtual_accounts', 'payout']);
+        }
 
         // Sets instance member variable to be re-usable in other test methods for assertions.
         $this->bankingBalance = $bankingBalance;
@@ -142,5 +197,23 @@ trait TestsBusinessBanking
                 'ifsc'           => 'SBIN0007105',
                 'account_number' => '111000',
             ]);
+    }
+
+    protected function createFAVBankingPricingPlan()
+    {
+        $pricingPlan = [
+            'plan_name'           => 'FAV Plan',
+            'percent_rate'        => 290,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'product'             => 'banking',
+            "feature"             => 'fund_account_validation',
+            'payment_method'      => 'bank_account',
+            'account_type'        => 'shared'
+        ];
+
+        $this->fixtures->create('pricing', $pricingPlan);
     }
 }

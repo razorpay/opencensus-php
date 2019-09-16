@@ -120,6 +120,62 @@ return [
         ],
     ],
 
+    'testCreateFundAccountBankAccountBeneficiaryVerified' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateFundAccountBankAccountBeneficiaryFailed' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_invalidcontact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_invalidcontact',
+                'details'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+        ],
+    ],
+
     'testCreateVpa' => [
         'request'  => [
             'content' => [
@@ -164,6 +220,58 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'card',
                 'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateCardBeneficiaryVerified' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card' => [
+                    'name' => 'shk',
+                    'number' => '4111111111111111',
+                    'expiry_month' => 4,
+                    'expiry_year' => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateCardBeneficiaryFailed' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_invalidcontact',
+                'card' => [
+                    'name' => 'shk',
+                    'number' => '4111111111111111',
+                    'expiry_month' => 4,
+                    'expiry_year' => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_invalidcontact',
                 'details'      => [
                 ],
             ],

@@ -11,7 +11,8 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::CHANNEL             => 'filled|string|max:8',
         Entity::MERCHANT_ID         => 'filled|string|size:14',
-        Entity::BANK_ACCOUNT_ID     => 'filled|string|size:14',
+        Entity::CARD_ID             => 'sometimes|string|size:14',
+        Entity::BANK_ACCOUNT_ID     => 'sometimes|string|size:14',
         Entity::REGISTRATION_STATUS => 'filled|string|max:40',
         Entity::BENEFICIARY_CODE    => 'sometimes|filled|nullable|string|max:30',
     ];
@@ -21,7 +22,7 @@ class Repository extends Base\Repository
      * @param string $channel
      * @return Entity
      */
-    public function fetchBeneficiaryDetailsForChannel(string $bankAccountId, string $channel): Entity
+    public function fetchBankAccountBeneficiaryDetailsForChannel(string $bankAccountId, string $channel): Entity
     {
         return $this->newQuery()
                     ->where(Entity::BANK_ACCOUNT_ID, $bankAccountId)
@@ -30,10 +31,30 @@ class Repository extends Base\Repository
                     ->firstorFail();
     }
 
-    public function fetchNonRegisteredBeneficiary(string $bankAccountId, string $channel)
+    public function fetchCardBeneficiaryDetailsForChannel(string $cardId, string $channel): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::CARD_ID, $cardId)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->withTrashed()
+                    ->firstorFail();
+    }
+
+    public function fetchNonRegisteredBankAccountBeneficiary(string $bankAccountId, string $channel)
     {
         $result =  $this->newQuery()
                         ->where(Entity::BANK_ACCOUNT_ID, $bankAccountId)
+                        ->where(Entity::CHANNEL, $channel)
+                        ->withTrashed()
+                        ->first();
+
+        return $result;
+    }
+
+    public function fetchNonRegisteredCardBeneficiary(string $cardId, string $channel)
+    {
+        $result =  $this->newQuery()
+                        ->where(Entity::CARD_ID, $cardId)
                         ->where(Entity::CHANNEL, $channel)
                         ->withTrashed()
                         ->first();
@@ -54,12 +75,25 @@ class Repository extends Base\Repository
     /**
      * @param string $bankAccountId
      * @param string $channel
-     * @return Entity
+     * @return mixed
      */
-    public function fetchActivatedBeneficiaryDetailsForChannel(string $bankAccountId, string $channel): Entity
+    public function fetchActivatedBankAccountBeneficiaryDetailsForChannel(string $bankAccountId, string $channel)
     {
         return $this->newQuery()
                     ->where(Entity::BANK_ACCOUNT_ID, $bankAccountId)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->first();
+    }
+
+    /**
+     * @param string $cardId
+     * @param string $channel
+     * @return mixed
+     */
+    public function fetchActivatedCardBeneficiaryDetailsForChannel(string $cardId, string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CARD_ID, $cardId)
                     ->where(Entity::CHANNEL, $channel)
                     ->first();
     }

@@ -3,18 +3,21 @@
 namespace RZP\Gateway\Mpi\Blade;
 
 use Cache;
-use Carbon\Carbon;
-use GuzzleHttp;
 use DOMDocument;
+use Carbon\Carbon;
+use Lib\Formatters\Xml;
+
 use RZP\Exception;
 use Requests_Hooks;
 use RZP\Models\Card;
-use RZP\Gateway\Mpi\Base;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
-use Lib\Formatters\Xml;
+use RZP\Gateway\Mpi\Base;
+
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base as BaseGateway;
@@ -74,6 +77,8 @@ class Gateway extends Base\Gateway
      */
     public function authenticate(array $input)
     {
+        parent::action($input, Action::AUTHENTICATE);
+
         $runEnrollmentCheck = $this->runEnrollmentCheckForCard($input);
 
         if ($runEnrollmentCheck === false)
@@ -81,12 +86,24 @@ class Gateway extends Base\Gateway
             return null;
         }
 
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+            $input);
+
         // Send card enrollment verification request
         $response = $this->sendEnrollmentRequest($input);
 
         $attributes = $this->getVeresAttributesToSave($response, $input);
 
-        $this->createGatewayPaymentEntity($attributes, $input);
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+            $input,
+            null,
+            [
+                'enrolled' => $attributes[Base\Entity::ENROLLED]
+            ]);
+
+        $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
 
         return $this->decideAuthStepAfterEnroll($input, $response);
     }
@@ -145,28 +162,27 @@ class Gateway extends Base\Gateway
                     return null;
                 }
 
+            default:
+                $this->trace->warning(
+                    TraceCode::GATEWAY_ERROR_ISSUER_AUTHENTICATION_NOT_AVAILABLE,
+                    [
+                        'enrollment_status' => $enrolled,
+                        'isInternational' => $input['card'][Card\Entity::INTERNATIONAL],
+                        'iin' => $input['card'][Card\Entity::IIN]
+                    ]);
+
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE,
-                    $enrolled,
-                    'Invalid enrollment response',
+                    ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                    'enrollment_status' . $enrolled,
+                    'Unexpected response',
                     [
                         'enrollment_status' => $enrolled,
                         'isInternational' => $input['card'][Card\Entity::INTERNATIONAL],
                         'iin' => $input['card'][Card\Entity::IIN]
                     ],
                     null,
-                    BaseGateway\Action::AUTHENTICATE);
-
-            default:
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-                    $enrolled,
-                    'Invalid enroll response',
-                    [
-                        'enrollment_status' => $enrolled
-                    ],
-                    null,
-                    BaseGateway\Action::AUTHENTICATE);
+                    Action::AUTHENTICATE,
+                    true);
         }
     }
 
@@ -193,6 +209,18 @@ class Gateway extends Base\Gateway
         $isInternational = $input['card']['international'];
 
         $this->validateAuthResponse($eci, $networkCode, $isInternational);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
+            $input);
+
+        if ($input['payment'][Payment\Entity::GATEWAY] === Payment\Gateway::FIRST_DATA)
+        {
+            $this->trace->info(TraceCode::GATEWAY_RAW_PARES_RESPONSE, [
+                'pares'     => $input['gateway'][PARes::GATEWAY_PARES],
+                'store_id'  => $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID],
+            ]);
+        }
 
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity
@@ -519,8 +547,8 @@ class Gateway extends Base\Gateway
         if ((isset($VERes[VERes::ERROR]) === true) and
             (count($VERes[VERes::ERROR]) !== 0))
         {
-            $msg = 'Error message: ' . $error[VERes::ERROR_MSG] . ' ' .
-                   'Error detail: ' . $error[VERes::ERROR_DETAILS];
+            $msg = 'Error message: ' . $VERes[VERes::ERROR_MSG] . ' ' .
+                   'Error detail: ' . $VERes[VERes::ERROR_DETAILS];
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -872,23 +900,26 @@ class Gateway extends Base\Gateway
 
         $network = $input['card']['network_code'];
 
+        if ($gateway === PaymentEntity\Gateway::HDFC)
+        {
+            return $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
+        }
+
+        if ($gateway == PaymentEntity\Gateway::FIRST_DATA)
+        {
+            // For Authenticating First Data requests we need to create merid by appending id provided from
+            // first data with the store id that is placed in gateway_merchant_id field in terminal
+            $envMerchantId = $this->config[$gateway]['live_merchant_id'];
+            $storeId = $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+            return $envMerchantId . substr($storeId, -8);
+        }
+
         switch ($network)
         {
             case Card\Network::MC:
             case Card\Network::MAES:
-                if ($gateway == PaymentEntity\Gateway::FIRST_DATA)
-                {
-                    // For Authenticating First Data requests we need to create merid by appending id provided from
-                    // first data with the store id that is placed in gateway_merchant_id field in terminal
-                    $envMerchantId = $this->config[$gateway]['live_merchant_id'];
-                    $storeId = $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
-
-                    $merchantId = $envMerchantId . substr($storeId, -8);
-                }
-                else
-                {
-                    $merchantId = $this->config['live_mastercard_merchant_id'];
-                }
+                $merchantId = $this->config['live_mastercard_merchant_id'];
 
                 break;
 

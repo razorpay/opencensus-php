@@ -40,6 +40,7 @@ class ConfigKey
     const BLOCK_AADHAAR_REG                     = self::PREFIX . 'block_aadhaar_reg';
     const HITACHI_DYNAMIC_DESCR_ENABLED         = self::PREFIX . 'hitachi_dynamic_descr_enabled';
     const HITACHI_NEW_URL_ENABLED               = self::PREFIX . 'hitachi_new_url_enabled';
+    const FTA_CHANNELS                          = self::PREFIX . 'fta_channels';
     const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
     const FTS_TEST_MERCHANT                     = self::PREFIX . 'fts_test_merchant';
     const FTS_ROUTE_PERCENTAGE                  = self::PREFIX . 'fts_request_percentage';
@@ -47,6 +48,11 @@ class ConfigKey
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
     const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
+    const DOWNTIME_DETECTION                    = self::PREFIX . '{downtime:detection}';
+    const RX_SLA_FOR_IMPS_PAYOUT                = self::PREFIX . 'rx_sla_for_imps_payout';
+    const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
+    const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
+    const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
 
     // Gateway level configs
     const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
@@ -81,6 +87,7 @@ class ConfigKey
         self::HITACHI_NEW_URL_ENABLED,
         self::PAYSECURE_BLACKLISTED_MCCS,
         self::DOWNTIME_THROTTLE,
+        self::RX_SLA_FOR_IMPS_PAYOUT,
     ];
 
     public static function isSensitive(string $key)

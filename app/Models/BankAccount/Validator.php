@@ -76,7 +76,7 @@ class Validator extends Base\Validator
     protected static $addTpvBankAccountRules = [
         Entity::IFSC            => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER  => 'required|alpha_num|between:5,20',
-        Entity::NAME            => 'sometimes|max:40|string',
+        Entity::NAME            => 'sometimes|max:60|string',
     ];
 
     protected static $addBankAccountValidators = [
@@ -107,7 +107,8 @@ class Validator extends Base\Validator
     protected static $beneficiaryRegisterApiRules = [
         Entity::ALL                     => 'sometimes|boolean',
         Entity::DURATION                => 'sometimes|integer',
-        'failed_response'               => 'sometimes|int'
+        'failed_response'               => 'sometimes|int',
+        'send_email'                    => 'sometimes|boolean',
     ];
 
     protected function validateBeneficiaryState($input)

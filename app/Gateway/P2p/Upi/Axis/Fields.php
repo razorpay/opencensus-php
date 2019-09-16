@@ -32,6 +32,7 @@ class Fields
     const MERCHANT_SIGNATURE            = 'merchantSignature';
     const VPA_ACCOUNTS                  = 'vpaAccounts';
     const TIMESTAMP                     = 'timestamp';
+    const ACCOUNT                       = 'account';
     const ACCOUNTS                      = 'accounts';
     const VPA_SUGGESTIONS               = 'vpaSuggestions';
     const DEVICE_DATA                   = 'device_data';
@@ -69,9 +70,12 @@ class Fields
     const BALANCE                       = 'balance';
 
     // --------------------- VPA -------------------- //
+    const VPA                           = 'vpa';
     const CUSTOMER_VPA                  = 'customerVpa';
+    const CUSTOMER_PRIMARY_VPA          = 'customerPrimaryVpa';
     const AVAILABLE                     = 'available';
     const IS_CUSTOMER_VPA_VALID         = 'isCustomerVpaValid';
+    const IS_DEFAULT                    = 'isDefault';
     const CUSTOMER_NAME                 = 'customerName';
     const SHOULD_BLOCK                  = 'shouldBlock';
     const SHOULD_SPAM                   = 'shouldSpam';
@@ -87,7 +91,6 @@ class Fields
     const REMARKS                       = 'remarks';
     const PAY_TYPE                      = 'payType';
     const AMOUNT                        = 'amount';
-    const MERCHANT_CATEGORY_CODE        = 'mcc';
     const TRANSACTION_TIME_STAMP        = 'transactionTimestamp';
     const GATEWAY_TRANSACTION_ID        = 'gatewayTransactionId';
     const GATEWAY_REFERENCE_ID          = 'gatewayReferenceId';
@@ -99,6 +102,7 @@ class Fields
     const QUERY_COMMENT                 = 'queryComment';
     const QUERY_REFERENCE_ID            = 'queryReferenceId';
     const QUERY_CLOSING_TIMESTAMP       = 'queryClosingTimestamp';
+    const QUERIES                       = 'queries';
     const LIMIT                         = 'limit';
     const OFFSET                        = 'offset';
 
@@ -115,4 +119,5 @@ class Fields
     const HEADERS                       = 'headers';
     const X_MERCHANT_PAYLOAD_SIGNATURE  = 'x-merchant-payload-signature';
     const PAYEE_MOBILE_NUMBER           = 'payeeMobileNumber';
+    const PAYER_MOBILE_NUMBER           = 'payerMobileNumber';
 }

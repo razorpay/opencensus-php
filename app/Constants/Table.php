@@ -8,6 +8,7 @@ class Table
     const P2P                   = 'p2p';
     const VPA                   = 'vpas';
     const IIN                   = 'iins';
+    const MPAN                  = 'mpan';
     const KEY                   = 'keys';
     const RISK                  = 'risk';
     const PLAN                  = 'plans';
@@ -69,7 +70,16 @@ class Table
     const TRANSACTION               = 'transactions';
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
-    const SUBSCRIPTION              = 'subscriptions';
+    const SETTLEMENT_BUCKET         = 'settlement_bucket';
+
+    // Subscriptions Tables
+    const SUBSCRIPTION                   = 'subscriptions';
+    const SUBSCRIPTION_CYCLE             = 'subscription_cycles';
+    const SUBSCRIPTION_VERSION           = 'subscription_versions';
+    const SUBSCRIPTION_UPDATE_REQUEST    = 'subscription_update_requests';
+    const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
+    //Subscriptions Tables end
+
     const METHODS                   = 'merchant_banks';
     const BANK_TRANSFER             = 'bank_transfers';
     const GATEWAY_TOKEN             = 'gateway_tokens';
@@ -98,6 +108,7 @@ class Table
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempts';
     const FUND_ACCOUNT_VALIDATION   = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registrations';
+    const MERCHANT_DOCUMENT         = 'merchant_documents';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other
@@ -160,6 +171,7 @@ class Table
     const PAYSECURE             = 'paysecure';
     const CARDLESS_EMI          = 'cardless_emi';
     const MOZART                = 'mozart';
+    const WORLDLINE             = 'worldline';
 
     // Sessions table
     const SESSION               = 'sessions';
@@ -189,7 +201,10 @@ class Table
 
     const SETTING               = 'settings';
 
-    const BANKING_ACCOUNT       = 'banking_accounts';
+    // Banking Accounts Tables
+    const EXTERNAL                        = 'external';
+    const BANKING_ACCOUNT                 = 'banking_accounts';
+    const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
 
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';
@@ -203,6 +218,13 @@ class Table
     const P2P_TRANSACTION       = 'p2p_transactions';
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_CONCERN           = 'p2p_concerns';
+
+
+    const CREDITNOTE           = 'creditnote';
+
+    const CREDITNOTE_INVOICE   = 'creditnote_invoices';
+
+    const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,

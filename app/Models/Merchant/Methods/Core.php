@@ -151,7 +151,9 @@ class Core extends Base\Core
             Payment\Method::CARD         => true,
             Entity::DEBIT_CARD           => true,
             Entity::CREDIT_CARD          => true,
+            Entity::PREPAID_CARD         => true,
             Entity::CARD_NETWORKS        => [],
+            Entity::CARD_SUBTYPE         => [],
             Payment\Gateway::AMEX        => false,
             Payment\Method::NETBANKING   => [],
             Payment\Method::WALLET       => [],
@@ -166,7 +168,9 @@ class Core extends Base\Core
         $data[Payment\Method::CARD]  = $methods->isCardEnabled();
         $data[Entity::DEBIT_CARD]    = $methods->isDebitCardEnabled();
         $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
+        $data[Entity::PREPAID_CARD]  = $methods->isPrepaidCardEnabled();
         $data[Entity::CARD_NETWORKS] = $methods->getCardNetworks();
+        $data[Entity::CARD_SUBTYPE]  = $methods->getCardSubtypes();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled           = $methods->isNetbankingEnabled();
 
@@ -179,13 +183,18 @@ class Core extends Base\Core
             $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
         }
 
-        $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
-        $data[Payment\Method::UPI] = $methods->isUpiEnabled();
+        $data[Payment\Method::WALLET]        = $methods->getEnabledWallets();
+        $data[Payment\Method::UPI]           = $methods->isUpiEnabled();
         $data[Payment\Method::CARDLESS_EMI] =
                   $methods->isCardlessEmiEnabled() ? $this->getProviders($merchant, Payment\Method::CARDLESS_EMI) : [];
 
         $data[Payment\Method::PAYLATER] =
             $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER) : [];
+
+        if ($merchant->isFeatureEnabled(Constants::BANK_TRANSFER_ON_CHECKOUT) === true)
+        {
+            $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
+        }
 
         $emi = $methods->isEmiEnabled();
 
@@ -312,15 +321,6 @@ class Core extends Base\Core
         }
     }
 
-    public function validatePricingForInternational($merchant, $plan)
-    {
-        if ($plan->hasInternationalPricing() === false)
-        {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Pricing not present for international.');
-        }
-    }
-
     public function setDefaultMethods($merchant)
     {
         $methods = (new Methods\Entity)->build();
@@ -332,10 +332,14 @@ class Core extends Base\Core
         {
             $methods->setCreditCard(true);
             $methods->setDebitCard(true);
+            $methods->setPrepaidCard(true);
             $methods->setMobikwik(false);
             $methods->setPayzapp(true);
             $methods->setPayumoney(true);
-            $methods->setOlamoney(true);
+            // OlaMoney is facing fraud issues, not going to
+            // enable by default for new merchants anymore.
+            // Ref: https://razorpay.slack.com/archives/C0X84TUTH/p1568200366022300
+            // $methods->setOlamoney(false);
             $methods->setFreecharge(true);
             $methods->setAirtelmoney(false);
             $methods->setAmazonpay(false);
@@ -352,6 +356,7 @@ class Core extends Base\Core
             $methods->setNetbanking(false);
             $methods->setCreditCard(false);
             $methods->setDebitCard(false);
+            $methods->setPrepaidCard(false);
             $methods->setUpi(false);
         }
 

@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
+use RZP\Events\P2p;
 use RZP\Models\P2p\Vpa;
 use RZP\Error\P2p\Error;
 use RZP\Models\P2p\Base;
@@ -26,7 +27,7 @@ class Processor extends Base\Processor
 
         $this->input->put(Entity::INTERNAL_STATUS, Status::CREATED);
 
-        $transaction = $this->createTransaction($this->action, $this->input, new ArrayBag());
+        $transaction = $this->createTransaction($this->action, $this->input, $this->input->bag(Entity::UPI));
 
         $this->initiateCallGateway($transaction);
 
@@ -120,7 +121,18 @@ class Processor extends Base\Processor
         $transactionInput = $this->input->bag(Entity::TRANSACTION);
         $upiInput         = $this->input->bag(Entity::UPI);
 
-        $transaction = $this->createTransaction($this->action, $transactionInput, $upiInput);
+        $upi = $this->core->findAllUpi($upiInput->toArray());
+
+        if ($upi->count() === 1)
+        {
+            $transaction = $this->core->fetch($upi->first()->getTransactionId());
+
+            $this->updateTransaction($transaction, $transactionInput, $upiInput);
+        }
+        else
+        {
+            $transaction = $this->createTransaction($this->action, $transactionInput, $upiInput);
+        }
 
         return $transaction->toArrayPublic();
     }
@@ -131,6 +143,10 @@ class Processor extends Base\Processor
 
         $transaction = $this->core->fetch($this->input->pull(Entity::ID));
 
+        if ($transaction->isConcernEligible() === false)
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
         if ($transaction->concern instanceof Concern\Entity)
         {
             if ($transaction->concern->isClosed() === false)
@@ -159,7 +175,11 @@ class Processor extends Base\Processor
         $concern->mergeGatewayData($concernInput[Entity::GATEWAY_DATA] ?? []);
         $concern->setInternalStatus($concernInput[Entity::INTERNAL_STATUS]);
 
-        (new Concern\Core)->update($concern, $concernInput);
+        (new Concern\Core)->update($concern, array_only($concernInput, [
+            Concern\Entity::GATEWAY_REFERENCE_ID,
+            Concern\Entity::RESPONSE_CODE,
+            Concern\Entity::RESPONSE_DESCRIPTION,
+        ]));
 
         return $concern->toArrayPublic();
     }
@@ -228,6 +248,7 @@ class Processor extends Base\Processor
 
             case Status::PENDING:
             case Status::INITIATED:
+            case Status::REQUESTED:
                 $actions = $this->setTransactionProcessing($transaction, $input);
                 break;
 
@@ -242,9 +263,12 @@ class Processor extends Base\Processor
                 ]);
         }
 
-        $this->core->update($transaction, $input->toArray());
+        if ($actions->shouldUpdate() === true)
+        {
+            $this->core->update($transaction, $input->toArray());
+        }
 
-        $this->dispatchEventIfRequired($actions, $transaction);
+        return $actions;
     }
 
     protected function setTransactionCompleted(Entity $transaction, ArrayBag $input): Actions
@@ -260,10 +284,7 @@ class Processor extends Base\Processor
         }
         else if ($transaction->isCompleted() === true)
         {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_INVALID_STATE, [
-                Entity::TRANSACTION     => $input,
-                Entity::ID              => $transaction->getId(),
-            ]);
+            return $actions->setShouldUpdate(false);
         }
 
         // TODO: Add support for partial payments
@@ -276,6 +297,8 @@ class Processor extends Base\Processor
         }
 
         $transaction->markCompleted();
+
+        $actions->setEvent(new P2p\TransactionCompleted($this->context(), $transaction));
 
         return $actions;
     }
@@ -293,10 +316,7 @@ class Processor extends Base\Processor
         }
         else if ($transaction->isFailed() === true)
         {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_INVALID_STATE, [
-                Entity::TRANSACTION     => $input,
-                Entity::ID              => $transaction->getId(),
-            ]);
+            return $actions->setShouldUpdate(false);
         }
 
         $transaction->setInternalStatus($input[Entity::INTERNAL_STATUS]);
@@ -305,6 +325,8 @@ class Processor extends Base\Processor
 
         $transaction->setErrorCode($error->getPublicErrorCode());
         $transaction->setErrorDescription($error->getDescription());
+
+        $actions->setEvent(new P2p\TransactionFailed($this->context(), $transaction));
 
         return $actions;
     }
@@ -334,6 +356,12 @@ class Processor extends Base\Processor
             $transaction->setErrorCode($error->getPublicErrorCode());
             $transaction->setErrorDescription($error->getDescription());
         }
+        else if ($input[Entity::INTERNAL_STATUS] === Status::REQUESTED)
+        {
+            $transaction->setInternalStatus(Status::REQUESTED);
+
+            $actions->setEvent(new P2p\TransactionCreated($this->context(), $transaction));
+        }
 
         return $actions;
     }
@@ -354,15 +382,9 @@ class Processor extends Base\Processor
 
         $transaction->setInternalStatus(Status::CREATED);
 
-        return $actions;
-    }
+        $actions->setEvent(new P2p\TransactionCreated($this->context(), $transaction));
 
-    protected function dispatchEventIfRequired(Actions $actions, Entity $transaction)
-    {
-        if ($actions->hasEvent() === true)
-        {
-            event($actions->getEvent());
-        }
+        return $actions;
     }
 
     protected function createTransaction(string $action, ArrayBag $input, ArrayBag $upiInput): Entity
@@ -375,6 +397,11 @@ class Processor extends Base\Processor
 
         $properties->attachToTransaction($transaction);
 
+        if ($transaction->payer->getDeviceId() === $transaction->payee->getDeviceId())
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_PAYER_PAYEE_SAME);
+        }
+
         $upi = $this->core->buildUpi($transaction, $action, $upiInput->toArray());
 
         $lock = $upi->getAction() . $upi->getNetworkTransactionId();
@@ -386,11 +413,13 @@ class Processor extends Base\Processor
                 {
                     $this->checkForDuplicate($upi);
 
-                    $this->updateTransactionStatus($transaction, $input);
+                    $actions = $this->updateTransactionStatus($transaction, $input);
 
                     $upi->associateTransaction($transaction);
 
                     $this->core->updateUpi($upi, []);
+
+                    $this->performTransactionActions($actions, $transaction);
 
                     return $transaction;
                 });
@@ -420,12 +449,25 @@ class Processor extends Base\Processor
 
                 return $this->repo()->transaction(function() use ($transaction, $input, $upiInput)
                 {
-                    $this->updateTransactionStatus($transaction, $input);
+                    $actions = $this->updateTransactionStatus($transaction, $input);
 
                     $this->core->updateUpi($transaction->upi, $upiInput->toArray());
 
+                    $this->performTransactionActions($actions, $transaction);
+
                     return $transaction;
                 });
-            });
+            },
+            60,
+            ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+            3);
+    }
+
+    protected function performTransactionActions(Actions $actions, Entity $transaction)
+    {
+        if ($actions->hasEvent() === true)
+        {
+            $this->app['events']->fire($actions->getEvent());
+        }
     }
 }

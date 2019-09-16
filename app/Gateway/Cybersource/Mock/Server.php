@@ -225,12 +225,11 @@ class Server extends Base\Mock\Server
                     'gateway_reference_id1' => '5470653499446597903009',
                     'gateway_reference_id3' => '831001',
                     'status'                => 'authorized',
-                    'eci'                   => null,
-                    'avs_code'              => 'Y',
                     'reason_code'           => 100,
-                    'cavv'                  => '',
-                    'cvCode'                => '',
-                    'xid'                   => '',
+                    'eci'                   => null,
+                    'avs_code'              => null,
+                    'cavv'                  => null,
+                    'xid'                   => null,
                 ],
                 'error'             => null,
                 'success'           => true,
@@ -282,20 +281,47 @@ class Server extends Base\Mock\Server
 
     public function verifyRefund($input)
     {
-        $content = $this->getVerifyContent($input);
+        if (is_array($input) === false) {
+            $response = [
+                'data' => [
+                    '_raw' => '',
+                    'received' => true,
+                    'gateway_reference_id1' => '5470653499446597903009',
+                    'reason_code' => '100',
+                    'r_code' => '1',
+                    'r_flag' => 'SOK',
+                    'r_message' => 'Request was processed successfully.',
+                    'status' => 'refunded'
+                ],
+                'error' => null,
+                'success' => true,
+                'mozart_id' => '',
+                'external_trace_id' => '',
+            ];
 
-        $this->content($content, 'verify_content');
+            $this->content($response, 'verify_refund_fail');
 
-        $xml = '';
+            $this->content($response, 'verify_reverse');
 
-        if ($content !== [])
-        {
-            $xml = require __DIR__ . '/VerifyResponseXml.php';
+            return $this->makeResponse($response);
         }
+        else
+        {
+            $content = $this->getVerifyContent($input);
 
-        $this->content($xml, 'verify_xml');
+            $this->content($content, 'verify_content');
 
-        return $this->makeResponse($xml);
+            $xml = '';
+
+            if ($content !== [])
+            {
+                $xml = require __DIR__ . '/VerifyResponseXml.php';
+            }
+
+            $this->content($xml, 'verify_xml');
+
+            return $this->makeResponse($xml);
+        }
     }
 
     protected function getVerifyContent(array $input)

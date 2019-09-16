@@ -83,10 +83,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $settlementInitiateRules = [
+        'merchant_ids'        => 'sometimes|array',
+        'merchant_ids.*'      => 'sometimes|string|size:14',
         'use_queue'           => 'sometimes|boolean',
         'all'                 => 'sometimes|integer',
         'testSettleTimeStamp' => 'sometimes|integer',
         'logging'             => 'sometimes|boolean',
+        'ignore_time_limit'   => 'sometimes|string'
     ];
 
     protected function validateFailedResponse($attribute, $value)

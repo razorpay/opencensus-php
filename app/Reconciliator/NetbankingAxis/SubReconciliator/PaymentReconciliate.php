@@ -61,7 +61,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         //
         // Successfully authorized payments are indicated by Y - Status::YES

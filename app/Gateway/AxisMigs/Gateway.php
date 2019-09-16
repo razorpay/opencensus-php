@@ -6,6 +6,7 @@ use Str;
 use Carbon\Carbon;
 use Requests_Hooks;
 
+use RZP\Diag\EventCode;
 use RZP\Gateway\Mpi;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
@@ -91,6 +92,8 @@ class Gateway extends Base\Gateway
 
     protected function authorizeRecurring(array $content, array $input)
     {
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         unset($content['vpc_CardSecurityCode'], $content['vpc_Card']);
         unset($content['vpc_ReturnURL'], $content['vpc_gateway']);
 
@@ -110,6 +113,8 @@ class Gateway extends Base\Gateway
 
     protected function authorizeNotEnrolled(array $content, array $input)
     {
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
         $this->traceGatewayPaymentResponse(
@@ -126,6 +131,8 @@ class Gateway extends Base\Gateway
 
     protected function authorizeEnrolled(array $input, array $authResponse)
     {
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         // Adding dummy callback URL
         $input['callbackUrl'] = '';
 
@@ -206,24 +213,14 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $mpiEntity = $this->app['repo']
-                          ->mpi
-                          ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
-
-        $authenticationGateway = $this->gateway;
-
-        if ($mpiEntity !== null)
-        {
-            $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
-        }
-
-        switch ($authenticationGateway)
+        switch ($input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY])
         {
             case Payment\Gateway::MPI_BLADE:
             case Payment\Gateway::MPI_ENSTAGE:
                 parent::callback($input);
 
-                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+                $authResponse = $this->callAuthenticationGateway($input,
+                                                    $input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY]);
 
                 $this->setCardNumberAndCvv($input);
 

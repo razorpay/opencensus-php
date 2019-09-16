@@ -2,13 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use App;
-use Redirect;
 use Request;
+use Redirect;
+use ApiResponse;
+
 use RZP\Models\Admin;
 use RZP\Models\Report;
-use RZP\Constants\Entity as E;
 
 class AdminController extends Controller
 {
@@ -224,6 +224,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getHourlyReconciliationStatusSummary()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchHourlyReconciliationSummary($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createAdminBatch()
     {
         $input = Request::all();
@@ -301,5 +310,39 @@ class AdminController extends Controller
         $response = $this->app['card.cardVault']->createVaultToken($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function setGatewayDowntimeConf()
+    {
+        $input  = Request::all();
+
+        $data = $this->service()->setGatewayDowntimeConf($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getGatewayDowntimeConf()
+    {
+        $data = $this->service()->getGatewayDowntimeConf();
+
+        return ApiResponse::json($data);
+    }
+
+    public function sendTestSms()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendTestSms($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bulkCreateEntity()
+    {
+        $input = Request::all();
+
+        $data  = $this->service()->bulkCreate($input);
+
+        return ApiResponse::json($data);
     }
 }

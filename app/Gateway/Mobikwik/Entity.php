@@ -2,10 +2,22 @@
 
 namespace RZP\Gateway\Mobikwik;
 
+use RZP\Constants;
 use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
+    const METHOD        = 'method';
+    const AMOUNT        = 'amount';
+    const ORDERID       = 'orderid';
+    const TXID          = 'txid';
+    const MID           = 'mid';
+    const MERCHANTNAME  = 'merchantname';
+    const SHOWMOBILE    = 'showmobile';
+    const STATUSCODE    = 'statuscode';
+    const STATUSMSG     = 'statusmessage';
+    const REFID         = 'refid';
+    const ISPARTIAL     = 'ispartial';
     protected $fields = array(
         'id',
         'payment_id',
@@ -44,7 +56,7 @@ class Entity extends Base\Entity
         'ispartial'
     );
 
-    protected $entity = 'mobikwik';
+    protected $entity = Constants\Entity::MOBIKWIK;
 
     // ----------------------- Setters --------------------------------------------
 

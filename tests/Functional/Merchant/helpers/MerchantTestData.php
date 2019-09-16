@@ -4,6 +4,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
+use RZP\Exception\BadRequestValidationFailureException;
 
 return [
     'testCreateKey' => [
@@ -145,7 +146,8 @@ return [
                     'merchant_id' => '1X4hRFHFx4UiXt',
                     'paytm' => false,
                     'disabled_banks' => [],
-                ]
+                ],
+                'receipt_email_trigger_event' => 'authorized',
             ],
         ],
     ],
@@ -304,7 +306,8 @@ return [
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
-                'fee_credits_threshold'     => 1000
+                'fee_credits_threshold'       => 1000,
+                'receipt_email_trigger_event' => 'captured',
             ]),
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -326,7 +329,8 @@ return [
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
-                'fee_credits_threshold'    => 1000
+                'fee_credits_threshold'       => 1000,
+                'receipt_email_trigger_event' => 'captured'
             ]
         ]
     ],
@@ -795,6 +799,146 @@ return [
         ],
     ],
 
+    'testMerchantRestricted2faEnable' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => true,
+            ],
+        ],
+    ],
+
+    'testMerchant2faEnable' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => true,
+            ],
+        ],
+    ],
+
+    'testFailedMerchant2faEnableInvalidPass' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PASSWORD,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PASSWORD,
+        ],
+    ],
+
+    'testMerchant2faDisable' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => false,
+            ],
+        ],
+    ],
+
+    'testFailedMerchantEnable2faMobNotPresent' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY,
+        ],
+    ],
+
+    'testFailedMerchantEnable2faMobNotVerified' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY,
+        ],
+    ],
+
+    'testFailedMerchantEnable2faNotOwner' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testFailedMerchantRestricted2faEnableUserMobNotVerified' => [
+        'request' => [
+            'url'     => '/merchants/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
     'testEditMerchantConfig' => [
         'request'  => [
             'content' => [
@@ -946,6 +1090,26 @@ return [
         'response' => [
             'content' => [
                 'auto_refund_delay' => 10800
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditMerchantDefaultRefundSpeed' => [
+        'request' => [
+            'content' => [
+                'default_refund_speed' => 'optimum',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'default_refund_speed' => 'optimum'
             ],
             'status_code' => 200,
         ]
@@ -1192,7 +1356,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/1000InvalidMID/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -1232,7 +1396,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/10000000000000/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -1570,6 +1734,20 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithPartnerLogo' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'options' => [
+                    'partnership_logo' => 'https://cdn.razorpay.com/logos/lalalala.png'
+                ]
             ],
         ],
     ],
@@ -4315,6 +4493,23 @@ return [
         ],
     ],
 
+    'testInternationalEnableWhenInternationalActivationFlowIsAlreadySet' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'international'    => true,
+                'convert_currency' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testInternationalEnableWhenWebsiteNotSet' => [
         'request'  => [
             'url'     => '/merchant/international',
@@ -4429,4 +4624,312 @@ return [
         ],
     ],
 
+    'testGetOrgDetails' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/org',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'id'                => 'org_100000razorpay',
+                'primary_host_name' => 'dashboard.razorpay.in',
+            ],
+        ],
+    ],
+
+    'testMerchantApplyRestrictionSettingsSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'add'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '',
+                'restricted'  => true
+            ]
+        ],
+    ],
+
+    'testMerchantApplyRestrictionSettingFailure' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'add'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant Restricted Settings failed to apply because users of merchant are associated with multiple merchants',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED,
+        ],
+    ],
+
+    'testMerchantRemoveRestrictionSettings' => [
+        'request'  => [
+            'url'     => '/merchant/restrict',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id' => '',
+                'action'      => 'remove'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '',
+                'restricted'  => false
+            ]
+        ],
+    ],
+
+    'testEditDashboardWhitelistedIpsLive' => [
+        'request'  => [
+            'content' => [
+                'dashboard_whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+            ]
+        ]
+    ],
+    'testEditDashboardInvalidWhitelistedIpsLive' => [
+        'request'   => [
+            'content' => [
+                'dashboard_whitelisted_ips_live' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testEditDashboardWhitelistedIpsTest' => [
+        'request'  => [
+            'content' => [
+                'dashboard_whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+            ]
+        ]
+    ],
+    'testEditDashboardInvalidWhitelistedIpsTest' => [
+        'request'   => [
+            'content' => [
+                'dashboard_whitelisted_ips_test' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testEditDashboardRedundantWhitelistedIpsTest' => [
+        'request'   => [
+            'content' => [
+                'dashboard_whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The dashboard_whitelisted_ips_test.0 field has a duplicate value.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testEditDashboardRedundantWhitelistedIpsLive' => [
+        'request'   => [
+            'content' => [
+                'dashboard_whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The dashboard_whitelisted_ips_live.0 field has a duplicate value.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateContactMobileOfUser' => [
+        'request'  => [
+            'url'     => '/users/contact',
+            'method'  => 'patch',
+            'content' => [
+                'user_id'        => '',
+                'contact_mobile' => '999999999'
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateContactMobileOfUserByAdmin' => [
+        'request'  => [
+            'url'     => '/users-admin/contact',
+            'method'  => 'patch',
+            'content' => [
+                'user_id'        => '',
+                'contact_mobile' => '999999999'
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateContactMobileOfSelfUser' => [
+        'request'   => [
+            'url'     => '/users/contact',
+            'method'  => 'patch',
+            'content' => [
+                'user_id'        => '',
+                'contact_mobile' => '999999999'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Action not allowed for self user',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER,
+        ],
+    ],
+
+    'testUserAccountUnlock' => [
+        'request'  => [
+            'url'     => '/users/account/{id}/unlock',
+            'method'  => 'put',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'account_locked' => false,
+                'user_id'        => '',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

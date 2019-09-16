@@ -57,7 +57,7 @@ return [
                     [
                         Header::UPI_MINDGATE_MERCHANT_ID          => '10NodalAccount',
                         Header::UPI_MINDGATE_GATEWAY_MERCHANT_ID  => 'HDFC000011670817',
-                        Header::UPI_MINDGATE_VPA                  => 'pqr.razorpay@hdfcbank',
+                        Header::UPI_MINDGATE_VPA                  => 'abc.razorpay@hdfcbank',
                         Header::UPI_MINDGATE_COLLECT              => null,
                         Header::UPI_MINDGATE_PAY                  => null,
                     ]

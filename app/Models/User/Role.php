@@ -2,16 +2,15 @@
 
 namespace RZP\Models\User;
 
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
+use RZP\Exception\LogicException;
+use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestException;
 
 class Role
 {
-    protected $productRoles = [];
-
-    public function __construct()
-    {
-        $this->setProductRoles();
-    }
     const MANAGER               = 'manager';
     const OPERATIONS            = 'operations';
     const FINANCE               = 'finance';
@@ -23,6 +22,9 @@ class Role
     const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
     const RBL_SUPERVISOR        = 'rbl_supervisor';
     const RBL_AGENT             = 'rbl_agent';
+
+    // SELLERAPP and extra functionality (Reports) - not publicly available.
+    const SELLERAPP_PLUS        = 'sellerapp_plus';
 
     // Payment Link Agent - not publicly available
     const AGENT                 = 'agent';
@@ -36,6 +38,7 @@ class Role
         self::SELLERAPP,
         self::OWNER,
         self::AGENT,
+        self::SELLERAPP_PLUS,
     ];
 
     const WRITER_ROLES = [
@@ -57,6 +60,7 @@ class Role
     const PL_ROLES = [
         self::SELLERAPP,
         self::AGENT,
+        self::SELLERAPP_PLUS,
     ];
 
     const LINKED_ACCOUNT_ROLES = [
@@ -74,12 +78,18 @@ class Role
         self::RBL_AGENT
     ];
 
-    public function setProductRoles()
+    /**
+     * Only Owner/Admin can update some user details
+     * such as mobile number, unlock user account.
+     */
+    const USER_DETAILS_UPDATE_ROLES = [
+        self::OWNER,
+        self::ADMIN,
+    ];
+
+    public static function getPrimaryRoles(): array
     {
-        $this->productRoles = [
-            Product::PRIMARY => array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES),
-            Product::BANKING => self::BANKING_ROLES,
-        ];
+        return array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES);
     }
 
     public static function exists(string $action): bool
@@ -87,15 +97,39 @@ class Role
         return defined(get_class() . '::' . strtoupper($action));
     }
 
-    public function validateProductRole(string $role, string $product): bool
+    public static function validateProductRoleForMerchant(string $role, string $product, Merchant\Entity $merchant = null): bool
     {
-        $productRoles = $this->productRoles[$product];
+        switch ($product)
+        {
+            case Product::PRIMARY:
+                $productRoles = self::getPrimaryRoles();
+                break;
+
+            case Product::BANKING:
+                $productRoles = BankingRole::getAllRoles();
+                break;
+
+            default:
+                throw new LogicException('Logic not defined for product: ' . $product);
+        }
 
         return (in_array($role, $productRoles, true) === true);
     }
 
     public static function allExceptPaymentLinkRoles()
     {
-        return array_diff(self::ALL_ROLES, self::PL_ROLES);
+        $allRoles = array_merge(self::ALL_ROLES, BankingRole::getAllRoles());
+
+        return array_diff($allRoles, self::PL_ROLES);
+    }
+
+    public function validateMerchantUserRoleForUpdateUserDetails(string $role)
+    {
+        if (in_array($role, self::USER_DETAILS_UPDATE_ROLES, true) === true)
+        {
+            return;
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
     }
 }

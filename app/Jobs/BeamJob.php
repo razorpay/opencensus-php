@@ -6,7 +6,10 @@ use Mail;
 use Requests;
 use Requests_Response;
 
+use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Beam\BeamRequestFailure;
@@ -27,7 +30,6 @@ class BeamJob extends Job
     /**
      * @var string
      */
-    protected $queueConfigKey = 'beam_request';
 
     /**
      * @var array
@@ -180,6 +182,8 @@ class BeamJob extends Job
             {
                 $this->release($this->retryTimeLines[$this->attempts() - 1]);
 
+                $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_RETRY);
+
                 return;
             }
 
@@ -192,6 +196,8 @@ class BeamJob extends Job
 
         if (in_array($this->response->status_code, self::HTTP_SUCCESS_CODES, true) === true)
         {
+            $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_SUCCESS);
+
             $this->delete();
 
             return;
@@ -218,6 +224,10 @@ class BeamJob extends Job
     {
         try
         {
+            $batchFundTransferId = null;
+
+            $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_FAILED);
+
             $this->sendEmail();
 
             $operation = $this->mailInfo['filetype'] .' file send failed through Beam';
@@ -256,7 +266,7 @@ class BeamJob extends Job
             array_push($fileList, $fileParam[count($fileParam) - 1]);
         }
 
-        $this->fileList = implode(",", $fileList);
+        $this->fileList = implode(',', $fileList);
 
         $body = 'Hi,\n'. $this->mailInfo['filetype'] .' file send failed through Beam.\n'.
             'Channel  :: ' . $this->mailInfo['channel'] . '\n'.
@@ -267,5 +277,33 @@ class BeamJob extends Job
             'subject'   => $this->mailInfo['subject'],
             'recipient' => $this->mailInfo['recipient'],
         ];
+    }
+
+    protected function raiseSettlementBeamJobEvent(array $eventCode)
+    {
+        $channel = null;
+
+        // Setting this key only when beam job is called
+        // for settlements file push.
+        if(isset($this->mailInfo['batchFundTransferId']) === true)
+        {
+            if(isset($this->mailInfo['channel']) === true)
+            {
+                $channel = $this->mailInfo['channel'];
+            }
+
+            $batchFundTransferId = $this->mailInfo['batchFundTransferId'];
+
+            $customProperties = [
+                'channel'                           => $channel,
+                'batch_fund_transfer_attempt_id'    => $batchFundTransferId,
+            ];
+
+            app('diag')->trackSettlementEvent(
+                $eventCode,
+                null,
+                null,
+                $customProperties);
+        }
     }
 }

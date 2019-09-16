@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Validator;
 
-
 class CardVault
 {
     const TOKEN             = 'token';
@@ -165,6 +164,8 @@ class CardVault
             'options' => $options,
             'content' => $data
         ];
+
+        $this->trace->info(TraceCode::CARD_VAULT_REQUEST,[]);
 
         $response = $this->sendCardVaultRequest($request);
 

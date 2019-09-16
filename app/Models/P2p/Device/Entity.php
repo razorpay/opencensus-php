@@ -56,6 +56,7 @@ class Entity extends Base\Entity
 
     protected $visible = [
         Entity::ID,
+        Entity::ENTITY,
         Entity::CUSTOMER_ID,
         Entity::MERCHANT_ID,
         Entity::CONTACT,
@@ -73,8 +74,8 @@ class Entity extends Base\Entity
 
     protected $public = [
         Entity::ID,
+        Entity::ENTITY,
         Entity::CUSTOMER_ID,
-        Entity::MERCHANT_ID,
         Entity::CONTACT,
         Entity::SIMID,
         Entity::UUID,
@@ -118,6 +119,12 @@ class Entity extends Base\Entity
         Entity::DELETED_AT   => 'int',
         Entity::CREATED_AT   => 'int',
         Entity::UPDATED_AT   => 'int',
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::CUSTOMER_ID,
     ];
 
     /***************** GENERATORS *****************/
@@ -252,6 +259,14 @@ class Entity extends Base\Entity
     }
 
     /**
+     * @return string self::CONTACT without initial plus
+     */
+    public function getFormattedContact()
+    {
+        return substr($this->getContact(), -12);
+    }
+
+    /**
      * @return string self::SIMID
      */
     public function getSimid()
@@ -300,6 +315,18 @@ class Entity extends Base\Entity
     }
 
     /**
+     * @return string self::APP_NAME
+     */
+    public function getAppFullName()
+    {
+        $map = [
+            'com.razorpay' => 'Bajaj Application'
+        ];
+
+        return array_get($map, $this->getAppName(), 'Razorpay Mobile Application');
+    }
+
+    /**
      * @return string self::IP
      */
     public function getIp()
@@ -338,5 +365,17 @@ class Entity extends Base\Entity
     public function deviceTokens()
     {
         return $this->hasMany(DeviceToken\Entity::class, DeviceToken\Entity::DEVICE_ID);
+    }
+
+    public function setPublicCustomerIdAttribute(& $input)
+    {
+        $input[self::CUSTOMER_ID] = Customer\Entity::getSignedId($input[self::CUSTOMER_ID]);
+    }
+
+    public function toArrayPartner(): array
+    {
+        $array = $this->toArrayPublic();
+
+        return array_except($array, [self::AUTH_TOKEN]);
     }
 }

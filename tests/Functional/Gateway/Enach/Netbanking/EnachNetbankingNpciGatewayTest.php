@@ -22,6 +22,7 @@ use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 
 class EnachNetbankingNpciGatewayTest extends TestCase
 {
@@ -29,6 +30,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     use DbEntityFetchTrait;
     use AttemptTrait;
     use AttemptReconcileTrait;
+    use PartnerTrait;
 
     public function setUp()
     {
@@ -83,6 +85,27 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('netbanking', $token['auth_type']);
 
         $this->assertEquals('initiated', $token['recurring_status']);
+    }
+
+    public function testPartnerPayment()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $this->doPartnerAuthPayment($payment, $clientId, $submerchantId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame('authorized', $payment['status']);
     }
 
     public function testPaymentRejectResponse()
@@ -311,19 +334,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     {
         $response = $this->makeDebitPayment();
 
-        $lastDebitPayment = $this->getLastEntity('payment', true);
-
-        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
-        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
-
-        $this->fixtures->edit(
-            'payment',
-            $lastDebitPayment['id'],
-            [
-                'created_at' => $createdAt,
-            ]);
-
-        $paymentId = substr($response['razorpay_payment_id'], 4);
+        $paymentId = $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
 
         $this->ba->adminAuth();
 
@@ -358,7 +369,61 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
+    }
+
+    public function testDebitFileGenerationMultipleUtilityCode()
+    {
+        $response = $this->makeDebitPayment();
+
+        $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+
+        $this->fixtures->create('terminal:direct_enach_npci_netbanking_terminal');
+
+        $response = $this->makeDebitPayment();
+
+        $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testDebitFileGeneration'];
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', ['count' => 2], true);
+
+        $directTerminalFile = $files['items'][0];
+        $sharedTerminalFile = $files['items'][1];
+
+        $fileNamingConvention = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        $expectedFileContentForDirectTerminal = [
+            'type'        => 'enach_npci_nb_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'csv',
+            'name'        => strtr($fileNamingConvention, ['{$date}' => $date, '{$utilityCode}' => 'direct_utility_code'])
+        ];
+
+        $expectedFileContentForSharedTerminal = [
+            'type'        => 'enach_npci_nb_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'csv',
+            'name'        => strtr($fileNamingConvention, ['{$date}' => $date, '{$utilityCode}' => 'shared_utility_code'])
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentForDirectTerminal, $directTerminalFile);
+        $this->assertArraySelectiveEquals($expectedFileContentForSharedTerminal, $sharedTerminalFile);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileReconciliation()
@@ -428,6 +493,30 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('Balance insufficient', $enach['error_message']);
 
         $this->assertEquals('REJECTED', $enach['status']);
+    }
+
+    public function testDebitFilePendingResponse()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'PENDING',
+            'error_code' => '98',
+            'error_desc' => 'BANK EXTENDED',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(10));
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('created', $payment['status']);
     }
 
     public function testRegisterReconLateAuth()
@@ -548,9 +637,11 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $payment['order_id'] = $order->getPublicId();
 
-        $this->doAuthPayment($payment);
+        $response = $this->doAuthPayment($payment);
 
-        $paymentEntity = $this->getLastEntity('payment', true);
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $paymentEntity = $this->getEntityById('payment', $response['razorpay_payment_id'],true);
 
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
@@ -583,8 +674,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             if ($action === 'authorize_get_secure_data')
             {
                 $content['Accptd'] = 'false';
-                $content['ReasonCode'] = '1022';
-                $content['ReasonDesc'] = 'Invalid Authentication';
+                $content['ReasonCode'] = 'AP04';
+                $content['ReasonDesc'] = 'Account Inoperative';
                 $content['RejectBy'] = 'Bank';
             }
         });
@@ -613,6 +704,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 $url, $method, $content);
         }
 
+        $this->ba->publicCallbackAuth();
+
         $response = $this->sendRequest($request);
 
         $this->assertEquals($response->getStatusCode(), '302');
@@ -623,6 +716,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         if (filter_var($data['url'], FILTER_VALIDATE_URL))
         {
+            // Hack: only way to remove IsPartnerAuth from container
+            $this->app['basicauth']->checkAndSetKeyId('');
+
             return $this->submitPaymentCallbackRedirect($data['url']);
         }
 
@@ -871,5 +967,22 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertNotNull($attempt['utr']);
+    }
+
+    protected function updateCreatedAtOfPayment($paymentId)
+    {
+        $this->fixtures->stripSign($paymentId);
+
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'payment',
+            $paymentId,
+            [
+                'created_at' => $createdAt,
+            ]);
+
+        return $paymentId;
     }
 }

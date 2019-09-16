@@ -32,4 +32,6 @@ class RequestFields
     const DYNAMIC_MERCHANT_NAME     = 'pDBAName';
     const AUTH_ID                   = 'pAuthID';
     const MCC                       = 'pMCC';
+    const MC_DS_TRANSACTION_ID      = 'pMCDSTransactionID';
+    const MC_PROTOCOL_VERSION       = 'pMCProtocolVersion';
 }

@@ -148,6 +148,27 @@ return [
         ]
     ],
 
+    'testCreateSbiTpvTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_sbi',
+                'gateway_merchant_id'       => 'netbanking_sbi_merchant_id',
+                'gateway_secure_secret'     => 'random_secret',
+                'netbanking'                => '1',
+                'tpv'                       => '1',
+                'network_category'          => 'ecommerce',
+                ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => 'netbanking_sbi_merchant_id',
+                'enabled'              => true,
+                'tpv'                  => 1
+            ]
+        ]
+    ],
+
     'testBankAccountTerminalValidationRules' => [
         'request' => [
             'content' => [
@@ -566,6 +587,7 @@ return [
                 'type'                      => [
                     'non_recurring' => '1',
                 ],
+                'international'             => 0,
             ],
             'url' => '/merchants/10000000000000/terminals',
             'method' => 'POST'
@@ -588,12 +610,15 @@ return [
     'testAssignTerminalForDifferentGateway' => [
         'request'  => [
             'content' => [
-                'gateway'               => 'atom',
-                'netbanking'            => 1,
-                'gateway_merchant_id'   => '12345',
-                'gateway_secure_secret' => 'random_secret',
-                'gateway_access_code'   => 'random_access_code',
-                'network_category'      => 'ecommerce',
+                'gateway'                    => 'atom',
+                'netbanking'                 => 1,
+                'gateway_merchant_id'        => '12345',
+                'gateway_secure_secret'      => 'random_secret',
+                'gateway_access_code'        => 'random_access_code',
+                'network_category'           => 'ecommerce',
+                'gateway_terminal_password'  => 'password',
+                'gateway_terminal_password2' => 'password2',
+                'gateway_secure_secret2'     => 'securepassword',
             ],
             'url'     => '/merchants/10000000000000/terminals',
             'method'  => 'POST'
@@ -744,6 +769,28 @@ return [
         ],
     ],
 
+    'testCreateGooglePayTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'google_pay',
+                'omnichannel'          => 1,
+                'gateway_merchant_id'  => 'razorpay upi',
+                'gateway_merchant_id2' => 'abc@icici',
+                'vpa'                  => 'abc@icici',
+                'capability'           => 1,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway'       => 'google_pay',
+                'upi'           => false,
+                'omnichannel'   => true,
+                'enabled'       => true,
+            ],
+        ],
+    ],
+
     'testCreateTpvTerminalWithInvalidMethod' => [
         'request' => [
             'content' => [
@@ -870,6 +917,28 @@ return [
         ],
     ],
 
+    'testCreateTerminalWithMerchantProcurer' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_kotak',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'procurer'                  => 'merchant',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+                'procurer'             => 'merchant',
+            ]
+        ]
+    ],
+
     'testCreateCardlessEmiTerminal'  => [
         'request' => [
             'content' => [
@@ -899,17 +968,17 @@ return [
                 'gateway'                   => 'paylater',
                 'gateway_acquirer'          => 'epaylater',
                 'category'                  => 1234,
-                'gateway_merchant_id'       => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+                'gateway_merchant_id'       => 'abcd',
                 'gateway_merchant_id2'      => 'test merchant',
                 'mode'                      => 1,
                 'paylater'                  => 1,
-                'gateway_terminal_password' => 'aabbccdd'
+                'gateway_terminal_password' => '64517b42-7b8d-4137-924a-4b6a065e7e4d'
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content'  => [
-                'gateway_merchant_id'  => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+                'gateway_merchant_id'  => 'abcd',
                 'gateway_merchant_id2' => 'test merchant',
                 'enabled'              => true,
             ]
@@ -935,13 +1004,35 @@ return [
         ]
     ],
 
+    'testCreateUpiCitiTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_citi',
+                'gateway_merchant_id'       => 'CITI0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl',
+                'type'                      => [
+                    'collect'               => 1,
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'CITI0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
-                'gateway'                   => 'upi_mindgate',
+                'gateway'                   => 'upi_airtel',
                 'gateway_merchant_id'       => '12345',
                 'gateway_merchant_id2'      => '12345678',
-                'gateway_terminal_password' => '12345678',
+                'gateway_terminal_password' => 'random password',
                 'upi'                       => '1',
                 'tpv'                       => '2',
                 'type'                      => [
@@ -1156,6 +1247,8 @@ return [
                 'gateway_terminal_id'       => 'randommerchantid',
                 'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
                 'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
                 'gateway_acquirer'          => 'hdfc',
                 'mode'                      => Terminal\Mode::DUAL,
                 'type'                      => [
@@ -1184,6 +1277,8 @@ return [
                 'gateway_terminal_id'       => 'randommerchantid',
                 'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
                 'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
                 'gateway_acquirer'          => 'hdfc',
                 'mode'                      => Terminal\Mode::DUAL,
                 'type'                      => [
@@ -1286,6 +1381,26 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE ,
         ],
+    ],
+
+    'testTerminalSecretCheck' => [
+        'request' => [
+            'content' => [
+                'gateway_terminal_password'  => '1234',
+                'gateway_terminal_password2' => '21234',
+                'gateway_secure_secret'      => '0123',
+                'gateway_secure_secret2'     => '201235',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_terminal_password'  => true,
+                'gateway_terminal_password2' => true,
+                'gateway_secure_secret'      => true,
+                'gateway_secure_secret2'     => false,
+            ]
+        ]
     ],
 
     'testAddAmazonPayTerminal' => [
@@ -1399,42 +1514,91 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'ANDB'   => "Andhra Bank",
-                    'BKID'   => "Bank of India",
-                    'MAHB'   => "Bank of Maharashtra",
-                    'CNRB'   => "Canara Bank",
-                    'CBIN'   => "Central Bank of India",
-                    'CIUB'   => "City Union Bank",
-                    'DCBL'   =>"DCB Bank",
-                    'DEUT'   => "Deutsche Bank",
-                    'DLXB'   => "Dhanlaxmi Bank",
-                    'ESFB'   => "Equitas Small Finance Bank",
-                    'IBKL'   =>"IDBI",
-                    'IDIB'   => "Indian Bank",
-                    'IOBA'   => "Indian Overseas Bank",
-                    'JAKA'   => "Jammu and Kashmir Bank",
-                    'KARB'   => "Karnataka Bank",
-                    'KVBL'   => "Karur Vysya Bank",
-                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
-                    'PMCB'   => "Punjab & Maharashtra Co-operative Bank",
-                    'PSIB'   => "Punjab & Sind Bank",
-                    'PUNB_R' => "Punjab National Bank - Retail Banking",
-                    'SRCB'   => "Saraswat Co-operative Bank",
-                    'SIBL'   => "South Indian Bank",
-                    'SCBL'   => "Standard Chartered Bank",
-                    'SBBJ'   => "State Bank of Bikaner and Jaipur",
-                    'SBHY'   => "State Bank of Hyderabad",
-                    'SBIN'   => "State Bank of India",
-                    'SBMY'   => "State Bank of Mysore",
-                    'STBP'   => "State Bank of Patiala",
-                    'SBTR'   => "State Bank of Travancore",
-                    'TMBL'   => "Tamilnadu Mercantile Bank",
-                    'UCBA'   =>"UCO Bank",
-                    'UBIN'   => "Union Bank of India",
-                    'UTBI'   => "United Bank of India",
-                    'VIJB'   => "Vijaya Bank",
+                    'ANDB'   => 'Andhra Bank',
+                    'BKID'   => 'Bank of India',
+                    'MAHB'   => 'Bank of Maharashtra',
+                    'CNRB'   => 'Canara Bank',
+                    'CBIN'   => 'Central Bank of India',
+                    'CIUB'   => 'City Union Bank',
+                    'DCBL'   => 'DCB Bank',
+                    'DEUT'   => 'Deutsche Bank',
+                    'DLXB'   => 'Dhanlaxmi Bank',
+                    'ESFB'   => 'Equitas Small Finance Bank',
+                    'IBKL'   => 'IDBI',
+                    'IDIB'   => 'Indian Bank',
+                    'IOBA'   => 'Indian Overseas Bank',
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'KVBL'   => 'Karur Vysya Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                    'PUNB_R' => 'Punjab National Bank - Retail Banking',
+                    'SRCB'   => 'Saraswat Co-operative Bank',
+                    'SIBL'   => 'South Indian Bank',
+                    'SCBL'   => 'Standard Chartered Bank',
+                    'SBBJ'   => 'State Bank of Bikaner and Jaipur',
+                    'SBHY'   => 'State Bank of Hyderabad',
+                    'SBIN'   => 'State Bank of India',
+                    'SBMY'   => 'State Bank of Mysore',
+                    'STBP'   => 'State Bank of Patiala',
+                    'SBTR'   => 'State Bank of Travancore',
+                    'TMBL'   => 'Tamilnadu Mercantile Bank',
+                    'UCBA'   => 'UCO Bank',
+                    'UBIN'   => 'Union Bank of India',
+                    'UTBI'   => 'United Bank of India',
+                    'VIJB'   => 'Vijaya Bank',
                 ],
                 'disabled' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetTerminalBanksForBilldesk' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'ANDB'   => 'Andhra Bank',
+                    'BKID'   => 'Bank of India',
+                    'MAHB'   => 'Bank of Maharashtra',
+                    'CNRB'   => 'Canara Bank',
+                    'CBIN'   => 'Central Bank of India',
+                    'CIUB'   => 'City Union Bank',
+                    'DCBL'   => 'DCB Bank',
+                    'DEUT'   => 'Deutsche Bank',
+                    'DLXB'   => 'Dhanlaxmi Bank',
+                    'IBKL'   => 'IDBI',
+                    'IDIB'   => 'Indian Bank',
+                    'IOBA'   => 'Indian Overseas Bank',
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'KVBL'   => 'Karur Vysya Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                    'PUNB_R' => 'Punjab National Bank - Retail Banking',
+                    'SRCB'   => 'Saraswat Co-operative Bank',
+                    'SIBL'   => 'South Indian Bank',
+                    'SCBL'   => 'Standard Chartered Bank',
+                    'SBBJ'   => 'State Bank of Bikaner and Jaipur',
+                    'SBHY'   => 'State Bank of Hyderabad',
+                    'SBIN'   => 'State Bank of India',
+                    'SBMY'   => 'State Bank of Mysore',
+                    'STBP'   => 'State Bank of Patiala',
+                    'SBTR'   => 'State Bank of Travancore',
+                    'TMBL'   => 'Tamilnadu Mercantile Bank',
+                    'UCBA'   => 'UCO Bank',
+                    'UBIN'   => 'Union Bank of India',
+                    'UTBI'   => 'United Bank of India',
+                    'VIJB'   => 'Vijaya Bank',
+                ],
+                'disabled' => [
+                    'ESFB'   => 'Equitas Small Finance Bank',
+                    'FDRL'   => 'Federal Bank',
                 ],
             ],
         ],
@@ -1447,20 +1611,20 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'MAHB' => "Bank of Maharashtra",
-                    'CIUB' => "City Union Bank",
-                    'DCBL' => "DCB Bank",
-                    'DEUT' => "Deutsche Bank",
-                    'DLXB' => "Dhanlaxmi Bank",
-                    'IBKL' => "IDBI",
-                    'IDIB' => "Indian Bank",
-                    'JAKA' => "Jammu and Kashmir Bank",
-                    'KVBL' => "Karur Vysya Bank",
-                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
-                    'SRCB' => "Saraswat Co-operative Bank",
-                    'SBIN' => "State Bank of India",
-                    'TMBL' => "Tamilnadu Mercantile Bank",
-                    'YESB' => "Yes Bank",
+                    'MAHB' => 'Bank of Maharashtra',
+                    'CIUB' => 'City Union Bank',
+                    'DCBL' => 'DCB Bank',
+                    'DEUT' => 'Deutsche Bank',
+                    'DLXB' => 'Dhanlaxmi Bank',
+                    'IBKL' => 'IDBI',
+                    'IDIB' => 'Indian Bank',
+                    'JAKA' => 'Jammu and Kashmir Bank',
+                    'KVBL' => 'Karur Vysya Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'SRCB' => 'Saraswat Co-operative Bank',
+                    'SBIN' => 'State Bank of India',
+                    'TMBL' => 'Tamilnadu Mercantile Bank',
+                    'YESB' => 'Yes Bank',
                 ],
                 'disabled' => [
                 ],
@@ -1475,7 +1639,7 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'UTIB_C' => "Axis Bank - Corporate Banking",
+                    'UTIB_C' => 'Axis Bank - Corporate Banking',
                 ],
                 'disabled' => [
                 ],
@@ -1512,42 +1676,42 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'SBIN'   => "State Bank of India",
+                    'SBIN'   => 'State Bank of India',
                 ],
                 'disabled' => [
-                    'ANDB'   => "Andhra Bank",
-                    'BKID'   => "Bank of India",
-                    'MAHB'   => "Bank of Maharashtra",
-                    'CNRB'   => "Canara Bank",
-                    'CBIN'   => "Central Bank of India",
-                    'CIUB'   => "City Union Bank",
-                    'DCBL'   =>"DCB Bank",
-                    'DEUT'   => "Deutsche Bank",
-                    'DLXB'   => "Dhanlaxmi Bank",
-                    'ESFB'   => "Equitas Small Finance Bank",
-                    'IBKL'   =>"IDBI",
-                    'IDIB'   => "Indian Bank",
-                    'IOBA'   => "Indian Overseas Bank",
-                    'JAKA'   => "Jammu and Kashmir Bank",
-                    'KARB'   => "Karnataka Bank",
-                    'KVBL'   => "Karur Vysya Bank",
-                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
-                    'PMCB'   => "Punjab & Maharashtra Co-operative Bank",
-                    'PSIB'   => "Punjab & Sind Bank",
-                    'PUNB_R' => "Punjab National Bank - Retail Banking",
-                    'SRCB'   => "Saraswat Co-operative Bank",
-                    'SIBL'   => "South Indian Bank",
-                    'SCBL'   => "Standard Chartered Bank",
-                    'SBBJ'   => "State Bank of Bikaner and Jaipur",
-                    'SBHY'   => "State Bank of Hyderabad",
-                    'SBMY'   => "State Bank of Mysore",
-                    'STBP'   => "State Bank of Patiala",
-                    'SBTR'   => "State Bank of Travancore",
-                    'TMBL'   => "Tamilnadu Mercantile Bank",
-                    'UCBA'   =>"UCO Bank",
-                    'UBIN'   => "Union Bank of India",
-                    'UTBI'   => "United Bank of India",
-                    'VIJB'   => "Vijaya Bank",
+                    'ANDB'   => 'Andhra Bank',
+                    'BKID'   => 'Bank of India',
+                    'MAHB'   => 'Bank of Maharashtra',
+                    'CNRB'   => 'Canara Bank',
+                    'CBIN'   => 'Central Bank of India',
+                    'CIUB'   => 'City Union Bank',
+                    'DCBL'   => 'DCB Bank',
+                    'DEUT'   => 'Deutsche Bank',
+                    'DLXB'   => 'Dhanlaxmi Bank',
+                    'ESFB'   => 'Equitas Small Finance Bank',
+                    'IBKL'   => 'IDBI',
+                    'IDIB'   => 'Indian Bank',
+                    'IOBA'   => 'Indian Overseas Bank',
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'KVBL'   => 'Karur Vysya Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                    'PUNB_R' => 'Punjab National Bank - Retail Banking',
+                    'SRCB'   => 'Saraswat Co-operative Bank',
+                    'SIBL'   => 'South Indian Bank',
+                    'SCBL'   => 'Standard Chartered Bank',
+                    'SBBJ'   => 'State Bank of Bikaner and Jaipur',
+                    'SBHY'   => 'State Bank of Hyderabad',
+                    'SBMY'   => 'State Bank of Mysore',
+                    'STBP'   => 'State Bank of Patiala',
+                    'SBTR'   => 'State Bank of Travancore',
+                    'TMBL'   => 'Tamilnadu Mercantile Bank',
+                    'UCBA'   => 'UCO Bank',
+                    'UBIN'   => 'Union Bank of India',
+                    'UTBI'   => 'United Bank of India',
+                    'VIJB'   => 'Vijaya Bank',
                 ],
             ],
         ],
@@ -1626,7 +1790,7 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => "HDFC Bank",
+                    'HDFC' => 'HDFC Bank',
                 ],
                 'disabled' => [
                 ],
@@ -1644,7 +1808,7 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC'   => "HDFC Bank",
+                    'HDFC'   => 'HDFC Bank',
                 ],
                 'disabled' => [
                 ],
@@ -1739,7 +1903,7 @@ return [
         ],
         'response' => [
             'content' => [
-                '100000EbsTrmnl' =>  [
+                '100000EbsTrmnl' => [
                     'BKID'   => 'Bank of India',
                     'MAHB'   => 'Bank of Maharashtra',
                     'CNRB'   => 'Canara Bank',
@@ -1760,14 +1924,14 @@ return [
                     'VIJB'   => 'Vijaya Bank',
                     'YESB'   => 'Yes Bank'
                 ],
-                '1000AtomShared' =>  [
+                '1000AtomShared' => [
                     'BKID'   => 'Bank of India',
                     'MAHB'   => 'Bank of Maharashtra',
                     'CNRB'   => 'Canara Bank',
                     'CBIN'   => 'Central Bank of India',
                     'CIUB'   => 'City Union Bank',
                     'DCBL'   => 'DCB Bank',
-                    'DEUT'   => "Deutsche Bank",
+                    'DEUT'   => 'Deutsche Bank',
                     'DLXB'   => 'Dhanlaxmi Bank',
                     'ESFB'   => 'Equitas Small Finance Bank',
                     'IBKL'   => 'IDBI',
@@ -1775,13 +1939,13 @@ return [
                     'IOBA'   => 'Indian Overseas Bank',
                     'JAKA'   => 'Jammu and Kashmir Bank',
                     'KARB'   => 'Karnataka Bank',
-                    'KVBL'   => "Karur Vysya Bank",
+                    'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => "Punjab & Maharashtra Co-operative Bank",
+                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
-                    'SIBL'   => "South Indian Bank",
+                    'SIBL'   => 'South Indian Bank',
                     'SBIN'   => 'State Bank of India',
                     'SBBJ'   => 'State Bank of Bikaner and Jaipur',
                     'SBHY'   => 'State Bank of Hyderabad',
@@ -1795,7 +1959,7 @@ return [
                     'UTBI'   => 'United Bank of India',
                     'VIJB'   => 'Vijaya Bank',
                 ],
-                'success'             =>    true
+                'success'             => true
             ]
         ]
     ],
@@ -1811,13 +1975,13 @@ return [
         ],
         'response' => [
             'content' => [
-                '1000AtomShared' =>  [
+                '1000AtomShared' => [
                     'BKID'   => 'Bank of India',
                 ],
-                '100000EbsTrmnl' =>  [
+                '100000EbsTrmnl' => [
                     'BKID'   => 'Bank of India',
                 ],
-                'success'             =>    true
+                'success'             => true
             ]
         ]
     ],
@@ -1833,11 +1997,11 @@ return [
         ],
         'response' => [
             'content' => [
-                '100000EbsTrmnl' =>  'banks not supported by gateway',
-                '1000AtomShared' =>  [
+                '100000EbsTrmnl' => 'banks not supported by gateway',
+                '1000AtomShared' => [
                     'SBIN'   => 'State Bank of India',
                 ],
-                'success'             =>    true
+                'success'             => true
             ]
         ]
     ],
@@ -1899,6 +2063,27 @@ return [
         ]
     ],
 
+    'testCreateWalletPaypalTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_terminal_password2'=> 'terminal_password2',
+                'gateway_terminal_password' => 'terminal_password',
+                'type'                      => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingSibTerminal'  => [
         'request' => [
             'content' => [
@@ -1934,6 +2119,23 @@ return [
         ]
     ],
 
+    'testCreateNetbankingIbkTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_ibk',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingCanaraTerminal'  => [
         'request' => [
             'content' => [
@@ -1946,6 +2148,210 @@ return [
             'content'  => [
                 'gateway_merchant_id'  => 'merchant_id',
                 'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateWorldlineTerminal'  => [
+        'request' => [
+            'content' => [
+                'merchant_id'               => '10000000000000',
+                'gateway'                   => 'worldline',
+                'gateway_merchant_id'       => '037122003842039',
+                'gateway_terminal_id'       => '70374018',
+                'gateway_acquirer'          => 'axis',
+                'card'                      => 1,
+                'gateway_terminal_password' => '9900991100',
+                'mc_mpan'                   => '5122600004774122',
+                'visa_mpan'                 => '4604901004774122',
+                'rupay_mpan'                => '6100020004774141',
+                'vpa'                       => 'MAB.037122003842039@AXISBANK',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '037122003842039',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateBilldeskTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'billdesk',
+                'gateway_merchant_id'       => 'testmerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_access_code'       => 'gateway_access_code'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'testmerchantid',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testEnableTerminal'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'terminal',
+                'status' => "activated",
+                'enabled'             =>  true,
+                'notes'               =>  'some notes',
+                'mpan'                =>  [
+                    'mc_mpan'             => '1234567890123456',
+                    'visa_mpan'           => '9876543210123456',
+                    'rupay_mpan'          => '1234123412341234'
+                ]
+            ]
+        ]
+    ],
+
+    'testDisableTerminal'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'terminal',
+                'status'              => "activated",
+                'enabled'             =>  false,
+                'notes'               =>  'some notes',
+                'mpan'                =>  [
+                    'mc_mpan'             => '1234567890123456',
+                    'visa_mpan'           => '9876543210123456',
+                    'rupay_mpan'          => '1234123412341234'
+                ]
+            ]
+        ]
+    ],
+
+    'testSubMerchantsShouldNotBeAbleToDisableTerminals'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
+
+    'testFetchTerminals'  => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'  => [
+                'count'   => 2,
+                'entity'  => 'collection',
+                'items'   => [
+                    [
+                        'entity'  => "terminal",
+                        'status'  => "activated",
+                        'enabled' => true,
+                        'notes'   => null,
+                        'mpan' => [
+                            'mc_mpan' =>  "5220240401208405",
+                            'rupay_mpan' =>  "6100030401208403",
+                            'visa_mpan' =>  "4403844012084006"
+                        ]
+                    ],
+                    [
+                        'entity'  => "terminal",
+                        'status'  => "activated",
+                        'enabled' => true,
+                        'notes'   => null,
+                        'mpan' => [
+                            'mc_mpan' =>  "4287346823986423",
+                            'rupay_mpan' =>  "6287346823986423",
+                            'visa_mpan' =>  "5287346823986423"
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testPartnerWithouTerminalControlFeatureShouldNotBeAbleToFetchTerminals'  => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
+
+    'testSubMerchantsShouldNotBeAbleToFetchTerminals'  => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+        ],
+    ],
+
+    'testTerminalOnboardingCreateTerminal' => [
+        'request' => [
+            'content' => [
+                "mpan" => [
+                  "mastercard"  => "1234567880123456",
+                  "visa"        => "1234567890123456",
+                  "rupay"       => "1234567890123457"
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  "1234567880123456",
+                    'rupay_mpan'    =>  "1234567890123457",
+                    'visa_mpan'     =>  "1234567890123456"
+                ]
+
             ]
         ]
     ],

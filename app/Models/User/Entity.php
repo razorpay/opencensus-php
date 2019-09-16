@@ -7,49 +7,57 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Table;
+use RZP\Models\Admin\Role;
 use RZP\Models\Invitation;
+use RZP\Models\Merchant\MerchantUser;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                    = 'id';
-    const NAME                  = 'name';
-    const EMAIL                 = 'email';
-    const PASSWORD              = 'password';
-    const OLD_PASSWORD          = 'old_password';
-    const PASSWORD_CONFIRMATION = 'password_confirmation';
-    const CONTACT_MOBILE        = 'contact_mobile';
-    const REMEMBER_TOKEN        = 'remember_token';
-    const CONFIRM_TOKEN         = 'confirm_token';
-    const PASSWORD_RESET_TOKEN  = 'password_reset_token';
-    const PASSWORD_RESET_EXPIRY = 'password_reset_expiry';
-    const CAPTCHA               = 'captcha';
-    const CAPTCHA_DISABLE       = 'captcha_disable';
+    const ID                            = 'id';
+    const NAME                          = 'name';
+    const EMAIL                         = 'email';
+    const PASSWORD                      = 'password';
+    const OLD_PASSWORD                  = 'old_password';
+    const PASSWORD_CONFIRMATION         = 'password_confirmation';
+    const CONTACT_MOBILE                = 'contact_mobile';
+    const REMEMBER_TOKEN                = 'remember_token';
+    const CONFIRM_TOKEN                 = 'confirm_token';
+    const PASSWORD_RESET_TOKEN          = 'password_reset_token';
+    const PASSWORD_RESET_EXPIRY         = 'password_reset_expiry';
+    const SECOND_FACTOR_AUTH            = 'second_factor_auth';
+    const SECOND_FACTOR_AUTH_ENFORCED   = 'second_factor_auth_enforced';
+    const SECOND_FACTOR_AUTH_SETUP      = 'second_factor_auth_setup';
+    const WRONG_2FA_ATTEMPTS            = 'wrong_2fa_attempts';
+    const RESTRICTED                    = 'restricted';
+    const ACCOUNT_LOCKED                = 'account_locked';
+    const CAPTCHA                       = 'captcha';
+    const CAPTCHA_DISABLE               = 'captcha_disable';
 
-    const TOKEN                 = 'token';
-    const EXPIRY_TIME           = 'expiryTime';
+    const TOKEN                         = 'token';
+    const EXPIRY_TIME                   = 'expiryTime';
 
-    const ACTION                = 'action';
-    const USER_ID               = 'user_id';
-    const MERCHANT_ID           = 'merchant_id';
-    const MERCHANTS             = 'merchants';
-    const ROLE                  = 'role';
-    const BANKING_ROLE          = 'banking_role';
-    const PIVOT                 = 'pivot';
-    const OWNER                 = 'owner';
-    const CONFIRMED             = 'confirmed';
-    const INVITATIONS           = 'invitations';
-    const PRODUCT               = 'product';
+    const ACTION                        = 'action';
+    const USER_ID                       = 'user_id';
+    const MERCHANT_ID                   = 'merchant_id';
+    const MERCHANTS                     = 'merchants';
+    const ROLE                          = 'role';
+    const BANKING_ROLE                  = 'banking_role';
+    const PIVOT                         = 'pivot';
+    const OWNER                         = 'owner';
+    const CONFIRMED                     = 'confirmed';
+    const INVITATIONS                   = 'invitations';
+    const PRODUCT                       = 'product';
 
-    const PASSWORD_TOKEN_LENGTH = 50;
+    const PASSWORD_TOKEN_LENGTH         = 50;
 
     // Boolean attribute is true if contact mobile is verified via OTP
-    const CONTACT_MOBILE_VERIFIED = 'contact_mobile_verified';
+    const CONTACT_MOBILE_VERIFIED       = 'contact_mobile_verified';
     // Additional input keys
-    const MEDIUM                 = 'medium';
-    const OTP                    = 'otp';
-    const MEDIUM_SMS             = 'sms';
-    const MEDIUM_EMAIL           = 'email';
-    const SETTINGS               = 'settings';
+    const MEDIUM                        = 'medium';
+    const OTP                           = 'otp';
+    const MEDIUM_SMS                    = 'sms';
+    const MEDIUM_EMAIL                  = 'email';
+    const SETTINGS                      = 'settings';
 
     // Settings keys
     const SETTINGS_SKIP_CONTACT_MOBILE_VERIFY = 'skip_contact_mobile_verify';
@@ -74,7 +82,12 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT_MOBILE,
         self::CONTACT_MOBILE_VERIFIED,
+        self::SECOND_FACTOR_AUTH,
+        self::SECOND_FACTOR_AUTH_ENFORCED,
+        self::SECOND_FACTOR_AUTH_SETUP,
+        self::RESTRICTED,
         self::CONFIRMED,
+        self::ACCOUNT_LOCKED,
         self::CREATED_AT,
     ];
 
@@ -99,12 +112,19 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::CONTACT_MOBILE_VERIFIED => 'bool',
+        self::CONTACT_MOBILE_VERIFIED       => 'bool',
+        self::SECOND_FACTOR_AUTH            => 'bool',
+        self::ACCOUNT_LOCKED                => 'bool',
     ];
 
     protected $generateIdOnCreate = true;
 
-    protected $appends = [self::CONFIRMED];
+    protected $appends = [
+        self::CONFIRMED,
+        self::SECOND_FACTOR_AUTH_ENFORCED,
+        self::SECOND_FACTOR_AUTH_SETUP,
+        self::RESTRICTED,
+    ];
 
     // --------------------- Modifiers ---------------------------------------------
 
@@ -162,6 +182,11 @@ class Entity extends Base\PublicEntity
                     ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
     }
 
+    public function roles()
+    {
+        return $this->morphToMany(Role\Entity::class, 'entity', Table::ROLE_MAP);
+    }
+
     public function setConfirmTokenNull()
     {
         $this->setAttribute(self::CONFIRM_TOKEN, null);
@@ -195,6 +220,11 @@ class Entity extends Base\PublicEntity
     public function getContactMobile()
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
+    public function setContactMobile($contact)
+    {
+        $this->setAttribute(self::CONTACT_MOBILE, $contact);
     }
 
     public function getName()
@@ -232,9 +262,79 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONTACT_MOBILE_VERIFIED, $verified);
     }
 
+    public function isSecondFactorAuth(): bool
+    {
+        return ($this->getAttribute(self::SECOND_FACTOR_AUTH) === true);
+    }
+
+    public function setSecondFactorAuth(bool $enabled)
+    {
+        $this->setAttribute(self::SECOND_FACTOR_AUTH, $enabled);
+    }
+
+    public function getWrong2faAttempts(): int
+    {
+        return ($this->getAttribute(self::WRONG_2FA_ATTEMPTS));
+    }
+
+    public function setWrong2faAttempts(int $wrongAttempts)
+    {
+        $this->setAttribute(self::WRONG_2FA_ATTEMPTS, $wrongAttempts);
+    }
+
+    public function isAccountLocked(): bool
+    {
+        return ($this->getAttribute(self::ACCOUNT_LOCKED) === true);
+    }
+
+    public function setAccountLocked(bool $locked)
+    {
+        $this->setAttribute(self::ACCOUNT_LOCKED, $locked);
+    }
+
+    public function isSecondFactorAuthEnforced(): bool
+    {
+        return ($this->getAttribute(self::SECOND_FACTOR_AUTH_ENFORCED) === true);
+    }
+
+    public function getRestricted(): bool
+    {
+        return ($this->getAttribute(self::RESTRICTED) === true);
+    }
+
+    public function isSecondFactorAuthSetup(): bool
+    {
+        return ($this->getAttribute(self::SECOND_FACTOR_AUTH_SETUP) === true);
+    }
+
     public function getSettingsAccessor(): Settings\Accessor
     {
         return Settings\Accessor::for($this, Settings\Module::USER);
+    }
+
+    protected function getSecondFactorAuthEnforcedAttribute(): bool
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)->count() > 0;
+    }
+
+    protected function getSecondFactorAuthSetupAttribute(): bool
+    {
+        return (($this->getContactMobile() !== null) and
+                ($this->isContactMobileVerified() === true));
+    }
+
+    protected function getRestrictedAttribute(): bool
+    {
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID));
+        
+        if (count($merchantIds) !== 1)
+        {
+            return false;
+        }
+
+        $merchant = (new Merchant\Repository)->find($merchantIds[0]);
+        return $merchant->getRestricted();
     }
 
     public function getAllSettings(): array

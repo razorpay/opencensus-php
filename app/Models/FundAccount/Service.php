@@ -37,7 +37,7 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->fund_account;
     }
 
-    public function create(array $input): array
+    public function create(array $input, string $batchId = null): array
     {
         $this->traceFundAccountNewRequest($input);
 
@@ -62,18 +62,16 @@ class Service extends Base\Service
                 'Fund accounts cannot be created on an inactive ' . $source->getEntity());
         }
 
-        $entity = $this->core->create($input, $this->merchant, $source);
+        if ($batchId !== null)
+        {
+            $entity = $this->core->create($input, $this->merchant, $source, null, $batchId);
+        }
+        else
+        {
+            $entity = $this->core->create($input, $this->merchant, $source);
+        }
 
         return $entity->toArrayPublic();
-    }
-
-    public function createPublic(array $input): array
-    {
-        $this->traceFundAccountNewRequest($input);
-
-        (new Validator)->setStrictFalse()->validateInput(Validator::PUBLIC_CREATE, $input);
-
-        return $this->create($input);
     }
 
     public function fetch(string $id, array $input): array

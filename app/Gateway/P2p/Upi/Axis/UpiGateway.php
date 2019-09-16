@@ -5,16 +5,19 @@ namespace RZP\Gateway\P2p\Upi\Axis;
 use RZP\Models\P2p\Transaction;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Gateway\P2p\Base\Response;
+use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
+use RZP\Gateway\P2p\Upi\Axis\Actions\TransactionAction;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\TransactionTransformer;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\UpiTransactionTransformer;
+use RZP\Gateway\P2p\Upi\Axis\Transformers\TransactionConcernTransformer;
 
 class UpiGateway extends Gateway implements Contracts\UpiGateway
 {
     public function initiateGatewayCallback(Response $response)
     {
         $content = $this->input->get(Fields::CONTENT);
-        $type    = $content[Fields::TYPE];
+        $type    = $content[Fields::TYPE] ?? null;
 
         switch ($type)
         {
@@ -49,6 +52,8 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
                 break;
 
             case UpiAction::CUSTOMER_CREDITED_VIA_COLLECT:
+            case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
+            case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
 
                 $transformer = new UpiTransactionTransformer($content, $type);
                 $upi = $transformer->transformCallback();
@@ -62,6 +67,33 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
                 ];
 
                 break;
+
+            default:
+                // In if axis does not send the type, which is for queries
+                if (is_array(array_get($content, Fields::QUERIES)) === true)
+                {
+                    $concerns = [];
+
+                    foreach ($content[Fields::QUERIES] as $query)
+                    {
+                        $transformer = new TransactionConcernTransformer($query, TransactionAction::QUERY_STATUS);
+                        $concerns[] = $transformer->transformCallback();
+                    }
+
+                    $response->setData([
+                        Transaction\Entity::CONCERNS    => $concerns,
+                        Transaction\Entity::CONTEXT     => [
+                            Transaction\Entity::ENTITY      => Transaction\Entity::CONCERNS,
+                            Transaction\Entity::ACTION      => Transaction\Action::CONCERN_STATUS_SUCCESS,
+                        ],
+                    ]);
+
+                    return;
+                }
+                else
+                {
+                    throw $this->p2pGatewayException(ErrorMap::INVALID_CALLBACK);
+                }
         }
 
         $response->setData([
@@ -75,11 +107,14 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
     {
         $gatewayData = $this->input->get(Transaction\Entity::GATEWAY_DATA);
 
-        switch ($this->input->get(Fields::CONTENT)[Fields::TYPE])
+        switch ($this->input->get(Fields::CONTENT)[Fields::TYPE] ?? null)
         {
             case UpiAction::COLLECT_REQUEST_RECEIVED:
             case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
             case UpiAction::CUSTOMER_CREDITED_VIA_COLLECT:
+            case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
+            case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+            case null:
 
                 $signature = $this->getpayloadSignature();
                 $payload   = $this->input->get(Fields::PAYLOAD);

@@ -61,6 +61,29 @@ class External extends Base
         return $request;
     }
 
+    public function fetchCheckoutInfo(array $input, Merchant\Entity $merchant)
+    {
+        $isCardChange       = $input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false;
+
+        $subscriptionId     = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+        $requestBody = [
+            Subscription\Entity::SUBSCRIPTION_CARD_CHANGE => $isCardChange,
+        ];
+
+        $this->traceRequest($requestBody);
+
+        $headers = [
+            self::MERCHANT_HEADER_KEY => $merchant->getId(),
+            self::MODE_HEADER_KEY     => $this->mode,
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $url = 'subscriptions/' . $subscriptionId.'/checkout_info';
+
+        return $this->sendRequest($url, Requests::GET, $requestBody, $headers);
+    }
+
     public function fetchSubscriptionInfo(array $input, Merchant\Entity $merchant, $callback = false, $appTokenPresent = false)
     {
         $amount             = $input[Payment\Entity::AMOUNT] ?? null;

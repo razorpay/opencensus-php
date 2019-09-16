@@ -6,16 +6,11 @@ use App;
 use Cache;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Terminal\Category;
-use RZP\Constants\Entity as Constants;
 
 class AuthSelector extends Base\Core
 {
@@ -27,6 +22,7 @@ class AuthSelector extends Base\Core
 
     protected $autflow;
 
+    /** @var Terminal\Auth\Card\AuthFilter $autflowObj */
     protected $autflowObj;
 
     protected static $filters = [
@@ -70,7 +66,9 @@ class AuthSelector extends Base\Core
 
         $applicableTerminals = $this->autflowObj->getAuthenticationTerminals($terminals);
 
-        $this->traceAuthTerminals($applicableTerminals, 'Auth terminals via auth', true);
+        $verbose = $this->isVerboseLogEnabled();
+
+        $this->traceAuthTerminals($applicableTerminals, 'Auth terminals via auth', $verbose);
 
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
 
@@ -80,16 +78,16 @@ class AuthSelector extends Base\Core
             return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
 
-        $applicableTerminals = $this->filterTerminals($applicableTerminals, $applicableRules);
+        $applicableTerminals = $this->filterTerminals($applicableTerminals, $applicableRules, $verbose);
 
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
 
-        $applicableTerminals = $this->sortTerminals($applicableTerminals, $applicableRules);
+        $applicableTerminals = $this->sortTerminals($applicableTerminals, $applicableRules, $verbose);
 
         return $applicableTerminals[0];
     }
 
-    protected function filterTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = true)
+    protected function filterTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false): array
     {
         //
         // Initially, the terminals are run through a filter class, which removes
@@ -103,8 +101,6 @@ class AuthSelector extends Base\Core
 
         foreach (self::$filters as $filter)
         {
-            $filterRules = $this->getRulesForFiltering($rules);
-
             $filterObj = new $filter($this->input, $this->options, $filterRules);
 
             $filteredTerminals = $filterObj->filter($filteredTerminals, $verbose);
@@ -115,7 +111,8 @@ class AuthSelector extends Base\Core
         return $filteredTerminals;
     }
 
-    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = true): array
+    // $shouldHitRoutingService is not being used. add to make this func signature compatible with RZP\Models\Terminal\Selector::sortTerminals()
+    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false, bool $shouldHitRoutingService = false): array
     {
         $sortedTerminals = $terminals;
 
@@ -169,5 +166,26 @@ class AuthSelector extends Base\Core
     protected function getTerminals()
     {
         return AuthenticationTerminals::AUTHENTICATION_TERMINALS;
+    }
+
+    /**
+     * Verbosity of terminal selection logs are determined
+     * by a flag held in cache
+     * @return boolean verbosity flag
+     */
+    protected function isVerboseLogEnabled(): bool
+    {
+        try
+        {
+            $verbose = (bool) Cache::get(ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINAL_CONFIG_FETCH_ERROR);
+
+            $verbose = false;
+        }
+
+        return $verbose;
     }
 }

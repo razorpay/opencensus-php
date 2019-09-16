@@ -9,7 +9,7 @@ class Url
 
     //here %s is for merchant id
     const PAY          = '/api/MerchantAPI/UPI/v1/QR/%s';
-    const AUTHORIZE    = '/api/MerchantAPI/UPI/v2/CollectPay/%s';
+    const AUTHENTICATE = '/api/MerchantAPI/UPI/v3/CollectPay/%s';
     const VERIFY       = '/api/MerchantAPI/UPI/v1/CallbackStatus/%s';
     const REFUND       = '/api/MerchantAPI/UPI/v1/Refund/%s';
 }

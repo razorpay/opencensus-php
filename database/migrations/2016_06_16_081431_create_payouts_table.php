@@ -58,6 +58,9 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::BATCH_ID, Batch\Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payout::IDEMPOTENCY_KEY, Batch\Entity::IDEMPOTENCY_ID_LENGTH)
+                  ->nullable();
+
             $table->string(Payout::PURPOSE, 255);
 
             $table->string(Payout::NARRATION, 255)
@@ -66,8 +69,7 @@ class CreatePayoutsTable extends Migration
             $table->string(Payout::PURPOSE_TYPE, 255)
                   ->nullable();
 
-            $table->integer(Payout::AMOUNT)
-                  ->unsigned();
+            $table->unsignedBigInteger(Payout::AMOUNT);
 
             $table->char(Payout::CURRENCY);
 
@@ -101,14 +103,14 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::BATCH_FUND_TRANSFER_ID, Payout::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Payout::CHANNEL, 8);
+            $table->string(Payout::CHANNEL, 255)
+                  ->nullable();
 
             $table->integer(Payout::ATTEMPTS)
                   ->default(1);
 
             $table->string(Payout::UTR)
-                  ->nullable()
-                  ->unique();
+                  ->nullable();
 
             $table->string(Payout::FAILURE_REASON)
                   ->nullable();
@@ -127,6 +129,12 @@ class CreatePayoutsTable extends Migration
                   ->nullable();
 
             $table->integer(Payout::REVERSED_AT)
+                  ->nullable();
+
+            $table->integer(Payout::FAILED_AT)
+                  ->nullable();
+
+            $table->integer(Payout::REJECTED_AT)
                   ->nullable();
 
             $table->integer(Payout::QUEUED_AT)
@@ -156,6 +164,10 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::PENDING_AT);
 
             $table->index(Payout::REVERSED_AT);
+
+            $table->index(Payout::FAILED_AT);
+
+            $table->index(Payout::REJECTED_AT);
 
             $table->index(Payout::INITIATED_AT);
 

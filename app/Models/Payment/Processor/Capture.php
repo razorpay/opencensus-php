@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Jobs;
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Diag\EventCode;
@@ -19,6 +21,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\SubscriptionRegistration;
 
 trait Capture
 {
@@ -587,8 +590,10 @@ trait Capture
             // Currently, since we are doing this only for Dream11, we are not handling credits.
             // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
             //
-            if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
-                ($payment->getMerchantId() === Preferences::MID_DREAM11))
+
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
+                (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
+                ($payment->getMerchantId() === Preferences::MID_DREAM11)))
             {
                 $payment->setLateBalanceUpdate();
             }
@@ -599,7 +604,11 @@ trait Capture
 
             $this->updateVirtualAccountStatusIfApplicable($payment);
 
+            $this->updateAnalyticsIfApplicable($payment);
+
             $this->createPartnerCommission($payment);
+
+            $this->postPaymentCaptureSubscriptionRegistrationProcessing($payment);
 
             if ($payment->isLateBalanceUpdate() === true)
             {
@@ -607,7 +616,55 @@ trait Capture
             }
         });
 
+        $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
+
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+    }
+
+    protected function handleAsyncUpdateBalanceIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        try
+        {
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) or
+                ($txn->isBalanceUpdated() === true))
+            {
+                return;
+            }
+
+            $input = [
+                'payment_id'  => $payment->getId(),
+                'mode'        => $this->mode,
+            ];
+
+            $this->trace->info(
+                TraceCode::MERCHANT_BALANCE_UPDATE_INIT,
+                [
+                    'input' => $input,
+                ]);
+
+            Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode);
+        }
+         catch (\Throwable $e)
+        {
+            $this->trace->critical(
+                TraceCode::MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED,
+                [
+                    'payment_id' => $payment->getId(),
+                    'message'    => $e->getMessage(),
+                ]);
+
+            $this->updateMerchantBalance($payment, $transaction);
+        }
+    }
+
+    public function updateMerchantBalance(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        $this->payment = $payment;
+
+        $this->repo->transaction(function() use ($payment, $txn)
+        {
+            (new Transaction\Core)->asyncUpdateMerchantBalance($payment, $txn);
+        });
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)
@@ -968,9 +1025,62 @@ trait Capture
 
             $this->updateVirtualAccountStatusForOrder($payment);
         }
-
     }
 
+    /*
+     * For some of our older plugins (like Prestashop), the only indicator that
+     * the payment was made via the plugin is in the user agent of the capture
+     * request. To store this in the analytics table, we do a regex search on
+     * the user-agent looking for plugin names and a semantic version number.
+     *
+     * Eg. User-Agent: Razorpay/v1 PHPSDK/2.0.2 PHP/7.0.33 Prestashop/2.0.0
+     */
+    protected function updateAnalyticsIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->analytics === null)
+        {
+            return;
+        }
+
+        // For newer plugins, the information sent in the payment request
+        // (and set during time of authorization) takes precedence.
+        if ($payment->analytics->getIntegration() !== null)
+        {
+            return;
+        }
+
+        $userAgent = $this->app['request']->header('User-Agent');
+
+        foreach (Payment\Analytics\Metadata::INTEGRATION_VALUES as $integration => $_code)
+        {
+            $matches = null;
+
+            $integrationSemVerRegexParts = [
+                '/',                        // Regex delimiter
+                '(' . $integration . ')',   // Group 1: Integration name
+                '\/',                       // Forward slash dividing name from version
+                '(\d+\.\d+\.\d+)',          // Group 2: Semantic Version
+                '/'                         // Regex delimiter
+            ];
+
+            $integrationSemVerRegex = implode('', $integrationSemVerRegexParts);
+
+            if (preg_match($integrationSemVerRegex, strtolower($userAgent), $matches) > 0)
+            {
+                $integration = $matches[1];
+
+                $payment->analytics->setIntegration($integration);
+
+                $integrationVersion = $matches[2];
+
+                $payment->analytics->setIntegrationVersion($integrationVersion);
+
+                $this->repo->saveOrFail($payment->analytics);
+
+                break;
+            }
+        }
+    }
 
     protected function updateOrderStatusPaidIfApplicable(Order\Entity $order, Payment\Entity $payment)
     {
@@ -1034,6 +1144,27 @@ trait Capture
         $this->trace->count(Invoice\Metric::INVOICE_PAID_TOTAL, $dimensions);
 
         $this->repo->saveOrFail($invoice);
+    }
+
+    protected function postPaymentCaptureSubscriptionRegistrationProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasInvoice() === false)
+        {
+            return;
+        }
+
+        $invoice = $payment->invoice;
+
+        if ($invoice->getEntityType() !== Constants\Entity::SUBSCRIPTION_REGISTRATION)
+        {
+            return;
+        }
+
+        $subscriptionRegistration = $invoice->entity;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        (new SubscriptionRegistration\Core)->authenticate($subscriptionRegistration, $token);
     }
 
     public function calculateAndSetMdrFeeIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)

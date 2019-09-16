@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\Gateway\Card\Fss;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Card\Fss\Fields;
 use RZP\Gateway\Card\Fss\Status;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -55,6 +57,52 @@ class BobGatewayTest extends TestCase
 
     public function testPaymentAuthAndCapture()
     {
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($authResponse['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('passed', $payment['two_factor_auth']);
+    }
+
+    public function testPaymentAuthAndCaptureForVijayaMerchant()
+    {
+        if ($this->acquirer !== 'barb')
+        {
+            $this->markTestSkipped('extra params required only for bob');
+        }
+
+        $this->fixtures->edit('terminal', $this->sharedTerminal['id'], [
+            \RZP\Models\Terminal\Entity::GATEWAY_MERCHANT_ID2 => '12345',
+            \RZP\Models\Terminal\Entity::GATEWAY_ACCESS_CODE => '1234',
+
+        ]);
+
+        $this->fixtures->merchant->addFeatures(\RZP\Models\Feature\Constants::VIJAYA_MERCHANT);
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize_decrypted')
+            {
+                $this->assertNotNull($content[Fields::UDF6]);
+                $this->assertNotNull($content[Fields::UDF7]);
+                $this->assertNotNull($content[Fields::UDF8]);
+                $this->assertNotNull($content[Fields::UDF9]);
+                $this->assertNotNull($content[Fields::UDF10]);
+                $this->assertNotNull($content[Fields::UDF11]);
+                $this->assertNotNull($content[Fields::UDF12]);
+                $this->assertNotNull($content[Fields::UDF13]);
+                $this->assertNotNull($content[Fields::UDF14]);
+            }
+        }, $this->gateway);
+
+
         $authResponse = $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -223,5 +271,26 @@ class BobGatewayTest extends TestCase
         );
 
         return $payment;
+    }
+
+    public function testPaymentAuthWithPrepaidCardType()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin'     => '457392',
+            'country' => 'IN',
+            'network' => 'RuPay',
+            'type'    => 'prepaid',
+            'issuer'  => 'ICIC',
+        ]);
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
     }
 }

@@ -4,9 +4,12 @@ namespace RZP\Models\Transaction;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
+
 use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
@@ -155,6 +158,8 @@ class Core extends Base\Core
 
         $this->updateBalances($txn);
 
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
+
         return [$txn, $feesSplit];
     }
 
@@ -192,6 +197,8 @@ class Core extends Base\Core
         $this->updateCredits($txn, $payment);
 
         $this->updateBalances($txn, false);
+
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
 
         return [$txn, $feesSplit];
     }
@@ -597,51 +604,12 @@ class Core extends Base\Core
 
         list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
-    public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
+    public function createFromAdjustment(Adjustment\Entity $adj)
     {
-        $txn = new Transaction\Entity;
-
-        $amount = $adj->getAmount();
-
-        $debit = $credit = 0;
-
-        if ($amount > 0)
-            $credit = $amount;
-
-        if ($amount < 0)
-            $debit = -1 * $amount;
-
-        $settledAt = time();
-
-        $values = array(
-            Transaction\Entity::DEBIT           => $debit,
-            Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::GATEWAY_FEE     => 0,
-            Transaction\Entity::API_FEE         => 0,
-            Transaction\Entity::RECONCILED_AT   => time(),
-            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
-            Transaction\Entity::SETTLED         => 0,
-            Transaction\Entity::SETTLED_AT      => $settledAt,
-            Transaction\Entity::FEE             => 0,
-            Transaction\Entity::TAX             => 0,
-            Transaction\Entity::AMOUNT          => abs($amount),
-            Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
-            Transaction\Entity::CHANNEL         => $adj->getChannel(),
-        );
-
-        $txn->fillAndGenerateId($values);
-
-        $txn->merchant()->associate($adj->merchant);
-
-        $txn->sourceAssociate($adj);
-
-        $adj->transaction()->associate($txn);
-
-        $this->updateBalances($txn, $updateEscrow);
+        list($txn, $feeSplit) = $this->createTransactionForSource($adj);
 
         return $txn;
     }
@@ -676,7 +644,7 @@ class Core extends Base\Core
         $txn->setFee($fee);
         $txn->setTax($tax);
 
-        $settledAt = time();
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         //
         // We're checking for available balance here and not earlier because
@@ -734,6 +702,8 @@ class Core extends Base\Core
         //
         $this->repo->saveOrFail($txn);
 
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
+
         $this->updateCredits($txn, $transfer);
 
         $this->updateBalances($txn, false);
@@ -781,6 +751,8 @@ class Core extends Base\Core
         $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
+
+        $this->dispatchForSettlementBucketing($txn, $settleTimestamp);
 
         return $txn;
     }
@@ -868,7 +840,7 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($txn);
 
-        $settledAt = time();
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         $amount = $payout->getAmount();
 
@@ -924,6 +896,8 @@ class Core extends Base\Core
 
         $txn->fill($values);
 
+        $this->dispatchForSettlementBucketing($txn, $settledAt);
+
         return $txn;
     }
 
@@ -959,6 +933,7 @@ class Core extends Base\Core
         $txn->accountBalance()->associate($merchantBalance);
 
         $merchantBalance->updateBalance($txn);
+
         $this->repo->balance->updateBalance($merchantBalance);
 
         $txn->setBalance($merchantBalance->getBalance());
@@ -1117,7 +1092,8 @@ class Core extends Base\Core
     public function updateRefundCredits(Transaction\Entity $txn)
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if (($txn->isTypeRefund() === false) or
+        if ((($txn->isTypeRefund() === false) and
+            ($txn->isTypeReversal() === false)) or
             ($txn->isRefundCredits() === false))
         {
             return;
@@ -1342,7 +1318,7 @@ class Core extends Base\Core
     {
         try
         {
-            (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
+            (new Credits\Transaction\Core)->createCreditTransaction($amount, $txn, $creditType);
         }
         catch (\Throwable $e)
         {
@@ -1521,6 +1497,57 @@ class Core extends Base\Core
                     'payment_id'        => $txn->getEntityId(),
                     'fee_split'         => $feesSplit->toArrayPublic(),
                 ]);
+        }
+    }
+
+
+    //Async Update Merchant Balance
+    public function asyncUpdateMerchantBalance($payment, $txn)
+    {
+        $processor = $this->getFactory($payment);
+
+        $processor->setTransaction($txn);
+
+        $processor->setMerchantBalanceLockForUpdate();
+
+        $processor->updateCredits();
+
+        $processor->updateBalances();
+
+        $txn->setBalance(null);
+
+        $txn->setBalanceUpdated(true);
+
+        $this->repo->saveOrFail($txn);
+    }
+
+    /**
+     * It'll dispatch the job to update settlement bucket for merchant
+     * This will also suppress the any error occurred at this stage
+     * if settled at is null then it wont dispatch the job
+     *
+     * @param string $merchantId
+     * @param null   $settledAt
+     */
+    public function dispatchForSettlementBucketing(Entity $txn, $settledAt = null)
+    {
+        if ($settledAt === null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Dispatch for bucket creation for settlement
+            Bucket::dispatch($this->mode, $txn->getId(), $txn->getMerchantId(), $settledAt);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT
+            );
         }
     }
 }

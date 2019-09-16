@@ -11,6 +11,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
+//This code is not being used to generate refund file go to app/Gateway/Netbanking/Kotak/RefundFile.php
+
 class Kotak extends Base
 {
     use FileHandler;
@@ -59,7 +61,7 @@ class Kotak extends Base
                 $index + 1,
                 $row['gateway']['merchant_code'],
                 $date,
-                $row['gateway']['int_payment_id'],
+                $row['gateway']['int_payment_id'] ?: $row['gateway']['verification_id'],
                 $row['refund']['amount'] / 100,
                 $row['gateway']['bank_payment_id'],
             ];

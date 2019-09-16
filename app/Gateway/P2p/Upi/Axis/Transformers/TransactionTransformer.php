@@ -57,7 +57,7 @@ class TransactionTransformer extends Transformer
                 $output = [
                     Entity::TYPE            => Type::COLLECT,
                     Entity::FLOW            => Flow::DEBIT,
-                    Entity::INTERNAL_STATUS => Status::CREATED,
+                    Entity::INTERNAL_STATUS => Status::REQUESTED,
                 ];
                 break;
 
@@ -73,6 +73,22 @@ class TransactionTransformer extends Transformer
                 $output = [
                     Entity::TYPE            => Type::COLLECT,
                     Entity::FLOW            => Flow::CREDIT,
+                    Entity::INTERNAL_STATUS => Status::COMPLETED,
+                ];
+                break;
+
+            case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
+                $output = [
+                    Entity::TYPE            => Type::COLLECT,
+                    Entity::FLOW            => Flow::DEBIT,
+                    Entity::INTERNAL_STATUS => Status::COMPLETED,
+                ];
+                break;
+
+            case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+                $output = [
+                    Entity::TYPE            => Type::PAY,
+                    Entity::FLOW            => Flow::DEBIT,
                     Entity::INTERNAL_STATUS => Status::COMPLETED,
                 ];
                 break;

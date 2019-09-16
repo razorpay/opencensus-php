@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use RZP\Models\Payment\Verify\Action;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
@@ -408,6 +410,31 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SPrivateAuthJsonPayment($payment = null, $server = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SRecurringPayment($payment = null, $server = null)
     {
         if ($payment === null)
@@ -613,7 +640,15 @@ trait PaymentTrait
             'method'    => 'POST',
         ];
 
-        return $this->sendRequest($request);
+        $response = $this->sendRequest($request);
+
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response);
+
+        $this->ba->publicAuth();
+
+        $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+
+        return $this->submitPaymentCallbackRequest($request);
     }
 
     protected function makeS2sCallbackAndGetContent($content, $gateway = null)
@@ -891,15 +926,28 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function refundPayment($id, $amount = null, $reversals = [], $reverseAll = false)
+    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false, $auth = [])
     {
-        $this->ba->privateAuth();
+        if ((empty($auth['key']) === false) and
+            (empty($auth['secret']) === false))
+        {
+            $this->ba->privateAuth($auth['key'], $auth['secret']);
+        }
+        else
+        {
+            $this->ba->privateAuth();
+        }
 
         $content = [];
 
         if ($amount !== null)
         {
             $content = array('amount' => $amount);
+        }
+
+        if (empty($data['speed']) === false)
+        {
+            $content['speed'] = $data['speed'];
         }
 
         if (empty($reversals) === false)
@@ -910,6 +958,11 @@ trait PaymentTrait
         if ($reverseAll === true)
         {
             $content['reverse_all'] = true;
+        }
+
+        if (empty($data['notes']) === false)
+        {
+            $content['notes'] = $data['notes'];
         }
 
         $request = [
@@ -930,7 +983,7 @@ trait PaymentTrait
         //TODO: remove merchant id check
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
-            $this->scroogeRefund($refund);
+            $this->scroogeRefund($refund, $data);
         }
 
         return $refund;
@@ -946,10 +999,17 @@ trait PaymentTrait
         $input['attempts'] = $refund['attempts'] ?? 0;
         $input['amount'] = $refund['amount'] ?? $input['amount'];
         $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
+        $input['is_fta'] = $data['is_fta'] ?? false;
 
         if (isset($data['bank_account']) === true)
         {
             $input['fta_data'] = $data;
+            $input['is_fta'] = true;
+        }
+
+        if (isset($data['fta_data']) === true)
+        {
+            $input['fta_data'] = $data['fta_data'];
         }
 
         $this->ba->scroogeAuth();
@@ -975,13 +1035,44 @@ trait PaymentTrait
 
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeUpdateRefundStatus($refund, 'processed');
+            $this->scroogeUpdateRefundStatus($refund, 'processed_event');
         }
         // Adding specific amount check - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
-        else if ((isset($refund['amount']) === true) and ($refund['amount'] === 3459))
+        else if (isset($refund['amount']) === true)
         {
-            $this->scroogeUpdateRefundStatus($refund, 'failed');
+            $event = '';
+
+            switch ($refund['amount'])
+            {
+                case 200:
+                    $failed = $data['failed'] ?? false;
+
+                    if ($failed === false)
+                    {
+                        $event = 'processed_event';
+                    }
+
+                    break;
+
+                case 3459:
+                    $event = 'failed_event';
+                    break;
+
+                case 3470:
+                    $event = 'fee_only_reversal_event';
+                    break;
+
+                case 3471:
+                    $event = 'processed_event';
+                    $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
+                    break;
+            }
+
+            if ($event !== '')
+            {
+                $this->scroogeUpdateRefundStatus($refund, $event);
+            }
         }
 
         return $response;
@@ -1005,7 +1096,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $status)
+    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1016,6 +1107,12 @@ trait PaymentTrait
             $input['reference_no'] = random_integer(12);
         }
 
+        if (empty($refund[RefundEntity::SPEED_PROCESSED]) === false)
+        {
+            $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
+        }
+
+        $input['event'] = $event;
         $input['status'] = $status;
 
         $this->ba->scroogeAuth();
@@ -1090,7 +1187,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $paymentId = null, $content = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [])
     {
         $this->ba->adminAuth();
 
@@ -1107,6 +1204,11 @@ trait PaymentTrait
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
             $response['attempts'] = 1;
+
+            if (isset($data['amount']) === true)
+            {
+                $response['amount'] = $data['amount'];
+            }
 
             $this->scroogeRefund($response, $content);
         }
@@ -1501,6 +1603,8 @@ trait PaymentTrait
 
         if ($this->isPaymentCreationUrl($url))
         {
+            $this->resetSingletons();
+
             $response = $this->handlePaymentCreationFlow($response, $request, $callback);
         }
 
@@ -1880,6 +1984,7 @@ trait PaymentTrait
                     $bin = $payment->card->getIin();
 
                     $binRiskMapping = [
+                        '341111' => '22.0',
                         '510510' => '22.0',
                         '401201' => '15.3',
                         '555555' => '2.4',
@@ -1991,54 +2096,15 @@ trait PaymentTrait
                     'status_code'   => 500,
                 ];
 
-                throw new Exception\GatewayRequestException('cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ');
+                throw new Exception\GatewayRequestException(
+                    'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                    new \Requests_Exception_Transport_cURL('SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                        'curlerror',
+                        'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                        35));
             }
 
         });
-    }
-
-    protected function mockCardVault($callable = null)
-    {
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
-
-        $this->app->instance('card.cardVault', $cardVault);
-
-        $callable = $callable ?: function ($route, $method, $input)
-        {
-            $response = [
-                'error' => '',
-                'success' => true,
-            ];
-
-            switch ($route)
-            {
-                case 'tokenize':
-                    $response['token'] = base64_encode($input['secret']);
-                    break;
-
-                case 'detokenize':
-                    $response['value'] = base64_decode($input['token']);
-                    break;
-
-                case 'validate':
-                    if ($input['token'] === 'fail')
-                    {
-                        $response['success'] = false;
-                    }
-                    break;
-
-                case 'delete':
-                    break;
-            }
-
-            return $response;
-        };
-
-        $cardVault->shouldReceive('sendRequest')
-                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-                  ->andReturnUsing($callable);
-
-        $this->app->instance('card.cardVault', $cardVault);
     }
 
     protected function mockShield()
@@ -2129,5 +2195,43 @@ trait PaymentTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function mockFundAccountService($callable = null)
+    {
+        $fts = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $callable = $callable ?: function ($endpoint, $method, $data = [])
+        {
+            switch ($endpoint)
+            {
+                case '/account':
+
+                    $response = [
+                        'body' => [
+                            'fund_account_id' => random_integer(2),
+                        ],
+                        'code' => 201
+                    ];
+
+                    return $response;
+
+                case '/source_account':
+
+                    $response = [
+                            'message' => 'source account registered',
+                        ];
+
+                    return $response;
+
+                default:
+                    return null;
+            }
+        };
+
+        $fts->shouldReceive('createAndSendRequest')
+            ->andReturnUsing($callable);
+
+        $this->app->instance('fts_create_account', $fts);
     }
 }

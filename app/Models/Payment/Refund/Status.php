@@ -6,13 +6,15 @@ use RZP\Models\FundTransfer\Attempt;
 
 class Status
 {
-    const CREATED   = 'created';
-    const INITIATED = Attempt\Status::INITIATED;
-    const PROCESSED = 'processed';
-    const FAILED    = 'failed';
-    const REVERSED  = 'reversed';
+    const CREATED    = 'created';
+    const INITIATED  = Attempt\Status::INITIATED;
+    const PROCESSED  = 'processed';
+    const FAILED     = 'failed';
+    const REVERSED   = 'reversed';
     // This is a derived status
-    const PENDING   = 'pending';
+    const PENDING    = 'pending';
+    // This is a public status shown for instant refunds dashboard merchants
+    const PROCESSING = 'processing';
 
     const REFUND_STATUS = [
         self::CREATED,

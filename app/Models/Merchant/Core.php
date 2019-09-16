@@ -17,6 +17,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -35,6 +36,7 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -540,25 +542,11 @@ class Core extends Base\Core
         }
     }
 
-    public function action($merchant, $input)
+    public function action($merchant, $input, bool $useWorkflows = true)
     {
         $merchant->getValidator()->validateInput('action', $input);
 
-        $admin = $this->app['basicauth']->getAdmin();
-
         $action = $input['action'];
-
-        // Check for admin permissions
-        $admin->hasMerchantActionPermissionOrFail($action);
-
-        if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
-        {
-            $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
-
-            (new Methods\Core)->validatePricingForInternational($merchant, $plan);
-        }
-
-        $routePermission = Permission\Name::$actionMap[$action];
 
         $originalMerchant = clone $merchant;
 
@@ -566,8 +554,10 @@ class Core extends Base\Core
 
         $merchant->$function();
 
-        $this->app['workflow']->setPermission($routePermission)->handle(
-            $originalMerchant, $merchant);
+        if ($useWorkflows === true)
+        {
+            $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
+        }
 
         $this->repo->saveOrFail($merchant);
 
@@ -578,6 +568,23 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    /**
+     * @param Entity $oldMerchant
+     * @param Entity $newMerchant
+     * @param string $action
+     */
+    protected function triggerWorkFlowForMerchantEditAction(Entity $oldMerchant, Entity $newMerchant, string $action)
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        // Check for admin permissions
+        $admin->hasMerchantActionPermissionOrFail($action);
+
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        $this->app['workflow']->setPermission($routePermission)->handle($oldMerchant, $newMerchant);
     }
 
     /**
@@ -982,7 +989,7 @@ class Core extends Base\Core
 
         try
         {
-            $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+            $app = $this->getPartnerAppByMerchantId($merchant->getId());
         }
         catch (DBQueryException $ex)
         {
@@ -1330,6 +1337,80 @@ class Core extends Base\Core
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
     }
 
+    /**
+     * Changes the 2fa setting of the merchant.
+     *
+     * Only an owner can enable/disable 2fa
+     * for the merchant id.
+     *
+     * In all cases, the owner's mobile should be setup
+     *
+     * In case of restricted merchant, all the users
+     * associated with the merchant should have their mobile setup.
+     *
+     *
+     * @param Entity $user
+     * @param Entity $merchant
+     * @param array $input
+     *
+     * @return array
+     */
+    public function change2faSetting(User\Entity $user, Entity $merchant, array $input): array
+    {
+        $action = $input[Entity::SECOND_FACTOR_AUTH];
+
+        if ($input === false)
+        {
+            $merchant->setSecondFactorAuth($action);
+            $this->repo->saveOrFail($merchant);
+
+            return [
+                Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
+            ];
+        }
+
+        //owner should have their own 2fa setup done
+        if ($user->isSecondFactorAuthSetup() === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY);
+        }
+
+        if ($merchant->getRestricted() === true)
+        {
+            $query = $merchant->users()
+                        ->where(function ($q)
+                        {
+                            $q->where(User\Entity::CONTACT_MOBILE_VERIFIED, 0)
+                            ->orWhereNull(User\Entity::CONTACT_MOBILE);
+                        });
+
+            $totalUsersWithNo2faSetup = $query->get()->count();
+
+            if ($totalUsersWithNo2faSetup !== 0)
+            {
+                $maxUserDetailsInError = 20;
+
+                $usersWithNo2faSetup = $query->get()->take($maxUserDetailsInError);
+
+                $usersWithNo2faSetupToArrayMerchant = $usersWithNo2faSetup->callOnEveryItem('toArrayMerchant');
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                    null,
+                    [
+                        'total_users'   => $totalUsersWithNo2faSetup,
+                        'users'         => $usersWithNo2faSetupToArrayMerchant,
+                    ]);
+            }
+        }
+
+        $merchant->setSecondFactorAuth($action);
+        $this->repo->saveOrFail($merchant);
+
+        return [
+            Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
+        ];
+    }
+
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
         $tag = 'ref-' . $partnerId;
@@ -1406,6 +1487,36 @@ class Core extends Base\Core
         $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser);
 
         return $merchant;
+    }
+
+    /**
+     * This function checks for a mapping between the partner merchant's dummy app from
+     * auth database and the submerchant. This is stored in the `merchant_access_map` table
+     * on API side.
+     *
+     * @param  string $merchantId
+     * @param  string $partnerId
+     *
+     * @return bool
+     */
+    public function isMerchantMappedToNonPurePlatformPartner(string $merchantId, string $partnerId): bool
+    {
+        $app = $this->getPartnerAppByMerchantId($partnerId);
+
+        $mapping = (new AccessMap\Repository)
+            ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+
+        return (empty($mapping) === false);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return OAuthApp\Entity|null
+     */
+    public function getPartnerAppByMerchantId(string $merchantId)
+    {
+        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
     }
 
     /**
@@ -1661,7 +1772,13 @@ class Core extends Base\Core
     {
         $partnerUsers = $partner->users()->get();
 
-        $submerchantIds = $submerchants->pluck(Entity::ID)->toArray();
+        //
+        // if partner added himself as a submerchant which used to happen before but not anymore
+        // then we should not remove his own user
+        //
+        $submerchantIds = $submerchants->reject(function($subMerchant) use ($partner) {
+            return ($subMerchant->getId() === $partner->getId());
+        })->pluck(Entity::ID)->toArray();
 
         foreach ($partnerUsers as $partnerUser)
         {
@@ -1993,9 +2110,9 @@ class Core extends Base\Core
      */
     protected function shouldActivateInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
-        $isExperimentEnabled = $this->isInternationalActivationsExperimentEnabled($merchant);
+        $autoEnableInternational = $this->autoEnableInternational($merchant);
 
-        if ($isExperimentEnabled === false)
+        if ($autoEnableInternational === false)
         {
             return false;
         }
@@ -2014,10 +2131,10 @@ class Core extends Base\Core
             return false;
         }
 
-        $featureValue = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: (BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
             BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
             $category,
-            $subcategory);
+            $subcategory));
 
         //
         // Conditions being checked:
@@ -2034,16 +2151,42 @@ class Core extends Base\Core
         return false;
     }
 
-    public function isInternationalActivationsExperimentEnabled(Entity $merchant): bool
+    /**
+     * Auto Enable International for merchant if
+     *  1) Merchant belongs to Razorpay org
+     *
+     * @param Entity $merchant
+     *
+     * @return bool
+     */
+    public function autoEnableInternational(Entity $merchant): bool
     {
-        // Get razorx treatment
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::INTERNATIONAL_ACTIVATIONS,
-            $this->mode
-        );
+        $isRazorpayOrg = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
 
-        return (strtolower($variant) === 'on');
+        if ($isRazorpayOrg === false)
+        {
+            return false;
+        }
+
+        //
+        // SubMerchant batch upload flow defines a way to disable the auto-enabling international feature
+        // If the submerchant is getting activated using a submerchant batch and if the submerchant
+        // batch parameters define to not auto-enable international attribute, false will be returned.
+        //
+        $isBatchFlow = (app('basicauth')->isBatchFlow() === true);
+
+        if ($isBatchFlow === true)
+        {
+            $batchContext = app('basicauth')->getBatchContext();
+
+            $batchName               = $batchContext['type'] ?? null;
+            $autoEnableInternational = $batchContext['data'][Merchant\Entity::AUTO_ENABLE_INTERNATIONAL] ?? false;
+
+            return ($batchName === Batch\Type::SUB_MERCHANT)
+                   and ($autoEnableInternational === true);
+        }
+
+        return true;
     }
 
     /*
@@ -2084,6 +2227,56 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    public function getPartnerBankAccountIdsForSubmerchants(array $merchantIds): array
+    {
+        $merchants = $this->repo->merchant->getAllPartnerBankAccountsForSubmerchants($merchantIds);
+
+        $submerchants = [];
+
+        // Attributes
+        $partnerBankAccountId         = 'partner_bank_account_id';
+        $partnerConfigOriginId        = 'partner_config_origin_id';
+        $partnerConfigSettleToPartner = 'partner_config_settle_to_partner';
+
+        foreach ($merchants as $merchant)
+        {
+            $merchantId = $merchant->getId();
+
+            if (array_key_exists($merchantId, $submerchants) === true)
+            {
+                if (empty($merchant->getAttribute($partnerConfigOriginId)) === false)
+                {
+                    // App config was applied to the map but now we have a submerchant config, so unset the app config
+                    unset($submerchants[$merchantId]);
+                }
+                else
+                {
+                    // Submerchant config has been applied to the map. Do nothing for the app config
+                    continue;
+                }
+            }
+
+            $submerchants[$merchantId] = [
+                $partnerBankAccountId         => $merchant->getAttribute($partnerBankAccountId),
+                $partnerConfigSettleToPartner => (bool) $merchant->getAttribute($partnerConfigSettleToPartner),
+            ];
+        }
+
+        $merchantIdToPartnerBankAccountMap = [];
+
+        foreach ($submerchants as $merchantId => $merchantObj)
+        {
+            if ($merchantObj[$partnerConfigSettleToPartner] === true)
+            {
+                $merchantIdToPartnerBankAccountMap[$merchantId] = $merchantObj[$partnerBankAccountId];
+            }
+        }
+
+        $this->trace->info(TraceCode::PARTNER_BANK_ACCOUNT_MAP, $merchantIdToPartnerBankAccountMap);
+
+        return $merchantIdToPartnerBankAccountMap;
+    }
+
     protected function internationalEnable(Entity $merchant)
     {
         if ($merchant->isInternational() === true)
@@ -2121,5 +2314,89 @@ class Core extends Base\Core
         $merchant->setCurrencyConversion(null);
 
         $this->repo->saveOrFail($merchant);
+    }
+
+    /**
+     *  Restricted Merchant will have all its users associated to only itself.
+     *  If Restricted cannot be applied, will return userIds which are associated
+     *  with more than one merchant.
+     *
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    protected function getMerchantUsersWithMultipleMerchants(Entity $merchant): array
+    {
+        $users = $merchant->users()
+                          ->get();
+
+        $userAssociatedWithMoreMerchants = [];
+
+        foreach ($users as $user)
+        {
+            $merchantIds = $user->merchants()->distinct()->get()->pluck(Entity::ID)->toArray();
+
+            if (count($merchantIds) !== 1)
+            {
+                $userAssociatedWithMoreMerchants[] = $user->getId();
+            }
+        }
+
+        return $userAssociatedWithMoreMerchants;
+    }
+
+    /**
+     * This method does remove/apply restricted settings.
+     *
+     * @param Entity $merchant
+     * @param string $action
+     *
+     * @return array
+     */
+    public function applyRestrictedSettings(Entity $merchant, string $action): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_RESTRICTED_SETTINGS,
+            [
+                Entity::MERCHANT_ID => $merchant->getId(),
+                Entity::ACTION      => $action,
+                'admin_id'          => $this->app['basicauth']->getAdmin()->getId(),
+            ]);
+
+        if ($action === Constants::REMOVE)
+        {
+            return $this->addRestrictedSettingsToMerchant($merchant, false);
+        }
+        else
+        {
+            $userIds = $this->getMerchantUsersWithMultipleMerchants($merchant);
+
+            // Will add restricted settings only if all users
+            // are associated with one merchant itself.
+
+            if (count($userIds) === 0)
+            {
+                return $this->addRestrictedSettingsToMerchant($merchant, true);
+            }
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED,
+                                                    null,
+                                                    [
+                                                        'count_users_with_multiple_merchants' => count($userIds),
+                                                        'users_with_mutiple_merchants'        => $userIds,
+                                                    ]);
+        }
+    }
+
+    protected function addRestrictedSettingsToMerchant(Entity $merchant, bool $action)
+    {
+        $merchant->setAttribute(Entity::RESTRICTED, $action);
+
+        $this->repo->saveOrFail($merchant);
+
+        return [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            Entity::RESTRICTED  => $merchant->getRestricted(),
+        ];
     }
 }

@@ -2,6 +2,12 @@
 
 namespace RZP\Tests\Functional\Card;
 
+use Event;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\KeyWritten;
+use Illuminate\Cache\Events\CacheMissed;
+use Illuminate\Cache\Events\KeyForgotten;
+
 use RZP\Models\Card\IIN;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -23,6 +29,45 @@ class IinTest extends TestCase
     }
 
     public function testAddIin()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIinWithSubType()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIinWithInValidSubType()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIinWithCategory()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIinWithInvalidCategory()
+    {
+        $this->startTest();
+    }
+
+    public function testEditIinWithCategoryWithoutNetwork()
+    {
+        $this->testAddIin();
+
+        $this->startTest();
+    }
+
+    public function testEditIinWithoutCategory()
+    {
+        $this->testAddIin();
+
+        $this->startTest();
+    }
+
+    public function testAddIinWithCategoryAndRuPay()
     {
         $this->startTest();
     }
@@ -60,6 +105,13 @@ class IinTest extends TestCase
     public function testGetIin()
     {
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBatchServiceIinUpdate()
+    {
+        $this->ba->appAuth();
 
         $this->startTest();
     }
@@ -349,6 +401,78 @@ class IinTest extends TestCase
     public function testIinsBulkUpdate()
     {
         $this->startTest();
+    }
+
+    public function testQueryCacheforIin()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake(false);
+
+        $this->testEditIin();
+
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                $this->assertEquals('iin_112333', $tag);
+            }
+
+            return true;
+        });
+
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                $this->assertEquals('iin_112333', $tag);
+            }
+
+            return true;
+        });
+
+        Event::assertNotDispatched(CacheHit::class);
+
+        $request = [
+            'request' => [
+                'url' => '/iins/112333',
+                'method' => 'put',
+                'content' => [
+                    'country'        => 'IN',
+                    'issuer'         => 'HDFC',
+                    'issuer_name'    => 'HDFC',
+                    'emi'            => 1,
+                    'network'        => 'RuPay',
+                    'type'           => 'credit',
+                    'message_type'   => 'SMS',
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'iin'            => 112333,
+                    'network'        => 'RuPay',
+                    'type'           => 'credit',
+                    'country'        => 'IN',
+                    'issuer'         => 'HDFC',
+                    'issuer_name'    => 'HDFC Bank',
+                    'emi'            => true,
+                    'message_type'   => 'SMS',
+                    'recurring'      => false,
+                ],
+            ],
+        ];
+
+        $this->runRequestResponseFlow($request);
+
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                $this->assertEquals('iin_112333', $tag);
+            }
+
+            return true;
+        });
     }
 
     public function startTest($testDataToReplace = [])

@@ -15,18 +15,18 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Metric;
-use RZP\Constants\Entity as E;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
  * Class Base
  * @package RZP\Models\Payout\Processor
  */
-abstract class Base extends BaseCore
+class Base extends BaseCore
 {
     /**
      * @var Merchant\Entity
@@ -37,6 +37,11 @@ abstract class Base extends BaseCore
      * @var Batch\Entity
      */
     protected $batch;
+
+    /**
+     * @var string
+     */
+    protected $batchId;
 
     /**
      * @var Customer\Entity
@@ -60,14 +65,14 @@ abstract class Base extends BaseCore
     protected $fees = 0;
 
     /**
-     * @var string|null
-     */
-    protected $channel;
-
-    /**
      * @var Balance\Entity
      */
     protected $balance;
+
+    /**
+     * @var bool
+     */
+    protected $workflowActivated = false;
 
     /**
      * @var BankAccount\Entity|Vpa\Entity|Card\Entity
@@ -80,47 +85,26 @@ abstract class Base extends BaseCore
 
         $this->setPayoutBalance($input);
 
-        $this->setChannel($input);
-
+        /** @var Payout\Entity $payout */
         $payout = $this->repo->transaction(function () use ($input)
         {
-            // Create a payout entity
-            $payout = $this->createPayoutEntity($input);
-
-            try
+            $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
             {
-                // Create merchant/customer transactions and link it to payout.
-                $this->createTxns($payout);
+                return $this->createPayoutEntity($input);
+            });
 
-                // Create a fund transfer entity where the fund transfers will be processed.
-                // NOTE: Ensure that this is created after transaction creation, so that if
-                // the transaction creation fails because of insufficient funds and we want
-                // to queue the payout instead of failing the complete DB transaction, this
-                // FTA does not get created.
-                $this->createFundTransferAttemptEntity($payout);
-            }
-            catch (Exception\BadRequestException $ex)
+            if ($this->workflowActivated === true)
             {
-                //
-                // This needs to be done since while creating a transaction we also associate
-                // the source (payout) with the transaction and then we fail the transaction
-                // creation due to insufficient balance and then later attempt to save the payout.
-                // Payout save fails because we associated the failed transaction with the payout
-                // but we had not actually saved the transaction in the DB.
-                //
-                $payout->transaction()->dissociate();
-
-                $insufficientFundsErrorCode = ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING;
-
-                if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
-                {
-                    $this->handleInsufficientFunds($ex, $payout);
-                }
-                else
-                {
-                    throw $ex;
-                }
+                return $payout;
             }
+
+            $payoutType = $this->getPayoutType();
+
+            $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                           $payout,
+                                                           $this->fundTransferDestination);
+
+            $downstreamProcessor->process();
 
             $this->repo->saveOrFail($payout);
 
@@ -136,16 +120,7 @@ abstract class Base extends BaseCore
             return $payout;
         });
 
-        if ($payout->isStatusQueued() === true)
-        {
-            $this->app->events->fire('api.payout.queued', [$payout]);
-        }
-        else
-        {
-            // api.payout.created to be removed after merchants have migrated.
-            $this->app->events->fire('api.payout.created', [$payout]);
-            $this->app->events->fire('api.payout.initiated', [$payout]);
-        }
+        $this->fireEventForPayoutStatus($payout);
 
         return $payout;
     }
@@ -155,17 +130,26 @@ abstract class Base extends BaseCore
         $payout = $this->repo->transaction(
                     function () use ($payout)
                     {
-                        // Create merchant/customer transactions and link it to payout.
-                        $this->createTxns($payout);
-
                         // TODO: Later, we will have to handle active / inactive stuff also here.
                         // Refer the function `fetchAndAssociatePayoutAccount`
                         // Also, this will have to be fixed for MerchantPayout since there the fundTransferDestination
                         // is merchant's bank account.
                         $this->fundTransferDestination = $payout->fundAccount->account;
 
-                        // Create a fund transfer entity where the fund transfers will be processed.
-                        $this->createFundTransferAttemptEntity($payout);
+                        $payoutType = $this->getPayoutType();
+
+                        $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                                       $payout,
+                                                                       $this->fundTransferDestination);
+
+                        //
+                        // Ensure that the queued flag in the payout entity is not set.
+                        // If it is set, it's going to cause issues since the downstream processor
+                        // doesn't throw an error on insufficient funds if queued flag is set.
+                        // If it doesn't throw an error, we'll end up marking it created without actually
+                        // creating any transaction or FTA.
+                        //
+                        $downstreamProcessor->process();
 
                         $payout->setStatus(Payout\Status::CREATED);
 
@@ -195,6 +179,66 @@ abstract class Base extends BaseCore
         return $payout;
     }
 
+    public function processPendingPayout(Payout\Entity $payout): Payout\Entity
+    {
+        /** @var Payout\Entity $payout */
+        $payout = $this->repo->transaction(
+            function () use ($payout)
+            {
+                //
+                // TODO: Later, we will have to handle active / inactive stuff also here.
+                // Refer the function `fetchAndAssociatePayoutAccount`
+                //
+                $this->fundTransferDestination = $payout->fundAccount->account;
+
+                $payoutType = $this->getPayoutType();
+
+                //
+                // We're setting the queued flag to true since Queued Payouts is always enabled
+                // alongside Payout Workflows. Hence, we want to enabled the queued payout logic in
+                // DownstreamProcessor
+                //
+                $payout->setQueueFlag(true);
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->fundTransferDestination);
+
+                $downstreamProcessor->process();
+
+                //
+                // Downstream processor can set the status to queued in some cases (low balance)
+                // If set, we want the payout to remain in queued so it can be processed separately.
+                // Hence, payout status is set to created only if it's not already queued.
+                //
+                if ($payout->isStatusQueued() === false)
+                {
+                    $payout->setStatus(Payout\Status::CREATED);
+                }
+
+                $this->repo->saveOrFail($payout);
+
+                $this->trace->info(
+                    TraceCode::PENDING_PAYOUT_CREATED,
+                    [
+                        'payout_id'      => $payout->getId(),
+                        'transaction_id' => $payout->getTransactionId(),
+                        'payout_status'  => $payout->getStatus(),
+                    ]);
+
+                return $payout;
+            });
+
+        $this->fireEventForPayoutStatus($payout);
+
+        if ($payout->isStatusCreated() === true)
+        {
+            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        }
+
+        return $payout;
+    }
+
     /**
      * Set the merchant context, always required.
      *
@@ -209,11 +253,98 @@ abstract class Base extends BaseCore
         return $this;
     }
 
-    public function setBatch(Batch\Entity $batch = null): self
+    public function setBatch($batchIdOrBatch): self
     {
-        $this->batch = $batch;
+        // TODO: remove batch entity handling once ramped to 100%
+        if (($batchIdOrBatch instanceof Batch\Entity) === true)
+        {
+            $this->batch = $batchIdOrBatch;
+        }
+        else if (is_string($batchIdOrBatch) === true)
+        {
+            $this->batchId = $batchIdOrBatch;
+        }
 
         return $this;
+    }
+
+    /**
+     * @param callable $createPayoutCallback The callable is expected to create and return a payout entity.
+     *
+     * @return Payout\Entity|null
+     * @throws Exception\BadRequestException
+     */
+    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
+    {
+        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        if ($areWorkflowsEnabled === false)
+        {
+            //
+            // Workflows feature was not enabled.
+            // The callback will create a payout entity, which we return back from here,
+            // which will progressed on to DownstreamProcessor
+            //
+            return $createPayoutCallback();
+        }
+
+        //
+        // Workflows module works on org and requires org details to be set in basicauth
+        // The current flows set and override org details at multiple places. We're setting
+        // this here explicitly to avoid bugs and missed flows. Not ideal, but not harmful either.
+        //
+        app('basicauth')->setOrgDetails($this->merchant->org);
+
+        //
+        // Call the create Payout callback that will return a base Payout entity,
+        // which we further work with.
+        //
+        /** @var Payout\Entity $payout */
+        $payout = $createPayoutCallback();
+
+        try
+        {
+            //
+            // Initiate the workflow process. If a workflow is triggered successfully,
+            // this function will thrown an EarlyWorkflowResponse exception.
+            //
+            $this->app['workflow']
+                 ->setEntityAndId($payout->getEntity(), $payout->getId())
+                 ->setPermission(Permission\Name::CREATE_PAYOUT)
+                 ->handle((new \stdClass), $payout);
+        }
+        catch (Exception\EarlyWorkflowResponse $ex)
+        {
+            $this->trace->info(TraceCode::PAYOUT_WORKFLOW_TRIGGERED, ['payout' => $payout->toArray()]);
+
+            if ($payout === null)
+            {
+                $this->trace->critical(TraceCode::PAYOUT_WORKFLOW_ACTION_EXCEPTION);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
+                    null,
+                    ['payout_id' => $payout->getId()]);
+            }
+
+            // Set payout to pending and move on
+            $payout->setStatus(Payout\Status::PENDING);
+
+            $this->repo->saveOrFail($payout);
+
+            $this->workflowActivated = true;
+        }
+        catch (\Throwable $t)
+        {
+            $this->trace->traceException($t);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
+                null,
+                ['payout_id' => optional($payout)->getId()]);
+        }
+
+        return $payout;
     }
 
     /**
@@ -275,8 +406,6 @@ abstract class Base extends BaseCore
 
         $payout->customer()->associate($this->customer);
 
-        $payout->setChannel($this->channel);
-
         $this->fetchAndAssociatePayoutAccount($payout, $input);
 
         $this->setMethod($payout);
@@ -299,7 +428,7 @@ abstract class Base extends BaseCore
         //
         $this->associateUserIfApplicable($payout);
 
-        $payout->batch()->associate($this->batch);
+        $this->batchId ? ($payout->setBatchId($this->batchId)) : ($payout->batch()->associate($this->batch));
 
         //
         // Doing this after all the associations since
@@ -318,45 +447,6 @@ abstract class Base extends BaseCore
         return $payout;
     }
 
-    protected function createFundTransferAttemptEntity(Payout\Entity $payout)
-    {
-        $ftaInput = [
-            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
-            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
-            FundTransferAttempt\Entity::MODE      => $payout->getMode(),
-            FundTransferAttempt\Entity::NARRATION => $payout->getNarration(),
-        ];
-
-        $ftaAccount = $this->fundTransferDestination;
-        $ftaCore    = new FundTransferAttempt\Core;
-
-        $ftaAccountEntity = $ftaAccount->getEntity();
-
-        switch ($ftaAccountEntity)
-        {
-            case E::BANK_ACCOUNT:
-                $ftaCore->createWithBankAccount($payout, $ftaAccount, $ftaInput);
-                break;
-
-            case E::VPA:
-                $ftaCore->createWithVpa($payout, $ftaAccount, $ftaInput);
-                break;
-
-            case E::CARD:
-                $ftaCore->createWithCard($payout, $ftaAccount, $ftaInput);
-                break;
-
-            default:
-                throw new Exception\InvalidArgumentException(
-                    'Payout fta destination entity is invalid. '. $ftaAccount->getEntity(),
-                    [
-                        'payout_id'             => $payout->getId(),
-                        'fta_account_id'        => $ftaAccount->getId(),
-                        'fta_account_entity'    => $ftaAccountEntity,
-                    ]);
-        }
-    }
-
     protected function preValidations()
     {
         //
@@ -373,11 +463,16 @@ abstract class Base extends BaseCore
 
     protected function runInputValidations(Payout\Entity $payout, array $input)
     {
-        $validatorOperation = camel_case(class_basename(get_called_class()));
+        $validatorOperation = camel_case($this->getPayoutType());
 
         $validator = $payout->getValidator();
 
         $validator->validateInput(camel_case($validatorOperation), $input);
+    }
+
+    protected function getPayoutType()
+    {
+        return class_basename(get_called_class());
     }
 
     protected function setPayoutBalance(array $input)
@@ -394,51 +489,22 @@ abstract class Base extends BaseCore
         }
     }
 
-    protected function createTxns(Payout\Entity $payout)
+    protected function fireEventForPayoutStatus(Payout\Entity $payout)
     {
-        list ($txn, $feeSplit) = (new Transaction\Processor\Payout($payout))->createTransaction();
-
-        //
-        // In an on-demand payout, whatever payout amount the merchant asks for, we DO NOT create
-        // a payout for that amount. Instead, we deduct some fees from that amount and create the
-        // payout with the REMAINING amount. For example: If a merchant wants a payout of 100rs,
-        // we create a payout of 98rs only and keep the remaining 2rs as fees.
-        //
-        // In case of a normal payout, we add extra fees to the actual payout amount and deduct
-        // that much amount of money from the merchant's balance. For example, if a merchant wants
-        // to do a payout of 100rs, we create a payout of 100rs and then deduct 102rs from his balance.
-        // The 2rs extra is our fees. The reason we don't deduct from the actual payout amount here is
-        // because in most cases normal payout is used to payout some money to a customer (of the merchant).
-        // The customer would always expect a certain amount. (we can have customer fee bearer concept later).
-        //
-        // In case of on-demand, it's basically a customer fee bearer kind of concept, where in the customer
-        // is the actual merchant himself. He bears the fees for the payout to his account. Hence, the payout
-        // happens after deducting the razorpay fees from the actual payout amount. For this reason, we also
-        // reset the payout amount here.
-        //
-        // In both the above cases, we need to ensure that the merchant has enough balance in his account.
-        // The validation for the balance would always be payout's amount + our fees.
-        //
-
-        if ($payout->getPayoutType() === Payout\Entity::ON_DEMAND)
+        if ($payout->isStatusQueued() === true)
         {
-            // Here, payout amount is the amount requested by merchant for payout and fees is
-            // levied over it. Also, this fees is deducted from merchant balance. This happens for
-            // merchants who do not have 'es_on_demand' feature enabled. In case of 'es_on_demand'
-            // merchants, payout fees will be deducted from payout amount requested by the merchant.
-            // This is done to allow a merchant to do a payout on requested amount, rather than
-            // calculating fees over it and failing a transaction if merchant does not have enough balance.
-            $payout->setAmount($txn->getAmount());
+            $this->app->events->fire('api.payout.queued', [$payout]);
         }
-
-        $payout->setFees($txn->getFee());
-        $payout->setTax($txn->getTax());
-
-        $this->repo->saveOrFail($txn);
-
-        (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
-
-        $this->repo->saveOrFail($txn);
+        else if ($payout->isStatusPending() === true)
+        {
+            // TODO:: Add pending webhook trigger here
+        }
+        else
+        {
+            // api.payout.created to be removed after merchants have migrated.
+            $this->app->events->fire('api.payout.created', [$payout]);
+            $this->app->events->fire('api.payout.initiated', [$payout]);
+        }
     }
 
     /**
@@ -463,11 +529,4 @@ abstract class Base extends BaseCore
 
         $payout->setMethod($method);
     }
-
-    protected function handleInsufficientFunds(Exception\BadRequestException $ex, Payout\Entity $payout)
-    {
-        throw $ex;
-    }
-
-    abstract protected function setChannel($input = []);
 }

@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Card\IIN;
+use RZP\Models\Card;
 
 class CreateIins extends Migration
 {
@@ -18,7 +19,7 @@ class CreateIins extends Migration
     {
         Schema::create(Table::IIN, function(Blueprint $table)
         {
-            $table->integer(IIN\Entity::IIN)->primary();
+            $table->char(IIN\Entity::IIN, 6)->primary();
 
             $table->string(IIN\Entity::CATEGORY)
                   ->nullable();
@@ -28,6 +29,9 @@ class CreateIins extends Migration
 
             $table->string(IIN\Entity::TYPE)
                   ->nullable();
+
+            $table->string(IIN\Entity::SUBTYPE)
+                  ->default(Card\SubType::CONSUMER);
 
             $table->string(IIN\Entity::MESSAGE_TYPE)
                   ->nullable();

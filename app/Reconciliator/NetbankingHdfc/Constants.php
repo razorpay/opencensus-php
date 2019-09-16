@@ -36,4 +36,8 @@ class Constants
         self::COLUMN_PAYMENT_DATE,
         self::ERROR_DESCRIPTION,
     ];
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_CUSTOMER_EMAIL,
+    ];
 }

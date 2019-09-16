@@ -2,11 +2,14 @@
 
 namespace RZP\Tests\Functional\Gateway\Hitachi;
 
+use App;
+
 use RZP\Exception;
-use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Hitachi;
 use RZP\Models\Payment\Gateway;
+use RZP\Services\DowntimeMetric;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mpi\Enstage\Field;
 use RZP\Gateway\Hitachi\ResponseFields;
@@ -52,11 +55,32 @@ class HitachiGatewayTest extends TestCase
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
 
         $this->mockCardVault();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'save_all_cards')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
     }
 
     public function testSuccessful13DigitPanForEnrolledCard()
     {
-        $payment = $this->defaultAuthPayment([
+        $this->assertEquals([], $this->app['gateway_downtime_metric']->getMetrics());
+
+        $this->defaultAuthPayment([
             'card' => [
                 'number'       => CardNumber::VALID_ENROLL_NUMBER,
                 'expiry_month' => '02',
@@ -65,6 +89,14 @@ class HitachiGatewayTest extends TestCase
                 'name'         => 'Test Card'
             ]
         ]);
+
+        $this->assertEquals([
+            $this->gateway => [
+                DowntimeMetric::Success    => [
+                    DowntimeMetric::NoError      => 1,
+                ]
+            ]
+        ], $this->app['gateway_downtime_metric']->getMetrics());
 
         $txn = $this->getEntities('transaction', [], true);
         $this->assertEquals(0, $txn['count']);
@@ -149,6 +181,12 @@ class HitachiGatewayTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $payment['card']['number'] = CardNumber::VALID_NOT_ENROLL_NUMBER;
+
+        $this->mockServerRequestFunction(
+            function(& $request)
+            {
+                $this->assertNotNull($request['pMCProtocolVersion']);
+            });
 
         $response = $this->doAuthPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
@@ -455,7 +493,17 @@ class HitachiGatewayTest extends TestCase
 
     public function testCaptureFailure()
     {
+        $this->assertEquals([], $this->app['gateway_downtime_metric']->getMetrics());
+
         $this->doAuthPayment($this->payment);
+
+        $this->assertEquals([
+            'hitachi' => [
+                'SUCCESS'    => [
+                    'NO_ERROR'      => 1,
+                ],
+            ],
+        ], $this->app['gateway_downtime_metric']->getMetrics());
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -469,6 +517,14 @@ class HitachiGatewayTest extends TestCase
             {
                 $this->capturePayment($payment['public_id'], $payment['amount']);
             });
+
+        $this->assertEquals([
+            'hitachi' => [
+                'FAILURE'    => [
+                    'GATEWAY_ERROR_UNKNOWN_ERROR'      => 1,
+                ],
+            ],
+        ], $this->app['gateway_downtime_metric']->getMetrics());
 
         $hitachi = $this->getLastEntity('hitachi', true);
 

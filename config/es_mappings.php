@@ -158,6 +158,9 @@ return [
             'user_id' => [
                 'type'            => 'keyword',
             ],
+            'subscription_id' => [
+                'type'            => 'keyword',
+            ],
             'currency' => [
                 'type'            => 'keyword',
             ],

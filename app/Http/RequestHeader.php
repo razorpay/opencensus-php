@@ -8,6 +8,8 @@ class RequestHeader
 
     const USER_AGENT                    = 'user-agent';
 
+    const CONTENT_TYPE                  = 'Content-Type';
+
     // Dashboard Headers
     const ADMIN_TOKEN                   = 'x-admin-token';
 
@@ -27,6 +29,8 @@ class RequestHeader
     const X_DASHBOARD_USER_ID           = 'X-Dashboard-User-Id';
     const X_DASHBOARD_USER_EMAIL        = 'X-Dashboard-User-Email';
     const X_DASHBOARD_USER_ROLE         = 'X-Dashboard-User-Role';
+
+    const X_DASHBOARD_IP                = 'X-Dashboard-Ip';
 
     /**
      * To support Account Auth: Allows API requests to be served under the
@@ -48,4 +52,5 @@ class RequestHeader
     const X_Batch_Id                    = 'x-batch-id';
     const X_IDEMPOTENT_KEY              = 'X-Idempotent-Key';
 
+    const X_TASK_ID                     = 'X-Task-ID';
 }

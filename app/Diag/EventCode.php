@@ -15,7 +15,6 @@ class EventCode
         'name'  => 'order.creation.processed'
     ];
 
-
     // payment flow events
     const PAYMENT_CREATION_INITIATED                    = [
         'group' => 'initiation',
@@ -30,6 +29,11 @@ class EventCode
     const PAYMENT_INPUT_VALIDATIONS_PROCESSED           = [
         'group' => 'internal_checks',
         'name'  => 'payment.input.validations.processed'
+    ];
+
+    const PAYMENT_CREATION_RESPAWN                      = [
+        'group' => 'initiation',
+        'name'  => 'payment.creation.respawn'
     ];
 
     const PAYMENT_CARDSAVING_INITIATED                  = [
@@ -72,6 +76,11 @@ class EventCode
         'name'  => 'payment.terminal.selection.processed'
     ];
 
+    const PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING    = [
+        'group' => 'internal_checks',
+        'name'  => 'payment.sorted.terminals.received.from.smart.routing'
+    ];
+
     const PAYMENT_CREATION_PROCESSED                    = [
         'group' => 'payment_creation',
         'name'  => 'payment.creation.processed'
@@ -97,14 +106,19 @@ class EventCode
         'name'  => 'payment.authentication.initiated'
     ];
 
-    const PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED = [
+    const PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED              = [
         'group' => 'authentication',
-        'name'  => 'payment.authentication.otp.generate.initiated'
+        'name'  => 'payment.authentication.enrollment.initiated'
     ];
 
-    const PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED = [
+    const PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED              = [
         'group' => 'authentication',
-        'name'  => 'payment.authentication.otp.generate.processed'
+        'name'  => 'payment.authentication.enrollment.processed'
+    ];
+
+    const PAYMENT_AUTHENTICATION_PROCESSED              = [
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.processed'
     ];
 
     const PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED   = [
@@ -142,14 +156,14 @@ class EventCode
         'name'  => 'payment.authentication.3ds.redirect.initiated'
     ];
 
-    const PAYMENT_AUTHORIZATION_INITIATED               = [
-        'group' => 'authorization',
-        'name'  => 'payment.authorization.initiated'
-    ];
-
     const PAYMENT_AUTHENTICATION_2FA_URL_SENT           = [
         'group' => 'authentication',
         'name'  => 'payment.authentication.2fa.url.sent'
+    ];
+
+    const PAYMENT_AUTHORIZATION_INITIATED               = [
+        'group' => 'authorization',
+        'name'  => 'payment.authorization.initiated'
     ];
 
     const PAYMENT_AUTHORIZATION_DROPPED                 = [
@@ -207,7 +221,6 @@ class EventCode
         'name'  => 'payment.response.sent'
     ];
 
-
     // payment verification
     const PAYMENT_VERIFICATION_INITIATED                = [
         'group' => 'verification',
@@ -219,4 +232,104 @@ class EventCode
         'name'  => 'payment.verification.processed'
     ];
 
+    const PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_INITIATED = [
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.omnichannel.request.initiated'
+    ];
+
+    const PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_PROCESSED = [
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.omnichannel.request.processed'
+    ];
+
+    //Settlement flow events
+    const TRANSACTION_SETTLED_AT_UPDATE = [
+        'group' => 'initiation',
+        'name'  => 'transaction.settled.at.update'
+    ];
+
+    const SETTLEMENT_CREATION_INITIATED = [
+        'group' => 'initiation',
+        'name'  => 'settlement.creation.initiated'
+    ];
+
+    const SETTLEMENT_CREATION_SUCCESS = [
+        'group' => 'success',
+        'name'  => 'settlement.creation.success'
+    ];
+
+    const SETTLEMENT_CREATION_FAILED = [
+        'group' => 'failure',
+        'name'  => 'settlement.creation.failed'
+    ];
+
+    const FTA_CREATION_INITIATED = [
+        'group' => 'initiation',
+        'name'  => 'fta.creation.initiated'
+    ];
+
+    const FTA_CREATION_SUCCESS = [
+        'group' => 'success',
+        'name'  => 'fta.creation.success'
+    ];
+
+    const FTA_CREATION_FAILED = [
+        'group' => 'failure',
+        'name'  => 'fta.creation.failed'
+    ];
+
+    const BATCH_FUND_TRANSFER_CREATION_INITIATED = [
+        'group' => 'initiated',
+        'name'  => 'batchFta.creation.initiated'
+    ];
+
+    const BATCH_FUND_TRANSFER_CREATION_SUCCESS = [
+        'group' => 'success',
+        'name'  => 'batchFta.creation.success'
+    ];
+
+    const BATCH_FUND_TRANSFER_CREATION_FAILED = [
+        'group' => 'failure',
+        'name'  => 'batchFta.creation.failed'
+    ];
+
+    const BEAM_FILE_PUSH_SUCCESS = [
+        'group' => 'success',
+        'name'  => 'beam.push.success'
+    ];
+
+    const BEAM_FILE_PUSH_RETRY = [
+        'group' => 'retry',
+        'name'  => 'beam.push.retry'
+    ];
+
+    const BEAM_FILE_PUSH_FAILED = [
+        'group' => 'failure',
+        'name'  => 'beam.push.failed'
+    ];
+
+    const FTA_UTR_UPDATED = [
+        'group' => 'update',
+        'name'  => 'fta.utr.updated'
+    ];
+
+    const FTA_DATA_UPDATED_FROM_REVERSE_FEED = [
+        'group' => 'update',
+        'name'  => 'fta.data.updated.reverse.feed'
+    ];
+
+    const FTA_STATUS_UPDATED = [
+        'group' => 'update',
+        'name'  => 'fta.status.updated'
+    ];
+
+    const SETTLEMENT_STATUS_UPDATED = [
+        'group' => 'update',
+        'name'  => 'settlement.status.updated'
+    ];
+
+    const REVERSE_FEED_RECEIVED = [
+        'group' => 'receive',
+        'name'  => 'reverse.feed.received'
+    ];
 }

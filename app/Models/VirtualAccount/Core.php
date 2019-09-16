@@ -2,6 +2,7 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -115,7 +116,7 @@ class Core extends Base\Core
         return $this->create($input, $merchant, null, null, $merchant->bankingBalance);
     }
 
-    public function createOrFetchBankingVirtualAccount(Merchant $merchant, $balance): Entity
+    public function createOrFetchBankingVirtualAccount(Merchant $merchant, Balance\Entity $balance): Entity
     {
         $virtualAccount = $this->repo->virtual_account->getActiveVirtualAccountFromBalanceId($balance->getId());
 
@@ -155,6 +156,8 @@ class Core extends Base\Core
 
             return $virtualAccount;
         });
+
+        $this->repo->reload($virtualAccount);
 
         $this->eventVirtualAccountCreated($virtualAccount);
 
@@ -309,6 +312,32 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
+    public function close(Entity $virtualAccount)
+    {
+        $virtualAccount->getValidator()->validateOfPrimaryBalance();
+
+        $bankAccount = $virtualAccount->bankAccount;
+
+        if ($bankAccount !== null)
+        {
+            $this->repo->deleteOrFail($bankAccount);
+
+            $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
+        }
+
+        $virtualAccount->setStatus(Status::CLOSED);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $virtualAccount->setClosedAt($currentTime);
+
+        $this->repo->saveOrFail($virtualAccount);
+
+        $this->eventVirtualAccountClosed($virtualAccount);
+
+        return $virtualAccount;
+    }
+
     protected function verifyBankTransferEnabled(Merchant $merchant)
     {
         $merchantMethods = $merchant->getMethods();
@@ -365,5 +394,14 @@ class Core extends Base\Core
         }
 
         return $defaultMerchantId;
+    }
+
+    public function eventVirtualAccountClosed(Entity $virtualAccount)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $virtualAccount
+        ];
+
+        $this->app['events']->fire('api.virtual_account.closed', $eventPayload);
     }
 }

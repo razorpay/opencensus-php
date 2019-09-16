@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -63,16 +64,66 @@ class Core extends Base\Core
         return $balance;
     }
 
+    public function createBalanceForCurrentAccount(Merchant\Entity $merchant, array $input, string $mode)
+    {
+        $content = [
+            Entity::TYPE     => Product::BANKING,
+            Entity::CURRENCY => Currency::INR,
+        ];
+
+        $input = array_merge($input, $content);
+
+        $balance = $this->create($merchant, $input, $mode);
+
+        return $balance;
+    }
+
+    /**
+     * Shared Banking balance is the first banking account created on business banking
+     * This is of account_type=shared, and only one of these can exist (currently)
+     *
+     * @param Merchant\Entity $merchant
+     * @param null            $mode
+     *
+     * @return Entity
+     */
+    public function createOrFetchSharedBankingBalance(Merchant\Entity $merchant, $mode = null)
+    {
+        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                                            $merchant->getId(),
+                                            Type::BANKING,
+                                            AccountType::SHARED,
+                                            $mode);
+
+        if ($balance === null)
+        {
+            $input = [
+                Entity::TYPE         => Type::BANKING,
+                Entity::ACCOUNT_TYPE => AccountType::SHARED,
+                Entity::CURRENCY     => Currency::INR,
+            ];
+
+            $balance = $this->create($merchant, $input, $mode);
+        }
+
+        return $balance;
+    }
+
     /**
      * Check that a merchant's balance is greater than amount argument passed
      *
-     * @param  Merchant\Entity $merchant
-     * @param  int             $amount
+     * @param Merchant\Entity $merchant
+     * @param int             $amount
+     * @param string          $balanceType
+     *
      * @return bool
      */
-    public function checkMerchantBalance(Merchant\Entity $merchant, int $amount) : bool
+    public function checkMerchantBalance(
+        Merchant\Entity $merchant,
+        int $amount,
+        string $balanceType = Type::PRIMARY) : bool
     {
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        $balance = $merchant->getBalanceByProductTypeOrFail($balanceType);
 
         if ($balance->getBalance() < $amount)
         {

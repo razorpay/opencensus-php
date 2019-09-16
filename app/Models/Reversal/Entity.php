@@ -9,10 +9,10 @@ use RZP\Models\Transfer;
 use RZP\Models\Customer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
-use RZP\Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
 {
@@ -27,6 +27,8 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE           = 'entity_type';
     const BALANCE_ID            = 'balance_id';
     const AMOUNT                = 'amount';
+    const FEE                   = 'fee';
+    const TAX                   = 'tax';
     const CURRENCY              = 'currency';
     const NOTES                 = 'notes';
     const TRANSACTION_ID        = 'transaction_id';
@@ -35,6 +37,8 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const INITIATOR_ID          = 'initiator_id';
     const CUSTOMER_REFUND_ID    = 'customer_refund_id';
+    // TODO: Need to fill UTR from FTS.
+    const UTR                   = 'utr';
 
     // Input attribute const
     const LINKED_ACCOUNT_NOTES  = 'linked_account_notes';
@@ -52,9 +56,12 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::AMOUNT,
+        self::FEE,
+        self::TAX,
         self::CURRENCY,
         self::NOTES,
         self::CHANNEL,
+        self::UTR,
         self::LINKED_ACCOUNT_NOTES,
     ];
 
@@ -68,12 +75,15 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::BALANCE_ID,
         self::AMOUNT,
+        self::FEE,
+        self::TAX,
         self::CURRENCY,
         self::NOTES,
         self::TRANSFER_ID,
         self::PAYOUT_ID,
         self::INITIATOR_ID,
         self::CUSTOMER_REFUND_ID,
+        self::UTR,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -85,20 +95,27 @@ class Entity extends Base\PublicEntity
         self::TRANSFER_ID,
         self::PAYOUT_ID,
         self::AMOUNT,
+        self::FEE,
+        self::TAX,
         self::CURRENCY,
         self::NOTES,
         self::LINKED_ACCOUNT_NOTES,
         self::INITIATOR_ID,
         self::CUSTOMER_REFUND_ID,
+        self::UTR,
         self::CREATED_AT,
     ];
 
     protected $casts = [
         self::AMOUNT => 'int',
+        self::FEE    => 'int',
+        self::TAX    => 'int',
     ];
 
     protected $amounts = [
         self::AMOUNT,
+        self::FEE,
+        self::TAX,
     ];
 
     protected $publicSetters = [
@@ -119,6 +136,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::FEE   => 0,
+        self::TAX   => 0,
         self::NOTES => [],
     ];
 
@@ -178,6 +197,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function getFee()
+    {
+        return $this->getAttribute(self::FEE);
+    }
+
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
+    }
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
@@ -186,6 +215,16 @@ class Entity extends Base\PublicEntity
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getTransactionType()
+    {
+        return $this->getAttribute(self::TRANSACTION_TYPE);
     }
 
     public function getCustomerRefundId()
@@ -198,9 +237,47 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INITIATOR_ID);
     }
 
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
+    }
+
     // -------------------- End Getters --------------------------
 
     // -------------------- Setters ------------------------------
+
+    public function setChannel($channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    public function setFee(int $fee)
+    {
+        assertTrue($fee >= 0);
+
+        $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setTax(int $tax)
+    {
+        assertTrue($tax >= 0);
+
+        $this->setAttribute(self::TAX, $tax);
+    }
+
+    public function setUtr($utr)
+    {
+        $this->setAttribute(self::UTR, $utr);
+    }
+
+    // -------------------- End Setters --------------------------
+
+    // -------------------- Public Setters ------------------------------
 
     public function setPublicTransferIdAttribute(array & $array)
     {
@@ -281,12 +358,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setChannel($channel)
-    {
-        $this->setAttribute(self::CHANNEL, $channel);
-    }
+    // -------------------- End Public Setters --------------------------
 
-    // -------------------- End Setters --------------------------
+    // -------------------- Accessors ------------------------------
 
     public function getPayoutIdAttribute()
     {
@@ -307,4 +381,6 @@ class Entity extends Base\PublicEntity
 
         return null;
     }
+
+    // -------------------- End Accessors ------------------------------
 }

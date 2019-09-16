@@ -46,6 +46,14 @@ configure_dark(){
     echo QUEUE_DRIVER=sync >> ./environment/.env.production
     echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
     echo "MOZART_URL=\"https://mozart-dark.razorpay.com/\"" >> ./environment/.env.production
+    echo "SCROOGE_URL=\"https://scrooge-dark.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CORE_PAYMENT_SERVICE_LIVE_URL=\"https://cps-dark-live.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CORE_PAYMENT_SERVICE_TEST_URL=\"https://cps-dark-test.razorpay.com/v1/\"" >> ./environment/.env.production
+}
+
+run_migration_job(){
+    cd /app
+    php artisan migrate --database=live_migration --force && php artisan migrate --database=test_migration --force
 }
 
 start_apache(){
@@ -89,6 +97,9 @@ main() {
     configure_dark
     echo "Starting web app"
     start_apache
+  elif [[ "${app_type}" == "migrations-job" ]]; then
+    echo "Starting db migration job"
+    run_migration_job
   elif [[ "${app_type}" == "batch-job" ]]; then
     echo "Starting K8s Job"
     command=$2

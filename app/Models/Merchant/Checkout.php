@@ -87,7 +87,11 @@ class Checkout
 
         $this->checkAndFillGatewayDowntime($merchant, $data);
 
+        $this->checkAndFillPaymentDowntime($merchant, $data);
+
         $this->fillEnabledFeatures($merchant, $data);
+
+        $this->checkAndFillPartnerUrl($merchant, $data);
 
         return $data;
     }
@@ -201,7 +205,7 @@ class Checkout
 
         $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
-        $subscription = $this->getSubscription($input[self::SUBSCRIPTION_ID], $merchant);
+        $subscription = $this->getSubscription($input, $merchant);
 
         //
         // If the subscription has already been authenticated, there's no reason for
@@ -234,7 +238,7 @@ class Checkout
                 ]);
         }
 
-        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($subscription, $cardChange);
+        $data['subscription'] = $subscription->formatted_subscription_data;
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
@@ -459,7 +463,7 @@ class Checkout
                 $input);
         }
 
-        $subscription = $this->setSubscription($input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
+        $subscription = $this->setSubscription($input, $merchant);
 
         //
         // If a customer is not associated with the subscription already,
@@ -493,30 +497,50 @@ class Checkout
         //
         else
         {
-            if ($subscription->followLocalFlow() === true)
+            $customerId = $subscription->getCustomerId();
+
+            if ($this->followSubscriptionLocalFlow($merchant, $customerId) === true)
             {
-                $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+                $input[Payment\Entity::CUSTOMER_ID] = $customerId;
             }
         }
     }
 
-    protected function setSubscription($subscriptionId, Merchant\Entity $merchant)
+    protected function followSubscriptionLocalFlow(Merchant\Entity $merchant, string $customerId): bool
     {
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
+        if ($this->subscription->hasCustomer() === false)
+        {
+            return false;
+        }
+
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $merchant);
+
+        $hasGlobalCustomer = $customer->hasGlobalCustomer();
+
+        return ($hasGlobalCustomer === false);
+    }
+
+    protected function setSubscription(array $input, Merchant\Entity $merchant)
+    {
+        $subscription = $this->app['module']
+                             ->subscription
+                             ->fetchCheckoutInfo (
+                                 $input,
+                                 $merchant);
 
         $this->subscription = $subscription;
 
         return $subscription;
     }
 
-    protected function getSubscription(string $subscriptionId, Merchant\Entity $merchant)
+    protected function getSubscription(array $input, Merchant\Entity $merchant)
     {
         if (isset($this->subscription) === true)
         {
             return $this->subscription;
         }
 
-        return $this->setSubscription($subscriptionId, $merchant);
+        return $this->setSubscription($input, $merchant);
     }
 
     protected function getMerchantPreferencesData(Entity $merchant, $mode)
@@ -680,6 +704,8 @@ class Checkout
 
         $enabledWallets = $data['methods'][Payment\Method::WALLET];
 
+        $recurringData = $data['methods']['recurring'] ?? null;
+
         $data['methods'] = [
             'entity' => 'methods'
         ];
@@ -734,6 +760,11 @@ class Checkout
                 $data['methods'][$offerMethod] = true;
 
                 break;
+        }
+
+        if (isset($recurringData) === true)
+        {
+            $data['methods']['recurring'] = $recurringData;
         }
     }
 
@@ -795,6 +826,36 @@ class Checkout
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
+        }
+    }
+
+    protected function checkAndFillPaymentDowntime(Merchant\Entity $merchant, array & $data)
+    {
+        try
+        {
+            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
+            {
+                $downtimeData = (new Payment\Downtime\Service)->getMethodDowntimeDataForMerchant([]);
+
+                if (empty($downtimeData) === false)
+                {
+                    $data['payment_downtime'] = $downtimeData;
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION);
+        }
+    }
+
+    protected function checkAndFillPartnerUrl(Merchant\Entity $merchant, array & $data)
+    {
+        $partnershipUrl = $merchant->getPartnershipUrl();
+
+        if (empty($partnershipUrl) === false)
+        {
+            $data['options']['partnership_logo'] = $partnershipUrl;
         }
     }
 

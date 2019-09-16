@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        $this->wasGatewayHit = true;
+
         if ($this->isBharatQrPayment() === true)
         {
             return null;
@@ -242,6 +244,8 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->wasGatewayHit = true;
+
         if (($input['payment']['method'] === 'card') and
             ($input['card']['iin'] === '501010') and
             ($input['card']['last4'] === '1015'))
@@ -323,9 +327,15 @@ class Gateway extends Base\Gateway
 
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
+            $bankNamePrefix = strtoupper(substr($input['terminal']['gateway_acquirer'], 0, 3));
+            $randomStr = strtoupper(substr(md5(time()), 0, 32));
+
             $acquirer = [
                 Payment\Entity::VPA => $input['payment']['vpa'] ?? $input['gateway']['vpa'],
+                ///REFERENCE16 refers to RRN field
                 Payment\Entity::REFERENCE16 => (string) random_integer(12),
+                ///REFERENCE1 refers to upi_gateway_txn_id
+                Payment\Entity::REFERENCE1 => ($bankNamePrefix . $randomStr),
             ];
         }
 
@@ -571,6 +581,12 @@ class Gateway extends Base\Gateway
             case ((($amount === 7777) or ($amount === 9999)) and ((int) $attempts === 0)):
                 $response['result']         = 'Request Timeout. Please try again.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
+                break;
+
+            // Request failure
+            case ($amount === 3456):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS;
                 break;
 
             default:

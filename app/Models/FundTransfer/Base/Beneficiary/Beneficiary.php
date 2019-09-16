@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Base\Beneficiary;
 
 use Mail;
 
+use RZP\Models\FundAccount\Type;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -11,8 +12,11 @@ use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
 abstract class Beneficiary extends BaseCore
 {
+    protected $accountType = Type::BANK_ACCOUNT;
+
     /**
-     * @param $bankAccounts
+     * @param $accounts
+     * @param $accountType
      * @param array $input
      *
      * @return array
@@ -20,15 +24,42 @@ abstract class Beneficiary extends BaseCore
      *                         'local_file_path'
      *                         'file_name'
      */
-    public function register(PublicCollection $bankAccounts, array $input = []): array
+    public function register(PublicCollection $accounts, $accountType = Type::BANK_ACCOUNT, array $input = []): array
     {
-        $response = $this->registerBeneficiary($bankAccounts);
+        $this->accountType = $accountType;
+
+        $response = $this->registerBeneficiary($accounts);
+
+        if ((array_key_exists('send_email', $input) === true) and
+            ((bool)$input['send_email'] === false))
+        {
+            return $response;
+        }
 
         $recipientEmails = $input[BankAccount::RECIPIENT_EMAILS] ?? null;
 
         $mailData = array_merge($response, [BankAccount::RECIPIENT_EMAILS => $recipientEmails]);
 
         $this->sendEmail($mailData);
+
+        return $response;
+    }
+
+    /**
+     * @param $accounts
+     * @param $accountType
+     * @param array $input
+     *
+     * @return array
+     * @return array with keys 'signed_url'
+     *                         'local_file_path'
+     *                         'file_name'
+     */
+    public function verify(PublicCollection $accounts, $accountType = Type::BANK_ACCOUNT): array
+    {
+        $this->accountType = $accountType;
+
+        $response = $this->verifyBeneficiary($accounts);
 
         return $response;
     }
@@ -70,4 +101,6 @@ abstract class Beneficiary extends BaseCore
     }
 
     abstract public function registerBeneficiary(PublicCollection $bankAccounts): array;
+
+    abstract public function verifyBeneficiary(PublicCollection $bankAccounts): array;
 }

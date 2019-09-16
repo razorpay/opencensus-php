@@ -67,4 +67,31 @@ class SubscriptionRegistrationController extends Controller
 
         return ApiResponse::json($invoice);
     }
+
+    public function postProcessAutoCharges()
+    {
+        $input = Request::all();
+
+        $summary = $this->service()->processAutoCharges($input);
+
+        return ApiResponse::json($summary);
+    }
+
+    public function associateToken(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->associateToken($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function authenticateTokens()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->authenticateTokens($input);
+
+        return ApiResponse::json($data);
+    }
 }

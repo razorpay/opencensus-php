@@ -5,6 +5,11 @@ namespace RZP\Models\Merchant\Email;
 class Type
 {
     const PARTNER_DUMMY = 'partner_dummy';
+    const SUPPORT       = 'support';
+    const REFUND        = 'refund';
+    const DISPUTE       = 'dispute';
+    const CHARGEBACK    = 'chargeback';
+    const RZPINTERNAL   = 'rzpinternal';
 
     /**
      * Use to strictly reject any communication even

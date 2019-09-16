@@ -42,6 +42,12 @@ class CreateCards extends Migration
 
             $table->string(Card::TYPE, 7);
 
+            $table->string(Card::SUBTYPE, 255)
+                  ->nullable();
+
+            $table->string(Card::CATEGORY, 255)
+                  ->nullable();
+
             $table->string(Card::ISSUER, 100)
                   ->nullable();
 

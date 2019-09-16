@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use DB;
 use Mail;
+use Hash;
 use Cache;
 use Config;
 use Request;
@@ -132,6 +133,25 @@ class Service extends Base\Service
         }
 
         return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
+    }
+
+     /**
+     * Change 2fa setting of merchant (enable/disable)
+     *
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function change2faSetting(array $input)
+    {
+        $this->merchant->getValidator()->validateInput('change2faSetting', $input);
+
+        if (Hash::check($input[User\Entity::PASSWORD], $this->user->getPassword()))
+        {
+            return $this->core()->change2faSetting($this->user, $this->merchant, $input);
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
     }
 
     /**
@@ -562,17 +582,6 @@ class Service extends Base\Service
         $this->app['workflow']
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::DIWALI_PROMOTIONAL_PLAN) === true)
-        {
-            // removing diwali_promotional_plan
-            (new Feature\Service)->deleteEntityFeature(
-                'accounts',
-                $merchant->getId(),
-                Feature\Constants::DIWALI_PROMOTIONAL_PLAN,
-                [Feature\Entity::SHOULD_SYNC => true]
-            );
-        }
 
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
@@ -1038,6 +1047,17 @@ class Service extends Base\Service
         return $methods['enabled'];
     }
 
+    public function getOrgDetails(string $id): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($id, [CE::ORG]);
+
+        $org = $merchant->org->toArrayPublic();
+
+        $org[Org\Entity::PRIMARY_HOST_NAME] = $merchant->org->getPrimaryHostName();
+
+        return $org;
+    }
+
     public function setPaymentBanks($id, $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -1138,12 +1158,22 @@ class Service extends Base\Service
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
 
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return $webhook->toArrayHosted();
+        }
+
         return $webhook->toArrayPublic();
     }
 
     public function getWebhooks(array $params)
     {
         $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
+
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return $webhooks->toArrayHosted();
+        }
 
         return $webhooks->toArrayPublic();
     }
@@ -2470,9 +2500,9 @@ class Service extends Base\Service
 
         $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
 
-        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchant->getId());
+        $isMapped = $this->core()->isMerchantMappedToNonPurePlatformPartner($subMerchant->getId(), $aggregatorMerchant->getId());
 
-        if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
+        if (($isNonPurePlatformAggregator === true) and ($isMapped === true))
         {
             return;
         }
@@ -2481,34 +2511,24 @@ class Service extends Base\Service
     }
 
     /**
-     * This function checks for a mapping between the partner merchant's dummy app from
-     * auth database and the submerchant. This is stored in the `merchant_access_map` table
-     * on API side.
+     * This used to map submerchants to the partner in merchant_access_map entity
+     * If the given partnerId is not a partner then it will mark him as a partner then proceed
      *
-     * @param  string $merchantId
-     * @param  string $partnerId
+     * @param array $input
      *
-     * @return bool
+     * @return array
      */
-    public function isPartnerMerchantMapped(string $merchantId, string $partnerId): bool
+    public function createPartnerSubmerchantMap(array $input)
     {
-        $app = $this->getPartnerAppByMerchantId($partnerId);
+        (new Validator)->validateInput('partner_submerchant_map', $input);
 
-        $mapping = (new AccessMap\Repository)
-                        ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+        $partnerType   = $input[ENTITY::PARTNER_TYPE];
+        $submerchantId = $input['submerchant_id'];
+        $partnerId     = $input['partner_merchant_id'];
 
-        return (empty($mapping) === false);
-    }
+        $partner = $this->markAsPartner($partnerId, $partnerType);
 
-    /**
-     * TODO: Check if the core function (getPartnerApp) is needed at all and remove it if not
-     * @param  string $merchantId
-     *
-     * @return null|OAuthApplication\Entity
-     */
-    public function getPartnerAppByMerchantId(string $merchantId)
-    {
-        return (new OAuthApplication\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
+        return $this->mapSubmerchant($partner, $submerchantId);
     }
 
     /**
@@ -2525,6 +2545,67 @@ class Service extends Base\Service
         $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
 
         return $accessMap;
+    }
+
+    /**
+     * @param Merchant\Entity $partner
+     * @param                 $submerchantId
+     *
+     * @throws BadRequestException
+     */
+    protected function mapSubmerchant(Merchant\Entity $partner, $submerchantId): array
+    {
+        // Using findOrFail here will not give a proper error code in the batch output.
+        $submerchant = $this->repo->merchant->find($submerchantId);
+
+        if ($submerchant === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                Merchant\Entity::ID,
+                [
+                    Merchant\Entity::ID => $submerchantId
+                ]);
+        }
+
+        return $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
+    }
+
+    /**
+     * @param       $merchantId
+     * @param       $partnerType
+     *
+     * @return Merchant\Entity
+     * @throws BadRequestException
+     */
+    protected function markAsPartner($merchantId, $partnerType): Merchant\Entity
+    {
+        $partner = $this->repo->merchant->find($merchantId);
+
+        if ($partner === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                Merchant\Entity::ID,
+                [
+                    Merchant\Entity::ID => $merchantId
+                ]);
+        }
+
+        // Mark as partner only if the merchant is not a partner
+        if ($partner->isPartner() === true)
+        {
+            return $partner;
+        }
+
+        if (empty($partnerType) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+        }
+
+        $partner = $this->core()->markAsPartner($partner, $partnerType);
+
+        return $partner;
     }
 
     public function getSubmerchant(string $submerchantId, array $input): array
@@ -3012,7 +3093,9 @@ class Service extends Base\Service
         /** @var Entity $subMerchant */
         $subMerchant = $this->repo->merchant->findOrFailPublic($id);
 
-        if ($this->isPartnerMerchantMapped($subMerchant->getId(), $merchant->getId()) === false)
+        $isMapped = $this->core()->isMerchantMappedToNonPurePlatformPartner($subMerchant->getId(), $merchant->getId());
+
+        if ($isMapped === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
@@ -3058,6 +3141,19 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         return (new TerminalService)->onboardMerchant($merchant, $input, false)
-                                    ->toArrayPublic();
+                                    ->toArrayAdmin();
+    }
+
+    public function applyRestrictedSettings(array $input): array
+    {
+        (new Validator)->validateInput('restrict_settings_merchant', $input);
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $action = $input[Entity::ACTION];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        return $this->core()->applyRestrictedSettings($merchant, $action);
     }
 }

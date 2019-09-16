@@ -12,14 +12,15 @@ use RZP\Models\Base\PublicCollection;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        'amount'                => 'sometimes|integer|min:100',
+        'amount'                => 'sometimes|integer',
         'notes'                 => 'sometimes|notes',
         'receipt'               => 'sometimes|string|max:40',
         'reverse_all'           => 'sometimes|boolean',
         'reversals'             => 'sometimes|array',
         'reversals.*.transfer'  => 'required',
-        'reversals.*.amount'    => 'required|integer|min:100',
+        'reversals.*.amount'    => 'required|integer',
         'reversals.*.notes'     => 'sometimes|notes',
+        'speed'                 => 'sometimes|filled|in:optimum,normal',
     ];
 
     protected static $editStatusRules = [
@@ -28,14 +29,20 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NOTES => 'sometimes|notes'
+        Entity::NOTES => 'sometimes|notes',
     ];
 
     protected static $directRules = [
         'payment_id'    => 'required',
-        'amount'        => 'sometimes|integer|min:100',
         'notes'         => 'sometimes|notes',
+        'amount'        => 'sometimes|integer',
         'receipt'       => 'sometimes|string|max:40',
+    ];
+
+    protected static $minAmountCheckRules = [
+        'currency'              => 'required|string|size:3',
+        'amount'                => 'sometimes|integer|min_amount',
+        'reversals.*.amount'    => 'required|integer|min_amount',
     ];
 
     protected static $retryRules = [
@@ -47,23 +54,23 @@ class Validator extends Base\Validator
         'vpa.address'                       => 'required_with:vpa|filled|string',
         'card_transfer'                     => 'sometimes|associative_array',
         'card_transfer.card_id'             => 'required_with:card_transfer|filled|unsigned_id',
-
     ];
 
     protected static $createValidators = [
         'paymentStatus',
         'paymentRefundStatus',
-        'refundAmount'
+        'refundAmount',
+        'minRefundAmount',
     ];
 
     protected static $retryBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id'
+        'refund_ids.*'  => 'required|public_id',
     ];
 
     protected static $directRetryBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id'
+        'refund_ids.*'  => 'required|public_id',
     ];
 
     protected static $markProcessedBulkRules = [
@@ -75,6 +82,15 @@ class Validator extends Base\Validator
         'refund_id'         => 'required_without_all:payment_id,reservation_id|public_id',
         'payment_id'        => 'required_without_all:refund_id,reservation_id|public_id',
         'reservation_id'    => 'required_without_all:payment_id,refund_id|string|max:50',
+        'mode'              => 'sometimes|in:live,test',
+        'captcha'           => 'required|string|custom',
+    ];
+
+    protected static $customerRefundsDetailsRules = [
+        'refund_id'         => 'required_without_all:payment_id,order_id,id|public_id',
+        'payment_id'        => 'required_without_all:refund_id,order_id,id|public_id',
+        'order_id'          => 'required_without_all:payment_id,refund_id,id|public_id',
+        'id'                => 'required_without_all:payment_id,refund_id,order_id|alpha_num_underscore',
         'mode'              => 'sometimes|in:live,test',
         'captcha'           => 'required|string|custom',
     ];
@@ -112,11 +128,17 @@ class Validator extends Base\Validator
         'fta_data.vpa.address'                      => 'required_with:vpa|filled|string',
         'fta_data.card_transfer'                    => 'sometimes|associative_array',
         'fta_data.card_transfer.card_id'            => 'required_with:card_transfer|filled|unsigned_id',
+        'is_fta'                                    => 'sometimes|bool',
     ];
 
     protected static $createScroogeRefundBulkRules = [
         'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id'
+        'refund_ids.*'  => 'required|public_id',
+    ];
+
+    protected static $getFeeRules = [
+        'payment_id'    => 'required|public_id',
+        'amount'        => 'required|integer|min:0',
     ];
 
     protected $payment;
@@ -245,6 +267,39 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateMinRefundAmount($input)
+    {
+        if (isset($input['amount']) === false)
+        {
+            return;
+        }
+
+        $amountCheckInput = [];
+
+        if (empty($input['amount']) === false) {
+            $amountCheckInput['amount'] = $input['amount'];
+        }
+
+        if (empty($input['reversals']) === false) {
+            $amountCheckInput['reversals'] = [
+                'amount' => $input['reversals']['amount'],
+            ];
+        }
+
+        $payment = $this->payment;
+
+        // currency will not be available here. But we need to validate amount based
+        // on the existing currency.
+        $currency = $payment->getCurrency();
+
+        if (empty($currency) === false)
+        {
+            $amountCheckInput['currency'] = $currency;
+        }
+
+        $this->validateInputValues('min_amount_check', $amountCheckInput);
+    }
+
     public static function validateVerifyInternalRefundAllowed(string $gateway)
     {
         if (in_array($gateway, self::$verifyInternalRefundGateways, true) === false)
@@ -344,10 +399,10 @@ class Validator extends Base\Validator
         if ((($refund->isCreated() === false) and
             ($refund->isProcessed() === false) and
             ($refund->isInitiated() === false)) or
-            (isset($input['status']) === false))
+            (isset($input['event']) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED,
+                ErrorCode::BAD_REQUEST_REFUND_INVALID_EVENT_TO_PROCESS,
                 Entity::STATUS,
                 [
                     'refund_id' => $refund->getId(),
@@ -454,6 +509,18 @@ class Validator extends Base\Validator
                     'payment_id'    => $payment->getId(),
                     'gateway'       => $gateway,
                 ]);
+        }
+    }
+
+    public function validateCustomerRefundFetchDetailsFromMerchantNotes($id)
+    {
+        $idRegex = '/^.*[0-9]+.*$/';
+
+        $validId = (preg_match($idRegex, $id) === 1);
+
+        if ($validId === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('The id format is invalid.', 'id');
         }
     }
 }

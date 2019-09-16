@@ -2,6 +2,8 @@
 <html>
   <head>
     <title>Processing, Please wait...</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width">
     <meta charset="utf-8">
     @include('partials.loader')

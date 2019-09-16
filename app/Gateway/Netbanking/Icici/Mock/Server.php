@@ -260,4 +260,29 @@ class Server extends Base\Mock\Server
 
         return $responseArray;
     }
+
+    public function getCheckerCallbackForPaymentFromBank($payment)
+    {
+        $url = $this->route->getPublicCallbackUrlWithHash($payment['public_id']);
+
+        $response = [
+                ResponseFields::PAYMENT_ID      => $payment['id'],
+                ResponseFields::ITEM_CODE       => $payment['id'],
+
+                // If the amount is not sent, it's a registration-only emandate auth request
+                ResponseFields::AMOUNT          => $payment['amount'] / 100,
+                ResponseFields::PAID            => Confirmation::YES,
+                ResponseFields::BANK_PAYMENT_ID => 9999999999
+        ];
+
+        $httpQuery = http_build_query($response);
+
+        $masterKey = $this->getGatewayInstance('corporate')->getSecret();
+
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+
+        $content['ES'] = base64_encode($aes->encryptString($httpQuery));
+
+        return [$content, $url];
+    }
 }

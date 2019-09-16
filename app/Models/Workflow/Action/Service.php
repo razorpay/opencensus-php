@@ -161,7 +161,7 @@ class Service extends Base\Service
         return $action->toArrayPublic();
     }
 
-    public function executeAction(string $id, Role\Entity $role = null)
+    public function executeAction(string $id, Role\Entity $role = null, Base\PublicEntity $checkerEntity = null)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -181,11 +181,14 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
+        $checkerEntity = $checkerEntity ?: $admin;
+
         if (empty($role) === true)
         {
-            if ($admin->isSuperAdmin() === false)
+            if (($checkerEntity === $admin) and
+                ($checkerEntity->isSuperAdmin() === false))
             {
-                $role = $admin->getSuperAdminRole();
+                $role = $checkerEntity->getSuperAdminRole();
             }
             else
             {
@@ -193,7 +196,7 @@ class Service extends Base\Service
             }
         }
 
-        return $this->core()->executeAction($action, $admin, $role);
+        return $this->core()->executeAction($action, $checkerEntity, $role);
     }
 
     /**
@@ -227,9 +230,6 @@ class Service extends Base\Service
      */
     public function getActionsByOrg(array $input)
     {
-        // Only superadmin can access maker.all and maker.open
-        $this->app['basicauth']->validateSuperAdminAccess();
-
         $input[Entity::ORG_ID] = $this->maker->getOrgId();
 
         $input[Constants::EXPAND] = [Entity::MAKER];

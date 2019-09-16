@@ -16,7 +16,9 @@ use RZP\Models\Payment\Gateway;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Yesbank\Request\HealthCheck;
@@ -68,7 +70,14 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
-            $gateway = $attempt->shouldUseGateway();
+            //if BA is not present for attempt
+            // marking FTA as failed, if source is settlement
+            if($this->markFailedIfBANotExists($attempt) === true)
+            {
+                continue;
+            }
+
+            $gateway = $attempt->shouldUseGateway($attempt->getMode());
 
             $this->doRequiredChecks($gateway);
 
@@ -80,7 +89,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
             if ($attempt->hasCard() === true)
             {
-                if ($attempt->card->getType() === Type::CREDIT)
+                $iin = $attempt->card->iinRelation;
+
+                if (($iin !== null) and ($iin->getType() === Type::CREDIT))
                 {
                     $transfer->disableLogs();
                 }
@@ -95,7 +106,6 @@ class NodalAccount extends NodalBase\NodalAccount
                     continue;
                 }
             }
-
             try
             {
                 // Calling init will reset all the data of previous request
@@ -212,6 +222,11 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
+        if (in_array($ifsc, Constants::VIRTUAL_ACCOUNT_IFSC, true) === true)
+        {
+            return Mode::NEFT;
+        }
+
         if (starts_with($ifscFirstFour, static::IFSC_IDENTIFIER) === true)
         {
             return Mode::IFT;
@@ -253,18 +268,57 @@ class NodalAccount extends NodalBase\NodalAccount
             return true;
         }
 
+        $currentDateTime = Carbon::now(Timezone::IST);
+
+        // If Source Type is payout and its s Rx Payout, then
+        // Use FTA bank holiday list to check working day.
+        if (($attempt->getSourceType() === Attempt\Type::PAYOUT) and
+            ($attempt->source->isBalanceTypeBanking() === true))
+        {
+            if (Holidays::isWorkingDay($currentDateTime) === false)
+            {
+                $this->trace->info(
+                    TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED,
+                    [
+                        'attempt_id' => $attempt->getId(),
+                        'reason' => 'Holiday today!',
+                    ]);
+
+                return false;
+            }
+            else
+            {
+                return $this->isNeftRtgsSupportedTimings($attempt, $mode, $amount);
+            }
+        }
+
+        // This Checks the List of Holidays (Inside settlement holiday list)
+        // If the source is other than RxPayout e.g: settlement, refunds etc
         if ($this->isWorkingDay === false)
         {
             $this->trace->info(
                 TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED,
                 [
-                    'attempt_id'    => $attempt->getId(),
-                    'reason'        => 'Holiday today!',
+                    'reason'     => 'Holiday today!',
+                    'attempt_id' => $attempt->getId(),
                 ]);
 
             return false;
         }
 
+        return $this->isNeftRtgsSupportedTimings($attempt, $mode, $amount);
+    }
+
+    /**
+     * To check if timings are supported for Given Mode i.e. NEFT, RTGS
+     *
+     * @param Attempt\Entity $attempt
+     * @param $mode
+     * @param $amount
+     * @return bool
+     */
+    protected function isNeftRtgsSupportedTimings(Attempt\Entity $attempt, $mode, $amount): bool
+    {
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
         // For RTGS

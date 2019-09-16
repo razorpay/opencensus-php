@@ -46,6 +46,16 @@ trait Callback
         $gatewayInputLog = $gatewayInput;
 
         unset($gatewayInputLog['otp']);
+        if (empty($gatewayInputLog['PaRes']) === false)
+        {
+            $gatewayInputLog['PaRes'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaRes']);
+        }
+
+        if (empty($gatewayInputLog['PaReq']) === false)
+        {
+            $gatewayInputLog['PaReq'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaReq']);
+        }
+
 
         $this->trace->info(
             TraceCode::PAYMENT_CALLBACK_REQUEST,
@@ -107,14 +117,9 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                $isCorporatePayment = $payment->isCorporateNetbanking();
-
                 // In case of non - corporate payments, this case is fine.
                 // In case of corporate and payment already having been authorized
-                if ((($payment->isCreated() === false) and
-                     ($isCorporatePayment === false)) or
-                    (($isCorporatePayment === true) and
-                     ($payment->hasBeenAuthorized() === true)))
+                if ($this->shouldProcessSecondS2sCallback($payment) === false)
                 {
                     $this->app['segment']->trackPayment(
                         $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
@@ -142,6 +147,41 @@ trait Callback
             2000);
 
         return ['success' => true];
+    }
+
+    protected function shouldProcessSecondS2sCallback($payment)
+    {
+        $isCorporatePayment = $payment->isCorporateNetbanking();
+
+        $method = $payment->getMethod();
+
+        $result = true;
+
+        switch ($method)
+        {
+            case Payment\Method::NETBANKING:
+                if ((($payment->isCreated() == false) and ($isCorporatePayment === false)) or
+                (($isCorporatePayment === true) and ($payment->hasBeenAuthorized() === true)))
+                {
+                    $result = false;
+                }
+                break;
+
+            case Payment\Method::UPI:
+                if ($payment->hasBeenAuthorized() === true)
+                {
+                    $result = false;
+                }
+                break;
+
+            default :
+                if ($payment->isCreated() === false)
+                {
+                    $result = false;
+                }
+        }
+
+        return $result;
     }
 
     public function redirectCallback($id)

@@ -26,6 +26,9 @@ return [
         'notes'             => [
         'merchant_order_id' => 'random order id',
         ],
+        'acquirer_data' => [
+        'bank_transaction_id' => 'AB1234'
+        ],
         'gateway'           => 'netbanking_corporation',
         'signed'            => false,
         'verified'          => null,

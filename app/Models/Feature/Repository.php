@@ -59,6 +59,16 @@ class Repository extends BaseRepository
                     ->get();
     }
 
+    public function findMerchantWithFeatures(string $merchantId, array $featureNames)
+    {
+        return $this->newQuery()
+                    ->select(Entity::NAME)
+                    ->whereIn(Entity::NAME, $featureNames)
+                    ->where(Entity::ENTITY_TYPE, 'merchant')
+                    ->where(Entity::ENTITY_ID, $merchantId)
+                    ->get();
+    }
+
     public function findMerchantIdsHavingFeatures(array $featureNames): array
     {
         /** @var PublicCollection $featureEntities */
@@ -176,5 +186,22 @@ class Repository extends BaseRepository
         $modeEntity->saveOrFail();
 
         $this->syncToEs($modeEntity, EsRepository::CREATE, null, $mode);
+    }
+
+    /***
+     * @param array $entityIds
+     * @param string $featureName
+     * @return mixed
+     * This query is run to get the EntityId which are not in $entityId and have
+     * Feature as passed by the $featureName
+     * and Entity type is 'merchant'
+     */
+    public function findMerchantNotInEntityIdHavingFeature(array $entityIds, string $featureName)
+    {
+        return $this->newQuery()
+                    ->whereNotIn(Entity::ENTITY_ID, $entityIds)
+                    ->where(Entity::NAME, $featureName)
+                    ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                    ->get();
     }
 }

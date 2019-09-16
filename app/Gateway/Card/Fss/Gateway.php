@@ -6,7 +6,9 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -19,6 +21,12 @@ class Gateway extends Base\Gateway
     use Base\AuthorizeFailed;
 
     protected $gateway = Payment\Gateway::CARD_FSS;
+
+    protected $acquirerMethodMap = [
+        Acquirer::SBI => 'post',
+        Acquirer::BOB => 'get',
+        Acquirer::FSS => 'get',
+    ];
 
     /**
      * Fss Gateway has purchase model so framing the request here
@@ -36,7 +44,10 @@ class Gateway extends Base\Gateway
 
         $purchaseRequestContent = $this->getPurchaseRequestContent($purchaseRequestFields, $input);
 
-        $request = $this->getPurchaseRequestFieldsArray($purchaseRequestContent, 'get', Action::PURCHASE);
+        $gatewayAcquirer = $this->terminal->getGatewayAcquirer();
+
+        $request = $this->getPurchaseRequestFieldsArray($purchaseRequestContent,
+            $this->acquirerMethodMap[$gatewayAcquirer], Action::PURCHASE);
 
         $purchaseFields = $this->getPurchaseFields($purchaseRequestFields);
 
@@ -324,6 +335,19 @@ class Gateway extends Base\Gateway
                 {
                     $requestContent[Fields::ID]       = $this->config['barb']['merchant_id'];
                     $requestContent[Fields::PASSWORD] = $this->config['barb']['terminal_password'];
+                }
+
+                if ($input[E::MERCHANT]->isFeatureEnabled(Feature\Constants::VIJAYA_MERCHANT) === true)
+                {
+                    $requestContent[Fields::UDF6]       = $input[E::MERCHANT][Merchant\Entity::NAME];
+                    $requestContent[Fields::UDF7]       = $input[E::CARD][Card\Entity::NAME];
+                    $requestContent[Fields::UDF8]       = $input[E::PAYMENT][Payment\Entity::EMAIL];
+                    $requestContent[Fields::UDF9]       = $input[E::PAYMENT][Payment\Entity::CONTACT];
+                    $requestContent[Fields::UDF10]      = 'Bangalore, Karnataka';
+                    $requestContent[Fields::UDF11]      = $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100;
+                    $requestContent[Fields::UDF12]      = $input[E::PAYMENT][Payment\Entity::ID];
+                    $requestContent[Fields::UDF13]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2];
+                    $requestContent[Fields::UDF14]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_ACCESS_CODE];
                 }
 
                 break;
@@ -1013,7 +1037,18 @@ class Gateway extends Base\Gateway
     {
         $gatewayAcquirer = $this->getGatewayAcquirer($this->input);
 
-        return CardType::getCardTypesByAcquirer($gatewayAcquirer)[$cardType];
+        $acquirerCardTypeMap = CardType::getCardTypesByAcquirer($gatewayAcquirer);
+
+        if (isset($acquirerCardTypeMap[$cardType]) === false)
+        {
+            throw new Exception\ServerErrorException('card type not supported',
+                ErrorCode::SERVER_ERROR_CARD_TYPE_NOT_SUPPORTED, [
+                    'cardType' => $cardType,
+                    'gateway'  => $this->gateway,
+                ]);
+        }
+
+        return $acquirerCardTypeMap[$cardType];
     }
 
     /**

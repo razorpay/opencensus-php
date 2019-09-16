@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Payout\Processor;
 
-use RZP\Exception\BadRequestException;
 use RZP\Models\Payout;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class FundAccountPayout extends Base
 {
@@ -18,33 +19,24 @@ class FundAccountPayout extends Base
         $payout = parent::createPayout($input);
 
         //
-        // In case of queued payouts, we don't create the transaction.
-        // We just mark the payout as queued and move on. This event will
-        // be dispatched later when we are actually processing the queued payout.
+        // In case of payouts with status=(queued, payouts), we don't create the transaction yet.
+        // This event will be dispatched later when we are actually processing the payout.
         //
-        if ($payout->isStatusQueued() === false)
+        if ($payout->isStatusBeforeCreate() === false)
         {
-            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            //
+            // Ideally, this should be done as part of downstream processor,
+            // but we do it here since, we do not want to dispatch this even if
+            // payout creation flow fails for any reason after downstream processor runs.
+            //
+
+            if (($payout->isStatusBeforeCreate() === false) and
+                ($payout->balance->getAccountType() !== AccountType::DIRECT))
+            {
+                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            }
         }
 
         return $payout;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function setChannel($input = [])
-    {
-        $this->channel = Settlement\Channel::YESBANK;
-    }
-
-    protected function handleInsufficientFunds(BadRequestException $ex, Payout\Entity $payout)
-    {
-        if ($payout->toBeQueued() === false)
-        {
-            throw $ex;
-        }
-
-        $payout->setStatus(Payout\Status::QUEUED);
     }
 }

@@ -321,24 +321,26 @@ return [
     'testMerchantDetailsPatch' => [
         'request'  => [
             'content' => [
-                'business_operation_address' => 'Test address',
-                'business_operation_state'   => 'Karnataka',
-                'business_operation_city'    => 'Bengaluru',
-                'business_operation_pin'     => '560030',
-                'business_category'          => 'financial_services',
-                'business_subcategory'       => 'lending',
+                'business_operation_address'    => 'Test address',
+                'business_operation_state'      => 'Karnataka',
+                'business_operation_city'       => 'Bengaluru',
+                'business_operation_pin'        => '560030',
+                'business_category'             => 'financial_services',
+                'business_subcategory'          => 'lending',
+                'international_activation_flow' => 'whitelist',
             ],
             'url'     => '/merchants/details',
             'method'  => 'PATCH',
         ],
         'response' => [
             'content' => [
-                'business_operation_address' => 'Test address',
-                'business_operation_state'   => 'Karnataka',
-                'business_operation_city'    => 'Bengaluru',
-                'business_operation_pin'     => '560030',
-                'business_category'          => 'financial_services',
-                'business_subcategory'       => 'lending',
+                'business_operation_address'    => 'Test address',
+                'business_operation_state'      => 'Karnataka',
+                'business_operation_city'       => 'Bengaluru',
+                'business_operation_pin'        => '560030',
+                'business_category'             => 'financial_services',
+                'business_subcategory'          => 'lending',
+                'international_activation_flow' => 'whitelist',
             ],
         ],
     ],
@@ -389,6 +391,29 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid business subcategory for business category: education',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantDetailsPatchInvalidInternationalActivtionFlow' => [
+        'request'  => [
+            'content' => [
+                'international_activation_flow' => 'whatlist',
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid activation flow: whatlist',
                 ],
             ],
             'status_code' => 400,

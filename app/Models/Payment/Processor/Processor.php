@@ -7,6 +7,7 @@ use Route;
 use Config;
 use Carbon\Carbon;
 
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Risk;
@@ -29,6 +30,7 @@ use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Flow;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Constants\Entity as E;
@@ -55,6 +57,7 @@ class Processor
     use Topup;
     use FraudDetector;
     use HeadlessOtp;
+    use Omnichannel;
     use Payout;
     use Reversal;
     use Transfer;
@@ -271,6 +274,8 @@ class Processor
 
             if ($ret !== null)
             {
+                $this->logPaymentRespawnEvent($input, $ret);
+
                 return $ret;
             }
 
@@ -328,6 +333,24 @@ class Processor
         {
             (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
         }
+    }
+
+    protected function logPaymentRespawnEvent(array $request, array $data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $properties = [
+            'payment' => $request,
+            'reason'  => $data['missing'] ?? "Unknown",
+            'merchant'     => [
+                'id'        => $merchant->getId(),
+                'name'      => $merchant->getBillingLabel(),
+                'mcc'       => $merchant->getCategory(),
+                'category'  => $merchant->getCategory2(),
+            ],
+        ];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
     }
 
     public function getPayment(): Payment\Entity
@@ -450,35 +473,104 @@ class Processor
     {
         $this->verifyCardlessEmiEnabled();
 
-        if ((empty($input['ott']) === false) or
-            (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
+        if ((empty($input['ott']) === false) and
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false))
         {
-            return null;
+            return;
         }
 
-        $merchant = $payment->merchant;
+        $payment = $this->repo->transaction(function() use ($input, $payment)
+        {
+            $payment = $this->createPaymentEntity($input, $payment);
+
+            $payment->setBaseAmount($payment->getAmount());
+
+            $this->repo->saveOrFail($payment);
+
+            return $payment;
+        });
+
+        $input['payment_id'] = $payment->getPublicId();
+
+        if ((empty($input['emi_duration']) === false) and
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
+        {
+            return;
+        }
 
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
+        $merchant = $payment->merchant;
+
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
+        {
+            $coproto = [
+                'type'    => 'respawn',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
+                ],
+                'method' => 'cardless_emi',
+                'version' => '1',
+                'provider' => $input['provider'],
+            ];
+
+            $coproto['missing'][] = 'contact';
+
+            $coproto['payment_id'] = $payment->getPublicId();
+
+            unset($coproto['request']['content']['contact']);
+
+            return $coproto;
+        }
 
         $terminal = $this->repo
                          ->terminal
                          ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::CARDLESS_EMI);
+        try
+        {
+            $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+        }
+        catch (Exception\GatewayErrorException $exception)
+        {
+            $this->payment->setStatus(Payment\Status::FAILED);
 
-        $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+            $error = $exception->getError();
 
-        $data = (new Customer\Raven)->sendOtp($input, $merchant);
+            if ($error === null)
+            {
+                $this->payment->setError(null, null, null);
+            }
+            else
+            {
+                $errorCode = $error->getGatewayErrorCode();
+
+                $errorDescription = $error->getDescription();
+
+                $internalErrorCode = $error->getInternalErrorCode();
+
+                $this->payment->setError($errorCode, $errorDescription, $internalErrorCode);
+            }
+
+
+            $this->payment->saveOrFail();
+
+            throw $exception;
+        }
 
         $coproto = [
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                                Payment\Entity::METHOD   => Payment\Method::CARDLESS_EMI,
-                                Payment\Entity::PROVIDER => $input[Payment\Entity::PROVIDER]
-                            ]),
+                    'method'     => 'cardless_emi',
+                    'provider'   => $input['provider'],
+                    'payment_id' => $input['payment_id'],
+                ]),
                 'method'  => 'POST',
                 'content' => $input,
             ],
@@ -486,11 +578,26 @@ class Processor
             'theme'      => $payment->merchant->getBrandColorElseDefault(),
             'merchant'   => $merchant->getDbaName(),
             'gateway'    => $this->getEncryptedGatewayText($gateway),
-            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
             'key_id'     => $this->ba->getPublicKey(),
             'version'    => '1',
             'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
         ];
+
+        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        {
+            $coproto['emi_plans'] = [
+                $input['provider'] => $checkAccountData['emi_plans']
+            ];
+            $coproto['lender_branding_url'] = $checkAccountData['lender_branding_url'];
+        }
+        else
+        {
+            (new Customer\Raven)->sendOtp($input, $merchant);
+
+            $coproto['resend_url'] = $this->route->getUrlWithPublicAuth('otp_post');
+        }
+
+        $coproto['payment_id'] = $payment->getPublicId();
 
         return $coproto;
     }
@@ -507,6 +614,28 @@ class Processor
         $merchant = $payment->merchant;
 
         $gateway = Payment\Gateway::PAYLATER;
+
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
+        {
+            $coproto = [
+                'type'    => 'respawn',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
+                ],
+                'method' => 'paylater',
+                'version' => '1',
+                'provider' => $input['provider'],
+            ];
+
+            $coproto['missing'][] = 'contact';
+
+            unset($coproto['request']['content']['contact']);
+
+            return $coproto;
+        }
 
         $terminal = $this->repo
                          ->terminal
@@ -713,16 +842,36 @@ class Processor
     {
         $coproto = null;
 
+        $missing = [];
+
         if ($payment->isUpi() === false)
         {
             return;
         }
 
-        if ((empty($input[Payment\Entity::VPA]) === false) or
-            (empty($input['_']['flow']) === false))
+        if (empty($input[Payment\Entity::VPA]) === false)
         {
             return;
         }
+
+        if ((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+        {
+            $missing[] = 'vpa';
+        }
+        else if (isset($input[Payment\Entity::UPI_PROVIDER]) === false)
+        {
+            return;
+        }
+        else if (isset($input[Payment\Entity::CONTACT]) === true)
+        {
+            return;
+        }
+        else
+        {
+            $missing[] = 'contact';
+        }
+
+        $host = $this->route->getHost();
 
         $coproto = [
             'type'    => 'respawn',
@@ -735,6 +884,8 @@ class Processor
             'theme'     => $payment->merchant->getBrandColorElseDefault(),
             'method'    => 'upi',
             'version'   => '1',
+            'missing'   => $missing,
+            'base'      => $host,
         ];
 
         return $coproto;
@@ -901,8 +1052,11 @@ class Processor
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
         // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
-        if ((empty($gatewayInput['authenticate']['gateway']) === false) and
-            ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
+        // Adding cybersource check until cybersource emi payments are fixed
+        if (((empty($gatewayInput['authenticate']['gateway']) === false) and
+             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway())) or
+            (($payment->getGateway() === E::CYBERSOURCE) and
+             ($payment->isMethod(Payment\Method::CARD) === false)))
         {
             $payment->disableCpsRoute();
 
@@ -925,6 +1079,14 @@ class Processor
                 'payment_id'     => $payment->getId(),
                 'razorx_variant' => $variant,
             ]);
+
+            // Hardcoding this till wallet phonepe intent is moved to cps.
+            if (($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and ($gatewayInput['wallet']['flow'] === 'intent'))
+            {
+                $payment->disableCpsRoute();
+
+                return;
+            }
 
             if (strtolower($variant) === 'cps')
             {
@@ -1017,6 +1179,37 @@ class Processor
         }
 
         throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
+    }
+
+    /*
+     * This is a temporary measure to block payments for certain merchants who have "block_debit_2k" feature enabled
+     * and if the amount is >2k and method is card and type is debit
+     * In the future, this function will have validations for max amount that are method/type/currency etc specific
+     * per merchant
+     */
+    protected function validateForMaxAmount(array $input, Payment\Entity $payment)
+    {
+        if (($this->merchant->isFeatureEnabled(Feature::BLOCK_DEBIT_2K) === false) or
+            ($payment->getMethod() !== Payment\Method::CARD) or
+            ($payment->getAmount() <= 200000)) //INR 2000
+        {
+            return;
+        }
+
+        if ($payment->card === null)
+        {
+            return;
+        }
+
+        if ($payment->card->getType() !== Card\Type::DEBIT)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'Amount exceeds maximum amount allowed.',
+            'amount',
+            ['amount' => $payment->getAmount()]);
     }
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
@@ -1155,9 +1348,20 @@ class Processor
 
         $validator->validateInput('transfer', $input);
 
+        $merchantId = $payment->getMerchantId();
+
+        $result = app('razorx')->getTreatment($merchantId, 'transfer_deadlock_retry', $this->mode);
+
+        $deadLockRetryAttempts = 1;
+
+        if (strtolower($result) === 'on')
+        {
+            $deadLockRetryAttempts = 2;
+        }
+
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $input)
+            function() use ($payment, $input, $deadLockRetryAttempts)
             {
                 $this->repo->reload($payment);
 
@@ -1173,7 +1377,7 @@ class Processor
                         ['transfer_ids' => $transfers->getIds()]);
 
                     return $transfers;
-                });
+                }, $deadLockRetryAttempts);
             });
     }
 
@@ -1607,7 +1811,11 @@ class Processor
             // If CPS service is enabled then route this payment via CPS
             if ((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true)
             {
-                $this->persistCardDetails($gateway, $action, $gatewayData);
+                // Persist card details only when payment method is card or emi
+                if ($this->payment->isMethodCardOrEmi() === true)
+                {
+                    $this->persistCardDetails($gateway, $action, $gatewayData);
+                }
 
                 $gatewayData['cps_route'] = true;
             }
@@ -1646,35 +1854,74 @@ class Processor
         {
             $error = $ex->getError();
 
-            /*
-             * If error is because of invalid terminal and terminal
-             * used is direct, we can disable the terminal
-             */
-            if (($error->isInvalidTerminalError() === true) and
-                ($terminal->isShared() === false))
-            {
-                $this->disableTerminal($terminal);
-            }
+            $this->disableTerminalIfApplicable($terminal, $error);
+
+            $this->changeTerminalCapabilityIfApplicable($terminal, $error);
 
             /*
-             * If error indicates gateway downtime, act on it and
-             * check if a downtime entity needs to be created
+             * Because error indicates gateway downtime, we might act on it later
+             * so set $gatewayDowntimeError = true
              */
-            if ($error->isGatewayDowntimeError() === true)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::INFO,
-                    TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
-                    [
-                        'payment_id' => $this->payment->getId()
-                    ]);
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => $gateway,
+                    'action'     => $action,
+                    'method'     => $gatewayData['payment']['method'],
+                ]);
 
-                $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
-            }
+            $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
 
             throw $ex;
         }
+        finally
+        {
+            $variant  = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                'gateway_downtime_detection',
+                $this->mode
+            );
+
+            // Gateway Downtime Detection only works on few actions.
+            // Right now failure percentage is not considered on each
+            // action individually, which we might do at later point of time.
+            // For Example: Action AUTH and CALLBACK both need to succeed
+            // for the payment to be successful. If one is working fine, then
+            // Downtime configuration might not work properly.
+
+            // Also, though we are putting the check here that
+            // we only want these actions to succeed but inside
+            // $this->app['gateway']->call(), we might call other actions.
+            // Example: In case of international payments we call capture immediately.
+            if ((strtolower($variant) === 'on') and
+                ($this->isGatewayDowntimeAction($action) == true))
+            {
+                try
+                {
+                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gatewayData);
+                }
+                catch (\Throwable $e)
+                {
+                    // This can be removed later.
+                    // This is added for some time to test this feature.
+                    $this->trace->traceException($e);
+                }
+            }
+        }
+    }
+
+    public function isGatewayDowntimeAction(string $action)
+    {
+        $gatewayDowntimeActions = [
+            Action::AUTHENTICATE,
+            Action::AUTHORIZE,
+            Action::CALLBACK
+        ];
+
+        return in_array($action, $gatewayDowntimeActions, true);
     }
 
     public function isRoutedThroughCps($action, $input): bool
@@ -1722,6 +1969,15 @@ class Processor
     protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
     {
         $this->tracePaymentNewRequest($input);
+
+        if (($input['method'] === Payment\Method::CARDLESS_EMI) === true)
+        {
+            if ((isset($input['ott']) === true) and
+                (isset($input['payment_id']) === true))
+            {
+                $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
+            }
+        }
 
         if ($payment == null)
         {
@@ -1973,6 +2229,15 @@ class Processor
 
         $payment->order()->associate($this->order);
 
+        //
+        // FIXME: Hack for reliance AMC, moving order receipt to payment
+        // description
+        //
+        if ($payment->getMerchantId() === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $payment->setDescription($this->order->getReceipt());
+        }
+
         $orderNotes = $this->order->getNotes()->toArray();
 
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
@@ -2207,6 +2472,15 @@ class Processor
         return $ba;
     }
 
+    /**
+     * This function is used to identify if a payment can be auto captured or not
+     * Please *note* that the order of the conditions is important and shouldn't be chnaged
+     * without understanding the consequences
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return bool
+     */
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
         // Bank transfers are auto-captured only if they are expected. This is checked later.
@@ -2225,19 +2499,6 @@ class Processor
             return false;
         }
 
-        if ($payment->isDirectSettlement() === true)
-        {
-            return true;
-        }
-
-        //
-        // We do an auto capture only if payment is associated with an order.
-        //
-        if ($payment->hasOrder() === false)
-        {
-            return false;
-        }
-
         //
         // The payment should always be in authorized if it has reached this point.
         // Ideally, this should throw an exception. But, we do not want to fail
@@ -2252,6 +2513,25 @@ class Processor
                     'status'        => $payment->getStatus()
                 ]);
 
+            return false;
+        }
+
+        //
+        // We do an auto capture direct settlement payment only if payment is not associated with an order.
+        //
+        // Later we are checking if the payment is associated with order and order status is paid then don't
+        // capture this late auth payment since order is fullfilled by some other payment made for this order.
+        if (($payment->isDirectSettlement() === true) and
+            ($payment->hasOrder() === false))
+        {
+            return true;
+        }
+
+        //
+        // We do an auto capture only if payment is associated with an order.
+        //
+        if ($payment->hasOrder() === false)
+        {
             return false;
         }
 
@@ -2392,6 +2672,13 @@ class Processor
         // An order must not have more than one captured payment.
         //
         $this->repo->reload($order);
+
+        // If order status is not paid yet and if the payment is direct settlement then capture
+        if (($order->isPaid() === false) and
+            ($payment->isDirectSettlement()))
+        {
+            return true;
+        }
 
         if (($order->isPaid() === true) or
             ($order->getPaymentCapture() === false))
@@ -2583,6 +2870,54 @@ class Processor
         return true;
     }
 
+    protected function changeTerminalCapabilityIfApplicable(Terminal\Entity $terminal, Error $error)
+    {
+        if (($error->getInternalErrorCode() === ErrorCode::GATEWAY_ERROR_PERMISSION_DENIED_FOR_ACTION) and
+            ($terminal->getGateway() === Payment\Gateway::AXIS_MIGS) and
+            ($terminal->getCapability() === Terminal\Capability::AUTHORIZE))
+        {
+            $terminal->setCapability(Terminal\Capability::ALL);
+
+            $this->repo->saveOrFail($terminal);
+
+            $this->app['slack']->queue(
+                TraceCode::TERMINAL_EDIT,
+                [
+                    'merchant_id'           => $terminal->getMerchantId(),
+                    'merchant_name'         => $terminal->merchant->getName(),
+                    'terminal_id'           => $terminal->getId(),
+                    'payment_id'            => $this->payment->getId(),
+                    'channel'               => Config::get('slack.channels.tech_alerts'),
+                    'username'              => 'alerts',
+                    'icon'                  => ':x:',
+                    'message'               => 'terminal capability auto changed to ALL',
+                ]
+            );
+
+            $this->trace->error(
+                TraceCode::TERMINAL_EDIT,
+                [
+                    'merchant_id'           => $terminal->getMerchantId(),
+                    'terminal_id'           => $terminal->getId(),
+                    'message'               => 'terminal capability auto changed to ALL'
+                ]
+            );
+        }
+    }
+
+    protected function disableTerminalIfApplicable($terminal, $error)
+    {
+        /*
+         * If error is because of invalid terminal and terminal
+         * used is direct, we can disable the terminal
+         */
+        if (($error->isInvalidTerminalError() === true) and
+            ($terminal->isShared() === false))
+        {
+            $this->disableTerminal($terminal);
+        }
+    }
+
     protected function createGatewayDowntimeIfApplicable(string $gateway, array $gatewayData)
     {
         (new Gateway\Downtime\Core)->createForGatewayException($gateway, $gatewayData);
@@ -2708,18 +3043,13 @@ class Processor
 
         $key = $payment->getCacheInputKey();
 
-        $inputDetails = $this->cache->get($key);
+        $inputDetails = $this->getInputDetails($payment, $key);
 
         if ($inputDetails === null)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
             );
-        }
-
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
-        {
-            $this->setCardNumberAndCvv($inputDetails);
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -2738,9 +3068,23 @@ class Processor
 
                 $payment->setAuthType(Payment\AuthType::_3DS);
 
+                $payment->setAuthenticationGateway(null);
+
                 $this->repo->saveOrFail($payment);
 
-                return $this->authorize($payment, $inputDetails);
+                // temporary code
+                if (empty($inputDetails['gateway_input']) === true)
+                {
+                    return $this->authorize($payment, $inputDetails);
+                }
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                $gatewayInput['selected_terminals_ids'] = [$payment->getTerminalId()];
+
+                unset($inputDetails['gatewayInput']);
+
+                return $this->gatewayRelatedProcessing($payment, $inputDetails, $gatewayInput);
             },
             120,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
@@ -2749,6 +3093,88 @@ class Processor
             2000);
 
         return $response;
+    }
+
+    //
+    // This function is used to reverse the payment's following attributes:
+    // 1. amount_refunded: amount_refunded - $refund[amount]
+    // 2. refund_status: {full to partial} {full to null} {partial to null}
+    // 3. status: {refunded to captured} only in the case of amount_refunded being changed from full to partial/null
+    //
+    public function revertPaymentToRefundableState(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $refund)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_UPDATE_INITIATED,
+                [
+                    'refund_id'                    => $refund->getId(),
+                    'payment_id'                   => $payment->getId(),
+                    'payment_status'               => $payment->getStatus(),
+                    'payment_refund_status'        => $payment->getRefundStatus(),
+                    'payment_amount_refunded'      => $payment->getAmountRefunded(),
+                    'payment_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+                ]);
+
+            $amountRefunded = $payment->getAmountRefunded();
+
+            $baseAmountRefunded = $payment->getBaseAmountRefunded();
+
+            $amountRefunded = $amountRefunded - $refund->getAmount();
+            $baseAmountRefunded = $baseAmountRefunded - $refund->getBaseAmount();
+
+            $payment->setAmountRefunded($amountRefunded);
+            $payment->setBaseAmountRefunded($baseAmountRefunded);
+
+            $this->resetPaymentStatusAndRefundStatus($payment);
+
+            $this->repo->saveOrFail($payment);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_UPDATE_COMPLETE,
+                [
+                    'refund_id'                    => $refund->getId(),
+                    'payment_id'                   => $payment->getId(),
+                    'payment_status'               => $payment->getStatus(),
+                    'payment_refund_status'        => $payment->getRefundStatus(),
+                    'payment_amount_refunded'      => $payment->getAmountRefunded(),
+                    'payment_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+                ]);
+        },
+        120,
+        ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+        20,
+        1000,
+        2000);
+    }
+
+    public function revertProcessedRefundToCreatedState(Payment\Refund\Entity &$refund)
+    {
+        $refund->setStatus(Payment\Refund\Status::CREATED);
+
+        $refund->setReference1();
+
+        $refund->setProcessedAt(null);
+
+        $refund->setGatewayRefunded(null);
+    }
+
+    protected function resetPaymentStatusAndRefundStatus(Payment\Entity $payment)
+    {
+        // If total amount refund is 0, setting payment's refund status to null
+        if ($payment->getAmountRefunded() === 0)
+        {
+            $payment->setRefundStatus(Payment\RefundStatus::NULL);
+        }
+        // If total amount refund is not 0, setting payment's refund status to partial if not already in partial
+        else if ($payment->getAmountRefunded() !== $payment->getAmountAuthorized())
+        {
+            $payment->setRefundStatus(Payment\RefundStatus::PARTIAL);
+        }
+
+        $payment->setStatus(Payment\Status::CAPTURED);
     }
 
     protected function getUpiStatus(string $id)

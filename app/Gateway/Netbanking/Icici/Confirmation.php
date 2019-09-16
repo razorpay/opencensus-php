@@ -12,6 +12,7 @@ class Confirmation
     // We use Y to generate bank_payment_id in callback response
     const YES     = 'Y';
     const NO      = 'N';
+    const PENDING = 'P';
 
     public static function getAuthSuccessStatus()
     {

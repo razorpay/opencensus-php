@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use Carbon\Carbon;
+
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Payout as PayoutModel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Transaction\ReconciledType;
@@ -82,7 +85,7 @@ class Payout extends Base
 
     public function updateTransaction()
     {
-        $settledAt = $reconciledAt = time();
+        $settledAt = $reconciledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->txn->setSettledAt($settledAt);
 
@@ -95,9 +98,11 @@ class Payout extends Base
         $this->txn->setGatewayServiceTax(0);
 
         // the transaction is saved in the caller
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
-    protected function setMerchantBalanceLockForUpdate()
+    public function setMerchantBalanceLockForUpdate()
     {
         // TODO: Remove the second condition later once we backfill payouts
         // with all existing payouts having primaryBalance filled in.

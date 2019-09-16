@@ -373,7 +373,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function getConfigKey($input): array
+    public function getConfigKey($input)
     {
         (new Validator)->validateInput('get_config_key', $input);
 
@@ -492,6 +492,13 @@ class Service extends Base\Service
     public function fetchReconciliationSummary(array $input)
     {
         $data = (new DailyReconStatusSummary)->generateReconSummary($input);
+
+        return $data;
+    }
+
+    public function fetchHourlyReconciliationSummary(array $input)
+    {
+        $data = (new DailyReconStatusSummary)->generateReconSummaryByGateway($input);
 
         return $data;
     }
@@ -687,5 +694,135 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::REDIS_KEY_UPDATE, $data);
 
         return $data;
+    }
+
+    public function setGatewayDowntimeConf(array $input): array
+    {
+        (new Validator)->validateInput('set_gateway_downtime_redis_keys', $input);
+
+        $redis = $this->app['redis']->connection();
+
+        foreach ($input[ConfigKey::DOWNTIME_DETECTION_CONFIGURATION] as $value)
+        {
+            $values[$value['key']] = json_encode($value['value']);
+        }
+
+        $values = array_change_key_case($values, CASE_LOWER);
+
+        $this->setRedisKey($redis, ConfigKey::DOWNTIME_DETECTION_CONFIGURATION, $values);
+
+        // Now get configuration for all the gateways and return
+        return $this->getGatewayDowntimeConf();
+    }
+
+    public function getGatewayDowntimeConf(): array
+    {
+        $redis = $this->app['redis']->connection();
+
+        $result = [];
+
+        $conf = $redis->HGETALL(ConfigKey::DOWNTIME_DETECTION_CONFIGURATION);
+
+        foreach ($conf as $key => $value)
+        {
+            $result[] =
+                [
+                    'key'   => $key,
+                    'value' => json_decode($value),
+                ];
+        }
+
+        return [
+            ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => $result,
+        ];
+    }
+
+    public function sendTestSms(array $input)
+    {
+        $admin = $this->auth->getAdmin();
+
+        $this->trace->info(
+            TraceCode::ADMIN_SEND_TEST_SMS_REQUEST,
+            [
+                'admin_id'          => $admin->getId(),
+                'payload'           => $input,
+            ]);
+
+        $ravenPayload = [
+            'receiver' => $input['receiver'],
+            'source'   => 'api.admin.test.sms',
+            'gateway'  => $input['gateway'],
+            'sender'   => $input['sender'],
+            'template' => $input['template'] ?? 'sms.p2p.verification_completed',
+            'params'   => $input['params'],
+        ];
+
+        return $this->app->raven->sendSms($ravenPayload, true);
+    }
+
+    /**
+     * @param $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
+     */
+    public function bulkCreate($input)
+    {
+        (new Validator)->validateInput('bulkCreateEntity', $input);
+
+        $type = $input['type'];
+
+        Entity::validateEntityOrFailPublic($type);
+
+        $dataList = $input['data'];
+
+        $failed = $processed = [];
+
+        $this->repo->transactionOnLiveAndTest(function() use ($type, $dataList, &$processed, &$failed) {
+            foreach ($dataList as $data)
+            {
+                try
+                {
+                    $newEntityClass = (new Entity)->getEntityClass($type);
+
+                    $newEntity = (new $newEntityClass)->generateId();
+
+                    if (array_key_exists($newEntity::MERCHANT_ID, $data))
+                    {
+                        $merchantId = $data[$newEntity::MERCHANT_ID];
+
+                        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                        $newEntity->merchant()->associate($merchant);
+
+                        unset($data[$newEntity::MERCHANT_ID]);
+                    }
+
+                    $newEntity->build($data);
+
+                    $this->repo->saveOrFail($newEntity);
+
+                    array_push($processed, $newEntity[$newEntity::ID]);
+
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR
+                    );
+                    array_push($failed, $data);
+                }
+            }
+        });
+
+        $summary = [
+            'failed_count'  => count($failed),
+            'success_count' => count($processed),
+            'failed'        => $failed,
+        ];
+
+        return $summary;
     }
 }

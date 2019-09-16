@@ -2,15 +2,17 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use RZP\Diag\EventCode;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
-use RZP\Models\Transaction;
-use RZP\Models\Currency;
-use RZP\Models\Pricing;
 use RZP\Models\Merchant;
-use RZP\Models\Payment as PaymentEntity;
+use RZP\Models\Transaction;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseCollection;
-use RZP\Models\Schedule\Library as ScheduleLibrary;
+use RZP\Models\Payment as PaymentEntity;
+use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Schedule\Library as ScheduleLibrary;
 
 class Payment extends Base
 {
@@ -22,11 +24,46 @@ class Payment extends Base
                 'payment_id' => $this->source->getId()
             ]);
 
+        $this->checkAndSetTxnReconciliation();
+
         $this->repo->saveOrFail($this->txn);
 
         $settledAt = $this->getSettledAtTimestamp();
 
+        $type = $this->txn->getType();
+
+        $entity_id = $this->txn->getEntityId();
+
+        $channel = $this->txn->getChannel();
+
+        $transactionId = $this->txn->getId();
+
+        $customProperties = [
+            'type'              => $type,
+            'entity_id'         => $entity_id,
+            'channel'           => $channel,
+            'transaction_id'    => $transactionId,
+        ];
+
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::TRANSACTION_SETTLED_AT_UPDATE,
+            null,
+            null,
+            $customProperties);
+
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
+    }
+
+    private function checkAndSetTxnReconciliation()
+    {
+        if ($this->source->getGateway() === Gateway::WALLET_OPENWALLET)
+        {
+            $this->txn->setReconciledAt(time());
+
+            $this->txn->setReconciledType(ReconciledType::NA);
+        }
     }
 
     public function createTransaction()
@@ -97,17 +134,28 @@ class Payment extends Base
         //
         if ($this->source->isAuthorized() === true)
         {
+            // in authorize transaction we set to balance updated as true since there is no actual balance update.
+            $this->txn->setBalanceUpdated(true);
+
             return false;
         }
-        else
+        else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
         {
-            if ($this->source->isLateBalanceUpdate() === true)
-            {
-                return false;
-            }
-
-            return true;
+            return false;
         }
+        else if ($this->source->isLateBalanceUpdate() === true)
+        {
+            // in late balance update we do it on the fly and setting it to true for backward compatiablility
+            $this->txn->setBalanceUpdated(true);
+
+            return false;
+        }
+
+
+        $this->txn->setBalanceUpdated(true);
+
+        return true;
+
     }
 
     protected function fillEmptyTxnFeesAndAmount()

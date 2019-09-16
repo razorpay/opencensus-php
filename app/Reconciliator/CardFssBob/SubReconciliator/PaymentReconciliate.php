@@ -52,7 +52,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         return true;
     }
 
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
     }
@@ -130,7 +130,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         return strtolower($row[ReconciliationFields::ONUS_INDICATOR]?? '');
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         $status = Status::$successStates;
 
@@ -198,13 +198,13 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         if (in_array($cardLocale, [BaseReconciliate::DOMESTIC, BaseReconciliate::INTERNATIONAL]) === false)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'message'         => 'unable to figure out card locale',
-                    'recon_card_type' => $cardLocale,
-                    'row'             => $row,
-                    'gateway'         => $this->gateway
+                    'info_code'  => InfoCode::UNEXPECTED_CARD_LOCALE,
+                    'payment_id' => $paymentId,
+                    'gateway'    => $this->gateway,
+                    'message'    => 'unable to figure out card locale'
                 ]);
 
             return null;
@@ -315,11 +315,9 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $settledAt = $row[ReconciliationFields::PAYMENT_DATE];
 
-        $format = 'd-m-Y';
-
         try
         {
-            $gatewaySettledAtTimestamp = Carbon::createFromFormat($format, $settledAt, Timezone::IST)->timestamp;
+            $gatewaySettledAtTimestamp = Carbon::parse($settledAt)->setTimezone(Timezone::IST)->getTimestamp();
         }
         catch (\Exception $ex)
         {
@@ -328,7 +326,6 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                 [
                     'info_code'         => InfoCode::INCORRECT_DATE_FORMAT,
                     'settled_at'        => $settledAt,
-                    'expected_format'   => $format,
                     'payment_id'        => $this->payment->getId(),
                     'gateway'           => $this->gateway,
                 ]);
@@ -339,7 +336,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getAuthCode($row)
     {
-        if (empty($row[ReconciliationFields::AUTH_CODE]) === true)
+        if (isset($row[ReconciliationFields::AUTH_CODE]) === false)
         {
             $this->reportMissingColumn($row, ReconciliationFields::AUTH_CODE);
 
@@ -350,7 +347,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     }
 
     /**
-     * In MIS file, we are not receiving ARN hence sstoring RRN in reference1 field of payment entity.
+     * In MIS file, we are not receiving ARN hence storing RRN in reference1 field of payment entity.
      * This is done because for reporting purposes, we need reference number in payment entity.
      * @param $rowDetails
      */

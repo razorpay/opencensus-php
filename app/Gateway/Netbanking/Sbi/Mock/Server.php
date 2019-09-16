@@ -24,7 +24,7 @@ class Server extends Base\Mock\Server
         $content = $this->getAuthResponse($input);
 
         $request = [
-            'url'     => $input[RequestFields::REDIRECT_URL],
+            'url'     => $input[RequestFields::REDIRECT_URL] ?? $input[RequestFields::MANDATE_RETURN_URL],
             'content' => $content,
             'method'  => 'post',
         ];
@@ -47,14 +47,27 @@ class Server extends Base\Mock\Server
 
     protected function getAuthResponse(array $input): array
     {
-        $content = [
-            ResponseFields::BANK_REF_NO     => 'IGAAAAGNN6',
-            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
-            ResponseFields::REF_NO          => $input[RequestFields::REF_NO],
-            ResponseFields::STATUS          => 'Success',
-            ResponseFields::STATUS_DESC     => 'success',
-            ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
-        ];
+        if (isset($input[RequestFields::MANDATE_PAYMENT_ID]) === true)
+        {
+            $content = [
+                ResponseFields::MANDATE_SBI_REF         => 'IGAAAAGNN6',
+                ResponseFields::MANDATE_TXN_AMOUNT      => $input[RequestFields::MANDATE_TXN_AMOUNT],
+                ResponseFields::MANDATE_SBI_STATUS      => 'Success',
+                ResponseFields::MANDATE_SBI_DESCRIPTION => 'success',
+                ResponseFields::MANDATE_PAYMENT_ID      => $input[RequestFields::MANDATE_PAYMENT_ID]
+            ];
+        }
+        else
+        {
+            $content = [
+                ResponseFields::BANK_REF_NO     => 'IGAAAAGNN6',
+                ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+                ResponseFields::REF_NO          => $input[RequestFields::REF_NO],
+                ResponseFields::STATUS          => 'Success',
+                ResponseFields::STATUS_DESC     => 'success',
+                ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
+            ];
+        }
 
         $this->content($content, $this->action);
 
@@ -67,13 +80,26 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponse(array $input)
     {
-        $content = [
-            ResponseFields::BANK_REF_NO     => 'IGAAAAGNN6',
-            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
-            ResponseFields::REF_NO          => $input[RequestFields::REF_NO],
-            ResponseFields::STATUS          => 'Success',
-            ResponseFields::STATUS_DESC     => 'success',
-        ];
+        if (isset($input[RequestFields::MANDATE_VERIFY_TXN_AMOUNT]) === true)
+        {
+            $content = [
+                ResponseFields::MANDATE_SBI_REF         => 'IGAAAAGNN6',
+                ResponseFields::MANDATE_PAYMENT_ID      => $input[RequestFields::MANDATE_PAYMENT_ID],
+                ResponseFields::MANDATE_SBI_STATUS      => 'Success',
+                ResponseFields::MANDATE_SBI_DESCRIPTION => 'Completed Successfully',
+                ResponseFields::MANDATE_TXN_AMOUNT      => '1.00'
+            ];
+        }
+        else
+        {
+            $content = [
+                ResponseFields::BANK_REF_NO     => 'IGAAAAGNN6',
+                ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+                ResponseFields::REF_NO          => $input[RequestFields::REF_NO],
+                ResponseFields::STATUS          => 'Success',
+                ResponseFields::STATUS_DESC     => 'success',
+            ];
+        }
 
         $this->content($content, $this->action);
 

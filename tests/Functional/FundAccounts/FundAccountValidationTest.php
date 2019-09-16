@@ -2,18 +2,27 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
+use \RZP\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundAccount\Validation\Entity;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class FundAccountValidationTest extends TestCase
 {
     use AttemptTrait;
+    use MocksDnsTrait;
     use FundAccountTrait;
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
     use AttemptReconcileTrait;
     use FundAccountValidationTrait;
 
@@ -372,6 +381,7 @@ class FundAccountValidationTest extends TestCase
         // Queue will be processed by now.
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals(2, $fav['attempts']);
+        $this->assertEquals(null, $fav['retry_at']);
         $this->assertEquals('active', $fav['results']['account_status']);
         $this->assertEquals('Someone', $fav['results']['registered_name']);
 
@@ -399,5 +409,46 @@ class FundAccountValidationTest extends TestCase
         // beneficiary not accepted is not an internal error
         // and there is not need to retry.
         $this->assertNull($fav['retry_at']);
+    }
+
+    public function testFundAccValidationWithAccountNumberAndBankAccount()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        // get database entities
+        $balance = $this->getLastEntity('balance', true);
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $txn = $this->getLastEntity('transaction', true);
+
+        // validate balance entry in database
+        $this->assertEquals(9999997, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav['balance_id']);
+        $this->assertEquals('10000000000000', $fav['merchant_id']);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav['entity']);
+
+        // validate transaction table last entry
+        $this->assertEquals(Constants\Entity::FUND_ACCOUNT_VALIDATION, $txn['type']);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals(100, $txn['amount']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals($balance['id'], $txn['balance_id']);
+        $this->assertEquals(9999997, $txn['balance']);
+
+        // validate fund transfer attempt table last entry
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
     }
 }

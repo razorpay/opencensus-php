@@ -9,7 +9,6 @@ use RZP\Gateway\Base\Action;
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PAYMENT_ID          = 'fldMerchRefNbr';
-    const COLUMN_PAYMENT_AMOUNT      = 'Transaction Amount';
     const COLUMN_GATEWAY_PAYMENT_ID  = 'fldBankRefNbr';
     const COLUMN_BANK_ACCOUNT_NUMBER = 'AccountNo.';
 
@@ -18,7 +17,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[self::COLUMN_PAYMENT_ID];
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         $status = [Bob\Status::SUCCESS];
 

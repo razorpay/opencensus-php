@@ -73,7 +73,9 @@ class Gateway extends Base\Gateway
 
         $this->verifyCallback($input, $gatewayPayment);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     protected function verifyCallback(array $input, $gatewayPayment)
@@ -234,6 +236,11 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        if ($this->mode === Mode::LIVE)
+        {
+            $request['options']['verify'] = $this->getCaInfo();
+        }
+
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
@@ -297,7 +304,7 @@ class Gateway extends Base\Gateway
             foreach ($pairs as $value)
             {
                 $pair = explode(Constants::VERIFY_KEY_VALUE_SEPARATOR, $value, 2);
-                
+
                 $content[$pair[0]] = $pair[1];
             }
         }
@@ -363,5 +370,12 @@ class Gateway extends Base\Gateway
     public function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
+
+        return $clientCertPath;
     }
 }

@@ -1,0 +1,57 @@
+<?php
+
+namespace RZP\Events\P2p;
+
+use App;
+use RZP\Models\P2p\Transaction\Entity;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use RZP\Models\P2p\Base\Libraries\Context;
+
+class TransactionCreated extends Event implements ShouldQueue
+{
+    use SerializesModels;
+
+    public function getName()
+    {
+        return 'customer.transaction.created';
+    }
+
+    public function getWebhookPaylaod()
+    {
+        $entity = $this->getEntity();
+
+        if ($entity->isPendingCollect() === true)
+        {
+            return $entity->toArrayPartner();
+        }
+    }
+
+    public function getNotificationPayload()
+    {
+        $entity = $this->getEntity();
+
+        if ($entity->isPendingCollect() === true)
+        {
+            $payeeName    = strtoupper($entity->payee->getBeneficiaryName());
+            $currency     = $entity->getCurrency();
+            $amount       = $entity->getAmount();
+            $appName      = $entity->device->getAppFullName();
+
+            return [
+                'receiver' => $entity->device->getFormattedContact(),
+                'source'   => "api.{$this->context->getMode()}.p2p",
+                'template' => 'sms.p2p.collect',
+                'params'   => [
+                    'payee_name'        => $payeeName,
+                    'app_name'          => $appName,
+                    'currency'          => $currency,
+                    'currency_label'    => 'Rs.',
+                    'amount'            => $amount,
+                    'formatted_amount'  => number_format($amount / 100, 2, '.', '')
+                ],
+            ];
+        }
+    }
+}

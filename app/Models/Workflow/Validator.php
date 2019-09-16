@@ -28,8 +28,7 @@ class Validator extends Base\Validator
     public function validatePermissionHasOneWorkflow(
         string $orgId, array $perms, string $excludeWorkflow = null)
     {
-        $workflowIds = (new Repository)->getWorkflowIdsForPermissionsAndOrgId(
-            $orgId, $perms);
+        $workflowIds = (new Repository)->getWorkflowIdsForPermissionsAndOrgId($orgId, $perms);
 
         $workflowIds = $workflowIds->toArray();
 

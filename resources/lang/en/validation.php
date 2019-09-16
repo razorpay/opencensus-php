@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 
     /*
     |--------------------------------------------------------------------------
@@ -12,7 +12,6 @@ return array(
     | as the size rules. Feel free to tweak each of these messages here.
     |
     */
-
 
     'accepted'             => 'The :attribute must be accepted.',
     'active_url'           => 'The :attribute is not a valid URL.',
@@ -95,6 +94,7 @@ return array(
     'int_percentage'       => 'The :attribute must be a valid integer between 0 and 10000',
     'pan'                  => 'The :attribute field is invalid',
     'alpha_dash_space'     => 'The :attribute may only contain alphabets, digits, hyphens, underscores, and spaces.',
+    'alpha_num_underscore' => 'The :attribute may only contain alphabets, digits and underscores.',
     'min_amount'           => 'The :attribute must be atleast :currency :min_amount',
     'currency'             => 'The :input is not a supported currency.',
 
@@ -144,6 +144,6 @@ return array(
     |
     */
 
-    'attributes' => array(),
+    'attributes' => [],
 
-);
+];

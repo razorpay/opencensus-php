@@ -49,7 +49,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return true;
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         if (isset($row[self::COLUMN_AMOUNT]) === false)
         {
@@ -59,7 +59,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]);
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         if ($this->payment->getMethod() === Method::WALLET)
         {

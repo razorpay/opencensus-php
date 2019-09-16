@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Hitachi;
 
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Gateway\Mpi;
 use RZP\Models\Admin;
@@ -24,6 +25,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Reconciliator\Base\Reconciliate;
 
 class Gateway extends Base\Gateway
 {
@@ -42,6 +44,8 @@ class Gateway extends Base\Gateway
     const DATE_FORMAT               = 'md';
     const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
     const DEFAULT_CVV_VALUE         = '000';
+
+    const PAYSECURE_MID_SWITCH_TIME = 1567612806; // 4 Sept 2019, 4:00 PM
 
     protected $map = [
         ResponseFields::RETRIEVAL_REF_NUM   => Entity::RRN,
@@ -115,6 +119,17 @@ class Gateway extends Base\Gateway
         return $authResponse;
     }
 
+    protected function isFirstRecurringMcPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['payment']['recurring_type'] === 'initial') and
+            ($input['card']['network_code']  === Card\Network::MC))
+        {
+            return true;
+        }
+        return false;
+    }
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -164,11 +179,6 @@ class Gateway extends Base\Gateway
         if ($this->isRupayTransaction($input) === true)
         {
             $callbackData = $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
-
-            if ($input['terminal']['mode'] === Terminal\Mode::PURCHASE)
-            {
-                $this->call(Base\Action::ADVICE, $input);
-            }
 
             return $callbackData;
         }
@@ -364,13 +374,26 @@ class Gateway extends Base\Gateway
 
     protected function validateChecksumAndGetQrData($input)
     {
-        $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
+        //
+        // While trying to create unexpected Hitachi BQR payment
+        // via recon (dashboard file upload by FinOps), we don't
+        // have checksum. So we use this flag $isReconRunning to decide
+        // whether to skip or continue with the checksum validation.
+        //
+        // In normal flow when actual callback comes from outside,
+        // $isReconRunning will be false and checksum will be validated.
+        //
 
-        $hashString = $this->getStringToHashForBharatQr($input);
+        if (Reconciliate::$isReconRunning === false)
+        {
+            $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
 
-        $expectedChecksum = $this->getHashOfString($hashString);
+            $hashString = $this->getStringToHashForBharatQr($input);
 
-        $this->compareHashes($actualChecksum, $expectedChecksum);
+            $expectedChecksum = $this->getHashOfString($hashString);
+
+            $this->compareHashes($actualChecksum, $expectedChecksum);
+        }
 
         $this->checkForBharatQrFailure($input);
 
@@ -498,6 +521,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_MOTO_AUTH_RESPONSE);
@@ -517,7 +542,6 @@ class Gateway extends Base\Gateway
         parent::advice($input);
 
         $request = $this->getAdviceRequestArrayForPaysecure($input);
-
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::CAPTURE);
 
@@ -540,6 +564,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE);
@@ -559,6 +585,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
@@ -577,6 +605,8 @@ class Gateway extends Base\Gateway
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
         $gatewayEntity = $this->createGatewayPaymentEntity($input,[],Base\Action::AUTHORIZE);
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -701,11 +731,11 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
+        $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
+
         $this->checkResponseAndThrowExceptionIfRequired($verify);
 
         $this->setVerifyStatus($verify);
-
-        $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
     }
 
     protected function checkResponseAndThrowExceptionIfRequired($verify)
@@ -1043,9 +1073,16 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY_CODE            => $currencyCode,
         ];
 
-        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
+//        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
+//        {
+//            $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
+//        }
+
+        if ($this->isFirstRecurringMcPaymentRequest($input) === true)
         {
-            $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
+            //ToDo:Fix this after 3DS 2 is live.
+            $content[RequestFields::MC_PROTOCOL_VERSION] = 1;
+            // $content[RequestFields::MC_DS_TRANSACTION_ID] = $mcProtocolVersion;
         }
 
         return $content;
@@ -1355,6 +1392,8 @@ class Gateway extends Base\Gateway
 
         $message = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
+        unset($response[ResponseFields::CARD_NUMBER]);
+
         if ($respCode !== Status::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(
@@ -1419,9 +1458,24 @@ class Gateway extends Base\Gateway
             // This happens because gateway return two json instead of one
             // Till they fix this, we need to apply this hack
 
-            $body = explode('}', $body)[0] . '}';
+            try
+            {
+                $explodedbody = explode('}', $body)[0] . '}';
 
-            $responseArray = $this->jsonToArray($body);
+                $responseArray = $this->jsonToArray($explodedbody);
+            }
+            catch (\Exception $e)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_INVALID_JSON,
+                    null,
+                    'Failed to convert json to array',
+                    [
+                        'json' => $body,
+                    ],
+                    $e);
+            }
+
         }
 
         return $responseArray;
@@ -1431,14 +1485,15 @@ class Gateway extends Base\Gateway
     {
         if ($this->isLiveMode() === true)
         {
-            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
-            {
-                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
-            }
-            else
-            {
-                return 'https://172.16.18.40:10010/PaymentGateway.aspx';
-            }
+            return 'https://172.16.18.40:10010/PaymentGateway.aspx';
+//            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
+//            {
+//                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
+//            }
+//            else
+//            {
+//
+//            }
         }
 
         return constant(Url::class . '::' . strtoupper($this->mode));
@@ -1446,15 +1501,13 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        $merchantId = $this->getLiveMerchantId();
-
-        // For all Paysecure requests, use hitachi's shared mid on live mode
-        if ($this->isRupayTransaction($this->input) === true)
+        if (($this->isRupayTransaction($this->input) === true) and
+            ($this->input['payment'][Payment\Entity::CREATED_AT] <= self::PAYSECURE_MID_SWITCH_TIME))
         {
-            // todo: Change later as required.
-            // For PVT, we would be using shared Hitachi merchant
-            $merchantId = '38RR00000000001';
+            return '38RR00000000001';
         }
+
+        $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {
@@ -1466,15 +1519,13 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
-        $terminalId = $this->terminal['gateway_terminal_id'];
-
-        // For all Paysecure requests, use hitachi's shared tid on live mode
-        if ($this->isRupayTransaction($this->input) === true)
+        if (($this->isRupayTransaction($this->input) === true) and
+            ($this->input['payment'][Payment\Entity::CREATED_AT] <= self::PAYSECURE_MID_SWITCH_TIME))
         {
-            // todo: Change later as required.
-            // For PVT, we would be using shared Hitachi terminal
             return '38R00001';
         }
+
+        $terminalId = $this->terminal['gateway_terminal_id'];
 
         if ($this->mode === Mode::TEST)
         {
@@ -1542,31 +1593,6 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    // Overriding this, because for only rupay payments, we need to fetch this data from Paysecure gateway
-    protected function getCacheKey($paymentId)
-    {
-        $key = sprintf(static::CACHE_KEY, $paymentId);
-
-        if ($this->isRupayTransaction($this->input) === true)
-        {
-            $key = sprintf(Paysecure\Gateway::CACHE_KEY, $paymentId);
-        }
-
-        return $key;
-    }
-
-    // Overriding this from CardCacheTrait, since for Paysecure, we want to set the cache_ttl
-    // to the one mentioned in Paysecure gateway implementation
-    protected function getCardCacheTtl()
-    {
-        if ($this->isRupayTransaction($this->input) === true)
-        {
-            return Paysecure\Gateway::CARD_CACHE_TTL;
-        }
-
-        return static::CARD_CACHE_TTL;
-    }
-
     public function forceAuthorizeFailed(array $input)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
@@ -1590,5 +1616,27 @@ class Gateway extends Base\Gateway
         $gatewayPayment->saveOrFail();
 
         return true;
+    }
+
+    protected function getCacheKey($input)
+    {
+        if ((isset($input['card'][Card\Entity::NETWORK_CODE]) === true) and
+            ($input['card'][Card\Entity::NETWORK_CODE] === Card\Network::RUPAY))
+        {
+            return sprintf(Paysecure\Gateway::CACHE_KEY, $input['payment']['id']);
+        }
+
+            return sprintf(static::CACHE_KEY, $input['payment']['id']);
+    }
+
+    protected function getCardCacheTtl($input)
+    {
+        if ((isset($input['card'][Card\Entity::NETWORK_CODE]) === true) and
+            ($input['card'][Card\Entity::NETWORK_CODE] === Card\Network::RUPAY))
+        {
+            return 60 * 24 * 10;
+        }
+
+        return static::CARD_CACHE_TTL;
     }
 }

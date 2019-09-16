@@ -5,10 +5,11 @@ namespace RZP\Gateway\Netbanking\Base;
 use App;
 use Mail;
 use Carbon\Carbon;
-use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\MailTags;
+use RZP\Models\Payment\Refund;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
 class DailyFiles
 {
@@ -17,6 +18,7 @@ class DailyFiles
     protected $mode;
     protected $gateway;
     protected $bankCode;
+    protected $refundCore;
 
     // SECONDS_PER_DAY is 24 Hours/Day * 60 Minutes/Hour * 60 Seconds/Minute
     //                 is 86400
@@ -35,6 +37,8 @@ class DailyFiles
         $this->gateway = Payment\Gateway::$netbankingToGatewayMap[$bankCode];
 
         $this->bankCode = $bankCode;
+
+        $this->refundCore = new Refund\Core;
     }
 
     public function generate($from, $to, $email = null)
@@ -92,7 +96,12 @@ class DailyFiles
 
         $gateway = $terminal->getGateway();
 
-        return $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
+        $refundsResult = $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
+
+        $this->refundCore->reconcileNetbankingRefunds($data);
+
+        return $refundsResult;
+
     }
 
     protected function getClaimsData($from, $to)

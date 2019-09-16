@@ -6,15 +6,16 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use Config;
-use Illuminate\Support\Facades\Artisan;
-
+use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
+use Illuminate\Support\Facades\Artisan;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -45,6 +46,21 @@ class PayoutTest extends TestCase
             ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+    }
+
+    public function liveSetUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
+        $this->setUpMerchantForBusinessBankingLive(true, 10000000);
     }
 
     public function testCreatePayout(): array
@@ -110,6 +126,255 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutForVirtualAccountWhenModeIsNotPresent(): array
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create(
+            'bank_account',
+            [
+                'id'           => '1000000lvirtba',
+                'ifsc'         => 'YESB0CMSNOC',
+            ]);
+
+        $this->fixtures->edit(
+            'fund_account', '100000000000fa',
+            [
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lvirtba'
+            ]);
+
+        $this->bankAccount->setIfsc('YESB0CMSNOC');
+
+        // Setting the mock carbon timestamp to 1 minute less than today's ending timing i.e. 6:14 PM
+        $endTime = Carbon::createFromDate(2019, 07, 11., Timezone::IST)
+                           ->hour(18)
+                           ->minute(14);
+
+        Carbon::setTestNow($endTime);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lvirtba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        //If Mode is not sent in the request NEFT will be the mode of attempt.
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
+    public function testCreatePayoutForVirtualAccountWhenModeIsPresent(): array
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create(
+            'bank_account',
+            [
+                'id'           => '1000000lvirtba',
+                'ifsc'         => 'YESB0CMSNOC',
+            ]);
+
+        $this->fixtures->edit(
+            'fund_account', '100000000000fa',
+            [
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lvirtba'
+            ]);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lvirtba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        //If Mode is sent in request the attempt should be in NEFT mode and Payout mode will remain the sent mode.
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        $this->assertEquals('IFT', $payout['mode']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
+    public function testRxPayoutOnBankingHoliday(): array
+    {
+        $this->ba->privateAuth();
+
+        // Setting current time as 15th Aug Independence day holiday
+        $holidayDateTime = Carbon::createFromDate(2019, 8, 15., Timezone::IST)
+                                ->hour(18)
+                                ->minute(14);
+
+        Carbon::setTestNow($holidayDateTime);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        //Attempt should be in created state as its an holiday
+        $this->assertEquals('created', $payoutAttempt['status']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        return $payout;
+    }
+
+    public function testRxPayoutOnNonBankingHolidayBeforeNEFTtimings(): array
+    {
+        $this->ba->privateAuth();
+
+        // Date time set as non banking holiday and inside NEFT timings
+        $holidayDateTime = Carbon::createFromDate(2019, 8, 16., Timezone::IST)
+            ->hour(17)
+            ->minute(55);
+
+        Carbon::setTestNow($holidayDateTime);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        $this->assertEquals('processed', $payoutAttempt['status']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        return $payout;
+    }
+
+    public function testRxPayoutOnNonBankingHolidayAfterNEFTtimings(): array
+    {
+        $this->ba->privateAuth();
+
+        // Date time set as non banking holiday and outside NEFT timings
+        $holidayDateTime = Carbon::createFromDate(2019, 8, 16., Timezone::IST)
+            ->hour(19)
+            ->minute(55);
+
+        Carbon::setTestNow($holidayDateTime);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        $this->assertEquals('created', $payoutAttempt['status']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        return $payout;
+    }
+
     public function testCreateMerchantPayoutOnDemand()
     {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
@@ -144,8 +409,6 @@ class PayoutTest extends TestCase
 
     public function testCreateQueuedPayout()
     {
-        $this->fixtures->merchant->addFeatures([Constants::QUEUED_PAYOUTS]);
-
         $currentBalance = $this->getDbLastEntity('balance');
 
         $response = $this->startTest();
@@ -224,6 +487,20 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutToCardFundAccountUsingUpi()
+    {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'account_id'   => '10000000ICcard',
+                'active'       => 1,
+            ]);
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutToInactiveContactFundAccount()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'active' => 0]);
@@ -273,6 +550,127 @@ class PayoutTest extends TestCase
 
         $this->expectException(BadRequestException::class);
         $this->expectExceptionCode(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutWithOtp()
+    {
+        $this->markTestSkipped('Workflows test handling pending');
+
+        $payout = $this->testCreatePayout();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutWithInvalidOtp()
+    {
+        $this->markTestSkipped('Workflows test handling pending');
+
+        $payout = $this->testCreatePayout();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApproveBulkPayoutWithOtp()
+    {
+        $this->markTestSkipped('Workflows test handling pending');
+
+        $payout1 = $this->testCreatePayout();
+        $payout2 = $this->testCreatePayout();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        $this->fixtures->edit(
+            'payout',
+            $payout1['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->fixtures->edit(
+            'payout',
+            $payout2['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testRejectPayout()
+    {
+        $this->markTestSkipped('Workflows test handling pending');
+
+        $payout = $this->testCreatePayout();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkRejectPayouts()
+    {
+        $this->markTestSkipped('Workflows test handling pending');
+
+        $payout1 = $this->testCreatePayout();
+        $payout2 = $this->testCreatePayout();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        $this->fixtures->edit(
+            'payout',
+            $payout1['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->fixtures->edit(
+            'payout',
+            $payout2['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -337,6 +735,15 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::REVERSED
             ]);
 
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        $this->fixtures->edit(
+            'nodal_beneficiary',
+            $nodalBeneficiary['id'],
+            [
+                'updated_at' => $nodalBeneficiary['updated_at'] - 70,
+            ]);
+
         $this->fixtures->edit(
             'fund_transfer_attempt',
             $payoutAttempt['id'],
@@ -356,7 +763,7 @@ class PayoutTest extends TestCase
         $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(Payout\Status::PROCESSED, $newPayout['status']);
-        $this->assertEquals(Attempt\Status::PROCESSED, $payoutAttempt['status']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $newPayoutAttempt['status']);
 
         // Verify attempt entity
         $this->assertEquals($newPayout['attempts'], 1);
@@ -550,7 +957,6 @@ class PayoutTest extends TestCase
     public function testCreatePayoutAttemptSuccess()
     {
         // FTA initiate happens via sync queue
-
         $this->ba->privateAuth();
         $p1 = $this->testCreatePayout();
 
@@ -903,6 +1309,34 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
+    public function testBulkPayout()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        
+        $this->startTest();
+    }
+
+    public function testBulkPayoutWithSameIdempotencyandBatchId()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        
+        $this->startTest();
+    }
+    
     public function createEsIndex()
     {
         $esMock = Config::get('database.es_mock');
@@ -961,4 +1395,163 @@ class PayoutTest extends TestCase
 
         return json_decode($response->getContent(), true);
     }
+
+    public function testRxPayoutForSlaExpiry(): array
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->liveSetUp();
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_SLA_FOR_IMPS_PAYOUT => 1]);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        $this->assertEquals('IMPS', $payoutAttempt['mode']);
+
+        $this->assertEquals('created', $payoutAttempt['status']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true, 'live');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+
+        $this->assertNotNull($txn['balance_id']);
+
+        return $payout;
+    }
+
+//    public function testCreatePayoutForRblDirectAccount(): array
+//    {
+//        $newBalance = $this->getDbLastEntity('balance');
+//
+//        $this->fixtures->balance->edit($newBalance['id'],
+//            [
+//                'balance'           => 10000000,
+//                'account_type'      => 'direct',
+//                'channel'           => 'rbl',
+//            ]);
+//
+//        $this->ba->privateAuth();
+//
+//        $this->startTest();
+//
+//        $payout = $this->getLastEntity('payout', true);
+//
+//        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+//
+//        // On private auth, payout.user_id should be null
+//        $this->assertNull($payout['user_id']);
+//
+//        // Verify attempt entity
+//        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+//        $this->assertEquals('Batman', $payoutAttempt['narration']);
+//        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+//        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+//        $this->assertEquals($payout['channel'], 'yesbank');
+//
+//        // Verify transaction entity
+//        $txn = $this->getLastEntity('transaction', true);
+//        $txnId = str_after($txn['id'], 'txn_');
+//
+//        $this->assertEquals($payout['transaction_id'], $txn['id']);
+//        $this->assertNotNull($txn['balance_id']);
+//
+//        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+//
+//        $expectedBreakup = [
+//            'name'            => "payout",
+//            'transaction_id'  => $txnId,
+//            'pricing_rule_id' => "Bbg7fgaDwax04u",
+//            'percentage'      => null,
+//            'amount'          => 0,
+//        ];
+//
+//        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+//
+//        return $payout;
+//    }
+//
+//    public function testCreatePayoutForRblDirectWithSharedRules(): array
+//    {
+//        $pricingPlan = [
+//            'plan_name'           => 'Banking merchant plan',
+//            'product'             => 'primary',
+//            'feature'             => 'payout',
+//            'payment_method'      => 'fund_transfer',
+//            'percent_rate'        => 0,
+//            'fixed_rate'          => 500,
+//            'amount_range_active' => 1,
+//            'amount_range_min'    => 0,
+//            'amount_range_max'    => 200000,
+//            'org_id'              => '100000Razorpay',
+//            'expired_at'          => null,
+//            'created_at'          => time(),
+//            'updated_at'          => time(),
+//        ];
+//
+//        $pricingPlan = $this->fixtures->create('pricing', $pricingPlan);
+//
+//        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $pricingPlan['plan_id']]);
+//
+//        $newBalance = $this->getDbLastEntity('balance');
+//
+//        $this->fixtures->balance->edit($newBalance['id'],
+//            [
+//                'balance'           => 10000000,
+//                'account_type'      => 'direct',
+//                'channel'           => 'rbl',
+//            ]);
+//
+//        $this->ba->privateAuth();
+//
+//        $this->startTest();
+//
+//        $payout = $this->getLastEntity('payout', true);
+//
+//        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+//
+//        // On private auth, payout.user_id should be null
+//        $this->assertNull($payout['user_id']);
+//
+//        // Verify attempt entity
+//        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+//        $this->assertEquals('Batman', $payoutAttempt['narration']);
+//        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+//        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+//        $this->assertEquals($payout['channel'], 'yesbank');
+//
+//        // Verify transaction entity
+//        $txn = $this->getLastEntity('transaction', true);
+//        $txnId = str_after($txn['id'], 'txn_');
+//
+//        $this->assertEquals($payout['transaction_id'], $txn['id']);
+//        $this->assertNotNull($txn['balance_id']);
+//
+//        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+//
+//        $expectedBreakup = [
+//            'name'            => "payout",
+//            'transaction_id'  => $txnId,
+//            'pricing_rule_id' => "Bbg7fgaDwax04u",
+//            'percentage'      => null,
+//            'amount'          => 0,
+//        ];
+//
+//        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+//
+//        return $payout;
+//    }
 }

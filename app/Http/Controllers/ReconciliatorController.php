@@ -22,7 +22,9 @@ class ReconciliatorController extends Controller
 
     public function postReconciliateCancelledTransactions($gateway)
     {
-        $response = $this->service()->reconciliateCancelledTransactions($gateway);
+        $input = Request::all();
+
+        $response = $this->service()->reconciliateCancelledTransactions($gateway, $input);
 
         return ApiResponse::generateResponse($response);
     }
@@ -34,5 +36,23 @@ class ReconciliatorController extends Controller
         $response = $this->service()->reconcileRefundsAfterScroogeRecon($input);
 
         return ApiResponse::generateResponse($response);
+    }
+
+    public function getReconBatches()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getReconBatchesAndFiles($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getReconFiles()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getReconFilesCount($input);
+
+        return ApiResponse::json($data);
     }
 }

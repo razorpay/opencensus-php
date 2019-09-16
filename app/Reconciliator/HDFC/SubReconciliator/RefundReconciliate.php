@@ -2,25 +2,28 @@
 
 namespace RZP\Reconciliator\HDFC\SubReconciliator;
 
-use RZP\Constants\Entity;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\HDFC\Reconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID                  = 'merchant_trackid';
-    const COLUMN_REFUND_AMOUNT              = 'domestic_amt';
-    const COLUMN_ARN                        = 'arn_no';
-    const COLUMN_GATEWAY_TRANSACTION_ID     = 'tran_id';
+    const COLUMN_REFUND_ID                      = 'merchant_trackid';
+    const COLUMN_REFUND_AMOUNT                  = ['domestic_amt', 'intnl_amt'];
+    const COLUMN_INTERNATIONAL_REFUND_AMOUNT    = 'paycur_usd';
+    const COLUMN_ARN                            = 'arn_no';
+    const COLUMN_GATEWAY_TRANSACTION_ID         = 'tran_id';
+    const COLUMN_INR_REFUND_AMOUNT              = 'inr';
 
-    const COLUMN_TERMINAL_NUMBER    = 'terminal_number';
-    const COLUMN_CARD_TRIVIA        = 'card_type';
+    const COLUMN_TERMINAL_NUMBER                = 'terminal_number';
+    const COLUMN_CARD_TRIVIA                    = 'card_type';
 
     /**
      * If we are not able to find refund id to reconcile,
@@ -121,6 +124,64 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         return $paymentId;
     }
 
+    protected function getReconRefundAmount(array $row)
+    {
+        $amountColumn = ($this->isInternationalRefund($row) === true) ?
+                        self::COLUMN_INTERNATIONAL_REFUND_AMOUNT :
+                        self::COLUMN_REFUND_AMOUNT;
+
+        $refundAmountColumns = (is_array($amountColumn) === false) ?
+                                [$amountColumn] :
+                                $amountColumn;
+
+        $refundAmountColumn = array_first(
+            $refundAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (array_key_exists($amount, $row) === true);
+            });
+
+        if ($refundAmountColumn === null)
+        {
+            // None of the expected payment columns set
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
+                    'refund_id'         => $this->refund->getId(),
+                    'expected_column'   => $amountColumn,
+                    'amount'            => $this->refund->getBaseAmount(),
+                    'currency'          => $this->payment->getCurrency(),
+                    'payment_id'        => $this->payment->getId(),
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        //
+        // for HDFC, sometimes we are getting rows where 'domestic_amt' column is 0
+        // and amount is given in 'intnl_amt' column. In this case, we can't just calculate
+        // the recon amount on first key set. Instead we should calculate on the non zero
+        // amount column if any.
+        //
+        $refundAmountNonZeroColumn = array_first(
+            $refundAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (empty($row[$amount]) === false);
+            });
+
+        if ($refundAmountNonZeroColumn === null)
+        {
+            // There was no non zero amount column, so returning 0
+            return 0;
+        }
+
+        return Helper::getIntegerFormattedAmount($row[$refundAmountNonZeroColumn]);
+    }
+
     protected function getArn(array $row)
     {
         $arn = null;
@@ -143,18 +204,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return $arn;
-    }
-
-    protected function getReconRefundAmount(array $row)
-    {
-        $refundAmount = null;
-
-        if (isset($row[self::COLUMN_REFUND_AMOUNT]) === true)
-        {
-            $refundAmount = $row[self::COLUMN_REFUND_AMOUNT];
-        }
-
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($refundAmount);
     }
 
     protected function getGatewayRefund(string $refundId)
@@ -300,6 +349,26 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         return $rrn;
     }
 
+    /**
+     * In case on Non INR refunds, a non empty field of 'inr' is set in transaction row and
+     * convert_currency will be false for such payment.
+     * @param array $row
+     * @return bool
+     */
+    protected function isInternationalRefund(array $row)
+    {
+        $inrAmountColumnSet =  (empty($row[self::COLUMN_INR_REFUND_AMOUNT]) === false) ? true : false;
+
+        $convertCurrencyFlag = $this->payment->getConvertCurrency();
+
+        if (($inrAmountColumnSet === true) and ($convertCurrencyFlag === false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function isBharatQrIsg(array $row)
     {
         if ((isset($row[self::COLUMN_CARD_TRIVIA]) === true) and
@@ -309,27 +378,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return false;
-    }
-
-    protected function validateRefundAmountEqualsReconAmount(array $row)
-    {
-        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
-                    'refund_id'         => $this->refund->getId(),
-                    'expected_amount'   => $this->refund->getBaseAmount(),
-                    'recon_amount'      => $this->getReconRefundAmount($row),
-                    'currency'          => $this->refund->getCurrency(),
-                    'gateway'           => $this->gateway
-                ]);
-
-            return false;
-        }
-
-        return true;
     }
 
     /*

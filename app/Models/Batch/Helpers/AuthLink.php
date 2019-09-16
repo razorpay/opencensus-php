@@ -58,9 +58,22 @@ class AuthLink
             Invoice\Entity::DESCRIPTION  => (string) $entry[Batch\Header::AUTH_LINK_DESCRIPTION],
             Invoice\Entity::EXPIRE_BY    => $expireBy,
             Invoice\Entity::CUSTOMER     => self::getCustomerInput($entry),
+            Invoice\Entity::NOTES        => $entry[Invoice\Entity::NOTES] ?? [],
         ];
 
         $mandateInput = self::getMandateEntityInput($entry);
+
+        $method = $entry[Batch\Header::AUTH_LINK_METHOD];
+
+        if ($method === SubscriptionRegistration\Method::EMANDATE)
+        {
+            if ($amount > 0)
+            {
+                $input[Invoice\Entity::AMOUNT] = 0;
+
+                $mandateInput[SubscriptionRegistration\Entity::FIRST_PAYMENT_AMOUNT] = $amount;
+            }
+        }
 
         $input[Entity::SUBSCRIPTION_REGISTRATION] = $mandateInput;
 

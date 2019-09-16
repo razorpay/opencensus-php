@@ -16,21 +16,25 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
     use CustomReplacesAttributes;
 
-    const MYSQL_UNSIGNED_INT_MIN = 0;
-    const MYSQL_UNSIGNED_INT_MAX = 4294967295;
+    const MYSQL_UNSIGNED_INT_MIN        = 0;
+    const MYSQL_UNSIGNED_INT_MAX        = 4294967295;
 
-    const MYSQL_SIGNED_INT_MIN   = -2147483648;
-    const MYSQL_SIGNED_INT_MAX   = 2147483647;
+    const MYSQL_SIGNED_INT_MIN          = -2147483648;
+    const MYSQL_SIGNED_INT_MAX          = 2147483647;
 
-    const MYSQL_SIGNED_BIGINT_MAX = 9223372036854775807;
+    const MYSQL_SIGNED_BIGINT_MIN       = -9223372036854775808;
+    const MYSQL_SIGNED_BIGINT_MAX       = 9223372036854775807;
 
-    const INT_PERCENTAGE_MIN     = 0;
-    const INT_PERCENTAGE_MAX     = 10000;
+    const MYSQL_UNSIGNED_BIGINT_MIN     = 0;
+    const MYSQL_UNSIGNED_BIGINT_MAX     = 18446744073709551615;
 
-    const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
-    const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038
+    const INT_PERCENTAGE_MIN            = 0;
+    const INT_PERCENTAGE_MAX            = 10000;
 
-    const PAN_NUMBER_REGEX       = '/[A-Za-z]{5}\d{4}[A-Za-z]{1}/';
+    const EPOCH_DEFAULT_MIN             = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
+    const EPOCH_DEFAULT_MAX             = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038
+
+    const PAN_NUMBER_REGEX              = '/[A-Za-z]{5}\d{4}[A-Za-z]{1}/';
 
     /**
      * Overridden from \Illuminate\Validation\Validator because we have added
@@ -390,6 +394,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     protected function validateMysqlSignedInt(string $attribute, $value)
     {
         $isInteger = $this->validateInteger($attribute, $value);
+
         $isInRange = $this->validateBetween(
                                 $attribute,
                                 $value,
@@ -404,6 +409,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     protected function validateMysqlUnsignedInt(string $attribute, $value)
     {
         $isInteger = $this->validateInteger($attribute, $value);
+
         $isInRange = $this->validateBetween(
                                 $attribute,
                                 $value,
@@ -413,6 +419,36 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
                                 ]);
 
         return ($isInteger and $isInRange);
+    }
+
+    protected function validateMysqlSignedBigInt(string $attribute, $value)
+    {
+        $isFloat = (filter_var($value, FILTER_VALIDATE_FLOAT) !== false);
+
+        $isInRange = $this->validateBetween(
+            $attribute,
+            $value,
+            [
+                self::MYSQL_SIGNED_BIGINT_MIN,
+                self::MYSQL_SIGNED_BIGINT_MAX,
+            ]);
+
+        return ($isFloat and $isInRange);
+    }
+
+    protected function validateMysqlUnsignedBigInt(string $attribute, $value)
+    {
+        $isFloat = (filter_var($value, FILTER_VALIDATE_FLOAT) !== false);
+
+        $isInRange = $this->validateBetween(
+            $attribute,
+            $value,
+            [
+                self::MYSQL_UNSIGNED_BIGINT_MIN,
+                self::MYSQL_UNSIGNED_BIGINT_MAX,
+            ]);
+
+        return ($isFloat and $isInRange);
     }
 
     /**
@@ -496,6 +532,25 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         }
 
         return preg_match('/^[ \pL\pM\pN_-]+$/u', $value) > 0;
+    }
+
+    /**
+     * Validate that an attribute contains only alpha-numeric characters and underscores
+     *
+     * @param  string  $attribute
+     * @param  mixed   $value
+     *
+     * @return bool
+     */
+    public function validateAlphaNumUnderscore($attribute, $value)
+    {
+        if ((is_string($value) === false) and
+            (is_numeric($value) === false))
+        {
+            return false;
+        }
+
+        return preg_match('/^[\pL\pM\pN_]+$/u', $value) > 0;
     }
 
     public function validateMinAmount($attribute, $amount, $parameters)

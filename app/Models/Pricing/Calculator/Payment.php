@@ -2,18 +2,17 @@
 
 namespace RZP\Models\Pricing\Calculator;
 
+use RZP\Exception;
+use RZP\Models\Org;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
+use RZP\Error\ErrorCode;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Payment as PaymentModel;
 
 class Payment extends Base
 {
-    public function __construct(BaseModel\PublicEntity $entity, string $product)
-    {
-        parent::__construct($entity, $product);
-    }
-
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
         $method  = $this->entity->getMethod();
@@ -39,6 +38,15 @@ class Payment extends Base
     }
 
     protected function getPricingRule($rules, $method)
+    {
+        $rules = $this->getRelevantPricingRuleForProcurer($rules);
+
+        $rule = $this->getRelevantPricingRuleForMethod($rules, $method);
+
+        return $rule;
+    }
+
+    protected function getRelevantPricingRuleForMethod($rules, $method)
     {
         $rule = null;
 
@@ -94,6 +102,32 @@ class Payment extends Base
         return $rule;
     }
 
+    protected function getRelevantPricingRuleForProcurer($rules)
+    {
+        $payment = $this->entity;
+
+        if ($payment->merchant->isFeeBearerCustomer() === true)
+        {
+            return $rules;
+        }
+
+        //
+        // Transfer method doesn't have terminal associated
+        //
+        if ($payment->getMethod() === PaymentModel\Method::TRANSFER)
+        {
+            return $rules;
+        }
+
+        $procurer = $payment->terminal->getProcurer();
+
+        $filters = [
+            [Pricing\Entity::PROCURER, $procurer, true, null]
+        ];
+
+        return $this->applyFiltersOnRules($rules, $filters);
+    }
+
     protected function getRelevantPricingRuleForCardPayment($rules)
     {
         // All the rules for the current pricing plan will be put
@@ -114,6 +148,8 @@ class Payment extends Base
         $network = Card\Network::getCode($payment->card->getNetwork());
 
         $issuer = $payment->card->getIssuer();
+
+        $subtype = $payment->card->getSubtype();
 
         // Current Implementation
         // * Filter based on receiver type
@@ -144,12 +180,26 @@ class Payment extends Base
             return $this->validateAndGetOnePricingRule($rules);
         }
 
-        // If network is not amex, we can check for AMOUNT RANGE FILTERS
+        if ($cardType === Card\Type::PREPAID)
+        {
+            $filterPrepaid = [
+                [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      false,   null    ],
+            ];
 
+            $prepaidRules = $this->applyFiltersOnRules($rules, $filterPrepaid);
+
+            if (empty($prepaidRules) === true)
+            {
+                $cardType = Card\Type::CREDIT;
+            }
+        }
+
+        // If network is not amex, we can check for AMOUNT RANGE FILTERS
         $filters2 = [
-            [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
-            [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
-            [Pricing\Entity::PAYMENT_ISSUER,        $issuer,        true,   null    ],
+            [Pricing\Entity::PAYMENT_METHOD_TYPE,       $cardType,      true,   null    ],
+            [Pricing\Entity::PAYMENT_METHOD_SUBTYPE,    $subtype,       true,   null    ],
+            [Pricing\Entity::AUTH_TYPE,                 $authType,      true,   null    ],
+            [Pricing\Entity::PAYMENT_ISSUER,            $issuer,        true,   null    ],
         ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);

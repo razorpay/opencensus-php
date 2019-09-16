@@ -33,7 +33,7 @@ class Validator extends Base\Validator
             Entity::HANDLE                => 'string',
             Entity::GATEWAY_DATA          => 'array',
             Entity::BANK_ID               => 'string',
-            Entity::IFSC                  => 'string',
+            Entity::IFSC                  => 'string|regex:/^[A-Za-z0-9]{11}$/',
             Entity::ACCOUNT_NUMBER        => 'string',
             Entity::MASKED_ACCOUNT_NUMBER => 'string',
             Entity::BENEFICIARY_NAME      => 'string',

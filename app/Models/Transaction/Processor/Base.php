@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Processor;
 use Mail;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Pricing;
@@ -13,6 +14,7 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
@@ -225,7 +227,7 @@ abstract class Base extends BaseCore
         $this->merchantBalance = $this->repo->balance->getMerchantBalance($this->txn->merchant);
     }
 
-    protected function setMerchantBalanceLockForUpdate()
+    public function setMerchantBalanceLockForUpdate()
     {
         $merchantId = $this->txn->getMerchantId();
 
@@ -417,7 +419,18 @@ abstract class Base extends BaseCore
     {
         try
         {
-            (new Credits\Transaction\Core)->create($amount, $this->txn, $creditType);
+            // We are doing reversal only for Refund credits
+            if (($this->txn->isTypeReversal() === true) and ($this->txn->isRefundCredits()))
+            {
+                $refundTransactionId = $this->source->entity->getTransactionId();
+
+                (new Credits\Transaction\Core)
+                    ->createCreditReversalTransaction($amount, $this->txn, $refundTransactionId);
+            }
+            else
+            {
+                (new Credits\Transaction\Core)->createCreditTransaction($amount, $this->txn, $creditType);
+            }
         }
         catch (\Throwable $e)
         {
@@ -523,8 +536,9 @@ abstract class Base extends BaseCore
     public function updateRefundCredits()
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if (($this->txn->isTypeRefund() === false) or
-            ($this->txn->isRefundCredits() === false))
+        if ((($this->txn->isTypeRefund() === false) and
+             ($this->txn->isTypeReversal() === false)) or
+             ($this->txn->isRefundCredits() === false))
         {
             return;
         }
@@ -554,29 +568,52 @@ abstract class Base extends BaseCore
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
     }
 
-    public function updateBalances(bool $updateNodalBalance = true)
+    public function updateBalances()
     {
         $this->txn->accountBalance()->associate($this->merchantBalance);
 
         $this->updateMerchantBalance();
-
-        // if ($updateNodalBalance === true)
-        // {
-        //     $txn = $this->updateNodalBalance($txn);
-        // }
-        // else
-        // {
-        //     $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
-        //
-        //     $txn->setEscrowBalance($nodalBalance->getBalance());
-        // }
     }
 
     public function updateMerchantBalance()
     {
         $this->merchantBalance->updateBalance($this->txn);
+
         $this->repo->balance->updateBalance($this->merchantBalance);
 
         $this->txn->setBalance($this->merchantBalance->getBalance());
+    }
+
+    /**
+     * It'll dispatch the job to update settlement bucket for merchant
+     * This will also suppress the any error occurred at this stage
+     * if settled at is null then it wont dispatch the job
+     *
+     * @param Transaction\Entity $txn
+     * @param null               $settledAt
+     */
+    public function dispatchForSettlementBucketing(TransactionModel\Entity $txn, $settledAt = null)
+    {
+        //
+        // in case the transaction is not eligible for settlement then
+        // settled_at will have some number else it will be null
+        //
+        if ($settledAt === null)
+        {
+            return;
+        }
+
+        try
+        {
+            Bucket::dispatch($this->mode, $txn->getId(), $txn->getMerchantId(), $settledAt);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT
+            );
+        }
     }
 }

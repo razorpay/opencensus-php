@@ -144,7 +144,7 @@ trait Inquiry
         if (($input['payment']['auth_type'] === AuthType::PIN) or
             ($this->isSecondRecurringPaymentRequest($input) === true))
         {
-            $payment = $payments->first();
+            $payment = $payments->firstOrFail();
 
             $verify->payment = $payment;
 
@@ -423,19 +423,17 @@ trait Inquiry
             $this->inquiryRequest,
             $this->inquiryResponse);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'xml'               => $this->inquiryResponse['xml'],
+                'response_content'  => $this->inquiryResponse['data'],
+                'gateway'           => $this->gateway
+            ]);
 
         $this->checkAndSetResponseResult($payment);
 
         $inquiryResponse = $this->inquiryResponse;
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'payment_id'        => $payment->getPaymentId(),
-                'xml'               => $inquiryResponse['xml'],
-                'response_content'  => $inquiryResponse['data'],
-                'gateway'           => $this->gateway
-            ]);
 
         $verify->verifyResponse = $inquiryResponse;
         $verify->verifyResponseBody = $inquiryResponse['xml'];

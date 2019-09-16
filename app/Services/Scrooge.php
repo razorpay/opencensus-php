@@ -243,16 +243,18 @@ class Scrooge
 
     /**
      * @param string $id
-     *
+     * @param array $params
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Requests_Exception
      */
-    public function getPublicRefund(string $id): array
+    public function getPublicRefund(string $id, array $params = []): array
     {
+        $queryParams = array_merge(['type' => 'public'], $params);
+
         $id = RefundEntity::verifyIdAndStripSign($id);
 
-        return $this->sendRequest(self::RefundBaseURL . '/' . $id, Requests::GET, ['type' => 'public']);
+        return $this->sendRequest(self::RefundBaseURL . '/' . $id, Requests::GET, $queryParams);
     }
 
     /**
@@ -358,7 +360,7 @@ class Scrooge
         $code = $response->status_code;
 
         if (($throwExceptionOnFailure === true) and
-            (in_array($code, [200, 201, 204], true) === false))
+            (in_array($code, [200, 201, 204, 302], true) === false))
         {
 
             throw new Exception\RuntimeException(

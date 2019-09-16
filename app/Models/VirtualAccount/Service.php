@@ -159,15 +159,55 @@ class Service extends Base\Service
         return $virtualAccount->toArrayPublic();
     }
 
+    public function closeVirtualAccountsByCloseBy()
+    {
+        $virtualAccounts = $this->repo
+                                ->virtual_account
+                                ->fetchVirtualAccountsToBeClosed();
+
+        $success = $failure = 0;
+
+        $failures = [];
+
+        foreach ($virtualAccounts as $virtualAccount)
+        {
+            try
+            {
+                $this->core->close($virtualAccount);
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failure++;
+
+                $failures[] = $virtualAccount->getPublicId();
+            }
+        }
+
+        $response = [
+            'success'  => $success,
+            'failure'  => $failure,
+            'failures' => $failures,
+        ];
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_CLOSED_ACCOUNTS,
+            $response
+        );
+
+        return $response;
+    }
+
     public function closeVirtualAccount(string $id)
     {
         $virtualAccount = $this->repo
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $virtualAccount->getValidator()->validateOfPrimaryBalance();
-
-        $virtualAccount = $this->core->updateStatus($virtualAccount, STATUS::CLOSED);
+        $virtualAccount = $this->core->close($virtualAccount);
 
         return $virtualAccount->toArrayPublic();
     }

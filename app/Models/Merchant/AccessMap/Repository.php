@@ -100,4 +100,47 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->get();
     }
+
+    /**
+     * Returns access maps linking the submerchant and the partner
+     *
+     * @param string $subMerchantId
+     * @param string $partnerId
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchAccessMapForMerchantIdAndOwnerId(string $subMerchantId, string $partnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $subMerchantId)
+                    ->where(Entity::ENTITY_OWNER_ID, $partnerId)
+                    ->get();
+    }
+
+    public function fetchMerchantsMappedToPartner(array $merchantIds): array
+    {
+        $subMerchantIds = [];
+
+        if (empty($merchantIds) === true)
+        {
+            return $subMerchantIds;
+        }
+
+        $chunkedIdsList = array_chunk($merchantIds, 5000);
+
+        foreach ($chunkedIdsList as $chunkedIds)
+        {
+            $accessMaps = $this->newQuery()
+                               ->select(Entity::MERCHANT_ID)
+                               ->whereIn(Entity::MERCHANT_ID, $chunkedIds)
+                               ->get();
+
+            foreach ($accessMaps as $accessMap)
+            {
+                $subMerchantIds[] = $accessMap->getAttribute(Entity::MERCHANT_ID);
+            }
+        }
+
+        return $subMerchantIds;
+    }
 }

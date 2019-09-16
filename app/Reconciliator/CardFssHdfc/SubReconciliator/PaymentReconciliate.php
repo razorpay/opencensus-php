@@ -190,7 +190,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $gatewaySettledAt;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         $status = Status::$successStates;
 

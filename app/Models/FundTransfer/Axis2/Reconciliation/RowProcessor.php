@@ -58,10 +58,12 @@ class RowProcessor extends BaseRowProcessor
 
         $this->reconEntity->setCmsRefNo($this->parsedData[self::CMS_REFERENCE_NO]);
 
-        $failureStatus = Status::getFailureStatus();
+        $flipStatus = Status::getFlipStatus();
 
-        if (($currentBankStatusCode === Status::SUCCESS) and
-            (in_array($newBankStatusCode, $failureStatus, true) === true))
+        $successStatuses = Status::getSuccessfulStatus();
+
+        if ((Status::inStatus($successStatuses, $currentBankStatusCode) === true) and
+            (in_array($newBankStatusCode, $flipStatus, true) === true))
         {
             $this->reconEntity->setStatus(AttemptStatus::INITIATED);
         }

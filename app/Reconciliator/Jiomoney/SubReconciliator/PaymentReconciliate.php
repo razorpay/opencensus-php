@@ -40,7 +40,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $paymentId;
     }
 
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
 
@@ -94,7 +94,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         try
         {

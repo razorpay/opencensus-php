@@ -32,6 +32,29 @@ class Card extends Base
             'expiry_year'       =>  '2100',
             'iin'               =>  '411111',
             'last4'             =>  '1111',
+        ),
+        array(
+            'id'                =>  '10000000rucard',
+            'merchant_id'       =>  '10000000000000',
+            'name'              =>  'test',
+            'network'           =>  'RuPay',
+            'expiry_month'      =>  '12',
+            'expiry_year'       =>  '2100',
+            'iin'               =>  '607384',
+            'last4'             =>  '1111',
+            'vault_token'       => 'NjA3Mzg0OTcwMDAwNDk0Nw==',
+            'vault'             => 'rzpvault',
+        ),
+        array(
+            'id'                =>  '10000000ICcard',
+            'merchant_id'       =>  '10000000000000',
+            'name'              =>  'test',
+            'network'           =>  'Visa',
+            'expiry_month'      =>  '12',
+            'expiry_year'       =>  '2100',
+            'iin'               =>  '462846',
+            'last4'             =>  '1111',
+            'issuer'            =>  'ICIC',
         )
     );
 

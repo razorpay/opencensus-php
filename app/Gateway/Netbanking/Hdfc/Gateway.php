@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Merchant;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
@@ -49,6 +50,7 @@ class Gateway extends Base\Gateway
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
         'Date'          => 'date',
+        'MerchantRefNo' => 'verification_id',
     ];
 
     const DISPLAY_DETAILS = 'Y';
@@ -96,7 +98,14 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackChecksum($input);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
+        if (empty($input['gateway'][Fields::REF1]) === false)
+        {
+            $this->assertPaymentId($input['payment']['id'], $input['gateway'][Fields::REF1]);
+        }
+        else
+        {
+            $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
+        }
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
@@ -199,6 +208,13 @@ class Gateway extends Base\Gateway
             'Date'              => $date,
         ];
 
+        if ($input['payment']['merchant_id'] === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $data['MerchantRefNo'] = substr($input['payment']['description'] . '-' . strrev($input['payment']['id']), 0, 19);
+        }
+
+        $data[Fields::REF1] = $input['payment']['id'];
+
         if ($input['merchant']->isTPVRequired())
         {
             $data[Fields::CLIENT_ACCOUNT_NUMBER] = $input['order']['account_number'];
@@ -220,24 +236,24 @@ class Gateway extends Base\Gateway
 
             $emData = Fields::getEmandateRegistrationData($token, $input['payment']['id'], $input['merchant']);
 
-            $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST)
-                               ->format('dmY');
+            $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST);
 
-            $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST)
-                             ->format('dmY');
+            $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST);
+
+            $amount = number_format($token->getMaxAmount() / 100, 2, '.', '');
 
             $data[Fields::REF1]                  = $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
             $data[Fields::REF2]                  = $emData[RHeadings::CUSTOMER_NAME];
             $data[Fields::REF3]                  = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
-            $data[Fields::REF4]                  = number_format($token->getMaxAmount() / 100, 2, '.', '');
+            $data[Fields::REF4]                  = $amount;
             $data[Fields::REF5]                  = $emData[RHeadings::FREQUENCY];
             $data[Fields::REF6]                  = $emData[RHeadings::MANDATE_SERIAL_NUMBER];
             $data[Fields::REF7]                  = $emData[RHeadings::MANDATE_ID];
             $data[Fields::REF8]                  = $emData[RHeadings::MERCHANT_REQUEST_NO];
             $data[Fields::REF9]                  = $emData[RHeadings::AMOUNT_TYPE];
             $data[Fields::REF10]                 = $emData[RHeadings::CLIENT_NAME];
-            $data[Fields::DATE1]                 = $startDate;
-            $data[Fields::DATE2]                 = $endDate;
+            $data[Fields::DATE1]                 = $startDate->format('dmY');
+            $data[Fields::DATE2]                 = $endDate->format('dmY');
 
             //
             // For emandate registration payments, we need to hard-code the amount to Rs 1
@@ -247,9 +263,23 @@ class Gateway extends Base\Gateway
             $data['TxnAmount']                   = Fields::INIT_AMOUNT;
 
             $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
+
             $data[Fields::DISPLAY_DETAILS]       = self::DISPLAY_DETAILS;
-            $data[Fields::DETAILS1]              = Fields::MERCHANT_NAME . '~' . $emData[RHeadings::SUB_MERCHANT_NAME];
-            $data[Fields::DETAILS2]              = Fields::MERCHANT_REFERENCE_NO_DETAIL . '~' . $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
+
+            $data[Fields::DETAILS1]              = Fields::DISPLAY_DEBIT_START_DATE . '~' .
+                                                   $startDate->format('d-m-Y') . '|' .
+                                                   Fields::DISPLAY_DEBIT_END_DATE . '~' .
+                                                   $endDate->format('d-m-Y');
+
+            $data[Fields::DETAILS2]              = Fields::DISPLAY_FREQUENCY . '~' .
+                                                   $emData[RHeadings::FREQUENCY] . '|' .
+                                                   Fields::DISPLAY_MANDATE_AMOUNT . '~' .
+                                                   $amount;
+
+            $data[Fields::DETAILS3]              = Fields::DISPLAY_CUSTOMER_NAME .'~' .
+                                                   $emData[RHeadings::CUSTOMER_NAME] . '|' .
+                                                   Fields::DISPLAY_MANDATE_ID . '~' .
+                                                   $emData[RHeadings::MANDATE_ID];
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to
@@ -312,13 +342,14 @@ class Gateway extends Base\Gateway
         $content = array(
             'MerchantCode'          => $this->getMerchantId(),
             'Date'                  => $date,
-            'MerchantRefNo'         => $payment['payment_id'],
+            'MerchantRefNo'         => $payment['verification_id'] ?: $payment['payment_id'],
             'TransactionId'         => 'XTXTV01',
             'FlgVerify'             => $flgVerify,
             'ClientCode'            => $clientCode,
             'SuccessStaticFlag'     => 'N',
             'FailureStaticFlag'     => 'N',
             'TxnAmount'             => $txnAmount,
+            'Ref1'                  => $payment['payment_id']
         );
 
         $url = $this->getUrl();

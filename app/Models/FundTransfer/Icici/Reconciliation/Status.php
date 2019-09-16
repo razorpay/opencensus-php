@@ -28,24 +28,24 @@ class Status extends BaseStatus
     {
         return [
             self::CANCELLED,
-            self::HOLD
+            self::HOLD,
         ];
     }
 
     public static function getFailureStatus(): array
     {
         return [
-            self::CANCELLED,
+            self::CANCELLED => [],
         ];
     }
 
     public static function getSuccessfulStatus(): array
     {
         return [
-            self::PAID,
-            self::PENDING,
-            self::AWAITING_MESSAGING,
-            self::AWAITING_LIQUIDATION
+            self::PAID                  => [],
+            self::PENDING               => [],
+            self::AWAITING_MESSAGING    => [],
+            self::AWAITING_LIQUIDATION  => [],
         ];
     }
 

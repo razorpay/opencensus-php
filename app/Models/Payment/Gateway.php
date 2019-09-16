@@ -23,6 +23,7 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const ATOS                   = 'atos';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -44,6 +45,7 @@ class Gateway
     const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_SIB         = 'netbanking_sib';
+    const NETBANKING_CBI         = 'netbanking_cbi';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
@@ -53,6 +55,8 @@ class Gateway
     const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CUB         = 'netbanking_cub';
+    const NETBANKING_IBK         = 'netbanking_ibk';
+    const NETBANKING_IDBI        = 'netbanking_idbi';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
@@ -78,6 +82,8 @@ class Gateway
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
+    const WORLDLINE              = 'worldline';
+    const UPI_CITI               = 'upi_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -92,6 +98,7 @@ class Gateway
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PHONEPE     = 'wallet_phonepe';
+    const WALLET_PAYPAL      = 'wallet_paypal';
 
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
@@ -118,6 +125,8 @@ class Gateway
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
     const BAJAJFINSERV       = 'bajajfinserv';
+    const GOOGLE_PAY         = 'google_pay';
+
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -188,14 +197,22 @@ class Gateway
         self::BILLDESK,
     ];
 
+    // TODO: Add gateway and gateway_acquirer map to fix
+    // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [
-        self::NETBANKING_HDFC   => self::HDFC,
-        self::NETBANKING_KOTAK  => self::KOTAK,
-        self::NETBANKING_ICICI  => self::ICICI,
-        self::NETBANKING_RBL    => self::RBL,
-        self::NETBANKING_AXIS   => self::AXIS,
-        self::PAYTM             => self::PAYTM,
         self::AMEX              => self::AMEX,
+        self::HDFC              => self::HDFC,
+        self::ISG               => self::HDFC,
+        self::BILLDESK          => self::BILLDESK,
+        self::NETBANKING_AXIS   => self::AXIS,
+        self::NETBANKING_HDFC   => self::HDFC,
+        self::NETBANKING_ICICI  => self::ICICI,
+        self::NETBANKING_KOTAK  => self::KOTAK,
+        self::NETBANKING_RBL    => self::RBL,
+        self::PAYTM             => self::PAYTM,
+        self::UPI_AXIS          => self::AXIS,
+        self::UPI_MINDGATE      => self::HDFC,
+        self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
     ];
 
     /**
@@ -251,6 +268,7 @@ class Gateway
      * and be allowed to perform it.
      * */
     const REFUND_RETRY_GATEWAYS = [
+        Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::EBS,
@@ -279,6 +297,8 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::PAYTM,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -286,17 +306,28 @@ class Gateway
       Payment\Gateway::NETBANKING_CANARA
     ];
 
-    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates-new
+    // Please keep this list sorted. The list of Live Banks in API E-Mandate is available at https://www.npci.org.in/nach-e-mandates-new
     const ENACH_NPCI_NETBANKING_BANKS = [
-        IFSC::YESB,
-        IFSC::IDFB,
-        IFSC::UTIB,
         IFSC::CBIN,
-        IFSC::KKBK,
-        IFSC::INDB,
-        IFSC::ICIC,
-        IFSC::USFB,
+        IFSC::CIUB,
+        IFSC::DEUT,
+        IFSC::ESFB,
+        IFSC::FDRL,
+        IFSC::HDFC,
         IFSC::IBKL,
+        IFSC::ICIC,
+        IFSC::IDFB,
+        IFSC::INDB,
+        IFSC::IOBA,
+        IFSC::KKBK,
+        IFSC::MAHB,
+        IFSC::PYTM,
+        IFSC::RATN,
+        IFSC::SIBL,
+        IFSC::TMBL,
+        IFSC::USFB,
+        IFSC::UTIB,
+        IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
@@ -305,6 +336,7 @@ class Gateway
         IFSC::ICIC,
         IFSC::UTIB,
         IFSC::HDFC,
+        IFSC::SBIN
     ];
 
     // The 2 commented banks are mentioned at the bottom
@@ -545,6 +577,8 @@ class Gateway
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::ATOM,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     public static $channels = [
@@ -617,9 +651,12 @@ class Gateway
             self::EBS,
             self::ATOM,
             self::NETBANKING_SIB,
+            self::NETBANKING_CBI,
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
             self::NETBANKING_CUB,
+            self::NETBANKING_IBK,
+            self::NETBANKING_IDBI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
             self::NETBANKING_CORPORATION,
@@ -670,6 +707,7 @@ class Gateway
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
             self::WALLET_PHONEPE,
+            self::WALLET_PAYPAL,
         ],
 
         Method::EMI => [
@@ -687,6 +725,7 @@ class Gateway
             self::UPI_HULK,
             self::UPI_YESBANK,
             self::UPI_AIRTEL,
+            self::UPI_CITI,
         ],
 
         Method::AEPS => [
@@ -744,6 +783,18 @@ class Gateway
         self::HITACHI               => [],
     ];
 
+    /**
+     * Card gateways which support purchase mechanism for at
+     * least one card network.
+     *
+     * @var array
+     */
+    public static $gatewayNetworkPurchaseSupport = [
+        self::HITACHI               => [
+            self::NOT_SUPPORTED     => [Network::RUPAY]
+        ],
+    ];
+
     public static $bankTransferProviderGateway = [
         Provider::YESBANK   => self::BT_YESBANK,
         Provider::KOTAK     => self::BT_KOTAK,
@@ -790,6 +841,8 @@ class Gateway
         self::UPI_RBL,
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
+        self::UPI_CITI,
+        self::WALLET_PHONEPE,
     ];
 
     public static $headless = [
@@ -807,8 +860,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
-            Network::DICL,
-            Network::RUPAY,
+            Network::DICL
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -903,6 +955,11 @@ class Gateway
             Network::MC,
             Network::RUPAY,
         ],
+        self::WORLDLINE => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
+        ],
     ];
 
     public static $cardNetworkRecurringMap = [
@@ -926,6 +983,7 @@ class Gateway
         Wallet::MPESA       => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
         Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
+        Wallet::PAYPAL      => Gateway::WALLET_PAYPAL,
     ];
 
     public static $upiToGatewayMap = [
@@ -992,6 +1050,7 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
+        self::NETBANKING_CBI,
         self::CARDLESS_EMI,
     ];
 
@@ -1014,6 +1073,12 @@ class Gateway
         self::ISG,
     ];
 
+    // We do not report capture verify for some gateway even if they fail, as there are integration issues currently
+    public static $captureVerifyReportDisabledGateways = [
+        self::UPI_AXIS,
+        self::UPI_ICICI,
+    ];
+
     public static $captureVerifyQREnabledGateways = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
@@ -1034,6 +1099,7 @@ class Gateway
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_SBI,
         Gateway::ESIGNER_DIGIO,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
@@ -1065,6 +1131,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_MINDGATE,
         self::ISG,
+        self::WORLDLINE,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
@@ -1072,6 +1139,7 @@ class Gateway
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
+            Gateway::NETBANKING_SBI,
             Gateway::ENACH_NPCI_NETBANKING,
         ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
@@ -1129,6 +1197,7 @@ class Gateway
         IFSC::SIBL,
         IFSC::ESFB,
         IFSC::ACUX,
+        IFSC::SBIN,
     ];
 
     /**
@@ -1143,6 +1212,7 @@ class Gateway
         Gateway::NETBANKING_ICICI      => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS       => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC       => [IFSC::HDFC],
+        Gateway::NETBANKING_SBI        => [IFSC::SBIN],
         Gateway::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING_BANKS,
         Gateway::ENACH_RBL             => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
@@ -1165,6 +1235,7 @@ class Gateway
         Gateway::NETBANKING_AXIS,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1176,6 +1247,7 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1201,6 +1273,8 @@ class Gateway
         Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
         Gateway::UPI_AIRTEL,
+        Gateway::WALLET_PHONEPE,
+        Gateway::UPI_CITI,
     ];
 
     /**
@@ -1263,6 +1337,7 @@ class Gateway
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
         IFSC::SIBL         => Gateway::NETBANKING_SIB,
+        IFSC::CBIN         => Gateway::NETBANKING_CBI,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB         => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
@@ -1270,6 +1345,8 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CIUB         => Gateway::NETBANKING_CUB,
+        IFSC::IDIB         => Gateway::NETBANKING_IBK,
+        IFSC::IBKL         => Gateway::NETBANKING_IDBI,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
@@ -1279,6 +1356,7 @@ class Gateway
         IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::SBIN         => Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -1288,6 +1366,31 @@ class Gateway
      * @var array
      */
     public static $refundFileNetbankingGateways = [
+        IFSC::ICIC          => Gateway::NETBANKING_ICICI,
+        IFSC::IDIB          => Gateway::NETBANKING_IBK,
+        IFSC::HDFC          => Gateway::NETBANKING_HDFC,
+        IFSC::CBIN          => Gateway::NETBANKING_CBI,
+        IFSC::CORP          => Gateway::NETBANKING_CORPORATION,
+        IFSC::KKBK          => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB          => Gateway::NETBANKING_AXIS,
+        IFSC::FDRL          => Gateway::NETBANKING_FEDERAL,
+        IFSC::RATN          => Gateway::NETBANKING_RBL,
+        IFSC::INDB          => Gateway::NETBANKING_INDUSIND,
+        IFSC::ALLA          => Gateway::NETBANKING_ALLAHABAD,
+        IFSC::CNRB          => Gateway::NETBANKING_CANARA,
+        IFSC::IDFB          => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB          => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB          => Gateway::NETBANKING_VIJAYA,
+        Netbanking::PUNB_R  => Gateway::NETBANKING_PNB,
+        Netbanking::BARB_R  => Gateway::NETBANKING_BOB,
+        IFSC::SBIN          => Gateway::NETBANKING_SBI,
+    ];
+
+    /**
+     * @var array
+     * Refunds for the netbanking gateways in this list are reconciled automatically while generating the RefundsFile.
+     */
+    public static $refundsReconcileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,
@@ -1301,9 +1404,13 @@ class Gateway
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
         IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
         IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
+        IFSC::ORBC => Gateway::NETBANKING_OBC,
+        IFSC::CSBK => Gateway::NETBANKING_CSB,
+        IFSC::CBIN => Gateway::NETBANKING_CBI,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
+
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -1412,6 +1519,10 @@ class Gateway
 
     public static $cardlessEmiRedirectFlowProvider = [
         CardlessEmi::FLEXMONEY,
+    ];
+
+    public static $verifyClientOnS2s = [
+        Gateway::UPI_CITI,
     ];
 
     public static function isNonTerminalGateway(string $gateway)
@@ -1701,6 +1812,29 @@ class Gateway
         }
     }
 
+    /**
+     * If network code is null, the function returns back whether the
+     * given gateway has support for Purchase or not.
+     * If network code is not null, the functions returns back whether
+     * the given gateway has support for Purchase for the given
+     * network.
+     *
+     * @param string $gateway
+     * @param string $networkCode
+     * @return bool
+     */
+    public static function supportsPurchase($gateway, $networkCode = null): bool
+    {
+        $supportsPurchase = isset(self::$gatewayNetworkPurchaseSupport[$gateway]);
+
+        if ($supportsPurchase === true)
+        {
+            return self::isNetworkSupportedForPurchase($gateway, $networkCode);
+        }
+
+        return true;
+    }
+
     public static function supportsReverse($gateway)
     {
         return in_array($gateway, self::$reverse, true);
@@ -1746,6 +1880,23 @@ class Gateway
         }
 
         return true;
+    }
+
+    public static function isNetworkSupportedForPurchase($gateway, $networkCode)
+    {
+        // This means that all the networks are supported by the gateway for Purchase.
+        if ((isset(self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED]) === false) or
+            ($networkCode === null))
+        {
+            return true;
+        }
+
+        // Get all the networks which are NOT supported by the gateway for Purchase.
+        $notSupportedNetworks = self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED];
+
+        // If a given network is in the list of notSupportedNetworks, it means that the network
+        // is not supported by the gateway for Purchase.
+        return (in_array($networkCode, $notSupportedNetworks, true) === false);
     }
 
     public static function isPowerWallet($wallet)
@@ -1914,4 +2065,21 @@ class Gateway
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
     }
+
+    public static function isCaptureVerifyEnabledGateway($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true);
+    }
+
+    public static function isCaptureVerifyQREnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === true);
+    }
+
+    public static function isCaptureVerifyReportEnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
+    }
+
+
 }

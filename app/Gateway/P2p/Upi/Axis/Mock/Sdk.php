@@ -265,7 +265,7 @@ class Sdk
                 $callback = [
                     Fields::AMOUNT                      => $input[Fields::AMOUNT],
                     Fields::CUSTOME_RESPONSE            => '{}',
-                    Fields::EXPIRY                      => $input[Fields::EXPIRY] ?? '2019-04-25T16:11:22+05:30',
+                    Fields::EXPIRY                      => $input[Fields::EXPIRY] ?? $this->formattedTime(30),
                     Fields::GATEWAY_REFERENCE_ID        => $input[Fields::GATEWAY_REFERENCE_ID] ?? '911416196085',
                     Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
                     Fields::IS_VERIFIED_PAYEE           => 'false',
@@ -324,6 +324,40 @@ class Sdk
                     Fields::TRANSACTION_TIME_STAMP      => $input[Fields::TIMESTAMP] ?? Carbon::now()->getTimestamp(),
                     Fields::TYPE                        => $type,
                 ];
+                break;
+
+            case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
+            case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+                $callback = [
+                    Fields::AMOUNT                      => $input[Fields::AMOUNT],
+                    Fields::BANK_ACCOUNT_UNIQUE_ID      => str_random(16),
+                    Fields::BANK_CODE                   => random_integer(6),
+                    Fields::CUSTOME_RESPONSE            => '{}',
+                    Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::GATEWAY_RESPONSE_CODE       => $input[Fields::GATEWAY_RESPONSE_CODE] ?? $successCode,
+                    Fields::GATEWAY_RESPONSE_MESSAGE    => $input[Fields::GATEWAY_RESPONSE_MESSAGE] ?? $successMessage,
+                    Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
+                    Fields::MASKED_ACCOUNT_NUMBER       => 'xxxxx0123456',
+                    Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
+                    Fields::MERCHANT_ID                 => 'MERCHANT',
+                    Fields::MERCHANT_REQUEST_ID         => $input[Fields::MERCHANT_REQUEST_ID] ?? null,
+                    Fields::PAYEE_NAME                  => $input[Fields::PAYEE_NAME] ?? 'Beneficiary Name',
+                    Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA],
+                    Fields::PAYER_MOBILE_NUMBER         => '919000000001',
+                    Fields::PAYER_VPA                   => $input[Fields::PAYER_VPA],
+                    Fields::TRANSACTION_TIME_STAMP      => $input[Fields::TIMESTAMP] ?? Carbon::now()->getTimestamp(),
+                    Fields::TYPE                        => $type,
+                ];
+
+                if ($callback[Fields::GATEWAY_RESPONSE_CODE] === 'U69')
+                {
+                    unset($callback[Fields::MERCHANT_REQUEST_ID]);
+                }
+
+                break;
+
+            default:
+                $callback = $input;
         }
 
         $this->callbacks[] = $callback;
@@ -375,5 +409,10 @@ class Sdk
         $sign = $rsa->sign($string);
 
         return bin2hex($sign);
+    }
+
+    private function formattedTime($minutes = 0)
+    {
+        return Carbon::now()->addMinutes(30)->toIso8601String();
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 
 class SettlementController extends Controller
@@ -13,6 +14,15 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = $this->service()->initiateSettlements($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementBucketBackfill()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_BUCKET)->fillSettlementBucket($input);
 
         return ApiResponse::json($data);
     }
@@ -240,6 +250,19 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = $this->service()->processAdhocSettlements($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * @return mixed
+     * Gets the amount to be gone for next settlement
+     * which is then sent to the settlements slack channel
+     * for the clarity of FinOps people
+     */
+    public function getSettlementAmount()
+    {
+        $data = $this->service()->nextSettlementAmount();
 
         return ApiResponse::json($data);
     }

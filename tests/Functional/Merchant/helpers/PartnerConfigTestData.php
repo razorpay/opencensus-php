@@ -90,6 +90,7 @@ return [
                 'application_id'         => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'commissions_enabled'    => 1,
                 'revisit_at'             => 1648416783,
+                'settle_to_partner'      => 1,
             ],
         ],
         'response' => [
@@ -99,6 +100,7 @@ return [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'commissions_enabled'    => true,
                 'revisit_at'             => 1648416783,
+                'settle_to_partner'      => true,
             ],
         ],
     ],
@@ -142,6 +144,35 @@ return [
                 'commission_model'    => 'commission',
                 'commissions_enabled' => true,
             ],
+        ],
+    ],
+
+    'testAddingInvalidConfigForPlatformPartner' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'POST',
+            'content' => [
+                'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'application_id'         => Constants::DEFAULT_PLATFORM_APP_ID,
+                'commissions_enabled'    => 1,
+                'explicit_plan_id'       => null,
+                'implicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
+                'settle_to_partner'      => 1,
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_CONFIGURATION_INVALID,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_CONFIGURATION_INVALID,
         ],
     ],
 
@@ -426,11 +457,41 @@ return [
                 'implicit_plan_id'       => null,
                 'explicit_plan_id'       => null,
                 'implicit_expiry_at'     => null,
+                'settle_to_partner'      => 1,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id'        => '10ZeroPricingP',
+                'commissions_enabled'    => false,
+                'implicit_plan_id'       => null,
+                'explicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
+                'explicit_refund_fees'   => true,
+                'explicit_should_charge' => false,
+                'commission_model'       => 'commission',
+                'settle_to_partner'      => true,
+            ],
+        ],
+    ],
+
+    'testEditingOverriddenConfig' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'default_plan_id'        => '10ZeroPricingP',
+                'commissions_enabled'    => 0,
+                'implicit_plan_id'       => null,
+                'explicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
+                'settle_to_partner'      => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'              => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'default_plan_id'        => '10ZeroPricingP',
                 'commissions_enabled'    => false,
                 'implicit_plan_id'       => null,
@@ -453,6 +514,7 @@ return [
                 'implicit_plan_id'       => null,
                 'explicit_plan_id'       => null,
                 'implicit_expiry_at'     => null,
+                'settle_to_partner'      => 1,
             ],
         ],
         'response' => [
@@ -466,6 +528,7 @@ return [
                 'implicit_expiry_at'     => null,
                 'explicit_refund_fees'   => true,
                 'explicit_should_charge' => false,
+                'settle_to_partner'      => true,
             ],
         ],
     ],

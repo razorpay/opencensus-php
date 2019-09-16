@@ -121,9 +121,8 @@ class MySqlConnection extends BaseMySqlConnection
 
                         $connection = app('db')->reconnect($mode);
 
-                        $this->trace->info(TraceCode::DATABASE_RECONNECT, [
+                        $this->trace->count(Metric::DATABASE_RECONNECT, [
                             'mode'      => $mode,
-                            'exception' => $e->getMessage(),
                             'connected' => ($connection->readPdo !== null),
                         ]);
 

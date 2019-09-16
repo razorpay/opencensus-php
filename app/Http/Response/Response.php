@@ -7,6 +7,7 @@ use View;
 use Request;
 use RZP\Http\Route;
 use RZP\Error\Error;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use Illuminate\Http\JsonResponse;
 
@@ -349,9 +350,11 @@ class Response
             'merchant_methods_downtime',
             'customer_create_token_public',
             'refund_fetch_for_customer',
+            'refunds_fetch_for_customer',
             'get_merchant_partner_status',
             'payment_get_status',
             'fund_account_create_public',
+            'payment_validate_account',
         ];
 
         if (in_array($route, $routes, true) === true)
@@ -362,6 +365,22 @@ class Response
             // otherwise these routes will not work there. Read further on CORS
             // to understand better.
             //
+            $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
+            return;
+        }
+
+        // temporarily adding these routes due to issue with cardless emi s2s flow
+        $tempRoutes = [
+            'otp_verify',
+            'otp_post',
+        ];
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if ((in_array($route, $tempRoutes, true) === true) and
+            ($merchant !== null) and
+            ($merchant->isFeatureEnabled(Feature\Constants::S2S)))
+        {
             $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
         }
     }

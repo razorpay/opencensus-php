@@ -90,9 +90,9 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
     ];
 
-    protected static $generators = array(
+    protected static $generators = [
         self::DATE
-    );
+    ];
 
     protected $dates = [
         self::DATE,
@@ -135,6 +135,16 @@ class Entity extends Base\PublicEntity
     public function getTotalCount()
     {
         return $this->getAttribute(self::TOTAL_COUNT);
+    }
+
+    public function getTransactionCount()
+    {
+        return $this->getAttribute(self::TRANSACTION_COUNT);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getUrls()

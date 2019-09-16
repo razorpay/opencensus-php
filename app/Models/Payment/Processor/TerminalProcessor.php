@@ -37,7 +37,7 @@ class TerminalProcessor extends Base\Core
         $options = $this->getTerminalSelectionOptions();
 
         $input = [
-            'payment' => $this->payment,
+            'payment'  => $this->payment,
             'merchant' => $this->payment->merchant,
         ];
 
@@ -94,6 +94,8 @@ class TerminalProcessor extends Base\Core
               'gateway'   => $terminal['authentication_gateway'],
               'auth_type' => $terminal['gateway_auth_type']
             ];
+
+            $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);
         }
     }
 

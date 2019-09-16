@@ -72,5 +72,63 @@ return [
                 ],
             ],
         ],
+    ],
+
+    'testGenerateTpvKotakRefundFile' => [
+        'request' => [
+            'content' => [
+                'bank' => "KKBK",
+                'method' => "netbanking",
+                'mode' => "test",
+                'from'=> Carbon::today(Timezone::IST)->getTimestamp(),
+                'to'  => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/refunds/excel',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'=> [
+                'netbanking_kotak' =>
+                    [
+                        'refunds' => [
+                            'tpv' => storage_path('files/filestore/Kotak_Netbanking_Refund_OTRAZORPAY_test_'.Carbon::today(Timezone::IST)->format('d-m-Y').'.txt'),
+                            'nonTpv' => ''
+                        ],
+                        'claims' =>
+                            ['tpv' => storage_path('files/filestore/Kotak_Netbanking_Claim_OTRAZORPAY_test_'.Carbon::today(Timezone::IST)->format('d-m-Y').'.txt'),
+                                'nonTpv' => ''
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGenerateNonTpvKotakRefundFile' => [
+        'request' => [
+            'content' => [
+                'bank' => "KKBK",
+                'method' => "netbanking",
+                'mode' => "test",
+                'from'=> Carbon::today(Timezone::IST)->getTimestamp(),
+                'to'  => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/refunds/excel',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'=> [
+                'netbanking_kotak' =>
+                    [
+                        'refunds' => [
+                            'tpv' => '',
+                            'nonTpv' => storage_path('files/filestore/Kotak_Netbanking_Refund_OSRAZORPAY_test_'.Carbon::today(Timezone::IST)->format('d-m-Y').'.txt'),
+                        ],
+                        'claims' =>
+                            ['tpv' => '',
+                                'nonTpv' => storage_path('files/filestore/Kotak_Netbanking_Claim_OSRAZORPAY_test_'.Carbon::today(Timezone::IST)->format('d-m-Y').'.txt'),
+                            ]
+                    ]
+            ],
+        ],
     ]
 ];

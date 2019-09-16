@@ -108,6 +108,13 @@ class NodalAccount extends NodalBase\FileProcessor
 
         foreach ($entities as $entity)
         {
+            //if BA is not present for attempt
+            // marking FTA as failed, if source is settlement
+            if($this->markFailedIfBANotExists($entity) === true)
+            {
+                continue;
+            }
+
             $record   = $this->emptyRow;
 
             $source   = $entity->source;
@@ -115,7 +122,6 @@ class NodalAccount extends NodalBase\FileProcessor
             $amount   = ($source->getAmount() / 100);
 
             $ba       = $entity->bankAccount;
-
             $mode     = $this->getPaymentType($amount, $ba);
 
             $entity->setMode($mode);
@@ -251,41 +257,6 @@ class NodalAccount extends NodalBase\FileProcessor
         return Axis2Constants::CORP_CODE . '_H2H_' . $date . '_' . $serialNum;
     }
 
-    protected function getTransferMode($amount, Merchant\Entity $merchant): string
-    {
-        $rtgsMinCutoffTime = Carbon::createFromTime(
-            self::RTGS_CUTOFF_HOUR_MIN,
-            0,
-            0,
-            Timezone::IST
-        )->getTimestamp();
-
-        $rtgsMaxCutoffTime = Carbon::createFromTime(
-            self::RTGS_CUTOFF_HOUR_MAX,
-            self::RTGS_CUTOFF_MINUTE_MAX,
-            0,
-            Timezone::IST)->getTimestamp();
-
-
-        $now = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $mode = Mode::NEFT;
-
-       // TODO:: IMPS and RTGS issue with Power Access system
-       // if ($amount < self::MAX_IMPS_AMOUNT)
-       // {
-       //     $mode = Mode::IMPS;
-       // }
-  
-        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
-            ($amount >= self::MIN_RTGS_AMOUNT))
-        {
-            $mode = Mode::RTGS;
-        }
-
-        return $mode;
-    }
-
     /**
      * @param FileStore\Creator $file
      * Send file to bank through Beam
@@ -302,12 +273,21 @@ class NodalAccount extends NodalBase\FileProcessor
         // In seconds
         $timelines = [15, 30, 45, 60, 90, 120, 150, 180];
 
+        $batchFTAId = null;
+
+        //Batchfta can be null in case of test mode
+        if(empty($this->batchFundTransfer) === false)
+        {
+            $batchFTAId = $this->batchFundTransfer->getId();
+        }
+
         $mailInfo = [
-            'fileInfo'  => $fileInfo,
-            'channel'   => $this->channel,
-            'filetype'  => self::BEAM_FILE_TYPE,
-            'subject'   => 'Axis2 Settlement File Send Failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS]
+            'fileInfo'              => $fileInfo,
+            'channel'               => $this->channel,
+            'filetype'              => self::BEAM_FILE_TYPE,
+            'subject'               => 'Axis2 Settlement File Send Failure',
+            'recipient'             => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS],
+            'batchFundTransferId'   => $batchFTAId
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);

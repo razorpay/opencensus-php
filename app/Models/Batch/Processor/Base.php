@@ -111,6 +111,20 @@ class Base extends BaseModel\Core
      */
     protected $scroogeDispatchData;
 
+    /**
+     * Holds Recon batch output data, which it is used to
+     * generate the output file
+     * @var
+     */
+    protected $reconBatchOutputData;
+
+    /**
+     * Holds delimiter for output text file
+     *
+     * @var string
+     */
+    protected $delimiter = '|';
+
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
@@ -121,6 +135,10 @@ class Base extends BaseModel\Core
         $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
 
         $this->app['basicauth']->setMerchant($this->merchant);
+
+        // Indicates that the request is being executed by a batch upload flow
+        $this->app['basicauth']->setBatch($batch);
+
     }
 
     public function setParams(array $params = null)
@@ -134,6 +152,15 @@ class Base extends BaseModel\Core
         $this->params = $params ?: [];
 
         return $this;
+    }
+
+    public function getBatchContext(array $config): array
+    {
+        $batchContext                        = [];
+        $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
+        $batchContext[Batch\Constants::DATA] = $config;
+
+        return $batchContext;
     }
 
     /**
@@ -169,7 +196,8 @@ class Base extends BaseModel\Core
         // gets associated with this batch
         list($ufhFile, $entries) = $this->saveInputFileAndValidateEntries($input);
 
-        // if type is payment_link just return the ufhFile and do not save batches and files entity.
+        // if batch is migrated to new batch service
+        // just return the ufhFile and do not save batches and files entity.
         if ($this->shouldSendToBatchService())
         {
             return $ufhFile;
@@ -205,7 +233,15 @@ class Base extends BaseModel\Core
         $validatedUfhFile = $this->createSetOutputFileAndSave($entries, FileStore\Type::BATCH_VALIDATED);
 
         $response = $this->getValidatedEntriesStatsAndPreview($entries);
-        $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
+
+        if ($this->shouldSkipValidateInputFile())
+        {
+            $response += $this->getFileIdAndSignedUrlFromFileEntity($inputUfhFile);
+        }
+        else
+        {
+            $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
+        }
 
         $this->deleteLocalFiles();
 
@@ -213,6 +249,13 @@ class Base extends BaseModel\Core
     }
 
     public function setScroogeDispatchData(array $data)
+    {
+        // Do nothing from Base class. This is handled in Reconciliation.php
+
+        return;
+    }
+
+    public function setReconBatchOutputData(array $data)
     {
         // Do nothing from Base class. This is handled in Reconciliation.php
 
@@ -762,7 +805,9 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::TXT:
-                $txt = $this->generateTextWithHeadings($entries, '|', false, array_keys(current($entries)));
+            case FileStore\Format::DAT:
+                $txt = $this->generateTextWithHeadings($entries, $this->delimiter,
+                                       false, array_keys(current($entries)));
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 
@@ -789,13 +834,16 @@ class Base extends BaseModel\Core
 
         $mailerClass = "\\RZP\\Mail\\Batch\\$type";
 
-        $mail = new $mailerClass(
-                        $this->batch->toArray(),
-                        $this->merchant->toArray(),
-                        $this->outputFileLocalPath,
-                        $this->settingsAccessor->all()->toArray());
+        if (class_exists($mailerClass))
+        {
+            $mail = new $mailerClass(
+                            $this->batch->toArray(),
+                            $this->merchant->toArray(),
+                            $this->outputFileLocalPath,
+                            $this->settingsAccessor->all()->toArray());
 
-        Mail::send($mail);
+            Mail::send($mail);
+        }
     }
 
     protected function deleteLocalFiles()
@@ -884,6 +932,7 @@ class Base extends BaseModel\Core
                 return $this->parseExcelSheets($filePath);
 
             case FileStore\Format::TXT:
+            case FileStore\Format::DAT:
                 //
                 // We use standard separator | for txt, if needs this
                 // can be made configurable. But for now it's ok.
@@ -911,12 +960,11 @@ class Base extends BaseModel\Core
         {
             $this->trace->info(TraceCode::BATCH_FILE_PROCESS_USING_SPREADSHEET, $this->batch->toArrayTraceAll());
 
-            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
+            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath, $this->getNumRowsToSkipExcelFile());
         }
 
-        return $this->parentParseExcelSheets($filePath);
+        return $this->parentParseExcelSheets($filePath, $this->getStartRowExcelFiles());
     }
-
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {
@@ -986,10 +1034,41 @@ class Base extends BaseModel\Core
             }
         }
 
+        if ($this->batch->getType() === Batch\Type::TERMINAL_CREATION)
+        {
+            $entries = $this->cleanTypeEntries($entries);
+        }
+
         $stats        = ['total_entries' => $totalEntries, 'total_cleaned_entries' => $totalEntries - count($entries)];
         $tracePayload = $this->batch->toArrayTrace([], $stats);
 
         $this->trace->debug(TraceCode::BATCH_PROCESS_ENTRIES_CLEANED, $tracePayload);
+
+        return $entries;
+    }
+
+    protected function cleanTypeEntries(array $entries): array
+    {
+        // Type: Function to handle 'Type' for Generic Batch Terminal Creation. Similar to Notes.
+        foreach ($entries as & $entry)
+        {
+            $index = 0;
+
+            foreach ($entry as $key => $value)
+            {
+                // Excel: Empty trailing columns comes as sequentially indexed key and null values
+                if ((($key === $index++) or ($key === '')) and ($value === null))
+                {
+                    unset($entry[$key]);
+                }
+                // If key is of type pattern pushes the key value pair in a entry's type & unset current key
+                else if (preg_match(Batch\Header::TERMINAL_CREATION_TYPE_REGEX, $key, $matches) === 1)
+                {
+                    unset($entry[$key]);
+                    $entry[Batch\Header::TERMINAL_CREATION_TYPE][$matches[1]] = $value;
+                }
+            }
+        }
 
         return $entries;
     }
@@ -1056,6 +1135,19 @@ class Base extends BaseModel\Core
         return [
             self::FILE_ID    => FileStore\Entity::getSignedId($ufhSignedUrl['id']),
             self::SIGNED_URL => $ufhSignedUrl['url'],
+        ];
+    }
+
+    /**
+     * @param FileStore\Entity $ufh
+     *
+     * @return array
+     */
+    public function getFileIdAndSignedUrlFromFileEntity(FileStore\Entity $ufh): array
+    {
+        return [
+            self::FILE_ID    => 'file_' . $ufh->getId(),
+            self::SIGNED_URL => $ufh->getFullFilePath(),
         ];
     }
 
@@ -1260,7 +1352,8 @@ class Base extends BaseModel\Core
             {
                 $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE]        = ErrorCode::BAD_REQUEST_ERROR;
-                $entry[Batch\Header::ERROR_DESCRIPTION] = 'Something went wrong, Request you to please contact Razorpay for assistance.';
+                $entry[Batch\Header::ERROR_DESCRIPTION] =
+                    'Something went wrong, Request you to please contact Razorpay for assistance.';
             }
         }
 
@@ -1404,10 +1497,23 @@ class Base extends BaseModel\Core
     {
         $result = false;
 
-        if ($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true)
+        if ($this->app->batchService->isCompletelyMigratedBatchType($this->batch->getType()) === true)
         {
+            // not required to call razorx.
+            return true;
+        }
+
+        if ($this->app->batchService->isMigratingBatchType($this->batch->getType()) === true)
+        {
+            //
+            // Get the RazorxTreatment based on batch Type:
+            // BATCH_SERVICE_<BATCH_TYPE>_MIGRATION
+            // Eg: for payment_link, RazorxTreatment will be batch_service_payment_link_migration
+            //
+            $razorxTreatment = 'batch_service_' . $this->batch->getType() . '_migration';
+
             $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        Merchant\RazorxTreatment::BATCH_SERVICE_PAYMENT_LINK,
+                                                        $razorxTreatment,
                                                         $this->mode
                                                         );
 
@@ -1420,5 +1526,38 @@ class Base extends BaseModel\Core
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
     {
         return;
+    }
+
+
+    /**
+     *  Checks whether validation needs to be skipped using razorx.
+     *
+     * @return bool
+     */
+    protected function shouldSkipValidateInputFile(): bool
+    {
+        $result = false;
+
+        if ($this->app->batchService->isMigratingBatchType($this->batch->getType()) === true)
+        {
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::BATCH_SERVICE_SKIP_VALIDATION,
+                                                        $this->mode
+            );
+
+            $result = (strtolower($variant) === 'on');
+        }
+
+        return $result;
+    }
+
+    protected function getStartRowExcelFiles()
+    {
+        return 1;
+    }
+
+    protected function getNumRowsToSkipExcelFile()
+    {
+        return 0;
     }
 }

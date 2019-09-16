@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction;
 use DB;
 use Cache;
 use Carbon\Carbon;
+use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -19,7 +20,9 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Pricing\Calculator;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
 {
@@ -154,6 +157,82 @@ class Repository extends Base\Repository
         $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
 
         return $results;
+    }
+
+    /**
+     * calculates the sum of `fee` and `tax` for the instant speed refunds
+     *  - captured for a merchant in a given time frame
+     *  - based on filter type passed REFUND_LTE_1K, REFUND_GT_1K_LTE_10K, REFUND_GT_10K
+     *  - When correction flag is true the adds condition where created in given time frame
+     *
+     * @param string $merchantId
+     * @param int $start
+     * @param int $end
+     * @param string $filterType
+     *
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    public function fetchFeesAndTaxForRefundByType(
+        string $merchantId,
+        int $start,
+        int $end,
+        string $filterType)
+    {
+        /*
+            SELECT Sum(transactions.tax) AS tax,
+                   Sum(transactions.fee) AS fee
+            FROM   `transactions`
+                   INNER JOIN `refunds`
+                           ON `transactions`.`entity_id` = `refunds`.`id`
+            WHERE  `transactions`.`type` = ?
+                   AND `transactions`.`created_at` BETWEEN ? AND ?
+                   AND `transactions`.`merchant_id` = ?
+                   AND `refunds`.`base_amount` <= ?
+            LIMIT  1
+         */
+        $query = $this->newQuery()
+            ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
+            ->where($this->dbColumn(Entity::TYPE), '=', 'refund')
+            ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
+
+        $query->join(
+            $this->repo->refund->getTableName(),
+            function(JoinClause $join)
+            {
+                $refundIdAttr = $this->repo->refund->dbColumn(Entity::ID);
+                $entityIdAttr = $this->dbColumn(Entity::ENTITY_ID);
+
+                $join->on($entityIdAttr, $refundIdAttr);
+            });
+
+        $query->merchantId($merchantId);
+
+        $refundBaseAmountColumn = $this->repo->refund->dbColumn(Refund\Entity::BASE_AMOUNT);
+
+        switch ($filterType)
+        {
+            case InvoiceType::REFUND_LTE_1K:
+                $query = $query->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF);
+
+                break;
+
+            case InvoiceType::REFUND_GT_1K_LTE_10K:
+                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF)
+                    ->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
+
+                break;
+
+            case InvoiceType::REFUND_GT_10K:
+                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
+
+                break;
+
+            default:
+                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
+        }
+
+        return $query->first();
     }
 
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
@@ -594,7 +673,7 @@ class Repository extends Base\Repository
                     ->update($attributes);
     }
 
-    public function getCancelledBilldeskTransactions()
+    public function getCancelledBilldeskPaymentTransactions(int $limit = 200)
     {
         $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
@@ -614,6 +693,47 @@ class Repository extends Base\Repository
                     ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
                     ->where($paymentStatus, '=', Payment\Status::REFUNDED)
                     ->whereNull($transactionReconciledAt)
+                    ->limit($limit)
+                    ->get();
+    }
+
+    /**
+     * select `transactions`.* from `transactions`
+     * inner join `refunds` on `refunds`.`id` = `transactions`.`entity_id`
+     * inner join `payments` on `refunds`.`payment_id` = `payments`.`id`
+     * inner join `billdesk` on `billdesk`.`payment_id` = `payments`.`id`
+     * where `billdesk`.`RefStatus` = '0699'
+     * and `payments`.`status` = 'refunded'
+     * and `transactions`.`reconciled_at` is null
+     *
+     * @param $limit
+     * @return mixed
+     */
+    public function getCancelledBilldeskPaymentRefundTransactions(int $limit = 200)
+    {
+        $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
+        $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+
+        $refundId = $this->repo->refund->dbColumn(Refund\Entity::ID);
+        $refundPaymentId = $this->repo->refund->dbColumn(Refund\Entity::PAYMENT_ID);
+
+        $transactionEntityId = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionReconciledAt = $this->dbColumn(Entity::RECONCILED_AT);
+
+        $transactionData = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::REFUND, $refundId, '=', $transactionEntityId)
+                    ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
+                    ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
+                    ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
+                    ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+                    ->whereNull($transactionReconciledAt)
+                    ->limit($limit)
                     ->get();
     }
 
@@ -844,6 +964,126 @@ class Repository extends Base\Repository
         return $reconciledPaymentsSummary;
     }
 
+    protected function getQueryClausesForUnreconSummaryByGateway($query, array $dates,  string $entityName, string $gateway)
+    {
+        $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $transactionReconciledAtColumn = $this->dbColumn(Entity::RECONCILED_AT);
+
+        if ($entityName === ConstantEntity::PAYMENT)
+        {
+            $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+        }
+        else
+        {
+            $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+        }
+
+        // To exclude e-mandate transactions and non-active gateways, we put 'where' clause here
+        $query->where($transactionAmountColumn, '>', 0)
+              ->where($paymentGatewayColumn, '=', $gateway);
+
+        $query->where(function($query) use($dates, $timestampColumn)
+        {
+            foreach ($dates as $index => $date)
+            {
+                $from = $date;
+
+                $to = Carbon::createFromTimestamp($date)->addDays(1)->getTimestamp();
+
+                if ($index === 0)
+                {
+                    $query->whereBetween($timestampColumn, [$from, $to]);
+                }
+                else
+                {
+                    $query->orWhereBetween($timestampColumn, [$from, $to]);
+                }
+            }
+        });
+
+        $query->whereNull($transactionReconciledAtColumn);
+
+        $query->groupBy('date', 'gateway', $paymentMethodColumn)
+              ->orderBy('date', 'desc');
+
+        return $query;
+    }
+
+    /**
+     * Raw SQL Query
+     *
+     *    (select
+     *    FROM_UNIXTIME(transactions.created_at + 19800,\"%D %M, %Y\") AS date,
+     *    COUNT(transactions.id) count,
+     *    (Case WHEN payments.method in ("card","emi")
+     *    THEN terminals.gateway_acquirer
+     *    ELSE terminals.gateway
+     *    END) gateway,
+     *    payments.method from `transactions`
+     *    inner join `payments` on `entity_id` = `payments`.`id`
+     *    inner join `terminals` on `terminal_id` = `terminals`.`id`
+     *    where `transactions`.`amount` > ?
+     *    and `payments`.`gateway` = ?
+     *    and (`transactions`.`created_at` between ? and ?)
+     *    and `transactions`.`reconciled_at` is null
+     *    group by `date`, `gateway`, `payments`.`method`
+     *    order by `date` desc)
+     *    union all
+     *    (select FROM_UNIXTIME(transactions.created_at + 19800,\"%D %M, %Y\") AS date,
+     *    COUNT(transactions.id) count,
+     *    (Case WHEN payments.method in ("card","emi")
+     *    THEN terminals.gateway_acquirer
+     *    ELSE terminals.gateway
+     *    END) gateway,
+     *    payments.method from `transactions`
+     *    inner join `payments` on `entity_id` = `payments`.`id`
+     *    inner join `terminals` on `terminal_id` = `terminals`.`id`
+     *    where `transactions`.`amount` > ?
+     *    and `payments`.`gateway` = ?
+     *    and (`transactions`.`created_at` between ? and ?)
+     *    and `transactions`.`reconciled_at` is null
+     *    group by `date`, `gateway`, `payments`.`method`
+     *    order by `date` desc)
+    ...
+     */
+    public function fetchPaymentUnreconStatusSummary(array $gatewaysWithDate): array
+    {
+        $unionQueries= [];
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        foreach ($gatewaysWithDate as $gateway => $dates)
+        {
+            $query = $this->getMinimumSelectParamsQueryForUnreconSummary(ConstantEntity::PAYMENT);
+
+            $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn)
+                  ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+
+            $query = $this->getQueryClausesForUnreconSummaryByGateway($query, $dates, ConstantEntity::PAYMENT, $gateway);
+
+            $unionQueries[] = $query;
+        }
+
+        $unionQuery = null;
+
+        foreach ($unionQueries as $unionQueryElement)
+        {
+            $unionQuery = $unionQuery ? $unionQuery->unionAll($unionQueryElement) : $unionQueryElement;
+        }
+
+        $reconciledPaymentsSummary = $unionQuery->get()
+                                                ->toArray();
+
+        return $reconciledPaymentsSummary;
+    }
+
     /**
      * Raw sql query :
      *
@@ -912,6 +1152,41 @@ class Repository extends Base\Repository
         return $reconciledRefundsSummary;
     }
 
+    public function fetchRefundUnreconStatusSummary(array $gatewaysWithDate): array
+    {
+        $unionQueries = [];
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        foreach ($gatewaysWithDate as $gateway => $dates)
+        {
+            $query = $this->getMinimumSelectParamsQueryForUnreconSummary(ConstantEntity::REFUND);
+
+            $this->addRefundJoinForReconSummary($query);
+
+            $query->join(Table::PAYMENT, $paymentIdColumn, '=', Refund\Entity::PAYMENT_ID)
+                  ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+
+            $query = $this->getQueryClausesForUnreconSummaryByGateway($query, $dates, ConstantEntity::REFUND, $gateway);
+
+            $unionQueries[] = $query;
+        }
+
+        $unionQuery = null;
+
+        foreach ($unionQueries as $unionQueryElement)
+        {
+            $unionQuery = $unionQuery ? $unionQuery->unionAll($unionQueryElement) : $unionQueryElement;
+        }
+
+        $reconciledPaymentsSummary = $unionQuery->get()
+                                                ->toArray();
+
+        return $reconciledPaymentsSummary;
+    }
+
     protected function getSelectParamsQueryForReconSummary(string $entityName)
     {
         $transactionPaymentIdColumn = $this->dbColumn(Entity::ENTITY_ID);
@@ -972,6 +1247,43 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->selectRaw($dateCol . ',' . $params);
+
+        return $query;
+    }
+
+    protected function getMinimumSelectParamsQueryForUnreconSummary(string $entityName)
+    {
+        $transactionIdColumn = $this->dbColumn(Entity::ID);
+
+        $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $terminalGatewayAcquirerColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
+        $terminalGatewayColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY);
+
+        //
+        // For refunds : use 'processedAt' instead of txn createdAt
+        // Bcoz some refunds got success recently which were created
+        // 1-2 months ago and thus we do not get these in recon summary
+        // report if we use txn createdAt.
+        //
+        if ($entityName === ConstantEntity::REFUND)
+        {
+                $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+        }
+
+        $params = 'COUNT('.$transactionIdColumn.') count,'.
+            '(Case WHEN '. $paymentMethodColumn .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")'.'
+                THEN '. $terminalGatewayAcquirerColumn . '
+            ELSE '. $terminalGatewayColumn . '
+            END) gateway, '. $paymentMethodColumn;
+
+        $dateCol = 'FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
+
+        $query = $this->newQuery()
+                ->selectRaw($dateCol . ',' . $params);
 
         return $query;
     }
@@ -1280,9 +1592,11 @@ class Repository extends Base\Repository
 
         $results = $query->get();
 
-        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
-
-        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
+            [
+                'time_taken' => get_diff_in_millisecond($txnFetchStartTime),
+            ]);
 
         return $results;
     }
@@ -1311,7 +1625,7 @@ class Repository extends Base\Repository
                 Transaction\Entity::SETTLED_AT,
                 Transaction\Entity::CREDITS,
                 Transaction\Entity::CREDIT_TYPE
-            ],$columns);
+            ], $columns);
 
         }
 
@@ -1329,6 +1643,21 @@ class Repository extends Base\Repository
                     ->select(Entity::ID)
                     ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
                     ->count();
+    }
+
+    public function getTransactionBalanceType(string $transactionId)
+    {
+        $id                     = $this->dbColumn(Entity::ID);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+                    ->select($balanceTypeColumn)
+                    ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                    ->where($id , $transactionId)
+                    ->value(Entity::TYPE);
     }
 
     /**
@@ -1382,5 +1711,113 @@ class Repository extends Base\Repository
         // Additionally, checks if transaction is on banking balance. Others are not required as of now.
         return ((($entity === null) or ($entity->isBalanceTypeBanking() === true)) and
                 (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
+    }
+
+    /**
+     * @param $timestamp
+     * @param array $inMerchantIds
+     * @param array $notInMerchantIds
+     * @return mixed
+     * Activated merchants are those whose hold fund is zero and the activated field is notNull
+     * Since we require only the amount with respect to channel thus we use $transactionChannel
+     * Sum the amount which is then grouped by the channel which lead to the amount per channel
+     * Since transactionChannel is the index thus the query gives faster result
+     * Query
+     * SELECT $ransactionChannel, $amount( (SUM($transactionCredit) - SUM($transactionDebit))/100 ) FROM TRANSACTIONS
+     * INNER JOIN
+     * {
+     *  SELECT $merchantId FROM MERCHANTS where $merchantsHoldFund = 0
+     *                                          AND $merchantActivatedAt != NULL
+     *                                          AND $merchantId not in $notMerchantId
+     * as $settle_merchants ON $settle_merchants_id = $transactions_merchant_id
+     * }
+     * LEFT JOIN
+     * {
+     * balance ON $balanceId = $transactionsBalanceId WHERE $transactionBalanceId is NULL
+     *                                                     OR $balanceType is $primary
+     * }
+     * AND $transactionSettledAt <= $timestamp
+     * AND $transactionsOnHold = 0
+     * AND $transactionSettled = 0
+     * AND $transactionType != settlement
+     * GroupBy $transactionChannel
+     */
+    public function getAmountForNextSettlement(
+        $timestamp, array $inMerchantIds = [], array $notInMerchantIds = [])
+    {
+        $activatedMerchants = $this->repo->merchant->fetchMerchantsForSettlement($inMerchantIds, $notInMerchantIds);
+
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $settlementCredit       = $this->dbColumn(Entity::CREDIT);
+        $settlementDebit        = $this->dbColumn(Entity::DEBIT);
+
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+
+        $query = $this->newQuery()
+                ->select($transactionChannel,DB::raw("(SUM($settlementCredit)-SUM($settlementDebit))/100 as amount"))
+                ->joinSub($activatedMerchants->toSql(), 'settle_merchants', function($join)
+                    {
+                         $join->on('settle_merchants.id', '=', 'transactions.merchant_id');
+                    })
+                ->mergeBindings($activatedMerchants->getQuery())
+                ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+                    {
+                        $query->whereNull($transactionBalanceId)
+                              ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+                    })
+                ->where($transactionSettledAt, '<=', $timestamp)
+                ->where($transactionOnHold, 0)
+                ->where($transactionSettled, 0)
+                ->where($transactionType, '!=', Type::SETTLEMENT)
+                ->groupBy($transactionChannel);
+
+        $results = $query->get()->toArray();
+
+        return $results;
+    }
+
+    public function getMerchantSettledAtTime(array $mids, string $start, $end)
+    {
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $settlementCredit       = $this->dbColumn(Entity::CREDIT);
+        $settlementDebit        = $this->dbColumn(Entity::DEBIT);
+        $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+
+        $query = $this->newQuery()
+            ->select($transactionMerchantId, $transactionSettledAt)
+            ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+            ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+            {
+                $query->whereNull($transactionBalanceId)
+                      ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+            })
+            ->whereNotNull($transactionSettledAt)
+            ->where($transactionSettled, 0)
+            ->where($transactionSettledAt, '>=', $start)
+            ->whereNotIn($transactionMerchantId, $mids)
+            ->where($transactionType, '!=', Type::SETTLEMENT)
+            ->groupBy($transactionMerchantId, $transactionSettledAt);
+
+        if (empty($end) === false)
+        {
+            $query->where($transactionSettledAt, '<=', $end);
+        }
+
+        return $query->get();
     }
 }

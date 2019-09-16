@@ -6,6 +6,7 @@ use Requests;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Base
@@ -36,6 +37,9 @@ class Base
 
     // Transfer related URIs
     const FUND_TRANSFER_CREATE_URI = '/transfer';
+
+    // Source Account related URIs
+    const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
     // Headers
     const ACCEPT        = 'Accept';
@@ -82,7 +86,7 @@ class Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    protected function createAndSendRequest(
+    public function createAndSendRequest(
         string $endpoint,
         string $method,
         array $data = []): array
@@ -99,7 +103,7 @@ class Base
         {
             throw new Exception\RecordAlreadyExists(
                 'record already exists',
-                TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
+                ErrorCode::BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
                 'response' => $response->body,
             ]);
         }

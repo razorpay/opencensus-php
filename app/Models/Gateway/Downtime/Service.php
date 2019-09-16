@@ -87,4 +87,15 @@ class Service extends Base\Service
 
         $this->auth->setModeAndDbConnection($mode);
     }
+
+
+    public function purgeKeys()
+    {
+        (new GatewayDowntimeDetection())->purgeKeys();
+    }
+
+    public function stats()
+    {
+        return (new GatewayDowntimeDetection())->stats();
+    }
 }

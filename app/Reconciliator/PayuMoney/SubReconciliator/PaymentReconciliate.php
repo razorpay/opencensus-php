@@ -103,7 +103,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return true;
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]) ?? null;
     }
@@ -113,7 +113,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * @param $paymentId
      * @return mixed
      */
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->wallet->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE) ?? null;
     }

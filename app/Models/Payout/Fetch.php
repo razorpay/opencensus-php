@@ -33,9 +33,12 @@ class Fetch extends BaseFetch
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
         AuthType::PROXY_AUTH => [
-            self::EXPAND_EACH       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
+            self::EXPAND_EACH               => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
             // Because, dashboard thinks there can be just one mode (live/test).
-            Entity::PAYOUT_MODE     => 'sometimes|string|custom',
+            Entity::PAYOUT_MODE             => 'sometimes|string|custom',
+            Entity::PENDING_ON_ME           => 'sometimes|boolean',
+            Entity::PENDING_ON_ROLES        => 'sometimes|array',
+            Entity::PENDING_ON_ROLES . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3',
         ],
     ];
 
@@ -61,7 +64,10 @@ class Fetch extends BaseFetch
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
             Entity::BATCH_ID,
-            Entity::PAYOUT_MODE
+            Entity::PAYOUT_MODE,
+            Entity::PENDING_ON_ME,
+            Entity::PENDING_ON_ROLES,
+            Entity::PENDING_ON_ROLES . '.*',
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,

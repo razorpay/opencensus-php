@@ -6,8 +6,11 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Mozart\WalletPhonepe;
 use RZP\Gateway\Mozart\NetbankingSib;
+use RZP\Gateway\Mozart\NetbankingCbi;
 use RZP\Gateway\Mozart\NetbankingYesb;
+use RZP\Gateway\Mozart\NetbankingIbk;
 use RZP\Gateway\Mozart\NetbankingCub;
 use RZP\Models\Payment\Gateway as PaymentGateway;
 
@@ -35,7 +38,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         $this->fileToWriteName = 'Recon_' . Carbon::now(Timezone::IST)->format('dmY');
 
-        for ($i = 0; $i < 5; $i++)
+        for ($i = 0; $i < 4; $i++)
         {
             $data[] = [];
         }
@@ -58,7 +61,9 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 NetbankingYesb\ReconFields::TRANSACTION_DATE   => $date,
                 NetbankingYesb\ReconFields::AMOUNT             => $row['payment']['amount'] / 100,
                 NetbankingYesb\ReconFields::SERVICE_CHARGES    => '0',
-                NetbankingYesb\ReconFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row['mozart']['raw']),
+                NetbankingYesb\ReconFields::BANK_REFERENCE_ID  => $this->fetchFieldFromJsonData(
+                                                                            $row['mozart']['raw'],
+                                                                            'bank_payment_id'),
                 NetbankingYesb\ReconFields::TRANSACTION_STATUS => NetbankingYesb\Constants::RECON_STATUS_SUCCESS,
             ];
 
@@ -68,6 +73,36 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
 
         return $data;
+    }
+
+    protected function netbanking_ibk($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+        $this->fileToWriteName = 'RAZORPAY_2019May';
+        $data = [];
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d/m/y');
+            $col = [
+                NetbankingIbk\ReconFields::PID                  => $row['payment']['id'],
+                NetbankingIbk\ReconFields::BILLER_NAME          => 'xyz',
+                NetbankingIbk\ReconFields::DATE_TIME            => $date,
+                NetbankingIbk\ReconFields::MERCHANT_REF_NO      => $date,
+                NetbankingIbk\ReconFields::AMOUNT               => $row['payment']['amount'] / 100,
+                NetbankingIbk\ReconFields::CUSTOMER_NO          => $date,
+                NetbankingIbk\ReconFields::DATE_BANK            => $date,
+                NetbankingIbk\ReconFields::BANK_REF_NO          => $this->fetchFieldFromJsonData($row['mozart']['raw'],'bank_payment_id'),
+                NetbankingIbk\ReconFields::JOURNAL_NO           => "900322626",
+                NetbankingIbk\ReconFields::PAID_STATUS          => "Y",
+            ];
+            $this->content($col, 'col_payment_ibk_nb_recon');
+            $data[] = $col;
+        }
+        $formattedData = $this->generateText($data, '^');
+        return $formattedData;
     }
 
     protected function netbanking_sib($input)
@@ -89,7 +124,9 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 NetbankingSib\ReconFields::TRANSACTION_DATE      => $date,
                 NetbankingSib\ReconFields::PAYMENT_ID            => $row['payment']['id'],
                 NetbankingSib\ReconFields::PAYMENT_AMOUNT        => $row['payment']['amount'] / 100,
-                NetbankingSib\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row['mozart']['raw']),
+                NetbankingSib\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchFieldFromJsonData(
+                                                                            $row['mozart']['raw'],
+                                                                            'bank_payment_id'),
             ];
 
             $this->content($col, 'col_payment_sib_nb_recon');
@@ -98,6 +135,44 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
 
         $formattedData = $this->generateText($data, '|');
+
+        return $formattedData;
+    }
+
+    protected function netbanking_cbi($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+
+        $this->fileToWriteName = 'DailyRecon-' . Carbon::now(Timezone::IST)->format('dmY');
+
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('Ymd');
+
+            $col = [
+                NetbankingCbi\ReconFields::PAYMENT_ID            => $row['payment']['id'],
+                NetbankingCbi\ReconFields::BANK_REFERENCE_NUMBER =>
+                    $this->fetchFieldFromJsonData(
+                        $row['mozart']['raw'],
+                        'bank_payment_id'),
+                NetbankingCbi\ReconFields::AMOUNT                => $row['payment']['amount'] / 100,
+                NetbankingCbi\ReconFields::STATUS                => 'Y',
+                NetbankingCbi\ReconFields::DATE                  => $date,
+                NetbankingCbi\ReconFields::ACCOUNT_NUMBER        => '123456789',
+                NetbankingCbi\ReconFields::ACCOUNT_TYPE          => '01',
+            ];
+
+            $this->content($col, 'col_payment_cbi_nb_recon');
+
+            $data[] = $col;
+        }
+
+        $formattedData = $this->generateText($data, '^');
 
         return $formattedData;
     }
@@ -120,7 +195,9 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $col = [
                 NetbankingCub\ReconFields::PAYMENT_ID            => $row['payment']['id'],
                 NetbankingCub\ReconFields::PAYMENT_AMOUNT        => $row['payment']['amount'] / 100,
-                NetbankingCub\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row['mozart']['raw']),
+                NetbankingCub\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchFieldFromJsonData(
+                                                                            $row['mozart']['raw'],
+                                                                            'bank_payment_id'),
                 NetbankingCub\ReconFields::PAYMENT_DATE          => $date,
             ];
 
@@ -134,6 +211,48 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $formattedData;
     }
 
+    protected function wallet_phonepe($input)
+    {
+        $this->fileExtension = FileStore\Format::CSV;
+
+        $this->fileToWriteName = 'Recon_' . Carbon::now(Timezone::IST)->format('dmY');
+
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d-m-Y');
+
+            $col = [
+                WalletPhonepe\ReconFields::PAYMENT_TYPE         => 'PAYMENT',
+                WalletPhonepe\ReconFields::RZP_ID               => $row['payment']['id'],
+                WalletPhonepe\ReconFields::ORDER_ID             => $row['payment']['id'],
+                WalletPhonepe\ReconFields::PHONEPE_ID           => $this->fetchFieldFromJsonData(
+                                                                            $row['mozart']['raw'],
+                                                                            'providerReferenceId'),
+                WalletPhonepe\ReconFields::FROM                 => $date,
+                WalletPhonepe\ReconFields::CREATION_DATE        => $date,
+                WalletPhonepe\ReconFields::TRANSACTION_DATE     => $date,
+                WalletPhonepe\ReconFields::SETTLEMENT_DATE      => $date,
+                WalletPhonepe\ReconFields::BANK_REFERENCE_NO    => 'N0000012345',
+                WalletPhonepe\ReconFields::AMOUNT               => $row['payment']['amount']/100,
+                WalletPhonepe\ReconFields::FEE                  => '0',
+                WalletPhonepe\ReconFields::IGST                 => '0',
+                WalletPhonepe\ReconFields::CGST                 => '0',
+                WalletPhonepe\ReconFields::SGST                 => '0',
+            ];
+
+            $this->content($col, 'col_payment_wallet_phonepe_recon');
+
+            $data[] = $col;
+        }
+
+        return $data;
+    }
+
     public function generateReconciliation(array $input)
     {
         $this->gateway = $input['gateway'];
@@ -141,11 +260,11 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return parent::generateReconciliation($input);
     }
 
-    protected function fetchBankPaymentId($data)
+    protected function fetchFieldFromJsonData($data, $field)
     {
         $dataArray = json_decode($data, true);
 
-        return $dataArray['bank_payment_id'];
+        return $dataArray[$field];
     }
 
     //Overriding this base class create file as it creates and excel file

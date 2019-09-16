@@ -134,12 +134,14 @@ class Core extends Base\Core
 
                 $fundAccountValidation->setAttempts($attempt);
 
+                $fundAccountValidation->setRetryAt(null);
+
                 $this->repo->saveOrFail($fundAccountValidation);
 
                 return true;
             },
             18000,
-            ErrorCode::FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS);
     }
 
     /**
@@ -275,8 +277,6 @@ class Core extends Base\Core
             'validation_status' => $validation->getStatus(),
         ]);
 
-        assertTrue(Attempt\Status::INITIATED === $input['fta_status']);
-
         $processor = Processor\Factory::get($validation);
 
         $processor->updateWithDetailsBeforeFtaRecon($input);
@@ -309,7 +309,14 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
 
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        if ($validation->hasBalance() === true)
+        {
+            $balance = $validation->balance;
+        }
+        else
+        {
+            $balance = $this->merchant->primaryBalance;
+        }
 
         if ($balance->getFeeCredits() >= $fee)
         {
@@ -347,7 +354,7 @@ class Core extends Base\Core
         }
         else
         {
-            $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
+            $balance = $this->repo->balance->findByIdAndMerchant($balanceId, $this->merchant);
         }
 
         $fundAccValidation->balance()->associate($balance);

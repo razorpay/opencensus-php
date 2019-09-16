@@ -9,6 +9,7 @@ use SoapFault;
 use SoapClient;
 use Carbon\Carbon;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Mpi;
@@ -80,6 +81,26 @@ class Gateway extends Base\Gateway
         'card_group'                => 'cardGroup',
     ];
 
+    protected $actionVersion = [
+        Action::VERIFY              => 'v1',
+        Action::VERIFY_REFUND       => 'v2',
+        Base\Action::VERIFY_REFUND  => 'v2',
+    ];
+
+    protected function getVersionForAction($input, $action)
+    {
+        if ((empty($input['terminal']['gateway_secure_secret2']) === false) and
+            (empty($input['terminal']['gateway_access_code']) === false))
+        {
+            if (isset($this->actionVersion[$action]) === true)
+            {
+                return $this->actionVersion[$action];
+            }
+        }
+
+        return 'v1';
+    }
+
     public function setGatewayParams($input, $mode, $terminal)
     {
         parent::setGatewayParams($input, $mode, $terminal);
@@ -134,12 +155,23 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Base\Action::AUTHENTICATE);
 
         // directly send authorize request for 2nd recurring payment
         if ($this->isSecondRecurringPaymentRequest($input) === true)
         {
             parent::action($input, 'pay_init');
+
+            $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
+            return $this->sendMozartRequest($input);
+        }
+
+        if ($this->isMotoTransactionRequest($input) === true)
+        {
+            parent::action($input, 'pay_init');
+
+            $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
             return $this->sendMozartRequest($input);
         }
@@ -175,9 +207,21 @@ class Gateway extends Base\Gateway
                     'callbackUrl' => $input['callbackUrl'],
                 ];
 
+                $this->app['diag']->trackGatewayPaymentEvent(
+                    EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+                    $input);
+
                 $request = $this->sendMozartRequest($input);
 
                 $authenticateInit = $this->gatewayPayment;
+
+                $this->app['diag']->trackGatewayPaymentEvent(
+                    EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+                    $input,
+                    null,
+                    [
+                        'enrolled' => $authenticateInit['veresEnrolled']
+                    ]);
 
                 // some unexpected enrollment status. not taking the call to go ahead with pay_init
                 if (in_array($authenticateInit['veresEnrolled'], ['Y', 'N'], true) === false)
@@ -187,14 +231,18 @@ class Gateway extends Base\Gateway
                         'status'    => Status::AUTHORIZE_FAILED,
                     ], false);
 
-                    throw new Exception\LogicException(
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                        'enrollment_status:' . $authenticateInit['veresEnrolled'],
                         'Unexpected response',
-                        null,
                         [
                             'payment_id'        => $input['payment']['id'],
                             'reason_code'       => $authenticateInit['reason_code'],
                             'enrollment_status' => $authenticateInit['veresEnrolled'],
-                        ]);
+                        ],
+                        null,
+                        Action::AUTHENTICATE,
+                        true);
                 }
 
                 // enrolled card. return OTP page request.
@@ -273,24 +321,14 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $mpiEntity = $this->app['repo']
-                          ->mpi
-                          ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
-
-        $authenticationGateway = Payment\Gateway::CYBERSOURCE;
-
-        if ($mpiEntity !== null)
-        {
-            $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
-        }
-
-        switch ($authenticationGateway)
+        switch ($input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY])
         {
             case Payment\Gateway::MPI_BLADE:
             case Payment\Gateway::MPI_ENSTAGE:
                 parent::callback($input);
 
-                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+                $authResponse = $this->callAuthenticationGateway($input,
+                                                        $input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY]);
 
                 $dataForMozart = $this->formatDataForMozart($input, $authResponse);
 
@@ -320,6 +358,8 @@ class Gateway extends Base\Gateway
                 $this->validateXid($authenticateInit, $authenticateVerify);
 
                 $input['gateway']['authenticate_verify'] = $this->mapInReverseWay($authenticateVerify);
+
+                $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_PROCESSED, $input);
                 break;
         }
 
@@ -328,6 +368,8 @@ class Gateway extends Base\Gateway
 
         // callback data verified. now send actual authorize request
         parent::action($input, 'pay_init');
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $this->sendMozartRequest($input);
 
@@ -418,6 +460,8 @@ class Gateway extends Base\Gateway
         {
             $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->gatewayPayment);
         }
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $this->sendMozartRequest($input);
     }
@@ -712,6 +756,7 @@ class Gateway extends Base\Gateway
             $this->handleSoapFault($exception, 'Reverse failed');
         }
     }
+
     /**
      * Calls gateway to verify if a refund has
      * been successfully performed or not.
@@ -728,6 +773,19 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VERIFY_REFUND);
 
+        if ((empty(trim($input['terminal']['gateway_secure_secret2'])) === false) and
+            (empty(trim($input['terminal']['gateway_access_code'])) === false))
+        {
+            return $this->verifyRefundMozart($input);
+        }
+        else
+        {
+            return $this->verifyRefundApi($input);
+        }
+    }
+
+    protected function verifyRefundMozart(array $input)
+    {
         $scroogeResponse = new Base\ScroogeResponse();
 
         if ($this->isUnprocessedRefund($input) === true)
@@ -735,6 +793,80 @@ class Gateway extends Base\Gateway
             return $scroogeResponse->setSuccess(false)
                 ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
                 ->toArray();
+
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(true)
+                ->toArray();
+        }
+
+        $content = $this->sendMozartRequest($input, false);
+
+        if ((isset($content['success']) === true) and
+            ($content['success'] === true))
+        {
+            $attributes = $this->getRefundAttributesFromMozartVerify($content['data']);
+
+            $status = $attributes['status'];
+
+            if ($status == 'reversed')
+            {
+                $action = 'reverse';
+            }
+            else if ($status == 'refunded')
+            {
+                $action = 'refund';
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Unexpected status',
+                    ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
+                    [
+                        Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content['data']),
+                        Payment\Gateway::GATEWAY_KEYS             => ['received_status' => $status]
+                    ]);
+            }
+
+            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+            if ($gatewayEntity !== null)
+            {
+                $gatewayEntity->setStatus($status);
+
+                $this->repo->saveOrFail($gatewayEntity);
+            }
+            else
+            {
+                $this->createGatewayRefundEntity($attributes, $input, $action);
+            }
+
+            return $scroogeResponse->setSuccess(true)
+                ->setGatewayVerifyResponse($content['data']['_raw'])
+                ->setGatewayKeys($content['data'])
+                ->toArray();
+        }
+        else
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->setGatewayVerifyResponse($content['data']['_raw'])
+                                   ->setGatewayKeys($content['data'])
+                                   ->toArray();
+        }
+    }
+
+    protected function verifyRefundApi(array $input)
+    {
+        $scroogeResponse = new Base\ScroogeResponse();
+
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
 
         }
 
@@ -799,18 +931,27 @@ class Gateway extends Base\Gateway
                 }
 
                 return $scroogeResponse->setSuccess(true)
-                                       ->setGatewayVerifyResponse($content)
-                                       ->setGatewayKeys($this->getGatewayVerifyData($refundReply[0]))
-                                       ->toArray();
+                    ->setGatewayVerifyResponse($content)
+                    ->setGatewayKeys($this->getGatewayVerifyData($refundReply[0]))
+                    ->toArray();
             }
         }
 
         return $scroogeResponse->setSuccess(false)
-                               ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                               ->setGatewayVerifyResponse($content)
-                               ->setGatewayKeys($this->getGatewayVerifyData($content))
-                               ->toArray();
+            ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+            ->setGatewayVerifyResponse($content)
+            ->setGatewayKeys($this->getGatewayVerifyData($content))
+            ->toArray();
+    }
 
+    protected function getRefundAttributesFromMozartVerify(array $request)
+    {
+        return [
+            E::REF           => $request['gateway_reference_id1'],
+            E::REASON_CODE   => $request['reason_code'],
+            E::RECEIVED      => $request['received'],
+            E::STATUS        => $request['status'],
+        ];
     }
 
     protected function getRefundAttributesFromVerify(array $request)
@@ -1041,9 +1182,14 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
         $paymentId = $input['payment']['id'];
-        $amount    = $input['payment']['amount'];
-        $currency  = $input['payment']['currency'];
-        $acquirer  = $input['terminal']['gateway_acquirer'];
+
+        $paymentRepo = $this->repo->repo->payment;
+
+        $payment = $paymentRepo->findOrFail($paymentId);
+
+        $amount    = $input['payment']['amount'] ?? $payment->getAmount();
+        $currency  = $input['payment']['currency'] ?? $payment->getCurrency();
+        $acquirer  = $input['terminal']['gateway_acquirer'] ?? $payment->terminal->getGatewayAcquirer();
 
         $gatewayPayment->setPaymentId($paymentId);
 

@@ -14,12 +14,14 @@ use RZP\Services\Beam;
 use RZP\Models\Payment;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Emi as EmiMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class GatewayEmiFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -250,7 +252,9 @@ class GatewayEmiFileTest extends TestCase
         $amountData = [58846,44894];
         $merchantNames = ['A WEIRD MERCH NT NAME  W TH SPECIAL CHAR'];
 
-        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames);
+        $cardNumbers = ['0004006660000086709'];
+
+        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers);
 
         Mail::assertQueued(EmiMail\File::class, function ($mail)
         {
@@ -258,6 +262,33 @@ class GatewayEmiFileTest extends TestCase
 
             return $mail->hasTo('emi.ops@sbicard.com');
         });
+    }
+
+    public function testGenerateEmiFileForSbiSecondFile()
+    {
+        $this->prerequisitesForSbiEmi();
+
+        $testData = $this->testData['testGenerateEmiFileForSbi'];
+
+        $this->startTest($testData);
+
+        $fileStoreEntity = $this->getDbLastEntity('file_store')->toArray();
+
+        $startString = 'GGCMS1';
+
+        $length = strlen($startString);
+
+        $this->assertEquals(substr($fileStoreEntity['name'], 0, $length), $startString);
+
+        $this->startTest($testData);
+
+        $fileStoreEntity = $this->getDbLastEntity('file_store')->toArray();
+
+        $startString = 'GGCMS2';
+
+        $length = strlen($startString);
+
+        $this->assertEquals(substr($fileStoreEntity['name'], 0, $length), $startString);
     }
 
     public function testGenerateEmiFileForSbiWithBeamFailure()
@@ -331,9 +362,12 @@ class GatewayEmiFileTest extends TestCase
         $this->assertSbiEmiFileData($content, 1);
     }
 
-    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [])
+    // One file would be encrypted and the other not encrypted
+    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [])
     {
-        $file = $this->getLastEntity('file_store', true);
+        $files = $this->getDbEntities('file_store')->toArray();
+
+        $file = $files[0];
 
         $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
 
@@ -347,12 +381,30 @@ class GatewayEmiFileTest extends TestCase
 
         $fileContent = $encryptor->decrypt($fileContent);
 
+        $this->checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers);
+
+        $outputFile = $files[1];
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $outputFile['location']);
+
+        // For the output files, the card numbers would be replaced with 0s
+        if (empty($cardNumbers) === false)
+        {
+            $cardNumbers = ['0000000000000000000'];
+        }
+
+        $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, true);
+    }
+
+    protected function checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $outputFile = false)
+    {
         $fileRows = explode("\r\n", $fileContent);
 
         $this->assertEquals($rowCount, count($fileRows));
 
         $amounts = [];
         $names = [];
+        $cards = [];
 
         // Remove header
         unset($fileRows[0]);
@@ -361,9 +413,11 @@ class GatewayEmiFileTest extends TestCase
         foreach ($fileRows as $key => $row)
         {
             $amount = (int)substr($row, 325, 17);
-            $amounts[] = $amount;
 
+            $amounts[] = $amount;
             $names[] = substr($row, 166, 40);
+            $cards[] = substr($row, 57, 19);
+
             $this->assertEquals(450, strlen($row));
         }
 
@@ -385,8 +439,16 @@ class GatewayEmiFileTest extends TestCase
             );
         }
 
+        if (empty($cardNumbers) !== true)
+        {
+            $this->assertArraySelectiveEquals(
+                $cardNumbers,
+                $cards
+            );
+        }
+
         $expectedFileContent = [
-            'type'        => 'sbi_emi_file',
+            'type'        => (($outputFile === true) ? 'sbi_emi_output_file' : 'sbi_emi_file'),
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',

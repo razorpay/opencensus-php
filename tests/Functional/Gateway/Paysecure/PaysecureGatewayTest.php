@@ -2,12 +2,16 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use App;
 use Mail;
 use Queue;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Gateway\Hitachi;
+use RZP\Services\DowntimeMetric;
 use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Exception\GatewayTimeoutException;
@@ -80,6 +84,25 @@ class PaysecureGatewayTest extends TestCase
 
         $this->mockCardVault();
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'save_all_cards')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
+
         $this->payment = $this->getDefaultPaymentArray();
     }
 
@@ -98,7 +121,78 @@ class PaysecureGatewayTest extends TestCase
             }
         );
 
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_message_type')
+                {
+                    $this->assertEquals('SMS', $content);
+                }
+            }
+        );
+
         $authResponse = $this->doAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+
+        return $authResponse;
+    }
+
+    public function testStanIncrementAndTtl()
+    {
+        $redis = Redis::connection()->client();
+
+        $this->testPaymentAuthViaRedirect();
+
+        $counter = $redis->get(Gateway::GATEWAY_PAYSECURE_STAN);
+
+        $this->assertEquals(1, $counter);
+
+        $this->testPaymentAuthViaRedirect();
+
+        $counter = $redis->get(Gateway::GATEWAY_PAYSECURE_STAN);
+        $ttl = $redis->ttl(Gateway::GATEWAY_PAYSECURE_STAN);
+
+        // Assert that the counter is increased and that the ttl is set for the same.
+        // We can't check the value of ttl, since it depends on the current time and it changes every second
+        $this->assertEquals(2, $counter);
+        $this->assertGreaterThan(0, $ttl);
+
+        $redis->set(Gateway::GATEWAY_PAYSECURE_STAN, 999999);
+
+        $this->testPaymentAuthViaRedirect();
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_stan')
+                {
+                    // Assert that the stan gets resetted to 0 once it reaches 999999
+                    $this->assertEquals('000000', $content);
+                }
+            }
+        );
+    }
+
+    public function testLocalCustomersPaymentAuthViaRedirect()
+    {
+        $this->fixtures->iin->edit('607384', ['message_type' => 'DMS']);
+        // Create token and card
+        $payment = $this->payment;
+
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['token'] = '10002cardtoken';
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_message_type')
+                {
+                    $this->assertEquals('DMS', $content);
+                }
+            }
+        );
+
+        $authResponse = $this->doAuthPayment($payment);
 
         $this->assertSuccess($authResponse, 'redirect');
 
@@ -245,6 +339,10 @@ class PaysecureGatewayTest extends TestCase
             ],
             $payment
         );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEquals($paysecure[Entity::ERROR_CODE], 'ACCU100');
     }
 
     public function testCallbackAutoCapture()
@@ -303,9 +401,9 @@ class PaysecureGatewayTest extends TestCase
 
                     $content['status'] = 'failure';
 
-                    $content['errorcode'] = '57';
+                    $content['errorcode'] = 'CA';
 
-                    $content['errormsg'] = 'DECLINED (cardholder not allowed)';
+                    $content['errormsg'] = 'Compliance error code for acquirer';
                 }
             }
         );
@@ -328,6 +426,14 @@ class PaysecureGatewayTest extends TestCase
             ],
             $payment
         );
+
+        $this->assertEquals([
+            $this->gateway => [
+                DowntimeMetric::Failure   => [
+                    'SERVER_ERROR_INVALID_ARGUMENT' => 1,
+                ]
+            ],
+        ], $this->app['gateway_downtime_metric']->getMetrics());
     }
 
     public function testAuthorizeFailureWithNoErrorMessage()
@@ -455,8 +561,7 @@ class PaysecureGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function (&$content, $action = null)
             {
-                // Hitachi's advice uses the same action response as that of callback
-                if ($action === 'callback')
+                if ($action === 'advice')
                 {
                     throw new GatewayTimeoutException('Timed out');
                 }
@@ -487,8 +592,7 @@ class PaysecureGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function (&$content, $action = null)
             {
-                // Hitachi's advice uses the same action response as that of callback
-                if ($action === 'callback')
+                if ($action === 'advice')
                 {
                     $decoded = json_decode($content, true);
 
@@ -763,22 +867,6 @@ class PaysecureGatewayTest extends TestCase
     {
         $payment = $this->getDbLastEntityToArray('payment');
 
-        $cacheDriver = $this->app['config']->get('cache.secure_default');
-
-        $key = sprintf(Gateway::CACHE_KEY, $payment['id']);
-
-        $cacheValue = $this->app['cache']->store($cacheDriver)->get($key);
-
-        $this->assertArraySelectiveEquals(
-            [
-                'vault_token' => base64_encode($this->payment['card']['number']),
-            ],
-            $cacheValue
-        );
-
-        // Ensure cvv does not get stored in cache
-        $this->assertArrayNotHasKey('cvv', $cacheValue);
-
         $this->assertArraySelectiveEquals(
             [
                 'id'      => substr($authResponse['razorpay_payment_id'], 4),
@@ -799,7 +887,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'                 => 'success',
                 'gateway_transaction_id' => '100000000000000000000000025236',
                 'error_code'             => '00',
-                'error_message'          => '',
+                'error_message'          => null,
                 'flow'                   => $flow,
                 'apprcode'               => '183217',
             ],

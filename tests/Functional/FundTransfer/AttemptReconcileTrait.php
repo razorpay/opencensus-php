@@ -108,6 +108,31 @@ trait AttemptReconcileTrait
         return $content;
     }
 
+    protected function assertReconFileProcessFlipStatusForChannel($setlFile, string $channel, string $sourceType)
+    {
+        Mail::fake();
+
+        $data = $this->reconcileSettlementsForChannel($setlFile, $channel, true);
+
+        // Match data returned by reconciliation
+        $this->assertTestResponse($data, 'matchSummaryForReconFile');
+        $this->assertEquals($channel, $data['channel']);
+
+        // Validate settlement attempt entity
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $dataKey = 'matchAttemptForReconFlipStatus' . ucfirst($channel);
+        $this->assertTestResponse($attempt, $dataKey);
+        $this->assertNotNull($attempt['utr']);
+        $this->assertEquals($channel, $attempt[Attempt\Entity::CHANNEL]);
+
+        $source = $this->getLastEntity($sourceType, true);
+        $this->assertNotNull($source['utr']);
+
+        Mail::assertQueued(ReconciliationMail::class);
+    }
+
+
     protected function assertReconFileProcessSuccessForChannel($setlFile, string $channel, string $sourceType)
     {
         Mail::fake();

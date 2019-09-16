@@ -234,6 +234,7 @@ class Fixtures extends Constants
     {
         $defaults = [
             P2p\BankAccount\Entity::DEVICE_ID    => $this->current->device->getId(),
+            P2p\BankAccount\Entity::HANDLE       => $this->current->handle->getCode(),
         ];
 
         $entity = factory(P2p\BankAccount\Entity::class)->create(array_merge($defaults, $attributes));
@@ -260,6 +261,7 @@ class Fixtures extends Constants
         $defaults = [
             P2p\Vpa\Entity::BANK_ACCOUNT_ID => $this->current->bank_account->getId(),
             P2p\Vpa\Entity::DEVICE_ID       => $this->current->device->getId(),
+            P2p\BankAccount\Entity::HANDLE  => $this->current->handle->getCode(),
         ];
 
         $entity = factory(P2p\Vpa\Entity::class)->create(array_merge($defaults, $attributes));
@@ -270,6 +272,22 @@ class Fixtures extends Constants
         }
 
         return $entity;
+    }
+
+    public function createBeneficiary(array $attributes)
+    {
+        $defaults = [
+            P2p\Beneficiary\Entity::DEVICE_ID           => $this->current->device->getId(),
+            P2p\Beneficiary\Entity::ENTITY_TYPE         => P2p\Vpa\Entity::VPA,
+            P2p\Beneficiary\Entity::ENTITY_ID           => $this->vpa(self::DEVICE_2)->getId(),
+            P2p\Beneficiary\Entity::NAME                => P2p\Vpa\Entity::VPA,
+        ];
+
+        $beneficiary = new P2p\Beneficiary\Entity();
+
+        $beneficiary->forceFill(array_merge($defaults, $attributes))->saveOrFail();
+
+        return $beneficiary;
     }
 
     public function createRegisterToken(array $attributes): P2p\Device\RegisterToken\Entity

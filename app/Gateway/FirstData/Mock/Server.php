@@ -306,7 +306,15 @@ class Server extends Base\Mock\Server
     {
         $authorizeRequest = $this->parseRequest($input);
 
-        $this->validateActionInput($authorizeRequest, 'authorize');
+        $authType = $this->decideAuthorizationType($authorizeRequest);
+        if ($authType === 'pre_auth')
+        {
+            $this->validateActionInput($authorizeRequest, 'pre_auth');
+        }
+        else
+        {
+            $this->validateActionInput($authorizeRequest, 'authorize');
+        }
 
         $this->content($content, Action::CALLBACK);
 
@@ -328,6 +336,22 @@ class Server extends Base\Mock\Server
 
             return $this->prepareResponse($response);
         }
+    }
+
+    private function decideAuthorizationType($input)
+    {
+        if (isset($input['Transaction']['TransactionDetails']['OrderId']) === true)
+        {
+            $payment = (new Payment\Repository)->find(
+                $input['Transaction']['TransactionDetails']['OrderId']);
+
+            if (($payment !== null) and
+                ($payment['authentication_gateway'] === 'mpi_blade'))
+            {
+                return 'pre_auth';
+            }
+        }
+        return 'old_flow';
     }
 
     public function verifyRefund($input)

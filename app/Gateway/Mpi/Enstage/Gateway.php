@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Mpi\Enstage;
 
 use Cache;
+use RZP\Diag\EventCode;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -76,6 +77,10 @@ class Gateway extends Base\Gateway
 
         $this->action($input, Action::OTP_GENERATE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+            $input);
+
         $response = $this->sendOtpGenerateRequest($input);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE);
@@ -83,6 +88,14 @@ class Gateway extends Base\Gateway
         $this->validateResponseContent($response);
 
         $attributes = $this->getVeresAttributesToSave($response, $input);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+            $input,
+            null,
+            [
+                'enrolled'  => $attributes[Base\Entity::ENROLLED]
+            ]);
 
         $gatewayPaymentEntity = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
 
@@ -114,6 +127,10 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $response);
 
         $this->handleError($response, $input['payment']['id']);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
+            $input);
 
         return $gatewayPayment->toArray();
     }

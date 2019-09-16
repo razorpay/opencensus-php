@@ -11,7 +11,6 @@ use RZP\Models\Card\IIN;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
@@ -33,8 +32,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_CANARA,
         RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::NETBANKING_CBI,
         RequestProcessor\Base::NETBANKING_YESB,
         RequestProcessor\Base::NETBANKING_CUB,
+        RequestProcessor\Base::NETBANKING_IBK,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
@@ -46,6 +47,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::NETBANKING_EQUITAS,
         RequestProcessor\Base::NETBANKING_VIJAYA,
+        RequestProcessor\Base::NETBANKING_SBI,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::UPI_HDFC,
         RequestProcessor\Base::UPI_ICICI,
@@ -72,6 +74,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::CARD_FSS_BOB => 1539541800,
     ];
 
+    // This will need to be overridden in each gateway's payment recon.
+    // This contains domestic amount of transaction
+    const COLUMN_PAYMENT_AMOUNT = '';
+
+    // This will need to be overridden in each gateway's payment recon.
+    // This contains international amount of transaction
+    const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT = '';
+
     /*******************
      * Instance objects
      *******************/
@@ -90,8 +100,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     protected $gatewayPayment;
     protected $paymentTransaction;
 
-    protected $messenger;
-
     /**
      * It tells whether we should attempt force authorize for failed payments on the gateway.
      * If force authorize is enabled, we do not make gateway call and mark payments as authorized.
@@ -102,9 +110,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     {
         parent::__construct($gateway);
 
-        $this->messenger = new Messenger;
-
         $this->messenger->batch = $batch;
+
+        $this->batch = $batch;
 
         $this->paymentRepo     = $this->repo->payment;
         $this->iinRepo         = $this->repo->iin;
@@ -120,6 +128,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
         $this->resetRowProcessingAttributes();
 
+        $this->insertRowInOutputFile($row, Base\Reconciliate::PAYMENT);
+
         $rowDetails = $this->getRowDetailsStructured($row);
 
         if (empty($rowDetails) === true)
@@ -130,6 +140,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
+
+        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+
+        $this->setProcessedAtInOutput();
 
         try
         {
@@ -159,6 +173,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 ]);
 
             $this->trace->traceException($ex);
+
+            if (empty(static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS]) === true)
+            {
+                // if the status is not set, then set it to failure
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED,'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage());
+            }
 
             throw $ex;
         }
@@ -206,7 +226,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         if ($this->reconciled === true)
         {
-            $this->handleAlreadyReconciled($paymentId);
+            $this->handleAlreadyReconciled($paymentId, $this->payment->transaction->getReconciledAt());
 
             //
             // Record gateway fee and service tax for reconciled payments
@@ -273,7 +293,17 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     {
         $validPaymentAmount = $this->validatePaymentAmountEqualsReconAmount($row);
 
+        if ($validPaymentAmount === false)
+        {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::AMOUNT_MISMATCH);
+        }
+
         $validCurrencyCode  = $this->validatePaymentCurrencyEqualsReconCurrency($row);
+
+        if ($validCurrencyCode === false)
+        {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::CURRENCY_MISMATCH);
+        }
 
         if (($validPaymentAmount === false) or ($validCurrencyCode === false))
         {
@@ -324,6 +354,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     ]);
             }
 
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::MIS_FILE_PAYMENT_FAILED);
+
             return false;
         }
 
@@ -339,7 +371,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->traceRazorpayFailedPayment();
 
-        return $this->tryAuthorizeFailedPayment($row);
+        $success = $this->tryAuthorizeFailedPayment($row);
+
+        if ($success === false)
+        {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::RECON_AUTHORIZE_FAILED_PAYMENT_UNSUCCESSFUL);
+        }
+
+        return $success;
     }
 
     protected function traceRazorpayFailedPayment()
@@ -368,9 +407,77 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     protected function getReconPaymentStatus(array $row)
     {
         //
-        // The return value of this method must be mapped to one of the statuses in Payment\Status
+        // The return value of this method must be mapped
+        // to one of the statuses in Payment\Status
         //
         return null;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        //
+        // If this constant is not defined in the gateway classes,
+        // we don't do any recon on the payment amount at all.
+        //
+        if ((static::COLUMN_PAYMENT_AMOUNT === '') and
+            (static::COLUMN_INTERNATIONAL_PAYMENT_AMOUNT === ''))
+        {
+            return null;
+        }
+
+        $amountColumn = ($this->isInternationalPayment($row) === true) ?
+                        static::COLUMN_INTERNATIONAL_PAYMENT_AMOUNT :
+                        static::COLUMN_PAYMENT_AMOUNT;
+
+        $paymentAmountColumns = (is_array($amountColumn) === false) ?
+                                [$amountColumn] :
+                                 $amountColumn;
+
+        $paymentAmountColumn = array_first(
+            $paymentAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (array_key_exists($amount, $row) === true);
+            });
+
+        if ($paymentAmountColumn === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
+                    'payment_id'        => $this->payment->getId(),
+                    'expected_column'   => $amountColumn,
+                    'amount'            => $this->payment->getBaseAmount(),
+                    'currency'          => $this->payment->getCurrency(),
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return Helper::getIntegerFormattedAmount($row[$paymentAmountColumn]);
+    }
+
+    /**
+     * Gets amount of payment entity based on transaction currency
+     */
+    protected function getPaymentEntityAmount()
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        return ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+    }
+
+    /**
+     * This function has to be overriden in child classes.
+     * This will return true of current transaction is domestic or international
+     * @param array $row
+     * @return bool
+     */
+    protected function isInternationalPayment(array $row)
+    {
+        return false;
     }
 
     protected function tryAuthorizeFailedPayment($row)
@@ -663,6 +770,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // If payment id is not present, return. No point of evaluating the row.
         if (empty($paymentId) === true)
         {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ID_NOT_FOUND);
+
             return null;
         }
 
@@ -671,6 +780,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $gatewayPaymentDate = $this->getGatewayPaymentDate($row);
 
         $this->setPaymentAndTransaction($row, $paymentId);
+
+        //If payment is not found, dont throw. mark it as Unprocessed. returning null will do that.
+        if ($this->payment === null)
+        {
+            return null;
+        }
 
         //
         // Have to set allowForceAuthorization AFTER setting payment instance because this
@@ -748,10 +863,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         );
     }
 
-    protected function setPaymentAndTransaction($row, $paymentId)
+    public function setPaymentAndTransaction($row, $paymentId)
     {
         try
         {
+            $this->payment = null; //For every row $this->payment should be initialized to null.
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
             $this->paymentTransaction = $this->payment->transaction;
 
@@ -774,6 +890,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ABSENT);
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
@@ -782,10 +900,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
-
-            throw $ex;
-
-            //return null;
         }
     }
 
@@ -826,6 +940,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $cardDetails = $rowDetails[BaseReconciliate::CARD_DETAILS];
 
         $this->paymentIin = $this->payment->card->iinRelation;
+        $gatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
+        $gatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
 
         if ($this->paymentIin === null)
         {
@@ -843,22 +959,22 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         if (empty($cardDetails[BaseReconciliate::CARD_TYPE]) === false)
         {
-            $this->persistCardType($cardDetails[BaseReconciliate::CARD_TYPE]);
+            $this->traceCardType($cardDetails[BaseReconciliate::CARD_TYPE], $gatewayFee, $gatewayServiceTax);
         }
 
         if (empty($cardDetails[BaseReconciliate::CARD_LOCALE]) === false)
         {
-            $this->persistCardLocale($cardDetails[BaseReconciliate::CARD_LOCALE]);
+            $this->traceCardLocale($cardDetails[BaseReconciliate::CARD_LOCALE], $gatewayFee, $gatewayServiceTax);
         }
 
         if (empty($cardDetails[BaseReconciliate::CARD_TRIVIA]) === false)
         {
-            $this->persistCardTrivia($cardDetails[BaseReconciliate::CARD_TRIVIA]);
+            $this->traceCardTrivia($cardDetails[BaseReconciliate::CARD_TRIVIA], $gatewayFee, $gatewayServiceTax);
         }
 
         if (empty($cardDetails[BaseReconciliate::ISSUER]) === false)
         {
-            $this->persistIssuer($cardDetails[BaseReconciliate::ISSUER]);
+            $this->traceIssuer($cardDetails[BaseReconciliate::ISSUER], $gatewayFee, $gatewayServiceTax);
         }
 
         $this->repo->saveOrFail($this->paymentIin);
@@ -936,7 +1052,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * @param array $rowDetails
      * @param PublicEntity $gatewayPayment
      */
-    protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
+    public function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
     {
         if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
         {
@@ -1129,50 +1245,48 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $gatewayPayment->setCreditAccountNumber($accountNumber);
     }
 
-    protected function persistIssuer($reconIssuer)
+    protected function traceIssuer($reconIssuer, $gatewayFee, $gatewayServiceTax)
     {
         $iinIssuer = $this->paymentIin->getIssuer();
 
         if (empty($iinIssuer) === true)
         {
-            $this->paymentIin->setIssuer($reconIssuer);
-        }
-        else
-        {
             $this->trace->info(
                 TraceCode::RECON_INFO,
                 [
-                    'info_code'    => 'IIN_ISSUER_ALREADY_PRESENT',
-                    'message'      => 'IIN already contains issuer. Not updating it.',
-                    'payment_id'   => $this->payment->getId(),
-                    'iin_id'       => $this->paymentIin->getKey(),
-                    'recon_issuer' => $reconIssuer,
-                    'iin_issuer'   => $iinIssuer,
-                    'gateway'      => $this->gateway
+                    'info_code'           => Base\InfoCode::IIN_ISSUER_ABSENT,
+                    'message'             => 'IIN does not contain issuer.',
+                    'payment_id'          => $this->payment->getId(),
+                    'iin_id'              => $this->paymentIin->getKey(),
+                    'recon_issuer'        => $reconIssuer,
+                    'iin_issuer'          => $iinIssuer,
+                    'amount'              => $this->payment->getAmount(),
+                    'gateway_fee'         => $gatewayFee,
+                    'gateway_service_tax' => $gatewayServiceTax,
+                    'gateway'             => $this->gateway
                 ]);
         }
     }
 
-    protected function persistCardTrivia($reconCardTrivia)
+    protected function traceCardTrivia($reconCardTrivia, $gatewayFee, $gatewayServiceTax)
     {
         $iinTrivia = $this->paymentIin->getTrivia();
 
         if (empty($iinTrivia) === true)
         {
-            $this->paymentIin->setTrivia($reconCardTrivia);
-        }
-        else
-        {
             $this->trace->info(
                 TraceCode::RECON_INFO,
                 [
-                    'info_code'         => 'IIN_TRIVIA_ALREADY_PRESENT',
-                    'message'           => 'IIN already contains trivia. Not updating it.',
-                    'payment_id'        => $this->payment->getId(),
-                    'iin_id'            => $this->paymentIin->getKey(),
-                    'recon_card_trivia' => $reconCardTrivia,
-                    'iin_card_trivia'   => $iinTrivia,
-                    'gateway'           => $this->gateway
+                    'info_code'           => Base\InfoCode::IIN_TRIVIA_ABSENT,
+                    'message'             => 'IIN does not contain trivia.',
+                    'payment_id'          => $this->payment->getId(),
+                    'iin_id'              => $this->paymentIin->getKey(),
+                    'recon_card_trivia'   => $reconCardTrivia,
+                    'iin_card_trivia'     => $iinTrivia,
+                    'amount'              => $this->payment->getAmount(),
+                    'gateway_fee'         => $gatewayFee,
+                    'gateway_service_tax' => $gatewayServiceTax,
+                    'gateway'             => $this->gateway
                 ]);
         }
     }
@@ -1184,31 +1298,28 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * @param String $reconCardType
      * @throws ReconciliationException
      */
-    protected function persistCardType($reconCardType)
+    protected function traceCardType($reconCardType, $gatewayFee, $gatewayServiceTax)
     {
         // Assumption: This function will not be called if IIN is missing.
         // If IIN is missing, it will be created and this function will not be called.
 
         $iinCardType = $this->paymentIin->getType();
-
-        if ((empty($iinCardType) === true) or ($iinCardType === Card\Type::UNKNOWN))
-        {
-            $this->paymentIin->setType($reconCardType);
-        }
-        else if ($iinCardType !== $reconCardType)
+        if ($iinCardType !== $reconCardType)
         {
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'message'         => 'Card types in recon file and db do not match. Updating.',
-                    'info_code'       => 'CARD_TYPE_MISMATCH',
-                    'recon_card_type' => $reconCardType,
-                    'iin_card_type'   => $iinCardType,
-                    'payment_id'      => $this->payment->getId(),
-                    'gateway'         => $this->gateway
+                    'message'             => 'Card types in recon file and db do not match.',
+                    'info_code'           => Base\InfoCode::CARD_TYPE_MISMATCH,
+                    'recon_card_type'     => $reconCardType,
+                    'iin_card_type'       => $iinCardType,
+                    'payment_id'          => $this->payment->getId(),
+                    'iin_id'              => $this->paymentIin->getKey(),
+                    'amount'              => $this->payment->getAmount(),
+                    'gateway_fee'         => $gatewayFee,
+                    'gateway_service_tax' => $gatewayServiceTax,
+                    'gateway'             => $this->gateway
                 ]);
-
-            $this->paymentIin->setType($reconCardType);
         }
     }
 
@@ -1276,7 +1387,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->repo->saveOrFail($iin);
     }
 
-    protected function persistCardLocale($reconCardLocale)
+    protected function traceCardLocale($reconCardLocale, $gatewayFee, $gatewayServiceTax)
     {
         $shouldPersistCardLocale = $this->shouldPersistCardLocale();
 
@@ -1288,12 +1399,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
         if ($reconCardLocale === BaseReconciliate::INTERNATIONAL)
         {
-            $countryCode = null;
             $reconInternational = true;
         }
         else
         {
-            $countryCode = 'IN';
             $reconInternational = false;
         }
 
@@ -1303,25 +1412,15 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             ($currentInternational === false) and
             ($reconInternational === true))
         {
-            $this->paymentIin->setCountry($countryCode);
-
-            // Make sure that international returns true in this case, after the country code is set.
-            assertTrue($this->paymentIin->isInternational());
-
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'info_code'  => 'IIN_INTERNATIONAL_SET',
-                    'message'    => 'Setting an IIN to international.',
-                    'iin_id'     => $this->paymentIin->getKey(),
-                    'gateway'    => $this->gateway,
-                    'payment_id' => $this->payment->getId(),
-                ]
-            );
+            $this->traceCardLocaleMismatch('DB says domestic but recon says international',
+                $gatewayFee,
+                $gatewayServiceTax);
         }
         else if (($currentInternational === true) and ($reconInternational === false))
         {
-            $this->tracePaymentIinMismatchAndNotify(!$shouldPersistCardLocale);
+            $this->traceCardLocaleMismatch('DB says international but recon says domestic',
+                $gatewayFee,
+                $gatewayServiceTax);
         }
     }
 
@@ -1432,7 +1531,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->payment->setGatewayCaptured(true);
     }
 
-    protected function recordGatewayFeeAndServiceTax($rowDetails)
+    public function recordGatewayFeeAndServiceTax($rowDetails)
     {
         $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
         $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
@@ -1442,6 +1541,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         if ((($reconGatewayFee === null) or ($reconGatewayServiceTax === null)) and
             ($nullTaxAndFeesAllowed === false))
         {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::RECON_GATEWAY_FEE_OR_TAX_IS_EMPTY);
+
             return false;
         }
 
@@ -1458,6 +1559,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                         'row_details'   => $rowDetails,
                         'gateway'       => $this->gateway
                     ]);
+
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::RECON_RECORD_GATEWAY_FEE_TRANSACTION_ABSENT);
 
                 return false;
             }
@@ -1483,6 +1586,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 return true;
             }
         }
+
+        $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::RECON_RECORD_GATEWAY_FEE_FAILED);
 
         return false;
     }
@@ -1676,16 +1781,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             if ($currentGatewayFee !== $reconGatewayFee)
             {
-                $message = 'Gateway fee in the recon file does not match with the one stored in API.';
-
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'        => TraceCode::RECON_FAILURE,
-                        'message'           => $message,
+                        'info_code'         => Base\InfoCode::GATEWAY_FEE_MISMATCH,
                         'recon_gateway_fee' => $reconGatewayFee,
                         'api_gateway_fee'   => $currentGatewayFee,
                         'gateway'           => $this->gateway,
                     ]);
+
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::GATEWAY_FEE_MISMATCH);
 
                 throw new ReconciliationException(
                     'Gateway fee in the recon file does not match with the one stored in API.',
@@ -1713,16 +1818,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             if ($currentGatewayServiceTax !== $reconGatewayServiceTax)
             {
-                $message = 'Gateway service tax in the recon file does not match with the one stored in API.';
-
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'                 => TraceCode::RECON_FAILURE,
-                        'message'                    => $message,
+                        'info_code'                  => Base\InfoCode::GATEWAY_SERVICE_TAX_MISMATCH,
                         'recon_gateway_service_tax'  => $reconGatewayServiceTax,
                         'api_gateway_service_tax'    => $currentGatewayServiceTax,
                         'gateway'                    => $this->gateway,
                     ]);
+
+                $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::GATEWAY_SERVICE_TAX_MISMATCH);
 
                 throw new ReconciliationException(
                     'Gateway service tax in the recon file does not match with the one stored in API.',
@@ -1934,7 +2039,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * NOTE: If this is being implemented in the child class,
      * ensure that the relevant setters are implemented in the entity.
      */
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return null;
     }
@@ -1949,6 +2054,47 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
+        $reconPaymentAmount = $this->getReconPaymentAmount($row);
+
+        //
+        //  If payment amount column is expected in gateway recon but not present in MIS.
+        //  this will return false and amount validation fails.
+        //
+        if ($reconPaymentAmount === false)
+        {
+            return false;
+        }
+
+        //
+        // If payment column is not defined for the gateway recon, this will return
+        // true. Because that means, either we are not receiving payment amount column in MIS or
+        // we do not want to validate amount for this gateway, in such cases, validation
+        // always returns true.
+        //
+        if ($reconPaymentAmount === null)
+        {
+            return true;
+        }
+
+        // To handle multi-currency, get amount/base amount of payment entity
+        $paymentEntityAmount = $this->getPaymentEntityAmount();
+
+        if ($paymentEntityAmount !== $reconPaymentAmount)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
+                    'payment_id'        => $this->payment->getId(),
+                    'expected_amount'   => $paymentEntityAmount,
+                    'recon_amount'      => $reconPaymentAmount,
+                    'currency'          => $this->payment->getCurrency(),
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
         return true;
     }
 
@@ -2093,22 +2239,20 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * Traces and sends slack alert if mismatch in payment IIN found.
      * Will not send slack alert if we are not saving IIN metadata in recon
      */
-    protected function tracePaymentIinMismatchAndNotify($shouldSkipSlack = false)
+    protected function traceCardLocaleMismatch($message, $gatewayFee, $gatewayServiceTax)
     {
-        $this->messenger->setSkipSlack($shouldSkipSlack);
-
-        $this->messenger->raiseReconAlert(
+        $this->trace->info(
+            TraceCode::RECON_MISMATCH,
             [
-                'trace_code'    => TraceCode::RECON_MISMATCH,
-                'message'       => 'DB says international but recon says domestic',
-                'payment_id'    => $this->payment->getId(),
-                'amount'        => $this->payment->getAmount(),
-                'iin_id'        => $this->paymentIin->getKey(),
-                'gateway'       => $this->gateway
+                'info_code'           => Base\InfoCode::CARD_LOCALE_MISMATCH,
+                'message'             => $message,
+                'payment_id'          => $this->payment->getId(),
+                'iin_id'              => $this->paymentIin->getKey(),
+                'amount'              => $this->payment->getAmount(),
+                'gateway_fee'         => $gatewayFee,
+                'gateway_service_tax' => $gatewayServiceTax,
+                'gateway'             => $this->gateway
             ]);
-
-        // Enabling slack messages for further alerts.
-        $this->messenger->setSkipSlack(false);
     }
 
 

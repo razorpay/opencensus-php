@@ -5,23 +5,27 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
-use RZP\Models\Risk;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Models\Card\IIN;
 use RZP\Services\OtpElf;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Constants\Entity as E;
-use RZP\Models\Payment\Analytics\Metadata;
 
 trait HeadlessOtp
 {
     public static $errorCodeToFlow = [
         TraceCode::HEADLESS_OTP_ELF_FAILURE => IIN\Flow::HEADLESS_OTP,
         ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE => IIN\Flow::IVR,
+    ];
+
+    public static $elfErrorCodeMapping = [
+        OtpElf::CARD_BLOCKED         => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
+        OtpElf::NETWORK_ERROR        => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        OtpElf::BANK_ERROR           => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::PAYMENT_TIMEOUT      => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
+        OtpElf::BANK_SERVICE_DOWN    => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::NO_AVAILABLE_ACTIONS => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
     ];
 
     protected function getNextOtpAction(array $actions)
@@ -174,7 +178,6 @@ trait HeadlessOtp
 
         $this->handleFailedResponse($response, $payment, $traceInput);
 
-
         if ($payment->getAuthType() === Payment\AuthType::OTP)
         {
             $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
@@ -189,13 +192,33 @@ trait HeadlessOtp
                 true);
         }
 
-        /*
-         * If elf fail for unknow reason we are setting original termurl for fallback
-        */
-        if ($originalTermUrl !== null)
+
+        if ($this->isS2SJsonRoute === true)
         {
-            $request['content']['TermUrl'] = $originalTermUrl;
+            $this->headlessError = true;
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_OTPELF_FAILURE,
+                null,
+                null,
+                [],
+                null,
+                null,
+                true
+            );
         }
+
+        if ($this->isRupayNetwork($payment) === true)
+        {
+            throw new Exception\IntegrationException("Unknown error for Rupay transaction",
+                ErrorCode::SERVER_ERROR_OTP_ELF_FAILED_FOR_RUPAY);
+        }
+
+        /*
+         * If elf fail for unknown reason for Non Rupay Transaction we are setting original termurl for fallback
+        */
+
+        $request['content']['TermUrl'] = $originalTermUrl;
 
         return $request;
     }
@@ -322,6 +345,17 @@ trait HeadlessOtp
                     null,
                     false);
             }
+
+            if (array_key_exists($response['error']['reason'], self::$elfErrorCodeMapping) === true)
+            {
+                $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
+
+                $errorCode = self::$elfErrorCodeMapping[$response['error']['reason']];
+
+                throw new Exception\GatewayErrorException(
+                    $errorCode
+                );
+            }
         }
 
         $this->trace->critical($traceCode, $traceInput);
@@ -329,6 +363,11 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
+        if ($payment->hasCard() === false)
+        {
+            return;
+        }
+
         if (empty(self::$errorCodeToFlow[$code]) === true)
         {
             return;
@@ -338,10 +377,12 @@ trait HeadlessOtp
 
         $iin = $payment->card->getIin();
 
-        $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
-            'iin' => $iin,
-            'flow'  => $flow,
-        ]);
+        $this->trace->info(
+            TraceCode::IIN_FLOW_DISABLE,
+            [
+                'iin' => $iin,
+                'flow'  => $flow,
+            ]);
 
         (new IIN\Service)->disableIinFlow($iin, $flow);
     }

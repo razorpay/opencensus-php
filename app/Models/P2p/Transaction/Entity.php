@@ -3,14 +3,17 @@
 namespace RZP\Models\P2p\Transaction;
 
 use Carbon\Carbon;
-use RZP\Models\P2p\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Vpa;
+use RZP\Models\Customer;
+use RZP\Models\P2p\Base;
 
 /**
  * @property Vpa\Entity $payer
  * @property Vpa\Entity $payee
  * @property Concern\Entity $concern
  * @property UpiTransaction\Entity $upi
+ * @property boolean $isConcernEligible
  *
  * Class Entity
  * @package RZP\Models\P2p\Transaction
@@ -18,34 +21,38 @@ use RZP\Models\P2p\Vpa;
 class Entity extends Base\Entity
 {
     use Base\Traits\HasMerchant;
-    use Base\Traits\HasCustomer;
+    use Base\Traits\HasDevice;
+    use Base\Traits\HasHandle;
+    use Base\Traits\SoftDeletes;
     use Base\Traits\HasBankAccount;
 
-    const MERCHANT_ID          = 'merchant_id';
-    const CUSTOMER_ID          = 'customer_id';
-    const PAYER_TYPE           = 'payer_type';
-    const PAYER_ID             = 'payer_id';
-    const PAYEE_TYPE           = 'payee_type';
-    const PAYEE_ID             = 'payee_id';
-    const BANK_ACCOUNT_ID      = 'bank_account_id';
-    const METHOD               = 'method';
-    const TYPE                 = 'type';
-    const FLOW                 = 'flow';
-    const MODE                 = 'mode';
-    const AMOUNT               = 'amount';
-    const CURRENCY             = 'currency';
-    const DESCRIPTION          = 'description';
-    const GATEWAY              = 'gateway';
-    const STATUS               = 'status';
-    const INTERNAL_STATUS      = 'internal_status';
-    const ERROR_CODE           = 'error_code';
-    const ERROR_DESCRIPTION    = 'error_description';
-    const INTERNAL_ERROR_CODE  = 'internal_error_code';
-    const PAYER_APPROVAL_CODE  = 'payer_approval_code';
-    const PAYEE_APPROVAL_CODE  = 'payee_approval_code';
-    const INITIATED_AT         = 'initiated_at';
-    const EXPIRE_AT            = 'expire_at';
-    const COMPLETED_AT         = 'completed_at';
+    const MERCHANT_ID                   = 'merchant_id';
+    const CUSTOMER_ID                   = 'customer_id';
+    const PAYER_TYPE                    = 'payer_type';
+    const PAYER_ID                      = 'payer_id';
+    const PAYEE_TYPE                    = 'payee_type';
+    const PAYEE_ID                      = 'payee_id';
+    const BANK_ACCOUNT_ID               = 'bank_account_id';
+    const METHOD                        = 'method';
+    const TYPE                          = 'type';
+    const FLOW                          = 'flow';
+    const MODE                          = 'mode';
+    const AMOUNT                        = 'amount';
+    const AMOUNT_MINIMUM                = 'amount_minimum';
+    const AMOUNT_AUTHORIZED             = 'amount_authorized';
+    const CURRENCY                      = 'currency';
+    const DESCRIPTION                   = 'description';
+    const GATEWAY                       = 'gateway';
+    const STATUS                        = 'status';
+    const INTERNAL_STATUS               = 'internal_status';
+    const ERROR_CODE                    = 'error_code';
+    const ERROR_DESCRIPTION             = 'error_description';
+    const INTERNAL_ERROR_CODE           = 'internal_error_code';
+    const PAYER_APPROVAL_CODE           = 'payer_approval_code';
+    const PAYEE_APPROVAL_CODE           = 'payee_approval_code';
+    const INITIATED_AT                  = 'initiated_at';
+    const EXPIRE_AT                     = 'expire_at';
+    const COMPLETED_AT                  = 'completed_at';
 
     /************** Input  Properties ************/
 
@@ -56,6 +63,9 @@ class Entity extends Base\Entity
     const BANK_ACCOUNT         = 'bank_account';
     const CL                   = 'cl';
     const CONCERN              = 'concern';
+    const CONCERNS             = 'concerns';
+    const IS_CONCERN_ELIGIBLE  = 'is_concern_eligible';
+    const IS_PENDING_COLLECT   = 'is_pending_collect';
 
     /************** Entity Properties ************/
 
@@ -119,6 +129,8 @@ class Entity extends Base\Entity
         Entity::INTERNAL_ERROR_CODE,
         Entity::PAYER_APPROVAL_CODE,
         Entity::PAYEE_APPROVAL_CODE,
+        Entity::IS_CONCERN_ELIGIBLE,
+        Entity::IS_PENDING_COLLECT,
         Entity::INITIATED_AT,
         Entity::EXPIRE_AT,
         Entity::COMPLETED_AT,
@@ -141,6 +153,8 @@ class Entity extends Base\Entity
         Entity::STATUS,
         Entity::ERROR_CODE,
         Entity::ERROR_DESCRIPTION,
+        Entity::IS_CONCERN_ELIGIBLE,
+        Entity::IS_PENDING_COLLECT,
         Entity::INITIATED_AT,
         Entity::EXPIRE_AT,
         Entity::COMPLETED_AT,
@@ -149,6 +163,7 @@ class Entity extends Base\Entity
         Entity::PAYEE,
         Entity::BANK_ACCOUNT,
         Entity::UPI,
+        Entity::CONCERN,
     ];
 
     protected $defaults = [
@@ -200,6 +215,8 @@ class Entity extends Base\Entity
         Entity::INTERNAL_ERROR_CODE  => 'string',
         Entity::PAYER_APPROVAL_CODE  => 'string',
         Entity::PAYEE_APPROVAL_CODE  => 'string',
+        Entity::IS_CONCERN_ELIGIBLE  => 'boolean',
+        Entity::IS_PENDING_COLLECT   => 'boolean',
         Entity::INITIATED_AT         => 'int',
         Entity::EXPIRE_AT            => 'int',
         Entity::COMPLETED_AT         => 'int',
@@ -209,6 +226,11 @@ class Entity extends Base\Entity
 
     protected $with = [
         Entity::UPI,
+    ];
+
+    protected $appends = [
+        Entity::IS_CONCERN_ELIGIBLE,
+        Entity::IS_PENDING_COLLECT,
     ];
 
     /***************** SETTERS *****************/
@@ -645,7 +667,7 @@ class Entity extends Base\Entity
 
     public function isProcessing(): bool
     {
-        return in_array($this->getInternalStatus(), [Status::INITIATED, Status::PENDING]);
+        return in_array($this->getInternalStatus(), [Status::REQUESTED, Status::INITIATED, Status::PENDING]);
     }
 
     public function isFailed(): bool
@@ -658,16 +680,36 @@ class Entity extends Base\Entity
         return in_array($this->getInternalStatus(), [Status::CREATED]);
     }
 
+    public function isPendingCollect(): bool
+    {
+        return $this->getAttribute(self::IS_PENDING_COLLECT);
+    }
+
+    public function isConcernEligible()
+    {
+        return $this->getAttribute(self::IS_CONCERN_ELIGIBLE);
+    }
+
     /***************** RELATIONS *****************/
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer\Entity::class);
+    }
+
+    public function associateCustomer(Customer\Entity $handle)
+    {
+        return $this->customer()->associate($handle);
+    }
 
     public function payer()
     {
-        return $this->morphTo(self::PAYER);
+        return $this->morphTo(self::PAYER)->withTrashed();
     }
 
     public function payee()
     {
-        return $this->morphTo(self::PAYEE);
+        return $this->morphTo(self::PAYEE)->withTrashed();
     }
 
     public function upi()
@@ -682,11 +724,68 @@ class Entity extends Base\Entity
 
     public function concern()
     {
-        return $this->hasOne(Concern\Entity::class, Concern\Entity::TRANSACTION_ID)->latest();
+        return $this->hasOne(Concern\Entity::class, Concern\Entity::TRANSACTION_ID)
+                    ->whereNotIn(Concern\Entity::STATUS, [Concern\Status::CREATED])
+                    ->latest();
     }
 
     public function setPublicEntityAttribute(array & $array)
     {
         $array[self::ENTITY] = 'customer.transaction';
+    }
+
+    protected function getIsConcernEligibleAttribute()
+    {
+        return in_array($this->getInternalStatus(), [
+            Status::FAILED,
+            Status::PENDING,
+        ]);
+    }
+
+    protected function getIsPendingCollectAttribute()
+    {
+        return ($this->getStatus() === Status::REQUESTED);
+    }
+
+    public function toArrayPublic(): array
+    {
+        $array = parent::toArrayPublic();
+
+        $array[self::UPI] = $this->upi->toArrayPublic();
+
+        if (isset($array[self::PAYER]))
+        {
+            $array[self::PAYER] = $this->payer->toArrayBeneficiary();
+        }
+
+        if (isset($array[self::PAYEE]))
+        {
+            $array[self::PAYEE] = $this->payee->toArrayBeneficiary();
+        }
+
+        if (isset($array[self::BANK_ACCOUNT]))
+        {
+            $array[self::BANK_ACCOUNT] = $this->bankAccount->toArrayPublic();
+        }
+
+        if (isset($array[self::CONCERN]))
+        {
+            $array[self::CONCERN] = $this->concern->toArrayPublic();
+        }
+
+        return $array;
+    }
+
+    public function toArrayPartner(): array
+    {
+        $array = $this->toArrayPublic();
+
+        $array[self::CUSTOMER_ID]   = Customer\Entity::getSignedId($this->getCustomerId());
+        $array[self::UPI]           = $this->upi->toArrayPublic();
+        $array[self::PAYER]         = array_except($this->payer->toArrayPublic(), self::BANK_ACCOUNT);
+        $array[self::PAYEE]         = array_except($this->payee->toArrayPublic(), self::BANK_ACCOUNT);
+        $array[self::BANK_ACCOUNT]  = $this->bankAccount->toArrayPublic();
+
+        return $array;
     }
 }

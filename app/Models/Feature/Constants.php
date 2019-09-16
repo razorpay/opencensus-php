@@ -11,6 +11,7 @@ class Constants
     const DUMMY                           = 'dummy';
     const WEBHOOKS                        = 'webhooks';
     const AGGREGATOR                      = 'aggregator';
+    const TERMINAL_ONBOARDING             = 'terminal_onboarding';
     const TOKENS                          = 'tokens';
     const S2SWALLET                       = 's2swallet';
     const S2SUPI                          = 's2supi';
@@ -19,6 +20,7 @@ class Constants
     const NOFLASHCHECKOUT                 = 'noflashcheckout';
     const RECURRING                       = 'recurring';
     const S2S                             = 's2s';
+    const S2S_JSON                        = 's2s_json';
     const INVOICE                         = 'invoice';
     const NOZEROPRICING                   = 'nozeropricing';
     const REVERSE                         = 'reverse';
@@ -38,6 +40,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
     const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
@@ -103,6 +106,7 @@ class Constants
     const IRCTC_METHODS                   = 'irctc_methods';
     const SKIP_CVV                        = 'skip_cvv';
     const BLOCK_SETTLEMENTS               = 'block_settlements';
+    const TEST_MODE_SETTLEMENT            = 'test_mode_settlement';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
     const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
     const IIN_LISTING                     = 'iin_listing';
@@ -110,7 +114,6 @@ class Constants
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
     const ALLOW_REVERSALS_FROM_LA         = 'allow_reversals_from_la';
-    const QUEUED_PAYOUTS                  = 'queued_payouts';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
     const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
@@ -118,8 +121,22 @@ class Constants
     const DOWNTIME_ROUTING                = 'downtime_routing';
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
+    const GOOGLE_PAY_OMNICHANNEL          = 'google_pay_omnichannel';
+    const VIJAYA_MERCHANT                 = 'vijaya_merchant';
+    const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
+    const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
+    const PHONEPE_INTENT                  = 'phonepe_intent';
+    const ISSUE_MPANS                     = 'issue_mpans';
+    const BLOCK_DEBIT_2K                  = 'block_debit_2k';
 
     /**
+     * Feature flag to enable to create new customer if contact and email both are null,
+     * this functionality will be there by default for new merchants , flag need to be enabled if
+     * needed for older merchants
+     */
+    const CUST_CONTACT_EMAIL_NULL         = 'cust_contact_email_null';
+
+  /**
      * This will control if the bank details will be returned in the fetch token response.
      * Bank details will contain beneficiary_name, account_number, ifsc and account_type
      */
@@ -181,6 +198,11 @@ class Constants
      */
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
+    /**
+     * Enables workflow feature on Payout for Business Banking (RazorpayX)
+     */
+    const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -213,6 +235,8 @@ class Constants
         self::GOOGLE_PAY,
         self::CUSTOMER_ADDRESS,
         self::IRCTC_METHODS,
+        self::GOOGLE_PAY_OMNICHANNEL,
+        self::PHONEPE_INTENT,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -256,6 +280,7 @@ class Constants
         self::EXPOSE_DOWNTIMES                => true,
         self::PAYMENT_FAILURE_EMAIL           => true,
         self::VIRTUAL_ACCOUNTS                => true,
+        self::BANK_TRANSFER_ON_CHECKOUT       => true,
         self::INVOICE_PARTIAL_PAYMENTS        => true,
         self::HIDE_DOWNTIMES                  => true,
         self::OLD_CREDITS_FLOW                => true,
@@ -335,6 +360,7 @@ class Constants
         self::REPORTING_GENRERIC_NOTES        => true,
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
+        self::S2S_JSON                        => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
         self::DISABLE_CARD_REFUNDS            => true,
@@ -347,7 +373,6 @@ class Constants
         self::DISPUTE_MAILS_DISABLED          => true,
         self::ALLOW_REVERSALS_FROM_LA         => true,
         self::BLOCK_PL_PAY_POST_EXPIRY        => true,
-        self::QUEUED_PAYOUTS                  => true,
         self::ADHOC_SETTLEMENT                => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
@@ -356,6 +381,16 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::GOOGLE_PAY_OMNICHANNEL          => true,
+        self::TERMINAL_ONBOARDING             => true,
+        self::TEST_MODE_SETTLEMENT            => true,
+        self::VIJAYA_MERCHANT                 => true,
+        self::PAYOUT_WORKFLOWS                => true,
+        self::ASYNC_BALANCE_UPDATE            => true,
+        self::ISSUE_MPANS                     => true,
+        self::CUST_CONTACT_EMAIL_NULL         => true,
+        self::PHONEPE_INTENT                  => true,
+        self::BLOCK_DEBIT_2K                  => true,
     ];
 
     // Entity type constants
@@ -420,6 +455,11 @@ class Constants
             'display_name'  => 'Smart Collect',
             'documentation' => 'smart-collect',
         ],
+        self::PAYOUT    => [
+            'feature'       => self::PAYOUT,
+            'display_name'  => 'Payouts',
+            'documentation' => 'payouts',
+        ],
         self::REPORT_V2 => [
             'feature'       => self::REPORT_V2,
             'display_name'  => 'Report V2',
@@ -460,11 +500,6 @@ class Constants
             'display_name'  => 'Allow Refunds From Linked Accounts',
             'documentation' => '',
         ],
-        self::QUEUED_PAYOUTS            => [
-            'feature'       => self::QUEUED_PAYOUTS,
-            'display_name'  => 'Queued payouts',
-            'documentation' => '',
-        ],
         self::PAYOUT_TO_CARDS           => [
             'feature'       => self::PAYOUT_TO_CARDS,
             'display_name'  => 'Payout to cards',
@@ -473,6 +508,11 @@ class Constants
         self::X_PRO_INVITE              => [
             'feature'       => self::X_PRO_INVITE,
             'display_name'  => 'Razorpay X Pro Invite',
+            'documentation' => '',
+        ],
+        self::PAYOUT_WORKFLOWS          => [
+            'feature'       => self::PAYOUT_WORKFLOWS,
+            'display_name'  => 'Razorpay X - Workflows',
             'documentation' => '',
         ],
     ];

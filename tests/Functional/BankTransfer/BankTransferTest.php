@@ -113,6 +113,32 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
 
+    public function testHidePayerDetailsWithFeatureFlag()
+    {
+        $this->testBankTransferProcess();
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payments/'.$payment['id'].'/bank_transfer',
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('payer_bank_account', $response);
+
+        $this->assertArrayHasKey('id', $response['payer_bank_account']);
+
+        $this->fixtures->merchant->addFeatures(['hide_va_payer_bank_detail']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayNotHasKey('payer_bank_account', $response);
+    }
+
     public function testBankTransferProcessForTinyAmount()
     {
         $accountNumber = $this->bankAccount['account_number'];
@@ -254,45 +280,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals(1500 + $transaction['amount'] * 1 / 100, $transaction['fee'] - $transaction['tax']);
     }
 
-    public function testBankTransferTerminalDataMigration()
-    {
-        $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
-
-        // Process API always returns true
-        $response = $this->processBankTransfer($accountNumber, $ifsc);
-        $this->assertEquals(true, $response['valid']);
-        $this->assertNull($response['message']);
-
-        // Created bank transfer is an expected one
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
-        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
-        $this->assertEquals(true, $bankTransfer['expected']);
-        $this->assertNotNull($bankTransfer['payment_id']);
-
-        // Payment is automatically captured
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
-
-        $this->fixtures->payment->edit($payment['id'], ['terminal_id' => null]);
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertNull($payment['terminal_id']);
-
-        $request = [
-            'method'    => 'POST',
-            'url'       => '/payment/bank_transfer_terminal_backfill',
-            'content'   => []
-        ];
-
-        $this->ba->cronAuth();
-
-        $this->makeRequestAndGetContent($request);
-
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
-    }
-
     public function testBankTransferRefund()
     {
         $channel = Channel::AXIS;
@@ -415,9 +402,9 @@ class BankTransferTest extends TestCase
 
         // Adding this since post reconciliation, we update the status at scrooge side,
         // post which scrooge sends an update status request to API
-//        $this->scroogeUpdateRefundStatus($refund, Refund\Status::PROCESSED);
+        $this->scroogeUpdateRefundStatus($refund, 'processed_event');
 
-//        $refund = $this->getLastEntity('refund', true);
+        $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertNotNull($refund['processed_at']);
@@ -498,6 +485,57 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(4000000, $payment['amount_refunded']);
+    }
+
+    public function testBankTransferWithoutModifyingContact()
+    {
+        $this->fixtures->edit(
+            'customer',
+            '100000customer',
+            ['contact' => '000000000']
+        );
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->fixtures->base->editEntity(
+            'virtual_account',
+            $virtualAccount['id'],
+            [
+                'customer_id' => '100000customer'
+            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_dashboard', $payment['gateway']);
+
+        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+
+        // Customer bank account created
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
 
     public function testBankTransferImpsWithNbin()
@@ -1980,7 +2018,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
 
-        $response = $this->refundPayment($payment['id']);
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -1988,7 +2026,7 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -2116,5 +2154,32 @@ class BankTransferTest extends TestCase
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('UDAN', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
+    }
+
+    public function testBankTransferPreferences()
+    {
+        $methods = $this->getPreferences()['methods'];
+
+        // Key is not present in preferences, even though method is enabled
+        $this->assertArrayNotHasKey('bank_transfer', $methods);
+
+        $this->fixtures->merchant->addFeatures(['bank_transfer_on_checkout']);
+
+        $methods = $this->getPreferences()['methods'];
+
+        // Key becomes available when feature is enabled
+        $this->assertArrayHasKey('bank_transfer', $methods);;
+    }
+
+    protected function getPreferences()
+    {
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent([
+            'url'    => '/preferences',
+            'method' => 'get'
+        ]);
+
+        return $response;
     }
 }

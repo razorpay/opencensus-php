@@ -190,7 +190,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
         Entity::BILLING_START            => 'filled|epoch',
         Entity::BILLING_END              => 'filled|epoch',
-        Entity::EXPIRE_BY                => 'sometimes|epoch|nullable',
+        Entity::EXPIRE_BY                => 'sometimes|epoch|nullable|custom',
         Entity::DRAFT                    => 'filled|boolean',
         Entity::SUPPLY_STATE_CODE        => 'sometimes|nullable|custom',
         Entity::CALLBACK_URL             => 'sometimes|url|nullable',
@@ -202,7 +202,7 @@ class Validator extends Base\Validator
         Entity::NOTES                    => 'sometimes|notes',
         Entity::COMMENT                  => 'sometimes|string|max:2048|utf8',
         Entity::RECEIPT                  => 'sometimes|string|min:1|max:40|nullable|custom',
-        Entity::EXPIRE_BY                => 'sometimes|epoch|nullable',
+        Entity::EXPIRE_BY                => 'sometimes|epoch|nullable|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
         Entity::CALLBACK_URL             => 'sometimes|url|nullable',
@@ -775,7 +775,7 @@ class Validator extends Base\Validator
     /**
      * Validates if an invoice can be issued or not.
      * It has the following checks:
-     *  - Gap between invoice issue and expired by should be greater that a min
+     *  - Gap between invoice issue and expired by should be greater that 15 minutes
      *  - Invoice should have amount set to a non-zero value
      *  - Either description (minimal invoice) or non-zero line items should exist
      */
@@ -972,11 +972,13 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCancelInvoicesOfBatch(Batch\Entity $batch)
+    public function validateCancelInvoicesOfBatch(array $batch)
     {
-        if ($batch->getStatus() !== Batch\Status::PROCESSED)
+        if (($batch[Batch\Entity::STATUS] !== Batch\Status::PROCESSED) and
+            ($batch[Batch\Entity::STATUS] !== Batch\Status::PARTIALLY_PROCESSED)
+        )
         {
-            throw new BadRequestValidationFailureException('batch should be in processed status to cancel');
+            throw new BadRequestValidationFailureException('batch should be in processed or partially processed status to cancel');
         }
     }
 

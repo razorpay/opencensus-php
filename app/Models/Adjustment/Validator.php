@@ -38,7 +38,7 @@ class Validator extends Base\Validator
         DisputeEntity::PAYMENT_ID => 'required|string',
     ];
 
-    public function validateAdjusmentCreateInput(array $input)
+    public function validateAdjustmentCreateInput(array $input)
     {
         // Presence of all three keys is not allowed
         if (isset($input[Entity::AMOUNT]) === true and
@@ -55,7 +55,7 @@ class Validator extends Base\Validator
             isset($input['fees']) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Atleast one out of amount OR tax/fees should be passed');
+                'At least one out of amount OR tax/fees should be passed');
         }
     }
 
@@ -63,9 +63,10 @@ class Validator extends Base\Validator
      * Validate merchant balance before an adjustment is processed
      *
      * @param Merchant\Entity $merchant
-     * @param PublicEntity $entity
-     * @param array $input
-     * @throws BadRequestException
+     * @param PublicEntity    $entity
+     * @param array           $input
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateMerchantBalance(Merchant\Entity $merchant,
                                             PublicEntity $entity,
@@ -98,10 +99,6 @@ class Validator extends Base\Validator
 
     protected function validateChannel($attribute, $channel)
     {
-        if (SettlementChannel::exists($channel) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid channel name: ' . $channel);
-        }
+        SettlementChannel::validate($channel);
     }
 }

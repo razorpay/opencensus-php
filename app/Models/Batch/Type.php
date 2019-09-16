@@ -16,6 +16,7 @@ class Type
 
     // IRCTC Batch Types
     const IRCTC_REFUND              = 'irctc_refund';
+    const IRCTC_DELTA_REFUND        = 'irctc_delta_refund';
     const IRCTC_SETTLEMENT          = 'irctc_settlement';
 
     // Marketplace Batch
@@ -52,6 +53,8 @@ class Type
 
     const LINKED_ACCOUNT_REVERSAL   = 'linked_account_reversal';
 
+    const TERMINAL_CREATION         = 'terminal_creation';
+
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
      * type partners. This bypasses oauth authentication by end merchant.
@@ -69,6 +72,11 @@ class Type
 
     const FUND_ACCOUNT          = 'fund_account';
 
+    // iin batches
+    const IIN_NPCI_RUPAY        = 'iin_npci_rupay';
+
+    const MPAN                  = 'mpan';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -85,9 +93,12 @@ class Type
         self::BANK_TRANSFER,
         self::ENTITY_MAPPING,
         self::TERMINAL,
+        self::TERMINAL_CREATION,
         self::MERCHANT_ONBOARDING,
         self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
+        self::IIN_NPCI_RUPAY,
+        self::MPAN,
     ];
 
     /**
@@ -102,8 +113,8 @@ class Type
      * @var array
      */
     public static $retryInProcessingBatchTypes = [
-        // 2 hours gap for Recon batches
-        self::RECONCILIATION    => 7200,
+        // 1 hour gap for Recon batches
+        self::RECONCILIATION    => 3600,
     ];
 
     /**
@@ -140,11 +151,14 @@ class Type
         self::AUTH_LINK,
         self::INSTANT_ACTIVATION,
         self::TERMINAL,
+        self::TERMINAL_CREATION,
         self::CONTACT,
         self::FUND_ACCOUNT,
         self::MERCHANT_ONBOARDING,
         self::LINKED_ACCOUNT_REVERSAL,
         self::SUBMERCHANT_ASSIGN,
+        self::IIN_NPCI_RUPAY,
+        self::MPAN,
     ];
 
     /**
@@ -174,10 +188,48 @@ class Type
     public static $kubernetesJobGroup = [
         // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
         self::PAYMENT_LINK,
+        self::SUB_MERCHANT,
+        self::OAUTH_MIGRATION_TOKEN,
+        self::PARTNER_SUBMERCHANTS,
+        self::RECURRING_CHARGE,
+        self::AUTH_LINK,
+        self::VIRTUAL_BANK_ACCOUNT,
+        self::ENTITY_MAPPING,
+        self::LINKED_ACCOUNT,
+        self::LINKED_ACCOUNT_REVERSAL,
     ];
 
-    public static $batchTypeMigrated = [
-        self::PAYMENT_LINK
+    /**
+     * Following batch types get processed via Kubernetes Job, this is used for long
+     * running batches. These batches first get pushed into SQS queue, then worker picks up
+     * from the queue and initiate K8s job.
+     *
+     * @var array
+     */
+    public static $kubernetesJobQueueGroup = [
+        // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
+        self::RECONCILIATION,
+    ];
+
+    /**
+     * Following batch types are not yet completely migrated to new batch service.
+     * @var array
+     */
+    public static $batchTypeMigrating = [
+        self::PAYMENT_LINK,
+        self::PAYOUT,
+        self::FUND_ACCOUNT
+    ];
+
+    /**
+     * Following batch types are completely migrated to new batch service.
+     * Make sure batch type mentioned here is also present in $batchTypeMigrating array.
+     * @var array
+     */
+    public static $batchTypeMigrationCompleted = [
+        self::PAYMENT_LINK,
+        self::PAYOUT,
+        self::FUND_ACCOUNT
     ];
 
     public static function exists(string $type)
@@ -209,11 +261,11 @@ class Type
         }
     }
 
-    public static function validateSubType(string $type)
+    public static function validateSubType(string $subtype)
     {
-        if (in_array($type, self::$subTypes, true) === false)
+        if (in_array($subtype, self::$subTypes, true) === false)
         {
-            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $type);
+            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type' . $subtype);
         }
     }
 
@@ -225,6 +277,11 @@ class Type
     public static function isKubernetesJobGroup(string $type): bool
     {
         return in_array($type, self::$kubernetesJobGroup, true);
+    }
+
+    public static function isKubernetesJobQueueGroup(string $type): bool
+    {
+        return in_array($type, self::$kubernetesJobQueueGroup, true);
     }
 
     public static function isAppType(string $type): bool

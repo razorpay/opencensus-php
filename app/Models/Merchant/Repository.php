@@ -2,20 +2,23 @@
 
 namespace RZP\Models\Merchant;
 
+use DB;
 use Closure;
 
 use RZP\Exception;
 use RZP\Base\Common;
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\QueryCache\CacheQueries;
-use \RZP\Models\Merchant\Balance\Entity as BalanceEntity;
+use RZP\Models\Partner\Config as PartnerConfig;
 
 class Repository extends Base\Repository
 {
@@ -93,14 +96,20 @@ class Repository extends Base\Repository
       int $skip,
       int $end,
       array $merchantIds = [],
-      array $merchantIdsExcluded = []): Base\PublicCollection
+      array $merchantIdsExcluded = []): array
     {
         $query = $this->newQuery()
-                    ->where(Entity::ACTIVATED, '=', 1)
-                    ->where(Entity::ACTIVATED_AT, '<=', $end)
-                    ->take($limit)
-                    ->skip($skip)
-                    ->with('merchantDetail');
+                      ->select(Entity::ID)
+                      ->where(Entity::ACTIVATED, '=', 1)
+                      ->where(Entity::ACTIVATED_AT, '<=', $end)
+                      ->where(function ($query)
+                        {
+                            $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                                  ->orWhereNull(Entity::PARENT_ID);
+                        })
+                      ->whereIn(Entity::ORG_ID, Org\Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID)
+                      ->take($limit)
+                      ->skip($skip);
 
         if (empty($merchantIds) === false)
         {
@@ -112,7 +121,9 @@ class Repository extends Base\Repository
             $query = $query->whereNotIn(Entity::ID, $merchantIdsExcluded);
         }
 
-        return $query->get();
+        return $query->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
     }
 
     public function getSharedAccount()
@@ -584,11 +595,13 @@ class Repository extends Base\Repository
      * @param array $applicationIds
      * @param array $params
      *
+     * @param array $relations
+     *
      * @return Base\PublicCollection
      */
-    public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = []): Base\PublicCollection
+    public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = [], array $relations = []): Base\PublicCollection
     {
-        $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds);
+        $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds, $relations);
 
         $this->buildQueryWithParams($query, $params);
 
@@ -618,9 +631,11 @@ class Repository extends Base\Repository
     /**
      * @param array $applicationIds
      *
+     * @param array $relations
+     *
      * @return Base\BuilderEx
      */
-    protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds)
+    protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds, array $relations = [])
     {
         $accessMapRepo       = $this->repo->merchant_access_map;
         $merchantDetailsRepo = $this->repo->merchant_detail;
@@ -641,12 +656,14 @@ class Repository extends Base\Repository
             $accessMapsEntityId . ' as ' . Constants::APPLICATION_ID,
         ];
 
+        $relations = array_unique(array_merge(['users', 'owners'], $relations));
+
         //
         // merchantDetail is not fetched as a relation below because
         // a filter has to be added for merchantDetail.activation_status in the query
         //
         $query = $this->newQuery()
-                      ->with(['users', 'owners'])
+                      ->with($relations)
                       ->select($attributes)
                       ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
                       ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
@@ -680,5 +697,154 @@ class Repository extends Base\Repository
         }
 
         return $activatedMerchants;
+    }
+
+    public function getAllPartnerBankAccountsForSubmerchants(array $submerchantIds): Base\PublicCollection
+    {
+        // filter mIds so that we get only merchantIds which are mapped to at least one partner
+        $submerchantIds = $this->repo->merchant_access_map->fetchMerchantsMappedToPartner($submerchantIds);
+
+        if (empty($submerchantIds) === true)
+        {
+            return new Base\PublicCollection;
+        }
+
+        // Repo class instances
+        $accessMapRepo     = $this->repo->merchant_access_map;
+        $partnerConfigRepo = $this->repo->partner_config;
+        $bankAccountRepo   = $this->repo->bank_account;
+
+        // Merchants columns
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
+
+        // Access map columns
+        $accessMapsEntityId      = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+        $accessMapsDeletedAt     = $accessMapRepo->dbColumn(AccessMap\Entity::DELETED_AT);
+        $accessMapsEntityType    = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_TYPE);
+        $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+
+        // Partner columns
+        $partnerTable        = 'partners'; // 'merchants' is aliased below as 'partners'
+        $partnersMerchantId  = $partnerTable . '.' . Entity::ID;
+        $partnersPartnerType = $partnerTable . '.' . Entity::PARTNER_TYPE;
+
+        // Bank account columns
+        $bankAccountId          = $bankAccountRepo->dbColumn(BankAccount\Entity::ID);
+        $bankAccountsType       = $bankAccountRepo->dbColumn(BankAccount\Entity::TYPE);
+        $bankAccountsMerchantId = $bankAccountRepo->dbColumn(BankAccount\Entity::MERCHANT_ID);
+        $bankAccountsDeletedAt  = $bankAccountRepo->dbColumn(BankAccount\Entity::DELETED_AT);
+
+        $partnerConfigOriginId        = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::ORIGIN_ID);
+        $partnerConfigSettleToPartner = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::SETTLE_TO_PARTNER);
+
+        $attributes = [
+            $this->dbColumn('*'),
+            $partnerConfigSettleToPartner . ' as partner_config_settle_to_partner',
+            $bankAccountId . ' as partner_bank_account_id',
+            $partnerConfigOriginId . ' as partner_config_origin_id',
+        ];
+
+        $chunkedIdsList = array_chunk($submerchantIds, 5000);
+
+        $aggregateResults = new Base\PublicCollection;
+
+        foreach ($chunkedIdsList as $chunkedIds)
+        {
+            $appConfig = $this->newQuery()
+                              ->select($attributes)
+                              ->join(
+                                  Table::MERCHANT_ACCESS_MAP,
+                                  $merchantsMerchantId,
+                                  $accessMapsMerchantId)
+                              ->join(
+                                  Table::MERCHANT . ' as ' . $partnerTable,
+                                  $accessMapsEntityOwnerId,
+                                  $partnersMerchantId)
+                              ->join(
+                                  Table::BANK_ACCOUNT,
+                                  $partnersMerchantId,
+                                  $bankAccountsMerchantId)
+                              ->where($partnersPartnerType, '!=', Constants::PURE_PLATFORM)
+                              ->where($bankAccountsType, BankAccount\Type::MERCHANT)
+                              ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
+                              ->whereNull($accessMapsDeletedAt)
+                              ->whereNull($bankAccountsDeletedAt)
+                              ->whereIn($merchantsMerchantId, $chunkedIds);
+
+            $submerchantConfig = clone $appConfig;
+
+            $this->joinPartnerConfigForApp($appConfig);
+
+            $this->joinPartnerConfigForSubmerchant($submerchantConfig);
+
+            $results = $submerchantConfig->union($appConfig)->get();
+
+            $aggregateResults = $aggregateResults->concat($results);
+        }
+
+        return $aggregateResults;
+    }
+
+    private function joinPartnerConfigForApp(BuilderEx & $query)
+    {
+        // Access map columns
+        $accessMapRepo     = $this->repo->merchant_access_map;
+        $partnerConfigRepo = $this->repo->partner_config;
+
+        // Partner config columns
+        $partnerConfigEntityType = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::ENTITY_TYPE);
+        $partnerConfigEntityId   = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::ENTITY_ID);
+
+        // Other columns
+        $accessMapsEntityId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+
+        $query->join(
+            Table::PARTNER_CONFIG,
+            function ($join) use (
+                $partnerConfigEntityType,
+                $partnerConfigEntityId,
+                $accessMapsEntityId
+            )
+            {
+                // Join with entity_id as application id
+                $join->on($partnerConfigEntityId, $accessMapsEntityId)
+                     ->where($partnerConfigEntityType, PartnerConfig\Constants::APPLICATION);
+            });
+    }
+
+    private function joinPartnerConfigForSubmerchant(BuilderEx & $query)
+    {
+        // Repo instances
+        $accessMapRepo     = $this->repo->merchant_access_map;
+        $partnerConfigRepo = $this->repo->partner_config;
+
+        // Partner config columns
+        $partnerConfigEntityType = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::ENTITY_TYPE);
+        $partnerConfigEntityId   = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::ENTITY_ID);
+        $partnerConfigOriginType = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::ORIGIN_TYPE);
+        $partnerConfigOriginId   = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::ORIGIN_ID);
+
+        // Other columns
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
+        $accessMapsEntityId  = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+
+        $query->join(
+            Table::PARTNER_CONFIG,
+            function ($join) use (
+                $partnerConfigEntityType,
+                $partnerConfigEntityId,
+                $partnerConfigOriginType,
+                $partnerConfigOriginId,
+                $accessMapsEntityId,
+                $merchantsMerchantId
+            )
+            {
+                // Join with entity_id as merchant id and origin_id as application id
+                $join->on($partnerConfigEntityId, $merchantsMerchantId)
+                     ->on($partnerConfigOriginId, $accessMapsEntityId)
+                     ->where($partnerConfigEntityType, PartnerConfig\Constants::MERCHANT)
+                     ->where($partnerConfigOriginType, PartnerConfig\Constants::APPLICATION);
+            });
     }
 }

@@ -9,27 +9,13 @@ use RZP\Models\Feature\Constants as Feature;
 
 class Service extends Base\Service
 {
-    public function fetchIin($iinId)
-    {
-        $iin = $this->repo->iin->findOrFail($iinId);
-
-        return $iin->toArrayPublic();
-    }
-
-    public function fetchMultiple($input)
-    {
-        $iins = $this->repo->iin->fetch($input);
-
-        return $iins->toArrayPublic();
-    }
-
     public function addIin($input)
     {
         $iin = (new Entity)->build($input);
 
         $this->repo->saveOrFail($iin);
 
-        return $iin->toArrayPublic();
+        return $iin->toArrayAdmin();
     }
 
     public function editIin($id, $input)
@@ -42,7 +28,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($iin);
 
-        return $iin->toArrayPublic();
+        return $iin->toArrayAdmin();
     }
 
     public function editIinBulk($input)
@@ -92,7 +78,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($iin);
 
-        return $iin->toArrayPublic();
+        return $iin->toArrayAdmin();
     }
 
     public function enableIinFlow($id, $flow)
@@ -103,7 +89,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($iin);
 
-        return $iin->toArrayPublic();
+        return $iin->toArrayAdmin();
     }
 
     public function addIinRange($input)
@@ -186,6 +172,32 @@ class Service extends Base\Service
         $response['iins'] = $iins;
 
         return $response;
+    }
+
+    public function addOrUpdate($id, $input) : array
+    {
+        $iin = $this->repo->iin->find($id);
+
+        if ($iin === null)
+        {
+            $input['iin'] = $id;
+
+            return $this->addIin($input);
+        }
+        else
+        {
+            return $this->editIin($id, $input);
+        }
+    }
+
+    public function processRecord(string $type, array $input)
+    {
+        // hardcoding for now
+        $this->processor = new Batch\NpciRupay;
+
+        $this->processor->preprocess($input);
+
+        return $this->processor->process();
     }
 
     protected function formatEditInput(Entity $iin, array & $input)

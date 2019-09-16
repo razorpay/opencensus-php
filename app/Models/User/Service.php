@@ -17,6 +17,8 @@ use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
+use RZP\Models\Merchant\Account;
+use Illuminate\Hashing\BcryptHasher;
 
 class Service extends Base\Service
 {
@@ -37,6 +39,8 @@ class Service extends Base\Service
         $tokenData = null;
 
         $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
+
+        $this->app->hubspot->trackSignupEvent($input);
 
         /*
          * If we have an invitation token, the user may have created an account
@@ -296,6 +300,33 @@ class Service extends Base\Service
     public function login(array $input): array
     {
         return (new Core)->login($input);
+    }
+
+    public function checkUserAccess(array $input)
+    {
+        if (empty($input['merchant_id']) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($input['merchant_id']);
+
+        $user = $this->auth->getUser();
+
+        $product = $this->auth->getRequestOriginProduct();
+
+        return $this->core()->checkAccessForMerchant($user, $merchantId, $product);
+
+    }
+
+    public function setup2faMobileOnLogin(array $input): array
+    {
+        return (new Core)->setup2faMobileOnLogin($input);
+    }
+
+    public function setup2faVerifyMobileOnLogin(array $input): array
+    {
+        return (new Core)->setup2faVerifyMobileOnLogin($input);
     }
 
     public function get(string $id): array
@@ -575,6 +606,7 @@ class Service extends Base\Service
                                                                      $user->getId(),
                                                                      null,
                                                                      $switchProduct);
+
         if (empty($userMapping) === false)
         {
             $currentUserRole = $userMapping->pivot->role;
@@ -662,6 +694,28 @@ class Service extends Base\Service
     }
 
     /**
+     * Change 2fa setting of user (enable/disable)
+     *
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function change2faSetting(array $input)
+    {
+        $this->user->getValidator()->validateInput('change2faSetting', $input);
+
+        $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $this->user->getPassword());
+
+        if ($isPasswordEqual === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
+        }
+
+        return $this->core()->change2faSetting($this->user, $input);
+    }
+
+    /**
      * @param  string $id
      * @param  array  $input
      *
@@ -690,5 +744,36 @@ class Service extends Base\Service
         $this->core()->edit($user, $input, 'changePasswordAdmin');
 
         return ['success' => true];
+    }
+
+    public function editContactMobile(array $input)
+    {
+        (new Validator)->validateInput('edit_contact_mobile', $input);
+
+        return $this->core()->editContactMobile($input, $this->user);
+    }
+
+
+    public function updateContactMobile(array $input)
+    {
+        (new Validator)->validateInput('update_contact_mobile', $input);
+
+        $user = $this->repo->user->findOrFailPublic($input[Entity::USER_ID]);
+
+        return $this->core()->updateContactMobile($input, $user);
+    }
+
+    public function accountLockUnlock(string $userId, string $action): array
+    {
+        $accountLockData = [
+            Entity::USER_ID => $userId,
+            Entity::ACTION  => $action,
+        ];
+
+        (new Validator)->validateInput('user_account_lock_unlock', $accountLockData);
+
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        return $this->core()->accountLockUnlock($user, $action);
     }
 }

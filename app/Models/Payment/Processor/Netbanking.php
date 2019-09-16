@@ -98,10 +98,13 @@ class Netbanking
         IFSC::ALLA,
         IFSC::CNRB,
         IFSC::CIUB,
+        IFSC::IDIB,
         IFSC::ESFB,
         IFSC::SBIN,
+        IFSC::CBIN,
         IFSC::VIJB,
         IFSC::YESB,
+        IFSC::IBKL,
         IFSC::SIBL,
         self::PUNB_R,
         self::BARB_R,
@@ -125,16 +128,48 @@ class Netbanking
         IFSC::CSBK,
         IFSC::ALLA,
         IFSC::IDFB,
+        IFSC::SIBL,
+        IFSC::YESB,
+        IFSC::CIUB,
+        IFSC::IDIB,
+        IFSC::CBIN,
+        IFSC::SBIN,
+    ];
+
+    protected static $defaultGatewayDisabledBanks = [
+        Gateway::BILLDESK => [
+            'retail' => [
+                IFSC::ALLA,
+                IFSC::CORP,
+                IFSC::CSBK,
+                IFSC::ESFB,
+                IFSC::FDRL,
+                IFSC::HDFC,
+                IFSC::ICIC,
+                IFSC::IDFB,
+                IFSC::INDB,
+                IFSC::KKBK,
+                IFSC::ORBC,
+                IFSC::RATN,
+                IFSC::UTIB,
+                self::BARB_R,
+            ],
+            'tpv' => [
+                IFSC::HDFC,
+                IFSC::ICIC,
+                IFSC::IDFB,
+                IFSC::INDB,
+                IFSC::KKBK,
+                IFSC::SIBL,
+            ],
+        ],
     ];
 
     protected static $gatewaySupportedBanks = [
         Gateway::BILLDESK => [
             'retail' => [
-                // IFSC::FDRL,
-                // IFSC::INDB,
-                // IFSC::ORBC,
-                // IFSC::RATN,
                 IFSC::ABPB,
+                IFSC::ALLA,
                 IFSC::ANDB,
                 IFSC::AUBL,
                 IFSC::BACB,
@@ -145,28 +180,38 @@ class Netbanking
                 IFSC::CBIN,
                 IFSC::CIUB,
                 IFSC::CNRB,
+                IFSC::CORP,
                 IFSC::COSB,
+                IFSC::CSBK,
                 IFSC::DBSS,
-                IFSC::DCBL,
                 IFSC::DCBL,
                 IFSC::DEUT,
                 IFSC::DLXB,
                 IFSC::ESAF,
+                IFSC::ESFB,
+                IFSC::FDRL,
+                IFSC::HDFC,
                 IFSC::IBKL,
+                IFSC::ICIC,
+                IFSC::IDFB,
                 IFSC::IDIB,
+                IFSC::INDB,
                 IFSC::IOBA,
                 IFSC::JAKA,
                 IFSC::JSBP,
                 IFSC::KARB,
                 IFSC::KCCB,
                 IFSC::KJSB,
+                IFSC::KKBK,
                 IFSC::KVBL,
                 IFSC::MAHB,
                 IFSC::MSNU,
                 IFSC::NESF,
                 IFSC::NKGS,
+                IFSC::ORBC,
                 IFSC::PMCB,
                 IFSC::PSIB,
+                IFSC::RATN,
                 IFSC::SBBJ,
                 IFSC::SBHY,
                 IFSC::SBIN,
@@ -186,13 +231,14 @@ class Netbanking
                 IFSC::UBIN,
                 IFSC::UCBA,
                 IFSC::UTBI,
+                IFSC::UTIB,
                 IFSC::VARA,
                 IFSC::VIJB,
                 IFSC::YESB,
                 IFSC::ZCBL,
-                // self::BARB_R,
                 self::ANDB_C,
                 self::BARB_C,
+                self::BARB_R,
                 self::DLXB_C,
                 self::IBKL_C,
                 self::LAVB_C,
@@ -205,20 +251,25 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::ANDB,
+                IFSC::BKID,
                 IFSC::CIUB,
                 IFSC::CORP,
+                IFSC::HDFC,
                 IFSC::IBKL,
-                // IFSC::INDB,
+                IFSC::ICIC,
+                IFSC::IDFB,
+                IFSC::INDB,
+                IFSC::KKBK,
                 IFSC::KVBL,
-                self::LAVB_R,
-                IFSC::UTIB,
-                IFSC::BKID,
                 IFSC::SBBJ,
                 IFSC::SBHY,
                 IFSC::SBIN,
                 IFSC::SBMY,
-                IFSC::STBP,
                 IFSC::SBTR,
+                IFSC::SIBL,
+                IFSC::STBP,
+                IFSC::UTIB,
+                self::LAVB_R,
             ],
         ],
         Gateway::ATOM => [
@@ -359,6 +410,9 @@ class Netbanking
         Gateway::NETBANKING_YESB => [
             'retail' => [
                 IFSC::YESB,
+            ],
+            'tpv' => [
+                IFSC::YESB
             ]
         ],
         Gateway::NETBANKING_AXIS => [
@@ -383,6 +437,17 @@ class Netbanking
         Gateway::NETBANKING_SIB => [
             'retail' => [
                 IFSC::SIBL
+            ],
+            'tpv' => [
+                IFSC::SIBL
+            ]
+        ],
+        Gateway::NETBANKING_CBI => [
+            'retail' => [
+                IFSC::CBIN
+            ],
+            'tpv' => [
+                IFSC::CBIN
             ]
         ],
         Gateway::NETBANKING_IDFC => [
@@ -429,7 +494,23 @@ class Netbanking
         Gateway::NETBANKING_CUB => [
             'retail' => [
                 IFSC::CIUB,
-            ]
+            ],
+            'tpv' => [
+                IFSC::CIUB
+            ],
+        ],
+        Gateway::NETBANKING_IBK => [
+            'retail' => [
+                IFSC::IDIB,
+            ],
+            'tpv' => [
+                IFSC::IDIB
+            ],
+        ],
+        Gateway::NETBANKING_IDBI => [
+            'retail' => [
+                IFSC::IBKL,
+            ],
         ],
         Gateway::NETBANKING_FEDERAL => [
             'retail' => [
@@ -493,6 +574,9 @@ class Netbanking
         Gateway::NETBANKING_SBI => [
             'retail' => [
                 IFSC::SBIN,
+            ],
+            'tpv' => [
+                IFSC::SBIN
             ]
         ],
 
@@ -829,5 +913,62 @@ class Netbanking
         }
 
         return $banks;
+    }
+
+    public static function getDefaultDisabledBanksForGateway(
+        string $gateway,
+        int $bankingType = BankingType::RETAIL_ONLY,
+        int $tpvType = TpvType::NON_TPV_ONLY
+    ): array
+    {
+        $gatewayObject = self::$defaultGatewayDisabledBanks[$gateway] ?? [];
+
+        if (empty($gatewayObject) === true)
+        {
+            return [];
+        }
+
+        $banks = $gatewayObject['retail'];
+
+        switch ($bankingType)
+        {
+            case BankingType::CORPORATE_ONLY:
+                $banks = $gatewayObject['corp'] ?? [];
+
+                break;
+
+            case BankingType::BOTH:
+                $corpBanks = $gatewayObject['corp'] ?? [];
+                $banks = array_values(array_unique(array_merge($banks, $corpBanks)));
+
+                break;
+
+            default:
+                break;
+        }
+
+        switch ($tpvType)
+        {
+            case TpvType::TPV_ONLY:
+                $banks = $gatewayObject['tpv'] ?? [];
+
+                break;
+
+            case TpvType::BOTH_TPV_NON_TPV:
+                $tpvBanks = $gatewayObject['tpv'] ?? [];
+                $banks = array_values(array_unique(array_merge($banks, $tpvBanks)));
+
+                break;
+
+            default:
+                break;
+        }
+
+        return $banks;
+    }
+
+    public static function getGatewaySupportedBankList()
+    {
+        return self::$gatewaySupportedBanks;
     }
 }

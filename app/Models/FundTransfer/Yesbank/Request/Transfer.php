@@ -5,14 +5,16 @@ namespace RZP\Models\FundTransfer\Yesbank\Request;
 use Config;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\Card\Entity as CardVault;
+use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
@@ -22,9 +24,23 @@ use RZP\Models\FundTransfer\Base\Reconciliation\Constants as ReconConstants;
 
 class Transfer extends Base
 {
-    const VERSION = "1";
+    const VERSION = '1';
 
-    const IFSC_CODE = 'YESB0000022';
+    const IFSC_CODE  = 'YESB0000022';
+
+    const DEFAULT_NETWORK = 'default_network';
+
+    // VPA format based on card issuer
+    const VPA_FORMAT = [
+        Issuer::SCBL => [
+             Network::AMEX => 'AEBC%s@sc',
+            self::DEFAULT_NETWORK => 'AEBC%s@sc',
+        ],
+        Issuer::ICIC => [
+            Network::AMEX         => 'ccpay.0%s@icici',
+            self::DEFAULT_NETWORK => 'CCPAY.%s@icici',
+        ]
+    ];
 
     protected $requestType;
 
@@ -71,7 +87,7 @@ class Transfer extends Base
 
         $this->urlIdentifier = $this->config['fund_transfer_url_suffix'];
 
-        $this->typesWithoutPurposeCode = (in_array($type, [Attempt\Type::BANKING, Attempt\Type::SYNC], true)  === true);
+        $this->typesWithoutPurposeCode = (in_array($type, [Attempt\Type::BANKING, Attempt\Type::SYNC], true) === true);
 
         if (($type === Attempt\Type::BANKING) and ($useCurrentAccount === false))
         {
@@ -105,7 +121,8 @@ class Transfer extends Base
 
         $this->requestTrace = $requestData;
 
-        if ($this->isLogEnabled() === false)
+        if ($this->isLogEnabled() === false and
+            ($this->entity->isRefund() === true))
         {
             $this->requestTrace[$this->requestIdentifier]
             [Constants::BENEFICIARY]
@@ -214,7 +231,7 @@ class Transfer extends Base
 
             $cardNum = $this->app['card.cardVault']->detokenize($vaultToken);
 
-            $vpa = 'CCPAY.' . $cardNum . '@icici';
+            $vpa = $this->getVpaHandleFromCardDetails($cardObj, $cardNum);
         }
         else
         {
@@ -238,7 +255,9 @@ class Transfer extends Base
         {
             $this->requestTrace = $gatewayRequest;
 
-            $this->requestTrace['gateway_input']['vpa'] = mask_except_last4($this->requestTrace['gateway_input']['vpa'], 'x');
+            $this->requestTrace['gateway_input']['vpa'] = mask_except_last4(
+                $this->requestTrace['gateway_input']['vpa'],
+                'x');
         }
 
         return $gatewayRequest;
@@ -341,6 +360,14 @@ class Transfer extends Base
         // If not refund then beneficiary has to be registered
         // For Settlement and Payout will need beneficiary id for transfer
         //
+        if (($attempt->hasCard() === true) and
+            ($attempt->isSettlement() === true))
+        {
+            return [
+                Constants::BENEFICIARY_CODE => 'card' . $this->entity->card->getId(),
+            ];
+        }
+
         return [
             Constants::BENEFICIARY_CODE => $this->entity->bankAccount->getId(),
         ];
@@ -376,6 +403,31 @@ class Transfer extends Base
         $formattedNarration = $formattedNarration . ' FUND TRANSFER';
 
         return $formattedNarration;
+    }
+
+    /**
+     * @param $cardObj
+     * @param $cardNum
+     * @return string
+     */
+    public function getVpaHandleFromCardDetails($cardObj, $cardNum)
+    {
+        $issuer = $cardObj->getIssuer();
+
+        $network = $cardObj->getNetworkCode();
+
+        $networkList = self::VPA_FORMAT[$issuer]?: [];
+
+        $vpaFormat = $networkList[self::DEFAULT_NETWORK];
+
+        if (array_key_exists($network, $networkList) === true)
+        {
+            $vpaFormat = $networkList[$network];
+        }
+
+        $vpaHandle = sprintf($vpaFormat, $cardNum);
+
+        return $vpaHandle;
     }
 
     /**
@@ -422,7 +474,25 @@ class Transfer extends Base
 
         $bankReferenceNo = $response[Constants::TRANSACTION_STATUS][Constants::BANK_REFERENCE_NO] ?? null;
 
-        $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+        $publicFailureReason = Status::getPublicFailureReason($statusCode, $bankSubStatus);
+
+        $product = $this->entity->getSourceType();
+
+        $isSuccess = Status::inStatus(Status::getSuccessfulStatus(), $statusCode, $bankSubStatus);
+
+        $isFailure = Status::inStatus(Status::getFailureStatus(), $statusCode, $bankSubStatus);
+
+        $mode = $this->entity->getMode();
+
+        // capture failed response codes
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            $product,
+            $isFailure,
+            $isSuccess,
+            $mode,
+            $statusCode,
+            $bankSubStatus);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
@@ -459,7 +529,24 @@ class Transfer extends Base
 
         $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
 
-        $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+        $publicFailureReason = Status::getPublicFailureReason($statusCode, $bankSubStatus);
+
+        $product = $this->entity->getSourceType();
+
+        $isSuccess = Status::inStatus(Status::getSuccessfulStatus(), $statusCode, $bankSubStatus);
+
+        $isFailure = Status::inStatus(Status::getFailureStatus(), $statusCode, $bankSubStatus);
+
+        $mode = $this->entity->getMode();
+
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            $product,
+            $isFailure,
+            $isSuccess,
+            $mode,
+            $statusCode,
+            $bankSubStatus);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
@@ -498,7 +585,7 @@ class Transfer extends Base
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
 
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
-        $utr = (strtolower($utr) !== 'na')? $utr : null;
+        $utr = (strtolower($utr) !== 'na') ? $utr : null;
 
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
@@ -514,13 +601,29 @@ class Transfer extends Base
 
         $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
 
+        $product = $this->entity->getSourceType();
+
+        $isSuccess = GatewayStatus::inStatus(GatewayStatus::getSuccessfulStatus(), $statusCode, $finalResponseCode);
+
+        $isFailure = GatewayStatus::inStatus(GatewayStatus::getFailureStatus(), $statusCode, $finalResponseCode);
+
+        $mode = $this->entity->getMode();
+
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            $product,
+            $isFailure,
+            $isSuccess,
+            $mode,
+            $statusCode,
+            $finalResponseCode);
+
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
             ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
-            ReconConstants::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
-            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            ReconConstants::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($finalResponseCode),
             ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
-            ReconConstants::BANK_SUB_STATUS_CODE  => null,
             ReconConstants::PAYMENT_DATE          => null,
             ReconConstants::TRANSFER_TYPE         => null,
             ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
@@ -551,7 +654,7 @@ class Transfer extends Base
                 Constants::REQUEST_REFERENCE_NO         => $this->entity->getId(),
                 Constants::NAME_WITH_BENEFICIARY_BANK   => 'Someone',
                 Constants::LOW_BALANCE_ALERT            => false,
-                Constants::TRANSFER_TYPE                => Mode::IMPS,
+                Constants::TRANSFER_TYPE                => $this->transferType,
                 Constants::ATTEMPT_NO                   => 1,
                 Constants::UNIQUE_RESPONSE_NO           => PublicEntity::generateUniqueId(),
                 Constants::TRANSACTION_STATUS           => [
@@ -571,7 +674,7 @@ class Transfer extends Base
                 Constants::VERSION              => self::VERSION,
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
                 Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
-                Constants::REQ_TRANSFER_TYPE    => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::REQ_TRANSFER_TYPE    => $this->transferType,
                 Constants::STATUS_CODE          => Status::AS,
             ],
         ]);
@@ -670,17 +773,28 @@ class Transfer extends Base
 
     protected function mockGenerateFailedResponseForGateway(): array
     {
-        // TODO: Return stuff
-        return [];
+        return [
+            Constants::UPI_REQUEST_REFERENCE_NUMBER => $this->entity->getId(),
+            Constants::UPI_UNIQUE_RESPONSE_NUMBER   => PublicEntity::generateUniqueId(),
+            Constants::UPI_RESPONSE_CODE            => GatewayStatus::E99,
+            Constants::UPI_STATUS_CODE              => GatewayStatus::STATUS_CODE_FAILURE,
+        ];
     }
 
     protected function fetchCardInfoAndPurposeData()
     {
         $cardObj = $this->entity->card;
 
+        $networkCode = $cardObj->getNetworkCode();
+
         $vaultToken = $this->getCardVaultToken($cardObj);
 
         $response = $this->app['card.cardVault']->detokenize($vaultToken);
+
+        if ($networkCode === Network::DICL)
+        {
+            $response = '00'.$response;
+        }
 
         $beneName = $this->normalizeBeneficiaryName($cardObj->getName());
 
@@ -694,58 +808,5 @@ class Transfer extends Base
                 Constants::BENEFICIARY_IFSC       => $this->getIfscCodeUsingCardInfo($cardObj),
             ],
         ];
-    }
-
-    protected function getIfscCodeUsingCardInfo(CardVault $cardObj)
-    {
-        $cardIssuer = trim($cardObj->getIssuer());
-
-        if (in_array($cardIssuer, array_keys(Constants::BANK_IFSC), true) === true )
-        {
-            return Constants::BANK_IFSC[$cardIssuer];
-        }
-        else
-        {
-            (new SlackNotification)->send('Card payout not supported for issuer',
-                [
-                    'id'     => $this->entity->getId(),
-                    'issuer' => $cardIssuer,
-                ], null, 1);
-
-            new LogicException('Ifsc code does not exist for this card issuer');
-        }
-    }
-
-    /**
-     * If card is used for the 1st time on a RZP gateway then a vault token is generated in card entity.
-     * If vault has been already encountered then vault token is null and a global card id is present.
-     * This contains the vault token generated.
-     * If no vault token is present then null is returned to mark fta as failed.
-     *
-     * @param CardVault $card
-     * @return mixed
-     * @throws \Exception
-     */
-    protected function getCardVaultToken(CardVault $card)
-    {
-        $token = $card->getCardVaultToken();
-
-        if ($token === null)
-        {
-            $this->trace->error(
-                TraceCode::CARD_TOKEN_IS_NOT_AVAILABLE,
-                [
-                    'card_id' => $card->getId()
-                ]);
-
-            (new SlackNotification())->send(
-                'Vault token missing',
-                [
-                    'card_id' => $card->getId()
-                ],
-                null, 1);
-        }
-
-        return $token;
     }
 }

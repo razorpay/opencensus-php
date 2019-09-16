@@ -18,19 +18,22 @@ use RZP\Constants\Environment;
 use RZP\Services\Beam\Service;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
+use RZP\Models\Gateway\File\Type;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Gateway\File\Constants as GatewayFileConstants;
 
 class Sbi extends Base
 {
     const BANK_CODE         = IFSC::SBIN;
     const EXTENSION         = FileStore\Format::TXT;
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
-    const FILE_NAME         = 'GGCMS1';
+    const FILE_TYPE_OUTPUT  = FileStore\Type::SBI_EMI_OUTPUT_FILE;
+    const FILE_NAME         = 'GGCMS';
     const BEAM_FILE_TYPE    = 'emi';
 
     const TEST_ENCRYPTION_KEY = 'T8DIATjuwST8DIATjuwST8DIATjuwS22';
@@ -139,6 +142,22 @@ class Sbi extends Base
             $this->gatewayFile->setFileGeneratedAt($this->file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+
+            // Create output file by masking the card numbers in the data
+            $dataForOutputFile = $this->replaceCardNumbers($fileData);
+
+            $fileName = $this->getFileToWriteName();
+
+            $creator = new FileStore\Creator;
+
+            $creator->extension(static::EXTENSION)
+                    ->content($dataForOutputFile)
+                    ->name($fileName)
+                    ->store(FileStore\Store::S3)
+                    ->type(static::FILE_TYPE_OUTPUT)
+                    ->entity($this->gatewayFile)
+                    ->metadata($metadata)
+                    ->save();
         }
         catch (\Throwable $e)
         {
@@ -368,11 +387,12 @@ class Sbi extends Base
             ]
         ];
 
-        $timelines = [];
+        // Retry in 15, 30 and 45 minutes
+        $timelines = [900, 1800, 2700];
 
         $mailInfo = [
             'fileInfo'  => $fileInfo,
-            'channel'   => 'settlements',
+            'channel'   => 'tech_alerts',
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'SBI EMI - File Send failure',
             'recipient' => Constants::MAIL_ADDRESSES[Constants::GATEWAY_POD]
@@ -432,7 +452,12 @@ class Sbi extends Base
 
     protected function getFileToWriteName()
     {
-        return static::FILE_NAME . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
+        // This assumes we won't be sending more than 9 files after retry.
+        $start = Carbon::now()->setTimezone(Timezone::IST)->startOfDay()->getTimestamp();
+
+        $count = $this->repo->gateway_file->fetchFileSentCountFromStart(Type::EMI, GatewayFileConstants::SBI, $start);
+
+        return static::FILE_NAME . (string)($count + 1) . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
     }
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
@@ -451,6 +476,23 @@ class Sbi extends Base
         $den = $expression - 1;
 
         return (round($num / $den));
+    }
+
+    protected function replaceCardNumbers($data)
+    {
+        $delimiter = "\r\n";
+
+        $data = explode($delimiter, $data);
+
+        $out = [$data[0]];
+
+        // Replace characters from 57 till 76 which represents card numbers
+        for ($i = 1; $i < sizeof($data); $i++)
+        {
+            $out[] = substr_replace($data[$i], '0000000000000000000', 57, 19);
+        }
+
+        return implode($delimiter, $out);
     }
 
     //-------------------------- Helpers ------------------------------------//

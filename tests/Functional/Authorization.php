@@ -23,6 +23,7 @@ class Authorization
     protected $adminHeaders = [];
     protected $adminProxyHeaders;
     protected $proxyHeaders;
+    protected $merchant;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
     protected $defaultOAuthKey          = 'rzp_test_oauth_TheTestAuthKey';
@@ -130,6 +131,15 @@ class Authorization
     public function proxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
     {
         $this->appAuth($user);
+
+        $this->proxy = true;
+
+        $this->addProxyAuthHeaders($merchantUser);
+    }
+    
+    public function hostedAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
+    {
+        $this->appAuth($user, \Config::get('applications.hosted')['secret']);
 
         $this->proxy = true;
 
@@ -337,6 +347,15 @@ class Authorization
         $kotakConfig = \Config::get('applications.yesbank');
 
         $pwd = $kotakConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
+    public function authServiceAuth($mode = 'test')
+    {
+        $authServiceConfig = \Config::get('applications.auth_service');
+
+        $pwd = $authServiceConfig['secret'];
 
         $this->appAuth('rzp_'.$mode, $pwd);
     }
@@ -661,5 +680,26 @@ class Authorization
     public function getBearerHeader()
     {
         return $this->bearerHeaders;
+    }
+
+    public function ftsAuth($mode = 'test')
+    {
+        $ftsConfig = \Config::get('applications.fts');
+
+        $pwd = $ftsConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
+    public function setMerchant($merchant)
+    {
+        $this->merchant = $merchant;
+
+        return $this;
+    }
+
+    public function addXDashboardIpHeader($hostName)
+    {
+        $this->appHeaders['X-Dashboard-Ip'] = $hostName;
     }
 }

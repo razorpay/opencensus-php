@@ -8,6 +8,7 @@ use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Models\Merchant\Email;
+use RZP\Models\Batch\Constants;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
@@ -63,6 +64,13 @@ class SubMerchant extends Base
     protected $autoActivate = false;
 
     /**
+     * Used to check if the sub-merchants need to be instantly activated.
+     *
+     * @var bool
+     */
+    protected $instantlyActivate = false;
+
+    /**
      * Used to check if sub-merchant email needs to be treated as dummy
      * when provided in which case the submerchant email is same as the
      * partner email and the dummy is stored in the merchant_emails table
@@ -71,6 +79,11 @@ class SubMerchant extends Base
      * @var bool
      */
     protected $useMerchantEmailAsDummy = true;
+
+    /**
+     *  This variables contain all the config passed to the batch
+     */
+    protected $settings = [];
 
     public function __construct(Entity $batch)
     {
@@ -95,23 +108,43 @@ class SubMerchant extends Base
 
     protected function performPreProcessingActions()
     {
-        $this->autoSubmit = (empty($this->params[ME::AUTO_SUBMIT]) === false);
+        $config = $this->settingsAccessor->all()->toArray();
 
-        $this->autofillDetails = (empty($this->params[ME::AUTOFILL_DETAILS]) === false);
+        $this->settings = array_merge($this->params, $config);
 
-        $this->autoActivate = (empty($this->params[ME::AUTO_ACTIVATE]) === false);
+        $this->autoSubmit = (empty($this->settings[ME::AUTO_SUBMIT]) === false);
+
+        $this->autofillDetails = (empty($this->settings[ME::AUTOFILL_DETAILS]) === false);
+
+        $this->autoActivate = (empty($this->settings[ME::AUTO_ACTIVATE]) === false);
+
+        $this->instantlyActivate = (empty($this->settings[ME::INSTANTLY_ACTIVATE]) === false);
 
         //
         // This is true by default and needs to be overridden only when an input
         // is set to False explicitly, it should not be overridden by null. Hence
         // the following explicitly check for isset.
         //
-        if (isset($this->params[ME::USE_EMAIL_AS_DUMMY]) === true)
+        if (isset($this->settings[ME::USE_EMAIL_AS_DUMMY]) === true)
         {
-            $this->useMerchantEmailAsDummy = (bool) $this->params[ME::USE_EMAIL_AS_DUMMY];
+            $this->useMerchantEmailAsDummy = (bool) $this->settings[ME::USE_EMAIL_AS_DUMMY];
         }
 
-        $this->partner = $this->repo->merchant->findOrFailPublic($this->params[ME::PARTNER_ID]);
+        //
+        // set default values for  AUTO_ENABLE_INTERNATIONAL and SKIP_BA_REGISTRATION as false as of now
+        // once dashboard changes are done for supporting these two fields we can remove default values of these fields
+        //
+
+        $this->settings[ME::AUTO_ENABLE_INTERNATIONAL] = (bool) ($this->settings[ME::AUTO_ENABLE_INTERNATIONAL] ?? false);
+        $this->settings[ME::SKIP_BA_REGISTRATION]      = (bool) ($this->settings[ME::SKIP_BA_REGISTRATION] ?? true);
+
+        // This parameter is for data back filling. when we don't want to create new MID but want to update existing MIDS
+        // mids will be fetched using email provided in file 
+        $this->settings[ME::CREATE_SUBMERCHANT] = (bool) ($this->settings[ME::CREATE_SUBMERCHANT] ?? true);
+
+        $this->partner = $this->repo->merchant->findOrFailPublic($this->settings[ME::PARTNER_ID]);
+
+        $this->updateAuthDetails($this->partner);
 
         $this->userId = $this->partner->primaryOwner()->getId();
 
@@ -119,26 +152,100 @@ class SubMerchant extends Base
     }
 
     /**
+     * updates merchant information into auth,
+     * this is being used to set org id and merchant info
+     *
+     * @param ME    $merchant
+     * @param array $config
+     */
+    private function updateAuthDetails(ME $merchant)
+    {
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->app['basicauth']->setBatchContext($this->getBatchContext($this->settings));
+    }
+
+    /**
      * @param  array $entry
      *
      * @return ME
+     * @throws \RZP\Exception\BadRequestException
      */
-    protected function createSubMerchantForEntry(array & $entry) : ME
+    protected function createSubMerchantForEntry(array & $entry)
     {
         $input = Helper::getSubMerchantInput($entry, $this->userId, $this->useMerchantEmailAsDummy);
 
-        $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner);
+        $subMerchant = null;
 
-        /** @var ME $subMerchant */
-        $subMerchant = $this->repo->merchant->findOrFailPublic(
-            Account::verifyIdAndStripSign($subMerchantArray[ME::ID]));
+        if (($this->settings[ME::CREATE_SUBMERCHANT]) === true)
+        {
+            $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner);
+
+            /** @var ME $subMerchant */
+            $subMerchant = $this->repo->merchant->findOrFailPublic(
+                Account::verifyIdAndStripSign($subMerchantArray[ME::ID]));
+        }
+        else
+        {
+            if (empty($entry[Header::MERCHANT_EMAIL]) === false)
+            {
+                $merchants = $this->repo->merchant->fetchByEmailAndOrgId($entry[Header::MERCHANT_EMAIL]);
+                if ($merchants->count() === 1)
+                {
+                    $subMerchant = $merchants->first();
+                }
+
+            }
+        }
+
+        if (empty($subMerchant) === true)
+        {
+            $entry[Header::STATUS]            = Status::FAILURE;
+            $entry[Header::ERROR_DESCRIPTION] = 'Could not create/Find merchant';
+
+            return null;
+        }
+
 
         $status = Status::SUCCESS;
+
+        if ($this->instantlyActivate === true)
+        {
+            $instantActivationInput = Helper::getInstantActivationInput($entry);
+
+            $this->merchantDetailCore->saveInstantActivationDetails($instantActivationInput, $subMerchant);
+
+            //
+            //
+            // We are updating merchant object in instant activation flow , so reloading object so that we have updated merchant object
+            //
+            $subMerchant->reload();
+        }
 
         if ($this->autofillDetails === true)
         {
             // Fill in merchant details (activation form)
             $detailInput = Helper::getSubMerchantDetailInput($entry, $this->partner, $this->useMerchantEmailAsDummy);
+
+            if ($subMerchant->isActivated() === true)
+            {
+                //
+                // If merchant is coming from instant activation flow , we don't allow change in business category
+                // and subcategory field so removing these two fields from input
+                //
+                $detailInput = Helper::sanitizeMerchantDetailInput($detailInput, Constants::CATEGORY_DETAILS);
+            }
+
+            if ($this->merchantDetailCore->shouldSkipBankAccountRegistration() == true)
+            {
+                //
+                // SubMerchant batch upload flow allows skipping bank account registration as the partner
+                // is there liable for the risk and the sub-merchants must be activated directly.
+                //  so removing bank account details from input
+                //
+                $detailInput = Helper::sanitizeMerchantDetailInput($detailInput, Constants::BANK_DETAILS);
+            }
+
             $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
         }
 
@@ -160,7 +267,6 @@ class SubMerchant extends Base
             if (($response[MerchantDetail::SUBMITTED] === true) and ($this->autoActivate === true))
             {
                 $status = Status::SUCCESS;
-
                 $this->merchantCore->autoUpdateCategoryDetails(
                         $subMerchant,
                         $entry[Header::BUSINESS_CATEGORY],
@@ -170,7 +276,13 @@ class SubMerchant extends Base
 
                 $this->merchantCore->edit($subMerchant, $websiteUpdateData);
 
-                $response = (new Merchant\Activate)->activate($subMerchant, $subMerchant->merchantDetail);
+                $activationStatusData = [
+                    MerchantDetail::ACTIVATION_STATUS => Merchant\Detail\Status::ACTIVATED
+                ];
+
+                $subMerchant->load('merchantDetail');
+
+                $response = $this->merchantDetailCore->updateActivationStatus($subMerchant->merchantDetail, $activationStatusData, $subMerchant);
 
                 if ($response[ME::ACTIVATED] === false)
                 {
@@ -188,7 +300,7 @@ class SubMerchant extends Base
                 Email\Entity::TYPE  => Email\Type::PARTNER_DUMMY,
             ];
 
-            (new Email\Core)->create($subMerchant, $emailInput);
+            (new Email\Core)->upsert($subMerchant, $emailInput);
         }
 
         $entry[Header::STATUS]      = $status;

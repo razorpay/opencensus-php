@@ -41,6 +41,180 @@ return [
         ],
     ],
 
+    'testCreatePayoutForVirtualAccountWhenModeIsNotPresent' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutForVirtualAccountWhenModeIsPresent' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testRxPayoutOnBankingHoliday' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'NEFT',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testRxPayoutOnNonBankingHolidayBeforeNEFTtimings' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'NEFT',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testRxPayoutOnNonBankingHolidayAfterNEFTtimings' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'NEFT',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePayoutWithOtp' => [
         'request'  => [
             'method'  => 'POST',
@@ -68,6 +242,94 @@ return [
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
+            ],
+        ],
+    ],
+
+    'testApprovePayoutWithOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'   => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testApprovePayoutWithInvalidOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'   => '1234',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testApproveBulkPayoutWithOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/approve/bulk',
+            'content' => [
+                'payout_ids' => [],
+                'token'      => 'BUIj3m2Nx2VvVj',
+                'otp'        => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
+    'testRejectPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'   => '1234',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'pending',
+            ],
+        ],
+    ],
+
+    'testBulkRejectPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/reject/bulk',
+            'content' => [
+                'payout_ids' => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
             ],
         ],
     ],
@@ -748,5 +1010,401 @@ return [
             'content' => [
             ]
         ]
+    ],
+
+    'testBulkPayout' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'IMPS',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'bank_account',
+                        'account_name'          => 'Vivek Karna',
+                        'account_IFSC'          => 'HDFC0003780',
+                        'account_number'        => '50100244702362',
+                        'account_vpa'           => ''
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ],
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'UPI',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'vpa',
+                        'account_name'          => 'Debojyoti Chak',
+                        'account_IFSC'          => '',
+                        'account_number'        => '',
+                        'account_vpa'           => '8861655100@ybl'
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Debojyoti Chak',
+                        'email'                 => 'sampletwo@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc124'
+                ]
+            ]
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 2,
+                'items'                             => [
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'bank_account',
+                            'details'               => [
+                                'ifsc'              => 'HDFC0003780',
+                                'bank_name'         => 'HDFC Bank',
+                                'name'              => 'Vivek Karna',
+                                'account_number'    => '50100244702362',
+                            ],
+                            'bank_account'          => [
+                                'ifsc'              => 'HDFC0003780',
+                                'bank_name'         => 'HDFC Bank',
+                                'name'              => 'Vivek Karna',
+                                'account_number'    => '50100244702362',
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'transaction'               => [
+                            'entity'                => 'transaction',
+                            'account_number'        => '2224440041626905',
+                            'amount'                => 690,
+                            'currency'              => 'INR',
+                            'credit'                => 0,
+                            'debit'                 => 690,
+                            'balance'               => 9999310
+                        ],
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processing',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'IMPS',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                    ],
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'vpa',
+                            'details'               => [
+                                'address'           => '8861655100@ybl'
+                            ],
+                            'vpa'                   => [
+                                'address'           => '8861655100@ybl'
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'transaction'               => [
+                            'entity'                => 'transaction',
+                            'account_number'        => '2224440041626905',
+                            'amount'                => 690,
+                            'currency'              => 'INR',
+                            'credit'                => 0,
+                            'debit'                 => 690,
+                            'balance'               => 9998620
+                        ],
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processing',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'UPI',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testCreatePayoutForRblDirectAccount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutForRblDirectWithSharedRules' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutToCardFundAccountUsingUpi' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 100,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000002fa',
+                'mode'                  => 'UPI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000002fa',
+                'purpose'         => 'refund',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [],
+            ],
+        ],
+    ],
+
+    'testBulkPayoutWithSameIdempotencyandBatchId' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'IMPS',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'bank_account',
+                        'account_name'          => 'Vivek Karna',
+                        'account_IFSC'          => 'HDFC0003780',
+                        'account_number'        => '50100244702362',
+                        'account_vpa'           => ''
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ],
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'UPI',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'vpa',
+                        'account_name'          => 'Debojyoti Chak',
+                        'account_IFSC'          => '',
+                        'account_number'        => '',
+                        'account_vpa'           => '8861655100@ybl'
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Debojyoti Chak',
+                        'email'                 => 'sampletwo@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 2,
+                'items'                             => [
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'bank_account',
+                            'details'               => [
+                                'ifsc'              => 'HDFC0003780',
+                                'bank_name'         => 'HDFC Bank',
+                                'name'              => 'Vivek Karna',
+                                'account_number'    => '50100244702362',
+                            ],
+                            'bank_account'          => [
+                                'ifsc'              => 'HDFC0003780',
+                                'bank_name'         => 'HDFC Bank',
+                                'name'              => 'Vivek Karna',
+                                'account_number'    => '50100244702362',
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'transaction'               => [
+                            'entity'                => 'transaction',
+                            'account_number'        => '2224440041626905',
+                            'amount'                => 690,
+                            'currency'              => 'INR',
+                            'credit'                => 0,
+                            'debit'                 => 690,
+                            'balance'               => 9999310
+                        ],
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processing',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'IMPS',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                    ],
+                    [
+                        'entity'                    => 'payout',
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processed',
+                        'purpose'                   => 'refund',
+                        'user_id'                   => null,
+                        'mode'                      => 'IMPS',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testRxPayoutForSlaExpiry' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 200000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'King',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 200000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'King',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
     ],
 ];

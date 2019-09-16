@@ -10,7 +10,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'min_amount'    => 0,
@@ -26,7 +26,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'min_amount'    => 0,
@@ -42,7 +42,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'sorter',
                     'load'          => 100,
                     'group'         => 'authentication',
@@ -57,7 +57,7 @@ return [
                 'content' => [
                    'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'sorter',
                     'load'          => 100,
                     'group'         => 'authentication',
@@ -72,7 +72,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'min_amount'    => 0,
@@ -89,7 +89,7 @@ return [
                 'content' => [
                    'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'min_amount'    => 0,
@@ -107,7 +107,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'sorter',
                     'load'          => 50,
                     'group'         => 'authentication',
@@ -122,7 +122,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'sorter',
                     'load'          => 50,
                     'group'         => 'authentication',
@@ -1340,6 +1340,136 @@ return [
                     'error' => [
                         'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                         'description' => 'select and reject filter rules for same criteria cannot be present in same group',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Test for creating filter gateway rule with procurer
+        [
+
+            'request' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'procurer'    => 'merchant',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupA',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 300,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'procurer'    => 'merchant',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupA',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 3,
+                ],
+            ],
+        ],
+        // Test for creating sorter gateway rule with procurer
+        [
+
+            'request' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'procurer'    => 'merchant',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'load'        => 90,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'procurer'    => 'merchant',
+                    'type'        => 'sorter',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'load'        => 90,
+                ],
+            ],
+        ],
+        // Create a sorter rule with equal load with different procurer
+        [
+            'fixtures' => [
+                [
+                    'merchant_id' => '100000Razorpay',
+                    'procurer'    => 'razorpay',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'load'        => 90,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'method'      => 'card',
+                    'procurer'    => 'merchant',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'load'        => 90,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'procurer'    => 'merchant',
+                    'type'        => 'sorter',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'load'        => 90,
+                    'admin'       => true
+                ],
+            ],
+        ],
+        // Create a sorter rule with same load with same procurer
+        [
+            'fixtures' => [
+                [
+                    'merchant_id' => '100000Razorpay',
+                    'procurer'    => 'merchant',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'load'        => 90,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'method'      => 'card',
+                    'procurer'    => 'merchant',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'load'        => 90,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Load across all gateway rules must be less than 100 percent',
                     ]
                 ],
                 'status_code' => 400
