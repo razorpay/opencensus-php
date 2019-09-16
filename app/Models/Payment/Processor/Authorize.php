@@ -41,6 +41,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Jobs\RunShieldCheck;
+use RZP\Services\Doppler;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
@@ -436,6 +437,10 @@ trait Authorize
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
+
+        $payload = $this->preparePayloadForDoppler($this->payment, 'failure');
+
+        $response = $this->app->doppler->sendFailureFeedback($payload);
 
         $this->runShieldCheck($this->payment);
     }
@@ -5381,6 +5386,10 @@ trait Authorize
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
+            $payload = $this->preparePayloadForDoppler($this->payment, 'success');
+
+            $response = $this->app->doppler->sendFailureFeedback($payload);
+
             return true;
         });
 
@@ -6033,5 +6042,24 @@ trait Authorize
         }
 
         $gatewayInput['order']['account_number'] = $accountNumber;
+    }
+
+    protected  function preparePayloadForDoppler(Payment\Entity $payment, string $paymentStatus)
+    {
+        $data = [
+            'payment_id' => $payment->getId(),
+            'method'     => $payment->getMethod(),
+            'authorized' => $paymentStatus,
+            'card'       => [],
+            'upi'        => [],
+            'terminal'   => $payment->getTerminalId(),
+            'gateway'    => $payment->getGateway(),
+            'terminalType' => 'direct/shared',
+            'metadata'   => $payment->getMetadata(),
+            'created_at' => $payment['CREATED_AT'],
+            'authorized_at' => $payment['AUTHORIZED_AT'],
+        ];
+
+        return $data;
     }
 }

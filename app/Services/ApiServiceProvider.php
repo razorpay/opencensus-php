@@ -276,6 +276,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerSmartRouting();
 
+        $this->registerDoppler();
+
         $this->registerBatchService();
 
         $this->registerScrooge();
@@ -356,6 +358,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_fund_transfer',
             'nonBlockingHttp',
             'smartRouting',
+            'doppler',
             'diag',
             'mozart',
             'hubspot',
@@ -409,6 +412,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new SmartRouting($app);
+        });
+    }
+
+    protected function registerDoppler()
+    {
+        $this->app->bind('doppler', function($app)
+        {
+            $dopplerMock = $app['config']->get('applications.doppler.mock');
+
+            if ($dopplerMock === true)
+            {
+                return new Mock\Doppler($app);
+            }
+
+            return new Doppler($app);
         });
     }
 
