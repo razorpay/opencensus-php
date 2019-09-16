@@ -8,7 +8,12 @@ export default class EnumList extends React.PureComponent {
   };
 
   addNewOption = e => {
-    const { lastFocusedIndex: lastFocused, options } = this.state;
+    let { lastFocusedIndex: lastFocused, options } = this.state;
+
+    if (lastFocused == null) {
+      // Checking for null or undefined
+      lastFocused = options.length - 1; // Does it from last onwards by default
+    }
 
     if (options.length && !options[lastFocused]) {
       return;
