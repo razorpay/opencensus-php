@@ -47,6 +47,10 @@ const initState = {
   showNotification,
 })
 export default class UploadNACHForm extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   constructor(props) {
     super(props);
 
@@ -103,6 +107,15 @@ export default class UploadNACHForm extends React.Component {
   };
 
   onCloseClick = () => {
+    this.context.confirm({
+      header: 'Remove Nach Form',
+      message:
+        'The attached NACH form will be discarded and you will need to reupload a new image.',
+      affirmativeLabel: 'Yes, Remove',
+      abort: () => {},
+      action: () => {},
+    });
+
     this.setState(initState);
   };
 
