@@ -138,6 +138,7 @@ class Validator extends Base\Validator
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
                                  . 'approve_payout_bulk,',
+        Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
         'amount'              => 'required_if:action,create_payout,approve_payout|integer|min:100',
