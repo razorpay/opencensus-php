@@ -10,7 +10,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RepositoryManager;
 use Symfony\Component\HttpFoundation\File\File;
 
-abstract class AbstractAPIDataRetriever implements DataRetriever {
+abstract class AbstractAPIDataRetriever implements DataRetriever
+{
 
     protected $app;
 

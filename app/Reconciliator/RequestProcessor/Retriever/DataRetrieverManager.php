@@ -1,6 +1,5 @@
 <?php
 
-
 namespace RZP\Reconciliator\RequestProcessor\Retriever;
 
 use RZP\Reconciliator\RequestProcessor\Retriever\DataRetriever;

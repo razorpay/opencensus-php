@@ -15,15 +15,15 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Base extends Core
 {
-    const GATEWAY                 = 'gateway';
-    const ATTACHMENT_COUNT        = 'attachment_count';
-    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
-    const ATTACHMENT_HYPHEN_ONE   = 'attachment-1';
-    const FORCE_UPDATE            = 'force_update';
-    const FORCE_AUTHORIZE         = 'force_authorize';
-    const ATTACHMENT_HYPHEN_PREFIX   = 'attachment-';
-    const SOURCE                  = 'source';
-    const MANUAL_RECON_FILE       = 'manual_recon_file';
+    const GATEWAY                       = 'gateway';
+    const ATTACHMENT_COUNT              = 'attachment_count';
+    const ATTACHMENT_HYPHEN_COUNT       = 'attachment-count';
+    const ATTACHMENT_HYPHEN_ONE         = 'attachment-1';
+    const FORCE_UPDATE                  = 'force_update';
+    const FORCE_AUTHORIZE               = 'force_authorize';
+    const ATTACHMENT_HYPHEN_PREFIX      = 'attachment-';
+    const SOURCE                        = 'source';
+    const MANUAL_RECON_FILE             = 'manual_recon_file';
 
     /**
      * Type of request processor

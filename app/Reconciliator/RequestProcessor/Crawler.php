@@ -60,7 +60,7 @@ class Crawler extends Base
             $this->gateway = $input[self::GATEWAY];
         }
 
-        if (array_key_exists($this->gateway, self::GATEWAY_CRAWLERS) === false)
+        if (isset(self::GATEWAY_CRAWLERS[$this->gateway]) === false)
         {
             throw new Exception\ReconciliationException(
                 'Invalid gateway param. Not in the allowed list of gateway params.',

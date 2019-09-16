@@ -18,5 +18,5 @@ class Action
 
     const INTENT            = 'intent';
 
-    const RECONCILE            = 'reconcile';
+    const RECONCILE         = 'reconcile';
 }

@@ -2,7 +2,7 @@
 
 namespace RZP\Reconciliator\RequestProcessor\Retriever;
 
-interface DataRetriever {
-
+interface DataRetriever
+{
     public function fetchData(array $input): array;
 }

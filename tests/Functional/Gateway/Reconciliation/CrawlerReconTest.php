@@ -29,8 +29,6 @@ class CrawlerReconTest extends TestCase
 
         $payment = $this->createPayment('netbanking_cub', ['id'=>'DEelpRi0HMBGOi', 'amount'=>100]);
 
-        echo $payment['id'];
-
         $this->createNetbanking($payment['id'], 'CUB', 'S');
 
         $this->reconcile('NetbankingCub');

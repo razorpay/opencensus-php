@@ -1,6 +1,5 @@
 <?php
 
-
 namespace RZP\Reconciliator\RequestProcessor\Retriever\Impl;
 
 use App;
