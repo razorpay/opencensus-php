@@ -69,10 +69,12 @@ export default class AdvancedForm extends React.PureComponent {
                 {isStockSet && (
                   <Input
                     name="stock"
+                    setRef={this.setRefStockLimit}
                     defaultValue={stock}
                     autoFocus
                     step="1"
                     pattern="\d+"
+                    validator={this.validateStockLimit}
                   />
                 )}
               </div>
@@ -114,11 +116,32 @@ export default class AdvancedForm extends React.PureComponent {
     }
 
     if (Number(maxVal) <= 0) {
-      return 'Max amount cannot be 0';
+      return 'Max amount must be more than 0';
     }
 
     if (minVal && Number(maxVal) < Number(minVal)) {
       return 'Max amount must be more than Min amount';
+    }
+  };
+
+  validateStockLimit = stockVal => {
+    const minVal = this.minAmountLimit && this.minAmountLimit.value;
+    const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
+
+    if (stockVal === '') {
+      return;
+    }
+
+    if (Number(stockVal) <= 0) {
+      return 'Stock must be more than 0';
+    }
+
+    if (minVal && Number(stockVal) < Number(minVal)) {
+      return 'Stock must be more than Min amount';
+    }
+
+    if (maxVal && Number(stockVal) < Number(maxVal)) {
+      return 'Stock must be more than Max amount';
     }
   };
 
@@ -177,6 +200,7 @@ export default class AdvancedForm extends React.PureComponent {
 
   validateMinPurchaseLimit = minVal => {
     const maxVal = this.maxPurchaseLimit && this.maxPurchaseLimit.value;
+    const stockLimit = this.stockLimit && this.stockLimit.value;
 
     if (minVal === '') {
       return;
@@ -189,10 +213,15 @@ export default class AdvancedForm extends React.PureComponent {
     if (maxVal && Number(minVal) > Number(maxVal)) {
       return 'Min purchase is more than Max limit';
     }
+
+    if (stockLimit && Number(stockLimit) < Number(minVal)) {
+      return 'Min purchase must be less than Units Available';
+    }
   };
 
   validateMaxPurchaseLimit = maxVal => {
     const minVal = this.minPurchaseLimit && this.minPurchaseLimit.value;
+    const stockLimit = this.stockLimit && this.stockLimit.value;
 
     if (maxVal === '') {
       return;
@@ -204,6 +233,10 @@ export default class AdvancedForm extends React.PureComponent {
 
     if (minVal && Number(maxVal) < Number(minVal)) {
       return 'Max purchase is less than Min limit';
+    }
+
+    if (stockLimit && Number(stockLimit) < Number(maxVal)) {
+      return 'Max purchase must be less than Units Available';
     }
   };
 
@@ -278,6 +311,8 @@ export default class AdvancedForm extends React.PureComponent {
   }
 
   setRefForm = el => (this.formEl = el);
+
+  setRefStockLimit = el => (this.stockLimit = el);
 
   setRefMinAmountLimit = el => (this.minAmountLimit = el);
   setRefMaxAmountLimit = el => (this.maxAmountLimit = el);
