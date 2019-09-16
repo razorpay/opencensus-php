@@ -44,12 +44,12 @@ class RowProcessor extends BaseRowProcessor
 
     protected function updateReconEntity()
     {
+        $this->updateUtrOnReconEntity();
+
         $currentBankStatusCode = $this->reconEntity->getBankStatusCode();
 
         $newBankStatusCode = $this->parsedData[self::BANK_STATUS_CODE];
-
-        $this->reconEntity->setUtr($this->parsedData[self::UTR]);
-
+        
         $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
 
         $this->reconEntity->setBankStatusCode($newBankStatusCode);

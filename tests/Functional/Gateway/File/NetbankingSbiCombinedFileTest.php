@@ -59,6 +59,8 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
+        $rfDate = Carbon::now(Timezone::IST)->format('d.m.y');
+
         $expectedFilesContent = [
             'entity' => 'collection',
             'count' => 2,
@@ -69,7 +71,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
                 ],
                 [
                     'type' => 'sbi_netbanking_refund',
-                    'location' => 'SBI_REFUND' . '_' . $date . '.txt'
+                    'location' => 'RZPY_SBI_Refund' . '_' . $rfDate . '.txt'
                 ],
             ],
         ];
@@ -109,13 +111,11 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $refundsFileContents = file($refundsFileData['url']);
 
-        $this->assertCount(2, $refundsFileContents);
+        $this->assertCount(1, $refundsFileContents);
 
-        $refundsFileRow = explode('|', $refundsFileContents[1]);
+        $refundsFileRow = explode('|', $refundsFileContents[0]);
 
         $this->assertCount(6, $refundsFileRow);
-
-        $this->assertEquals($refundsFileRow[0], '1');
 
         $this->assertEquals($refundsFileRow[4], 500);
     }

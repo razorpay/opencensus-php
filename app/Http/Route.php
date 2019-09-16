@@ -382,6 +382,7 @@ final class Route
         'setl_fixer'                               => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                            => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_bucket_backfill'                     => ['post',     'settlements/bucket/fill',                        'SettlementController@postSettlementBucketBackfill'                 ],
         'setl_initiate_daily'                      => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_initiate_adhoc'                      => ['post',     'settlements/initiate_adhoc',                     'SettlementController@processAdhocSettlements'                      ],
         'setl_initiate_action'                     => ['post',     'settlements/initiate_action/{channel?}',         'SettlementController@postSettlementInitiate'                       ],
@@ -1591,6 +1592,7 @@ final class Route
         'schedule_process_tasks',
         'scorecard',
         'setl_initiate',
+        'setl_bucket_backfill',
         'setl_reconcile_pull',
         'setl_initiate_daily',
         'setl_post_details_old',
@@ -2954,6 +2956,7 @@ final class Route
             // The rest are crons
             'entity_tax_update',
             'setl_initiate',
+            'setl_bucket_backfill',
             'setl_initiate_daily',
             'setl_reconcile_generate',
             'setl_reconcile_test',

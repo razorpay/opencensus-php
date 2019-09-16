@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 
 class SettlementController extends Controller
@@ -13,6 +14,15 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = $this->service()->initiateSettlements($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementBucketBackfill()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_BUCKET)->fillSettlementBucket($input);
 
         return ApiResponse::json($data);
     }
