@@ -225,7 +225,9 @@ class Initiator extends Base\Core
             //reducing slack alerts for API based channels
             if (in_array($channel, $allowedChannels, true) === false)
             {
-                (new SlackNotification)->send('setl_initiate', $slackData);
+                $slackData += ['headLine' => 'setl_initiate'];
+
+                (new Alerts)->notifySlack($slackData, Alerts::ALERT);
             }
 
             if(empty($attemptedFTAs) === false)
