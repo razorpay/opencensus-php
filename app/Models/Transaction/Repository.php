@@ -1782,4 +1782,42 @@ class Repository extends Base\Repository
 
         return $results;
     }
+
+    public function getMerchantSettledAtTime(array $mids, string $start, $end)
+    {
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $settlementCredit       = $this->dbColumn(Entity::CREDIT);
+        $settlementDebit        = $this->dbColumn(Entity::DEBIT);
+        $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+
+        $query = $this->newQuery()
+            ->select($transactionMerchantId, $transactionSettledAt)
+            ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+            ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+            {
+                $query->whereNull($transactionBalanceId)
+                      ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+            })
+            ->whereNotNull($transactionSettledAt)
+            ->where($transactionSettled, 0)
+            ->where($transactionSettledAt, '>=', $start)
+            ->whereNotIn($transactionMerchantId, $mids)
+            ->where($transactionType, '!=', Type::SETTLEMENT)
+            ->groupBy($transactionMerchantId, $transactionSettledAt);
+
+        if (empty($end) === false)
+        {
+            $query->where($transactionSettledAt, '<=', $end);
+        }
+
+        return $query->get();
+    }
 }

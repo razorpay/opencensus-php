@@ -801,6 +801,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_SAVED_TO_DB                                       = 'FTA_SAVED_TO_DB';
     const FTA_BATCH_UPDATED                                     = 'FTA_BATCH_UPDATED';
 
+    const BUCKETING_INITIATE                                    = 'BUCKETING_INITIATE';
+    const BUCKETING_DONE                                        = 'BUCKETING_DONE';
+    const MERCHANT_ADDED_TO_BUCKET                              = 'MERCHANT_ADDED_TO_BUCKET';
+
     const FTA_RECON_REPORT_FILE_CREATED                         = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                            = 'FTA_RECON_REPORT_INITIATED';
     const LOCKED_FUND_TRANSFER_ATTEMPTS                         = 'LOCKED_FUND_TRANSFER_ATTEMPTS';
