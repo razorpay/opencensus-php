@@ -1372,6 +1372,7 @@ final class Route
         'order_fetch_by_id',
         'order_edit',
         'order_payments',
+        'balance_fetch',
         'feature_dummy',
         'razorx_dummy',
         'webhook_create',
