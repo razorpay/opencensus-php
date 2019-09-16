@@ -352,7 +352,7 @@ class FormFooter extends React.PureComponent {
           src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
         />
 
-        <button class="btn">
+        <button class="btn btn-gradient">
           {isEditModalOpened
             ? paymentButtonLabel
             : this.props.paymentButtonLabel}{' '}
