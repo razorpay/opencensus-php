@@ -131,6 +131,13 @@ export default class PaymentPagesV3Entity extends React.Component {
             this.state.detailsCollapse && 'Entity--paymentpage-collapse'
           )}
         >
+          <div class="content-header">
+            <Link to="/paymentpages">
+              <i class="i i-arrow-back" /> All Payment Pages
+            </Link>
+            <i class="i i-chevron-right" /> {paymentPageEntity.title}
+          </div>
+
           <div class="panel panel-default">
             <div class="panel-heading">
               <div class="text">{paymentPageEntity.title}</div>
@@ -250,18 +257,18 @@ export default class PaymentPagesV3Entity extends React.Component {
                         </td>
                         <td>
                           <div>
-                            <div class="title">Price</div>
+                            <div class="title">Revenue</div>
                             <Amount
-                              value={pi.item.amount}
+                              value={pi.total_amount_paid}
                               currency={paymentPageEntity.currency}
                             />
                           </div>
                         </td>
                         <td>
                           <div>
-                            <div class="title">Revenue</div>
+                            <div class="title">Price</div>
                             <Amount
-                              value={pi.total_amount_paid}
+                              value={pi.item.amount}
                               currency={paymentPageEntity.currency}
                             />
                           </div>
