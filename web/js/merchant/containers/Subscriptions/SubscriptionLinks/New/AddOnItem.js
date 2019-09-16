@@ -27,6 +27,7 @@ export default class AddOnItem extends Component {
           currency={currency}
           disableCurrencySelect
           type="addon"
+          isSubscriptionItem
         />
       ),
     });

@@ -7,6 +7,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required } from 'rzp/utils/validators';
 import * as ItemActions from 'merchant/modules/items';
+import { saveSubscriptionItem } from 'merchant/modules/subscriptions';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { PowerSelect } from 'react-power-select';
@@ -70,6 +71,7 @@ const sacLengthValidator = (sac, all) => {
     fetchTaxes,
     saveTax,
     fetchGSTTaxes,
+    saveSubscriptionItem,
     ...ItemActions,
     ...ModalActions,
     ...NotificationsActions,
@@ -318,8 +320,13 @@ export default class AddItem extends Component {
           props.type = this.props.type;
         }
 
-        return this.props
-          .saveItem(props)
+        let saveItem = this.props.saveItem;
+
+        if (this.props.isSubscriptionItem) {
+          saveItem = this.props.saveSubscriptionItem;
+        }
+
+        return saveItem(props)
           .then(item => {
             this.props.showNotification({
               type: 'success',
