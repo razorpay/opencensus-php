@@ -236,11 +236,6 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        if ($this->mode === Mode::LIVE)
-        {
-            $request['options']['verify'] = $this->getCaInfo();
-        }
-
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
@@ -370,12 +365,5 @@ class Gateway extends Base\Gateway
     public function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
-    }
-
-    protected function getCaInfo()
-    {
-        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
-
-        return $clientCertPath;
     }
 }
