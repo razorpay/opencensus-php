@@ -5385,12 +5385,12 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
-
             // publishing success event to doppler's topic
             $payload = $this->preparePayloadForDoppler($this->payment, 'success');
 
-            $response = $this->app->doppler->sendFeedback($payload);
+            $this->app->doppler->sendFeedback($payload);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
             return true;
         });

@@ -6,17 +6,10 @@ use RZP\Services\Doppler as BaseDoppler;
 
 class Doppler extends BaseDoppler
 {
-
-    public function sendSuccessFeedback($data)
+    public function sendFeedback($eventData)
     {
-        return null;
-    }
-
-    public function sendFailureFeedback($data)
-    {
-        return [
-            'error' => '',
-            'success' => true,
-        ];
+        // testing;
+        s($eventData);
+        s("inside doppler mock");
     }
 }
