@@ -3567,6 +3567,38 @@ return [
         ]
     ],
 
+    'testMerchantEditReceiptEmailEventCapture' => [
+        'request' => [
+            'content' => [
+                'action' => 'set_receipt_email_event_captured'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'receipt_email_trigger_event' => 'captured',
+            ],
+        ]
+    ],
+
+    'testMerchantEditReceiptEmailEventAuthorized' => [
+        'request' => [
+            'content' => [
+                'action' => 'set_receipt_email_event_authorized'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'receipt_email_trigger_event' => 'authorized',
+            ],
+        ]
+    ],
+
     'testMerchantArchiveWithNoMerchantDetails' => [
         'request' => [
             'content' => [
