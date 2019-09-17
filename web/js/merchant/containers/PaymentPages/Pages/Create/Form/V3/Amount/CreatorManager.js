@@ -15,6 +15,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         isImageCropperOpened: false,
         fieldType: null,
         field: this.props.field,
+        currency: this.props.currency,
       };
     }
 
@@ -74,6 +75,13 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           ...field,
           image_url: imgUrl,
         },
+      });
+    };
+
+    onUpdateCurrency = currency => {
+      // Updating currency only for this amount item. This is to keep Base form and Advanced form consistent
+      this.setState({
+        currency,
       });
     };
 
@@ -149,7 +157,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     render() {
       const {
         index,
-        currency,
         validateSameTitleExists,
         onDeleteFormItem,
         ...restProps
@@ -157,6 +164,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 
       const {
         field,
+        currency,
         fieldType,
         isBaseFormOpened,
         isAdvancedFormOpened,
@@ -184,6 +192,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               openAdvancedForm={_ => this.toggleAdvancedForm(true)}
               openImageCropper={_ => this.toggleImageCropper(true)}
               onUpdateImage={this.onSaveImageForm}
+              onUpdateCurrency={this.onUpdateCurrency}
             />
           )}
 
@@ -234,6 +243,7 @@ class BaseFormModal extends React.PureComponent {
       openAdvancedForm,
       openImageCropper,
       onUpdateImage,
+      onUpdateCurrency,
     } = this.props;
 
     return (
@@ -249,6 +259,7 @@ class BaseFormModal extends React.PureComponent {
           openAdvancedForm={openAdvancedForm}
           openImageCropper={openImageCropper}
           onUpdateImage={onUpdateImage}
+          onUpdateCurrency={onUpdateCurrency}
           currency={currency}
         />
       </CreatorModal>

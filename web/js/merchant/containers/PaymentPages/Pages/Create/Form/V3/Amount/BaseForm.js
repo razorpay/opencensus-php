@@ -88,6 +88,8 @@ export default class BaseForm extends React.PureComponent {
   };
 
   onChangeCurrency = selectedCurrency => {
+    this.props.onUpdateCurrency(selectedCurrency.name);
+
     if (this.props.currency !== selectedCurrency.name) {
       this.props.openModal({
         size: 'small',
