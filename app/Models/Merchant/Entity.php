@@ -1678,6 +1678,16 @@ class Entity extends Base\PublicEntity
         $this->setHoldFunds(false);
     }
 
+    public function setReceiptEmailEventAuthorized()
+    {
+        $this->setReceiptEmailTriggerEventAttribute(Event::AUTHORIZED);
+    }
+
+    public function setReceiptEmailEventCaptured()
+    {
+        $this->setReceiptEmailTriggerEventAttribute(Event::CAPTURED);
+    }
+
     public function setHoldFunds($holdFunds)
     {
         $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
