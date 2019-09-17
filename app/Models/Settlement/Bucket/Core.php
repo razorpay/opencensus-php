@@ -66,16 +66,7 @@ class Core extends Base\Core
 
         foreach ($result->toArray() as $record)
         {
-            $status = $this->addMerchantToSettlementBucket("", $record['merchant_id'], $record['settled_at']);
-
-            // Adding this to debug the issues,
-            // should be removed once the bucketing is fixed and bucket/fill route is removed.
-            if ($status === true)
-            {
-                $this->trace->info(
-                    TraceCode::MERCHANT_ADDED_TO_BUCKET,
-                    $record);
-            }
+            $this->addMerchantToSettlementBucket("", $record['merchant_id'], $record['settled_at']);
         }
 
         $this->trace->info(
@@ -148,7 +139,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return $this->addToBucket($merchantId, $timestamp);
+            return $this->addToBucket($merchantId, $settlementTime, $timestamp);
         }
 
         // check merchant preference
@@ -157,7 +148,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return $this->addToBucket($merchantId, $timestamp);
+            return $this->addToBucket($merchantId, $settlementTime, $timestamp);
         }
 
         $currentTimestamp = Carbon::now(Timezone::IST);
@@ -166,7 +157,7 @@ class Core extends Base\Core
             Preference::getNextBucket($currentTimestamp->getTimestamp()) :
             Preference::getNextBucket($settlementTime);
 
-        return $this->addToBucket($merchantId, $bucketTimestamp);
+        return $this->addToBucket($merchantId, $settlementTime, $bucketTimestamp);
     }
 
     /**
@@ -239,15 +230,20 @@ class Core extends Base\Core
      * creates entry in settlement bucket for the merchant id if its not already added to that bucket
      *
      * @param string $merchantId
+     * @param string $settlementTime
      * @param int    $bucketTimestamp
      * @return bool
      */
-    public function addToBucket(string $merchantId, int $bucketTimestamp): bool
+    public function addToBucket(string $merchantId, int $bucketTimestamp, $settlementTime = null): bool
     {
         $data = [
             Entity::MERCHANT_ID      => $merchantId,
             Entity::BUCKET_TIMESTAMP => $bucketTimestamp,
         ];
+
+        $traceData = [
+                'settled_at' => $settlementTime,
+            ] + $data;
 
         try
         {
@@ -255,12 +251,22 @@ class Core extends Base\Core
 
             $entity->fill($data);
 
-            return $entity->save();
+            $entity->save();
+
+            $this->trace->info(
+                TraceCode::MERCHANT_ADDED_TO_BUCKET,
+                $traceData);
+
+            return true;
         }
         catch (\Throwable $e)
         {
             // todo: use insert ignore or ignore this error
         }
+
+        $this->trace->info(
+            TraceCode::FAILED_TO_ADD_MERCHANT_TO_BUCKET,
+            $traceData);
 
         return false;
     }
