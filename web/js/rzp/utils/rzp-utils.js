@@ -933,3 +933,10 @@ export function setNativeValue(element, value) {
     valueSetter.call(element, value);
   }
 }
+
+export const sanitizeHTML = str => {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+
+  return temp.innerHTML;
+};

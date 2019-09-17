@@ -33,8 +33,8 @@ import accountFormTabsContent, {
 } from './AccountActivationFormMap';
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
+
 /*
 *             Main-form        LA-form
 * Submited      E F ~S        ~E ~F ~S
@@ -723,12 +723,7 @@ export default class ActivationWizard extends React.Component {
             activationFlow: data.data && data.data.activation_flow,
           });
 
-        const shouldShowHotjarNPSSurvey = showWhenUtil({
-          additionalCondition: user => user.isPostActivationHotjarSurveyEnabled,
-        });
-
-        if (shouldShowHotjarNPSSurvey)
-          window.hj && window.hj('trigger', 'L0_NPS_Post_KYC');
+        window.hj && window.hj('trigger', 'L0_NPS_Post_KYC');
       }
     });
   };
