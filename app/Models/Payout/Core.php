@@ -746,9 +746,9 @@ class Core extends Base\Core
             function() use ($payout, $reverseReason) {
                 $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
-                $payout->setStatus(Status::REVERSED);
-
                 $payout->setFailureReason($reverseReason);
+
+                $payout->setStatus(Status::REVERSED);
 
                 $this->repo->saveOrFail($payout);
 
@@ -756,76 +756,6 @@ class Core extends Base\Core
             });
 
         return $reversal;
-    }
-
-    public function pushPayoutStatusChangeMetrics(Entity $payout, string $status)
-    {
-        switch ($status)
-        {
-            case Status::INITIATED:
-                $this->pushInitiatedMetrics($payout);
-                break;
-
-            case Status::PROCESSED:
-                $this->pushProcessedMetrics($payout);
-                break;
-
-            case Status::REVERSED:
-                $this->pushReversedMetrics($payout);
-                break;
-
-            default:
-                return;
-        }
-    }
-
-    protected function pushReversedMetrics(Entity $payout)
-    {
-        $extraDimensions = [
-            Metric::FAILURE_REASON => $payout->getFailureReason(),
-        ];
-
-        $metricDimensions        = $payout->getMetricDimensions($extraDimensions);
-        $createdToReversedTime   = $payout->getReversedAt() - $payout->getCreatedAt();
-        $initiatedToReversedTime = $payout->getReversedAt() - $payout->getInitiatedAt();
-
-        $this->trace->histogram(
-            Metric::PAYOUT_CREATED_TO_REVERSED_DURATION_SECONDS,
-            $createdToReversedTime,
-            $metricDimensions);
-
-        $this->trace->histogram(
-            Metric::PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS,
-            $initiatedToReversedTime,
-            $metricDimensions);
-    }
-
-    protected function pushInitiatedMetrics(Entity $payout)
-    {
-        $metricDimensions        = $payout->getMetricDimensions();
-        $createdToInitiatedTime  = $payout->getInitiatedAt() - $payout->getCreatedAt();
-
-        $this->trace->histogram(
-            Metric::PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS,
-            $createdToInitiatedTime,
-            $metricDimensions);
-    }
-
-    protected function pushProcessedMetrics(Entity $payout)
-    {
-        $metricDimensions         = $payout->getMetricDimensions();
-        $createdToProcessedTime   = $payout->getProcessedAt() - $payout->getCreatedAt();
-        $initiatedToProcessedTime = $payout->getProcessedAt() - $payout->getInitiatedAt();
-
-        $this->trace->histogram(
-            Metric::PAYOUT_CREATED_TO_PROCESSED_DURATION_SECONDS,
-            $createdToProcessedTime,
-            $metricDimensions);
-
-        $this->trace->histogram(
-            Metric::PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS,
-            $initiatedToProcessedTime,
-            $metricDimensions);
     }
 
     protected function getMerchantPayoutAmount(array $input, Merchant\Entity $merchant)

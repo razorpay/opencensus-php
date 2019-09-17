@@ -815,8 +815,7 @@ class Entity extends Base\PublicEntity
             $this->setAttribute($timestampKey, $currentTime);
         }
 
-        // Entity calling Core is terrible. To be refactored later.
-        (new Core)->pushPayoutStatusChangeMetrics($this, $status);
+        Metric::pushPayoutStatusChangeMetrics(app('trace'), $this, $status);
     }
 
     public function setInitiatedAt()
@@ -1395,25 +1394,6 @@ class Entity extends Base\PublicEntity
         $this->removeRecursiveRelation();
 
         return parent::toArray();
-    }
-
-    /**
-     * Gets default dimensions for payout metrics
-     *
-     * @param array $extra
-     *
-     * @return array
-     */
-    public function getMetricDimensions(array $extra = []): array
-    {
-        $dimensions = $extra + [
-                Metric::CHANNEL      => $this->getChannel(),
-                Metric::MODE         => $this->getMode(),
-                Metric::ACCOUNT_TYPE => 'shared',
-                //Metric::ACCOUNT_TYPE => $this->balance->getAccountType(),  // This change will be made later.
-            ];
-
-        return $dimensions;
     }
 
     public function scopeStatus(BuilderEx $query, string $status)
