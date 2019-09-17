@@ -508,15 +508,16 @@ trait Authorize
 
         // TODO: Return metadata in a better format
         $response = [
-            'type'       => 'otp',
-            'request'    => $request,
-            'version'    => 1,
-            'payment_id' => $payment->getPublicId(),
-            'gateway'    => $this->getEncryptedGatewayText($payment->getGateway()),
-            'contact'    => $payment->getContact(),
-            'amount'     => number_format(($payment->getAmount() / 100), 2),
-            'wallet'     => $payment->getWallet(),
-            'merchant'   => $payment->merchant->getBillingLabel(),
+            'type'                  => 'otp',
+            'request'               => $request,
+            'version'               => 1,
+            'payment_id'            => $payment->getPublicId(),
+            'gateway'               => $this->getEncryptedGatewayText($payment->getGateway()),
+            'contact'               => $payment->getContact(),
+            'amount'                => number_format(($payment->getAmount() / 100), 2),
+            'formatted_amount'      => $payment->getFormattedAmount(),
+            'wallet'                => $payment->getWallet(),
+            'merchant'              => $payment->merchant->getBillingLabel(),
         ];
 
         // This is a hack to return direct method for IVR payments

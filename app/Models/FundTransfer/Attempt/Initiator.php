@@ -338,7 +338,7 @@ class Initiator extends Base\Core
     protected function dispatchFtaForReconProcess(Entity $attempt)
     {
         // TODO: Allow for all, after testing payouts.
-        if ($attempt->getSourceType() !== Type::PAYOUT)
+        if (in_array($attempt->getSourceType(), [Type::PAYOUT, Type::REFUND], true) === false)
         {
             return;
         }

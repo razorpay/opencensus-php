@@ -5328,3 +5328,7 @@ ALTER TABLE nodal_beneficiaries
     ADD INDEX `nodal_beneficiaries_card_id_index` (`card_id`);
 
 ALTER TABLE nodal_beneficiaries ADD INDEX nodal_beneficiaries_bank_account_id_channel_index(bank_account_id, channel);
+
+ALTER table merchant_details
+    ADD COLUMN `business_registered_district` VARCHAR(255) NULL AFTER `business_registered_city`,
+    ADD COLUMN `business_operation_district` VARCHAR(255) NULL AFTER  `business_operation_city`;

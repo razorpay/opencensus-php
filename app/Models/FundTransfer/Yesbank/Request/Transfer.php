@@ -12,6 +12,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\FundTransfer\Yesbank\Mode;
@@ -546,6 +547,30 @@ class Transfer extends Base
             $mode,
             $statusCode,
             $bankSubStatus);
+
+        if (($statusCode === GatewayStatus::STATUS_CODE_FAILURE) and ($bankSubStatus === GatewayStatus::DT))
+        {
+            try
+            {
+                $this->trace->critical(TraceCode::FTA_DUPLICATE_TRANSFER, $response);
+
+                (new SlackNotification)->send(
+                    'Duplicate Fund transfer',
+                    [ 'response' => $rzpReferenceNo ],
+                    null,
+                    1,
+                    'fts_alerts');
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::INFO,
+                    TraceCode::FTA_RECON_ALERT_FAILED,
+                    $response
+                );
+            }
+        }
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),

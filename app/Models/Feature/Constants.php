@@ -128,6 +128,7 @@ class Constants
     const PHONEPE_INTENT                  = 'phonepe_intent';
     const ISSUE_MPANS                     = 'issue_mpans';
     const BLOCK_DEBIT_2K                  = 'block_debit_2k';
+    const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
 
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
@@ -391,6 +392,7 @@ class Constants
         self::CUST_CONTACT_EMAIL_NULL         => true,
         self::PHONEPE_INTENT                  => true,
         self::BLOCK_DEBIT_2K                  => true,
+        self::USE_MSWIPE_TERMINALS            => true,
     ];
 
     // Entity type constants

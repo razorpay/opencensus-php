@@ -24,6 +24,7 @@ class Constants
     const LINE1              = 'line1';
     const LINE2              = 'line2';
     const CITY               = 'city';
+    const DISTRICT_NAME      = 'district_name';
     const STATE              = 'state';
     const PIN                = 'pin';
     const COUNTRY            = 'country';

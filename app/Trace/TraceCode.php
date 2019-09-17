@@ -260,6 +260,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
     const FTA_BANK_ACCOUNT_EMPTY                                = 'FTA_BANK_ACCOUNT_EMPTY';
+    const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
+    const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 
@@ -2062,6 +2064,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_AMOUNT_RETRIEVE_FAILED                     = 'SETTLEMENT_AMOUNT_RETRIEVE_FAILED';
 
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
+    const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
