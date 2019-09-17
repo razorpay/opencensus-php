@@ -6,6 +6,7 @@ use Requests_Session;
 
 use Requests;
 use RZP\Exception;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 
@@ -189,6 +190,12 @@ class GovernorService
 
     protected $request;
 
+    /**
+     * BasicAuth entity
+     * @var BasicAuth
+     */
+    protected $auth;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -266,10 +273,17 @@ class GovernorService
 
         $method = $this->getMethod($requestSchema);
 
+        $user = $this->auth->getUser()->getId();
+
+        $data1 = [
+            $data,
+            'created_by' => $user,
+        ];
+
         $request = [
             'url'     => $url,
             'method'  => $method,
-            'content' => $data,
+            'content' => $data1,
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
             ]
