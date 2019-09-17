@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Balance\Type;
 
@@ -25,6 +26,9 @@ class Core extends Base\Core
 
     public function backfillSettlementBucket(array $input)
     {
+        // Time limit of 10 mins
+        RuntimeManager::setTimeLimit(600);
+
         $currentTime = Carbon::now(Timezone::IST);
 
         $startTime = $currentTime->subMinutes($currentTime->minute)

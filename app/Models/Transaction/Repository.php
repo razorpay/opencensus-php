@@ -1585,7 +1585,7 @@ class Repository extends Base\Repository
                                         ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
                               })
                       ->where($transactionMerchantId, $mid)
-                      ->where($transactionSettledAt, '<', $timestamp)
+                      ->where($transactionSettledAt, '<=', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
@@ -1596,7 +1596,9 @@ class Repository extends Base\Repository
         $this->trace->info(
             TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
             [
-                'time_taken' => get_diff_in_millisecond($txnFetchStartTime),
+                'merchant_id' => $mid,
+                'settled_at'  => $timestamp,
+                'time_taken'  => get_diff_in_millisecond($txnFetchStartTime),
             ]);
 
         return $results;

@@ -47,7 +47,7 @@ class Processor extends Base\Core
 
     const MUTEX_LOCK_TIMEOUT    = 1800;
 
-    const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s';
+    const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s_%s';
 
     const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 600;
 
@@ -818,7 +818,7 @@ class Processor extends Base\Core
         }
 
         // Avoiding race condition here
-        $resource = sprintf(self::MUTEX_SETTLEMENT_CREATE_RESOURCE, $merchant->getId());
+        $resource = sprintf(self::MUTEX_SETTLEMENT_CREATE_RESOURCE, $merchant->getId(), $this->mode);
 
         $result = $this->mutex->acquireAndRelease(
             $resource,
@@ -858,7 +858,7 @@ class Processor extends Base\Core
                      ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel);
 
         // If there are no transactions to settle then return
-        if ($txns->count() === 0)
+        if ($txns->isEmpty() === true)
         {
             $this->traceMerchantSettlementSkip(
                 $merchant,
