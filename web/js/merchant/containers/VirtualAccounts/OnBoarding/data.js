@@ -33,9 +33,7 @@ export const FEATURES_LINKS = [
 
 // Landing
 export const PROS = [
-  <span>
-    <b>87</b>% reduction in reconciliation time
-  </span>,
+  <span>Unlimited Virtual Accounts at no extra cost</span>,
   <span>
     <b>63</b>% lower refunded escalations
   </span>,
