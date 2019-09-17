@@ -730,6 +730,26 @@ return [
         ],
     ],
 
+    'testEditProfileData' => [
+        'request'  => [
+            'url'     => '/accounts/{id}',
+            'method'  => 'PATCH',
+            'content' => [
+                'profile' => [
+                    'business_model' => 'B2C',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'account',
+                'profile' => [
+                    'business_model' => 'B2C',
+                ]
+            ],
+        ],
+    ],
+
     'testFetchAccount' => [
         'request' => [
             'url'    => '/accounts/{accountId}',

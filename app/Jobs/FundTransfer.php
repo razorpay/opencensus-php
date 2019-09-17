@@ -78,9 +78,25 @@ class FundTransfer extends Job
 
                 $accountType = FundAccountType::CARD;
             }
-            else
+            else if($fta->hasVpa() === true)
+            {
+                $accountEntity = $fta->vpa;
+
+                $accountType = FundAccountType::VPA;
+            }
+            else if($fta->hasBankAccount() === true)
             {
                 $accountEntity = $fta->bankAccount;
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER,
+                    [
+                        'fta_id' => $this->ftaId,
+                    ]);
+
+                return;
             }
 
             $data = [
@@ -98,7 +114,12 @@ class FundTransfer extends Job
                 return;
             }
 
-            $shouldReturn = $this->checkBeneficiaryRegistrationAndVerification($fta, $channel, $data, $accountEntity, $accountType);
+            $shouldReturn = false;
+
+            if (in_array($accountType, [FundAccountType::BANK_ACCOUNT, FundAccountType::CARD], true) === true)
+            {
+                $shouldReturn = $this->checkBeneficiaryRegistrationAndVerification($fta, $channel, $data, $accountEntity, $accountType);
+            }
 
             if ($shouldReturn === true)
             {

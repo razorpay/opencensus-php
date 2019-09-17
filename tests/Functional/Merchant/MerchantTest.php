@@ -1581,7 +1581,9 @@ class MerchantTest extends TestCase
         $request = array(
             'url' => '/checkout',
             'method' => 'get',
-            'content' => [],
+            'content' => [
+                'currency' => 'INR',
+            ],
         );
 
         $response = $this->sendRequest($request);
@@ -2155,6 +2157,30 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('epaylater', $response['methods']['paylater']);
     }
 
+    public function testGetCheckoutPreferencesForPaypalCurrency()
+    {
+        $this->fixtures->merchant->enablePaypal();
+
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences(null, 'USD');
+
+        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
+    }
+
+    public function testGetCheckoutPreferencesForPaypalCurrencyWithOrder()
+    {
+        $order = $this->fixtures->order->createWalletInternationalOrder();
+
+        $this->fixtures->merchant->enablePaypal();
+
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
+    }
+
     public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()
     {
         $this->fixtures->merchant->enableEmi();
@@ -2220,12 +2246,15 @@ class MerchantTest extends TestCase
         }
     }
 
-    protected function getPreferences($orderId = null)
+    protected function getPreferences($orderId = null, $currency = 'INR')
     {
         $request = [
             'url'     => '/preferences',
             'method'  => 'get',
             'content' => [
+                'currency' => [
+                    $currency
+                ],
             ],
         ];
 

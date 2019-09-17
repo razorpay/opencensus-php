@@ -161,6 +161,8 @@ class Constants
      */
     const PL_FIRST_MIN_AMOUNT             = 'pl_first_min_amount';
 
+    const PL_HIDE_ISSUED_TO               = 'pl_hide_issued_to';
+
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
@@ -358,6 +360,7 @@ class Constants
         self::IIN_LISTING                     => true,
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
+        self::PL_HIDE_ISSUED_TO               => true,
         self::REPORTING_GENRERIC_NOTES        => true,
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,

@@ -771,6 +771,9 @@ class SavedCardsPaymentCreateTest extends TestCase
             'request' => [
                 'url' => '/preferences',
                 'method' => 'get',
+                'content' => [
+                    'currency' => 'INR'
+                ]
             ],
             'response' => [
                 'content' => [

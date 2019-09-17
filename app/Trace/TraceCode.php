@@ -187,6 +187,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND                 = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE                         = 'CHECKOUT_PREFERENCES_RESPONSE';
     const CHECKOUT_PREFERENCES_EXCEPTION                        = 'CHECKOUT_PREFERENCES_EXCEPTION';
+    const CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION        = 'CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION';
     const CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION   = 'CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION';
     const PAYMENT_AUTO_REFUND_FAILURE                           = 'PAYMENT_AUTO_REFUND_FAILURE';
     const CREATE_GATEWAY_REFUND_RECORD_FAILED                   = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
@@ -806,6 +807,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUCKETING_INITIATE                                    = 'BUCKETING_INITIATE';
     const BUCKETING_DONE                                        = 'BUCKETING_DONE';
     const MERCHANT_ADDED_TO_BUCKET                              = 'MERCHANT_ADDED_TO_BUCKET';
+    const FAILED_TO_ADD_MERCHANT_TO_BUCKET                      = 'FAILED_TO_ADD_MERCHANT_TO_BUCKET';
 
     const FTA_RECON_REPORT_FILE_CREATED                         = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                            = 'FTA_RECON_REPORT_INITIATED';
@@ -930,6 +932,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_ACCOUNT_EDIT                                     = 'BANK_ACCOUNT_EDIT';
 
     const ACCOUNT_NOT_FOUND_FOR_BENE_REG                        = 'ACCOUNT_NOT_FOUND_FOR_BENE_REG';
+    const ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER                   = 'ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER';
     const ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG               = 'ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG';
 
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';

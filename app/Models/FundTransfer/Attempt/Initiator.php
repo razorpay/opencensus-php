@@ -26,11 +26,9 @@ use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
-    const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s';
+    const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s_%s';
     const DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT   = 500;
     const REQUEST_TIMEOUT                   = 30;
-
-    const FTA_PURPOSE                       = 'settlement';
 
     protected $mutex;
 
@@ -63,23 +61,7 @@ class Initiator extends Base\Core
             ];
         }
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, self::FTA_PURPOSE);
-
-        if ($channel === Channel::YESBANK)
-        {
-            if ((isset($input[Entity::PURPOSE]) === true) and (Purpose::isValid($input[Entity::PURPOSE])))
-            {
-                $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE]);
-            }
-            else
-            {
-                return [
-                    'channel'   => $channel,
-                    'count'     => 0,
-                    'message'   => 'Invalid purpose for fund transfer'
-                ];
-            }
-        }
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE], $input[Entity::SOURCE_TYPE]);
 
         $limit = $this->getLimitForChannel($channel) ?? self::DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT;
 
@@ -112,7 +94,7 @@ class Initiator extends Base\Core
 
             $purpose = $input[Entity::PURPOSE];
 
-            $sourceType = $input[Entity::SOURCE_TYPE] ?? null;
+            $sourceType = $input[Entity::SOURCE_TYPE];
 
             $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 

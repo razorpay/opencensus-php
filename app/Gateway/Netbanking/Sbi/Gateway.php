@@ -376,6 +376,16 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
+        $input = $verify->input;
+
+        // Throw exception as verify is not available for second recurring request
+        if (($input['payment']['recurring_type'] === Payment\RecurringType::AUTO) and
+            ($input['payment']['recurring'] === true))
+        {
+            throw new Exception\PaymentVerificationException(
+                [], $verify, Payment\Verify\Action::FINISH);
+        }
+
         $request = $this->getVerifyRequestData($verify);
 
         $response = $this->sendGatewayRequest($request);

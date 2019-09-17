@@ -12,11 +12,16 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'enach_npci_netbanking';
 
     protected $crypto;
@@ -101,7 +106,7 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
 
-        $recurringData = $this->getRecurringDataFromNpciResponse($gatewayPayment);
+        $recurringData = $this->getRecurringData($gatewayPayment);
 
         /**
          * Throwing an exception here for now. This only updates the payment entity to failed
@@ -144,6 +149,15 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     // -------------------------- authorize helper functions ----------------------------------
@@ -247,12 +261,13 @@ class Gateway extends Base\Gateway
 
         $catCode = Base\CategoryCode::getCategoryCodeFromMcc($mcc);
 
-        $currentDate = Carbon::now()->setTimezone(Timezone::IST)->format('Y-m-d\TH:i:s');
+        $createdDate = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
+                              ->format('Y-m-d\TH:i:s');
 
         $data = [
             NpciXmlHeaderTags::GROUP_HEADER      => [
                 RequestNpciTags::MESSAGE_ID            => $pid,
-                RequestNpciTags::CREATION_DATE_TIME    => $currentDate,
+                RequestNpciTags::CREATION_DATE_TIME    => $createdDate,
             ],
 
             NpciXmlHeaderTags::INFO              => [
@@ -538,7 +553,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getRecurringDataFromNpciResponse($gatewayPayment)
+    protected function getRecurringData($gatewayPayment)
     {
         $status = $gatewayPayment->getStatus();
 
@@ -548,7 +563,10 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 '',
                 '',
-                ['gateway_payment' => $gatewayPayment->toArray()]);
+                [
+                    'expected' => array_keys(RegistrationStatus::STATUS_TO_RECURRING_STATUS_MAP),
+                    'actual'   => $status,
+                ]);
         }
 
         $recurringStatus = RegistrationStatus::STATUS_TO_RECURRING_STATUS_MAP[$status];
@@ -583,6 +601,153 @@ class Gateway extends Base\Gateway
                     'gateway'               => $this->gateway,
                 ]);
         }
+    }
+
+    // -------------------------- verify helper functions ----------------------------------
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $request = $this->getVerifyRequest($verify);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $decodedJson = json_decode($response->body, true);
+
+        $verify->verifyResponseContent = $decodedJson[ResponseFields::TRANSACTION_STATUS][0];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT,
+            [
+                'gateway'          => $this->gateway,
+                'raw_response'     => $response->body,
+                'decoded_response' => $verify->verifyResponseContent,
+                'payment_id'       => $verify->input['payment']['id'],
+            ]
+        );
+    }
+
+    protected function getVerifyRequest(Verify $verify)
+    {
+        $input = $verify->input;
+
+        $mandateReqBlock = [
+            RequestFields::MERCHANT_ID   => $this->getMerchantId(),
+            RequestFields::MANDATE_ID    => $input['payment']['id'],
+            RequestFields::REQ_INIT_DATE => Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
+                                                    ->format('Y-m-d')
+        ];
+
+        $content = [
+            RequestFields::MANDATE_REQ_ID_LIST  => [$mandateReqBlock]
+        ];
+
+        $request = $this->getStandardRequestArray(json_encode($content), 'post');
+
+        if ($this->mode == Mode::TEST)
+        {
+            $request['options']['verify'] = false;
+        }
+
+        $request['headers']['Content-Type'] = 'application/json';
+
+        return $request;
+    }
+
+    protected function verifyPayment(Verify $verify)
+    {
+        $status = $this->getVerifyMatchStatus($verify);
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveVerifyResponse($verify);
+    }
+
+    protected function getVerifyMatchStatus(Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    protected function checkGatewaySuccess($verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ((isset($content[ResponseXmlTags::ACCEPTED]) === true) and
+            ($content[ResponseXmlTags::ACCEPTED] === RegistrationStatus::SUCCESS))
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    protected function saveVerifyResponse(Verify $verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $verify->verifyResponseContent;
+
+        $attributes = $this->getVerifyAttributesToSave($verify);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function getVerifyAttributesToSave(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $gatewayPayment = $verify->payment;
+
+        $gatewayRefId  = $gatewayPayment->getGatewayReferenceId();
+        $gatewayRefId2 = $gatewayPayment->getGatewayReferenceId2();
+
+        $attributes = [];
+
+        if ((empty($gatewayRefId) === true) or (empty($gatewayRefId2) === true))
+        {
+            $attributes[Base\Entity::GATEWAY_REFERENCE_ID]  = $content[ResponseXmlTags::VER_NPCI_REF_ID];
+            $attributes[Base\Entity::GATEWAY_REFERENCE_ID2] = $content[ResponseXmlTags::ACCEPT_REF_NO];
+        }
+
+        if ((isset($gatewayPayment[Base\Entity::STATUS]) === false) or
+            ($verify->match === false))
+        {
+            $attributes[Base\Entity::STATUS] = $content[ResponseXmlTags::ACCEPTED] ?? RegistrationStatus::FAILURE;
+        }
+
+        return $attributes;
+    }
+
+    protected function extractPaymentsProperties($gatewayPayment)
+    {
+        $response = [];
+
+        // For api based emandate initial payments, if late authorized,
+        // we need to update the token status to confirmed
+        if ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+            {
+                $recurringData = $this->getRecurringData($gatewayPayment);
+
+                $response = array_merge($response, $recurringData);
+            }
+
+        return $response;
     }
 
     // -------------------------- general helper functions ----------------------------------

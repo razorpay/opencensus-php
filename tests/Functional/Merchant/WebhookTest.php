@@ -1017,7 +1017,9 @@ class WebhookTest extends TestCase
 
         $this->initiateSettlements($channel);
 
-        $content = $this->initiateTransfer($channel, Attempt\Purpose::SETTLEMENT);
+        $content = $this->initiateTransfer($channel,
+            Attempt\Purpose::SETTLEMENT,
+            Attempt\Type::SETTLEMENT);
 
         $setlFile = $content[$channel]['file']['local_file_path'];
 
@@ -1038,7 +1040,9 @@ class WebhookTest extends TestCase
 
         $this->initiateSettlements($channel);
 
-        $content = $this->initiateTransfer($channel, Attempt\Purpose::SETTLEMENT);
+        $content = $this->initiateTransfer($channel,
+            Attempt\Purpose::SETTLEMENT,
+            Attempt\Type::SETTLEMENT);
 
         $setlFile = $content[$channel]['file']['local_file_path'];
 

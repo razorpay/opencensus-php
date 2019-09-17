@@ -7,7 +7,9 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Settlement\Metric;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Models\Settlement\Processor as SettlementProcessor;
@@ -86,6 +88,19 @@ class Create extends Job
             $this->trace->info(
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
                 $response);
+        }
+        catch (BadRequestException $e)
+        {
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS)
+            {
+                //
+                // its been seen that one job is received by multiple workers with in 10-15 sec of delay
+                // In any case if this happens the settlement count will get messed up
+                // in case of mutex error we are incrementing the counter here
+                // this is to keep the count stable in further process
+                //
+                Cache::increment(self::TOTAL_MERCHANT_COUNT);
+            }
         }
         catch (\Throwable $e)
         {
