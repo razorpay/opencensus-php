@@ -435,6 +435,26 @@ class Gateway extends Base\Gateway
 
         $attributes = [];
 
+        // Sample response content:
+        // {
+        //
+        //    "status":"success",
+        //    "errorcode":"00",
+        //    "errormsg":"",
+        //    "history":
+        //    {
+        //        "transaction":
+        //        {
+        //            "status":"I",
+        //            "tran_id":"200000000000000000000999999999",
+        //            "apprcode":"",
+        //            "datetime":"09/17/2019 21:02:28",
+        //            "amount":"100"
+        //        }
+        //    }
+        //
+        //}
+
         // If gateway payment does not contain apprcode and if apprcode
         // is present in verify response, update it.
         if ((empty($gatewayPayment[Entity::APPRCODE]) === true) and
@@ -442,8 +462,6 @@ class Gateway extends Base\Gateway
         )
         {
             $attributes[Entity::APPRCODE] = $response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE];
-
-
         }
 
         if (empty($response[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS]) === false)
