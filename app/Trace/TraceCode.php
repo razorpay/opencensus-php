@@ -930,6 +930,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_ACCOUNT_EDIT                                     = 'BANK_ACCOUNT_EDIT';
 
     const ACCOUNT_NOT_FOUND_FOR_BENE_REG                        = 'ACCOUNT_NOT_FOUND_FOR_BENE_REG';
+    const ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER                   = 'ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER';
     const ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG               = 'ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG';
 
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
