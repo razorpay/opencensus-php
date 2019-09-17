@@ -70,7 +70,8 @@ const displayField = ({
               <input
                 class="Field-el counter-value"
                 type="number"
-                defaultValue={field.min_purchase}
+                value={field.min_purchase}
+                readOnly
                 disabled
               />
               <button type="button">+</button>

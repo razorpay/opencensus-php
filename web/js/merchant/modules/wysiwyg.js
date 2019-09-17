@@ -137,8 +137,18 @@ export default function(state = initialState, action) {
 
       if (action.isPPV3Enabled) {
         entityData.payment_page_items.forEach(pi => {
+          // While creation/editing, all amounts are converted to Paisa (or smaller unit)
+
           if (pi.item.amount) {
             pi.item.amount /= 100; // Convert in Rupees (or bigger unit)
+          }
+
+          if (pi.min_amount) {
+            pi.min_amount /= 100; // Convert in Rupees (or bigger unit)
+          }
+
+          if (pi.max_amount) {
+            pi.max_amount /= 100; // Convert in Rupees (or bigger unit)
           }
         });
 
