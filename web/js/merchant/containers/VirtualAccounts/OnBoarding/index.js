@@ -86,7 +86,7 @@ export default class InvoicesOnBoarding extends React.Component {
               feature={RZPFeatures.VA}
               title="Smart Collect"
               imageUrl="/dist/css/assets/product_onboarding/smart_collect.svg"
-              desc="Create and send GST compliant invoices that your customers can pay online instantly."
+              desc="Automate reconciliation by generating unlimited Virtual Accounts and Virtual UPI IDs on demand. Accept payments via NEFT, RTGS and IMPS."
               pros={PROS}
             />
           )}
