@@ -575,6 +575,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::PHONEPE_INTENT);
     }
 
+    public function isUseMswipeTerminalsEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::USE_MSWIPE_TERMINALS);
+    }
+
     public function canHoldPayment(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::PAYMENT_ONHOLD);
