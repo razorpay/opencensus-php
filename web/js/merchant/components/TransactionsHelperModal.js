@@ -8,7 +8,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 
 @RTracking((state, props, args) => {
-  return window.rzpQ.component('HomeContainer');
+  return window.rzpQ.component('InstantActivationSuccess');
 })
 export default class InstantActivationSuccess extends Component {
   constructor(props) {
@@ -17,14 +17,14 @@ export default class InstantActivationSuccess extends Component {
     this.handleProductsView = this.handleProductsView.bind(this);
   }
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.accept_payments_popup_action', {
+      action: 'View_Products',
+    })
+  )
   handleProductsView() {
     const { onClose, showProductsModal, showTransactionsModal } = this.props;
     this.props.track.trackViewProducts();
-    this.props.tracking.trackEvent(
-      window.rzpQ.onbr().initiated('dash.accept_payments_popup_action', {
-        clickSource: 'view-products',
-      })
-    );
     onClose();
     showProductsModal(() => showTransactionsModal());
   }

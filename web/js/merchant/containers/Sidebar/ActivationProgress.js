@@ -6,7 +6,7 @@ import { classList } from 'common/util';
 import RTracking from 'react-tracking';
 
 export default RTracking((state, props, args) => {
-  return window.rzpQ.component('HomeContainer');
+  return window.rzpQ.component('ActivationProgress');
 })(function ActivationProgress(props) {
   const { user, config } = props;
 
@@ -53,7 +53,7 @@ export default RTracking((state, props, args) => {
           trackingIntent &&
             props.tracking.trackEvent(
               window.rzpQ.onbr().initiated(trackingIntent, {
-                clickSource: 'lhs-nav-bar',
+                clickSource: 'LHS_Nav_Bar',
               })
             );
           props.onSidebarBannerClick();
