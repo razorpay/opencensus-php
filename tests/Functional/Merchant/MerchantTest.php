@@ -1173,56 +1173,6 @@ class MerchantTest extends TestCase
         $this->assertNotNull($merchant['activated_at']);
     }
 
-    public function testMerchantEditReceiptEmailEventCapture()
-    {
-        $merchant = $this->getLastEntity('merchant', true);
-
-        $this->fixtures->create('merchant_detail',
-            [
-                'merchant_id' => $merchant['id'],
-                'submitted'   => true,
-                'locked'      => true
-            ]);
-
-        $this->ba->adminAuth();
-
-        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-
-        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
-
-        $this->assertNotNull($merchant['receipt_email_trigger_event'], 'captured');
-    }
-
-    public function testMerchantEditReceiptEmailEventAuthorized()
-    {
-        $merchant = $this->getLastEntity('merchant', true);
-
-        $this->fixtures->edit('merchant',  $merchant['id'], ['receipt_email_trigger_event' => 'captured']);
-
-        $this->fixtures->create('merchant_detail',
-            [
-                'merchant_id' => $merchant['id'],
-                'submitted'   => true,
-                'locked'      => true
-            ]);
-
-        $this->ba->adminAuth();
-
-        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-
-        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
-
-        $this->assertNotNull($merchant['receipt_email_trigger_event'], 'authorized');
-    }
-
     public function testMerchantArchiveWithNoMerchantDetails()
     {
         $merchant = $this->getLastEntity('merchant', true);

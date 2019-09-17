@@ -11,7 +11,6 @@ use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
-use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
 
 /**
@@ -823,28 +822,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
-        }
-    }
-
-    protected function validateSetReceiptEmailEventAuthorized()
-    {
-        $merchant = $this->entity;
-
-        if ($merchant->getReceiptEmailTriggerEvent() === Event::AUTHORIZED)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_AUTHORISED);
-        }
-    }
-
-    protected function validateSetReceiptEmailEventCaptured()
-    {
-        $merchant = $this->entity;
-
-        if ($merchant->getReceiptEmailTriggerEvent() === Event::CAPTURED)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_CAPTURED);
         }
     }
 
