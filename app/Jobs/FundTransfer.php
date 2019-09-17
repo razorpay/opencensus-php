@@ -12,7 +12,6 @@ use RZP\Models\FundTransfer as FTA;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankAccount\Beneficiary;
-use RZP\Models\FundTransfer\Attempt\Alerts;
 use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
@@ -148,10 +147,6 @@ class FundTransfer extends Job
         else
         {
             $this->logAndDelete($data, $traceCode);
-
-            $slackData = $data + ['headLine' => 'Fund transfer not initiated due to beneficiary registration failure'];
-
-            (new Alerts)->notifySlack($slackData, Alerts::INFO);
 
             return $this->isWithInFtaSla($fta);
         }

@@ -318,9 +318,7 @@ class Service extends Base\Service
                 'mode'              => $this->mode,
             ];
 
-            $slackData = $data + ['headLine' => 'fta_control'];
-
-            (new Alerts)->notifySlack($slackData, Alerts::ALERT);
+            (new SlackNotification)->send('fta_control', $data, null, 1, SlackNotification::SETTLEMENT);
 
             $status = true;
         }

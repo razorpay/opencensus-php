@@ -775,6 +775,10 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+            $alerts = new Alerts();
+
+            $alerts->notifySlack($ftaData + ['headLine' => 'fta source processing failed'], Alerts::ALERT);
         }
     }
 

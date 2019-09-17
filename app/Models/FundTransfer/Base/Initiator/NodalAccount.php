@@ -21,6 +21,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Metric;
+use RZP\Models\FundTransfer\Attempt\Alerts;
 use RZP\Exception\BadRequestValidationFailureException;
 
 abstract class NodalAccount extends Base\Core
@@ -430,12 +431,23 @@ abstract class NodalAccount extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $data = [
+                'fta_id'      => $fta->getId(),
+                'status'      => $fta->getStatus(),
+                'merchant_id' => $fta->getMerchantId(),
+                'source_id'   => $fta->getSourceId(),
+            ];
+
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
-                []
+                $data
             );
+
+            $alerts = new Alerts();
+
+            $alerts->notifySlack($data + ['headLine' => 'fta source processing failed'], Alerts::ALERT);
         }
     }
 

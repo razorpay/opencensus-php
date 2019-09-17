@@ -106,9 +106,7 @@ class BulkRecon extends Base\Core
         {
             $summary = $this->getSummary();
 
-            $slackData = $summary + ['headLine' => 'setl_reconciliation'];
-
-            (new Alerts)->notifySlack($slackData, Alerts::ALERT);
+            (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
         }
         catch (\Throwable $e)
         {
@@ -162,7 +160,7 @@ class BulkRecon extends Base\Core
             }
             catch (\Throwable $e)
             {
-                (new Alerts)->notifySlack(['headLine' => 'setl_reconciliation'], Alerts::ALERT);
+                (new SlackNotification)->send('setl_reconciliation', [], $e);
 
                 throw $e;
             }
@@ -257,9 +255,7 @@ class BulkRecon extends Base\Core
 
         unset($this->notificationSummary['ids']);
 
-        $slackData = $this->notificationSummary + ['headLine' => 'critical_failure'];
-
-        (new Alerts)->notifySlack($slackData, Alerts::ALERT);
+        (new SlackNotification)->send('critical_failure', $this->notificationSummary, null, 1);
 
         $mail = new CriticalFailureEmail($this->notificationSummary);
 
