@@ -232,12 +232,12 @@ class Preference extends Base\Core
         {
             if ($hour === Constants::NINE_AM)
             {
-                $hour = (($settlementHour <= Constants::NINE_AM) or ($settlementHour > Constants::THREE_PM)) ?
+                $hour = (($settlementHour < Constants::NINE_AM) or ($settlementHour > Constants::THREE_PM)) ?
                     Constants::NINE_AM : Constants::THREE_PM;
             }
             else
             {
-                $hour = (($settlementHour <= Constants::THREE_PM) or ($settlementHour > Constants::FIVE_PM)) ?
+                $hour = (($settlementHour < Constants::THREE_PM) or ($settlementHour > Constants::FIVE_PM)) ?
                     Constants::THREE_PM : Constants::FIVE_PM;
             }
         }
@@ -347,7 +347,7 @@ class Preference extends Base\Core
         {
             $hour = 0;
 
-            if (($settlementTime->hour >= Constants::THREE_PM) or ($settlementTime->hour < Constants::TEN_AM))
+            if (($settlementTime->hour > Constants::THREE_PM) or ($settlementTime->hour < Constants::TEN_AM))
             {
                 $hour = Constants::TEN_AM;
             }

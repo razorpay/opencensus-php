@@ -66,7 +66,7 @@ class Core extends Base\Core
 
         foreach ($result->toArray() as $record)
         {
-            $this->addMerchantToSettlementBucket("", $record['merchant_id'], $record['settled_at']);
+            $this->addMerchantToSettlementBucket('', $record['merchant_id'], $record['settled_at']);
         }
 
         $this->trace->info(
@@ -79,7 +79,7 @@ class Core extends Base\Core
         );
 
         return [
-            'count' => count($result)
+            'count' => $result->count(),
         ];
     }
 
@@ -139,7 +139,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return $this->addToBucket($merchantId, $settlementTime, $timestamp);
+            return $this->addToBucket($merchantId, $timestamp, $settlementTime);
         }
 
         // check merchant preference
@@ -148,7 +148,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return $this->addToBucket($merchantId, $settlementTime, $timestamp);
+            return $this->addToBucket($merchantId, $timestamp, $settlementTime);
         }
 
         $currentTimestamp = Carbon::now(Timezone::IST);
@@ -157,7 +157,7 @@ class Core extends Base\Core
             Preference::getNextBucket($currentTimestamp->getTimestamp()) :
             Preference::getNextBucket($settlementTime);
 
-        return $this->addToBucket($merchantId, $settlementTime, $bucketTimestamp);
+        return $this->addToBucket($merchantId, $bucketTimestamp, $settlementTime);
     }
 
     /**
