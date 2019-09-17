@@ -1176,7 +1176,7 @@ class EnachRblGatewayTest extends TestCase
 
         $content = $this->initiateTransfer(
             $channel,
-            Attempt\Purpose::REFUND);
+            Attempt\Purpose::REFUND, Attempt\Type::REFUND);
 
         $data = $this->reconcileOnlineSettlements($channel, false);
 
