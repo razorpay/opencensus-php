@@ -826,7 +826,8 @@ class Processor extends Base\Core
             {
                 return $this->createSettlementForMerchant($merchant);
             },
-            self::MUTEX_SETTLEMENT_CREATE_TIMEOUT);
+            self::MUTEX_SETTLEMENT_CREATE_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         //
         // Marking merchant settlement as complete here (update the bucket entity)
