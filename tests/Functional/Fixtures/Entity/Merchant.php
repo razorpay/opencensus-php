@@ -517,6 +517,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['paylater' => false]);
     }
 
+    public function enablePaypal($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paypal' => true]);
+    }
+
+    public function disablePaypal($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paypal' => false]);
+    }
+
     public function setDisabledBanks($id = '10000000000000', array $disabledBanks)
     {
         return $this->fixtures->edit('methods', $id, ['disabled_banks' => $disabledBanks]);
