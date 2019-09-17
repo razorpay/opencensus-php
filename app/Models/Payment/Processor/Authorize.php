@@ -2556,6 +2556,9 @@ trait Authorize
         $this->setAutoRefundTimestamp($payment);
 
         $this->setPreferredAuthIfApplicable($payment);
+
+        // this needs to be done after we have card entity as we need to know if card is debit or credit
+        $this->validateForMaxAmount($input, $payment);
     }
 
     protected function setPreferredAuthIfApplicable(Payment\Entity $payment)

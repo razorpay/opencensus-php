@@ -148,10 +148,10 @@ class FundTransfer extends Job
         {
             $this->logAndDelete($data, $traceCode);
 
-            (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure',
-                                          $data,
-                                          null,
-                                          1);
+//            (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure',
+//                                          $data,
+//                                          null,
+//                                          1);
 
             return $this->isWithInFtaSla($fta);
         }

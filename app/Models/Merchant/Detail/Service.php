@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Coupon;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
@@ -58,6 +59,8 @@ class Service extends Base\Service
         $response = $this->saveMerchantDetails($input);
 
         $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null);
 
         return $response;
     }

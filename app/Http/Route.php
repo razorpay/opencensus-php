@@ -382,6 +382,7 @@ final class Route
         'setl_fixer'                               => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                            => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_bucket_backfill'                     => ['post',     'settlements/bucket/fill',                        'SettlementController@postSettlementBucketBackfill'                 ],
         'setl_initiate_daily'                      => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_initiate_adhoc'                      => ['post',     'settlements/initiate_adhoc',                     'SettlementController@processAdhocSettlements'                      ],
         'setl_initiate_action'                     => ['post',     'settlements/initiate_action/{channel?}',         'SettlementController@postSettlementInitiate'                       ],
@@ -1371,6 +1372,7 @@ final class Route
         'order_fetch_by_id',
         'order_edit',
         'order_payments',
+        'balance_fetch',
         'feature_dummy',
         'razorx_dummy',
         'webhook_create',
@@ -1589,6 +1591,7 @@ final class Route
         'schedule_process_tasks',
         'scorecard',
         'setl_initiate',
+        'setl_bucket_backfill',
         'setl_reconcile_pull',
         'setl_initiate_daily',
         'setl_post_details_old',
@@ -2952,6 +2955,7 @@ final class Route
             // The rest are crons
             'entity_tax_update',
             'setl_initiate',
+            'setl_bucket_backfill',
             'setl_initiate_daily',
             'setl_reconcile_generate',
             'setl_reconcile_test',
@@ -3387,6 +3391,13 @@ final class Route
         'excel_store_page_by_url',
     ];
 
+    const FAILURE_EVENTS_INTERCEPTOR_ROUTES = [
+        'user_register',
+        'merchant_edit_pre_signup_details',
+        'user_confirm_by_data',
+        'merchant_instant_activation_post',
+    ];
+
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
@@ -3690,6 +3701,11 @@ final class Route
         if (in_array($name, self::EXCEL_STORE_PROXY_ROUTES, true) === true)
         {
             $route->middleware('excel_store_proxy');
+        }
+
+        if (in_array($name, self::FAILURE_EVENTS_INTERCEPTOR_ROUTES, true) === true)
+        {
+            $route->middleware('failure_interceptor');
         }
     }
 

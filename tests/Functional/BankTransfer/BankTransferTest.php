@@ -1698,7 +1698,7 @@ class BankTransferTest extends TestCase
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertNotNull($attempt['utr']);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
 
         // Process entities
         $this->reconcileEntitiesForChannel($channel);

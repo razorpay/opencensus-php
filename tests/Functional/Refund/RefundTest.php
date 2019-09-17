@@ -2089,7 +2089,14 @@ class RefundTest extends TestCase
 
         $this->assertEquals(false, $refund['gateway_refunded']);
         $this->assertEquals('optimum', $refund['speed_requested']);
-        $this->assertEquals(RefundStatus::CREATED, $refund['status']);
+        $this->assertEquals(RefundStatus::INITIATED, $refund['status']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('failed', $fta['status']);
 
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
@@ -2210,7 +2217,7 @@ class RefundTest extends TestCase
 
         $this->assertEquals(false, $refund['gateway_refunded']);
         $this->assertEquals('optimum', $refund['speed_requested']);
-        $this->assertEquals(RefundStatus::CREATED, $refund['status']);
+        $this->assertEquals(RefundStatus::INITIATED, $refund['status']);
 
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
@@ -2335,6 +2342,13 @@ class RefundTest extends TestCase
         $this->assertEquals('optimum', $refund['speed_requested']);
         $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
         $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
 
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
