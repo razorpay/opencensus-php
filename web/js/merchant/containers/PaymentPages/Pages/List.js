@@ -57,6 +57,7 @@ import { fetchPaymentPagesList } from './model';
     handleProductQuickGuide,
   }
 )
+@RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesContainer extends ListContainer {
   state = {
     loading: true,

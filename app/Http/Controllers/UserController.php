@@ -65,6 +65,7 @@ class UserController extends Controller
         }
 
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
+        $data['cdnBaseUrl'] = \Config::get('app.cdn_base_url');
 
         // $data is used to run diferent pieces of JS
         if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true)

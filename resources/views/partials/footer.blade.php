@@ -1,4 +1,4 @@
-  <script src='{{$cdnDashboardUrl}}/static/analytics/bundle.js'></script>
+  <script src='{{$cdnBaseUrl}}/static/analytics/bundle.js'></script>
   <script src="https://cdn.razorpay.com/static/assets/holidays.js"></script>
   <script type="text/javascript">
 
