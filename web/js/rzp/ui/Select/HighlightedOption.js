@@ -1,3 +1,5 @@
+import { sanitizeHTML } from 'rzp/utils/rzp-utils';
+
 const createHighlighedOption = (label, searchTerm) => {
   if (searchTerm) {
     let escapedSearchTerm = searchTerm.replace(
@@ -7,19 +9,17 @@ const createHighlighedOption = (label, searchTerm) => {
     label = label.replace(new RegExp(escapedSearchTerm, 'i'), '<b>$&</b>');
   }
 
-  return {
-    __html: label,
-  };
+  return label;
 };
 
 export default ({ option, select, optionLabelPath }) => {
   let highlightedLabel = option[optionLabelPath];
-  return (
-    <span
-      dangerouslySetInnerHTML={createHighlighedOption(
-        highlightedLabel,
-        select.searchTerm
-      )}
-    />
-  );
+
+  const html = {
+    __html: sanitizeHTML(
+      createHighlighedOption(highlightedLabel, select.searchTerm)
+    ),
+  };
+
+  return <span dangerouslySetInnerHTML={html} />;
 };
