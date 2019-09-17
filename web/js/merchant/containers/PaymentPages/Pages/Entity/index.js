@@ -8,6 +8,7 @@ import {
   fetchPaymentPageEntitySettings,
   fetchPaymentsListForPaymentPage,
   editPaymentPage,
+  editPaymentPageItem,
   activatePaymentPage,
   deactivatePaymentPage,
 } from '../model';
@@ -121,17 +122,20 @@ export default class extends React.Component {
       });
   }
 
-  editPaymentPage = data => {
-    return editPaymentPage(this.state.paymentPageEntity.id, data)
+  editPaymentPage = (data, paymentPageItemId) => {
+    const isEntityPaymentPageItem = !!paymentPageItemId;
+
+    const _updateFn = isEntityPaymentPageItem
+      ? editPaymentPageItem
+      : editPaymentPage;
+    const id = isEntityPaymentPageItem
+      ? paymentPageItemId
+      : this.state.paymentPageEntity.id;
+
+    return _updateFn(id, data)
       .then(resp => {
         if (resp.data) {
           this.props.updatePPInReduxList(resp.data, false);
-
-          const keys = { ...data };
-          if (keys.hasOwnProperty('times_payable')) {
-            keys.quantity = keys.times_payable;
-            delete keys.times_payable;
-          }
 
           this.props.showNotification({
             type: 'success',

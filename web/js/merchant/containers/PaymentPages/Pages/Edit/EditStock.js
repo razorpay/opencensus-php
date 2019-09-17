@@ -2,7 +2,7 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { isInteger } from 'rzp/utils/validators';
 
-export default class EditQuantity extends React.Component {
+export default class EditStock extends React.Component {
   state = this.resetState(this.props);
 
   resetState(props) {
@@ -10,13 +10,13 @@ export default class EditQuantity extends React.Component {
 
     return {
       isEditableMode: false,
-      timesPayable: props.value || '',
-      hasNoLimit: props.value ? '0' : '1',
+      totalStock: props.totalStock || '',
+      hasNoStockLimit: props.totalStock ? '0' : '1',
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.value !== this.state.timesPayable) {
+    if (nextProps.totalStock !== this.state.totalStock) {
       this.setState(this.resetState(nextProps));
     }
   }
@@ -26,24 +26,26 @@ export default class EditQuantity extends React.Component {
       isEditableMode: true,
     });
 
-    this.props.trackerFn('Edit Quantity');
+    this.props.trackerFn('Edit Stock');
   };
 
+  setRef = el => (this.stockEl = el);
+
   render() {
-    const { isRoleAllowedEdit, timesPaid } = this.props;
+    const { isRoleAllowedEdit, quantitySold, paymentPageItemId } = this.props;
 
     let content = (
       <React.Fragment>
-        {timesPaid}
+        {quantitySold}
         <span style={{ opacity: 0.7 }}>
-          {this.state.timesPayable && ' of ' + this.state.timesPayable}
+          {this.state.totalStock && ' of ' + this.state.totalStock}
         </span>
         {isRoleAllowedEdit && (
           <Button.Transparent
             onClick={this.makeEditable}
             class="Button--Link pull-right"
           >
-            Update Quantity
+            Update Stock
           </Button.Transparent>
         )}
       </React.Fragment>
@@ -54,34 +56,32 @@ export default class EditQuantity extends React.Component {
         <div class="InputGroup Input" style={{ maxWidth: 260 }}>
           <Input.Check
             fieldLabel="No Limit"
-            name="hasNoLimit"
-            defaultValue={this.state.hasNoLimit}
-            value={this.state.hasNoLimit}
+            name="hasNoStockLimit"
+            defaultValue={this.state.hasNoStockLimit}
+            value={this.state.hasNoStockLimit}
             onChange={e => {
               this.setState({
-                hasNoLimit: e.target.value,
+                hasNoStockLimit: e.target.value,
               });
 
               if (e.target.value == '0') {
                 setTimeout(() => {
-                  const ele = document.getElementsByName('times_payable');
-                  ele[0] && ele[0].focus();
+                  this.stockEl && this.stockEl.focus();
+                  this.stockEl.el.select();
                 }, 10);
               }
             }}
           />
           <Input
-            name="times_payable"
+            name="stock"
+            ref={this.setRef}
             class="Input"
-            placeholder="Total Quantity"
-            value={this.state.timesPayable}
-            disabled={this.state.hasNoLimit === '1'}
-            onFocus={e => {
-              e.target.select();
-            }}
+            placeholder="Total Stock"
+            value={this.state.totalStock}
+            disabled={this.state.hasNoStockLimit === '1'}
             validator={val => {
-              if (this.state.hasNoLimit === '0') {
-                if (!this.state.timesPayable) {
+              if (this.state.hasNoStockLimit === '0') {
+                if (!this.state.totalStock) {
                   return 'Please fill out this field';
                 } else if (!isInteger(val)) {
                   return 'Enter valid number';
@@ -90,7 +90,7 @@ export default class EditQuantity extends React.Component {
             }}
             onChange={e => {
               this.setState({
-                timesPayable: e.target.value,
+                totalStock: e.target.value,
               });
             }}
           />
@@ -113,20 +113,23 @@ export default class EditQuantity extends React.Component {
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={
-                this.state.hasNoLimit === '0' && !this.state.timesPayable
+                this.state.hasNoStockLimit === '0' && !this.state.totalStock
               }
               onClick={() => {
                 return this.props
-                  .editFn({
-                    times_payable:
-                      this.state.hasNoLimit == '1'
-                        ? null
-                        : Number(this.state.timesPayable),
-                  })
+                  .editFn(
+                    {
+                      stock:
+                        this.state.hasNoStockLimit == '1'
+                          ? null
+                          : Number(this.state.totalStock),
+                    },
+                    paymentPageItemId
+                  )
                   .then(resp => {
                     if (resp && resp.data) {
                       this.setState(this.resetState());
-                      this.props.trackerFn('Edit Quantity (Saved)');
+                      this.props.trackerFn('Edit Stock (Saved)');
                     }
                   });
               }}

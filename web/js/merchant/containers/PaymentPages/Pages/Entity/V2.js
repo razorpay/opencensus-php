@@ -18,7 +18,7 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
 
-import EditQuantity from '../Edit/EditQuantity';
+import EditStock from '../Edit/EditStock';
 
 import { EditExpiry, EditNotes } from '../../../PaymentLinks/Edit/index';
 import ShareView from '../Modals/Share';
@@ -181,7 +181,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                 />
 
                 {!!paymentPageEntity.amount &&
-                  !paymentPageEntity.times_payable && (
+                  !paymentPageEntity.stock && (
                     <EntityDetailRow
                       label="Total Units Sold"
                       value={paymentPageEntity.times_paid}
@@ -192,11 +192,11 @@ export default class PaymentPagesV2Entity extends React.Component {
                   <EntityDetailRow
                     label=" Available Quantity"
                     value={() => (
-                      <EditQuantity
-                        value={paymentPageEntity.times_payable}
-                        timesPaid={paymentPageEntity.times_paid}
+                      <EditStock
+                        stock={paymentPageEntity.stock}
+                        quantitySold={paymentPageEntity.quantity_sold}
                         editFn={editPaymentPage}
-                        entityId={paymentPageEntity.id}
+                        paymentPageItemId={paymentPageEntity.paymentPageItemId}
                         trackerFn={trackDetailViewEdits}
                         isRoleAllowedEdit={isRoleAllowedEdit}
                       />

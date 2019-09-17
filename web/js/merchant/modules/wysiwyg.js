@@ -159,7 +159,10 @@ export default function(state = initialState, action) {
         entityData.amount = amountItem.item.amount
           ? amountItem.item.amount / 100
           : null; // Convert in Rupees (or bigger unit)
-        entityData.quantity = amountItem.quantity;
+
+        entityData.quantity_sold = amountItem.quantity_sold;
+        entityData.stock = amountItem.stock;
+        entityData.paymentPageItemId = amountItem.id;
 
         formItems = udfSchema;
       }

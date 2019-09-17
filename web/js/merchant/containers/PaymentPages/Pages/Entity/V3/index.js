@@ -18,7 +18,7 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../../ga';
 
-import EditQuantity from '../../Edit/EditQuantity';
+import EditStock from '../../Edit/EditStock';
 
 import { EditExpiry, EditNotes } from '../../../../PaymentLinks/Edit/index';
 import ShareView from '../../Modals/Share';
@@ -276,11 +276,11 @@ export default class PaymentPagesV3Entity extends React.Component {
                         <td class="item-details-units">
                           <div>
                             <div class="title">Units Sold</div>
-                            <EditQuantity
-                              value={pi.stock}
-                              timesPaid={pi.quantity_sold}
+                            <EditStock
+                              totalStock={pi.stock}
+                              quantitySold={pi.quantity_sold}
                               editFn={editPaymentPage}
-                              entityId={pi.id}
+                              paymentPageItemId={pi.id}
                               trackerFn={trackDetailViewEdits}
                               isRoleAllowedEdit={isRoleAllowedEdit}
                             />

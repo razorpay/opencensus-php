@@ -29,6 +29,12 @@ export function createPaymentPage(data) {
   });
 }
 
+export function editPaymentPageItem(id, data) {
+  const reqPayload = { ...data };
+
+  return _makeEditCall(id, reqPayload);
+}
+
 export function editPaymentPage(id, data) {
   const reqPayload = { ...data };
 
@@ -37,10 +43,14 @@ export function editPaymentPage(id, data) {
 
   delete reqPayload.currency;
 
+  return _makeEditCall(id, reqPayload);
+}
+
+function _makeEditCall(id, data) {
   return merchantFetch({
     url: `payment_links/${id}`,
     method: 'patch',
-    data: reqPayload,
+    data: data,
     headers: {
       'content-type': 'application/json',
     },
