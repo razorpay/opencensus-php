@@ -32,7 +32,14 @@ export function createPaymentPage(data) {
 export function editPaymentPageItem(id, data) {
   const reqPayload = { ...data };
 
-  return _makeEditCall(id, reqPayload);
+  return merchantFetch({
+    url: `payment_links/payment_page_item/${id}`,
+    method: 'patch',
+    data: reqPayload,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
 }
 
 export function editPaymentPage(id, data) {
@@ -43,14 +50,10 @@ export function editPaymentPage(id, data) {
 
   delete reqPayload.currency;
 
-  return _makeEditCall(id, reqPayload);
-}
-
-function _makeEditCall(id, data) {
   return merchantFetch({
     url: `payment_links/${id}`,
     method: 'patch',
-    data: data,
+    data: reqPayload,
     headers: {
       'content-type': 'application/json',
     },

@@ -15,6 +15,7 @@ import {
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Spinner from 'rzp/ui/Spinner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { updateItem } from 'rzp/utils/immutable';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
@@ -128,6 +129,7 @@ export default class extends React.Component {
     const _updateFn = isEntityPaymentPageItem
       ? editPaymentPageItem
       : editPaymentPage;
+
     const id = isEntityPaymentPageItem
       ? paymentPageItemId
       : this.state.paymentPageEntity.id;
@@ -135,15 +137,42 @@ export default class extends React.Component {
     return _updateFn(id, data)
       .then(resp => {
         if (resp.data) {
-          this.props.updatePPInReduxList(resp.data, false);
+          const keys = { ...data };
 
           this.props.showNotification({
             type: 'success',
             message: `${keysToSentence(keys)} updated successfully`,
           });
 
+          let newPaymentPageEntity;
+          if (isEntityPaymentPageItem) {
+            let paymentPageItems = this.state.paymentPageEntity
+              .payment_page_items;
+            let itemIndexInArray;
+
+            paymentPageItems.find((pi, ix) => {
+              itemIndexInArray = ix;
+              return pi.id === resp.data.id;
+            });
+
+            newPaymentPageEntity = { ...this.state.paymentPageEntity };
+
+            if (itemIndexInArray != null) {
+              newPaymentPageEntity.payment_page_items = updateItem(
+                paymentPageItems,
+                itemIndexInArray,
+                resp.data
+              );
+            } else {
+              throw 'Please Reload the page'; // index must index, so this Shouldn't happen though
+            }
+          } else {
+            newPaymentPageEntity = resp.data;
+          }
+
+          this.props.updatePPInReduxList(newPaymentPageEntity, false);
           this.setState({
-            paymentPageEntity: resp.data,
+            paymentPageEntity: newPaymentPageEntity,
           });
 
           return resp;
