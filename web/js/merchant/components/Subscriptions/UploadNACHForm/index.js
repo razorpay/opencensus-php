@@ -133,7 +133,7 @@ export default class UploadNACHForm extends React.Component {
 
     const key = this.props.keys.keys[0] || {};
 
-    return validateNachFile(file, this.props.authLinkId, key.id)
+    return validateNachFile(file, this.props.id, key.id)
       .then(resp => {
         this.setState({
           extractedData: resp.data,

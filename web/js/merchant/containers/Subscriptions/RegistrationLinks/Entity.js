@@ -12,6 +12,7 @@ import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDe
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import NACHDetails from 'merchant/components/Subscriptions/UploadNACHForm/Details';
 
 import { fetchRegistrationLink } from 'merchant/modules/registration_link';
 
@@ -93,6 +94,13 @@ export default class RegistrationLinkEntityContainer extends Component {
                     {/* Customer Details */}
                     <EntityDetailRow label="Customer Details">
                       <CustomerDetails customer={entity.customer_details} />
+                    </EntityDetailRow>
+
+                    <EntityDetailRow label="NACH form">
+                      <NACHDetails
+                        registrationLinkId={entity.id}
+                        fileURL={''}
+                      />
                     </EntityDetailRow>
 
                     {/* created at */}

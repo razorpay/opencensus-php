@@ -18,7 +18,7 @@ import Form from 'component/Form';
 import Spinner from 'rzp/ui/Spinner';
 import Button, { AsyncBtn } from 'component/Button';
 import { ModalAsideNav } from 'component/Wizard';
-import { Modal, ModalMask, ModalContent } from 'component/Modal';
+import { Modal, ModalContent } from 'component/Modal';
 
 import CustomerDetailsForm, {
   validatePhone,
@@ -27,7 +27,6 @@ import CustomerDetailsForm, {
 import PaymentDetailsForm, {
   checkIfAmount,
 } from 'merchant/components/Subscriptions/RegistrationLinksForm/PaymentDetails';
-import UploadNACHForm from 'merchant/components/Subscriptions/UploadNACHForm';
 import TokenDetailsForm from 'merchant/components/Subscriptions/RegistrationLinksForm/TokenDetails';
 
 const CustomerDetailsMandatoryFields = [
@@ -99,7 +98,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         accountType: '',
       },
       validTabs: [false, false, false],
-      showNachFormModal: false,
     };
   }
 
@@ -216,20 +214,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     return isAllFieldsPresent;
   };
 
-  handleNachModal = () => {
-    this.setState({
-      showNachFormModal: !this.state.showNachFormModal,
-    });
-  };
-
-  openNACHFormUploadModal = () => {
-    return (
-      <ModalMask>
-        <UploadNACHForm closeModal={this.handleNachModal} />
-      </ModalMask>
-    );
-  };
-
   prepareDataForRequest = () => {
     const data = { ...this.state.formFields },
       notes = data.notes.reduce(
@@ -310,12 +294,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           });
 
           const entityId = response.id;
-
-          if (this.state.formFields.isNachFormAval) {
-            this.setState({
-              showNachFormModal: true,
-            });
-          }
 
           if (this.props.onClose) {
             this.props.luminateRow(entityId);
@@ -528,10 +506,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
   render() {
     const isModalView = this.props.onClose;
-
-    if (this.state.showNachFormModal) {
-      return this.openNACHFormUploadModal();
-    }
 
     if (isModalView) {
       return (
