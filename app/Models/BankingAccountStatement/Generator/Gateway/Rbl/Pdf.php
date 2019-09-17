@@ -25,7 +25,7 @@ class Pdf extends Generator
 
         $tmpFileName = $this->accountNumber . '.pdf';
 
-        $tmpFileFullPath = storage_path('tmp/' . $tmpFileName);
+        $tmpFileFullPath = storage_path('/tmp/' . $tmpFileName);
 
         $fileHandle = fopen($tmpFileFullPath, 'w');
 
@@ -48,7 +48,6 @@ class Pdf extends Generator
             'zoom'             => 1,
             'ignoreWarnings'   => false,
             'encoding'         => 'UTF-8',
-            'binary'           => '/usr/local/bin/wkhtmltopdf',
         ];
 
         $pdf = (new PdfLibrary($options))->addPage($html);

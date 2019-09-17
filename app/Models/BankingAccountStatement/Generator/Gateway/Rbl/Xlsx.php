@@ -192,7 +192,7 @@ class Xlsx extends Generator
 
         $tmpFileName     = $this->accountNumber . '.xlsx';
 
-        $tmpFileFullPath = storage_path('tmp/' . $tmpFileName);
+        $tmpFileFullPath = storage_path('/tmp/' . $tmpFileName);
 
         $writer          = new XlsxWriter($spreadsheet);
 
