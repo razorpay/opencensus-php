@@ -291,7 +291,7 @@ export default class AdvancedForm extends React.PureComponent {
       // Same Advanced Form for both fixed_price and fixed_price_optional
       case FIELD_TYPES.fixed_price.key:
       case FIELD_TYPES.fixed_price_optional.key:
-        return this.FIELD_available;
+        return this.FIELD_availableStock;
 
       case FIELD_TYPES.dynamic_price.key:
         return (
