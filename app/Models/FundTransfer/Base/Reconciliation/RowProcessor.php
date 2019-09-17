@@ -296,7 +296,12 @@ abstract class RowProcessor extends Base\Core
 
             $alerts = new Alerts();
 
-            $alerts->notifySlack($ftaData + ['headLine' => 'fta source processing failed'], Alerts::ALERT);
+            $slackData = $ftaData + [
+                'headLine' => 'fta source processing failed',
+                'error'    => $e->getMessage(),
+            ];
+
+            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 

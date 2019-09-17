@@ -436,6 +436,8 @@ abstract class NodalAccount extends Base\Core
                 'status'      => $fta->getStatus(),
                 'merchant_id' => $fta->getMerchantId(),
                 'source_id'   => $fta->getSourceId(),
+                'source_type' => $fta->getSourceType(),
+                'error'       => $e->getMessage(),
             ];
 
             $this->trace->traceException(
