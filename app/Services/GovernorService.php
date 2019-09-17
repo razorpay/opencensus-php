@@ -273,11 +273,11 @@ class GovernorService
 
         $method = $this->getMethod($requestSchema);
 
-        $user = $this->auth->getUser()->getId();
+        $userId = $this->app['basicauth']->getAdmin()->getId();
 
         $data1 = [
             $data,
-            'created_by' => $user,
+            'created_by' => $userId,
         ];
 
         $request = [
