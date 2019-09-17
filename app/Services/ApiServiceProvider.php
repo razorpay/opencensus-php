@@ -417,7 +417,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerDoppler()
     {
-        $this->app->bind('doppler', function($app)
+        $this->app->singleton('doppler', function($app)
         {
             $dopplerMock = $app['config']->get('applications.doppler.mock');
 

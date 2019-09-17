@@ -2,200 +2,52 @@
 
 namespace RZP\Services;
 
-use Requests;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Doppler
 {
-    const X_RAZORPAY_TASKID  = 'X-Razorpay-TaskId';
+    protected $app;
 
-    const REQUEST_TIMEOUT    = 1;
+    protected $mock;
 
-    const MAX_RETRY_COUNT    = 1;
-
-    const SUCCESS            = 'success';
-
-    const ERROR              = 'error';
+    protected $sns;
 
     protected $config;
 
-    protected $baseUrl;
-
-    protected $trace;
-
-    protected $request;
-
-    protected $app;
-
-    const SUCCESS_FEEDBACK  = [
-        'url'       =>  "/success",
-        'method'    =>  "POST",
-    ];
-
-    const FAILURE_FEEDBACK  = [
-        'url'       =>  "/fail",
-        'method'    =>  "POST",
-    ];
+    const SNS_CLIENT = 'doppler';
 
     public function __construct($app)
     {
         $this->app = $app;
 
-        $this->trace = $app['trace'];
-
         $this->config = $app['config']->get('applications.doppler');
 
-        $this->baseUrl = $this->config['url'];
+        $this->mock = $this->config['mock'];
 
-        $this->request = $app['request'];
+        $this->sns = $app['sns'];
+
     }
 
-    public function sendSuccessFeedback($data)
+    // sends event to doppler's topic
+    public function sendFeedback($eventData)
     {
-        return $this->sendRequest(self::SUCCESS_FEEDBACK, $data);
+        $this->sendDopplerEventRequest($eventData);
     }
 
-    public function sendFailureFeedback($data)
-    {
-        return $this->sendRequest(self::FAILURE_FEEDBACK, $data);
-    }
-
-    protected function sendRequest($action, $data = null, $id = null, $params = null)
+    /**
+     * Dispatch event data to doppler service via SNS.
+     *
+     * @param array $eventData
+     */
+    protected function sendDopplerEventRequest(array $eventData)
     {
         try
         {
-            $url = $this->getUrl($action, $id, $params);
-
-            if ($data === null)
-            {
-                $data = '';
-            }
-
-            $headers['Content-Type'] = 'application/json';
-
-            $headers['Accept'] = 'application/json';
-
-            $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
-
-            $authentication = [
-                $this->app['config']->get('applications.doppler.username'),
-                $this->app['config']->get('applications.doppler.password')
-            ];
-
-            $options = [
-                'timeout' => self::REQUEST_TIMEOUT,
-                'auth'    => $authentication
-
-            ];
-
-            $request = [
-                'url'     => $url,
-                'method'  => $action['method'],
-                'headers' => $headers,
-                'options' => $options,
-                'content' => $data
-            ];
-
-            $response = $this->sendDopplerRequest($request);
-
-            $this->checkErrors($response);
-
-            return json_decode($response->body, true);
+            $this->sns->publish(json_encode($eventData), self::SNS_CLIENT);
         }
         catch (\Throwable $e)
         {
-            $this->trace->error(
-                TraceCode::SMART_ROUTING_SERVICE_ERROR,
-                [
-                    'response' => $e->getMessage(),
-                    'action'   => $action,
-                    'data'     => $data,
-                ]);
-            return null;
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED, $eventData);
         }
-    }
-
-    protected function sendDopplerRequest($request)
-    {
-        $method = $request['method'];
-
-        $retryCount = 0;
-
-        while (true)
-        {
-            try
-            {
-                if ($method === 'POST' or $method === 'PUT')
-                {
-                    $response = Requests::$method(
-                        $request['url'],
-                        $request['headers'],
-                        json_encode($request['content']),
-                        $request['options']);
-                }
-
-                break;
-            }
-            catch(\Requests_Exception $e)
-            {
-                // check curl error, increase retry count if timeout
-                // throw the error if retry count reaches max allowed value
-                if (($retryCount < self::MAX_RETRY_COUNT) and
-                    (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
-                {
-                    $this->trace->info(
-                        TraceCode::SMART_ROUTING_RETRY,
-                        [
-                            'message' => $e->getMessage(),
-                            'type'    => $e->getType(),
-                            'data'    => $e->getData()
-                        ]);
-
-                    $retryCount++;
-                }
-                else
-                {
-                    throw $e;
-                }
-            }
-        }
-
-        return $response;
-    }
-
-    protected function checkErrors($response)
-    {
-        $responseBody = json_decode($response->body, true);
-
-        $this->trace->info(
-            TraceCode::SMART_ROUTING_RESPONSE,
-            [
-                'response' => $responseBody
-            ]);
-
-        if ($response->status_code >= 400)
-        {
-            throw new Exception\RuntimeException('Smart routing request failed', $responseBody);
-        }
-    }
-
-    private function getUrl($action, $id, $params = null) : string
-    {
-        $url = $this->baseUrl . str_replace_first(':id', $id, $action['url']);
-
-        if (empty($params) == false)
-        {
-            $url = $url . '?';
-
-            foreach ($params as $key => $value) {
-
-                $url .= $key . '=' . $value . '&';
-            }
-
-            $url = rtrim($url, '&');
-        }
-
-        return $url;
     }
 }

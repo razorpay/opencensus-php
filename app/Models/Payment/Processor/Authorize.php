@@ -370,6 +370,11 @@ trait Authorize
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
+                // publishing failure event to doppler's topic
+                $payload = $this->preparePayloadForDoppler($this->payment, 'failure');
+
+                $this->app->doppler->sendFeedback($payload);
+
                 $this->updatePaymentAuthFailedAndThrowException($e);
             }
             finally
@@ -437,10 +442,6 @@ trait Authorize
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
-
-        $payload = $this->preparePayloadForDoppler($this->payment, 'failure');
-
-        $response = $this->app->doppler->sendFailureFeedback($payload);
 
         $this->runShieldCheck($this->payment);
     }
@@ -5386,9 +5387,10 @@ trait Authorize
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
+            // publishing success event to doppler's topic
             $payload = $this->preparePayloadForDoppler($this->payment, 'success');
 
-            $response = $this->app->doppler->sendFailureFeedback($payload);
+            $response = $this->app->doppler->sendFeedback($payload);
 
             return true;
         });
@@ -6046,18 +6048,60 @@ trait Authorize
 
     protected  function preparePayloadForDoppler(Payment\Entity $payment, string $paymentStatus)
     {
+        // associated terminal from payment entity
+        $terminal = $payment->terminal;
+
+        $terminalType = $terminal->isShared() ? 'shared' : 'direct';
+
+        $gateway = $terminal->getGateway();
+
+        $card = [];
+
+        $upi = [];
+
+        if ($payment->hasCard() === true)
+        {
+            $card['id'] = $payment->card->getCardVaultToken();
+            $card['card_iin'] = $payment->card->getIin();
+            $card['card_network'] = $payment->card->getNetwork();
+            $card['card_type'] = $payment->card->getType();
+            $card['card_issuer'] = $payment->card->getIssuer();
+            $card['auth_type'] = $payment->getAuthType();
+
+            $upi['id'] = null;
+            $upi['vpa'] = null;
+            $upi['type'] = null;
+            $upi['auth_type'] = null;
+        }
+
+        if ($payment->getMethod() === Method::UPI)
+        {
+
+            $upi['id'] = $payment->getId();
+            $upi['vpa'] = $payment->getVpa();
+            $upi['type'] = null;
+            $upi['auth_type'] = $payment->getAuthType();
+
+            $card['id'] = null;
+            $card['card_iin'] = null;
+            $card['card_network'] = null;
+            $card['card_type'] = null;
+            $card['card_issuer'] = null;
+            $card['auth_type'] = null;
+        }
+
         $data = [
             'payment_id' => $payment->getId(),
             'method'     => $payment->getMethod(),
             'authorized' => $paymentStatus,
-            'card'       => [],
-            'upi'        => [],
+            'card'       => $card,
+            'upi'        => $upi,
             'terminal'   => $payment->getTerminalId(),
-            'gateway'    => $payment->getGateway(),
-            'terminalType' => 'direct/shared',
+            'gateway'    => $gateway,
+            'terminalType' => $terminalType,
             'metadata'   => $payment->getMetadata(),
-            'created_at' => $payment['CREATED_AT'],
-            'authorized_at' => $payment['AUTHORIZED_AT'],
+            'created_at' => $payment->getCreatedAt(),
+            'authorized_at' => $payment->getAuthorizeTimestamp(),
         ];
 
         return $data;
