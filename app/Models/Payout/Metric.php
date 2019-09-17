@@ -24,6 +24,19 @@ final class Metric
     // Dimension constants
     const IS_BULK_PAYOUT = 'is_bulk_payout';
 
+    public static function getMetricDimensions(Entity $payout, array $extra = []): array
+    {
+        $dimensions = $extra + [
+                Entity::MODE          => $payout->getMode(),
+                Entity::METHOD        => $payout->getMethod(),
+                Entity::CHANNEL       => $payout->getChannel(),
+                Balance::ACCOUNT_TYPE => $payout->balance->getAccountType(),
+                self::IS_BULK_PAYOUT  => ($payout->getBatchId() !== null ? true : false),
+            ];
+
+        return $dimensions;
+    }
+
     public static function pushPayoutStatusChangeMetrics(Trace $trace, Entity $payout, string $status)
     {
         switch ($status)
@@ -63,6 +76,13 @@ final class Metric
             default:
                 return;
         }
+    }
+
+    public static function pushCreatedMetrics(Trace $trace, Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+
+        $trace->count(self::PAYOUT_CREATED_TOTAL, $metricDimensions);
     }
 
     protected static function pushPendingMetrics(Trace $trace, Entity $payout)
@@ -143,18 +163,5 @@ final class Metric
             self::PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS,
             $initiatedToFailedTime,
             $metricDimensions);
-    }
-
-    protected static function getMetricDimensions(Entity $payout, array $extra = []): array
-    {
-        $dimensions = $extra + [
-                Entity::MODE          => $payout->getMode(),
-                Entity::METHOD        => $payout->getMode(),
-                Entity::CHANNEL       => $payout->getChannel(),
-                Balance::ACCOUNT_TYPE => $payout->balance->getAccountType(),
-                self::IS_BULK_PAYOUT  => ($payout->getBatchId() !== null ? true : false),
-            ];
-
-        return $dimensions;
     }
 }
