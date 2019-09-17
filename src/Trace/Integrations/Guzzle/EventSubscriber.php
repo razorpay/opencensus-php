@@ -104,7 +104,7 @@ class EventSubscriber implements SubscriberInterface
         $request = $event->getRequest();
         $headers = new ArrayHeaders();
         $this->propagator->inject($this->tracer->spanContext(), $headers);
-        $request->setHeaders($headers->toArray());
+        $request->addHeaders($headers->toArray());
 
         $attrHeaders = [];
         foreach ($request->getHeaders() as $name => $values) {
