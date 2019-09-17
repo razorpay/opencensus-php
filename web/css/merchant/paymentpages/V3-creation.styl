@@ -530,7 +530,7 @@
 
 
   .OptionsDropdown-list
-    margin-top: 8px
+    margin-bottom: 8px
     width: 224px
     max-height: 242px
     border-radius: 4px
@@ -541,7 +541,11 @@
     background-color: #fff
     box-shadow: 0 5px 9px 0 rgba(69,75,85,0.22)
     animation: dropdownAppearIn 0.1s cubic-bezier(0.13, 1.04, 1, 1)
-    transform-origin: center top
+    transform-origin: center bottom
+
+    top: unset
+    bottom: 100%
+
 
   .OptionsDropdown-title
     margin: 8px 12px 4px
@@ -615,6 +619,9 @@
 
       i
         color: #969caf
+
+      i.i-check
+        color: $primary-color
 
     .OptionsDropdown-item--delete
       color: #D26A6A
