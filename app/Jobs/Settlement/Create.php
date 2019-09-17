@@ -17,9 +17,9 @@ class Create extends Job
     //
     // redis keys used to store intermediate count of settlement process
     //
-    const TOTAL_MERCHANT_COUNT  = '{settlement}_total_merchant_count';
+    const TOTAL_MERCHANT_COUNT  = '{settlement}_total_merchant_count_%s';
 
-    const CHANNEL_WISE_COUNT    = '{settlement}_channel_wise_count';
+    const CHANNEL_WISE_COUNT    = '{settlement}_channel_wise_count_%s';
 
     /**
      * @var string
@@ -63,6 +63,11 @@ class Create extends Job
 
         try
         {
+            $key = sprintf(self::TOTAL_MERCHANT_COUNT, $this->mode);
+
+            // reduce the total count once the processing is done
+            Cache::decrement($key);
+
             $this->trace->info(
                 TraceCode::SETTLEMENT_JOB_INIT_FOR_MERCHANT,
                 [
@@ -108,9 +113,6 @@ class Create extends Job
         {
             $this->delete();
 
-            // reduce the total count once the processing is done
-            Cache::decrement(self::TOTAL_MERCHANT_COUNT);
-
             $this->trace->count(
                 Metric::MERCHANT_SETTLEMENT_PROCESSED,
                 [
@@ -132,7 +134,9 @@ class Create extends Job
     {
         $redis = app('redis')->connection();
 
-        $count = (int) $redis->hincrby(self::CHANNEL_WISE_COUNT, $channel, 1);
+        $channelCountKey = sprintf(self::CHANNEL_WISE_COUNT, $this->mode);
+
+        $count = (int) $redis->hincrby($channelCountKey, $channel, 1);
 
         $batchSize = (new Initiator)->getLimitForChannel($channel);
 
@@ -144,8 +148,10 @@ class Create extends Job
             return;
         }
 
+        $key = sprintf(self::TOTAL_MERCHANT_COUNT, $this->mode);
+
         // if there total merchant count is zero that means settlement creation process completed
-        $isCompleted = (((int) Cache::get(self::TOTAL_MERCHANT_COUNT)) === 0);
+        $isCompleted = (((int) Cache::get($key)) === 0);
 
         // if process is not complete then do not initiate transfer
         if ($isCompleted === false)
@@ -153,7 +159,7 @@ class Create extends Job
             return;
         }
 
-        $channelCount = $redis->hgetall(self::CHANNEL_WISE_COUNT);
+        $channelCount = $redis->hgetall($channelCountKey);
 
         // If there any channel with pending settlement initiate then dispatch it for the same
         foreach ($channelCount as $ch => $count)

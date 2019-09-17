@@ -744,11 +744,12 @@ class Processor extends Base\Core
                 'merchant_count' => count($merchantIds)
             ]);
 
+        $CountKey = sprintf(Create::TOTAL_MERCHANT_COUNT, $this->mode);
         //
         // add cout of total merchant IDs in cache
         // so that it can be used to initate transfer when settlement creation is complete
         //
-        Cache::increment(Create::TOTAL_MERCHANT_COUNT, count($merchantIds));
+        Cache::increment($CountKey, count($merchantIds));
 
         $startTime = microtime(true);
 
@@ -782,7 +783,7 @@ class Processor extends Base\Core
                 // this will help maintain the exact count pushed to queue
                 // and also when to iniatie the transfer
                 //
-                Cache::decrement(Create::TOTAL_MERCHANT_COUNT);
+                Cache::decrement($CountKey);
 
                 $this->trace->traceException(
                     $e,
