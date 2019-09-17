@@ -15,7 +15,6 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\FundTransfer\Yesbank\Mode;
-use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
