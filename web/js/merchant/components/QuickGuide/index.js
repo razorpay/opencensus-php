@@ -95,6 +95,12 @@ export default params => {
     }
 
     componentWillReceiveProps(nextProps) {
+      if (nextProps[DATA_POINTS[DATA_POINTS.length - 1]].items.length) {
+        if (typeof window.hj === 'function') {
+          window.hj('tagRecording', [`${FEATURE}_onboarding_completed`]);
+        }
+      }
+
       if (!this.props.currentOnboarding.isTour) return;
 
       let isLoading = false;
