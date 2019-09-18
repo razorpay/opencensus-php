@@ -36,7 +36,7 @@ class Repository extends Base\Repository
                     ->where(function($query)
                     {
                         $query->whereNull(Token\Entity::EXPIRED_AT)
-                            ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
+                              ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
                     })
                     ->orderBy(Token\Entity::CREATED_AT, 'desc')
                     ->orderBy(Token\Entity::ID, 'desc')
