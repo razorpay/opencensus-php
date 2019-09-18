@@ -38,6 +38,12 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           field: this.props.field,
         });
       }
+
+      if (prevProps.currency !== this.props.currency) {
+        this.setState({
+          currency: this.props.currency,
+        });
+      }
     }
 
     openBaseForm = (intentFieldType, initWithBaseField) => {
