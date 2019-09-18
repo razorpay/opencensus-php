@@ -76,8 +76,7 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
-            ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE))
+        if (isset($content[ResponseFields::ERROR_CODE]) === true)
         {
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
@@ -87,10 +86,10 @@ class Gateway extends Base\Gateway
 
         // OTP_REDIRECT sends a authCode as query param
         // If it exists, handle it as callback for OTP_REDIRECT
-        if (isset($input['gateway'][ResponseFields::AUTH_CODE]) === true)
+        /*if (isset($input['gateway'][ResponseFields::AUTH_CODE]) === true)
         {
             return $this->callbackOtpRedirectFlow($input);
-        }
+        }*/
 
         return $this->callbackTopupFlow($input);
     }
@@ -226,7 +225,23 @@ class Gateway extends Base\Gateway
         {
             $this->action($input, Action::VERIFY);
 
-            return $this->topupCallbackVerify($input);
+            $contentToSave = array(
+                RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
+                RequestFields::EMAIL         => $input['payment']['email'],
+                RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
+                RequestFields::STATUS        => $input['gateway'][ResponseFields::STATUS],
+                RequestFields::AMOUNT        => $input['payment']['amount'],
+                RequestFields::TXN_ID        => $input['gateway'][ResponseFields::TXN_ID],
+                RequestFields::RECEIVED      => true
+            );
+
+            $wallet = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Action::AUTHORIZE);
+
+            $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+
+            return;
+            //return $this->topupCallbackVerify($input);
         }
 
         $this->action($input, Action::DEBIT_WALLET);
