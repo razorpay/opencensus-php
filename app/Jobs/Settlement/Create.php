@@ -210,7 +210,9 @@ class Create extends Job
                 'channel' => $channel,
             ]);
 
+        $channelCountKey = sprintf(self::CHANNEL_WISE_COUNT, $this->mode);
+
         // decrement the size by count as those are dispatched to initiate
-        $redis->hincrby(self::CHANNEL_WISE_COUNT, $channel, -1 * $count);
+        $redis->hincrby($channelCountKey, $channel, -1 * $count);
     }
 }
