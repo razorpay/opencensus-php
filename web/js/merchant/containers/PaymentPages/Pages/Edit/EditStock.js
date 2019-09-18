@@ -29,6 +29,8 @@ export default class EditStock extends React.Component {
     this.props.trackerFn('Edit Stock');
   };
 
+  setRef = el => (this.stockEl = el);
+
   render() {
     const { isRoleAllowedEdit, quantitySold, paymentPageItemId } = this.props;
 
@@ -58,19 +60,29 @@ export default class EditStock extends React.Component {
             defaultValue={this.state.hasNoStockLimit}
             value={this.state.hasNoStockLimit}
             onChange={e => {
+              const val = e.target.value;
+
               this.setState({
-                hasNoStockLimit: e.target.value,
+                hasNoStockLimit: val,
               });
+
+              if (val == '0') {
+                setTimeout(() => {
+                  if (this.stockEl) {
+                    this.stockEl.focus();
+                    this.stockEl.el.select();
+                  }
+                }, 10);
+              }
             }}
           />
           <Input
             name="stock"
+            ref={this.setRef}
             class="Input"
             placeholder="Total Stock"
             value={this.state.totalStock}
             disabled={this.state.hasNoStockLimit === '1'}
-            autoFocus
-            onFocus={e => e.target.select()}
             validator={val => {
               if (this.state.hasNoStockLimit === '0') {
                 if (!this.state.totalStock && this.state.totalStock != 0) {
