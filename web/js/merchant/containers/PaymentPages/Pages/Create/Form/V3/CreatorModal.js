@@ -2,7 +2,13 @@ import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { classList } from 'common/util';
 
 /* Position-awared Modal which opens over the field being edited / in the middle of screen */
-const CreatorModal = ({ children, overElement, className, onClose }) => {
+const CreatorModal = ({
+  children,
+  overElement,
+  className,
+  onClose,
+  allowScroll,
+}) => {
   // If not available, then opens modal in center of screen
 
   const modalContent = (
@@ -12,7 +18,7 @@ const CreatorModal = ({ children, overElement, className, onClose }) => {
   return overElement ? (
     <React.Fragment>
       <div class={className} />
-      <Modal class={className} showCloseBtn={false}>
+      <Modal class={className} showCloseBtn={false} allowScroll={allowScroll}>
         <div class="mimic-expand" />
         {modalContent}
       </Modal>
@@ -23,6 +29,7 @@ const CreatorModal = ({ children, overElement, className, onClose }) => {
         onClose={onClose}
         class={classList('animate-appear', className)}
         showCloseBtn
+        allowScroll={allowScroll}
       >
         {modalContent}
       </Modal>

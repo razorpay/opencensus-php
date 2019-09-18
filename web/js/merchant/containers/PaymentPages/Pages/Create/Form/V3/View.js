@@ -366,7 +366,7 @@ class FormFooter extends React.PureComponent {
     return (
       <div id="form-footer" ref={this.setRef}>
         {isEditModalOpened && (
-          <CreatorModal class="CreatorModal-BaseForm" overElement>
+          <CreatorModal class="CreatorModal-BaseForm" overElement allowScroll>
             <div>
               <Input
                 name="payment_button_label"

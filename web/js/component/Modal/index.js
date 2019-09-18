@@ -55,7 +55,7 @@ export class ModalMask extends React.PureComponent {
   };
 
   render() {
-    const { children, maskClosable = false, ...rest } = this.props;
+    const { children, maskClosable = false, allowScroll, ...rest } = this.props;
 
     let classArray = rest.className
       ? rest.className.split(' ').map(cls => 'Modal-mask--' + cls)
@@ -90,7 +90,7 @@ export class ModalMask extends React.PureComponent {
 export class Modal extends React.PureComponent {
   componentDidMount() {
     // Add the class if not present on body
-    if (!document.body.classList.contains('noscroll')) {
+    if (!this.props.allowScroll) {
       document.body.classList.add('noscroll');
     }
   }
@@ -106,6 +106,7 @@ export class Modal extends React.PureComponent {
       className,
       onClose,
       onCloseCB,
+      allowScroll,
       ...rest
     } = this.props;
 
