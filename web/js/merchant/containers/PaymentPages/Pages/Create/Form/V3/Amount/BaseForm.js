@@ -141,7 +141,7 @@ export default class BaseForm extends React.PureComponent {
 
     if (isDisabled) {
       const minAmount = `${getCurrency(currency).symbol} ${Number(
-        field.min_amount
+        field.min_amount || 0
       ).toFixed(2)}`;
       const maxAmount = field.max_amount
         ? `${getCurrency(currency).symbol} ${Number(field.max_amount).toFixed(
