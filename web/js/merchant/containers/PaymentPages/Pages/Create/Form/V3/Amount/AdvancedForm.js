@@ -116,7 +116,7 @@ export default class AdvancedForm extends React.PureComponent {
     }
 
     if (Number(maxVal) <= 0) {
-      return 'Max amount must be more than 0';
+      return 'Max amount must be atleast 0';
     }
 
     if (minVal && Number(maxVal) < Number(minVal)) {
@@ -128,12 +128,8 @@ export default class AdvancedForm extends React.PureComponent {
     const minVal = this.minAmountLimit && this.minAmountLimit.value;
     const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
 
-    if (stockVal === '') {
-      return;
-    }
-
-    if (Number(stockVal) <= 0) {
-      return 'Stock must be more than 0';
+    if (stockVal === '' || Number(stockVal) <= 0) {
+      return 'Stock must be atleast 0';
     }
 
     if (minVal && Number(stockVal) < Number(minVal)) {
