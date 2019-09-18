@@ -203,7 +203,26 @@ export default class Field extends React.Component {
 
   // Will be called only in cases of impure-component fields
   componentWillReceiveProps(nextProps) {
-    if (nextProps !== this.props) {
+    const curPropsKey = Object.keys(this.props);
+    const nextPropsKey = Object.keys(nextProps);
+
+    let isDifferent = false;
+
+    // Skip comparison of function and children which might be changing on re-render
+    if (curPropsKey.length === nextPropsKey.length) {
+      for (let i = 0; i < curPropsKey.length; i++) {
+        const key = curPropsKey[i];
+
+        if (
+          ['function', 'object'].indexOf(typeof this.props[key]) === -1 &&
+          this.props[key] !== nextProps[key]
+        ) {
+          break;
+        }
+      }
+    }
+
+    if (isDifferent) {
       this.el && this.valid();
     }
   }

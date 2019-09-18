@@ -100,7 +100,7 @@ export default class AdvancedForm extends React.PureComponent {
       this.props.user.getCurrencyList[currency].min_value / 100; // In Paisa(lower unit of currency)
 
     if (Number(minVal) < Number(minAmountAllowed)) {
-      return `Min amount cannot be less than ${minAmountAllowed}`;
+      return `Min amount must be atleast ${minAmountAllowed}`;
     }
 
     if (maxVal && Number(minVal) > Number(maxVal)) {
@@ -206,7 +206,7 @@ export default class AdvancedForm extends React.PureComponent {
     }
 
     if (minVal < 0) {
-      return 'Min purchase cannot be 0';
+      return 'Min purchase must be atleast 0';
     }
 
     if (maxVal && Number(minVal) > Number(maxVal)) {
@@ -227,7 +227,7 @@ export default class AdvancedForm extends React.PureComponent {
     }
 
     if (Number(maxVal) <= 0) {
-      return 'Max purchase cannot be 0';
+      return 'Max purchase must be more than 0';
     }
 
     if (minVal && Number(maxVal) < Number(minVal)) {
