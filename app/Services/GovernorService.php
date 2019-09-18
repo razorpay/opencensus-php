@@ -275,15 +275,12 @@ class GovernorService
 
         $userId = $this->app['basicauth']->getAdmin()->getId();
 
-        $data1 = [
-            $data,
-            'created_by' => $userId,
-        ];
+        $data['created_by'] = $userId;
 
         $request = [
             'url'     => $url,
             'method'  => $method,
-            'content' => $data1,
+            'content' => $data,
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
             ]
