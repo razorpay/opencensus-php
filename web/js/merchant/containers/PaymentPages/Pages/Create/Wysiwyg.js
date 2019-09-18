@@ -379,7 +379,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           max_purchase,
           min_amount: min_amount ? min_amount * 100 : null,
           max_amount: max_amount ? max_amount * 100 : null,
-          stock,
+          stock: stock ? stock : null, // stock cannot be 0 or ""
         };
 
         if (isEditExistingId) {
