@@ -35,6 +35,10 @@ export default class BaseForm extends React.PureComponent {
     this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
   }
 
+  componentDidMount() {
+    setTimeout(this.toggleSubmitBtn);
+  }
+
   get isMandatory() {
     const isMandatory =
       typeof this.props.field.mandatory === 'boolean'
