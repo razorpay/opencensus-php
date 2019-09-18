@@ -1139,7 +1139,7 @@ class Service extends Base\Service
             TraceCode::WEBHOOK_EDIT,
             [
                 'webhook_id' => $webhookId,
-                'input'      => $input,
+                'input'      => array_except($input, [Webhook\Entity::SECRET]),
             ]);
 
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
