@@ -1,5 +1,7 @@
 <?php
+
 namespace RZP\Tests\Functional\Payment;
+
 use Carbon\Carbon;
 use Mockery;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -10,11 +12,14 @@ use RZP\Models\Customer\AppToken;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
+
 class PowerWalletTest extends TestCase
 {
     use PaymentTrait;
+
     const LOCAL_CUSTOMER = '100000customer';
     const GLOBAL_CUSTOMER = '10000gcustomer';
+
     public function setUp()
     {
         parent::setUp();
@@ -44,7 +49,7 @@ class PowerWalletTest extends TestCase
         // Flow should go through otpGenerate
         $this->setUpWalletToken();
         $attributes = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthAndGetPayment();
+        $payment = $this->doAuthAndGetPayment($attributes);
         $wallet = $this->getLastEntity('wallet', true);
         $this->assertTrue(isset($wallet['reference1']));
     }
@@ -57,7 +62,7 @@ class PowerWalletTest extends TestCase
         ];
         $this->mockSession($sessionData);
         $attributes = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthAndGetPayment();
+        $payment = $this->doAuthAndGetPayment($attributes);
         $wallet = $this->getLastEntity('wallet', true);
         $this->assertTrue(isset($wallet['reference1']));
     }
@@ -105,7 +110,7 @@ class PowerWalletTest extends TestCase
         ];
         $this->mockSession($sessionData);
         $attributes = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthAndGetPayment();
+        $payment = $this->doAuthAndGetPayment($attributes);
         $wallet = $this->getLastEntity('wallet', true);
         $this->assertTrue(isset($wallet['reference1']));
     }
@@ -131,7 +136,7 @@ class PowerWalletTest extends TestCase
         ];
         $this->mockSession($sessionData);
         $attributes = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthAndGetPayment();
+        $payment = $this->doAuthAndGetPayment($attributes);
         $wallet = $this->getLastEntity('wallet', true);
         $this->assertTrue(isset($wallet['reference1']));
     }

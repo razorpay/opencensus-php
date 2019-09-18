@@ -225,6 +225,7 @@ class Gateway extends Base\Gateway
         if (isset($input['gateway'][ResponseFields::TXN_ID]) === true)
         {
             $this->action($input, Action::VERIFY);
+
             return $this->topupCallbackVerify($input);
         }
 

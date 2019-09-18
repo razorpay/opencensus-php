@@ -527,12 +527,6 @@ trait Authorize
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
     {
-//        if (($payment->getGlobalTokenId() !== null) and
-//            (Payment\Gateway::isPowerWalletSupported($payment) === true) and
-//            (isset($request['type']) === true) and ($request['type'] === 'first'))
-//        {
-//            return $request;
-//        }
         $payment->incrementOtpCount();
 
         $this->repo->save($payment);
@@ -4900,6 +4894,7 @@ trait Authorize
         try
         {
             $gatewayInput['isAutoDebitFlow'] = true;
+
             $this->callGatewayFunction(Action::CHECK_BALANCE, $gatewayInput);
         }
         catch (Exception\GatewayErrorException $e)
