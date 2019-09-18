@@ -168,9 +168,8 @@ export default class AdvancedForm extends React.PureComponent {
             type="number"
             placeholder="0.00"
             validator={this.validateMinAmountLimit}
-          >
-            <span class="Input-after">Min</span>
-          </Input>
+            addonAfter="Min"
+          />
         </div>
 
         <span class="separator">-</span>
@@ -189,9 +188,8 @@ export default class AdvancedForm extends React.PureComponent {
             type="number"
             placeholder="No Limit"
             validator={this.validateMaxAmountLimit}
-          >
-            <span class="Input-after">Max</span>
-          </Input>
+            addonAfter="Max"
+          />
         </div>
       </Input.Group>
     );
@@ -259,11 +257,8 @@ export default class AdvancedForm extends React.PureComponent {
             pattern="\d+"
             placeholder="0"
             validator={this.validateMinPurchaseLimit}
-          >
-            <span key="max-purchase-addon" class="Input-after">
-              Min
-            </span>
-          </Input>
+            addonAfter="Min"
+          />
         </div>
 
         <span class="separator">-</span>
@@ -277,11 +272,8 @@ export default class AdvancedForm extends React.PureComponent {
             pattern="\d+"
             placeholder="No Limit"
             validator={this.validateMaxPurchaseLimit}
-          >
-            <span key="max-purchase-addon" class="Input-after">
-              Max
-            </span>
-          </Input>
+            addonAfter="Max"
+          />
         </div>
       </Input.Group>
     );
