@@ -119,12 +119,12 @@ class GovernorService
     ];
 
     const UPDATE_NAMESPACE_V1  =   [
-        'url'       =>  "clients/:client_id/namespaces/:namespace_id",
+        'url'       =>  "namespaces/:namespace_id",
         'method'    =>  "PUT",
     ];
 
     const DELETE_NAMESPACE_V1  =   [
-        'url'       =>  "client/:client/namespaces/:namespace_id",
+        'url'       =>  "namespaces/:namespace_id",
         'method'    =>  "DELETE",
     ];
     const LIST_RULE_V1  =   [
@@ -265,17 +265,18 @@ class GovernorService
         return $parsedResponse;
     }
 
-    public function sendRequestV1(array $requestSchema, $data, $client_id = null, $namespace_id = null, $client = null, $rule_chain_id = null, $rule_group_id = null, $rule_id = null)
+    public function sendRequestV1(array $requestSchema, $data, $client_id = null, $namespace_id = null, $rule_chain_id = null, $rule_group_id = null, $rule_id = null)
     {
-        $url = $this->getUrlV1($requestSchema, $client_id, $namespace_id, $client, $rule_chain_id, $rule_group_id, $rule_id);
+        $url = $this->getUrlV1($requestSchema, $client_id, $namespace_id, $rule_chain_id, $rule_group_id, $rule_id);
 
         $auth = $this->getAuthDetailsV1();
 
         $method = $this->getMethod($requestSchema);
 
-        $userId = $this->app['basicauth']->getAdmin()->getId();
-
-        $data['created_by'] = $userId;
+        if($method == 'POST'){
+            $userId = $this->app['basicauth']->getAdmin()->getId();
+            $data['created_by'] = $userId;
+        }
 
         $request = [
             'url'     => $url,
@@ -374,15 +375,13 @@ class GovernorService
         return $url;
     }
 
-    protected function getUrlV1($requestArray, $client_id = '', $namespace_id = '', $client = '', $rule_chain_id = '', $rule_group_id = '', $rule_id = ''): string
+    protected function getUrlV1($requestArray, $client_id = '', $namespace_id = '', $rule_chain_id = '', $rule_group_id = '', $rule_id = ''): string
     {
         $baseUrl = $this->getBaseUrl();
 
         $url = $baseUrl . str_replace_first(':namespace_id', $namespace_id, $requestArray['url']);
 
         $url = str_replace_first(':client_id', $client_id, $url);
-
-        $url = str_replace_first(':client', $client, $url);
 
         $url = str_replace_first(':rule_chain_id', $rule_chain_id, $url);
 

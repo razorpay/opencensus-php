@@ -1190,8 +1190,8 @@ final class Route
         'governor_create_namespace_v1'            => ['post',     'clients/{client_id}/namespaces',                                                                       'GovernorControllerV1@createNamespace'     ],
         'governor_list_namespace_v1'              => ['get',      'clients/{client_id}/namespaces',                                                                       'GovernorControllerV1@listNamespaces'      ],
         'governor_get_namespace_v1'               => ['get',      'namespaces/{namespace_id}',                                                                            'GovernorControllerV1@getNamespace'        ],
-        'governor_update_namespace_v1'            => ['put',      'clients/{client_id}/namespaces/{namespace_id}',                                                        'GovernorControllerV1@updateNamespace'     ],
-        'governor_delete_namespace_v1'            => ['delete',   'client/{client}/namespaces/{namespace_id}',                                                            'GovernorControllerV1@deleteNamespace'     ],
+        'governor_update_namespace_v1'            => ['put',      'namespaces/{namespace_id}',                                                                            'GovernorControllerV1@updateNamespace'     ],
+        'governor_delete_namespace_v1'            => ['delete',   'namespaces/{namespace_id}',                                                                            'GovernorControllerV1@deleteNamespace'     ],
 
         // Governor Proxy APIs New - Rule
 
