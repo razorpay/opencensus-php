@@ -29,8 +29,6 @@ export default class EditStock extends React.Component {
     this.props.trackerFn('Edit Stock');
   };
 
-  setRef = el => (this.stockEl = el);
-
   render() {
     const { isRoleAllowedEdit, quantitySold, paymentPageItemId } = this.props;
 
@@ -63,34 +61,30 @@ export default class EditStock extends React.Component {
               this.setState({
                 hasNoStockLimit: e.target.value,
               });
-
-              if (e.target.value == '0') {
-                setTimeout(() => {
-                  this.stockEl && this.stockEl.focus();
-                  this.stockEl.el.select();
-                }, 10);
-              }
             }}
           />
           <Input
             name="stock"
-            ref={this.setRef}
             class="Input"
             placeholder="Total Stock"
             value={this.state.totalStock}
             disabled={this.state.hasNoStockLimit === '1'}
+            autoFocus
+            onFocus={e => e.target.select()}
             validator={val => {
               if (this.state.hasNoStockLimit === '0') {
-                if (!this.state.totalStock) {
+                if (!this.state.totalStock && this.state.totalStock != 0) {
                   return 'Please fill out this field';
                 } else if (!isInteger(val)) {
-                  return 'Enter valid number';
+                  return 'Stock must be atleast 1';
                 }
               }
             }}
             onChange={e => {
+              const val = e.target.value;
+
               this.setState({
-                totalStock: e.target.value,
+                totalStock: val ? Number(e.target.value) | 1 : '',
               });
             }}
           />
