@@ -7,6 +7,7 @@ import Alert from 'component/Alert';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { trackFormFields } from 'rzp/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { classList, addPrefixToObjectKeys } from 'common/util';
 import { activationDuration } from 'common/data';
@@ -32,6 +33,8 @@ import accountFormTabsContent, {
 } from './AccountActivationFormMap';
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
+import RTracking from 'react-tracking';
+
 /*
 *             Main-form        LA-form
 * Submited      E F ~S        ~E ~F ~S
@@ -95,9 +98,13 @@ let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
+@RTracking((state, props, args) => {
+  return window.rzpQ.component('ActivationCard');
+})
 @connect(state => ({
   user: state.session.user,
 }))
+@RTracking(() => window.rzpQ.component('ActivationWizard'))
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: this.isLinkedAccountForm ? LOADING.DEFAULT : LOADING.INITIAL,
@@ -137,6 +144,7 @@ export default class ActivationWizard extends React.Component {
   }
 
   prepareTabs(props) {
+    const { tracking } = props;
     if (this.isLinkedAccountForm) {
       // Activation form for linked account
 
@@ -194,6 +202,12 @@ export default class ActivationWizard extends React.Component {
             updateHubSpotContactsProperties({
               [a.name]: true,
             });
+
+            tracking.trackEvent(
+              window.rzpQ.onbr().initiated('kyc.upload_document', {
+                name: a.name,
+              })
+            );
 
             this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
           });
@@ -275,10 +289,16 @@ export default class ActivationWizard extends React.Component {
 
   saveCurrentTab = () => {
     const currenActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.save_modifications', {
+          clickSource: 'save',
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
+        tracker();
         onAction.trackSave({
           tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
@@ -291,10 +311,16 @@ export default class ActivationWizard extends React.Component {
 
   next = e => {
     const currenActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.save_modifications', {
+          clickSource: 'save-next',
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
+        tracker();
         onAction.trackSaveAndNext({
           tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
@@ -324,12 +350,17 @@ export default class ActivationWizard extends React.Component {
   changeTab = ({ target }) => {
     const tabId = parseInt(target.getAttribute('data-index'));
     const currentActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.nav_action', {
+          clickSource: mainFormTabs[tabId],
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
         onAction.trackTabClick(tabId); // Tracks current tab clicked
-
+        tracker();
         if (typeof result !== 'undefined') {
           onAction.trackSaveOnTabClick({
             tabId: currentActiveTab, // Tracks for tab that got saved
@@ -343,6 +374,17 @@ export default class ActivationWizard extends React.Component {
   };
 
   //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
+  @RTracking((props, state) => {
+    const { tracking } = props;
+    const fields = trackFormFields(props.data, state.dirty);
+    return fields.forEach(field =>
+      tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.provide_details', {
+          ...field,
+        })
+      )
+    );
+  })
   goto = (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.

@@ -94,6 +94,7 @@ pipeline:
         - AWS_CDN_BUCKET=betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard
+        - CDN_BASE_URL=https://betacdn.razorpay.com/
     secrets: [AWS_KEY, AWS_SECRET]
     commands:
         # Requirements for running s3sync.js
@@ -202,6 +203,7 @@ pipeline:
         - AWS_CDN_BUCKET=checkout-live
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E34MFQ6HI02NUZ
         - CDN_DASHBOARD_URL=https://cdn.razorpay.com/dashboard
+        - CDN_BASE_URL=https://cdn.razorpay.com
     secrets: [AWS_KEY, AWS_SECRET]
     commands:
         # Requirements for running s3sync.js
