@@ -162,6 +162,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         index,
         validateSameTitleExists,
         onDeleteFormItem,
+        isPaymentPageEditMode,
         ...restProps
       } = this.props;
 
@@ -196,6 +197,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               openImageCropper={_ => this.toggleImageCropper(true)}
               onUpdateImage={this.onSaveImageForm}
               onUpdateCurrency={this.onUpdateCurrency}
+              isPaymentPageEditMode={isPaymentPageEditMode}
             />
           )}
 
@@ -247,6 +249,7 @@ class BaseFormModal extends React.PureComponent {
       openImageCropper,
       onUpdateImage,
       onUpdateCurrency,
+      isPaymentPageEditMode,
     } = this.props;
 
     return (
@@ -264,6 +267,7 @@ class BaseFormModal extends React.PureComponent {
           onUpdateImage={onUpdateImage}
           onUpdateCurrency={onUpdateCurrency}
           currency={currency}
+          isPaymentPageEditMod={isPaymentPageEditMode}
         />
       </CreatorModal>
     );

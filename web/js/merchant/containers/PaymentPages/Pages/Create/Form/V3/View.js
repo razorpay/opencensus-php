@@ -29,6 +29,7 @@ const Sortable_AmountDisplayField = sortableElement(AmountDisplayField);
 class SortableFormItemsList extends React.Component {
   render() {
     const {
+      isPaymentPageEditMode,
       currency,
       FORM_ITEMS,
       isListSorting,
@@ -56,6 +57,7 @@ class SortableFormItemsList extends React.Component {
                 onDeleteFormItem={onDeleteAmountItem}
                 onSubmitAmountField={onSubmitAmountField}
                 validateSameTitleExists={validateSameTitleExists}
+                isPaymentPageEditMode={isPaymentPageEditMode}
               />
             );
           } else {
@@ -89,13 +91,6 @@ export default class View extends React.PureComponent {
     isListSorting: false,
     hasAmountItem: null,
   };
-
-  componentWillReceiveProps(nextProps) {
-    if (this.props.payment_page_id !== nextProps.payment_page_id) {
-      // TODO: Update state.hasAmountItem = false if nextProps. payment_page_id doesn't exist
-      // this.onCreatorClose(); // TODO: Important controller point to close all the modals
-    }
-  }
 
   onSubmitAmountField = (formData, indexInFormItems) => {
     const amountItem = constructAmountField(formData);
@@ -203,6 +198,8 @@ export default class View extends React.PureComponent {
       );
     }
 
+    const isPaymentPageEditMode = !!paymentPageEntity.id; // If it has reached uptil here, and id exist, then it's edit mode of existing payment page.
+
     const hasAmountItem =
       this.state.hasAmountItem !== null
         ? this.state.hasAmountItem
@@ -228,12 +225,14 @@ export default class View extends React.PureComponent {
                     this.onSubmitAmountField(formData, -1)
                   } /*Added in the starting of form Items*/
                   validateSameTitleExists={this.validateSameTitleExists}
+                  isPaymentPageEditMode={isPaymentPageEditMode}
                 />
               </div>
             </div>
           )}
 
           <SortableFormItemsList
+            isPaymentPageEditMode={isPaymentPageEditMode}
             lockAxis="y"
             useDragHandle
             lockToContainerEdges
@@ -270,6 +269,7 @@ export default class View extends React.PureComponent {
                 onDeleteFormItem={this.onDeleteAmountItem}
                 onSubmitAmountField={this.onSubmitAmountField}
                 validateSameTitleExists={this.validateSameTitleExists}
+                isPaymentPageEditMode={isPaymentPageEditMode}
               />
             </div>
           </div>

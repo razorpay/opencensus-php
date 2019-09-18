@@ -127,7 +127,7 @@ export default class BaseForm extends React.PureComponent {
   };
 
   getREP_Amount(isDisabled) {
-    const { field, currency } = this.props;
+    const { field, currency, isPaymentPageEditMode } = this.props;
     const amount = field.item.amount || ''; // Note: If amount is there, then isDisabled = false;
     const placeholder = isDisabled ? 'To be filled by customer' : '0.00';
 
@@ -172,6 +172,8 @@ export default class BaseForm extends React.PureComponent {
       );
     }
 
+    const isEditDisabledForCurrency = isPaymentPageEditMode;
+
     return (
       <Input.Group class="InputGroup--inline InputGroup--full">
         <div class="Input-content">
@@ -186,6 +188,7 @@ export default class BaseForm extends React.PureComponent {
             defaultValue={currency}
             parentQuerySelector=".Modal-container"
             onChange={this.onChangeCurrency}
+            disabled={isEditDisabledForCurrency}
           />
 
           {inputField}
