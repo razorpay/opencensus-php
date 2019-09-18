@@ -870,6 +870,19 @@ class Core extends Base\Core
             $fta->setDateTime($input[AttemptConstants::BANK_PROCESSED_TIME]);
         }
 
+        if ((isset($input['extra_info']) === true) and (is_array($input['extra_info']) === true))
+        {
+            $this->updateExtraInfo($input['extra_info'], $fta);
+        }
+
         return $fta;
+    }
+
+    protected function updateExtraInfo(array $info, Entity $fta)
+    {
+        if (isset($info['cms_ref_no']) === true)
+        {
+            $fta->setCmsRefNo($info['cms_ref_no']);
+        }
     }
 }
