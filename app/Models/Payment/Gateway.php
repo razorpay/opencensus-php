@@ -867,6 +867,10 @@ class Gateway
             Network::VISA,
             Network::MAES,
         ],
+        self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
+        ],
     ];
 
     /**
