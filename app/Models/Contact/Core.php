@@ -88,19 +88,35 @@ class Core extends Base\Core
 
     public function processEntryForContact(
         array $entry,
-        string $idempotencyKey,
         string $batchId)
     {
-        $contactId = (isset($entry[ContactBatchHelper::CONTACT][ContactBatchHelper::ID]) === true) ?
-            $entry[ContactBatchHelper::CONTACT][ContactBatchHelper::ID] :
-            null;
+        $contact = $entry[ContactBatchHelper::CONTACT];
+
+        $contactId = (isset($contact[ContactBatchHelper::ID]) === true) ? $contact[ContactBatchHelper::ID] : null;
+
         if (empty($contactId) === false)
         {
             return $this->repo->contact->findByPublicIdAndMerchant($contactId, $this->merchant);
         }
+
         $input = ContactBatchHelper::getContactInput($entry);
+
         $contact = $this->repo->contact->getContactWithSimilarDetails($input, $this->merchant);
-        $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
-        return $contact ?: $this->create($input, $this->merchant, $batchId);
+
+        if ($contact !== null)
+        {
+            $this->trace->info(
+              TraceCode::DUPLICATE_CONTACT_FOUND,
+              [
+                  'contact_id' => $contact->getId(),
+                  'batch_id'   => $batchId,
+              ]);
+
+            return $contact;
+        }
+
+        $contact = $this->create($input, $this->merchant, $batchId);
+
+        return $contact;
     }
 }

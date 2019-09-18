@@ -9,6 +9,7 @@ use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Contact\Core as ContactCore;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -49,17 +50,27 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->fund_account;
     }
 
-    public function create(array $input, string $batchId = null, string $idempotencyKey = null): array
+    public function create(array $input, string $batchId = null): array
     {
-        if (isset($idempotencyKey) === true)
+        // The Idempotency key will be present in the batch request
+        // and is being used an as indicator of batch upload
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
-            $contact = $this->contactCore->processEntryForContact($input, $idempotencyKey, $batchId);
+            $contact = $this->contactCore->processEntryForContact($input, $batchId);
 
-            $fundAccount = $this->checkFundAccountExistence($input, $idempotencyKey, $contact);
+            $fundAccount = $this->checkFundAccountExistence($input, $contact);
 
             if (empty($fundAccount) === false)
             {
-                return $fundAccount->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()];
+                $this->trace->info(
+                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
+                    [
+                        'fund_account' => $fundAccount->getId(),
+                        'batch_id'     => $batchId,
+                    ]);
+
+                return $fundAccount->toArrayPublic() +
+                       [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()];
             }
         }
 
@@ -95,7 +106,7 @@ class Service extends Base\Service
             $entity = $this->core->create($input, $this->merchant, $source);
         }
 
-        return $entity->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+        return $entity->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $entity->getIdempotencyKey()];
     }
 
     public function fetch(string $id, array $input): array
@@ -169,12 +180,12 @@ class Service extends Base\Service
 
                     $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
-                    $fundAccount = $this->create($item, $batchId, $idempotencyKey);
+                    $fundAccount = $this->create($item, $batchId);
 
                     $fundaccountBatch->push($fundAccount);
                 });
             }
-            catch (Exception\BaseException $exception)
+            catch (BaseException $exception)
             {
                 $this->trace->traceException(
                     $exception,
@@ -225,7 +236,6 @@ class Service extends Base\Service
 
     private function checkFundAccountExistence(
         array & $entry,
-        string $idempotencyKey,
         Contact\Entity $contact)
     {
         $fundAccountId = $entry[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
@@ -237,14 +247,10 @@ class Service extends Base\Service
             return $fundAccount;
         }
 
-        $input = FundAccountHelper::getFundAccountInput($entry, $contact);
-
-        $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
-
-        $entry = $input;
+        $entry = FundAccountHelper::getFundAccountInput($entry, $contact);
 
         $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails(
-            $input,
+            $entry,
             $this->merchant,
             $contact);
 

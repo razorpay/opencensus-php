@@ -119,7 +119,6 @@ class Core extends Base\Core
      *
      * @param array $input
      * @param Merchant\Entity $merchant
-     * @param Batch\Entity $batch
      * @param string|null $batchId
      *
      * @return Entity

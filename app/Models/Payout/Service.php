@@ -455,9 +455,7 @@ class Service extends Base\Service
                     // If fund_account is null then, it is not created before
                     if ($fundAccount === null)
                     {
-                        $fundAccount = $this->fundAccountService->create($item,
-                                                                         $batchId,
-                                                                         $idempotencyKey);
+                        $fundAccount = $this->fundAccountService->create($item, $batchId);
                     }
                     else
                     {
@@ -467,7 +465,6 @@ class Service extends Base\Service
 
                     $payout = $this->processEntryForPayoutForFundAccount($item,
                                                                          $fundAccount,
-                                                                         $idempotencyKey,
                                                                          $batchId
                     );
 
@@ -521,12 +518,9 @@ class Service extends Base\Service
 
     protected function processEntryForPayoutForFundAccount(array $entry,
                                                            array $fundAccount,
-                                                           string $idempotencyKey,
                                                            string $batchId): Entity
     {
         $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount, $this->merchant);
-
-        $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
 
         return $this->core->createPayoutToFundAccount($input, $this->merchant, $batchId);
     }

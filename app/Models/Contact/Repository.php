@@ -29,7 +29,8 @@ class Repository extends Base\Repository
     {
         //
         // If all of following attributes are empty then do not continue with query.
-        // This is because other attributes do not tell if it is similar i.e. multiple people can have same name etc.
+        // This is because other attributes do not tell if it is similar i.e.
+        // multiple people can have same name, type etc.
         //
         if ((empty($input[Entity::CONTACT]) === true) and
             (empty($input[Entity::EMAIL]) === true) and
