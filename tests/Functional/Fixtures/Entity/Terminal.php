@@ -3075,7 +3075,7 @@ class Terminal extends Base
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
         $defaultValues = [
-            'id'                        => '100000Razorpay',
+            'id'                        => '1ShrdPaypalTml',
             'merchant_id'               => $sharedMerchantAccount,
             'gateway'                   => 'wallet_paypal',
             'shared'                    => 0,
@@ -3083,6 +3083,27 @@ class Terminal extends Base
             'gateway_terminal_password' => 'terminal_password',
             'gateway_terminal_password2'=> 'terminal_password2',
             'mode'                      => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createPaypalUsdTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                         => '1PaypalUSDTmnl',
+            'merchant_id'                => $sharedMerchantAccount,
+            'gateway'                    => 'wallet_paypal',
+            'shared'                     => 1,
+            'gateway_merchant_id'        => 'RazorpayPaypal2',
+            'gateway_terminal_password'  => 'terminal_password',
+            'gateway_terminal_password2' => 'terminal_password2',
+            'mode'                       => '1',
+            'currency'                   => 'USD'
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

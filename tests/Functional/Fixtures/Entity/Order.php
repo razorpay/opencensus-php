@@ -118,6 +118,22 @@ class Order extends Base
         return parent::create($attributes);
     }
 
+    public function createWalletInternationalOrder(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'      => '10000000000000',
+            'receipt'          => 'test_tpv_receipt',
+            'currency'         => 'USD',
+            'method'           => 'wallet',
+            'amount'           => 100000,
+            'payment_capture'  => true
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     /**
      * Creates a paid order.
      * If not passed, usage default amount value as amount_paid and 'paid' as

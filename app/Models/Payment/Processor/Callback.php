@@ -273,7 +273,14 @@ trait Callback
             $input['s2s'] = true;
         }
 
-        $this->preProcessGatewayCallback($input);
+        try
+        {
+            $this->preProcessGatewayCallback($input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->processHeadlessExceptionIfApplicable($e);
+        }
 
         try
         {
@@ -294,6 +301,19 @@ trait Callback
         }
 
         $this->updateAndNotifyPaymentAuthorized($data);
+    }
+
+    // headless exception handling where we fail the payment on NO_AVAILABLE_ACTIONS
+    protected function processHeadlessExceptionIfApplicable($e)
+    {
+        $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+        if ($internalErrorCode !== ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED)
+        {
+            throw $e;
+        }
+
+        $this->processPaymentCallbackException($e);
     }
 
     protected function acquireLockAndProcessCallback($payment, $gatewayInput)
@@ -393,7 +413,6 @@ trait Callback
             $this->rethrowFailedPaymentErrorException($payment);
         }
     }
-
     protected function preProcessGatewayCallback(array &$input)
     {
         $payment = $this->payment;

@@ -386,6 +386,8 @@ final class Route
         'setl_initiate_daily'                      => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_initiate_adhoc'                      => ['post',     'settlements/initiate_adhoc',                     'SettlementController@processAdhocSettlements'                      ],
         'setl_initiate_action'                     => ['post',     'settlements/initiate_action/{channel?}',         'SettlementController@postSettlementInitiate'                       ],
+        'setl_process_data'                        => ['get',      'settlements/process',                            'SettlementController@getSettlementProcess'                         ],
+        'setl_process_data_reset'                  => ['delete',   'settlements/process',                            'SettlementController@resetSettlementProcess'                       ],
         'setl_retry'                               => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                       => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileFileGenerate'          ],
@@ -1374,6 +1376,7 @@ final class Route
         'order_fetch_by_id',
         'order_edit',
         'order_payments',
+        'balance_fetch',
         'feature_dummy',
         'razorx_dummy',
         'webhook_create',
@@ -2314,6 +2317,8 @@ final class Route
         'set_channel_action',
         'get_channel_action',
         'setl_initiate_action',
+        'setl_process_data',
+        'setl_process_data_reset',
         'fund_transfer_attempt_initiate_action',
         'merchant_restrict',
         'user_update_contact_admin',
@@ -2465,6 +2470,8 @@ final class Route
         'transaction_bulk_update'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_reconcile'                           => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_initiate_action'                     => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_process_data'                        => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_process_data_reset'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
@@ -3392,6 +3399,13 @@ final class Route
         'excel_store_page_by_url',
     ];
 
+    const FAILURE_EVENTS_INTERCEPTOR_ROUTES = [
+        'user_register',
+        'merchant_edit_pre_signup_details',
+        'user_confirm_by_data',
+        'merchant_instant_activation_post',
+    ];
+
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
@@ -3695,6 +3709,11 @@ final class Route
         if (in_array($name, self::EXCEL_STORE_PROXY_ROUTES, true) === true)
         {
             $route->middleware('excel_store_proxy');
+        }
+
+        if (in_array($name, self::FAILURE_EVENTS_INTERCEPTOR_ROUTES, true) === true)
+        {
+            $route->middleware('failure_interceptor');
         }
     }
 

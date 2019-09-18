@@ -7,7 +7,9 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Settlement\Metric;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Models\Settlement\Processor as SettlementProcessor;
@@ -17,9 +19,9 @@ class Create extends Job
     //
     // redis keys used to store intermediate count of settlement process
     //
-    const TOTAL_MERCHANT_COUNT  = '{settlement}_total_merchant_count';
+    const TOTAL_MERCHANT_COUNT  = '{settlement}_total_merchant_count_%s';
 
-    const CHANNEL_WISE_COUNT    = '{settlement}_channel_wise_count';
+    const CHANNEL_WISE_COUNT    = '{settlement}_channel_wise_count_%s';
 
     /**
      * @var string
@@ -63,6 +65,11 @@ class Create extends Job
 
         try
         {
+            $key = sprintf(self::TOTAL_MERCHANT_COUNT, $this->mode);
+
+            // reduce the total count once the processing is done
+            Cache::decrement($key);
+
             $this->trace->info(
                 TraceCode::SETTLEMENT_JOB_INIT_FOR_MERCHANT,
                 [
@@ -87,6 +94,19 @@ class Create extends Job
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
                 $response);
         }
+        catch (BadRequestException $e)
+        {
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS)
+            {
+                //
+                // its been seen that one job is received by multiple workers with in 10-15 sec of delay
+                // In any case if this happens the settlement count will get messed up
+                // in case of mutex error we are incrementing the counter here
+                // this is to keep the count stable in further process
+                //
+                Cache::increment(self::TOTAL_MERCHANT_COUNT);
+            }
+        }
         catch (\Throwable $e)
         {
             $data = [
@@ -107,9 +127,6 @@ class Create extends Job
         finally
         {
             $this->delete();
-
-            // reduce the total count once the processing is done
-            Cache::decrement(self::TOTAL_MERCHANT_COUNT);
 
             $this->trace->count(
                 Metric::MERCHANT_SETTLEMENT_PROCESSED,
@@ -132,7 +149,9 @@ class Create extends Job
     {
         $redis = app('redis')->connection();
 
-        $count = (int) $redis->hincrby(self::CHANNEL_WISE_COUNT, $channel, 1);
+        $channelCountKey = sprintf(self::CHANNEL_WISE_COUNT, $this->mode);
+
+        $count = (int) $redis->hincrby($channelCountKey, $channel, 1);
 
         $batchSize = (new Initiator)->getLimitForChannel($channel);
 
@@ -144,8 +163,10 @@ class Create extends Job
             return;
         }
 
+        $key = sprintf(self::TOTAL_MERCHANT_COUNT, $this->mode);
+
         // if there total merchant count is zero that means settlement creation process completed
-        $isCompleted = (((int) Cache::get(self::TOTAL_MERCHANT_COUNT)) === 0);
+        $isCompleted = (((int) Cache::get($key)) === 0);
 
         // if process is not complete then do not initiate transfer
         if ($isCompleted === false)
@@ -153,7 +174,7 @@ class Create extends Job
             return;
         }
 
-        $channelCount = $redis->hgetall(self::CHANNEL_WISE_COUNT);
+        $channelCount = $redis->hgetall($channelCountKey);
 
         // If there any channel with pending settlement initiate then dispatch it for the same
         foreach ($channelCount as $ch => $count)

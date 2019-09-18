@@ -15,6 +15,8 @@ class Beneficiary extends Base
 {
     const RECORD_EXIST = 'Record already exists';
 
+    const RECORD_DOES_NOT_EXIST = 'Record does not exist';
+
     const RECORD_EXIST_PENDING_APPROVAL = 'Record already exists but pending for approval';
 
     protected $urlIdentifier;
@@ -430,7 +432,7 @@ class Beneficiary extends Base
      */
     protected function setMaskedBeneficiaryRegisterRequestBody()
     {
-        $this->maskedBody = '`<CustId>'
+        $this->maskedBody = '<CustId>'
             . $this->customerId
             . '</CustId>'
             . '<BeneficiaryCd>'

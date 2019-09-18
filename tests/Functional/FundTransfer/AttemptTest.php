@@ -102,7 +102,7 @@ class AttemptTest extends TestCase
 
         Carbon::setTestNow($beforeInitiateTime);
 
-        $content = $this->initiateTransfer($channel, $purpose);
+        $content = $this->initiateTransfer($channel, $purpose, Attempt\Type::SETTLEMENT);
 
         // Check that no attempts were picked up
         $this->assertEquals(0, $content[$channel]['count']);
@@ -114,7 +114,7 @@ class AttemptTest extends TestCase
         Carbon::setTestNow($postInitiateAt);
 
         // Verify that attempts were picked up
-        $content = $this->initiateTransfer($channel, $purpose);
+        $content = $this->initiateTransfer($channel, $purpose, Attempt\Type::SETTLEMENT);
 
         $this->assertEquals(1, $content[$channel]['count']);
     }
@@ -162,7 +162,7 @@ class AttemptTest extends TestCase
             ]
         );
 
-        $content = $this->initiateTransfer($channel, $purpose, false);
+        $content = $this->initiateTransfer($channel, $purpose, Attempt\Type::PAYOUT,false);
 
         $this->assertEquals($channel, $content['channel']);
         $this->assertEquals(0, $content['count']);
@@ -212,7 +212,7 @@ class AttemptTest extends TestCase
             ]
         );
 
-        $content = $this->initiateTransfer($channel, $purpose, false);
+        $content = $this->initiateTransfer($channel, $purpose, Attempt\Type::PAYOUT, false);
 
         $this->assertEquals($channel, $content['channel']);
         $this->assertEquals(0, $content['count']);
@@ -280,7 +280,7 @@ class AttemptTest extends TestCase
                 'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
             ]);
 
-        $content = $this->initiateTransfer($channel, $purpose, false);
+        $content = $this->initiateTransfer($channel, $purpose, Attempt\Type::PAYOUT, false);
 
         $this->assertEquals(1, $content[$channel]['count']);
         $this->assertEquals(0, $content[$channel]['success']);
@@ -326,7 +326,7 @@ class AttemptTest extends TestCase
                 'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
             ]);
 
-        $content = $this->initiateTransfer($channel, $purpose, false);
+        $content = $this->initiateTransfer($channel, $purpose, Attempt\Type::REFUND, false);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -377,7 +377,7 @@ class AttemptTest extends TestCase
                 'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
             ]);
 
-        $content = $this->initiateTransfer($channel, $purpose, false);
+        $content = $this->initiateTransfer($channel, $purpose, Attempt\Type::REFUND, false);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 

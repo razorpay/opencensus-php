@@ -9,6 +9,7 @@ $is_invoice_partial_payment     = $invoice_data['partial_payment'] === true;
 $invoice_status                 = $invoice_data['status'];
 $customer_details               = $invoice_data['customer_details'];
 $custom_labels                  = $data['custom_labels'];
+$view_preferences               = $data['view_preferences'];
 ?>
 
 <!doctype html>
@@ -503,7 +504,7 @@ $custom_labels                  = $data['custom_labels'];
                             </div>
                         @endif
 
-                        @if((isset($custom_labels['hide_issued_to']) === true) and ($custom_labels['hide_issued_to'] === false))
+                        @if(empty($view_preferences['hide_issued_to']) === true)
                             @if($customer_details['customer_name'] or $customer_details['customer_email'])
                                 <div class="info">
                                     ISSUED TO
