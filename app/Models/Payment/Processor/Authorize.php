@@ -375,9 +375,9 @@ trait Authorize
                 if (($payment->getMethod() === Method::CARD) or
                     ($payment->getMethod() === Method::UPI))
                 {
-                    $payload = $this->preparePayloadForDoppler($this->payment, 'failure');
+                    $event = $this->prepareEventForDoppler($payment, 'failure');
 
-                    $this->app->doppler->sendFeedback($payload);
+                    $this->app->doppler->sendFeedback($event);
                 }
 
                 $this->updatePaymentAuthFailedAndThrowException($e);
@@ -5396,9 +5396,9 @@ trait Authorize
             if (($payment->getMethod() === Method::CARD) or
                 ($payment->getMethod() === Method::UPI))
             {
-                $payload = $this->preparePayloadForDoppler($payment, 'success');
+                $event = $this->prepareEventForDoppler($payment, 'success');
 
-                $this->app->doppler->sendFeedback($payload);
+                $this->app->doppler->sendFeedback($event);
             }
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
@@ -6057,7 +6057,7 @@ trait Authorize
         $gatewayInput['order']['account_number'] = $accountNumber;
     }
 
-    protected  function preparePayloadForDoppler(Payment\Entity $payment, string $paymentStatus)
+    protected  function prepareEventForDoppler(Payment\Entity $payment, string $paymentStatus)
     {
         // associated terminal from payment entity
         $terminal = $payment->terminal;
