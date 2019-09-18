@@ -99,19 +99,14 @@ class PowerWalletTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['amount'] = 100000;
 
-        $e = null;
+        $data = $this->testData[__FUNCTION__];
 
-        try
+        $response = $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $response = $this->doAuthAndGetPayment($payment);
-        }
-        catch (\RZP\Exception\GatewayErrorException $e)
-        {
-        }
+            return $this->doAuthPayment($payment);
+        });
 
-        $this->assertNotNull($e, 'Expected insufficient Balance error');
-
-        $this->assertTrue($e->getError()->getInternalErrorCode() === 'BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE', 'Invalid Error');
+        return $response;
     }
 
     public function testUserWalletTokenExpired()
