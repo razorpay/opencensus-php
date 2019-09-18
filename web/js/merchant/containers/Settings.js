@@ -17,8 +17,8 @@ const analyticsGoTo = name => {
   });
 };
 
-@withRouter
 @RTracking(() => window.rzpQ.component('Settings'))
+@withRouter
 export default class Settings extends Component {
   componentDidMount() {
     analyticsGoTo('Settings');
