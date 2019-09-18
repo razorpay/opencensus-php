@@ -45,14 +45,17 @@ export default class TextareaAutoResize extends React.PureComponent {
             return;
           }
         }}
-      >
-        <textarea
-          className="Input-el Input-el--resizer"
-          ref={this.setResizerElRef}
-          readOnly
-        />
-        {children}
-      </Input.Textarea>
+        extraChildren={
+          <React.Fragment>
+            <textarea
+              className="Input-el Input-el--resizer"
+              ref={this.setResizerElRef}
+              readOnly
+            />
+            {children}
+          </React.Fragment>
+        }
+      />
     );
   }
 }

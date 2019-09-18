@@ -79,7 +79,7 @@ export function separateDomProps(props) {
     mature,
     propagatedError,
     setRef,
-    children,
+    extraChildren,
     ...rest
   } = props;
 
@@ -106,7 +106,7 @@ export function separateDomProps(props) {
     mature,
     propagatedError,
     setRef,
-    children,
+    extraChildren,
     props: rest,
   };
 }
@@ -373,7 +373,7 @@ export default class Field extends React.Component {
       <div class={inputClass(this)}>
         <Label text={allProps.label} />
         <div class="Input-content">
-          {allProps.children}
+          {allProps.extraChildren}
           <div
             class={classList(
               'Input-elWrapper',
