@@ -45,8 +45,6 @@ class Type
 
     const EQUITAS_NETBANKING_REFUND         = 'equitas_netbanking_refund';
 
-    const RBL_STATEMENT                     = 'rbl_statement';
-
     const ISG_REFUND                        = 'isg_refund';
     const ISG_SUMMARY                       = 'isg_summary';
 
