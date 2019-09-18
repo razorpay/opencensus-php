@@ -87,7 +87,7 @@ export default ({ paymentPages, loading }) => {
                         <td>
                           <span class="item-ellipsis">
                             {Number(pi.quantity_sold)}
-                            {!!pi.quantity_sold && (
+                            {!!pi.stock && (
                               <span style={{ opacity: 0.7 }}>
                                 {' '}
                                 of {Number(pi.stock)}

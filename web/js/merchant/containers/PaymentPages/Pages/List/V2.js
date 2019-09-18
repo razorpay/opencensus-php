@@ -59,7 +59,7 @@ export default ({ paymentPages, loading }) => {
 
               <td>
                 {Number(item.payment_page_items[0].quantity_sold)}
-                {!!item.payment_page_items[0].quantity_sold && (
+                {!!item.payment_page_items[0].stock && (
                   <span style={{ opacity: 0.7 }}>
                     {' '}
                     of {Number(item.payment_page_items[0].stock)}
