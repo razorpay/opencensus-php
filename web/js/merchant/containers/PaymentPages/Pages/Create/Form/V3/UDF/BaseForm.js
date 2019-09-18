@@ -144,6 +144,7 @@ export default class BaseForm extends React.PureComponent {
           class="Input--title"
           name="title"
           defaultValue={field.title}
+          maxLength="60"
           placeholder="Enter field label"
           onInput={this.onInputTitle}
           validator={function(val) {
