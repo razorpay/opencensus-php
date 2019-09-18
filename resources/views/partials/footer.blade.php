@@ -31,7 +31,7 @@
         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','perf','taboola'], {
            ga: 'UA-53341507-2',
            fb: '697927486977350',
-           lj:'10pYUm55sa39zgTN1gzNwQzNyQjM54Cg',
+           lj:'{{$ljKey}}',
            perf:'medash'
          },isLocal,appEnvironment,disableEventEmitters);
         // Init old key as well
