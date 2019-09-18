@@ -224,7 +224,7 @@ class Preference extends Base\Core
         $settlementHour = $settlementTime->hour;
 
         // 9AM or 5PM bucket (which ever is nearest)
-        $hour = (($settlementHour <= Constants::NINE_AM) or ($settlementHour > Constants::FIVE_PM)) ?
+        $hour = (($settlementHour < Constants::NINE_AM) or ($settlementHour > Constants::FIVE_PM)) ?
             Constants::NINE_AM : Constants::FIVE_PM;
 
         // Nearest 3PM bucket
@@ -333,7 +333,7 @@ class Preference extends Base\Core
 
     /**
      * DSP merchant preference
-     * this merchant wants settlement only between 10AM - 3PM
+     * this merchant wants settlement only between 10AM - 4PM
      *
      * @param Merchant\Entity $merchant
      * @param Carbon          $settlementTime
