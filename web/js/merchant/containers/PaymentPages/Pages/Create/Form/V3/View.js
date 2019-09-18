@@ -181,6 +181,10 @@ export default class View extends React.PureComponent {
     this.props.reorderFormItems(_);
   };
 
+  getSortableHelperContainer() {
+    return document.getElementById('draggableElementsContainer');
+  }
+
   render() {
     const { paymentPageEntity, FORM_ITEMS } = this.props;
 
@@ -234,9 +238,7 @@ export default class View extends React.PureComponent {
             useDragHandle
             lockToContainerEdges
             helperClass="CreatorManager"
-            helperContainer={document.getElementById(
-              'draggableElementsContainer'
-            )}
+            helperContainer={this.getSortableHelperContainer}
             onSortEnd={this.onSortEnd}
             onSortStart={this.onSortStart}
             isListSorting={this.state.isListSorting}
