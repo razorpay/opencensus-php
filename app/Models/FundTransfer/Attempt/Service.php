@@ -358,4 +358,9 @@ class Service extends Base\Service
 
         return $values;
     }
+
+    public function processFundTransfersUsingFts(array $input, string $channel)
+    {
+        return (new Initiator)->processFundTransfersUsingFts($input, $channel);
+    }
 }
