@@ -69,7 +69,8 @@ class Core extends Base\Core
     public function createWithCard(
         Base\PublicEntity $source,
         CardEntity $card,
-        array $values = []): Entity
+        array $values = [],
+        $instantDispatch = false): Entity
     {
         $fundTransferAttempt = $this->create($source, $values, $card);
 
@@ -87,12 +88,28 @@ class Core extends Base\Core
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
+        else if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
+        }
 
         return $fundTransferAttempt;
     }
 
     public function dispatchForTransfer(Entity $fta)
     {
+        //
+        // Not instantly dispatching for fta's with source type as refund in func environment
+        // because of absence of queues, this check must be removed when func environment gets queue infra
+        //
+        $isEligibleForInstantDispatch = !(($fta->getSourceType() === Type::REFUND) and
+            (in_array($this->env, [Constants\Environment::FUNC], true) === true));
+
+        if ($isEligibleForInstantDispatch === false)
+        {
+            return;
+        }
+
         try
         {
             FundTransfer::dispatch($this->mode, $fta->getId());
@@ -113,7 +130,11 @@ class Core extends Base\Core
         }
     }
 
-    public function createWithVpa(Base\PublicEntity $source, VpaEntity $vpa, array $values = []): Entity
+    public function createWithVpa(
+        Base\PublicEntity $source,
+        VpaEntity $vpa,
+        array $values = [],
+        $instantDispatch = false): Entity
     {
         $fundTransferAttempt = $this->create($source, $values);
 
@@ -130,6 +151,10 @@ class Core extends Base\Core
         if ($fundTransferAttempt->getIsFTS() === true)
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
+        }
+        else if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
         }
 
         return $fundTransferAttempt;

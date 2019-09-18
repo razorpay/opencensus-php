@@ -24,8 +24,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $initiateFundTransferRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|custom',
-        Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout,settlement',
+        Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement,penny_testing',
+        Entity::SOURCE_TYPE     => 'required|filled|string|max:32|in:refund,payout,settlement,fund_account_validation',
         // This will be used while generating response while mock. Only used in api based settlements
         'failed_response'       => 'sometimes|int'
     ];

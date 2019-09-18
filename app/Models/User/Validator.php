@@ -7,6 +7,7 @@ use Hash;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
@@ -263,6 +264,8 @@ class Validator extends Base\Validator
 
         $app = App::getFacadeRoot();
 
+        $emailData['email'] = $input[Entity::EMAIL];
+
         if($app->environment('production') === true)
         {
             $captchaResponse = $input[Entity::CAPTCHA] ?? null;
@@ -287,9 +290,13 @@ class Validator extends Base\Validator
 
             if($output->success !== true)
             {
+                $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCH_VERIFICATION_FAILED, null, null, $emailData);
+
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTCHA_FAILED);
             }
         }
+
+        $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCHA_VERIFICATION_SUCCESS, null, null, $emailData);
     }
 
     protected function validateAction(string $attribute, string $action)

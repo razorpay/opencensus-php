@@ -35,12 +35,14 @@ class Entity extends Base\PublicEntity
     const BUSINESS_REGISTERED_COUNTRY        = 'business_registered_country';
     const BUSINESS_REGISTERED_STATE          = 'business_registered_state';
     const BUSINESS_REGISTERED_CITY           = 'business_registered_city';
+    const BUSINESS_REGISTERED_DISTRICT       = 'business_registered_district';
     const BUSINESS_REGISTERED_PIN            = 'business_registered_pin';
     const BUSINESS_OPERATION_ADDRESS         = 'business_operation_address';
     const BUSINESS_OPERATION_ADDRESS_L2      = 'business_operation_address_l2';
     const BUSINESS_OPERATION_COUNTRY         = 'business_operation_country';
     const BUSINESS_OPERATION_STATE           = 'business_operation_state';
     const BUSINESS_OPERATION_CITY            = 'business_operation_city';
+    const BUSINESS_OPERATION_DISTRICT        = 'business_operation_district';
     const BUSINESS_OPERATION_PIN             = 'business_operation_pin';
     const BUSINESS_DOE                       = 'business_doe';
     const GSTIN                              = 'gstin'; // Goods and Services Tax Identification Number
@@ -157,12 +159,14 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_DISTRICT,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
         self::BUSINESS_OPERATION_ADDRESS_L2,
         self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_DISTRICT,
         self::BUSINESS_OPERATION_PIN,
         self::BUSINESS_DOE,
         self::GSTIN,
@@ -242,12 +246,14 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_DISTRICT,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
         self::BUSINESS_OPERATION_ADDRESS_L2,
         self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_DISTRICT,
         self::BUSINESS_OPERATION_PIN,
         self::PROMOTER_PAN,
         self::PROMOTER_PAN_NAME,
@@ -546,6 +552,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_CITY);
     }
 
+    public function getBusinessRegisteredDistrict()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_DISTRICT);
+    }
+
     public function getBusinessRegisteredState()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
@@ -590,6 +601,11 @@ class Entity extends Base\PublicEntity
     public function getBusinessOperationCity()
     {
         return $this->getAttribute(self::BUSINESS_OPERATION_CITY);
+    }
+
+    public function getBusinessOperationDistrict()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_DISTRICT);
     }
 
     public function getBusinessOperationState()

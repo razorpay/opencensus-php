@@ -187,6 +187,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND                 = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE                         = 'CHECKOUT_PREFERENCES_RESPONSE';
     const CHECKOUT_PREFERENCES_EXCEPTION                        = 'CHECKOUT_PREFERENCES_EXCEPTION';
+    const CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION        = 'CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION';
     const CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION   = 'CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION';
     const PAYMENT_AUTO_REFUND_FAILURE                           = 'PAYMENT_AUTO_REFUND_FAILURE';
     const CREATE_GATEWAY_REFUND_RECORD_FAILED                   = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
@@ -260,6 +261,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
     const FTA_BANK_ACCOUNT_EMPTY                                = 'FTA_BANK_ACCOUNT_EMPTY';
+    const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
+    const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 
@@ -804,6 +807,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUCKETING_INITIATE                                    = 'BUCKETING_INITIATE';
     const BUCKETING_DONE                                        = 'BUCKETING_DONE';
     const MERCHANT_ADDED_TO_BUCKET                              = 'MERCHANT_ADDED_TO_BUCKET';
+    const FAILED_TO_ADD_MERCHANT_TO_BUCKET                      = 'FAILED_TO_ADD_MERCHANT_TO_BUCKET';
 
     const FTA_RECON_REPORT_FILE_CREATED                         = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                            = 'FTA_RECON_REPORT_INITIATED';
@@ -928,6 +932,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_ACCOUNT_EDIT                                     = 'BANK_ACCOUNT_EDIT';
 
     const ACCOUNT_NOT_FOUND_FOR_BENE_REG                        = 'ACCOUNT_NOT_FOUND_FOR_BENE_REG';
+    const ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER                   = 'ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER';
     const ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG               = 'ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG';
 
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
@@ -2063,6 +2068,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_AMOUNT_RETRIEVE_FAILED                     = 'SETTLEMENT_AMOUNT_RETRIEVE_FAILED';
 
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
+    const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -41,4 +41,3 @@ class XLSXHeaders
     const CREDIT_COUNT             = 'Count Of Credit:';
     const LIEN_AMOUNT              = 'Lien Amt:';
 }
-

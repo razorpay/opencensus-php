@@ -64,26 +64,18 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
-
         $this->assertEquals(0, $payment['amount']);
-
         $this->assertEquals('authorized', $payment['status']);
-
         $this->assertEquals('initial', $payment['recurring_type']);
 
         $enach = $this->getLastEntity('enach', true);
-
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['gateway_reference_id2']);
-
         $this->assertEquals('true', $enach['status']);
-
         $this->assertEquals('true' ,$enach['acknowledge_status']);
 
         $token = $this->getLastEntity('token', true);
-
         $this->assertEquals('netbanking', $token['auth_type']);
-
         $this->assertEquals('initiated', $token['recurring_status']);
     }
 
@@ -110,23 +102,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testPaymentRejectResponse()
     {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
-            'name'           => 'Test account',
-        ];
-
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->mockRejectCallbackResponse();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($testData, function() use ($payment) {
-            $this->doAuthPayment($payment);
-        });
+        $this->createPaymentFailed();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -187,6 +163,70 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('netbanking', $token['auth_type']);
 
         $this->assertEquals(null, $token['recurring_status']);
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $response = $this->doAuthPayment($payment);
+
+        $verify = $this->verifyPayment($response['razorpay_payment_id']);
+
+        assert($verify['payment']['verified'] === 1);
+    }
+
+    public function testPaymentFailedVerifySuccess()
+    {
+        $this->createPaymentFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            }
+        );
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($enach['gateway_reference_id']);
+        $this->assertEquals('true', $enach['status']);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->createPaymentFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $enach = $this->getLastEntity('enach', true);
+        $this->assertNotNull($enach['gateway_reference_id']);
+        $this->assertNotNull($enach['gateway_reference_id2']);
+        $this->assertEquals('true', $enach['status']);
+        $this->assertEquals('true' ,$enach['acknowledge_status']);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals('netbanking', $token['auth_type']);
+        $this->assertEquals('initiated', $token['recurring_status']);
     }
 
     public function testRegisterReconSuccess()
@@ -288,25 +328,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     public function testPaymentFailedRegisterFileRejected()
     {
         // Since registration during API failed, the payment will not be picked during register batch file processing
-        $payment = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
-
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
-            'name'           => 'Test account',
-        ];
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->mockRejectCallbackResponse();
-
-        $testData = $this->testData['testPaymentRejectResponse'];
-
-        $this->runRequestResponseFlow($testData, function() use ($payment) {
-            $this->doAuthPayment($payment);
-        });
+        $this->createPaymentFailed();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -525,25 +547,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         // Depending on NPCI, this may be taken up later based on verify or if they send payment id in response file
         $this->markTestSkipped();
 
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
-
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
-            'name'           => 'Test account',
-        ];
-
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->mockRejectCallbackResponse();
-
-        $testData = $this->testData['testPaymentRejectResponse'];
-
-        $this->runRequestResponseFlow($testData, function() use ($payment) {
-            $this->doAuthPayment($payment);
-        });
+        $this->createPaymentFailed();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -581,25 +585,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     {
         // Tests a case where there is no match against gateway_reference_id in enach table
         // Db query will fail and batch gracefully handles this and continues its execution.
-        $payment = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
 
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
-            'name'           => 'Test account',
-        ];
-
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->mockRejectCallbackResponse();
-
-        $testData = $this->testData['testPaymentRejectResponse'];
-
-        $this->runRequestResponseFlow($testData, function() use ($payment) {
-            $this->doAuthPayment($payment);
-        });
+        // this should ideally not happen now since verify is implemented
+        $this->createPaymentFailed();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -673,10 +661,11 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         {
             if ($action === 'authorize_get_secure_data')
             {
-                $content['Accptd'] = 'false';
+                $content['Accptd']     = 'false';
+                $content['AccptRefNo'] = '';
                 $content['ReasonCode'] = 'AP04';
                 $content['ReasonDesc'] = 'Account Inoperative';
-                $content['RejectBy'] = 'Bank';
+                $content['RejectBy']   = 'Bank';
             }
         });
     }
@@ -947,14 +936,15 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $content = $this->initiateTransfer(
             $channel,
-            Attempt\Purpose::REFUND);
+            Attempt\Purpose::REFUND,
+            Attempt\Type::REFUND);
 
         $data = $this->reconcileOnlineSettlements($channel, false);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertNotNull($attempt['utr']);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
 
         // Process entities
         $this->reconcileEntitiesForChannel($channel);
@@ -984,5 +974,26 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             ]);
 
         return $paymentId;
+    }
+
+    protected function createPaymentFailed()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockRejectCallbackResponse();
+
+        $testData = $this->testData['testPaymentRejectResponse'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
     }
 }

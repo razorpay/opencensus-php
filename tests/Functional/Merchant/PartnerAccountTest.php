@@ -139,6 +139,21 @@ class PartnerAccountTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testEditProfileData()
+    {
+        $this->setUpNonPurePlatformPartner();
+
+        $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/accounts/'. $result['id'];
+
+        $this->startTest($testData);
+    }
+
     public function testFetchAccount()
     {
         $this->setUpNonPurePlatformPartner();

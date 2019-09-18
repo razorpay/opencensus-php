@@ -1731,6 +1731,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1742,6 +1745,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1756,6 +1762,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1767,6 +1776,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1778,6 +1790,9 @@ return [
         'request'  => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1790,6 +1805,9 @@ return [
         'request'  => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1803,6 +1821,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1823,6 +1844,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1844,6 +1868,7 @@ return [
             'method'  => 'get',
             'content' => [
                 'invoice_id' => 'inv_1000000invoice',
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -1867,6 +1892,7 @@ return [
             'method'  => 'get',
             'content' => [
                 'invoice_id' => 'inv_1000000invoice',
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -1888,6 +1914,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1907,6 +1936,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1926,6 +1958,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1946,7 +1981,8 @@ return [
             'url'     => '/preferences',
             'method'  => 'get',
             'content' => [
-                'order_id' => null
+                'order_id' => null,
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -1973,6 +2009,9 @@ return [
         'request' => [
             'url'    => null,
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'tests' => [
             [
@@ -2110,6 +2149,9 @@ return [
         'request' => [
             'url'    => null,
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'tests' => [
             [
@@ -2220,7 +2262,10 @@ return [
     'testGetCheckoutPreferencesWithEmiOffer' => [
         'request' => [
             'url'    => null,
-            'method' => 'GET'
+            'method' => 'GET',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2251,6 +2296,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2273,6 +2321,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2290,6 +2341,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -2910,6 +2964,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2921,6 +2978,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2943,6 +3003,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2965,6 +3028,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2985,6 +3051,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3037,6 +3106,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3048,6 +3120,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3068,6 +3143,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3088,6 +3166,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3205,6 +3286,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3218,6 +3300,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3259,6 +3342,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3300,7 +3384,8 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'app_token' => 'capp_1000000custapp'
+                'app_token' => 'capp_1000000custapp',
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3314,6 +3399,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3328,7 +3414,8 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'customer_id' => 'cust_100000customer'
+                'customer_id' => 'cust_100000customer',
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3343,6 +3430,7 @@ return [
             'method' => 'get',
             'content' => [
                 'contact' => '9988776655',
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3357,7 +3445,8 @@ return [
             'method' => 'get',
             'content' => [
                 'contact' => '9988776655',
-                'device_token' => '1000custdevice'
+                'device_token' => '1000custdevice',
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3378,6 +3467,7 @@ return [
             'content' => [
                 'contact' => '9988776655',
                 'device_token' => '1000custdevice',
+                'currency' => 'INR',
                 '_' => [
                     'library' => 'checkoutjs',
                     'platform' => 'android',
@@ -3398,6 +3488,7 @@ return [
             'content' => [
                 'contact' => '9988776655',
                 'device_token' => '1000custdevice',
+                'currency' => 'INR',
                 '_' => [
                     'library' => 'checkoutjs',
                     'platform' => 'android',
@@ -3563,6 +3654,38 @@ return [
                 'entity'    => 'merchant',
                 'activated' => true,
                 'live'      => true,
+            ],
+        ]
+    ],
+
+    'testMerchantEditReceiptEmailEventCapture' => [
+        'request' => [
+            'content' => [
+                'action' => 'set_receipt_email_event_captured'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'receipt_email_trigger_event' => 'captured',
+            ],
+        ]
+    ],
+
+    'testMerchantEditReceiptEmailEventAuthorized' => [
+        'request' => [
+            'content' => [
+                'action' => 'set_receipt_email_event_authorized'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'receipt_email_trigger_event' => 'authorized',
             ],
         ]
     ],
@@ -4345,6 +4468,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -4356,6 +4482,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [

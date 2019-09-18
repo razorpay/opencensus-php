@@ -20,10 +20,10 @@ abstract class Base extends BaseCore
 
         $this->accountNumber = $accountNumber;
 
-        $this->channel       = $channel;
+        $this->channel = $channel;
 
-        $this->fromDate      = $fromDate;
+        $this->fromDate = $fromDate;
 
-        $this->toDate        = $toDate;
+        $this->toDate = $toDate;
     }
 }

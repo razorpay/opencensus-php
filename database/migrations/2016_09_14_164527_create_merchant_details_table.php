@@ -71,6 +71,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::BUSINESS_REGISTERED_CITY)
                   ->nullable();
 
+            $table->string(MerchantDetail::BUSINESS_REGISTERED_DISTRICT)
+                  ->nullable();
+
             $table->string(MerchantDetail::BUSINESS_REGISTERED_PIN)
                   ->nullable();
 
@@ -87,6 +90,9 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable();
 
             $table->string(MerchantDetail::BUSINESS_OPERATION_CITY)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BUSINESS_OPERATION_DISTRICT)
                   ->nullable();
 
             $table->string(MerchantDetail::BUSINESS_OPERATION_PIN)
