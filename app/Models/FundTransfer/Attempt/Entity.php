@@ -552,7 +552,7 @@ class Entity extends Base\PublicEntity
 
     public function shouldUseGateway($mode = null): bool
     {
-        if ((empty($mode) !== true) and
+        if ((empty($mode) === false) and
             ($mode !== Mode::UPI))
         {
             return false;
@@ -564,9 +564,9 @@ class Entity extends Base\PublicEntity
 
         $amount = round($amount, 2);
 
-        if ($amount >= Constants::MAX_UPI_AMOUNT)
+        if ($amount > Constants::MAX_UPI_AMOUNT)
         {
-            //Throw Exception if Mode is sent by Source and Amountis greater than limit
+            // Throw Exception if Mode is sent by Source and Amount is greater than UPI limit
             if ($mode === Mode::UPI)
             {
                 throw new LogicException(

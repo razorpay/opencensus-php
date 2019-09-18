@@ -38,10 +38,7 @@ class Validator extends Base\Validator
 
     protected function validateFormat($attribute, $format)
     {
-        if (in_array($format, SupportedFormats::ALL_VALID_FORMATS, true) === false)
-        {
-            throw new BadRequestValidationFailureException('Not a valid format: ' . $format);
-        }
+        SupportedFormats::validateFormat($format);
     }
 
     protected function validateChannel($attribute, $channel)

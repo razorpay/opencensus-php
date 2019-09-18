@@ -186,15 +186,13 @@ class Xlsx extends Generator
 
     function getStatement()
     {
-        $statementData = $this->accountStatementData();
+        $spreadsheet   = $this->createTableView($this->data);
 
-        $spreadsheet   = $this->createTableView($statementData);
-
-        $tmpFileName     = $this->accountNumber . '.xlsx';
+        $tmpFileName     = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.xlsx';
 
         $tmpFileFullPath = storage_path('/tmp/' . $tmpFileName);
 
-        $writer          = new XlsxWriter($spreadsheet);
+        $writer = new XlsxWriter($spreadsheet);
 
         $writer->save($tmpFileFullPath);
 
@@ -205,7 +203,7 @@ class Xlsx extends Generator
     {
         $spreadsheet = new Spreadsheet();
 
-        $sheet       = $spreadsheet->getActiveSheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
         $this->addLogo($sheet);
 

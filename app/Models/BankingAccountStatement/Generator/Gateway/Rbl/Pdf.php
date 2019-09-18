@@ -17,13 +17,11 @@ class Pdf extends Generator
 
     public function getStatement()
     {
-        $input = $this->accountStatementData();
-
-        $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $input);
+        $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $this->data);
 
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
 
-        $tmpFileName = $this->accountNumber . '.pdf';
+        $tmpFileName = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.pdf';
 
         $tmpFileFullPath = storage_path('/tmp/' . $tmpFileName);
 

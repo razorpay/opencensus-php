@@ -25,7 +25,7 @@ return [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'wallet_paypal',
-        'terminal_id'       => '100000Razorpay',
+        'terminal_id'       => '1ShrdPaypalTml',
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',

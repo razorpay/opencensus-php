@@ -460,7 +460,7 @@ class GatewayController extends Controller
             TraceCode::NETBANKING_PAYMENT_CALLBACK,
             [
                 'input'   => $input ,
-                'gateway' => 'enach_npci_netbanking',
+                'gateway' => Gateway::ENACH_NPCI_NETBANKING,
             ]
         );
 
@@ -472,12 +472,17 @@ class GatewayController extends Controller
 
         if($input[EnachNb\ResponseFields::RESPONSE_TYPE] === EnachNb\ResponseType::SUCCESS)
         {
-            $paymentId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
+            $paymentId = $responseArray[EnachNb\ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                       [EnachNb\ResponseXmlTags::ACCEPT_DETAILS]
+                                       [EnachNb\ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                       [EnachNb\ResponseXmlTags::MANDATE_REQUEST_ID];
         }
         else
         {
             //TODO : what if payment id is not present : possible
-            $paymentId = $responseArray['MndtRejResp']['OrigReqInfo']['MndtReqId'];
+            $paymentId = $responseArray[EnachNb\ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+                                       [EnachNb\ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+                                       [EnachNb\ResponseXmlTags::MANDATE_REQUEST_ID];
         }
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');

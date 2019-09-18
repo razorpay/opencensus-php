@@ -18,4 +18,3 @@ class BankConstants
 
     const CALL_CENTER_NUMBER = '022-71109111';
 }
-

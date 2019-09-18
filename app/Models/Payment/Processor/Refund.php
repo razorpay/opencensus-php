@@ -2234,7 +2234,8 @@ trait Refund
 
             $fta = (new FundTransferAttempt\Core)->createWithVpa($this->refund,
                                                                  $this->refund->vpa,
-                                                                 $fundTransferAttemptInput);
+                                                                 $fundTransferAttemptInput,
+                                                                 true);
 
             return $fta;
         });
@@ -2282,7 +2283,8 @@ trait Refund
         {
             $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
                                                                   $payment->card,
-                                                                  $fundTransferAttemptInput);
+                                                                  $fundTransferAttemptInput,
+                                                                  true);
 
             return $fta;
         });

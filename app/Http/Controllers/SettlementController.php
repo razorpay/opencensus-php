@@ -266,4 +266,28 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * gets the settlement process details
+     * contains intermediate cached data of settlement
+     */
+    public function getSettlementProcess()
+    {
+        $data = $this->service()->getProcessDetails();
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * delete all process data
+     * this is required to clear the config if terminated unexpectedly
+     */
+    public function resetSettlementProcess()
+    {
+        $this->service()->resetProcessDetails();
+
+        $data = $this->service()->getProcessDetails();
+
+        return ApiResponse::json($data);
+    }
 }
