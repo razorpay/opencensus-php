@@ -136,7 +136,7 @@ class Core extends Base\Core
 
     protected function getDashboardFileAccessUrl($fileId)
     {
-        return $this->config['applications.dashboard.url'] . 'file/' . $fileId;
+        return $this->config['applications.dashboard.url'] . 'ufh/file/' . $fileId;
     }
 
     protected function uploadTemporaryFileToStore($pathToTemporaryFile, BankingAccount\Entity $entity)
