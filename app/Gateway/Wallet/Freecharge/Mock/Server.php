@@ -28,7 +28,6 @@ class Server extends Base\Mock\Server
         $content = [
             'status'        => 'COMPLETED',
             'walletBalance' => '1234',
-            'errorCode'     => 'E000',
             'errorMessage'  => 'SUCCESS',
             'metadata'      => 'dummy',
         ];

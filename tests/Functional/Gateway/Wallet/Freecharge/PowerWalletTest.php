@@ -18,6 +18,8 @@ class PowerWalletTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/FreechargeGatewayTestData.php';
+
         parent::setUp();
 
         // Use Freecharge Power Wallet for tests
@@ -79,7 +81,7 @@ class PowerWalletTest extends TestCase
         $this->assertTrue(isset($wallet['reference1']));
     }
 
-    public function testInSufficientWalletBalance()
+    public function testInsufficientBalancePayment()
     {
         $this->setUpWalletToken();
 
