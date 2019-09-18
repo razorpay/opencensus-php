@@ -298,6 +298,7 @@ class Gateway
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::PAYTM,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -577,6 +578,7 @@ class Gateway
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::ATOM,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     public static $channels = [
@@ -723,6 +725,7 @@ class Gateway
             self::UPI_HULK,
             self::UPI_YESBANK,
             self::UPI_AIRTEL,
+            self::UPI_CITI,
         ],
 
         Method::AEPS => [
@@ -839,6 +842,7 @@ class Gateway
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
         self::UPI_CITI,
+        self::WALLET_PHONEPE,
     ];
 
     public static $headless = [
@@ -862,6 +866,10 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
+        ],
+        self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
         ],
     ];
 
@@ -1046,6 +1054,7 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
+        self::NETBANKING_CBI,
         self::CARDLESS_EMI,
     ];
 

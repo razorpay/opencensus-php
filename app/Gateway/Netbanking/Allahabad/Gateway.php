@@ -173,6 +173,11 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestData($verify);
 
+        if ($this->mode === Mode::LIVE)
+        {
+            $request['options']['verify'] = $this->getCaInfo();
+        }
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
@@ -375,6 +380,13 @@ class Gateway extends Base\Gateway
         assert($this->mode === Mode::TEST);
 
         return $this->config['test_hash_secret'];
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
+
+        return $clientCertPath;
     }
 }
 

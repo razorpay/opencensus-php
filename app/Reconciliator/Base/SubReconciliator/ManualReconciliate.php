@@ -6,11 +6,11 @@ use App;
 
 use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Exception\ReconciliationException;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate as BasePaymentReconciliate;
 
@@ -60,9 +60,11 @@ class ManualReconciliate extends CombinedReconciliate
                         Base\InfoCode::RECON_FAILED,
                         Base\InfoCode::RECON_INSUFFICIENT_DATA_FOR_MANUAL_RECON);
 
-                    $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
-
-                    continue;
+                    //
+                    // Throw exception, as we dont want to process the file,
+                    // even if validation fails for one row
+                    //
+                    throw new ReconciliationException(Base\InfoCode::RECON_INSUFFICIENT_DATA_FOR_MANUAL_RECON);
                 }
 
                 try
@@ -99,9 +101,9 @@ class ManualReconciliate extends CombinedReconciliate
                 }
                 catch (\Exception $e)
                 {
-                    $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, $e->getCode());
-
                     $this->setSummaryCount(self::FAILURES_SUMMARY, $reconId);
+
+                    throw $e;
                 }
                 finally
                 {
@@ -132,6 +134,8 @@ class ManualReconciliate extends CombinedReconciliate
                     'recon_amount'    => $row[self::AMOUNT],
                     'gateway'         => $this->gateway,
                 ]);
+
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ABSENT);
 
             throw $ex;
         }
@@ -306,12 +310,7 @@ class ManualReconciliate extends CombinedReconciliate
     protected function persistPaymentReferenceNumber(array $row)
     {
         // check for reference number and ARN in the row
-        $result = $this->hasReferenceNumbers($row);
-
-        if ($result === false)
-        {
-            return false;
-        }
+        $this->validateReferenceNumbers($row);
 
         try
         {
@@ -359,9 +358,9 @@ class ManualReconciliate extends CombinedReconciliate
      * to be given in the row
      *
      * @param array $row
-     * @return bool
+     * @throws ReconciliationException
      */
-    protected function hasReferenceNumbers(array $row)
+    protected function validateReferenceNumbers(array $row)
     {
         if ($this->payment->getMethod() === Payment\Method::CARD)
         {
@@ -380,7 +379,7 @@ class ManualReconciliate extends CombinedReconciliate
 
                 $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::RECON_ARN_ABSENT_FOR_MANUAL_RECON);
 
-                return false;
+                throw new ReconciliationException(Base\InfoCode::RECON_ARN_ABSENT_FOR_MANUAL_RECON);
             }
         }
         else
@@ -398,11 +397,9 @@ class ManualReconciliate extends CombinedReconciliate
 
                 $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::RECON_REF_NUMBER_ABSENT_FOR_MANUAL_RECON);
 
-                return false;
+                throw new ReconciliationException(Base\InfoCode::RECON_REF_NUMBER_ABSENT_FOR_MANUAL_RECON);
             }
         }
-
-        return true;
     }
 
     /**

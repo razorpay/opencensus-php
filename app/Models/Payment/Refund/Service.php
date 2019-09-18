@@ -95,6 +95,7 @@ class Service extends Base\Service
                 unset($gateways[IFSC::CSBK]);
                 unset($gateways[IFSC::VIJB]);
                 unset($gateways[IFSC::CNRB]);
+                unset($gateways[IFSC::SBIN]);
                 unset($gateways[Netbanking::PUNB_R]);
                 unset($gateways[Netbanking::BARB_R]);
                 unset($gateways[IFSC::ALLA]);
@@ -436,15 +437,20 @@ class Service extends Base\Service
                                         if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
                                         {
                                             $entity = $this->repo
-                                                ->$gatewayEntity
-                                                ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
-                                                ->toArray();
+                                                           ->$gatewayEntity
+                                                           ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                           ->toArray();
 
                                             $map = [];
 
+                                            if ($gatewayEntity === RefundConstants::MOZART)
+                                            {
+                                                $entity = json_decode($entity['raw'], true);
+                                            }
+
                                             foreach ($columns as $column)
                                             {
-                                                $map[$column] = $entity[$column];
+                                                $map[$column] = $entity[$column] ?? '';
                                             }
 
                                             $response[RefundConstants::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
@@ -497,6 +503,16 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
+        // We are masking status for merchants
+        if ((($this->app['basicauth']->isProxyAuth() === true) or
+             ($this->app['basicauth']->isPrivateAuth() === true)) and
+            (isset($input[Entity::STATUS]) === true))
+        {
+            $input[Entity::PUBLIC_STATUS] = $input[Entity::STATUS];
+
+            unset($input[Entity::STATUS]);
+        }
+
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
 
         $refundsArray = $refunds->toArrayPublic();
@@ -595,6 +611,8 @@ class Service extends Base\Service
                 foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
                 {
                     $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
+
+                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
                 }
             }
             else
@@ -608,6 +626,8 @@ class Service extends Base\Service
                     Entity::verifyIdAndStripSign($refundId);
 
                     $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+                    $refundArray[Entity::STATUS] = $refundStatus[$refundId];
                 }
             }
         }
@@ -630,6 +650,8 @@ class Service extends Base\Service
                 $refundArray[Entity::MODE] = $refundModes[$refundId];
 
                 $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+                $refundArray[Entity::STATUS] = $refundStatus[$refundId];
             }
         }
     }
@@ -1389,7 +1411,31 @@ class Service extends Base\Service
                                 $refund->setSpeedProcessed(RefundSpeed::NORMAL);
 
                                 $processor->eventRefundSpeedChanged($refund);
+
                                 $processor->eventRefundProcessed($refund);
+
+                                break;
+
+                            case 'processed_to_file_init_event':
+
+                                $this->trace->info(
+                                    TraceCode::REFUND_PROCESSED_TO_CREATED,
+                                    [
+                                        'refund_id'        => $refundId,
+                                        'status'           => $refund->getStatus(),
+                                        'reference1'       => $refund->getReference1(),
+                                        'processed_at'     => $refund->getProcessedAt(),
+                                        'gateway_refunded' => $refund->getGatewayRefunded(),
+                                    ]);
+
+                                if ((isset($input[RefundEntity::STATUS])) and
+                                    ($input[RefundEntity::STATUS] === 'file_init') and
+                                    ($refund->getStatus() === Refund\Status::PROCESSED))
+                                {
+                                    $processor->revertProcessedRefundToCreatedState($refund);
+                                }
+
+                                break;
                         }
 
                         $this->repo->saveOrFail($refund);

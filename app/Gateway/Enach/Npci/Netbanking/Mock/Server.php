@@ -8,8 +8,10 @@ use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Npci\Netbanking\Crypto;
+use RZP\Gateway\Enach\Npci\Netbanking\RequestFields;
 use RZP\Gateway\Enach\Npci\Netbanking\ResponseType;
 use RZP\Gateway\Enach\Npci\Netbanking\ResponseFields;
+use RZP\Gateway\Enach\Npci\Netbanking\ResponseXmlTags;
 
 class Server extends Base\Mock\Server
 {
@@ -21,6 +23,8 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
+        $this->validateActionInput($input, 'auth');
+
         $this->setCryptoAttributes();
 
         $requestXmlString = $input['MandateReqDoc'];
@@ -71,6 +75,41 @@ class Server extends Base\Mock\Server
         ];
 
         return $this->makePostResponse($request);
+    }
+
+    public function verify($input)
+    {
+        $requestJson = json_decode($input, true);
+
+        $requestDetails = $requestJson[RequestFields::MANDATE_REQ_ID_LIST][0];
+
+        $this->validateActionInput($requestDetails, 'verify');
+
+        $gatewayPayment = $this->repo->enach->findAuthorizedPaymentByPaymentId($requestDetails[RequestFields::MANDATE_ID]);
+
+        // TODO : move to common response fields class
+        // TODO: check if response fields are empty string for success
+        $content = [
+            ResponseFields::TRANSACTION_STATUS => [
+                [
+                    ResponseXmlTags::MERCHANT_ID        => $requestDetails[RequestFields::MERCHANT_ID],
+                    ResponseXmlTags::MANDATE_REQUEST_ID => $requestDetails[RequestFields::MANDATE_ID],
+                    ResponseXmlTags::REQ_INIT_DATE      => $requestDetails[RequestFields::REQ_INIT_DATE],
+                    ResponseXmlTags::VER_NPCI_REF_ID    => $gatewayPayment->getGatewayReferenceId() ?? Base\Entity::generateUniqueId(),
+                    ResponseXmlTags::ACCEPTED           => 'true',
+                    ResponseXmlTags::ACCEPT_REF_NO      => self::ACCEPT_REF_NO,
+                    'ReasonCode'                        => '',
+                    'ReasonDesc'                        => '',
+                    'RejectBy'                          => '',
+                    'ErrorCode'                         => '',
+                    'ErrorDesc'                         => ''
+                ]
+            ]
+        ];
+
+        $this->content($content, 'verify');
+
+        return $this->makeResponse($content);
     }
 
     private function getResponseData($requestArray, $respType, $secureData)

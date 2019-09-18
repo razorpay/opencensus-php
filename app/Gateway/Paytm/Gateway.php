@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayRefundEntity($storeContent, $input);
 
-        $content['CHECKSUM'] = $this->getHashOfArrayForRefund($content);
+        $content['CHECKSUM'] = urlencode($this->getHashOfArrayForRefund($content));
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
@@ -151,6 +151,21 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
     }
 
     protected function sendPaymentVerifyRequest($verify)

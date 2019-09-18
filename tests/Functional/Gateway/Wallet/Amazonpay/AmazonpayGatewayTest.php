@@ -56,6 +56,9 @@ class AmazonpayGatewayTest extends TestCase
         $preferences = $this->makeRequestAndGetContent([
             'url'       => '/preferences',
             'method'    => 'GET',
+            'content'   => [
+                'currency' => 'INR',
+            ]
         ]);
 
         $this->assertArrayHasKey('amazonpay', $preferences['methods']['wallet']);

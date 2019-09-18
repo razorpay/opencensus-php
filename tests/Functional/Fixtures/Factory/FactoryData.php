@@ -336,7 +336,7 @@ final class FactoryData
             'network' => 'Visa',
             'type' => 'credit',
             'country' => 'IN',
-            'issuer' => 'SBI',
+            'issuer' => 'SBIN',
             'trivia' => $faker->sentence,
         ]);
 
@@ -1114,6 +1114,10 @@ final class FactoryData
             'channel'           => 'rbl',
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Mpan\Entity::class, [
+
         ]);
     }
 }

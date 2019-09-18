@@ -69,7 +69,8 @@ class Core extends Base\Core
     public function createWithCard(
         Base\PublicEntity $source,
         CardEntity $card,
-        array $values = []): Entity
+        array $values = [],
+        $instantDispatch = false): Entity
     {
         $fundTransferAttempt = $this->create($source, $values, $card);
 
@@ -87,12 +88,28 @@ class Core extends Base\Core
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
+        else if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
+        }
 
         return $fundTransferAttempt;
     }
 
     public function dispatchForTransfer(Entity $fta)
     {
+        //
+        // Not instantly dispatching for fta's with source type as refund in func environment
+        // because of absence of queues, this check must be removed when func environment gets queue infra
+        //
+        $isEligibleForInstantDispatch = !(($fta->getSourceType() === Type::REFUND) and
+            (in_array($this->env, [Constants\Environment::FUNC], true) === true));
+
+        if ($isEligibleForInstantDispatch === false)
+        {
+            return;
+        }
+
         try
         {
             FundTransfer::dispatch($this->mode, $fta->getId());
@@ -113,7 +130,11 @@ class Core extends Base\Core
         }
     }
 
-    public function createWithVpa(Base\PublicEntity $source, VpaEntity $vpa, array $values = []): Entity
+    public function createWithVpa(
+        Base\PublicEntity $source,
+        VpaEntity $vpa,
+        array $values = [],
+        $instantDispatch = false): Entity
     {
         $fundTransferAttempt = $this->create($source, $values);
 
@@ -130,6 +151,10 @@ class Core extends Base\Core
         if ($fundTransferAttempt->getIsFTS() === true)
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
+        }
+        else if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
         }
 
         return $fundTransferAttempt;
@@ -214,6 +239,29 @@ class Core extends Base\Core
     protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, CardEntity $card = null): array
     {
         $redis = $this->app['redis']->connection();
+
+        $iin = null;
+
+        if ($card !== null)
+        {
+            $iin = $card->iinRelation;
+        }
+
+        if ($iin !== null)
+        {
+            $issuer = $iin->getIssuer();
+
+            $networkCode = $card->getNetworkCode();
+
+            $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
+
+            // Checking specifically for IMPS as IMPS refund should be sent to ICICI channel FTS
+            if ((in_array(Mode::IMPS, $supportedModes, true) === false) or
+                (in_array(Mode::UPI, $supportedModes, true) === true))
+            {
+                return [false, Settlement\Channel::YESBANK];
+            }
+        }
 
         if (in_array($sourceType, AttemptConstants::ALLOWED_PRODUCTS_ON_FTS, true) === true)
         {
@@ -558,7 +606,7 @@ class Core extends Base\Core
     {
         $channel = $fta->getChannel();
 
-        if ($fta->shouldUseGateway() === true)
+        if ($fta->shouldUseGateway($fta->getMode()) === true)
         {
             return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
         }
@@ -622,6 +670,15 @@ class Core extends Base\Core
 
         $this->postFtaRecon($fta->source, $ftaData);
 
+        if (($fta->getSourceType() === Type::REFUND) and ($fta->getStatus() !== Status::PROCESSED))
+        {
+            //
+            // For refund fta, not updating transaction entity if fta is not processed.
+            // Do not want to set recon details of transaction entity for non-processed refunds
+            //
+            return;
+        }
+
         $this->updateTransactionEntity($fta->source);
     }
 
@@ -658,6 +715,17 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+            $slackData = [
+                'headLine'  => 'fta source processing failed',
+                'fta_id'    => $ftaData['fta_id'],
+                'status'    => $ftaData['fta_status'],
+                'source_id' => $ftaData['source_id'],
+            ];
+
+            $alerts = new Alerts();
+
+            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 

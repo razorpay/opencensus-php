@@ -19,6 +19,7 @@ class Entity
     // Core entities
     //
     const IIN                       = 'iin';
+    const MPAN                      = 'mpan';
     const KEY                       = 'key';
     const P2P                       = 'p2p';
     const VPA                       = 'vpa';
@@ -110,6 +111,7 @@ class Entity
     const CREDITNOTE_INVOICE        = 'creditnote_invoice';
     const NODAL_BENEFICIARY         = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS         = 'payment_analytics';
+    const SETTLEMENT_BUCKET         = 'settlement_bucket';
     const SETTLEMENT_DETAILS        = 'settlement_details';
     const MERCHANT_PROMOTION        = 'merchant_promotion';
     const CREDIT_TRANSACTION        = 'credit_transaction';
@@ -339,6 +341,7 @@ class Entity
         Entity::BANK_TRANSFER,
         Entity::REFUND,
         Entity::FUND_ACCOUNT_VALIDATION,
+        Entity::ADJUSTMENT,
     ];
 
     public static $namespace = [
@@ -404,6 +407,7 @@ class Entity
         self::MERCHANT_EMI_PLANS        => \RZP\Models\Merchant\EmiPlans::class,
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
+        self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,

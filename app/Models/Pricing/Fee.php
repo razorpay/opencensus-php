@@ -34,18 +34,6 @@ class Fee extends Base\Core
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
     const DEFAULT_BANKING_PLAN_ID       = 'BTo98voDY05ueB';
 
-    // Delete this after 31st Jan
-    const DIWALI_END_TIMESTAMP = 1548916199;
-
-    // Delete this after 31st Jan
-    protected static $promotionalMethods = [
-        'card',
-        'emi',
-        'netbanking',
-        'upi',
-        'wallet',
-    ];
-
     public function __construct()
     {
         parent::__construct();
@@ -114,14 +102,6 @@ class Fee extends Base\Core
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $merchant = $entity->merchant;
-
-        if ((($entity instanceof Payment\Entity) === true) and
-            ($merchant->isFeatureEnabled(Feature::DIWALI_PROMOTIONAL_PLAN) === true) and
-            ($currentTimeStamp < self::DIWALI_END_TIMESTAMP) and
-            (in_array($entity->getMethod(), self::$promotionalMethods, true) === true))
-        {
-            $pricingPlanId = Pricing\DefaultPlan::DIWALI_PROMOTIONAL_PLAN_ID;
-        }
 
         $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 

@@ -583,17 +583,6 @@ class Service extends Base\Service
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::DIWALI_PROMOTIONAL_PLAN) === true)
-        {
-            // removing diwali_promotional_plan
-            (new Feature\Service)->deleteEntityFeature(
-                'accounts',
-                $merchant->getId(),
-                Feature\Constants::DIWALI_PROMOTIONAL_PLAN,
-                [Feature\Entity::SHOULD_SYNC => true]
-            );
-        }
-
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);

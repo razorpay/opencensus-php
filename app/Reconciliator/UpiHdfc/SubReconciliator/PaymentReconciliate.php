@@ -43,6 +43,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const PAYER_VPA                 = 'payer_vpa';
 
+    const MERCHANT_VPA              = 'merchant_vpa';
+
+    const BLACKLISTED_COLUMNS = [
+        self::PAYER_VPA,
+        self::MERCHANT_VPA,
+    ];
+
     /**
      * If we are not able to find payment id to reconcile,
      * this ratio defines the minimum proportion of columns to be filled in a valid row.

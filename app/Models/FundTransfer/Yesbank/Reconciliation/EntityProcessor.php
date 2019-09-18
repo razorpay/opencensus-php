@@ -14,7 +14,7 @@ class EntityProcessor extends BaseEntityProcessor
 
         $bankResponseCode = $this->fta->getBankResponseCode();
 
-        if ($this->fta->shouldUseGateway() === true)
+        if ($this->fta->shouldUseGateway($this->fta->getMode()) === true)
         {
             $merchantFailures = GatewayStatus::getMerchantFailures();
 

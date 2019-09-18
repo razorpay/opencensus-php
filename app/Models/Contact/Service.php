@@ -201,7 +201,7 @@ class Service extends Base\Service
         {
             $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
-            return $fundAccount->toArrayPublic();
+            return $fundAccount->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
         }
 
         $input = FundAccountHelper::getFundAccountInput($entry, $contact);
@@ -215,9 +215,12 @@ class Service extends Base\Service
 
         if (empty($fundAccount) === false)
         {
-            return $fundAccount->toArrayPublic();
+            $fundAccountArr = $fundAccount->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+            return $fundAccountArr;
         }
 
-        return $this->fundAccountService->create($input, $batchId);
+        return $this->fundAccountService->create($input, $batchId, $idempotencyKey) +
+                [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
     }
 }

@@ -2,17 +2,20 @@
 
 namespace RZP\Jobs;
 
-use App;
-
+use Carbon\Carbon;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
-use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\FundTransfer as FTA;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
+use RZP\Models\FundAccount\Type as FundAccountType;
 use RZP\Models\NodalBeneficiary\Status as BeneficiaryStatus;
 
 class FundTransfer extends Job
@@ -65,7 +68,36 @@ class FundTransfer extends Job
 
             $channel     = $fta->getChannel();
 
-            $bankAccount = $fta->bankAccount;
+            $accountEntity = null;
+
+            $accountType = FundAccountType::BANK_ACCOUNT;
+
+            if ($fta->hasCard() === true)
+            {
+                $accountEntity = $fta->card;
+
+                $accountType = FundAccountType::CARD;
+            }
+            else if($fta->hasVpa() === true)
+            {
+                $accountEntity = $fta->vpa;
+
+                $accountType = FundAccountType::VPA;
+            }
+            else if($fta->hasBankAccount() === true)
+            {
+                $accountEntity = $fta->bankAccount;
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER,
+                    [
+                        'fta_id' => $this->ftaId,
+                    ]);
+
+                return;
+            }
 
             $data = [
                 'fta_id'  => $fta->getId(),
@@ -82,7 +114,12 @@ class FundTransfer extends Job
                 return;
             }
 
-            $shouldReturn = $this->checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, $data);
+            $shouldReturn = false;
+
+            if (in_array($accountType, [FundAccountType::BANK_ACCOUNT, FundAccountType::CARD], true) === true)
+            {
+                $shouldReturn = $this->checkBeneficiaryRegistrationAndVerification($fta, $channel, $data, $accountEntity, $accountType);
+            }
 
             if ($shouldReturn === true)
             {
@@ -112,8 +149,10 @@ class FundTransfer extends Job
 
     /**
      * @param array $data
+     * @param string $traceCode
+     * @param Attempt\Entity $fta
      */
-    public function checkRetryOrDelete(array $data, $traceCode)
+    public function checkRetryOrDelete(array $data, $traceCode, Attempt\Entity $fta)
     {
         // Functional test cases gets failed due to checkRetryOrDelete
         // gets called in sync hence returning false in test mode
@@ -128,9 +167,14 @@ class FundTransfer extends Job
         }
         else
         {
-            (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure', $data, null, 1);
-
             $this->logAndDelete($data, $traceCode);
+
+//            (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure',
+//                                          $data,
+//                                          null,
+//                                          1);
+
+            return $this->isWithInFtaSla($fta);
         }
 
         return true;
@@ -158,33 +202,33 @@ class FundTransfer extends Job
      * then dispatch it for the same and wait for the RELEASE_WAIT_SECS.
      *
      * @param       $fta
-     * @param       $bankAccount
      * @param       $channel
      * @param array $data
+     * @param $accountEntity
      * @return bool
      */
-    public function checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, array $data)
+    public function checkBeneficiaryRegistrationAndVerification($fta, $channel, array $data, $accountEntity, $accountType)
     {
         // Checks if registration is required based on product and account type
         $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
 
         if ($isBeneRegistrationRequired === true)
         {
-            $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($bankAccount, $channel);
+            $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($channel, $accountEntity, $accountType);
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED and
                 $beneficiaryStatus !== BeneficiaryStatus::REGISTERED)
             {
-                (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($accountEntity, $channel, $accountType);
 
-                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_REGISTERED);
+                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_REGISTERED, $fta);
             }
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED)
             {
-                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel);
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($accountEntity, $channel, $accountType);
 
-                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_VERIFIED);
+                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_VERIFIED, $fta);
             }
         }
 
@@ -220,5 +264,41 @@ class FundTransfer extends Job
                     'mode' => $this->mode
                 ]);
         }
+    }
+
+    private function isWithInFtaSla(Attempt\Entity $fta): bool
+    {
+        // SLA in seconds
+        $sla = (new Admin\Service)->getConfigKey(['key' => ConfigKey::RX_SLA_FOR_IMPS_PAYOUT]);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $duration = $currentTime - $fta->getCreatedAt();
+
+        if ((empty($sla) === false) and
+            ($fta->getSourceType() === Attempt\Type::PAYOUT) and
+            (((int) $sla) <= $duration) and
+            (($fta->getMode() === FTA\Mode::IMPS) or
+                ($fta->getMode() === FTA\Mode::IFT)))
+        {
+            $this->trace->info(
+                TraceCode::FTA_SLA_EXPIRED,
+                [
+                    'fta_id'   => $this->ftaId,
+                    'mode'     => $this->mode,
+                    'sla'      => $sla,
+                    'duration' => $duration,
+                ]);
+
+            $this->trace->count(
+                Attempt\Metric::FTA_SLA_EXPIRED,
+                [
+                    Attempt\Metric::SLA => $sla,
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

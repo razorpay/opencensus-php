@@ -258,11 +258,16 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
+            // assigning $gatewayInput to $terminalGatewayInput because we need to
+            // persist gateway input in redirection flow,in
+            // runPostGatewaySelectionPreProcessing() other attributes and
+            // payment analytics, gateway_tokens entities gets appended inside $terminalGatewayInput.
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $gatewayInput);
+            // passing $terminalGateawyInput and $gatewayInput
+            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
 
             if ($request !== null)
             {
@@ -503,15 +508,16 @@ trait Authorize
 
         // TODO: Return metadata in a better format
         $response = [
-            'type'       => 'otp',
-            'request'    => $request,
-            'version'    => 1,
-            'payment_id' => $payment->getPublicId(),
-            'gateway'    => $this->getEncryptedGatewayText($payment->getGateway()),
-            'contact'    => $payment->getContact(),
-            'amount'     => number_format(($payment->getAmount() / 100), 2),
-            'wallet'     => $payment->getWallet(),
-            'merchant'   => $payment->merchant->getBillingLabel(),
+            'type'                  => 'otp',
+            'request'               => $request,
+            'version'               => 1,
+            'payment_id'            => $payment->getPublicId(),
+            'gateway'               => $this->getEncryptedGatewayText($payment->getGateway()),
+            'contact'               => $payment->getContact(),
+            'amount'                => number_format(($payment->getAmount() / 100), 2),
+            'formatted_amount'      => $payment->getFormattedAmount(),
+            'wallet'                => $payment->getWallet(),
+            'merchant'              => $payment->merchant->getBillingLabel(),
         ];
 
         // This is a hack to return direct method for IVR payments
@@ -1687,16 +1693,11 @@ trait Authorize
                 ($payment->isSecondRecurring() === false) and
                 ($payment->isPushPaymentMethod() === false))
             {
-                $response = $this->app->razorx->getTreatment($payment->merchant->getId(), 'authentication_via_gateway_rules', $this->mode);
+                $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
 
-                if (strtolower($response) === 'on')
-                {
-                    $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
+                $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
 
-                    $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
-
-                    return;
-                }
+                return;
             }
         }
         catch (\Throwable $ex)
@@ -2517,6 +2518,9 @@ trait Authorize
         $this->setAutoRefundTimestamp($payment);
 
         $this->setPreferredAuthIfApplicable($payment);
+
+        // this needs to be done after we have card entity as we need to know if card is debit or credit
+        $this->validateForMaxAmount($input, $payment);
     }
 
     protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
@@ -5627,6 +5631,7 @@ trait Authorize
 
         $input['payment']['id'] = $payment->getId();
 
+
         $cache = Cache::getFacadeRoot();
 
         if ($type === 'fallback')
@@ -5638,7 +5643,6 @@ trait Authorize
         {
             $key = $payment->getCacheRedirectInputKey();
             $ttl = static::REDIRECT_CACHE_TTL;
-            $input['gateway_input'] = $gatewayInput;
             $input['headless_error'] = $this->headlessError;
         }
 
@@ -5658,7 +5662,12 @@ trait Authorize
 
             unset($input['card']['number']);
             unset($input['card']['cvv']);
+
+            unset($gatewayInput['card']['number']);
+            unset($gatewayInput['card']['cvv']);
         }
+
+        $input['gateway_input'] = $gatewayInput;
 
         $this->cache->put($key, $input, $ttl);
     }
@@ -5731,14 +5740,17 @@ trait Authorize
         return true;
     }
 
-    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    // function accepts, $terminalGatewayInput to check whether we can return a redirect response or not
+    // since it has auth terminal selection data and if we can return a redirect response, we are using
+    // $gatewayInput to add selected terminalIds node which will be used in the redirect flow
+    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array $terminalGatewayInput, array & $gatewayInput)
     {
         try
         {
             $merchant = $payment->merchant;
 
             if (($this->shouldRedirect($payment) === false) and
-                ($this->shouldRedirectV2($payment, $gatewayInput) === false))
+                ($this->shouldRedirectV2($payment, $terminalGatewayInput) === false))
             {
                 return null;
             }
@@ -5858,7 +5870,9 @@ trait Authorize
                         ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
                 }
 
-                $inputDetails = $this->getInputDetails($payment);
+                $key = $payment->getCacheRedirectInputKey();
+
+                $inputDetails = $this->getInputDetails($payment, $key);
 
                 $gatewayInput = $inputDetails['gateway_input'];
 
@@ -5904,9 +5918,12 @@ trait Authorize
         return $response;
     }
 
-    protected function getInputDetails($payment)
+    protected function getInputDetails($payment, $key = null)
     {
-        $key = $payment->getCacheRedirectInputKey();
+        if ($key === null)
+        {
+            $key = $payment->getCacheRedirectInputKey();
+        }
 
         $inputDetails = $this->cache->get($key);
 
@@ -5920,6 +5937,16 @@ trait Authorize
         if (($payment->isMethodCardOrEmi() === true) and (empty($inputDetails[Payment\Entity::TOKEN]) === true))
         {
             $this->setCardNumberAndCvv($inputDetails);
+
+            if(empty($inputDetails['gateway_input']) === false)
+            {
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                $this->setCardNumberAndCvv($gatewayInput);
+
+                $inputDetails['gateway_input'] = $gatewayInput;
+            }
         }
 
         return $inputDetails;

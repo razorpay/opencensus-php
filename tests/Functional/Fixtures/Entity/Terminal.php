@@ -534,6 +534,32 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSbiTpvTerminal(array $attributes = [])
+    {
+        $id = Shared::NETBANKING_SBI_TPV_TERMINAL;
+
+        $merchantId = Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => $id,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_SBI,
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+            'gateway_merchant_id'   => 'netbanking_sbi_merchant_id',
+            'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
+            'type'                  => [
+                'non_recurring'     => '1',
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedEnachNpciNetbankingTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::ENACH_NPCI_NETBANKING_TERMINAL;
@@ -3049,7 +3075,7 @@ class Terminal extends Base
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
         $defaultValues = [
-            'id'                        => '100000Razorpay',
+            'id'                        => '1ShrdPaypalTml',
             'merchant_id'               => $sharedMerchantAccount,
             'gateway'                   => 'wallet_paypal',
             'shared'                    => 0,
@@ -3057,6 +3083,27 @@ class Terminal extends Base
             'gateway_terminal_password' => 'terminal_password',
             'gateway_terminal_password2'=> 'terminal_password2',
             'mode'                      => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createPaypalUsdTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                         => '1PaypalUSDTmnl',
+            'merchant_id'                => $sharedMerchantAccount,
+            'gateway'                    => 'wallet_paypal',
+            'shared'                     => 1,
+            'gateway_merchant_id'        => 'RazorpayPaypal2',
+            'gateway_terminal_password'  => 'terminal_password',
+            'gateway_terminal_password2' => 'terminal_password2',
+            'mode'                       => '1',
+            'currency'                   => 'USD'
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

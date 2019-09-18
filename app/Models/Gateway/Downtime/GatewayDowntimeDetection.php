@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use App;
+use function Clue\StreamFilter\append;
 use Illuminate\Redis\RedisManager;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\Redis;
@@ -91,9 +92,10 @@ class GatewayDowntimeDetection
      * for which respective downtime should be created.
      *
      * This also updates the total attempts and total failure in redis.
+     * @param int $count total failure count of a error code
      * @return array
      */
-    public function gatewayDowntimeDurations(): array
+    public function gatewayDowntimeDurations(int $count): array
     {
         if (empty($this->settings) === true)
         {
@@ -104,6 +106,7 @@ class GatewayDowntimeDetection
             file_get_contents(__DIR__ . '/LuaScripts/FailureCount.lua'),
             1,
             $this->getThrottleKey(),
+            $count,
         ];
 
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_EXECUTING_FAILURE_COUNT, [
@@ -140,8 +143,9 @@ class GatewayDowntimeDetection
     /**
      * This function increment the total attempts in redis.
      * which will be used for downtime detection.
+     * @param int $count
      */
-    public function incrementTotalAttempts()
+    public function incrementTotalAttempts(int $count)
     {
         if (empty($this->settings) === true)
         {
@@ -152,6 +156,7 @@ class GatewayDowntimeDetection
             file_get_contents(__DIR__ . '/LuaScripts/AllAttemptsCount.lua'),
             1,
             $this->getThrottleKey(),
+            $count
         ];
 
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_EXECUTING_ATTEMPTS_COUNT, [
@@ -176,7 +181,7 @@ class GatewayDowntimeDetection
         {
             $this->gateway = $gateway;
 
-            $this->settings = json_decode(array_get($allGatewaySettings, $this->gateway));
+            $this->settings = json_decode($configuration);
 
             $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_PURGE_INITIATED, [
                 'gateway'                           => $gateway,
@@ -189,7 +194,7 @@ class GatewayDowntimeDetection
                 $this->getThrottleKey(),
             ];
 
-            $this->redis->eval(
+            $keysPurged = $this->redis->eval(
                 ...$args,
                 ...$this->getAllWindows()
             );
@@ -197,8 +202,56 @@ class GatewayDowntimeDetection
             $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_PURGE_COMPLETED, [
                 'gateway'                           => $gateway,
                 'settings'                          => $this->settings,
+                'keys_purged'                       => $keysPurged,
             ]);
         }
+    }
+
+    public function stats(): array
+    {
+        $response = [];
+
+        $allGatewaySettings = $this->redis->hgetall(self::SETTINGS_KEY);
+
+        foreach ($allGatewaySettings as $gateway => $configuration)
+        {
+            $this->gateway = $gateway;
+
+            $this->settings = json_decode($configuration);
+
+            $args = [
+                file_get_contents(__DIR__ . '/LuaScripts/Stats.lua'),
+                1,
+                $this->getThrottleKey(),
+            ];
+
+            $results = $this->redis->eval(
+                ...$args,
+                ...$this->getAllWindows()
+            );
+
+            $stats = [];
+
+            for ($i = 0; $i < count($results); $i++)
+            {
+                array_push($stats, [
+                    'window_length'         =>  $this->settings[($i)][0],
+                    'threshold_percentage'  =>  $this->settings[($i)][1],
+                    'threshold_attempts'    =>  $this->settings[($i)][2],
+                    'downtime_duration'     =>  $this->settings[($i)][3],
+                    'result'                => [    'total_attempts'            => $results[$i][0],
+                                                    'total_failure_attempts'    => $results[$i][1]
+                    ],
+                ]);
+            }
+
+            array_push($response, [
+                'gateway' => $gateway,
+                'stats' => $stats,
+            ]);
+        }
+
+        return $response;
     }
 
     protected function getThrottleKey(): string
@@ -216,6 +269,7 @@ class GatewayDowntimeDetection
     {
         return array_map(
             function($conf) {
+                // return window length in seconds
                 return $conf[0];
             },
             $this->settings);

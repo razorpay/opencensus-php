@@ -964,6 +964,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateSbiTpvTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAssignUpiYesbankTerminal()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -1346,7 +1355,7 @@ class TerminalTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
-        $url = '/accounts/'.$subMerchantId.'/terminals';
+        $url = '/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 

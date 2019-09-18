@@ -188,7 +188,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The account number may only contain letters and numbers.',
+                    'description' => 'The account number format is invalid.',
                     'field'       => 'fund_account.account_number',
                 ],
             ],

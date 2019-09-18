@@ -93,6 +93,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_SIB,
         Payment\Gateway::NETBANKING_FEDERAL,
         Payment\Gateway::NETBANKING_CUB,
+        Payment\Gateway::NETBANKING_SBI,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
@@ -800,7 +801,15 @@ class Validator extends Base\Validator
     protected static $netbankingSbiTerminalRules = [
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string'
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::TYPE                        => 'sometimes|array',
+    ];
+
+    protected static $netbankingSbiEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [
@@ -833,6 +842,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $cardFssEditTerminalRules = [
@@ -845,6 +855,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $upiHulkEditTerminalRules = [
@@ -1154,13 +1165,14 @@ class Validator extends Base\Validator
         $isNonCardNonMockGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
                                     (in_array($gateway, $nonCardPurchaseExceptions, true)));
 
-        // Migs, Amex, OpenWallet, CardlessEmi terminals are always in auth-capture mode
+        // Migs, Amex, OpenWallet, CardlessEmi, PayPal terminals are always in auth-capture mode
         //
         $authCaptureOnly = [
             Gateway::AXIS_MIGS,
             Gateway::AMEX,
             Gateway::WALLET_OPENWALLET,
             Gateway::CARDLESS_EMI,
+            Gateway::WALLET_PAYPAL,
         ];
 
         $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));

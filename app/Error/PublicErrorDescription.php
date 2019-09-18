@@ -346,6 +346,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK                     = 'Payment processing declined by card issuing bank. Please contact issuing bank to determine reason.';
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                      = 'Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page';
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication failure';
+    const BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED                         = 'Payment processing failed due to 3dsecure or OTP authentication failure';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK                   = 'Payment processing failed by gateway due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD              = 'Payment processing failed because cardholder\'s card was blocked';
@@ -708,6 +709,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MORPHED_ENTITY_INVALID                                    = 'Invalid entity passed in query parameters';
 
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                       = 'Merchant does not have enough balance for negative adjustment';
+    const BAD_REQUEST_BALANCE_DOES_NOT_EXIST                                    = 'Balance does not exist';
 
     const BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE                                  = 'Payment cannot be made on this payment link';
 

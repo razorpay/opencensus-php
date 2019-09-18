@@ -10,6 +10,9 @@ return [
         'request'  => [
             'url'    => '/v1/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [

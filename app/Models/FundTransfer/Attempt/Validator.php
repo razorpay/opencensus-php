@@ -24,8 +24,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $initiateFundTransferRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|custom',
-        Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout',
+        Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement,penny_testing',
+        Entity::SOURCE_TYPE     => 'required|filled|string|max:32|in:refund,payout,settlement,fund_account_validation',
         // This will be used while generating response while mock. Only used in api based settlements
         'failed_response'       => 'sometimes|int'
     ];
@@ -103,6 +103,11 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     */
     public function validateModeIfSet()
     {
         /** @var Entity $attempt */
@@ -114,6 +119,7 @@ class Validator extends Base\Validator
         }
 
         $mode = $attempt->getMode();
+
         $destinationType = $attempt->getDestinationType();
 
         Mode::validateModeOfAccountType($mode, $destinationType);
@@ -122,7 +128,9 @@ class Validator extends Base\Validator
         {
             $cardIssuer = $attempt->card->getIssuer();
 
-            Mode::validateModeOfIssuer($mode, $cardIssuer);
+            $networkCode = $attempt->card->getNetworkCode();
+
+            Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
 
         $channel = $attempt->getChannel();

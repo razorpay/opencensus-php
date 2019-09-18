@@ -479,4 +479,6 @@ return [
     E::CUSTOMER => [],
 
     E::CREDITNOTE => [],
+
+    E::MPAN => [],
 ];

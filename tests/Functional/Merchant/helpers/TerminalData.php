@@ -148,6 +148,27 @@ return [
         ]
     ],
 
+    'testCreateSbiTpvTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_sbi',
+                'gateway_merchant_id'       => 'netbanking_sbi_merchant_id',
+                'gateway_secure_secret'     => 'random_secret',
+                'netbanking'                => '1',
+                'tpv'                       => '1',
+                'network_category'          => 'ecommerce',
+                ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => 'netbanking_sbi_merchant_id',
+                'enabled'              => true,
+                'tpv'                  => 1
+            ]
+        ]
+    ],
+
     'testBankAccountTerminalValidationRules' => [
         'request' => [
             'content' => [

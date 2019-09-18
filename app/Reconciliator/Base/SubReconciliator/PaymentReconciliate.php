@@ -47,6 +47,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::NETBANKING_EQUITAS,
         RequestProcessor\Base::NETBANKING_VIJAYA,
+        RequestProcessor\Base::NETBANKING_SBI,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::UPI_HDFC,
         RequestProcessor\Base::UPI_ICICI,
@@ -111,6 +112,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->messenger->batch = $batch;
 
+        $this->batch = $batch;
+
         $this->paymentRepo     = $this->repo->payment;
         $this->iinRepo         = $this->repo->iin;
         $this->transactionRepo = $this->repo->transaction;
@@ -137,6 +140,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
+
+        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+
+        $this->setProcessedAtInOutput();
 
         try
         {

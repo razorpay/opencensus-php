@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Gateway\Hitachi;
 use App;
 
 use RZP\Exception;
-use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Hitachi;
 use RZP\Models\Payment\Gateway;
@@ -22,18 +21,11 @@ class HitachiGatewayTest extends TestCase
 {
     use PaymentTrait;
 
-    /** @var $downtimeMetric DowntimeMetric */
-    protected $downtimeMetric;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/HitachiGatewayTestData.php';
 
         parent::setUp();
-
-        $app = App::getFacadeRoot();
-
-        $this->downtimeMetric = $app['gateway_downtime_metric'];
 
         $this->otpFlow = false;
 
@@ -86,9 +78,9 @@ class HitachiGatewayTest extends TestCase
 
     public function testSuccessful13DigitPanForEnrolledCard()
     {
-        $this->assertEquals([],$this->downtimeMetric->getMetrics());
+        $this->assertEquals([], $this->app['gateway_downtime_metric']->getMetrics());
 
-        $payment = $this->defaultAuthPayment([
+        $this->defaultAuthPayment([
             'card' => [
                 'number'       => CardNumber::VALID_ENROLL_NUMBER,
                 'expiry_month' => '02',
@@ -97,6 +89,14 @@ class HitachiGatewayTest extends TestCase
                 'name'         => 'Test Card'
             ]
         ]);
+
+        $this->assertEquals([
+            $this->gateway => [
+                DowntimeMetric::Success    => [
+                    DowntimeMetric::NoError      => 1,
+                ]
+            ]
+        ], $this->app['gateway_downtime_metric']->getMetrics());
 
         $txn = $this->getEntities('transaction', [], true);
         $this->assertEquals(0, $txn['count']);
@@ -125,19 +125,6 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
-
-        $this->assertEquals([
-            $this->gateway => [
-                DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 2,
-                ]
-            ],
-            'mpi_blade' => [
-                DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 1,
-                ]
-            ]
-        ], $this->downtimeMetric->getMetrics());
     }
 
     public function testRecurringPayment()
@@ -506,9 +493,17 @@ class HitachiGatewayTest extends TestCase
 
     public function testCaptureFailure()
     {
-        $this->assertEquals([],$this->downtimeMetric->getMetrics());
+        $this->assertEquals([], $this->app['gateway_downtime_metric']->getMetrics());
 
         $this->doAuthPayment($this->payment);
+
+        $this->assertEquals([
+            'hitachi' => [
+                'SUCCESS'    => [
+                    'NO_ERROR'      => 1,
+                ],
+            ],
+        ], $this->app['gateway_downtime_metric']->getMetrics());
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -523,25 +518,17 @@ class HitachiGatewayTest extends TestCase
                 $this->capturePayment($payment['public_id'], $payment['amount']);
             });
 
+        $this->assertEquals([
+            'hitachi' => [
+                'FAILURE'    => [
+                    'GATEWAY_ERROR_UNKNOWN_ERROR'      => 1,
+                ],
+            ],
+        ], $this->app['gateway_downtime_metric']->getMetrics());
+
         $hitachi = $this->getLastEntity('hitachi', true);
 
         $this->assertTestResponse($hitachi, 'testCaptureFailureEntity');
-
-        $this->assertEquals([
-            'hitachi' => [
-                'SUCCESS'    => [
-                    'NO_ERROR'      => 1,
-                ],
-                'FAILURE'   => [
-                    'GATEWAY_ERROR_UNKNOWN_ERROR'  => 1,
-                ],
-            ],
-            'mpi_blade' => [
-                'SUCCESS'    => [
-                    'NO_ERROR'      => 1,
-                ]
-            ]
-        ],$this->downtimeMetric->getMetrics());
     }
 
     public function testPaymentRefund()

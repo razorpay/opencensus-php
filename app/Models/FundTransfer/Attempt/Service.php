@@ -18,6 +18,8 @@ class Service extends Base\Service
 {
     public function initiateFundTransfers(array $input, $channel = null)
     {
+        (new Validator)->validateInput('initiate_fund_transfer', $input);
+
         $this->trace->info(
             TraceCode::INITIATE_FUND_TRANSFER,
             [
@@ -31,6 +33,12 @@ class Service extends Base\Service
 
             if((isset($channelState[$channel]) === true) and $channelState[$channel] === Constants::DISABLE)
             {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_TRANSFER_DISABLED,
+                    [
+                        'channel' => $channel,
+                    ]);
+
                 return ['status' => 'failed'];
             }
         }

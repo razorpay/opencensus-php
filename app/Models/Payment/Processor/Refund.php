@@ -89,6 +89,8 @@ trait Refund
 
         $this->pushMetrics();
 
+        $this->eventRefundCreated($this->refund);
+
         if ($this->refund->isRefundSpeedInstant() === false)
         {
             $this->eventRefundProcessed($this->refund);
@@ -785,7 +787,7 @@ trait Refund
         }
         catch (\Exception $e)
         {
-            (new TransferMetric)->pushReversalFailedMetrics(e);
+            (new TransferMetric)->pushReversalFailedMetrics($e);
 
             throw $e;
         }
@@ -2127,6 +2129,15 @@ trait Refund
         $this->app['events']->fire('api.refund.processed', $eventPayload);
     }
 
+    public function eventRefundCreated(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.created', $eventPayload);
+    }
+
     public function eventRefundFailed(RefundEntity $refund)
     {
         $eventPayload = [
@@ -2223,7 +2234,8 @@ trait Refund
 
             $fta = (new FundTransferAttempt\Core)->createWithVpa($this->refund,
                                                                  $this->refund->vpa,
-                                                                 $fundTransferAttemptInput);
+                                                                 $fundTransferAttemptInput,
+                                                                 true);
 
             return $fta;
         });
@@ -2271,7 +2283,8 @@ trait Refund
         {
             $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
                                                                   $payment->card,
-                                                                  $fundTransferAttemptInput);
+                                                                  $fundTransferAttemptInput,
+                                                                  true);
 
             return $fta;
         });

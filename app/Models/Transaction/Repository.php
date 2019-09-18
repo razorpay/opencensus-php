@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
@@ -1573,7 +1574,7 @@ class Repository extends Base\Repository
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
 
-        $timestamp = Carbon::now()->getTimestamp();
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
@@ -1584,7 +1585,7 @@ class Repository extends Base\Repository
                                         ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
                               })
                       ->where($transactionMerchantId, $mid)
-                      ->where($transactionSettledAt, '<', $timestamp)
+                      ->where($transactionSettledAt, '<=', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
@@ -1592,9 +1593,13 @@ class Repository extends Base\Repository
 
         $results = $query->get();
 
-        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
-
-        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
+            [
+                'merchant_id' => $mid,
+                'settled_at'  => $timestamp,
+                'time_taken'  => get_diff_in_millisecond($txnFetchStartTime),
+            ]);
 
         return $results;
     }
@@ -1623,7 +1628,7 @@ class Repository extends Base\Repository
                 Transaction\Entity::SETTLED_AT,
                 Transaction\Entity::CREDITS,
                 Transaction\Entity::CREDIT_TYPE
-            ],$columns);
+            ], $columns);
 
         }
 
@@ -1641,6 +1646,21 @@ class Repository extends Base\Repository
                     ->select(Entity::ID)
                     ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
                     ->count();
+    }
+
+    public function getTransactionBalanceType(string $transactionId)
+    {
+        $id                     = $this->dbColumn(Entity::ID);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+                    ->select($balanceTypeColumn)
+                    ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                    ->where($id , $transactionId)
+                    ->value(Entity::TYPE);
     }
 
     /**
@@ -1764,5 +1784,43 @@ class Repository extends Base\Repository
         $results = $query->get()->toArray();
 
         return $results;
+    }
+
+    public function getMerchantSettledAtTime(array $mids, string $start, $end)
+    {
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $settlementCredit       = $this->dbColumn(Entity::CREDIT);
+        $settlementDebit        = $this->dbColumn(Entity::DEBIT);
+        $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+
+        $query = $this->newQuery()
+            ->select($transactionMerchantId, $transactionSettledAt)
+            ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+            ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+            {
+                $query->whereNull($transactionBalanceId)
+                      ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+            })
+            ->whereNotNull($transactionSettledAt)
+            ->where($transactionSettled, 0)
+            ->where($transactionSettledAt, '>=', $start)
+            ->whereNotIn($transactionMerchantId, $mids)
+            ->where($transactionType, '!=', Type::SETTLEMENT)
+            ->groupBy($transactionMerchantId, $transactionSettledAt);
+
+        if (empty($end) === false)
+        {
+            $query->where($transactionSettledAt, '<=', $end);
+        }
+
+        return $query->get();
     }
 }

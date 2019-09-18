@@ -21,6 +21,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Metric;
+use RZP\Exception\BadRequestValidationFailureException;
 
 abstract class NodalAccount extends Base\Core
 {
@@ -438,6 +439,12 @@ abstract class NodalAccount extends Base\Core
         }
     }
 
+    /**
+     * @param Attempt\Entity $attempt
+     * @param                $amount
+     * @return string
+     * @throws BadRequestValidationFailureException
+     */
     public function getPaymentModeForCard(Attempt\Entity $attempt, $amount): string
     {
         if ($attempt->hasMode() === true)
@@ -445,20 +452,95 @@ abstract class NodalAccount extends Base\Core
             return $attempt->getMode();
         }
 
+        $iin = $attempt->card->iinRelation;
+
+        if ($iin !== null)
+        {
+            $issuer = $iin->getIssuer();
+        }
+        else
+        {
+            throw new BadRequestValidationFailureException("iin is not valid mode for issuer");
+        }
+
+        $networkCode = $attempt->card->getNetworkCode();
+
+        $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
+
         if ($amount < self::MAX_IMPS_AMOUNT)
         {
-            return Mode::IMPS;
+            $mode =  Mode::IMPS;
         }
-
-        $now = Carbon::now(Timezone::IST)->getTimestamp();
-
-        if ((($now >= $this->bankingStartTimeRtgs) and
-                ($now <= $this->bankingEndTimeRtgs)) and
-            ($amount >= self::MIN_RTGS_AMOUNT))
+        else
         {
-            return Mode::RTGS;
+            $mode = Mode::NEFT;
+
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            if ((($now >= $this->bankingStartTimeRtgs) and
+                    ($now <= $this->bankingEndTimeRtgs)) and
+                ($amount >= self::MIN_RTGS_AMOUNT))
+            {
+                $mode = Mode::RTGS;
+            }
         }
 
-        return Mode::NEFT;
+        if (in_array($mode, $supportedModes, true) === true)
+        {
+            return $mode;
+        }
+        else if (in_array(Mode::NEFT, $supportedModes, true) === true)
+        {
+            return Mode::NEFT;
+        }
+        else
+        {
+            throw new BadRequestValidationFailureException("$mode is not a valid mode for issuer $issuer");
+        }
+    }
+
+    protected function markAttemptAsFailed(Attempt\Entity $entity, $remarks, $failureReason)
+    {
+        $attemptCore = new Attempt\Core;
+
+        $statusNamespace = $attemptCore->getStatusClass($entity);
+
+        $statusClass = new $statusNamespace;
+
+        $failureStatuses = $statusClass::getFailureStatus();
+
+        $failureStatus = array_keys($failureStatuses)[0];
+
+        $entity->setBankStatusCode($failureStatus);
+
+        $entity->setRemarks($remarks);
+
+        $entity->setFailureReason($failureReason);
+
+        $this->repo->saveOrFail($entity);
+    }
+
+    protected function markFailedIfBANotExists(Attempt\Entity $entity) : bool
+    {
+        if($entity->hasBankAccount() === true)
+        {
+            if(empty($entity->bankAccount) === true)
+            {
+                $remarks = 'Associated Bank Account is not active.';
+
+                $failureReason = 'Associated Bank Account is not active.';
+
+                $this->markAttemptAsFailed($entity, $remarks, $failureReason);
+
+                $this->trace->info(TraceCode::FTA_BANK_ACCOUNT_EMPTY,
+                    [
+                        'fta_id'            => $entity->getId(),
+                        'remarks'           => $remarks
+                    ]);
+
+                return true;
+            }
+        }
+        return false;
     }
 }

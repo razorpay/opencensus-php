@@ -1173,6 +1173,56 @@ class MerchantTest extends TestCase
         $this->assertNotNull($merchant['activated_at']);
     }
 
+    public function testMerchantEditReceiptEmailEventCapture()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->ba->adminAuth();
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['receipt_email_trigger_event'], 'captured');
+    }
+
+    public function testMerchantEditReceiptEmailEventAuthorized()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->edit('merchant',  $merchant['id'], ['receipt_email_trigger_event' => 'captured']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->ba->adminAuth();
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['receipt_email_trigger_event'], 'authorized');
+    }
+
     public function testMerchantArchiveWithNoMerchantDetails()
     {
         $merchant = $this->getLastEntity('merchant', true);
@@ -1512,68 +1562,6 @@ class MerchantTest extends TestCase
         $this->assertEquals(2, $bankAccounts['count']);
     }
 
-    public function testDiwaliPromotionalPlan()
-    {
-        $this->markTestSkipped();
-
-        $this->fixtures->pricing->createDiwaliPromotionalPlan();
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals($payment['id'], $transaction['entity_id']);
-        $this->assertEquals(1000, $transaction['fee']);
-
-        $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals($payment['id'], $transaction['entity_id']);
-
-        $this->assertEquals(100, $transaction['fee']);
-
-        // mock carbon to test timestamp check
-
-        $feb2019 = Carbon::createFromTimestamp(1549002600);
-
-        Carbon::setTestNow($feb2019);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals($payment['id'], $transaction['entity_id']);
-        $this->assertEquals(1000, $transaction['fee']);
-    }
-
-    public function testDiwaliPromotionalPlanFeatureRemoval()
-    {
-        $this->markTestSkipped();
-
-        $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
-        $this->fixtures->pricing->createStandardPlan();
-        $this->fixtures->merchant->disableInternational();
-
-        $merchant = $this->getDbEntityById('merchant', '10000000000000', true);
-
-        $this->assertTrue($merchant->isFeatureEnabled('diwali_promotional_plan'));
-        $this->ba->adminAuth();
-        $this->merchantAssignPricingPlan('1A0Fkd38fGZPVC', '10000000000000');
-
-        $merchant = $this->getDbEntityById('merchant', '10000000000000', true);
-
-        $this->assertFalse($merchant->isFeatureEnabled('diwali_promotional_plan'));
-    }
-
     public function testSetBanks()
     {
         $this->ba->adminAuth();
@@ -1643,7 +1631,9 @@ class MerchantTest extends TestCase
         $request = array(
             'url' => '/checkout',
             'method' => 'get',
-            'content' => [],
+            'content' => [
+                'currency' => 'INR',
+            ],
         );
 
         $response = $this->sendRequest($request);
@@ -2217,6 +2207,30 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('epaylater', $response['methods']['paylater']);
     }
 
+    public function testGetCheckoutPreferencesForPaypalCurrency()
+    {
+        $this->fixtures->merchant->enablePaypal();
+
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences(null, 'USD');
+
+        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
+    }
+
+    public function testGetCheckoutPreferencesForPaypalCurrencyWithOrder()
+    {
+        $order = $this->fixtures->order->createWalletInternationalOrder();
+
+        $this->fixtures->merchant->enablePaypal();
+
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
+    }
+
     public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()
     {
         $this->fixtures->merchant->enableEmi();
@@ -2282,12 +2296,15 @@ class MerchantTest extends TestCase
         }
     }
 
-    protected function getPreferences($orderId = null)
+    protected function getPreferences($orderId = null, $currency = 'INR')
     {
         $request = [
             'url'     => '/preferences',
             'method'  => 'get',
             'content' => [
+                'currency' => [
+                    $currency
+                ],
             ],
         ];
 
@@ -2723,13 +2740,15 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['google_pay']);
 
-        $this->fixtures->merchant->addFeatures(['google_pay_omnichannel']);
+        $this->fixtures->merchant->addFeatures(['google_pay_omnichannel', 'phonepe_intent']);
 
         $response = $this->startTest();
 
         $this->assertNotNull($response['features']['google_pay']);
 
         $this->assertNotNull($response['features']['google_pay_omnichannel']);
+
+        $this->assertNotNull($response['features']['phonepe_intent']);
     }
 
     public function testPutPaytmMethod()
