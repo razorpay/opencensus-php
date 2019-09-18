@@ -545,6 +545,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER                           = 'Invalid Invoice Number.';
 
     const BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS               = 'Request failed because another fund transfer operation in progress';
+    const BAD_REQUEST_FUND_TRANSFER_FTS_ANOTHER_OPERATION_IN_PROGRESS           = 'Request failed because another fund transfer operation via fts in progress';
 
     const BAD_REQUEST_PERMISSION_ERROR                                          = 'Permissions not found for this request/route';
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                              = 'Invalid type specified for callback';

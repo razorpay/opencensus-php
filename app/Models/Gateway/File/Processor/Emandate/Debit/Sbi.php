@@ -47,11 +47,13 @@ class Sbi extends Base
         {
             $terminal = $token->terminal;
 
+            $merchant = $token->merchant;
+
             $paymentId = $token['payment_id'];
 
             $debitDate = Carbon::today(Timezone::IST)->format('d/m/Y');
 
-            $gatewayMerchantId = $terminal->getGatewayMerchantId();
+            $gatewayMerchantId = $this->getCorporateId($terminal);
 
             if (isset($rows[$gatewayMerchantId]) === true)
             {
@@ -65,9 +67,9 @@ class Sbi extends Base
             $rows[$gatewayMerchantId][] = [
                 Headings::SERIAL_NUMBER           => $srNo,
                 Headings::UMRN                    => $token->getGatewayToken(),
-                Headings::CORPORATE_CODE          => $token->terminal->getGatewayMerchantId(),
-                Headings::CORPORATE_NAME          => self::CORPORATE_NAME,
-                Headings::MANDATE_HOLDER_NAME     => $token->customer->getName(),
+                Headings::CORPORATE_CODE          => $gatewayMerchantId,
+                Headings::CORPORATE_NAME          => $merchant->getFilteredDba(),
+                Headings::MANDATE_HOLDER_NAME     => $token->getBeneficiaryName(),
                 Headings::DEBIT_ACC_NO            => $token->getAccountNumber(),
                 Headings::DEBIT_DATE              => $debitDate,
                 Headings::AMOUNT                  => $this->getFormattedAmount($token['payment_amount']),
@@ -104,12 +106,6 @@ class Sbi extends Base
         return number_format($amount / 100, '2', '.', '');
     }
 
-    public function sendFile($data)
-    {
-        return;
-    }
-
-    // TODO: Move to base
     public function createFile($data)
     {
         // Don't process further if file is already generated
@@ -160,5 +156,17 @@ class Sbi extends Base
                 ],
                 $e);
         }
+    }
+
+    protected function getCorporateId($terminal)
+    {
+        $id = $terminal->getGatewayMerchantId2();
+
+        if (empty($id) === true)
+        {
+            $id = $this->config['gateway.netbanking_sbi.emandate_corporate_id'];
+        }
+
+        return $id;
     }
 }

@@ -187,6 +187,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND                 = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE                         = 'CHECKOUT_PREFERENCES_RESPONSE';
     const CHECKOUT_PREFERENCES_EXCEPTION                        = 'CHECKOUT_PREFERENCES_EXCEPTION';
+    const CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION        = 'CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION';
     const CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION   = 'CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION';
     const PAYMENT_AUTO_REFUND_FAILURE                           = 'PAYMENT_AUTO_REFUND_FAILURE';
     const CREATE_GATEWAY_REFUND_RECORD_FAILED                   = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
@@ -806,6 +807,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUCKETING_INITIATE                                    = 'BUCKETING_INITIATE';
     const BUCKETING_DONE                                        = 'BUCKETING_DONE';
     const MERCHANT_ADDED_TO_BUCKET                              = 'MERCHANT_ADDED_TO_BUCKET';
+    const FAILED_TO_ADD_MERCHANT_TO_BUCKET                      = 'FAILED_TO_ADD_MERCHANT_TO_BUCKET';
 
     const FTA_RECON_REPORT_FILE_CREATED                         = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                            = 'FTA_RECON_REPORT_INITIATED';
@@ -930,6 +932,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_ACCOUNT_EDIT                                     = 'BANK_ACCOUNT_EDIT';
 
     const ACCOUNT_NOT_FOUND_FOR_BENE_REG                        = 'ACCOUNT_NOT_FOUND_FOR_BENE_REG';
+    const ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER                   = 'ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER';
     const ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG               = 'ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG';
 
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
@@ -1870,11 +1873,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_FUND_TRANSFER_INIT                                = 'FTS_FUND_TRANSFER_INIT';
     const FTS_CREATE_ACCOUNT_INIT                               = 'FTS_CREATE_ACCOUNT_INIT';
     const FTS_FUND_TRANSFER_FAILED                              = 'FTS_FUND_TRANSFER_FAILED';
+    const FTS_TRANSFER_ACTION_INIT                              = 'FTS_TRANSFER_ACTION_INIT';
     const FTS_REGISTER_ACCOUNT_INIT                             = 'FTS_REGISTER_ACCOUNT_INIT';
     const FTS_CREATE_ACCOUNT_FAILED                             = 'FTS_CREATE_ACCOUNT_FAILED';
     const FTS_FUND_TRANSFER_COMPLETE                            = 'FTS_FUND_TRANSFER_COMPLETE';
     const FTS_REGISTER_ACCOUNT_FAILED                           = 'FTS_REGISTER_ACCOUNT_FAILED';
     const FTS_CREATE_ACCOUNT_COMPLETE                           = 'FTS_CREATE_ACCOUNT_COMPLETE';
+    const FTS_TRANSFER_ACTION_COMPLETE                          = 'FTS_TRANSFER_ACTION_COMPLETE';
     const FTS_REGISTER_ACCOUNT_COMPLETE                         = 'FTS_REGISTER_ACCOUNT_COMPLETE';
     const FTS_UPDATE_FUND_TRANSFER_ATTEMPT                      = 'FTS_UPDATE_FUND_TRANSFER_ATTEMPT';
     const FTS_FUND_TRANSFER_JOB_DISPATCHED                      = 'FTS_FUND_TRANSFER_JOB_DISPATCHED';
@@ -1887,6 +1892,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_CREATE_OR_UPDATE_NODAL_BENEFICIARY                = 'FTS_CREATE_OR_UPDATE_NODAL_BENEFICIARY';
     const FTS_UPDATE_FUND_TRANSFER_ATTEMPT_FAILED               = 'FTS_UPDATE_FUND_TRANSFER_ATTEMPT_FAILED';
     const FTS_BENEFICIARY_CREATE_OR_UPDATE_FAILED               = 'FTS_BENEFICIARY_CREATE_OR_UPDATE_FAILED';
+    const FTS_TRANSFER_RETRY_ACTION_INIT                        = 'FTS_TRANSFER_RETRY_ACTION_INIT';
+    const FTS_TRANSFER_RETRY_ACTION_COMPLETE                    = 'FTS_TRANSFER_RETRY_ACTION_COMPLETE';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';
@@ -2071,6 +2078,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_AMOUNT_RETRIEVE_FAILED                     = 'SETTLEMENT_AMOUNT_RETRIEVE_FAILED';
 
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
+    const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

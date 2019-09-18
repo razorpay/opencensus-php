@@ -2177,7 +2177,10 @@ class BankTransferTest extends TestCase
 
         $response = $this->makeRequestAndGetContent([
             'url'    => '/preferences',
-            'method' => 'get'
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ]);
 
         return $response;

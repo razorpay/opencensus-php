@@ -351,4 +351,52 @@ class Repository extends Base\Repository
                     ->where(Entity::IS_FTS, $isFTS)
                     ->get();
     }
+
+
+    /**
+     * @param string $channel
+     * @param string $status
+     * @param null $size
+     * @param null $id
+     * @param null $from
+     * @param null $to
+     * @param null $limit
+     * @return mixed
+     */
+    public function getFtsAttempts(
+        string $channel,
+        string $status,
+        $size = null,
+        $id = null,
+        $from = null,
+        $to = null,
+        $limit=null)
+    {
+
+        $query = $this->newQuery()
+                      ->where(Entity::CHANNEL, $channel)
+                      ->where(Entity::STATUS, '=', $status)
+                      ->where(Entity::IS_FTS, '=', 1);
+
+        if ($size !== null)
+        {
+            $query->take($size);
+        }
+
+        if ($id !== null)
+        {
+            $query->where(Entity::ID, '=', $id);
+        }
+
+        if (($from != null) and ($to != null))
+        {
+            $query->whereBetween(Entity::CREATED_AT, [$from, $to])
+                  ->limit($limit);
+        }
+
+
+        return $query->get();
+    }
+
+
 }

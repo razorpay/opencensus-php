@@ -65,7 +65,7 @@ class Validator extends Merchant\Validator
         Constants::CHARGEBACK        => 'sometimes|array',
         Constants::REFUND            => 'sometimes|array',
         Constants::DISPUTE           => 'sometimes|array',
-        Constants::BILLING_LABEL     => 'sometimes|string',
+        Constants::BILLING_LABEL     => 'required|string',
         Constants::IDENTIFICATION    => 'sometimes|array',
     ];
 

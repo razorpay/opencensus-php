@@ -505,6 +505,11 @@ class Core extends Merchant\Core
     {
         $registeredAddress = [];
 
+        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === true)
+        {
+            return $registeredAddress;
+        }
+
         foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $address)
         {
             if ($address[Constants::TYPE] === Constants::REGISTERED)
@@ -541,6 +546,11 @@ class Core extends Merchant\Core
     protected function getOperationAddressFromInput(array $input): array
     {
         $operationAddress = [];
+
+        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === true)
+        {
+            return $operationAddress;
+        }
 
         foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $address)
         {

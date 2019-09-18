@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
@@ -1573,7 +1574,7 @@ class Repository extends Base\Repository
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
 
-        $timestamp = Carbon::now()->getTimestamp();
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
@@ -1584,7 +1585,7 @@ class Repository extends Base\Repository
                                         ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
                               })
                       ->where($transactionMerchantId, $mid)
-                      ->where($transactionSettledAt, '<', $timestamp)
+                      ->where($transactionSettledAt, '<=', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
@@ -1595,7 +1596,9 @@ class Repository extends Base\Repository
         $this->trace->info(
             TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
             [
-                'time_taken' => get_diff_in_millisecond($txnFetchStartTime),
+                'merchant_id' => $mid,
+                'settled_at'  => $timestamp,
+                'time_taken'  => get_diff_in_millisecond($txnFetchStartTime),
             ]);
 
         return $results;

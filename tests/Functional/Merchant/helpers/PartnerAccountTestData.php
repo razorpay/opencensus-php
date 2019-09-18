@@ -269,6 +269,7 @@ return [
                     ],
                     'name'              => 'Ratnalal Jewellers',
                     'mcc'               => 7011,
+                    'billing_label'     => 'Ratnalal',
                 ],
             ],
         ],
@@ -306,6 +307,7 @@ return [
                         'logo'  => null,
                         'color' => null,
                     ],
+                    'billing_label'     => 'Ratnalal',
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
@@ -388,6 +390,7 @@ return [
                     ],
                     'name'              => 'Ratnalal Jewellers',
                     'mcc'               => 7011,
+                    'billing_label'     => 'Ratnalal',
                 ],
                 'settlement' => [
                     'fund_accounts'    => [
@@ -726,6 +729,26 @@ return [
             'content' => [
                 'entity'  => 'account',
                 'phone'   => '8888888888',
+            ],
+        ],
+    ],
+
+    'testEditProfileData' => [
+        'request'  => [
+            'url'     => '/accounts/{id}',
+            'method'  => 'PATCH',
+            'content' => [
+                'profile' => [
+                    'business_model' => 'B2C',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'account',
+                'profile' => [
+                    'business_model' => 'B2C',
+                ]
             ],
         ],
     ],
