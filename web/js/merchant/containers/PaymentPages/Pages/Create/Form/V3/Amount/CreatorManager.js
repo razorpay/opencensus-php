@@ -145,6 +145,9 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         formData.max_amount = null;
       }
 
+      // If stock key is not defined, that means, Unlimited is selected.
+      formData.stock = formData.stock || null; // Setting key to null explicitly inorder to override previous value, cuz "objects" are merged, not override.
+
       this.setState({
         field: {
           ...field,
