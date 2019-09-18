@@ -808,6 +808,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUCKETING_DONE                                        = 'BUCKETING_DONE';
     const MERCHANT_ADDED_TO_BUCKET                              = 'MERCHANT_ADDED_TO_BUCKET';
     const FAILED_TO_ADD_MERCHANT_TO_BUCKET                      = 'FAILED_TO_ADD_MERCHANT_TO_BUCKET';
+    const DELETING_COMPLETED_BUCKET_ENTRIES                     = 'DELETING_COMPLETED_BUCKET_ENTRIES';
+    const COMPLETED_BUCKET_ENTRIES_DELETED                      = 'DELETED_COMPLETED_BUCKET_ENTRIES';
 
     const FTA_RECON_REPORT_FILE_CREATED                         = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                            = 'FTA_RECON_REPORT_INITIATED';

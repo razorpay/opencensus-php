@@ -10,4 +10,9 @@ class Service extends Base\Service
     {
         return (new Core)->backfillSettlementBucket($input);
     }
+
+    public function deleteCompletedBucketEntries(array $input)
+    {
+        return (new Core)->deleteCompletedBucketEntries($input);
+    }
 }
