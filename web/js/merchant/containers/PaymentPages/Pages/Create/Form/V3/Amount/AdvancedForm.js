@@ -18,7 +18,7 @@ export default class AdvancedForm extends React.PureComponent {
 
     this.state = {
       disableSubmit: false,
-      isStockSet: typeof field.stock !== 'undefined',
+      isStockSet: field.stock != null,
     };
 
     this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
@@ -125,19 +125,22 @@ export default class AdvancedForm extends React.PureComponent {
   };
 
   validateStockLimit = stockVal => {
-    const minVal = this.minAmountLimit && this.minAmountLimit.value;
-    const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
-
     if (stockVal === '' || Number(stockVal) <= 0) {
-      return 'Stock must be atleast 0';
+      return 'Stock must be atleast 1';
     }
 
-    if (minVal && Number(stockVal) < Number(minVal)) {
-      return 'Stock must be more than Min amount';
-    }
+    if (this.fieldType === FIELD_TYPES.multiple_purchase.key) {
+      const minVal = this.minAmountLimit && this.minAmountLimit.value;
+      const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
 
-    if (maxVal && Number(stockVal) < Number(maxVal)) {
-      return 'Stock must be more than Max amount';
+      // Written before minVal comparison
+      if (maxVal && Number(stockVal) < Number(maxVal)) {
+        return 'Stock must be more than Max amount';
+      }
+
+      if (minVal && Number(stockVal) < Number(minVal)) {
+        return 'Stock must be more than Min amount';
+      }
     }
   };
 
@@ -257,7 +260,9 @@ export default class AdvancedForm extends React.PureComponent {
             placeholder="0"
             validator={this.validateMinPurchaseLimit}
           >
-            <span class="Input-after">Min</span>
+            <span key="max-purchase-addon" class="Input-after">
+              Min
+            </span>
           </Input>
         </div>
 
@@ -273,7 +278,9 @@ export default class AdvancedForm extends React.PureComponent {
             placeholder="No Limit"
             validator={this.validateMaxPurchaseLimit}
           >
-            <span class="Input-after">Max</span>
+            <span key="max-purchase-addon" class="Input-after">
+              Max
+            </span>
           </Input>
         </div>
       </Input.Group>
