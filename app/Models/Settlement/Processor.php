@@ -161,7 +161,7 @@ class Processor extends Base\Core
         // - time taken to complete the process
         //
         $this->trace->count(
-            Metric::SETTLEMENTS_INITIATE_RUNTIME,
+            Metric::SETTLEMENTS_INITIATE_EXECUTION_TIME,
             [
                 Metric::CHANNEL                 => $channel,
                 Metric::USING_QUEUE             => $useQueue,
