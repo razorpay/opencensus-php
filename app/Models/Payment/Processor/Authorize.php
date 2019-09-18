@@ -388,7 +388,7 @@ trait Authorize
         // but the wallet is not a power wallet.
         //
         if ((Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true) and
-            ($payment->getGlobalTokenId() !== null))
+            ($payment->getGlobalTokenId() !== null) and ($this->isAutoDebitFeatureEnabled($payment)))
         {
             $request = $this->runAutoDebitFlow($payment, $gatewayInput);
         }
@@ -398,6 +398,20 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    protected function isAutoDebitFeatureEnabled($payment): bool
+    {
+        $isFeatureEnabled = $this->repo
+                                ->feature
+                                ->findMerchantWithFeatures(
+                                    $payment['merchant_id'],
+                                    [
+                                        Feature\Constants::WALLET_AUTO_DEBIT
+                                    ])
+                                ->pluck(Feature\Entity::NAME)
+                                ->toArray();
+        return (empty($isFeatureEnabled) === false);
     }
 
     protected function preProcessAuthBeforeRetry($payment)

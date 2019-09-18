@@ -23,6 +23,7 @@ class PowerWalletTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_freecharge_terminal');
         $this->fixtures->merchant->enableWallet(Account::TEST_ACCOUNT, Wallet::FREECHARGE);
         $this->ba->publicAuth();
+        $this->setUpAutoDebitFeature();
     }
 
     public function testPowerWalletPayment()
@@ -73,11 +74,14 @@ class PowerWalletTest extends TestCase
         $this->setOtp(Otp::INSUFFICIENT_BALANCE);
         $payment = $this->getDefaultPaymentArray();
         $payment['amount'] = 100000;
+        $er = null;
         try {
-            $response = $this->doAuthPayment($payment);
+            $response = $this->doAuthAndGetPayment($payment);
         }catch (\RZP\Exception\GatewayErrorException $e){
-            $this->assertTrue($e->getError()->getInternalErrorCode() === "BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE", "Invalid Error");
+            $er  = $e;
         }
+        $this->assertNotNull($er, "Expected insufficient Balance error");
+        $this->assertTrue($e->getError()->getInternalErrorCode() === "BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE", "Invalid Error");
     }
 
     public function testUserWalletTokenExpired()
@@ -155,6 +159,20 @@ class PowerWalletTest extends TestCase
 
         return $appToken;
     }
+
+    protected function setUpAutoDebitFeature()
+    {
+        $appToken = $this->fixtures->create(
+            'feature',
+            [
+                'name' => 'wallet_auto_debit',
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ]);
+
+        return $appToken;
+    }
+
     protected function getDefaultPaymentArray($wallet = null)
     {
         $payment = [
