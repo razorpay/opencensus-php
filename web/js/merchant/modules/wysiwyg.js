@@ -193,7 +193,7 @@ export default function(state = initialState, action) {
         return {
           ...initialState,
           payment_page_id: action.id,
-          paymentPageEntity: deepMerge(state.paymentPageEntity, {
+          paymentPageEntity: deepMerge(initialState.paymentPageEntity, {
             id: action.id,
           }),
           isPageDirty: false,
