@@ -776,7 +776,7 @@ export default class HomeContainer extends Component {
                       onFirstStepClose();
                       tracking.trackEvent(
                         window.rzpQ.onbr().initiated('act.form_fill', {
-                          clickSource: 'first-login-popup',
+                          clickSource: 'First_Login_Popup',
                         })
                       );
                     }}
@@ -790,7 +790,7 @@ export default class HomeContainer extends Component {
             onClose={() => {
               iaActivations.trackClose(activation_flow);
               tracking.trackEvent(
-                window.rzpQ.dropped('act.whitelist_popup_action')
+                window.rzpQ.onbr().dropped('act.whitelist_popup_action')
               );
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
@@ -836,7 +836,7 @@ export default class HomeContainer extends Component {
               );
               tracking.trackEvent(
                 window.rzpQ.onbr().initiated('kyc.form_fill', {
-                  eventSource: 'greylist_popup',
+                  clickSource: 'Greylist_Popup',
                 })
               );
               hideKYCDetailsModal();

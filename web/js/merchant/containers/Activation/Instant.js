@@ -212,11 +212,11 @@ export default class ActivationWizard extends React.Component {
 
   @RTracking((props, state) => {
     const { tracking } = props;
-    const events = trackFormFields(props.data, state.dirty);
-    return events.forEach(event =>
+    const fields = trackFormFields(props.data, state.dirty);
+    return fields.forEach(field =>
       tracking.trackEvent(
         window.rzpQ.onbr().initiated('act.provide_act_details', {
-          ...event,
+          ...field,
         })
       )
     );

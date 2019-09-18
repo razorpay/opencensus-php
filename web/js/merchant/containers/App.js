@@ -75,7 +75,6 @@ import RTracking from 'react-tracking';
   },
   {
     dispatch: data => {
-      console.log(data);
       window.rzpQ.push(data);
     },
   }

@@ -68,7 +68,7 @@ export default class ActivationCard extends Component {
                 track.activateAccount();
                 this.props.tracking.trackEvent(
                   window.rzpQ.onbr().initiated('act.form_fill', {
-                    clickSource: 'dashboard-cta',
+                    clickSource: 'Dashboard_CTA',
                   })
                 );
               }}
@@ -100,7 +100,7 @@ export default class ActivationCard extends Component {
                 track.fillKyc();
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('act.form_fill', {
-                    eventSource: 'dashboard_banner',
+                    clickSource: 'Dashboard_Banner',
                   })
                 );
               }}

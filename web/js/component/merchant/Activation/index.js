@@ -376,11 +376,11 @@ export default class ActivationWizard extends React.Component {
   //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
   @RTracking((props, state) => {
     const { tracking } = props;
-    const events = trackFormFields(props.data, state.dirty);
-    return events.forEach(event =>
+    const fields = trackFormFields(props.data, state.dirty);
+    return fields.forEach(field =>
       tracking.trackEvent(
         window.rzpQ.onbr().initiated('kyc.provide_details', {
-          ...event,
+          ...field,
         })
       )
     );

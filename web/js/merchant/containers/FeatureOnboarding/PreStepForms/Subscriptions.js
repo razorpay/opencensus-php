@@ -32,11 +32,13 @@ import RTracking from 'react-tracking';
   form: 'editWebsiteDetails_subscription',
 })
 export default class SubscriptionsPreStep extends Component {
-  handleSave = form => {
-    const { user, mode, tracking } = this.props;
-    tracking.trackEvent(window.rzpQ.onbr().initiated('dash.add_website'), {
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.add_website', {
       clickSource: 'subscriptions',
-    });
+    })
+  )
+  handleSave = form => {
+    const { user, mode } = this.props;
     return merchantFetch({
       url: 'merchant/activation/update_website_details',
       mode: 'live',

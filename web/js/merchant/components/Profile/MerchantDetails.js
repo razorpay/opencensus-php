@@ -34,7 +34,7 @@ const MerchantDetails = ({
     );
     tracking.trackEvent(
       window.rzpQ.onbr().initiated('dash.add_website', {
-        eventSource: 'my_account',
+        clickSource: 'My_Account',
       })
     );
     openModal({
@@ -99,7 +99,7 @@ const MerchantDetails = ({
                 onClick={() => {
                   tracking.trackEvent(
                     window.rzpQ.onbr().initiated('kyc.form_fill', {
-                      eventSource: 'my_account',
+                      clickSource: 'My_Account',
                     })
                   );
                 }}
