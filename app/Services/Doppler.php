@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Doppler
 {
@@ -12,6 +13,8 @@ class Doppler
 
     protected $sns;
 
+    protected $trace;
+
     protected $config;
 
     const SNS_CLIENT = 'doppler';
@@ -20,12 +23,13 @@ class Doppler
     {
         $this->app = $app;
 
-        $this->config = $app['config']->get('applications.doppler');
-
-        $this->mock = $this->config['mock'];
+        $this->trace = $app['trace'];
 
         $this->sns = $app['sns'];
 
+        $this->config = $app['config']->get('applications.doppler');
+
+        $this->mock = $this->config['mock'];
     }
 
     // sends event to doppler's topic

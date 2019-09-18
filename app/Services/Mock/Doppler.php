@@ -6,5 +6,8 @@ use RZP\Services\Doppler as BaseDoppler;
 
 class Doppler extends BaseDoppler
 {
-    public function sendFeedback($eventData){}
+    public function sendFeedback($eventData)
+    {
+        //s($eventData);
+    }
 }
