@@ -459,6 +459,13 @@ class Service extends Base\Service
                     }
                     else
                     {
+                        $this->trace->info(
+                            TraceCode::FUND_ACCOUNT_EXIST,
+                            [
+                                Entity::FUND_ACCOUNT_ID          => $fundAccountId,
+                                Entity::BATCH_ID                 => $batchId
+                            ]);
+
                         // convert to array
                         $fundAccount = $fundAccount->toArrayPublic();
                     }

@@ -65,8 +65,8 @@ class Service extends Base\Service
                 $this->trace->info(
                     TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
                     [
-                        'fund_account' => $fundAccount->getId(),
-                        'batch_id'     => $batchId,
+                        Entity::ID           => $fundAccount->getId(),
+                        Entity::BATCH_ID     => $batchId,
                     ]);
 
                 return $fundAccount->toArrayPublic() +
@@ -228,7 +228,6 @@ class Service extends Base\Service
 
     /**
      * @param array             $entry
-     * @param string            $idempotencyKey
      * @param Contact\Entity    $contact
      * @return Entity           $fundAccount
      * @throws BadRequestValidationFailureException

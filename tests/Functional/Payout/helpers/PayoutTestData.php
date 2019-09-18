@@ -1115,6 +1115,7 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123'
                     ],
                     [
                         'entity'                    => 'payout',
@@ -1149,6 +1150,7 @@ return [
                         'mode'                      => 'UPI',
                         'reference_id'              => null,
                         'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc124'
                     ]
                 ]
             ],
@@ -1354,6 +1356,7 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123'
                     ],
                     [
                         'entity'                    => 'payout',
@@ -1367,6 +1370,7 @@ return [
                         'mode'                      => 'IMPS',
                         'reference_id'              => null,
                         'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123'
                     ]
                 ]
             ],

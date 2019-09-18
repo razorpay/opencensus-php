@@ -108,8 +108,8 @@ class Core extends Base\Core
             $this->trace->info(
               TraceCode::DUPLICATE_CONTACT_FOUND,
               [
-                  'contact_id' => $contact->getId(),
-                  'batch_id'   => $batchId,
+                  Entity::ID         => $contact->getId(),
+                  Entity::BATCH_ID   => $batchId,
               ]);
 
             return $contact;

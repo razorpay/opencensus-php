@@ -55,6 +55,8 @@ class BatchHelper
                     $input);
         }
 
+        $input[Entity::IDEMPOTENCY_KEY] = $entry[Entity::IDEMPOTENCY_KEY];
+
         return $input;
     }
 }
