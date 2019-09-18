@@ -2,6 +2,12 @@
 
 namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 
+/**
+ * Class StatementSummary
+ * @package RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl
+ * This class represents the key names for Statement Summary section in the
+ * RBL Account Statements for PDF and XLSX formats
+ */
 class StatementSummary
 {
     const OPENING_BALANCE                 = 'opening_balance';

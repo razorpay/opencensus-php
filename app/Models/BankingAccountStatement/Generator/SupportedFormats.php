@@ -36,4 +36,12 @@ class SupportedFormats
             throw new BadRequestValidationFailureException($message);
         }
     }
+
+    public static function validateFormat($format)
+    {
+        if (in_array($format, SupportedFormats::ALL_VALID_FORMATS, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Not a valid format: ' . $format);
+        }
+    }
 }

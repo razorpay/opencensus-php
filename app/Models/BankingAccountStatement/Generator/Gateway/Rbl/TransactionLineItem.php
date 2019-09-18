@@ -2,6 +2,11 @@
 
 namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 
+/**
+ * Class TransactionLineItem
+ * @package RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl
+ * This class represents the key names for an individual line item in the RBL Account Statement
+ */
 class TransactionLineItem
 {
     const TRANSACTION_DATE    = 'transaction_date';
