@@ -38,6 +38,13 @@ export default class RegistrationLinkEntityContainer extends Component {
 
   render() {
     const { loading: isLoading, entity, error } = this.props;
+
+    const fileURL =
+      !isLoading &&
+      entity.order.token &&
+      entity.order.token.paper_mandate &&
+      entity.order.token.paper_mandate.created_url;
+
     return (
       <div class="content-wrapper content-sm txn-details">
         {isLoading ? (
@@ -99,7 +106,7 @@ export default class RegistrationLinkEntityContainer extends Component {
                     <EntityDetailRow label="NACH form">
                       <NACHDetails
                         registrationLinkId={entity.id}
-                        fileURL={''}
+                        fileURL={fileURL}
                       />
                     </EntityDetailRow>
 

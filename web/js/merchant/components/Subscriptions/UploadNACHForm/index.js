@@ -2,9 +2,10 @@ import { connect } from 'react-redux';
 import { classList } from 'common/util';
 import { findBy, normalizeDate } from 'rzp/utils/rzp-utils';
 
-import { validateNachFile } from 'merchant/modules/registration_link';
 import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'rzp/modules/modals';
 import { fetchKeys } from 'merchant/modules/keys';
+import { validateNachFile } from 'merchant/modules/registration_link';
 
 import Accordion, {
   AccordionItem,
@@ -46,6 +47,7 @@ const initState = {
 };
 
 @connect(state => ({ keys: state.keys }), {
+  closeModal,
   fetchKeys,
   showNotification,
 })
@@ -270,62 +272,68 @@ export default class UploadNACHForm extends React.Component {
         !!this.errorsList.length ||
         !this.state.extractedData.extracted_data.length;
 
+    const contentView = (
+      <div class="ModalForm Wizard">
+        <main>
+          <main-title class="main-title">Upload NACH Form</main-title>
+
+          <p class="desc">
+            If you received the customer's signed NACH form, you can upload it
+            here, for details steps and help, please read our{' '}
+            <DocsLink url="https://razorpay.com/docs/subscriptions/" />
+          </p>
+
+          <FileUpload
+            showCloseBtn
+            showFileSize
+            showStagedFileStatus
+            stagedFileStatus="error"
+            maxSize="8000000"
+            accept={[
+              'image/jpeg',
+              'image/png',
+              'application/pdf',
+              'application/x-pdf',
+            ]}
+            size="large"
+            files={file}
+            uploadedFileName="Upload File here"
+            onFileChange={this.handleChange}
+            onCloseClick={this.onCloseClick}
+          />
+
+          <div class="Desc">{this.renderDesc()}</div>
+
+          <div class="Details">{this.renderNachDetails()}</div>
+        </main>
+
+        <footer>
+          <Button onClick={this.props.closeModal}>Cancel</Button>
+
+          <AsyncBtn.Primary
+            pendingState="Creating..."
+            onClick={this.handleSubmit}
+            disabled={disabled}
+          >
+            Create Registration Link
+          </AsyncBtn.Primary>
+        </footer>
+      </div>
+    );
+
+    if (!this.props.onClose) {
+      return contentView;
+    }
+
     return (
       <Modal
         class={classList(
-          'ModalForm UploadNACHForm animate-down',
+          'UploadNACHForm animate-down',
           isDataAval && 'UploadNACHForm-fulldata'
         )}
         onClose={this.props.closeModal}
       >
-        <ModalContent>
-          <div class="NACH--Upload Wizard">
-            <main>
-              <main-title class="main-title">Upload NACH Form</main-title>
-
-              <p class="desc">
-                If you received the customer's signed NACH form, you can upload
-                it here, for details steps and help, please read our{' '}
-                <DocsLink url="https://razorpay.com/docs/subscriptions/" />
-              </p>
-
-              <FileUpload
-                showCloseBtn
-                showFileSize
-                showStagedFileStatus
-                stagedFileStatus="error"
-                maxSize="8000000"
-                accept={[
-                  'image/jpeg',
-                  'image/png',
-                  'application/pdf',
-                  'application/x-pdf',
-                ]}
-                size="large"
-                files={file}
-                uploadedFileName="Upload File here"
-                onFileChange={this.handleChange}
-                onCloseClick={this.onCloseClick}
-              />
-
-              <div class="Desc">{this.renderDesc()}</div>
-
-              <div class="Details">{this.renderNachDetails()}</div>
-            </main>
-
-            <footer>
-              <Button onClick={this.props.closeModal}>Cancel</Button>
-
-              <AsyncBtn.Primary
-                pendingState="Creating..."
-                onClick={this.handleSubmit}
-                disabled={disabled}
-              >
-                Create Registration Link
-              </AsyncBtn.Primary>
-            </footer>
-          </div>
-        </ModalContent>
+        <ModalContent>{contentView}</ModalContent>
       </Modal>
     );
   }

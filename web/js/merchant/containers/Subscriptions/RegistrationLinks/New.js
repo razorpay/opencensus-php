@@ -444,7 +444,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       isLastTab = currentTab === tabs.length - 1;
 
     return (
-      <div class="PaymentLinks--Create RegistrationLinks--New Wizard">
+      <div class="ModalForm RegistrationLinks--New Wizard">
         <ModalAsideNav
           title="Create Registration Links"
           tabs={tabs}
