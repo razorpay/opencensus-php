@@ -292,10 +292,6 @@ class Core extends Base\Core
             // todo: use insert ignore or ignore this error
         }
 
-        $this->trace->info(
-            TraceCode::FAILED_TO_ADD_MERCHANT_TO_BUCKET,
-            $traceData);
-
         return false;
     }
 }
