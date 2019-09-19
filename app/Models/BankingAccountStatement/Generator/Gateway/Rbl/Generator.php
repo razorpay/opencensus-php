@@ -7,9 +7,8 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankInfo;
 use RZP\Models\Currency\Currency;
-use RZP\Models\BankingAccountStatement\Type;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
-use RZP\Models\BankingAccountStatement\Type as StatementType;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
 
 abstract class Generator extends Base
@@ -35,10 +34,10 @@ abstract class Generator extends Base
                                ->findByAccountNumberAndChannel($this->accountNumber, $this->channel);
 
         $allBankAccountTransactions = $this->repo
-                                           ->banking_account_statement
-                                           ->findByAccountNumberWithInPeriod($this->accountNumber,
-                                                                             $this->fromDate,
-                                                                             $this->toDate);
+                                           ->statement
+                                           ->fetch(['balance_id' => $bankingAccount->getBalanceId()],
+                                                    $bankingAccount->getMerchantId())
+                                            ->sortBy('created_at');
 
         $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(),
                                                          Timezone::IST)
@@ -85,9 +84,9 @@ abstract class Generator extends Base
 
         if ($bankAccountStatements->count() !== 0)
         {
-            $openingBalance = $bankAccountStatements[0]->balance;
+            $openingBalance = $bankAccountStatements[count($bankAccountStatements) - 1]->getBalance();
 
-            $closingBalance = $bankAccountStatements[count($bankAccountStatements) - 1]->balance;
+            $closingBalance =  $bankAccountStatements[0]->getBalance();
 
             $effectiveBalance = $closingBalance;
 
@@ -103,11 +102,11 @@ abstract class Generator extends Base
 
                 array_push($transactions, $lineItem);
 
-                if ($transaction->type == StatementType::CREDIT)
+                if ($transaction->getCredit())
                 {
                     $creditCount++;
                 }
-                else if ($transaction->type == StatementType::DEBIT)
+                else if ($transaction->getDebit())
                 {
                     $debitCount++;
                 }
@@ -138,36 +137,46 @@ abstract class Generator extends Base
         return $response;
     }
 
-    protected function convertToLineItem($transaction)
+    protected function convertToLineItem(TransactionEntity $transaction)
     {
-        $formattedTransactionDate = Carbon::createFromTimestamp($transaction->transaction_date, Timezone::IST)
+        $formattedTransactionDate = Carbon::createFromTimestamp($transaction->created, Timezone::IST)
                                             ->format(TransactionLineItem::ITEM_DATE_FORMAT);
+
+        $description = $this->extractDescription($transaction);
+
         $lineItem = [
             TransactionLineItem::TRANSACTION_DATE    => $formattedTransactionDate,
 
-            TransactionLineItem::TRANSACTION_DETAILS => $transaction->description,
+            TransactionLineItem::TRANSACTION_DETAILS => $description,
 
-            TransactionLineItem::CHEQUE_ID           => $transaction->bank_instrument_id,
+            TransactionLineItem::CHEQUE_ID           => '',
 
             TransactionLineItem::VALUE_DATE          => $formattedTransactionDate,
 
-            TransactionLineItem::BALANCE             => (float) $transaction->balance / 100
+            TransactionLineItem::BALANCE             => (float) $transaction->getBalance() / 100
         ];
 
-        if ($transaction->type == Type::CREDIT)
+        if ($transaction->getDebit())
         {
-            $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = (float) $transaction->amount / 100;
+            $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = (float) $transaction->getAmount() / 100;
 
             $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = null;
         }
-        else if ($transaction->type == Type::DEBIT)
+        else if ($transaction->getCredit())
         {
-            $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = (float) $transaction->amount / 100;
+            $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = (float) $transaction->getAmount() / 100;
 
             $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = null;
         }
 
         return $lineItem;
+    }
+
+    protected function extractDescription(TransactionEntity $transaction)
+    {
+        $source = $transaction->toArrayPublic()['source'];
+
+        return array_pull($source, 'description');
     }
 
     /**
