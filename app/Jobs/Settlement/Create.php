@@ -98,13 +98,15 @@ class Create extends Job
         {
             if ($e->getCode() === ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS)
             {
+                $key = sprintf(self::TOTAL_MERCHANT_COUNT, $this->mode);
+
                 //
                 // its been seen that one job is received by multiple workers with in 10-15 sec of delay
                 // In any case if this happens the settlement count will get messed up
                 // in case of mutex error we are incrementing the counter here
                 // this is to keep the count stable in further process
                 //
-                Cache::increment(self::TOTAL_MERCHANT_COUNT);
+                Cache::increment($key);
             }
         }
         catch (\Throwable $e)
