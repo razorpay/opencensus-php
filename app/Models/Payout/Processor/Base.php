@@ -17,9 +17,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payout\Metric;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Core as BaseCore;
-use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -232,14 +230,6 @@ class Base extends BaseCore
             });
 
         $this->fireEventForPayoutStatus($payout);
-
-        $accountType = $payout->balance->getAccountType();
-        $channel = $payout->balance->getChannel();
-
-        if ( $accountType === AccountType::SHARED && $channel === Channel::YESBANK)
-        {
-            return $payout;
-        }
 
         if ($payout->isStatusCreated() === true)
         {

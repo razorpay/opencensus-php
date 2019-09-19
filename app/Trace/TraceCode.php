@@ -1030,7 +1030,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DELETED_MEMBER_FROM_MAILING_LIST                      = 'DELETED_MEMBER_FROM_MAILING_LIST';
     const PAYOUT_WORKFLOW_EVALUATION_INPUT                      = 'PAYOUT_WORKFLOW_EVALUATION_INPUT';
     const PAYOUT_WORKFLOW_EVALUATION_RESULT                     = 'PAYOUT_WORKFLOW_EVALUATION_RESULT';
-    const PAYOUT_QUEUED                                         = 'PAYOUT_QUEUED';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
