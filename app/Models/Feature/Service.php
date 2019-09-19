@@ -147,27 +147,41 @@ class Service extends Base\Service
 
         $response = new Base\Collection;
 
+        $names = $input[Entity::NAME];
+
+        // Will separately update dashboard to start
+        // sending a list of features in a single request
+        if (is_array($input[Entity::NAME]) === false)
+        {
+            $names = [$input[Entity::NAME]];
+        }
+
         foreach ($entityIds as $entityId)
         {
-            $featureParam = [
-                Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
-                Entity::ENTITY_ID       => $entityId,
-                Entity::NAME            => $input[Entity::NAME]
-            ];
-
-            try
+            foreach ($names as $name)
             {
-                $feature = (new Core)->create($featureParam, $shouldSync);
+                $featureParam = [
+                    Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
+                    Entity::ENTITY_ID       => $entityId,
+                    Entity::NAME            => $name,
+                ];
 
-                $response->push($feature);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->warn(
-                    TraceCode::FEATURE_ASSIGNMENT_EXCEPTION,
-                    [
-                        'msg' => $e->getMessage()
-                    ]);
+                try
+                {
+                    $feature = (new Core)->create($featureParam, $shouldSync);
+
+                    $response->push($feature);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e);
+
+                    $this->trace->warn(
+                        TraceCode::FEATURE_ASSIGNMENT_EXCEPTION,
+                        [
+                            'msg' => $e->getMessage()
+                        ]);
+                }
             }
         }
 
