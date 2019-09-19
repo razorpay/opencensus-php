@@ -33,7 +33,7 @@ class Initiator extends Base\Core
 {
     const FTA_PURPOSE                       = 'settlement';
 
-    const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s';
+    const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s_%s';
 
     const REQUEST_TIMEOUT                   = 30;
 
