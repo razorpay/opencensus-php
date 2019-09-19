@@ -10,6 +10,7 @@ import Time from 'rzp/ui/Time';
 import Definition from 'rzp/ui/Definition';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NACHDetails from 'merchant/components/Subscriptions/UploadNACHForm/Details';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMethod';
 import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
@@ -97,6 +98,12 @@ export default class TokenEntityContainer extends Component {
 
   render() {
     const { loading: isLoading, entity = {}, error } = this.props;
+    paperMandate =
+      (!isLoading && entity.order.token && entity.order.token.paper_mandate) ||
+      {};
+
+    const completedNachFileURL = '--';
+
     return (
       <div class="content-wrapper content-sm txn-details">
         {isLoading ? (
@@ -140,6 +147,12 @@ export default class TokenEntityContainer extends Component {
                     {/*  */}
                     <EntityDetailRow label="Payment Method">
                       <PaymentMethod mandate={entity} />
+                    </EntityDetailRow>
+
+                    <EntityDetailRow label="Payment Method">
+                      <NACHDetails
+                        completedNachFileURL={completedNachFileURL}
+                      />
                     </EntityDetailRow>
 
                     {entity.method === 'emandate' && (

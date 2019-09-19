@@ -37,13 +37,15 @@ export default class RegistrationLinkEntityContainer extends Component {
   }
 
   render() {
-    const { loading: isLoading, entity, error } = this.props;
+    const { loading: isLoading, entity, error } = this.props,
+      paperMandate =
+        (!isLoading &&
+          entity.order.token &&
+          entity.order.token.paper_mandate) ||
+        {};
 
-    const fileURL =
-      !isLoading &&
-      entity.order.token &&
-      entity.order.token.paper_mandate &&
-      entity.order.token.paper_mandate.created_url;
+    const preFilledNachFileURL = paperMandate.created_url,
+      completedNachFileURL = '';
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -106,7 +108,8 @@ export default class RegistrationLinkEntityContainer extends Component {
                     <EntityDetailRow label="NACH form">
                       <NACHDetails
                         registrationLinkId={entity.id}
-                        fileURL={fileURL}
+                        preFilledNachFileURL={preFilledNachFileURL}
+                        completedNachFileURL={completedNachFileURL}
                       />
                     </EntityDetailRow>
 

@@ -2,13 +2,17 @@ import { Link } from 'react-router-dom';
 
 import Alert from 'rzp/ui/Forms/Alert';
 
-export default ({ nachForm, registrationLinkId, fileURL }) => {
-  if (nachForm) {
+export default ({
+  completedNachFileURL,
+  registrationLinkId,
+  preFilledNachFileURL,
+}) => {
+  if (completedNachFileURL) {
     return (
       <React.Fragment>
-        <a href={nachForm}>
-          <i class="i i-file-attach" />
+        <a href={completedNachFileURL} target="_blank">
           View Scan
+          <i class="i i-file-attach" />
         </a>
       </React.Fragment>
     );
@@ -29,7 +33,11 @@ export default ({ nachForm, registrationLinkId, fileURL }) => {
         Upload form
       </Link>
 
-      <a href={fileURL} class="btn btn-default m-l" target="_blank">
+      <a
+        href={preFilledNachFileURL}
+        class="btn btn-default m-l"
+        target="_blank"
+      >
         Download form
       </a>
     </React.Fragment>

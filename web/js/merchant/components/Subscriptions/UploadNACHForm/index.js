@@ -288,13 +288,8 @@ export default class UploadNACHForm extends React.Component {
             showFileSize
             showStagedFileStatus
             stagedFileStatus="error"
-            maxSize="8000000"
-            accept={[
-              'image/jpeg',
-              'image/png',
-              'application/pdf',
-              'application/x-pdf',
-            ]}
+            maxSize="5000000"
+            accept={['image/jpeg', 'image/png']}
             size="large"
             files={file}
             uploadedFileName="Upload File here"
@@ -322,7 +317,7 @@ export default class UploadNACHForm extends React.Component {
     );
 
     if (!this.props.onClose) {
-      return contentView;
+      return <div class="StandAloneContainer">{contentView}</div>;
     }
 
     return (
@@ -354,6 +349,10 @@ const getErrorMessage = ([error, status]) => {
       description:
         'Kindly re-upload an image with better quality as the uploaded form could not be read successfully.',
     };
-  } else if (error.includes('')) {
+  } else if (error.includes('signature is not detected in the NACH form')) {
+    return {
+      heading: 'NACH form could not be read',
+      description: 'signature is not detected in the NACH form',
+    };
   }
 };
