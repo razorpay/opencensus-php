@@ -9,7 +9,6 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -528,13 +527,6 @@ class Core extends Base\Core
             });
 
         $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
-
-        $merchant = $invoice->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::INVOICE_NO_EXPIRY_EMAIL) === false)
-        {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
-        }
 
         // Sends expiration mails to customer asynchronously
         $this->eventService->fire('api.invoice.expired', [$invoice]);

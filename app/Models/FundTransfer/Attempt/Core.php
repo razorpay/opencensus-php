@@ -666,10 +666,11 @@ class Core extends Base\Core
             );
 
             $slackData = [
-                'headLine'  => 'fta source processing failed',
-                'fta_id'    => $ftaData['fta_id'],
-                'status'    => $ftaData['fta_status'],
-                'source_id' => $ftaData['source_id'],
+                'headLine'    => 'fta source processing failed',
+                'fta_id'      => $ftaData['fta_id'],
+                'status'      => $ftaData['fta_status'],
+                'source_id'   => $ftaData['source_id'],
+                'error'       => $e->getMessage(),
             ];
 
             $alerts = new Alerts();
@@ -749,6 +750,15 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+            $alerts = new Alerts();
+
+            $slackData = $ftaData + [
+                'headLine' => 'fta source processing failed',
+                'error'    => $e->getMessage(),
+            ];
+
+            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
