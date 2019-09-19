@@ -27,6 +27,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function deleteCompletedBucketEntries()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_BUCKET)->deleteCompletedBucketEntries($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSettlementRetry()
     {
         $input = Request::all();

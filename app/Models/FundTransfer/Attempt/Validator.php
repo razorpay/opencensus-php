@@ -10,6 +10,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Services\FTS\Base as FtsService;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
@@ -60,6 +61,15 @@ class Validator extends Base\Validator
         'fund_transfer_id'     => 'required|int',
         'extra_info'           => 'sometimes',
         'extra_info.*'         => 'sometimes',
+    ];
+
+    protected  static $ftsFundTransferRules = [
+        Entity::ID => 'required_without_all:from,to,limit,size|public_id|size:18',
+        'from'     => 'required_with:to,limit|epoch|date_format:U',
+        'to'       => 'required_with:from,limit|epoch|date_format:U',
+        'limit'    => 'required_with:from,to|int',
+        'size'     => 'required_without_all:from,to,limit,id|filled|int',
+        'action'   => 'required|filled|custom'
     ];
 
     protected function validateStatus($attribute, $value)
@@ -179,6 +189,19 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invalid purpose passed to FTA',
+                $attribute,
+                [
+                    'value' => $value
+                ]);
+        }
+    }
+
+    protected function validateAction($attribute, $value)
+    {
+        if (FtsService::isValidFtsAction($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid action for FTS',
                 $attribute,
                 [
                     'value' => $value

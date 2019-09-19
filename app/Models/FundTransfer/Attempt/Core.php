@@ -21,7 +21,6 @@ use RZP\Models\Card\Issuer as CardIssuer;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Mail\Base\Constants as MailConstants;
-use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
@@ -55,7 +54,7 @@ class Core extends Base\Core
 
         if ($fundTransferAttempt->getIsFTS() === true)
         {
-            $this->sendFTSFundTransferRequest($fundTransferAttempt);
+            (new Initiator)->sendFTSFundTransferRequest($fundTransferAttempt);
         }
         else if ($instantDispatch === true)
         {
@@ -86,7 +85,7 @@ class Core extends Base\Core
 
         if ($fundTransferAttempt->getIsFTS() === true)
         {
-            $this->sendFTSFundTransferRequest($fundTransferAttempt);
+            (new Initiator)->sendFTSFundTransferRequest($fundTransferAttempt);
         }
         else if ($instantDispatch === true)
         {
@@ -150,7 +149,7 @@ class Core extends Base\Core
 
         if ($fundTransferAttempt->getIsFTS() === true)
         {
-            $this->sendFTSFundTransferRequest($fundTransferAttempt);
+            (new Initiator)->sendFTSFundTransferRequest($fundTransferAttempt);
         }
         else if ($instantDispatch === true)
         {
@@ -476,56 +475,6 @@ class Core extends Base\Core
         return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
     }
 
-    /**
-     * @param Entity $fta
-     * @param bool   $isRegistered
-     */
-    public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false)
-    {
-        try
-        {
-            if ($fta->shouldUseGateway() === true)
-            {
-                return;
-            }
-
-            $redis = $this->app['redis']->connection();
-
-            $ftsChannelMode = $redis->HGET(ConfigKey::FTS_CHANNELS, $fta->getChannel());
-
-            if (empty($ftsChannelMode) === true)
-            {
-                $this->trace->info(
-                    TraceCode::FTS_INVALID_CHANNEL,
-                    [
-                        'channel' => $fta->getChannel(),
-                    ]);
-
-                return;
-            }
-
-            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered)->delay(self::FTS_DISPATCH_DELAY);
-
-            $this->trace->info(
-                TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
-                [
-                    'fta_id'      => $fta->getId(),
-                    'source_type' => $fta->getSourceType(),
-                ]);
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FTS_FUND_TRANSFER_DISPATCH_FAILED,
-                [
-                    'fta_id'      => $fta->getId(),
-                    'source_type' => $fta->getSourceType(),
-                ]);
-        }
-    }
-
     public function getFTAEntity(string $ftaId)
     {
         return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
@@ -717,10 +666,11 @@ class Core extends Base\Core
             );
 
             $slackData = [
-                'headLine'  => 'fta source processing failed',
-                'fta_id'    => $ftaData['fta_id'],
-                'status'    => $ftaData['fta_status'],
-                'source_id' => $ftaData['source_id'],
+                'headLine'    => 'fta source processing failed',
+                'fta_id'      => $ftaData['fta_id'],
+                'status'      => $ftaData['fta_status'],
+                'source_id'   => $ftaData['source_id'],
+                'error'       => $e->getMessage(),
             ];
 
             $alerts = new Alerts();
@@ -800,6 +750,15 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+            $alerts = new Alerts();
+
+            $slackData = $ftaData + [
+                'headLine' => 'fta source processing failed',
+                'error'    => $e->getMessage(),
+            ];
+
+            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
@@ -870,6 +829,19 @@ class Core extends Base\Core
             $fta->setDateTime($input[AttemptConstants::BANK_PROCESSED_TIME]);
         }
 
+        if ((isset($input['extra_info']) === true) and (is_array($input['extra_info']) === true))
+        {
+            $this->updateExtraInfo($input['extra_info'], $fta);
+        }
+
         return $fta;
+    }
+
+    protected function updateExtraInfo(array $info, Entity $fta)
+    {
+        if (isset($info['cms_ref_no']) === true)
+        {
+            $fta->setCmsRefNo($info['cms_ref_no']);
+        }
     }
 }

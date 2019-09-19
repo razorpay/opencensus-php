@@ -4867,7 +4867,10 @@ trait Authorize
 
         $cardCore = new Card\Core;
 
-        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant);
+        $recurring = (($this->payment->isRecurring()) or
+                      ($this->isPreferredRecurring($input)));
+
+        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant, $recurring);
 
         $card = $cardCore->getCard();
 
@@ -4899,19 +4902,7 @@ trait Authorize
         //
         // Creates card entity. Card number is vaulted if vault is true
         //
-
-        if ($vault === true)
-        {
-            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
-        }
-
-        if (($this->payment->isRecurring() === false) and
-            ($this->isPreferredRecurring($input) === false) and
-            ($this->payment->isMoto() === false))
-        {
-
-            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
-        }
+        $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
 
         if (isset($cardInput[Card\Entity::VAULT]) === true)
         {
