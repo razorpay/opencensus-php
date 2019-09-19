@@ -51,7 +51,7 @@ class GatewayProcessor extends BaseGatewayProcessor
             Terminal\Entity::IFSC_CODE           => $ifscCode,
             Terminal\Entity::GATEWAY             => Gateway::ATOS,
             Terminal\Entity::GATEWAY_MERCHANT_ID => $this->generateMid(),
-            Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
+            // Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
         ];
 
         $terminalData[Terminal\Entity::MC_MPAN] = $gatewayInput[Constants::MPAN][Constants::MASTERCARD];
