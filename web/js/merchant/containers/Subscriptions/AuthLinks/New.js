@@ -382,7 +382,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                   description="Amount of First Charge"
                   validator={value => {
                     return checkIfAmountForFirstCharge(
-                      Number(this.state.mandateMaxAmount) || 100000,
+                      Number(this.state.mandateMaxAmount) || 99999,
                       value
                     );
                   }}
@@ -396,7 +396,7 @@ export default class CreateNewAuthLinkContainer extends Component {
 
                 <Input
                   name="mandateMaxAmount"
-                  placeholder="100000"
+                  placeholder="99999"
                   label="Token Max Amount"
                   addonBefore={
                     <AmountTooltip
