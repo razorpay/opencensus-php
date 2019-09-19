@@ -6,6 +6,8 @@ use Closure;
 use Mockery;
 
 use RZP\Models\Merchant\Webhook;
+use RZP\Models\FundAccount\Entity as FundAccount;
+use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 trait FundAccountValidationTrait
 {
@@ -60,4 +62,43 @@ trait FundAccountValidationTrait
 
         $this->app->instance('webhook.inferno', $inferno);
     }
+
+
+    protected function getDefaultFAVFundAccountArray(string $fundAccountId) {
+        return [
+            FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+            Validation::FUND_ACCOUNT => [
+                FundAccount::ID => $fundAccountId,
+            ],
+            Validation::AMOUNT       => 100,
+            Validation::CURRENCY     => 'INR',
+            Validation::NOTES        => [],
+        ];
+    }
+
+    protected function buildFAVForFundAccountRequest(string $fundAccountId) {
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations',
+            'content' => $this->getDefaultFAVFundAccountArray($fundAccountId)
+        ];
+
+        return $request;
+    }
+
+    protected function createFAVBankAccount()
+    {
+        $this->createFAVBankingPricingPlan();
+
+        $fundAccount = $this->createFundAccountBankAccount();
+
+        $request = $this->buildFAVForFundAccountRequest($fundAccount['id']);
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+
 }

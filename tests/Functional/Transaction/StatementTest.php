@@ -2,7 +2,8 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
-use RZP\Models\Feature;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -12,9 +13,11 @@ use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 class StatementTest extends TestCase
 {
     use PaymentTrait;
+    use FundAccountTrait;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
     use TestsBusinessBanking;
+    use FundAccountValidationTrait;
 
     public function setUp()
     {
@@ -203,6 +206,23 @@ class StatementTest extends TestCase
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
+    public function testFAVBankAccountTransaction() {
+        $this->ba->privateAuth();
+
+        $this->createFAVBankAccount();
+
+        $response = $this->startTest();
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals("fund_account.validation", $txn['source']['entity']);
+        $this->assertEquals("fund_account", $txn['source']['fund_account']['entity']);
+        $this->assertEquals("bank_account", $txn['source']['fund_account']['account_type']);
+        $this->assertEquals("111000111", $txn['source']['fund_account']['details']['account_number']);
+        $this->assertEquals("111000111", $txn['source']['fund_account']['bank_account']['account_number']);
+
+
+    }
 
     protected function createBankTransferTransaction()
     {
