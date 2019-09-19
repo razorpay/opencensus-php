@@ -35,14 +35,13 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
+use RZP\Services\Doppler;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Jobs\RunShieldCheck;
-use RZP\Services\Doppler;
-use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
@@ -371,14 +370,7 @@ trait Authorize
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
-                // publishing failure event to doppler's topic if payment method is card/upi
-                if (($payment->getMethod() === Method::CARD) or
-                    ($payment->getMethod() === Method::UPI))
-                {
-                    $event = $this->prepareEventForDoppler($payment, 'failure');
-
-                    $this->app->doppler->sendFeedback($event);
-                }
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_FAILURE_EVENT);
 
                 $this->updatePaymentAuthFailedAndThrowException($e);
             }
@@ -5392,14 +5384,7 @@ trait Authorize
 
             $payment = $this->payment;
 
-            // publishing success event to doppler's topic if payment method is card/upi
-            if (($payment->getMethod() === Method::CARD) or
-                ($payment->getMethod() === Method::UPI))
-            {
-                $event = $this->prepareEventForDoppler($payment, 'success');
-
-                $this->app->doppler->sendFeedback($event);
-            }
+            $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_SUCCESS_EVENT);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
@@ -6057,73 +6042,5 @@ trait Authorize
         $gatewayInput['order']['account_number'] = $accountNumber;
     }
 
-    protected  function prepareEventForDoppler(Payment\Entity $payment, string $paymentStatus)
-    {
-        // associated terminal from payment entity
-        $terminal = $payment->terminal;
 
-        $gateway = $terminal->getGateway();
-
-        $terminalType = $terminal->isShared() ? TerminalEntity::SHARED : TerminalEntity::DIRECT;
-
-        $card = [];
-
-        $upi = [];
-
-        $device = null;
-
-        $browser = null;
-
-        $os = null;
-
-        $paymentAnalytics = $payment->getMetadata("payment_analytics");
-
-        if (is_null($paymentAnalytics) === false)
-        {
-            $device = $paymentAnalytics->getDevice();
-
-            $browser = $paymentAnalytics->getBrowser();
-
-            $os = $paymentAnalytics->getOs();
-        }
-
-        switch ($payment->getMethod())
-        {
-            case Method::CARD :
-                $card['card_iin'] = $payment->card->getIin();
-                $card['card_network'] = $payment->card->getNetwork();
-                $card['card_type'] = $payment->card->getType();
-                $card['card_issuer'] = $payment->card->getIssuer();
-                $upi['vpa'] = null;
-                $upi['bank'] = null;
-                break;
-
-            case Method::UPI:
-                $card['card_iin'] = null;
-                $card['card_network'] = null;
-                $card['card_type'] = null;
-                $card['card_issuer'] = null;
-                $upi['vpa'] = $payment->getVpa();
-                $upi['bank'] = $payment->getBankName();
-                break;
-        }
-
-        $data = [
-            'payment_id'    => $payment->getId(),
-            'method'        => $payment->getMethod(),
-            'authorized'    => $paymentStatus,
-            'card'          => $card,
-            'upi'           => $upi,
-            'terminal'      => $payment->getTerminalId(),
-            'gateway'       => $gateway,
-            'terminalType'  => $terminalType,
-            'device'        => $device,
-            'os'            => $os,
-            'browser'       => $browser,
-            'created_at'    => $payment->getCreatedAt(),
-            'authorized_at' => Carbon::now()->getTimestamp(),
-        ];
-
-        return $data;
-    }
 }
