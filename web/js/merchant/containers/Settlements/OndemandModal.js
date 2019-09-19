@@ -215,6 +215,7 @@ export default class OndemandModal extends Component {
               />
               <div class="modal-body">
                 <p>Settle to your bank account instantly.</p>
+                <br />
                 <p>
                   Upcomming Settelments follow the existing schedule.
                   <a
@@ -286,7 +287,10 @@ export default class OndemandModal extends Component {
                   >
                     <p>Totoal Amount</p>
                     <p class="float-right currency">
-                      <Amount value={this.state.amount} currency={'INR'} />
+                      <Amount
+                        value={this.state.amount * 100}
+                        currency={'INR'}
+                      />
                     </p>
                     <br />
                     <p>Instant Fees</p>
@@ -314,10 +318,9 @@ export default class OndemandModal extends Component {
                     <p class="float-right currency-big">
                       <Amount
                         value={
-                          (this.state.amount * 100 -
-                            this.state.instantFee -
-                            this.state.tax) /
-                          100
+                          this.state.amount * 100 -
+                          this.state.instantFee -
+                          this.state.tax
                         }
                         currency={'INR'}
                       />
