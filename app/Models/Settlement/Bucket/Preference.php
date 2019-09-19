@@ -235,12 +235,7 @@ class Preference extends Base\Core
         // Nearest 3PM bucket
         if (in_array(Feature\Constants::ES_AUTOMATIC_THREE_PM, $featureList, true) === true)
         {
-            if ($hour === Constants::NINE_AM)
-            {
-                $hour = (($settlementHour <= Constants::NINE_AM) or ($settlementHour > Constants::THREE_PM)) ?
-                    Constants::NINE_AM : Constants::THREE_PM;
-            }
-            else
+            if ($hour === Constants::FIVE_PM)
             {
                 $hour = (($settlementHour <= Constants::THREE_PM) or ($settlementHour > Constants::FIVE_PM)) ?
                     Constants::THREE_PM : Constants::FIVE_PM;
