@@ -448,7 +448,6 @@ class Service extends Base\Service
                         $data['experiments']['support_call'] = ['result' => 'off'];
                     }
 
-                    $data['experiments']['subscription_link'] = $merchantService->getTreatment('subscription_link');
                     $data['experiments']['coupons'] = $merchantService->getTreatment('coupons');
                     $data['experiments']['is_announcement'] = $merchantService->getTreatment('is_announcement');
                     $data['experiments']['is_banner'] = $merchantService->getTreatment('is_banner');
@@ -456,12 +455,10 @@ class Service extends Base\Service
                     $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
                     $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
                     $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
-                    $data['experiments']['report_date_range'] = $merchantService->getTreatment('report_date_range');
                     $data['experiments']['show_extra_fields_in_pp'] = $merchantService->getTreatment('show_extra_fields_in_pp');
 
                     $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
                     $data['experiments']['sellerapp_plus'] = $merchantService->getTreatment('sellerapp_plus');
-                    $data['experiments']['post_activation_hotjar_survey'] = $merchantService->getTreatment('post_activation_hotjar_survey');
                     $data['experiments']['second_factor_auth'] = $merchantService->getTreatment('second_factor_auth');
                     $data['experiments']['disable-view-reports'] = $merchantService->getTreatment('disable-view-reports');
                     $data['experiments']['mobile_hotjar_survey'] = $merchantService->getTreatment('mobile_hotjar_survey');

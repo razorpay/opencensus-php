@@ -1,18 +1,46 @@
-  <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
+  <script src='{{$cdnBaseUrl}}/static/analytics/bundle.js'></script>
   <script src="https://cdn.razorpay.com/static/assets/holidays.js"></script>
   <script type="text/javascript">
-    var useAnalytics = true;
+
+    const noop = ()=>{}
+    //Empty Interface for rzpQ
+    window.rzpQ = {
+                    component: noop, //Track components
+                    initiated: noop, //User starts an activity
+                    dropped: noop, //User drops an activity
+                    success: noop, //Successfully completes activity
+                    failed: noop, //A failure occured
+                    push: noop, //Explicitly push as custom event to the queue
+                    setUser:noop, //Set a user one time
+                    defineEventModifiers:noop,//Extends to set custom event properties
+                    //Any modifiers
+                    onbr:()=>window.rzpQ,
+                };
+    //Above code doesn't perform any function, can avoid application breakage if the library is
+    //removed, not loaded or library code breaks anytime.
+    //For any environment where we want to disable tracking other than LJ turn isLocal to true.
+    var isLocal = undefined;
+    //Maintaining this for legacy reason. Should ideally be defined by the environments.
+    //Below peice of code will turn off trackers other than LJ in non-prod environments, since LJ is environment specific we do not have to follow this approach.
     if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
-        useAnalytics = false;
+        isLocal = true;
     }
-    if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
-         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing', 'taboola'], {
+    var disableEventEmitters = false; //If true events will not be emitted to LJ and PROM
+    var appEnvironment = window.location.hostname=="dashboard.razorpay.com" ? 'prod' : 'stage';
+    if(analytics){
+        analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','perf','taboola'], {
            ga: 'UA-53341507-2',
-           fb: '697927486977350'
-         });
+           fb: '697927486977350',
+           lj:'{{$ljKey}}',
+           perf:'medash'
+         },isLocal,appEnvironment,disableEventEmitters);
         // Init old key as well
-
-
+        if(undefined!==analytics.createQ){
+            window.rzpQ=analytics.createQ({pollFreq:500});
+        }
+        window.rzpQ.defineEventModifiers({
+            'onbr':[{propertyName:'event_type',value:'onboarding-events'},{propertyName:'event_group',value:'onboarding'}],
+        })
 
         ga('create', 'UA-53341507-1', 'auto', 'old');
 

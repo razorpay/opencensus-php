@@ -1,7 +1,9 @@
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
-import { NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
+
+import RTracking from 'react-tracking';
+
 import Pager from 'rzp/ui/Pager';
 import Spinner from 'rzp/ui/Spinner';
 import { withRouter } from 'react-router-dom';
@@ -50,6 +52,7 @@ import { RZPFeatures } from 'rzp/utils/constants';
     handleProductQuickGuide,
   }
 )
+@RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesContainer extends ListContainer {
   state = {
     loading: true,
@@ -190,7 +193,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
   render() {
     const { loading, loadingAllList, totalPaymentPagesLength } = this.state;
-    const { paymentPages, user } = this.props;
+    const { paymentPages, user, tracking } = this.props;
 
     const isRoleAllowedEdit = user.isAllowedEdit('payment_pages');
 
@@ -297,7 +300,17 @@ export default class PaymentPagesContainer extends ListContainer {
                 onClick={this.handleProductQuickGuide}
               >
                 <i class="i i-plus" />
-                <span>Create Payment Page</span>
+                <span
+                  onClick={() => {
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().success('dash.pp_action', {
+                        action: 'Initiate_PP_Creation',
+                      })
+                    );
+                  }}
+                >
+                  Create Payment Page
+                </span>
               </span>
             )}
           </div>

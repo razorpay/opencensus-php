@@ -9,7 +9,8 @@
     "glob": "^7.1.2",
     "multi-glob": "^1.0.1",
     "puppeteer": "^1.0.0",
-    "react-sortable-hoc": "^1.9.1"
+    "react-sortable-hoc": "^1.9.1",
+    "react-tracking": "^7.1.0"
   },
   "scripts": {
     "precommit": "lint-staged",

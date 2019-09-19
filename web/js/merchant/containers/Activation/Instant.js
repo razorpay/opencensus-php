@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
+import RTracking from 'react-tracking';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Collapsible from 'merchant/components/Collapsible';
@@ -12,6 +13,7 @@ import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { showNotification } from 'rzp/modules/notifications';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { trackFormFields } from 'rzp/utils/track-utils';
 import { classList, addPrefixToObjectKeys } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
@@ -67,6 +69,7 @@ function defaultFieldProps(f) {
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 1;
 
+@RTracking(() => window.rzpQ.component('ActivationWizard'))
 @withRouter
 @connect(
   state => ({
@@ -207,9 +210,20 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
+  @RTracking((props, state) => {
+    const { tracking } = props;
+    const fields = trackFormFields(props.data, state.dirty);
+    return fields.forEach(field =>
+      tracking.trackEvent(
+        window.rzpQ.onbr().initiated('act.provide_act_details', {
+          ...field,
+        })
+      )
+    );
+  })
   submitForm = () => {
     const data = this.formData;
-
+    const { tracking } = this.props;
     return merchantFetch({
       url: 'merchant/instant_activation',
       method: 'POST',
@@ -225,6 +239,7 @@ export default class ActivationWizard extends React.Component {
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
         trackL1FormSuccess(this.user.activation_flow);
+        tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
 
         // updating contact propteries of hubspot contact
         updateHubSpotContactsProperties({
@@ -387,6 +402,7 @@ export default class ActivationWizard extends React.Component {
 
   render() {
     const isFormLocked = !!this.props.data.locked;
+    const { tracking } = this.props;
 
     const content = FORM_TABS.map((field, i) => {
       if (Array.isArray(field)) {
@@ -394,7 +410,14 @@ export default class ActivationWizard extends React.Component {
           return (
             <Collapsible
               title={collapsibleOpen => (
-                <span class="text-primary">
+                <span
+                  class="text-primary"
+                  onClick={() => {
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().initiated('act.view_signup_fields')
+                    );
+                  }}
+                >
                   {collapsibleOpen ? 'Hide' : 'Show'} previously filled details
                 </span>
               )}

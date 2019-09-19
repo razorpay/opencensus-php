@@ -257,7 +257,7 @@ const EmptyComponent = () => (
   <EmptyList
     description={
       <React.Fragment>
-        <div>TThere are no virtual accounts yet!!</div>
+        <div>There are no virtual accounts yet!!</div>
         <div>Start creating new account now.</div>
       </React.Fragment>
     }

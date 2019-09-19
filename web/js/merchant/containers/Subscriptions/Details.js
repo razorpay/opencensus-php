@@ -451,6 +451,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
   // Create FE only invoice for status next_due
   getUpcomingInvoiceDetails(chargeAt, planAmount, addOnsList = []) {
+    if (this.state.scheduledChanges.plan.id) {
+      return null;
+    }
+
     // addOnsList to calculate the total amount for invoice
     const totalAddOnsAmount = addOnsList.reduce(
       (sum, addOn) => sum + addOn.quantity * addOn.item.amount,
@@ -730,7 +734,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           this.state.addons
         );
 
-        invoicesList.items.unshift(nextDueInvoice);
+        nextDueInvoice && invoicesList.items.unshift(nextDueInvoice);
       }
     }
 
