@@ -43,17 +43,7 @@ abstract class Generator extends Base
                                                          Timezone::IST)
                                                           ->format(self::DATE_FORMAT);
 
-        $fromDate = Carbon::createFromTimestamp($this->fromDate,
-                                                       Timezone::IST)
-                                                        ->format(self::DATE_FORMAT);
-
-        $toDate = Carbon::createFromTimestamp($this->toDate,
-                                                     Timezone::IST)
-                                                      ->format(self::DATE_FORMAT);
-
-        $statementPeriod = $fromDate . ' - ' . $toDate;
-
-        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount, $accountOpeningDate, $statementPeriod);
+        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount, $accountOpeningDate);
 
         list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($allBankAccountTransactions);
 
@@ -182,23 +172,34 @@ abstract class Generator extends Base
     /**
      * @param BankingAccountEntity $bankingAccount
      * @param string $accountOpeningDate
-     * @param string $statementPeriod
      * @return array
      */
-    protected function getAccountOwnerInfo(BankingAccountEntity $bankingAccount,
-                                           string $accountOpeningDate,
-                                           string $statementPeriod): array
+    protected function getAccountOwnerInfo(BankingAccountEntity $bankingAccount, string $accountOpeningDate): array
     {
+        $fromDate = Carbon::createFromTimestamp($this->fromDate,
+                                                Timezone::IST)
+                          ->format(self::DATE_FORMAT);
+
+        $toDate = Carbon::createFromTimestamp($this->toDate,
+                                              Timezone::IST)
+                        ->format(self::DATE_FORMAT);
+
+        $statementPeriod = $fromDate . ' - ' . $toDate;
+
         $ifscCode = $bankingAccount->getAccountIfsc();
 
         $bankInformation = (new BankInfo($ifscCode))->getBankInformation();
+
+        $customerAddressL2 =  $bankingAccount->getBeneficiaryAddress2() .
+                              ', ' .
+                              $bankingAccount->getBeneficiaryAddress3();
 
         $accountOwnerInfo = [
             AccountOwnerInfo::ACCOUNT_NAME         => $bankingAccount->getBeneficiaryName(),
 
             AccountOwnerInfo::CUSTOMER_ADDRESS     => $bankingAccount->getBeneficiaryAddress1(),
 
-            AccountOwnerInfo::CUSTOMER_ADDRESS_L2  => $bankingAccount->getBeneficiaryAddress2(),
+            AccountOwnerInfo::CUSTOMER_ADDRESS_L2  => $customerAddressL2,
 
             AccountOwnerInfo::ACCOUNT_TYPE         => $bankingAccount->getAccountType(),
 
