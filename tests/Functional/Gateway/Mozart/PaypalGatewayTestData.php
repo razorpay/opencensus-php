@@ -31,6 +31,31 @@ return [
         'entity'            => 'payment',
     ],
 
+    'testInternationalPayment' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'wallet',
+        'status'            => 'authorized',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'USD',
+        'description'       => 'random description',
+        'card_id'           => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '491761552902',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'wallet_paypal',
+        'terminal_id'       => '1ShrdPaypalTml',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+    ],
+
     'testPaymentMozartEntity' => [
         'action'            => 'authorize',
         'gateway'           => 'wallet_paypal',
