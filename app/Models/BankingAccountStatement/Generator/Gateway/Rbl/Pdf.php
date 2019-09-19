@@ -23,7 +23,7 @@ class Pdf extends Generator
 
         $tmpFileName = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.pdf';
 
-        $tmpFileFullPath = storage_path('/tmp/' . $tmpFileName);
+        $tmpFileFullPath = '/tmp/' . $tmpFileName;
 
         $fileHandle = fopen($tmpFileFullPath, 'w');
 
