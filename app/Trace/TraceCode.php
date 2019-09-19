@@ -260,6 +260,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
+    const MERCHANT_MAIL_UPDATE_FAIL                             = 'MERCHANT_MAIL_UPDATE_FAIL';
     const FTA_BANK_ACCOUNT_EMPTY                                = 'FTA_BANK_ACCOUNT_EMPTY';
     const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
@@ -1024,6 +1025,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_WORKFLOW_ACTION_INFO                           = 'PAYOUT_WORKFLOW_ACTION_INFO';
     const PAYOUT_WORKFLOW_TRIGGERED                             = 'PAYOUT_WORKFLOW_TRIGGERED';
     const PAYOUT_WORKFLOW_ACTION_EXCEPTION                      = 'PAYOUT_WORKFLOW_ACTION_EXCEPTION';
+    const ADDING_MEMBER_TO_MAILING_LIST                         = 'ADDING_MEMBER_TO_MAILING_LIST';
+    const ADDED_MEMBER_TO_MAILING_LIST                          = 'ADDED_MEMBER_TO_MAILING_LIST';
+    const DELETING_MEMBER_FROM_MAILING_LIST                     = 'DELETING_MEMBER_FROM_MAILING_LIST';
+    const DELETED_MEMBER_FROM_MAILING_LIST                      = 'DELETED_MEMBER_FROM_MAILING_LIST';
     const PAYOUT_WORKFLOW_EVALUATION_INPUT                      = 'PAYOUT_WORKFLOW_EVALUATION_INPUT';
     const PAYOUT_WORKFLOW_EVALUATION_RESULT                     = 'PAYOUT_WORKFLOW_EVALUATION_RESULT';
 

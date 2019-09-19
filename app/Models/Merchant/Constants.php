@@ -13,6 +13,8 @@ final class Constants
     const REF                                     = 'ref';
     const DATE                                    = 'date';
     const SIGNUP_DATE                             = 'signup_date';
+    const SUSPEND                                 = 'suspend';
+    const UNSUSPEND                               = 'unsuspend';
 
     // Used for pagination in submerchant listing for partners
     const TO                                      = 'to';
