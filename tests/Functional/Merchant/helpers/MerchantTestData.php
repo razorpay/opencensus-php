@@ -1339,6 +1339,26 @@ return [
         ]
     ],
 
+    'testUpdateBankAccountWithAddressProof' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'      => '10000000000000',
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ]
+        ]
+    ],
+
     'testAddBankAccountWithMerchantIdInURL' => [
         'request' => [
             'content' => [

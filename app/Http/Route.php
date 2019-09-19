@@ -1201,7 +1201,7 @@ final class Route
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
-
+        'merchant_document_upload'                => ['post',     'merchant/documents/upload',                                 'DocumentController@uploadMerchantDocuments'                ],
 
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -1705,6 +1705,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'merchant_document_upload',
         'merchant_document_delete',
         'get_es_pricing_merchant',
         'merchant_edit_config_la',
