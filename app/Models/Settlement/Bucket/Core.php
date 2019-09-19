@@ -24,6 +24,34 @@ class Core extends Base\Core
         parent::__construct();
     }
 
+    public function deleteCompletedBucketEntries(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::DELETING_COMPLETED_BUCKET_ENTRIES,
+            $input);
+
+        $timestamp = Carbon::now(Timezone::IST)->subDay();
+
+        if (isset($input['timestamp']) === true)
+        {
+            $timestamp = $input['timestamp'];
+        }
+
+        $recordsDeletedCount = $this->repo
+                                    ->settlement_bucket
+                                    ->removeCompletedEntriesBeforeTimestamp($timestamp);
+
+        $result = [
+            'count' => $recordsDeletedCount,
+        ];
+
+        $this->trace->info(
+            TraceCode::COMPLETED_BUCKET_ENTRIES_DELETED,
+            $result);
+
+        return $result;
+    }
+
     public function backfillSettlementBucket(array $input)
     {
         // Time limit of 10 mins

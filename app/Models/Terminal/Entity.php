@@ -6,7 +6,6 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
-use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
@@ -19,6 +18,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
+use RZP\Models\Terminal\Status;
 
 class Entity extends Base\PublicEntity
 {
@@ -1065,6 +1065,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(
             'RZP\Models\Admin\Org\Entity');
+    }
+
+    public function terminalOnboardingDetail()
+    {
+        return $this->hasOne(
+            'RZP\Models\TerminalOnboardingDetail\Entity');
     }
 
     public function toArrayWithPassword()
