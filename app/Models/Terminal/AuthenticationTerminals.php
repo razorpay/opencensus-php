@@ -136,6 +136,13 @@ class AuthenticationTerminals
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::CARD_FSS,
             self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CARD_FSS,
+            self::AUTHENTICATION_GATEWAY    => null,
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => null,
         ],

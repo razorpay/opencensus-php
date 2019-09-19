@@ -47,6 +47,12 @@ class Base
     const CONTENT_TYPE  = 'Content-Type';
     const X_REQUEST_ID  = 'X-Request-ID';
 
+    const TRANSFER_RETRY = 'transfer_retry';
+
+    const ALLOWED_FTS_ACTION = [
+        self::TRANSFER_RETRY,
+    ];
+
     const REQUEST_TIMEOUT = 30;
 
     /**
@@ -239,5 +245,16 @@ class Base
             'body' => json_decode($response->body, true),
             'code' => $code,
         ];
+    }
+
+    /**
+     * Checks if a valid action is initiated to FTS
+     *
+     * @param string $action
+     * @return bool
+     */
+    public static function isValidFtsAction(string $action): bool
+    {
+        return (in_array($action, self::ALLOWED_FTS_ACTION, true) === true);
     }
 }

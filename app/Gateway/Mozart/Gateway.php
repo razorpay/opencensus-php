@@ -156,6 +156,22 @@ class Gateway extends Base\Gateway
         $this->authorize($input);
     }
 
+    public function createTerminal(array $input)
+    {
+        parent::createTerminal($input);
+
+        $request = $this->getTerminalOnboardingMozartRequestArray($input);
+
+        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+       
+        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_CREATE_TERMINAL_RESPONSE);
+        // TODO check error codes and throw exception
+        
+        return $response;
+    }
+
     public function immediateVerifyApplicable($input)
     {
         if ( in_array($input['payment'][Payment\Entity::METHOD], [
@@ -425,17 +441,45 @@ class Gateway extends Base\Gateway
 
         $this->checkTpvAndModifyOrder($content, $input);
 
+        $url = $this->getUrlForMozartRequest($input, 'payments');
+
+        return $this->getAuthenticatedMozartRequestArray($url, $content);
+    }
+
+    protected function getTerminalOnboardingMozartRequestArray($input)
+    {
+        if (($input['terminal'] instanceof TerminalEntity) === true)
+        {
+            $input['terminal'] = $input['terminal']->toArrayWithPassword();
+        }
+
+        $content['entities'] = $input;
+
+        $url = $this->getUrlForMozartRequest($input, 'terminals');
+
+        return $this->getAuthenticatedMozartRequestArray($url, $content);
+    }
+
+    protected function getUrlForMozartRequest($input, $prefix)
+    {
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
-        $url =  $baseUrl . 'payments/' . $input['payment']['gateway'] . '/v1/' . $this->action;
+        $gateway = $this->getGateway($input);
+
+        $url =  $baseUrl . $prefix . '/' .  $gateway . '/v1/' . $this->action;
 
         $isGooglePay = $this->isGooglePayGateway($input);
 
         if ($isGooglePay === true)
         {
-            $url =  $baseUrl . 'payments/' . $input['gateway'] . '/v1/' . $this->action;
+            $url =  $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
         }
 
+        return $url;
+    }
+
+    protected function getAuthenticatedMozartRequestArray($url, $content)
+    {
         $authentication = [
             'api',
             $this->app['config']->get('applications.mozart.password')
@@ -962,7 +1006,8 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
-        if ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
+        if (($this->action === Action::CREATE_TERMINAL) or 
+            ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY)))
         {
             return $input['gateway'];
         }

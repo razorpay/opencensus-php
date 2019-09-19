@@ -213,6 +213,7 @@ class Gateway
         self::UPI_AXIS          => self::AXIS,
         self::UPI_MINDGATE      => self::HDFC,
         self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
+        self::ATOS              => self::ATOS,
     ];
 
     /**
@@ -866,6 +867,10 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
+        ],
+        self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
         ],
     ];
 
