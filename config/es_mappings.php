@@ -8,9 +8,14 @@ return [
 
     'settings' => [
 
-        'index.mapping.total_fields.limit'  => 10000000,
-        'index.mapping.depth.limit'         => 50,
-        'index.mapping.nested_fields.limit' => 20,
+        // Following are default values in Elasticsearch 5.6 and
+        // used unchanged for index creation.
+        'index.mapping.total_fields.limit'  => 1000,
+        'index.mapping.depth.limit'         => 20,
+        'index.mapping.nested_fields.limit' => 50,
+
+        // Following are default values in Elasticsearch 5.6 and
+        // is changeable per index via CLI command.
         'number_of_shards'                  => 5,
         'number_of_replicas'                => 1,
 
