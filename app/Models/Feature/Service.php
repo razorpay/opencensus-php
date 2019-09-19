@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
 
 class Service extends Base\Service
 {
@@ -141,6 +142,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::FEATURE_MULTI_ASSIGN_REQUEST, $input);
 
+        $this->increaseAllowedSystemLimits();
+
         $entityIds = $input[Constants::ENTITY_IDS];
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
@@ -216,6 +219,13 @@ class Service extends Base\Service
         }
 
         return $response->toArray();
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(300);
     }
 
     public function getFeaturesForEntity($entity)
