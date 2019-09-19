@@ -26,6 +26,8 @@ class Validator extends Base\Validator
      */
     const MAX_BULK_PAYOUTS_LIMIT = 15;
 
+    const CALCULATE_ES_ON_DEMAND_FEES = 'calculate_es_on_demand_fees';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -103,6 +105,11 @@ class Validator extends Base\Validator
     protected static $merchantPayoutOnDemandRules = [
         Entity::AMOUNT   => 'required|integer|min:100',
         Entity::CURRENCY => 'required|size:3',
+    ];
+
+    protected static $calculateEsOnDemandFeesRules = [
+        Entity::AMOUNT   => 'required|integer|min:100',
+        Entity::CURRENCY => 'required|size:3|in:INR,',
     ];
 
     protected static $bulkApproveRules = [

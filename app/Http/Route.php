@@ -943,6 +943,7 @@ final class Route
         'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postInternalMerchantPayout'                       ],
         // TODO: Fix the route. Changes on dashboard would be required.
         'on_demand_settlement'                     => ['post',     'merchant/payout/demand',                         'PayoutController@postMerchantPayoutOnDemand'                       ],
+        'on_demand_settlement_fees'                => ['get',      'merchant/payout/demand/fees',                    'PayoutController@calculateEsOnDemandFees'                          ],
 
         // Settings routes
         'settings_delete'                          => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
@@ -1859,6 +1860,7 @@ final class Route
         'merchant_methods_edit',
         'merchant_fetch_methods',
         'on_demand_settlement',
+        'on_demand_settlement_fees',
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
@@ -2805,7 +2807,7 @@ final class Route
         'p2p_admin_manage_banks'                    => Permission::P2P_MANAGE_MERCHANT,
         'recon_fetch_batchs_files_multiple'         => '*',
         'recon_fetch_files_count'                   => '*',
-
+        'on_demand_settlement_fees'                 => '*',
         'gateway_downtime_detection_get_stats'      => '*',
     ];
 
@@ -3261,6 +3263,7 @@ final class Route
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'la_fetch'                             => [Feature::MARKETPLACE],
         'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
+        'on_demand_settlement_fees'            => [Feature::ES_ON_DEMAND],
         'card_issuer_validate'                 => [Feature::BIN_ISSUER_VALIDATOR],
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
         'mpans_issue'                          => [Feature::ISSUE_MPANS],
