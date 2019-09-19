@@ -145,6 +145,7 @@ export default class SettlementsListContainer extends ListContainer {
   showOndemandSettlementForm = e => {
     trackOndemand.trackSettleNow('Settlements');
     let balance = this.props.current_balance.data.balance;
+
     this.props.openModal({
       component: (
         <OndemandModal currentBalance={balance} fromWhere="Settlements" />
