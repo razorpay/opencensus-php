@@ -262,7 +262,6 @@ class Type
             self::GATEWAY_FAILED_REFUNDS,
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,
-            self::RBL_STATEMENT,
             self::ISG_SUMMARY,
         ],
 
@@ -388,7 +387,6 @@ class Type
         self::OBC_NETBANKING_REFUND,
         self::EQUITAS_NETBANKING_REFUND,
         self::ISG_REFUND,
-        self::RBL_STATEMENT,
         self::ISG_SUMMARY,
     ];
 
