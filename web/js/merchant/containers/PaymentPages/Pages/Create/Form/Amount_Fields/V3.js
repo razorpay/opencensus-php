@@ -4,7 +4,6 @@ import FIELD_TYPES from './fieldTypes';
 export function getAmountFieldTypes() {
   const fieldTypes = [
     FIELD_TYPES.fixed_price,
-    FIELD_TYPES.fixed_price_optional,
     FIELD_TYPES.dynamic_price,
     FIELD_TYPES.multiple_purchase,
   ];
@@ -16,21 +15,17 @@ export function getAmountFieldTypes() {
 export function mapFieldToAmountFieldType(amountField) {
   let amountFieldType = null;
 
-  // Fixed price
   if (!amountField.item.amount) {
-    // Note: All other fields are by default dynamic_price, or else can check for min_amount
-    amountFieldType = getAmountFieldTypes()[2]; // FIELD_TYPES.dynamic_price
-  } else if (
-    amountField.hasOwnProperty('min_purchase') &&
-    amountField.min_purchase !== null
-  ) {
-    // Note: Assumed that other kind of fields shouldn't have min_purchase key, or else we'll have to check non-null values
-    amountFieldType = getAmountFieldTypes()[3]; // FIELD_TYPES.multiple_purchase
-  } else if (amountField.item.amount && !amountField.mandatory) {
-    amountFieldType = getAmountFieldTypes()[1]; // FIELD_TYPES.fixed_price_optional
+    amountFieldType = getAmountFieldTypes()[1]; // FIELD_TYPES.dynamic_price
   } else {
-    // Note: amountField.mandatory is not valid check for fixed_price field because dynamic_price and multiple_purchase items can also have mandatory = true
-    amountFieldType = getAmountFieldTypes()[0]; // FIELD_TYPES.fixed_price,
+    if (
+      amountField.hasOwnProperty('min_purchase') &&
+      amountField.min_purchase !== null // Counter type field will have min_purchase defined as 0 or 0+ integer
+    ) {
+      amountFieldType = getAmountFieldTypes()[2]; // FIELD_TYPES.multiple_purchase
+    } else {
+      amountFieldType = getAmountFieldTypes()[0]; // FIELD_TYPES.fixed_price,
+    }
   }
 
   return amountFieldType && amountFieldType.key;
@@ -42,12 +37,6 @@ export function getBaseFieldForAmountFieldType(amountFieldType) {
       return {
         item: {},
         mandatory: true, // fixed_price is always mandatory
-      };
-
-    case FIELD_TYPES.fixed_price_optional.key:
-      return {
-        item: {},
-        mandatory: false, // fixed_price_optional is always non-mandatory
       };
 
     case FIELD_TYPES.dynamic_price.key:
@@ -85,6 +74,11 @@ export function getBaseFieldForAmountFieldType(amountFieldType) {
 };
 */
 
+// Handles both values where iMandatory is string['0'/'1'] or boolean[false/true]
+export function isMandatory(val) {
+  return typeof val === 'boolean' ? val : Boolean(Number(val));
+}
+
 export function constructAmountField(fieldData) {
   const { mandatory, ...restProps } = fieldData;
   const amountItem = { ...restProps };
@@ -93,11 +87,10 @@ export function constructAmountField(fieldData) {
   amountItem.item.name = prettyName;
 
   if (typeof mandatory !== 'undefined') {
-    amountItem.mandatory =
-      typeof mandatory === 'boolean' ? mandatory : Boolean(Number(mandatory)); // BOOL
+    amountItem.mandatory = isMandatory(mandatory); // BOOL
   }
 
-  // Redundant cuz already handled some part in CreatorManager onSaveAdvancedForm, however safe call to reset to null if empty string
+  // TODO: Redundant cuz already handled some part in CreatorManager onSaveAdvancedForm, however safe call to reset to null if empty string
   if (restProps.min_amount === '') {
     restProps.min_amount = null;
   }

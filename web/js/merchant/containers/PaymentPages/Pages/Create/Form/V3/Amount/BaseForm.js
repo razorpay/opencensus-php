@@ -3,7 +3,7 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList } from 'common/util';
-import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
+import { mapFieldToAmountFieldType, isMandatory } from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
@@ -30,6 +30,7 @@ export default class BaseForm extends React.PureComponent {
       disableSubmit,
       hasDescription,
       mirrorDisplayName: name || '',
+      isMandatory: isMandatory(this.props.field.mandatory),
     };
 
     this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
@@ -37,15 +38,6 @@ export default class BaseForm extends React.PureComponent {
 
   componentDidMount() {
     setTimeout(this.toggleSubmitBtn);
-  }
-
-  get isMandatory() {
-    const isMandatory =
-      typeof this.props.field.mandatory === 'boolean'
-        ? this.props.field.mandatory
-        : Boolean(Number(this.props.field.mandatory));
-
-    return isMandatory;
   }
 
   onChange = ({ target }) => {
@@ -78,6 +70,14 @@ export default class BaseForm extends React.PureComponent {
   toggleDescriptionField = _ => {
     this.setState({
       hasDescription: !this.state.hasDescription,
+    });
+  };
+
+  toggleOptional = _ => {
+    const isMandatory = !this.state.isMandatory;
+
+    this.setState({
+      isMandatory,
     });
   };
 
@@ -202,28 +202,27 @@ export default class BaseForm extends React.PureComponent {
     const fieldType = this.fieldType;
 
     switch (fieldType) {
-      // Same Advanced Form for both fixed_price and fixed_price_optional
       case FIELD_TYPES.fixed_price.key:
-        return this.getREP_Amount();
-
-      case FIELD_TYPES.fixed_price_optional.key:
         return (
           <React.Fragment>
             {this.getREP_Amount()}
-            {/* Dummy Checkbox for optional field */}
-            <div class="Input-checkboxTooltip">
-              <Input.Check disabled />
 
-              <Popover
-                align="top"
-                theme="dark"
-                parentQuerySelector=".Modal-container"
-              >
-                <PopoverBody>
-                  Customer can select or unselect this Item
-                </PopoverBody>
-              </Popover>
-            </div>
+            {/* Dummy Checkbox for optional field */}
+            {!this.state.isMandatory && (
+              <div class="Input-checkboxTooltip">
+                <Input.Check disabled />
+
+                <Popover
+                  align="top"
+                  theme="dark"
+                  parentQuerySelector=".Modal-container"
+                >
+                  <PopoverBody>
+                    Customer can select or unselect this Item
+                  </PopoverBody>
+                </Popover>
+              </div>
+            )}
           </React.Fragment>
         );
 
@@ -289,7 +288,12 @@ export default class BaseForm extends React.PureComponent {
       onDeleteField,
     } = this.props;
 
-    const { hasDescription, disableSubmit, mirrorDisplayName } = this.state;
+    const {
+      hasDescription,
+      disableSubmit,
+      mirrorDisplayName,
+      isMandatory,
+    } = this.state;
 
     return (
       <Form
@@ -298,12 +302,7 @@ export default class BaseForm extends React.PureComponent {
         onSubmit={this.onSaveForm}
       >
         {/* This will automatically be controlled by both initial field and on re-render on save of Advanced Form */}
-        <input
-          name="mandatory"
-          value={Number(this.isMandatory)}
-          readOnly
-          hidden
-        />
+        <input name="mandatory" value={Number(isMandatory)} readOnly hidden />
 
         <Input.TextareaAutoResize
           class="Input--title"
@@ -336,12 +335,12 @@ export default class BaseForm extends React.PureComponent {
           <div
             class={classList(
               'Field Field--mirrorDisplay',
-              this.isMandatory && 'Field--required'
+              isMandatory && 'Field--required'
             )}
           >
             <span class="mirror-title">{mirrorDisplayName}</span>
             {mirrorDisplayName &&
-              !this.isMandatory && <div class="text-optional">(Optional)</div>}
+              !isMandatory && <div class="text-optional">(Optional)</div>}
           </div>
         </Input.TextareaAutoResize>
 
@@ -390,6 +389,15 @@ export default class BaseForm extends React.PureComponent {
               {this.state.hasDescription
                 ? 'Remove Description'
                 : 'Add Description'}
+            </div>
+          </OptionsItem>
+
+          <OptionsItem isSelected={!this.state.isMandatory}>
+            <div onClick={this.toggleOptional}>
+              <i class="i i-optional_mark" />
+              {!this.state.isMandatory
+                ? 'Optional Item'
+                : 'Make it Optional Item'}
             </div>
           </OptionsItem>
 

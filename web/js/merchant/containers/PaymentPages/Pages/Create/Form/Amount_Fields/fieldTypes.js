@@ -5,12 +5,6 @@ const FIELD_TYPES = {
     icon: 'fixed_price',
   },
 
-  fixed_price_optional: {
-    label: 'Optional Item',
-    key: 'fixed_price_optional',
-    icon: 'fixed_price_optional',
-  },
-
   dynamic_price: {
     label: 'Customers Decide Amount',
     key: 'dynamic_price',
@@ -36,19 +30,9 @@ export default FIELD_TYPES;
 // Fixed Price
 {
   item: {
-    amount: null
+    amount: 23 // non-null amount value
   },
-  mandatory: true,
-  quantity_available: null
-}
-
-//////////////////////////////////////////////
-
-// Fixed Price (Optional Purchase)
-{
-  item: {
-    amount: null
-  },
+  mandatory: true/false,
   quantity_available: null
 }
 
@@ -56,7 +40,8 @@ export default FIELD_TYPES;
 
 // Customer decides Price
 {
-  item: {},
+  item: {}, // amount is null
+  mandatory: true/false,
   min_amount: null,
   max_amount: null,
   quantity_available: null
@@ -67,10 +52,10 @@ export default FIELD_TYPES;
 // Multiple Quantity Purchase
 {
   item: {
-    amount: null
+    amount: 23 // non-null amount value
   },
-  mandatory: true,
-  min_purchase: null,
+  mandatory: true/false,
+  min_purchase: 0/1, // non-null value (differentiates from fixed-price field)
   max_purchase: null,
   quantity_available: null
 }

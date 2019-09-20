@@ -114,18 +114,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 
       console.log(formData);
 
-      // Explicitly handle field.mandatory because unlike udf field having field for "required", amount field doesn't have for "mandatory".
-      let isMandatory =
-        typeof field.mandatory === 'boolean'
-          ? field.mandatory
-          : Boolean(Number(field.mandatory));
-
-      if (fieldType === FIELD_TYPES.dynamic_price.key) {
-        isMandatory = Number(formData.min_amount) > 0; // mandatory only if min_amount > 0
-      } else if (fieldType === FIELD_TYPES.multiple_purchase.key) {
-        isMandatory = Number(formData.min_purchase) > 0; // mandatory only if min_purchase > 0
-      }
-
       if (formData.hasOwnProperty('min_purchase') && !formData.min_purchase) {
         formData.min_purchase = 0; // Cannot be null (inorder to differentiate field definition from fixed price optional field)
       }
@@ -158,7 +146,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         field: {
           ...field,
           ...formData,
-          mandatory: isMandatory,
         },
       });
     };

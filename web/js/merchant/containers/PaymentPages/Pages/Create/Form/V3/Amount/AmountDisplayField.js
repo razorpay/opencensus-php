@@ -1,12 +1,13 @@
+import { sortableHandle } from 'react-sortable-hoc';
 import { classList } from 'common/util';
+
 import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
 
-import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
+import { mapFieldToAmountFieldType, isMandatory } from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import { getCurrency } from 'rzp/ui/Amount';
 
-import { sortableHandle } from 'react-sortable-hoc';
 const DragHandle = sortableHandle(() => (
   <span class="dragHandle">
     <i class="i i-dotter" />
@@ -34,18 +35,21 @@ const displayField = ({
   );
 
   switch (fieldType) {
-    case FIELD_TYPES.fixed_price_optional.key: {
-      addOnAfter = (
-        <div class="Field Field--CheckBox">
-          <div class="Field-content">
-            <div class="Field-wrapper">
-              <label class="Field-el">
-                <span class="CheckBox-mark" />
-              </label>
+    case FIELD_TYPES.fixed_price.key: {
+      if (!isMandatory(field.mandatory)) {
+        addOnAfter = (
+          <div class="Field Field--CheckBox">
+            <div class="Field-content">
+              <div class="Field-wrapper">
+                <label class="Field-el">
+                  <span class="CheckBox-mark" />
+                </label>
+              </div>
             </div>
           </div>
-        </div>
-      );
+        );
+      }
+
       break;
     }
 
@@ -58,6 +62,7 @@ const displayField = ({
           disabled
         />
       );
+
       break;
     }
 
@@ -79,6 +84,7 @@ const displayField = ({
           </div>
         </div>
       );
+
       break;
     }
   }

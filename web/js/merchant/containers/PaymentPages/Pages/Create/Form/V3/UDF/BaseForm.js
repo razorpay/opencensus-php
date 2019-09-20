@@ -225,7 +225,7 @@ export default class BaseForm extends React.PureComponent {
           {!this.props.isFieldForcedRequired && (
             <OptionsItem isSelected={!this.state.isRequired}>
               <div onClick={this.toggleOptional}>
-                <i class="i i-info-circle" />
+                <i class="i i-optional_mark" />
                 Optional Field
               </div>
             </OptionsItem>
