@@ -37,15 +37,10 @@ export default class RegistrationLinkEntityContainer extends Component {
   }
 
   render() {
-    const { loading: isLoading, entity, error } = this.props,
-      paperMandate =
-        (!isLoading &&
-          entity.order.token &&
-          entity.order.token.paper_mandate) ||
-        {};
+    const { loading: isLoading, entity, error } = this.props;
 
-    const preFilledNachFileURL = paperMandate.created_url,
-      completedNachFileURL = '';
+    const preFilledNachFileURL = entity.created_url,
+      completedNachFileURL = entity.verified_url;
 
     return (
       <div class="content-wrapper content-sm txn-details">

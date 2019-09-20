@@ -102,7 +102,7 @@ export default class TokenEntityContainer extends Component {
       (!isLoading && entity.order.token && entity.order.token.paper_mandate) ||
       {};
 
-    const completedNachFileURL = '--';
+    const completedNachFileURL = paperMandate.verified_url;
 
     return (
       <div class="content-wrapper content-sm txn-details">

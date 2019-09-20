@@ -190,43 +190,9 @@
 .Modal-container--UploadNACHForm
   width: 90%
   max-width: 640px
-  min-height: 390px
-  max-height: 690px
 
-  .Wizrd
-    max-width: $max-width
-    height: 85vh
-    min-height: 560px
-    max-height: 690px
-    background: #fafafa
-    position: relative
-
-  main
-    left: 0
-    right: 0
-    padding: 30px
-    position: absolute
-    bottom: 80px
-    top: 0
-    overflow: auto
-
-    main-title
-      display: block
-      font-weight: 600
-      margin-bottom: 20px
-      font-size: 18px
-
-  footer
-    left: 0
-    padding: 20px
-    right: 0
-    background: #f6f6f6
-    border-top: 1px solid #e0e0e0
-    bottom: 0
-    position: absolute
-    text-align: right
-
-  .desc
+.UploadNACH
+  .file-desc
     max-width: 80%
     margin-bottom: 28px
     .btn-link
@@ -247,5 +213,6 @@
     .text-danger + p
       margin-left: 20px
 
-  &-fulldata
-    height: 80vh
+.UploadNACH--Form.ModalForm
+  height: 390px
+  min-height: 390px

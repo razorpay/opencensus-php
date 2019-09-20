@@ -16,7 +16,7 @@ export const createRegistrationLink = params => ({
   payload: new RegistrationLink().save(params),
 });
 
-export const validateNachFile = (file, id, keyId) => {
+export const validateNachFile = (file, id) => {
   let formData = new FormData();
   formData.append('form_uploaded', file);
   formData.append('auth_link_id', id);
@@ -33,11 +33,15 @@ export const validateNachFile = (file, id, keyId) => {
   });
 };
 
-export const authenticateNACHFile = () => {
+export const authenticateNACHFile = (file, id) => {
+  let formData = new FormData();
+  formData.append('form_uploaded', file);
+  formData.append('auth_link_id', id);
+
   return merchantFetch({
-    url: 'token.registration/paper_mandate/authenticate',
-    method: 'put',
-    data,
+    url: 'token.registration/paper_mandate/authenticate/proxy',
+    method: 'post',
+    data: formData,
   });
 };
 

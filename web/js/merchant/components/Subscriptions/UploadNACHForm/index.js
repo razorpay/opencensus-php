@@ -3,9 +3,10 @@ import { classList } from 'common/util';
 import { findBy, normalizeDate } from 'rzp/utils/rzp-utils';
 
 import { showNotification } from 'rzp/modules/notifications';
-import { closeModal } from 'rzp/modules/modals';
-import { fetchKeys } from 'merchant/modules/keys';
-import { validateNachFile } from 'merchant/modules/registration_link';
+import {
+  validateNachFile,
+  authenticateNACHFile,
+} from 'merchant/modules/registration_link';
 
 import Accordion, {
   AccordionItem,
@@ -43,12 +44,13 @@ const initState = {
     enhanced_image: null,
   },
   file: null,
-  errors: {},
+  errors: {
+    heading: '',
+    description: '',
+  },
 };
 
-@connect(state => ({ keys: state.keys }), {
-  closeModal,
-  fetchKeys,
+@connect(null, {
   showNotification,
 })
 export default class UploadNACHForm extends React.Component {
@@ -63,6 +65,10 @@ export default class UploadNACHForm extends React.Component {
   }
 
   get errorsList() {
+    if (!this.state.extractedData.errors) {
+      return [];
+    }
+
     return this.state.extractedData.errors.not_matching;
   }
 
@@ -102,10 +108,6 @@ export default class UploadNACHForm extends React.Component {
     return 'primary';
   }
 
-  componentDidMount() {
-    this.props.fetchKeys();
-  }
-
   getDataFromExtractedData = key => {
     const data = findBy(this.state.extractedData.extracted_data, 'key', key);
 
@@ -119,7 +121,7 @@ export default class UploadNACHForm extends React.Component {
     this.context.confirm({
       header: 'Remove Nach Form',
       message:
-        'The attached NACH form will be discarded and you will need to reupload a new image.',
+        'The attached NACH form will be discarded and you will need to re-upload a new image.',
       affirmativeLabel: 'Yes, Remove',
       abort: () => {},
       action: () => {
@@ -131,11 +133,10 @@ export default class UploadNACHForm extends React.Component {
   handleChange = file => {
     this.setState({
       uploading: true,
+      file,
     });
 
-    const key = this.props.keys.keys[0] || {};
-
-    return validateNachFile(file, this.props.id, key.id)
+    return validateNachFile(file, this.props.id)
       .then(resp => {
         this.setState({
           extractedData: resp.data,
@@ -150,7 +151,25 @@ export default class UploadNACHForm extends React.Component {
       });
   };
 
-  handleSubmit = () => {};
+  handleSubmit = () => {
+    return authenticateNACHFile(this.state.file, this.props.id)
+      .then(resp => {
+        this.setState({
+          extractedData: resp.data,
+        });
+
+        this.props.showNotification({
+          type: 'success',
+          message: 'NACH form uploaded successfully',
+        });
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
 
   renderDesc = () => {
     const { uploading, errors } = this.state;
@@ -182,8 +201,7 @@ export default class UploadNACHForm extends React.Component {
       return (
         <React.Fragment>
           <h5 class={`text-danger`}>
-            <i class="i i-info-circle" />
-            {errors.heading}
+            <i class="i i-info-circle" /> {errors.heading}
           </h5>
           <p class="description">{errors.description}</p>
         </React.Fragment>
@@ -272,12 +290,21 @@ export default class UploadNACHForm extends React.Component {
         !!this.errorsList.length ||
         !this.state.extractedData.extracted_data.length;
 
+    const isModalView = this.props.onClose;
+
     const contentView = (
-      <div class="ModalForm Wizard">
+      <div
+        class={classList(
+          'ModalForm',
+          'Wizard',
+          'UploadNACH',
+          !isDataAval && 'UploadNACH--Form'
+        )}
+      >
         <main>
           <main-title class="main-title">Upload NACH Form</main-title>
 
-          <p class="desc">
+          <p class="file-desc">
             If you received the customer's signed NACH form, you can upload it
             here, for details steps and help, please read our{' '}
             <DocsLink url="https://razorpay.com/docs/subscriptions/" />
@@ -291,7 +318,7 @@ export default class UploadNACHForm extends React.Component {
             maxSize="5000000"
             accept={['image/jpeg', 'image/png']}
             size="large"
-            files={file}
+            files={file ? [file] : []}
             uploadedFileName="Upload File here"
             onFileChange={this.handleChange}
             onCloseClick={this.onCloseClick}
@@ -303,7 +330,7 @@ export default class UploadNACHForm extends React.Component {
         </main>
 
         <footer>
-          <Button onClick={this.props.closeModal}>Cancel</Button>
+          {isModalView && <Button onClick={this.props.onClose}>Cancel</Button>}
 
           <AsyncBtn.Primary
             pendingState="Creating..."
@@ -316,17 +343,14 @@ export default class UploadNACHForm extends React.Component {
       </div>
     );
 
-    if (!this.props.onClose) {
+    if (!isModalView) {
       return <div class="StandAloneContainer">{contentView}</div>;
     }
 
     return (
       <Modal
-        class={classList(
-          'UploadNACHForm animate-down',
-          isDataAval && 'UploadNACHForm-fulldata'
-        )}
-        onClose={this.props.closeModal}
+        class={classList('UploadNACHForm animate-down')}
+        onClose={this.props.onClose}
       >
         <ModalContent>{contentView}</ModalContent>
       </Modal>
@@ -351,8 +375,9 @@ const getErrorMessage = ([error, status]) => {
     };
   } else if (error.includes('signature is not detected in the NACH form')) {
     return {
-      heading: 'NACH form could not be read',
-      description: 'signature is not detected in the NACH form',
+      heading: 'Signature is not visible',
+      description:
+        'Kindly upload an image with better quality and ensure that the form has been signed.',
     };
   }
 };
