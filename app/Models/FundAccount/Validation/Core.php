@@ -199,7 +199,9 @@ class Core extends Base\Core
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
-        if ($validation->balance->getAccountType() != Merchant\Balance\AccountType::SHARED) {
+        if ($validation->balance->getType() == Merchant\Balance\Type::BANKING
+            && $validation->balance->getAccountType() != Merchant\Balance\AccountType::SHARED)
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_SHARED_BALANCE_NOT_FOUND,
                 null,

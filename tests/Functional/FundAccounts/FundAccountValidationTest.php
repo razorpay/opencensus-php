@@ -451,4 +451,21 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
     }
+
+    public function testFundAccValidationFailedAccountTypeDirect()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->fixtures->merchant->editEntity('balance', $this->bankingBalance->getId(), ['account_type' => 'direct']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
 }
