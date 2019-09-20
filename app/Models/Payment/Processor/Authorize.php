@@ -1705,7 +1705,7 @@ trait Authorize
 
             $token = (new Token\Repository)->getByWalletTerminalAndCustomerId($wallet, $terminalId, $customerId);
 
-            if ($token !== null)
+            if (($token !== null) and (($token->getExpiredAt() === null) or ($token->getExpiredAt() > time())))
             {
                 $payment->globalToken()->associate($token);
             }
