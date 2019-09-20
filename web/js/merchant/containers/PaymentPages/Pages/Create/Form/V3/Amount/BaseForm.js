@@ -3,7 +3,10 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList } from 'common/util';
-import { mapFieldToAmountFieldType, isMandatory } from '../../Amount_Fields/V3';
+import {
+  mapFieldToAmountFieldType,
+  isMandatoryToBool,
+} from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
@@ -31,7 +34,7 @@ export default class BaseForm extends React.PureComponent {
       disableSubmit,
       hasDescription,
       mirrorDisplayName: name || '',
-      isMandatory: isMandatory(this.props.field.mandatory),
+      isMandatory: isMandatoryToBool(field.mandatory),
     };
 
     this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
@@ -74,12 +77,14 @@ export default class BaseForm extends React.PureComponent {
     });
   };
 
-  toggleOptional = _ => {
+  toggleIsMandatory = _ => {
     const isMandatory = !this.state.isMandatory;
 
     this.setState({
       isMandatory,
     });
+
+    this.props.onChangeIsMandatory(isMandatory);
   };
 
   onDeleteField = _ => {
@@ -145,7 +150,7 @@ export default class BaseForm extends React.PureComponent {
         validator={val => {
           if (val) {
             if (Number(val) < Number(minAmountAllowed)) {
-              return `Min amount must be atleast ${minAmountAllowed}`;
+              return `Amount must be atleast ${minAmountAllowed}`;
             }
           }
         }}
@@ -174,7 +179,7 @@ export default class BaseForm extends React.PureComponent {
             parentQuerySelector=".Modal-container"
           >
             <PopoverBody>
-              Customer can fill custom amount
+              Customers can fill custom amount
               <br />
               {/* TODO: As per the actual limits */}
               (Min: {minAmount}, Max: {maxAmount})
@@ -230,7 +235,7 @@ export default class BaseForm extends React.PureComponent {
                   parentQuerySelector=".Modal-container"
                 >
                   <PopoverBody>
-                    Customer can select or unselect this Item
+                    Customers can select or unselect this Item
                   </PopoverBody>
                 </Popover>
               </div>
@@ -276,7 +281,7 @@ export default class BaseForm extends React.PureComponent {
                 parentQuerySelector=".Modal-container"
               >
                 <PopoverBody>
-                  Customer can change Item quantity
+                  Customers can change Item quantity
                   <br />
                   {/* TODO: As per the actual limits */}
                   (Min: {field.min_purchase}, Max:{' '}
@@ -405,7 +410,7 @@ export default class BaseForm extends React.PureComponent {
           </OptionsItem>
 
           <OptionsItem isSelected={!this.state.isMandatory}>
-            <div onClick={this.toggleOptional}>
+            <div onClick={this.toggleIsMandatory}>
               <i class="i i-optional_mark" />
               {!this.state.isMandatory
                 ? 'Optional Item'

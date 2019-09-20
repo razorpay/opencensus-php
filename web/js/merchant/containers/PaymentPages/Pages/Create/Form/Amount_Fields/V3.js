@@ -75,7 +75,7 @@ export function getBaseFieldForAmountFieldType(amountFieldType) {
 */
 
 // Handles both values where iMandatory is string['0'/'1'] or boolean[false/true]
-export function isMandatory(val) {
+export function isMandatoryToBool(val) {
   return typeof val === 'boolean' ? val : Boolean(Number(val));
 }
 
@@ -87,7 +87,7 @@ export function constructAmountField(fieldData) {
   amountItem.item.name = prettyName;
 
   if (typeof mandatory !== 'undefined') {
-    amountItem.mandatory = isMandatory(mandatory); // BOOL
+    amountItem.mandatory = isMandatoryToBool(mandatory); // BOOL
   }
 
   // TODO: Redundant cuz already handled some part in CreatorManager onSaveAdvancedForm, however safe call to reset to null if empty string

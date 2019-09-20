@@ -10,6 +10,8 @@ import {
   deepMerge,
 } from 'rzp/utils/immutable';
 
+import { paiseToRupees } from 'rzp/utils/rzp-utils';
+
 import { arrayMove } from 'common/util';
 
 import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/model';

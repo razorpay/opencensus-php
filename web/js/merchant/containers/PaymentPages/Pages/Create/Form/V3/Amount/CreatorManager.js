@@ -3,6 +3,9 @@ import BaseForm from './BaseForm';
 import AdvancedForm from './AdvancedForm';
 import { ImageCropperModal } from './ImageCropper';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
+import { isMandatoryToBool } from '../../Amount_Fields/V3';
+import { getCurrency } from 'rzp/ui/Amount';
+import { paiseToRupees } from 'rzp/utils/rzp-utils';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
@@ -88,6 +91,43 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       // Updating currency only for this amount item. This is to keep Base form and Advanced form consistent
       this.setState({
         currency,
+      });
+    };
+
+    // To keep BaseForm and AdvancedForm in sync. Helps in adding default value and validators on min_purchase / min_amount.
+    onChangeIsMandatory = mandatory => {
+      const isMandatory = isMandatoryToBool(mandatory);
+      const { fieldType, currency, field } = this.state;
+
+      const newField = { ...field };
+      newField.mandatory = isMandatory;
+
+      if (isMandatory) {
+        switch (fieldType) {
+          case FIELD_TYPES.dynamic_price.key: {
+            const minAmountAllowed = paiseToRupees(
+              getCurrency(currency).min_value
+            ); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
+
+            if (Number(newField.min_amount) < Number(minAmountAllowed)) {
+              newField.min_amount = minAmountAllowed; // Must be atleast min payable value as per currency
+            }
+
+            break;
+          }
+
+          case FIELD_TYPES.multiple_purchase.key: {
+            if (Number(newField.min_purchase) === 0 && isMandatory) {
+              newField.min_purchase = 1; // Must be atleast 1 if mandatory field
+            }
+
+            break;
+          }
+        }
+      }
+
+      this.setState({
+        field: newField,
       });
     };
 
@@ -191,6 +231,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               onUpdateImage={this.onSaveImageForm}
               onUpdateCurrency={this.onUpdateCurrency}
               isPaymentPageEditMode={isPaymentPageEditMode}
+              onChangeIsMandatory={this.onChangeIsMandatory}
             />
           )}
 
@@ -242,6 +283,7 @@ class BaseFormModal extends React.PureComponent {
       openImageCropper,
       onUpdateImage,
       onUpdateCurrency,
+      onChangeIsMandatory,
       isPaymentPageEditMode,
     } = this.props;
 
@@ -261,6 +303,7 @@ class BaseFormModal extends React.PureComponent {
           onUpdateCurrency={onUpdateCurrency}
           currency={currency}
           isPaymentPageEditMod={isPaymentPageEditMode}
+          onChangeIsMandatory={onChangeIsMandatory}
         />
       </CreatorModal>
     );

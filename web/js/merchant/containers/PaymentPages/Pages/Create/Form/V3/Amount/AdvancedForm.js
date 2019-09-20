@@ -88,22 +88,30 @@ export default class AdvancedForm extends React.PureComponent {
     );
   }
 
-  validateMinAmountLimit = minVal => {
-    const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
-    const { currency } = this.props;
+  get minAmountAllowed() {
+    const { currency, field } = this.props;
+    const isFieldMandatory = field.mandatory;
 
-    // TODO: This should be communicated properly to the merchant that if set empty then field becomes optional
-    // Letting min amount to be ''. If so, then field will automatically become non-optional
-    if (minVal === '') {
-      return;
-    }
-
-    const minAmountAllowed = paiseToRupees(
+    const minAmountInCurrency = paiseToRupees(
       this.props.user.getCurrencyList[currency].min_value
     ); // In Paisa(lower unit of currency)
 
-    if (Number(minVal) < Number(minAmountAllowed)) {
-      return `Min amount must be atleast ${minAmountAllowed}`;
+    const minAmountAllowed = isFieldMandatory ? minAmountInCurrency : 0;
+
+    return minAmountAllowed;
+  }
+
+  validateMinAmountLimit = minVal => {
+    const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
+    const isFieldMandatory = this.props.field.mandatory;
+
+    // min_amount is allowed to be '' or 0 only when item is not mandatory
+    if (minVal === '' && !isFieldMandatory) {
+      return;
+    }
+
+    if (Number(minVal) < Number(this.minAmountAllowed)) {
+      return `Min amount must be atleast ${this.minAmountAllowed}`;
     }
 
     if (maxVal && Number(minVal) > Number(maxVal)) {
@@ -113,13 +121,15 @@ export default class AdvancedForm extends React.PureComponent {
 
   validateMaxAmountLimit = maxVal => {
     const minVal = this.minAmountLimit && this.minAmountLimit.value;
+    const isFieldMandatory = this.props.field.mandatory;
 
-    if (maxVal === '') {
+    // max_amount is allowed to be '' or 0 only when item is not mandatory
+    if (maxVal === '' && !isFieldMandatory) {
       return;
     }
 
-    if (Number(maxVal) <= 0) {
-      return 'Max amount must be atleast 0';
+    if (Number(maxVal) < Number(this.minAmountAllowed)) {
+      return `Max amount must be atleast ${this.minAmountAllowed}`;
     }
 
     if (minVal && Number(maxVal) < Number(minVal)) {
@@ -169,7 +179,7 @@ export default class AdvancedForm extends React.PureComponent {
             name="min_amount"
             defaultValue={minAmount}
             type="number"
-            placeholder="0.00"
+            placeholder={Number(this.minAmountAllowed).toFixed(2)}
             validator={this.validateMinAmountLimit}
             addonAfter="Min"
           />
@@ -198,6 +208,13 @@ export default class AdvancedForm extends React.PureComponent {
     );
   }
 
+  get minPurchaseAllowed() {
+    const isFieldMandatory = this.props.field.mandatory;
+    const minPurchaseAllowed = isFieldMandatory ? 1 : 0;
+
+    return minPurchaseAllowed;
+  }
+
   validateMinPurchaseLimit = minVal => {
     const maxVal = this.maxPurchaseLimit && this.maxPurchaseLimit.value;
     const stockLimit = this.stockLimit && this.stockLimit.value;
@@ -206,8 +223,8 @@ export default class AdvancedForm extends React.PureComponent {
       return;
     }
 
-    if (minVal < 0) {
-      return 'Min purchase must be atleast 0';
+    if (minVal < this.minPurchaseAllowed) {
+      return `Min purchase must be atleast ${this.minPurchaseAllowed}`;
     }
 
     if (maxVal && Number(minVal) > Number(maxVal)) {
@@ -227,8 +244,8 @@ export default class AdvancedForm extends React.PureComponent {
       return;
     }
 
-    if (Number(maxVal) <= 0) {
-      return 'Max purchase must be more than 0';
+    if (Number(maxVal) < this.minPurchaseAllowed) {
+      return `Max purchase must be more than ${this.minPurchaseAllowed}`;
     }
 
     if (minVal && Number(maxVal) < Number(minVal)) {
@@ -258,7 +275,7 @@ export default class AdvancedForm extends React.PureComponent {
             name="min_purchase"
             defaultValue={minPurchase}
             pattern="\d+"
-            placeholder="0"
+            placeholder={this.minPurchaseAllowed}
             validator={this.validateMinPurchaseLimit}
             addonAfter="Min"
           />

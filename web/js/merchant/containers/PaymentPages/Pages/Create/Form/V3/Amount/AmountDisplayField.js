@@ -4,7 +4,10 @@ import { classList } from 'common/util';
 import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
 
-import { mapFieldToAmountFieldType, isMandatory } from '../../Amount_Fields/V3';
+import {
+  mapFieldToAmountFieldType,
+  isMandatoryToBool,
+} from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import { getCurrency } from 'rzp/ui/Amount';
 
@@ -34,9 +37,13 @@ const displayField = ({
     </div>
   );
 
+  let hasCheckBox = false;
+
   switch (fieldType) {
     case FIELD_TYPES.fixed_price.key: {
-      if (!isMandatory(field.mandatory)) {
+      if (!isMandatoryToBool(field.mandatory)) {
+        hasCheckBox = true;
+
         addOnAfter = (
           <div class="Field Field--CheckBox">
             <div class="Field-content">
@@ -126,7 +133,14 @@ const displayField = ({
 
           {fieldEl}
 
-          <span class="Field-addon Field-addon--after">{addOnAfter}</span>
+          <span
+            class={classList(
+              `Field-addon Field-addon--after`,
+              hasCheckBox && 'Field-addon--after--CheckBox'
+            )}
+          >
+            {addOnAfter}
+          </span>
         </div>
         {field.item.description && (
           <div class="Field-description">{field.item.description}</div>
