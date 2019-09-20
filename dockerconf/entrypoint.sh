@@ -49,6 +49,7 @@ configure_dark(){
     echo "SCROOGE_URL=\"https://scrooge-dark.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CORE_PAYMENT_SERVICE_LIVE_URL=\"https://cps-dark-live.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CORE_PAYMENT_SERVICE_TEST_URL=\"https://cps-dark-test.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CHECKOUT_URL=\"https://checkout-dark.razorpay.com\"" >> ./environment/.env.production
 }
 
 run_migration_job(){
