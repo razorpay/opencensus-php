@@ -101,7 +101,6 @@ export default class OndemandModal extends Component {
       currency: 'INR',
     };
 
-    this.trackOnSubmit();
     this.setState({
       isSaving: true,
       errors: [],
@@ -217,7 +216,7 @@ export default class OndemandModal extends Component {
                 <p>Settle to your bank account instantly.</p>
                 <br />
                 <p>
-                  Upcomming Settelments follow the existing schedule.
+                  Upcomming Settlements follow the existing schedule.
                   <a
                     class="btn-link"
                     target="_blank"
@@ -270,12 +269,18 @@ export default class OndemandModal extends Component {
                       disabled={
                         this.state.isLoadingBreakup || !this.state.validAmount
                       }
-                      pendingState="fetching"
+                      pendingState=""
                       onClick={this.dropdown}
                     >
-                      {this.state.breakupShow
-                        ? 'Close Breakup'
-                        : 'Show Breakup'}
+                      {this.state.breakupShow ? (
+                        <span>
+                          Close Breakup <i class="i i-chevron-up" />
+                        </span>
+                      ) : (
+                        <span>
+                          Show Breakup <i class="i i-chevron-down" />
+                        </span>
+                      )}
                     </AsyncBtn.Primary>
                   </div>
                   <div
@@ -286,26 +291,26 @@ export default class OndemandModal extends Component {
                     }
                   >
                     <p>Totoal Amount</p>
-                    <p class="float-right currency">
+                    <span class="float-right currency">
                       <Amount
                         value={this.state.amount * 100}
                         currency={'INR'}
                       />
-                    </p>
+                    </span>
                     <br />
                     <p>Instant Fees</p>
-                    <p class="float-right currency">
+                    <span class="float-right currency">
                       {' '}
                       <p>-</p>
                       <Amount value={this.state.instantFee} currency={'INR'} />
-                    </p>
+                    </span>
                     <br />
                     <p>Taxes</p>
-                    <p class="float-right currency">
+                    <span class="float-right currency">
                       {' '}
                       <p>-</p>
                       <Amount value={this.state.tax} currency={'INR'} />
-                    </p>
+                    </span>
                   </div>
                   <div
                     className={
@@ -315,7 +320,7 @@ export default class OndemandModal extends Component {
                     }
                   >
                     <p>Amount to be settled</p>
-                    <p class="float-right currency-big">
+                    <span class="float-right currency-big">
                       <Amount
                         value={
                           this.state.amount * 100 -
@@ -324,7 +329,7 @@ export default class OndemandModal extends Component {
                         }
                         currency={'INR'}
                       />
-                    </p>
+                    </span>
                   </div>
                 </div>
                 <div class="border">
