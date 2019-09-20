@@ -78,6 +78,9 @@ return [
         'request' => [
             'method' => 'get',
             'url'    => '/preferences?x_entity_id=order_100000000order',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             // Just asserting that the response is 200

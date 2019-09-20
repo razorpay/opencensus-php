@@ -273,7 +273,14 @@ trait Callback
             $input['s2s'] = true;
         }
 
-        $this->preProcessGatewayCallback($input);
+        try
+        {
+            $this->preProcessGatewayCallback($input);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->processHeadlessExceptionIfApplicable($e);
+        }
 
         try
         {
@@ -294,6 +301,17 @@ trait Callback
         }
 
         $this->updateAndNotifyPaymentAuthorized($data);
+    }
+
+    // headless exception handling
+    protected function processHeadlessExceptionIfApplicable($exception)
+    {
+        if ($this->isHeadlessRetryableException($exception) === true)
+        {
+            throw $exception;
+        }
+
+        $this->processPaymentCallbackException($exception);
     }
 
     protected function acquireLockAndProcessCallback($payment, $gatewayInput)
@@ -393,7 +411,6 @@ trait Callback
             $this->rethrowFailedPaymentErrorException($payment);
         }
     }
-
     protected function preProcessGatewayCallback(array &$input)
     {
         $payment = $this->payment;

@@ -1139,7 +1139,7 @@ class Service extends Base\Service
             TraceCode::WEBHOOK_EDIT,
             [
                 'webhook_id' => $webhookId,
-                'input'      => $input,
+                'input'      => array_except($input, [Webhook\Entity::SECRET]),
             ]);
 
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
@@ -3155,5 +3155,18 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         return $this->core()->applyRestrictedSettings($merchant, $action);
+    }
+
+    public function removeSuspendedMerchantsFromMailingList(array $input)
+    {
+        (new Validator)->validateInput('suspended_merchant_remove', $input);
+
+        $merchants = $this->repo->merchant
+                                ->fetchAllSuspendedMerchants($input);
+
+        foreach ($merchants as $merchant)
+        {
+            $this->core()->removeMerchantEmailToMailingList($merchant);
+        }
     }
 }

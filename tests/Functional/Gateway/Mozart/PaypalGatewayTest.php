@@ -44,7 +44,27 @@ class PaypalGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment, 'testPayment');
-        $this->assertEquals('100000Razorpay', $payment['terminal_id']);
+        $this->assertEquals('1ShrdPaypalTml', $payment['terminal_id']);
+
+        $mozartEntity = $this->getLastEntity('mozart', true);
+
+        $this->assertTestResponse($mozartEntity, 'testPaymentMozartEntity');
+
+        return $payment;
+    }
+
+    public function testInternationalPayment()
+    {
+        $payment = $this->payment;
+
+        $payment['contact'] = '491761552902';
+
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testInternationalPayment');
+        $this->assertEquals('1ShrdPaypalTml', $payment['terminal_id']);
 
         $mozartEntity = $this->getLastEntity('mozart', true);
 
@@ -62,7 +82,7 @@ class PaypalGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment, 'testPayment');
-        $this->assertEquals('100000Razorpay', $payment['terminal_id']);
+        $this->assertEquals('1ShrdPaypalTml', $payment['terminal_id']);
 
         $mozartEntity = $this->getLastEntity('mozart', true);
 

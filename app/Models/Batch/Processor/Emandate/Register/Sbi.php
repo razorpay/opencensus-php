@@ -14,6 +14,8 @@ class Sbi extends Base
 {
     const GATEWAY   = Gateway::NETBANKING_SBI;
 
+    protected $useSpreadSheetLibrary = false;
+
     protected $gatewayPaymentMapping = [
         self::TOKEN_STATUS     => NetbankingEntity::SI_STATUS,
         self::TOKEN_ERROR_CODE => NetbankingEntity::SI_MSG,
@@ -81,6 +83,12 @@ class Sbi extends Base
     protected function getNumRowsToSkipExcelFile()
     {
         return 5;
+    }
+
+
+    protected function getStartRowExcelFiles()
+    {
+        return 6;
     }
 
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)

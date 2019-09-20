@@ -32,6 +32,7 @@ class ProviderCode
     const AXIS               = 'axis';
     const AXISBANK           = 'axisbank';
     const AXISGO             = 'axisgo';
+    const AXISB              = 'axisb';
     const BANDHAN            = 'bandhan';
     const BARODAMPAY         = 'barodampay';
     const BARODAPAY          = 'barodapay';
@@ -50,6 +51,7 @@ class ProviderCode
     const CUB                = 'cub';
     const DBS                = 'dbs';
     const DCB                = 'dcb';
+    const DCBBANK            = 'dcbbank';
     const DENABANK           = 'denabank';
     const DLB                = 'dlb';
     const EAZYPAY            = 'eazypay';
@@ -64,6 +66,7 @@ class ProviderCode
     const HSBC               = 'hsbc';
     const ICICI              = 'icici';
     const ICICIPAY           = 'icicipay';
+    const ICICIBANK          = 'icicibank';
     const IDBI               = 'idbi';
     const IDBIBANK           = 'idbibank';
     const IDFC               = 'idfc';
@@ -79,6 +82,7 @@ class ProviderCode
     const JIO                = 'jio';
     const JKB                = 'jkb';
     const JSB                = 'jsb';
+    const JSBP               = 'jsbp';
     const KARB               = 'karb';
     const KARURVYSYABANK     = 'karurvysyabank';
     const KAYPAY             = 'kaypay';
@@ -159,6 +163,7 @@ class ProviderCode
         self::AXIS               => IFSC::UTIB,
         self::AXISBANK           => IFSC::UTIB,
         self::AXISGO             => IFSC::UTIB,
+        self::AXISB              => IFSC::UTIB,
         self::BANDHAN            => IFSC::BDBL,
         self::BARODAMPAY         => IFSC::BARB,
         self::BARODAPAY          => IFSC::BARB,
@@ -177,6 +182,7 @@ class ProviderCode
         self::CUB                => IFSC::CIUB,
         self::DBS                => IFSC::DBSS,
         self::DCB                => IFSC::DCBL,
+        self::DCBBANK            => IFSC::DCBL,
         self::DENABANK           => IFSC::BKDN,
         self::DLB                => IFSC::DLXB,
         self::EAZYPAY            => IFSC::ICIC,
@@ -190,6 +196,7 @@ class ProviderCode
         self::HDFCBANKJD         => IFSC::HDFC,
         self::HSBC               => IFSC::HSBC,
         self::ICICI              => IFSC::ICIC,
+        self::ICICIBANK          => IFSC::ICIC,
         self::ICICIPAY           => IFSC::ICIC,
         self::IDBI               => IFSC::IBKL,
         self::IDBIBANK           => IFSC::IBKL,
@@ -205,6 +212,7 @@ class ProviderCode
         self::IOB                => IFSC::IOBA,
         self::JIO                => 'NPCI',
         self::JSB                => IFSC::JSBP,
+        self::JSBP               => IFSC::JSBP,
         self::JKB                => IFSC::JAKA,
         self::KARB               => IFSC::KARB,
         self::KARURVYSYABANK     => IFSC::KVBL,

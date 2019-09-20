@@ -77,6 +77,11 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $public = [
+        self::PERCENT_RATE,
+        self::FIXED_RATE,
+    ];
+
     protected $fillable = [
         self::ID,
         self::PLAN_ID,

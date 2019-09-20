@@ -1173,6 +1173,56 @@ class MerchantTest extends TestCase
         $this->assertNotNull($merchant['activated_at']);
     }
 
+    public function testMerchantEditReceiptEmailEventCapture()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->ba->adminAuth();
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['receipt_email_trigger_event'], 'captured');
+    }
+
+    public function testMerchantEditReceiptEmailEventAuthorized()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->edit('merchant',  $merchant['id'], ['receipt_email_trigger_event' => 'captured']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->ba->adminAuth();
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['receipt_email_trigger_event'], 'authorized');
+    }
+
     public function testMerchantArchiveWithNoMerchantDetails()
     {
         $merchant = $this->getLastEntity('merchant', true);
@@ -1440,6 +1490,17 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateBankAccountWithAddressProof()
+    {
+        $documentType = 'address_proof_url';
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        (new MerchantDetailTest())->updateUploadDocumentData(__FUNCTION__, $documentType);
+
+        $this->startTest();
+    }
+
     public function testGetBankAccount()
     {
         $this->testAddBankAccount();
@@ -1581,7 +1642,9 @@ class MerchantTest extends TestCase
         $request = array(
             'url' => '/checkout',
             'method' => 'get',
-            'content' => [],
+            'content' => [
+                'currency' => 'INR',
+            ],
         );
 
         $response = $this->sendRequest($request);
@@ -2155,6 +2218,30 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('epaylater', $response['methods']['paylater']);
     }
 
+    public function testGetCheckoutPreferencesForPaypalCurrency()
+    {
+        $this->fixtures->merchant->enablePaypal();
+
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences(null, 'USD');
+
+        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
+    }
+
+    public function testGetCheckoutPreferencesForPaypalCurrencyWithOrder()
+    {
+        $order = $this->fixtures->order->createWalletInternationalOrder();
+
+        $this->fixtures->merchant->enablePaypal();
+
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
+    }
+
     public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()
     {
         $this->fixtures->merchant->enableEmi();
@@ -2220,12 +2307,15 @@ class MerchantTest extends TestCase
         }
     }
 
-    protected function getPreferences($orderId = null)
+    protected function getPreferences($orderId = null, $currency = 'INR')
     {
         $request = [
             'url'     => '/preferences',
             'method'  => 'get',
             'content' => [
+                'currency' => [
+                    $currency
+                ],
             ],
         ];
 

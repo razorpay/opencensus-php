@@ -1196,7 +1196,6 @@ return [
                         'speed_requested' => 'optimum',
                         'speed_processed' => 'instant',
                         'acquirer_data'   => [
-                            'arn' => null,
                         ],
                     ],
                 ],

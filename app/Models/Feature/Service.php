@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
 
 class Service extends Base\Service
 {
@@ -141,33 +142,49 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::FEATURE_MULTI_ASSIGN_REQUEST, $input);
 
+        $this->increaseAllowedSystemLimits();
+
         $entityIds = $input[Constants::ENTITY_IDS];
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         $response = new Base\Collection;
 
+        $names = $input[Entity::NAME];
+
+        // Will separately update dashboard to start
+        // sending a list of features in a single request
+        if (is_array($input[Entity::NAME]) === false)
+        {
+            $names = [$input[Entity::NAME]];
+        }
+
         foreach ($entityIds as $entityId)
         {
-            $featureParam = [
-                Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
-                Entity::ENTITY_ID       => $entityId,
-                Entity::NAME            => $input[Entity::NAME]
-            ];
-
-            try
+            foreach ($names as $name)
             {
-                $feature = (new Core)->create($featureParam, $shouldSync);
+                $featureParam = [
+                    Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
+                    Entity::ENTITY_ID       => $entityId,
+                    Entity::NAME            => $name,
+                ];
 
-                $response->push($feature);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->warn(
-                    TraceCode::FEATURE_ASSIGNMENT_EXCEPTION,
-                    [
-                        'msg' => $e->getMessage()
-                    ]);
+                try
+                {
+                    $feature = (new Core)->create($featureParam, $shouldSync);
+
+                    $response->push($feature);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e);
+
+                    $this->trace->warn(
+                        TraceCode::FEATURE_ASSIGNMENT_EXCEPTION,
+                        [
+                            'msg' => $e->getMessage()
+                        ]);
+                }
             }
         }
 
@@ -202,6 +219,13 @@ class Service extends Base\Service
         }
 
         return $response->toArray();
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(300);
     }
 
     public function getFeaturesForEntity($entity)

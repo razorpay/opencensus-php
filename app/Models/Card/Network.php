@@ -283,7 +283,7 @@ class Network
             return NetworkName::$codes[$fullName];
         }
 
-        return NetworkName::UNKNOWN;
+        return Network::UNKNOWN;
     }
 
     public static function getColorCode($networkCode)

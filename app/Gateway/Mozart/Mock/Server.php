@@ -355,6 +355,28 @@ class Server extends Base\Mock\Server
         ];
     }
 
+    public function createTerminal($body)
+    {
+        $response_body = [
+            'data' => [
+                'Description'   => "Success",
+                'Status'        => "00",
+                '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
+            ],
+            'error'             => [],
+            'external_trace_id' => "",
+            'mozart_id'         => "blfq216r1gunssphbs01",
+            'next'              => null,
+            'success'           => true
+        ];
+        
+        $response = \Response::make($response_body);
+        
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+ 
+        return $response;
+    }
+    
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');

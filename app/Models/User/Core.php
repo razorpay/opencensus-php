@@ -10,6 +10,7 @@ use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -72,6 +73,8 @@ class Core extends Base\Core
         $user->setConfirmTokenNull();
 
         $this->repo->saveOrFail($user);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS, $this->merchant, null);
 
         return $user;
     }
