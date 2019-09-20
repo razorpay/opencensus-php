@@ -1339,4 +1339,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function deleteSuspendedMerchantsFromMailingList()
+    {
+        $input = Request::all();
+
+        $this->service()->removeSuspendedMerchantsFromMailingList($input);
+    }
 }

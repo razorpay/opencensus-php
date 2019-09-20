@@ -242,6 +242,7 @@ final class Route
         'get_merchant_partner_status'              => ['get',      'merchant/partner_status',                        'MerchantController@getMerchantPartnerStatus'                       ],
         'merchant_invoice_update_gstin'            => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         // TODO: Should be removed once the correction has run for all the merchant
         'merchant_invoice_correction'              => ['post',     'merchants/invoice/correction',                   'MerchantInvoiceController@createCorrectionInvoice'                 ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
@@ -1671,6 +1672,7 @@ final class Route
         'iin_batch_process_record',
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
+        'mailing_list_remove_suspended_merchant',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3053,6 +3055,7 @@ final class Route
             'refund_speed_processed_backfill',
             'get_setl_amount',
             'cps_sync_gateway_entities_cron',
+            'mailing_list_remove_suspended_merchant',
         ],
 
         'subscriptions' => [

@@ -864,4 +864,25 @@ class Repository extends Base\Repository
                      ->where($partnerConfigOriginType, PartnerConfig\Constants::APPLICATION);
             });
     }
+
+    public function fetchAllSuspendedMerchants($input)
+    {
+        $merchants = $this->newQuery()
+                          ->where(Entity::LIVE, '=', 0)
+                          ->whereNotNull(Entity::SUSPENDED_AT);
+
+        if(isset($input['limit']) === true )
+        {
+            $merchants->take($input['limit']);
+        }
+
+        if(isset($input['skip']) === true )
+        {
+            $merchants->skip($input['skip']);
+        }
+
+        $merchants = $merchants->select(['email', 'transaction_report_email'])
+                               ->get();
+        return $merchants;
+    }
 }

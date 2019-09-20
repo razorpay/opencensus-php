@@ -38,6 +38,7 @@ final class Constants
     const RECORDS_PROCESSED                        = 'records_processed';
 
     const REMOVE                                  = 'remove';
+    const LIVE                                    = 'live';
 
     public static $partnerTypes = [
         self::BANK,
