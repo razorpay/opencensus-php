@@ -19,6 +19,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Repository extends Base\Repository
 {
@@ -67,11 +68,27 @@ class Repository extends Base\Repository
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
         Constants::INSTANT_ACTIVATION   => 'sometimes|boolean',
+        Constants::BUSINESS_TYPE_BUCKET => 'sometimes|custom'
     ];
 
     protected function validateAccountStatus($attribute, $value)
     {
         AccountStatus::validate($value);
+    }
+
+    /**
+     * @param $attribute
+     * @param $value
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateBusinessTypeBucket($attribute, $value)
+    {
+        if (Detail\BusinessType::isValidBusinessTypeBucket($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid business type bucket: ' . $value);
+        }
     }
 
     protected function validateSubAccounts($attribute, $value)
