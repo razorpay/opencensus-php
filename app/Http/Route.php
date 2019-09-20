@@ -154,6 +154,7 @@ final class Route
         // Both the following routes refund_verify_call, refund_gateway_call must always point to master DB
         'refund_gateway_call'                      => ['post',     'refunds/{id}/gateway_refund',                    'RefundController@postGatewayRefundCall'                            ],
         'refund_verify_call'                       => ['post',     'refunds/{id}/gateway_verify',                    'RefundController@postGatewayVerifyRefundCall'                      ],
+        'scrooge_verify_refund_call'               => ['post',     'refunds/{id}/verify_refund',                     'RefundController@postScroogeVerifyRefundCall'                      ],
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
         'scrooge_refund_create_bulk'               => ['post',     'refunds/scrooge_create/bulk',                    'RefundController@scroogeRefundCreateBulk'                          ],
         'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
@@ -1590,6 +1591,7 @@ final class Route
         'refund_update_status',
         'refund_gateway_call',
         'refund_verify_call',
+        'scrooge_verify_refund_call',
         'refund_fetch_status',
         'scrooge_entities',
         'schedule_migration',
@@ -3117,6 +3119,7 @@ final class Route
             'refunds_reconcile_bulk',
             'scrooge_refund_create_bulk',
             'refund_verify_call',
+            'scrooge_verify_refund_call',
             'refund_fetch_status',
             'scrooge_entities',
             'scrooge_refund_reference1_bulk_update',
