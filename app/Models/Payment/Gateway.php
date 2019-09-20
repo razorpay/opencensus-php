@@ -1214,19 +1214,34 @@ class Gateway
      * @var array
      */
     public static $gatewaysEmandateBanksMap = [
-        Gateway::NETBANKING_ICICI      => [IFSC::ICIC],
-        Gateway::NETBANKING_AXIS       => [IFSC::UTIB],
-        Gateway::NETBANKING_HDFC       => [IFSC::HDFC],
-        Gateway::NETBANKING_SBI        => [IFSC::SBIN],
-        Gateway::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING_BANKS,
-        Gateway::ENACH_RBL             => self::EMANDATE_AADHAAR_BANKS,
+        Gateway::NETBANKING_ICICI      => [
+            AuthType::NETBANKING       => [ IFSC::ICIC],
+        ],
+        Gateway::NETBANKING_AXIS       => [
+            AuthType::NETBANKING       => [IFSC::UTIB],
+        ],
+        Gateway::NETBANKING_HDFC       => [
+            AuthType::NETBANKING       => [IFSC::HDFC],
+        ],
+        Gateway::NETBANKING_SBI        => [
+            AuthType::NETBANKING       => [IFSC::SBIN],
+        ],
+        Gateway::ENACH_NPCI_NETBANKING => [
+            AuthType::NETBANKING       => self::ENACH_NPCI_NETBANKING_BANKS,
+        ],
+        Gateway::ENACH_RBL             => [
+            AuthType::AADHAAR          => self::EMANDATE_AADHAAR_BANKS,
+            AuthType::AADHAAR_FP       => self::EMANDATE_AADHAAR_BANKS,
+        ],
         // This is added here just for test cases
         // We are using UTIB in test cases
         Gateway::ESIGNER_DIGIO         => [
-            IFSC::UTIB,
+            AuthType::AADHAAR          => [IFSC::UTIB],
+            AuthType::AADHAAR_FP       => [IFSC::UTIB],
         ],
         Gateway::ESIGNER_LEGALDESK     => [
-            IFSC::UTIB,
+            AuthType::AADHAAR          => [IFSC::UTIB],
+            AuthType::AADHAAR_FP       => [IFSC::UTIB],
         ],
     ];
 
