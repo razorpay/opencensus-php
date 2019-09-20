@@ -5382,8 +5382,6 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
-            $payment = $this->payment;
-
             $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_SUCCESS_EVENT);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
