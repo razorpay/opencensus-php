@@ -31,6 +31,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { validateUISchema as validateUISchemaV2 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
 import { validateUISchema as validateUISchemaV3 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V3';
 
+import { rupeesToPaise } from 'rzp/utils/rzp-utils';
 import {
   trackWYSIWYGCloseIntent,
   trackConfirmWYSIWYGCloseIntent,
@@ -377,15 +378,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           item: {
             name,
             description,
-            amount: amount ? amount * 100 : null, // Convert in paisa (smaller unit)
+            amount: amount ? rupeesToPaise(amount) : null, // Convert in paisa (smaller unit)
           },
           settings, // Contains position
           image_url,
           mandatory,
           min_purchase,
           max_purchase,
-          min_amount: min_amount ? min_amount * 100 : null,
-          max_amount: max_amount ? max_amount * 100 : null,
+          min_amount: min_amount ? rupeesToPaise(min_amount) : null,
+          max_amount: max_amount ? rupeesToPaise(max_amount) : null,
           stock: stock ? stock : null, // stock cannot be 0 or ""
         };
 

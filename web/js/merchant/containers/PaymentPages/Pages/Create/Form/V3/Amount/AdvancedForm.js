@@ -4,6 +4,8 @@ import Form from 'component/Form';
 import Button from 'component/Button';
 import Input from 'component/Input';
 
+import { paiseToRupees } from 'rzp/utils/rzp-utils';
+
 import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 
@@ -96,8 +98,9 @@ export default class AdvancedForm extends React.PureComponent {
       return;
     }
 
-    const minAmountAllowed =
-      this.props.user.getCurrencyList[currency].min_value / 100; // In Paisa(lower unit of currency)
+    const minAmountAllowed = paiseToRupees(
+      this.props.user.getCurrencyList[currency].min_value
+    ); // In Paisa(lower unit of currency)
 
     if (Number(minVal) < Number(minAmountAllowed)) {
       return `Min amount must be atleast ${minAmountAllowed}`;
@@ -283,9 +286,8 @@ export default class AdvancedForm extends React.PureComponent {
     const fieldType = this.fieldType;
 
     switch (fieldType) {
-      // Same Advanced Form for both fixed_price and fixed_price_optional
+      // Same Advanced Form for both fixed_price
       case FIELD_TYPES.fixed_price.key:
-      case FIELD_TYPES.fixed_price_optional.key:
         return this.FIELD_availableStock;
 
       case FIELD_TYPES.dynamic_price.key:

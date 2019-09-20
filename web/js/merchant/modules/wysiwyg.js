@@ -140,15 +140,15 @@ export default function(state = initialState, action) {
           // While creation/editing, all amounts are converted to Paisa (or smaller unit)
 
           if (pi.item.amount) {
-            pi.item.amount /= 100; // Convert in Rupees (or bigger unit)
+            pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
           }
 
           if (pi.min_amount) {
-            pi.min_amount /= 100; // Convert in Rupees (or bigger unit)
+            pi.min_amount = paiseToRupees(pi.min_amount); // Convert in Rupees (or bigger unit)
           }
 
           if (pi.max_amount) {
-            pi.max_amount /= 100; // Convert in Rupees (or bigger unit)
+            pi.max_amount = paiseToRupees(pi.max_amount); // Convert in Rupees (or bigger unit)
           }
         });
 
@@ -167,7 +167,7 @@ export default function(state = initialState, action) {
         const amountItem = entityData.payment_page_items[0];
 
         entityData.amount = amountItem.item.amount
-          ? amountItem.item.amount / 100
+          ? paiseToRupees(amountItem.item.amount)
           : null; // Convert in Rupees (or bigger unit)
 
         entityData.quantity_sold = amountItem.quantity_sold;
