@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Payout\Processor;
 
-use RZP\Models\Contact\Entity;
 use RZP\Models\Payout;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Contact\Entity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -48,7 +48,8 @@ class FundAccountPayout extends Base
      */
     public function validateFundAccountContact(FundAccount\Entity $fundAccount)
     {
-        if ($fundAccount->getSourceType() === Entity::CONTACT && optional($fundAccount->source)->isActive() === true) {
+        if ($fundAccount->getSourceType() === Entity::CONTACT && optional($fundAccount->source)->isActive() === true)
+        {
             return;
         }
 
