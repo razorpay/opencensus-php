@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Merchant\Balance\Entity as Balance;
@@ -16,10 +17,11 @@ final class Metric
     const PAYOUT_CANCELLED_TOTAL = 'payout_cancelled_total';
 
     // Histograms
-    const PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS   = 'payout_created_to_initiated_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS = 'payout_initiated_to_processed_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS  = 'payout_initiated_to_reversed_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS    = 'payout_initiated_to_failed_duration_seconds.histogram';
+    const PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS       = 'payout_created_to_initiated_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS     = 'payout_initiated_to_processed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS      = 'payout_initiated_to_reversed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS        = 'payout_initiated_to_failed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_FTA_INITIATED_DURATION_SECONDS = 'payout_initiated_to_fta_initiated_duration_seconds.histogram';
 
     // Dimension constants
     const IS_BULK_PAYOUT = 'is_bulk_payout';
@@ -41,22 +43,6 @@ final class Metric
     {
         switch ($status)
         {
-            case Status::INITIATED:
-                self::pushInitiatedMetrics($trace, $payout);
-                break;
-
-            case Status::PROCESSED:
-                self::pushProcessedMetrics($trace, $payout);
-                break;
-
-            case Status::REVERSED:
-                self::pushReversedMetrics($trace, $payout);
-                break;
-
-            case Status::FAILED:
-                self::pushFailedMetrics($trace, $payout);
-                break;
-
             case Status::PENDING:
                 self::pushPendingMetrics($trace, $payout);
                 break;
@@ -73,12 +59,32 @@ final class Metric
                 self::pushCancelledMetrics($trace, $payout);
                 break;
 
+            case Status::INITIATED:
+                self::pushFtaInitiatedMetrics($trace, $payout);
+                break;
+
+            case Status::CREATED:
+                self::pushPayoutInitiatedMetrics($trace, $payout);
+                break;
+
+            case Status::PROCESSED:
+                self::pushProcessedMetrics($trace, $payout);
+                break;
+
+            case Status::REVERSED:
+                self::pushReversedMetrics($trace, $payout);
+                break;
+
+            case Status::FAILED:
+                self::pushFailedMetrics($trace, $payout);
+                break;
+
             default:
                 return;
         }
     }
 
-    public static function pushCreatedMetrics(Trace $trace, Entity $payout)
+    public static function pushPayoutCreateMetrics(Trace $trace, Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
 
@@ -113,10 +119,21 @@ final class Metric
         $trace->count(self::PAYOUT_CANCELLED_TOTAL, $metricDimensions);
     }
 
-    protected static function pushInitiatedMetrics(Trace $trace, Entity $payout)
+    protected static function pushFtaInitiatedMetrics(Trace $trace, Entity $payout)
     {
-        $metricDimensions        = self::getMetricDimensions($payout);
-        $createdToInitiatedTime  = $payout->getInitiatedAt() - $payout->getCreatedAt();
+        $metricDimensions            = self::getMetricDimensions($payout);
+        $initiatedToFtaInitiatedTime = Carbon::now()->getTimestamp() - $payout->getInitiatedAt();
+
+        $trace->histogram(
+            self::PAYOUT_INITIATED_TO_FTA_INITIATED_DURATION_SECONDS,
+            $initiatedToFtaInitiatedTime,
+            $metricDimensions);
+    }
+
+    public static function pushPayoutInitiatedMetrics(Trace $trace, Entity $payout)
+    {
+        $metricDimensions       = self::getMetricDimensions($payout);
+        $createdToInitiatedTime = $payout->getInitiatedAt() - $payout->getCreatedAt();
 
         $trace->histogram(
             self::PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS,

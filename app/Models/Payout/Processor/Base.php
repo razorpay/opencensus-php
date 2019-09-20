@@ -115,7 +115,7 @@ class Base extends BaseCore
                     'payout'      => $payout->toArray(),
                 ]);
 
-            Metric::pushCreatedMetrics($this->trace, $payout);
+            Metric::pushPayoutCreateMetrics($this->trace, $payout);
 
             return $payout;
         });
