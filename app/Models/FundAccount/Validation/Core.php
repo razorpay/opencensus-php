@@ -193,10 +193,19 @@ class Core extends Base\Core
      * @param array $input
      * @param Merchant\Entity $merchant
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     protected function createValidationEntity(array $input, Merchant\Entity $merchant): Entity
     {
         $validation = $this->buildValidationEntity($input, $merchant);
+
+        if ($validation->balance->getAccountType() != Merchant\Balance\AccountType::SHARED) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_SHARED_BALANCE_NOT_FOUND,
+                null,
+                null
+            );
+        }
 
         $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
