@@ -84,13 +84,6 @@ class Gateway extends Base\Gateway
                 $content[ResponseFields::ERROR_MESSAGE]);
         }
 
-        // OTP_REDIRECT sends a authCode as query param
-        // If it exists, handle it as callback for OTP_REDIRECT
-        /*if (isset($input['gateway'][ResponseFields::AUTH_CODE]) === true)
-        {
-            return $this->callbackOtpRedirectFlow($input);
-        }*/
-
         return $this->callbackTopupFlow($input);
     }
 
@@ -223,8 +216,6 @@ class Gateway extends Base\Gateway
     {
         if (isset($input['gateway'][ResponseFields::TXN_ID]) === true)
         {
-            $this->action($input, Action::VERIFY);
-
             $contentToSave = array(
                 RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
                 RequestFields::EMAIL         => $input['payment']['email'],
@@ -241,7 +232,6 @@ class Gateway extends Base\Gateway
             $this->updateGatewayPaymentEntity($wallet, $contentToSave);
 
             return;
-            //return $this->topupCallbackVerify($input);
         }
 
         $this->action($input, Action::DEBIT_WALLET);
@@ -435,74 +425,6 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    public function topupCallbackVerify(array $input)
-    {
-        parent::verify($input);
-
-        $verify = new Verify($this->gateway, $input);
-
-        $gatewayPayment = $this->getPaymentToVerify($verify);
-
-        if (($gatewayPayment === null) and
-            ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
-        {
-            $this->trace->warning(
-                TraceCode::GATEWAY_PAYMENT_VERIFY,
-                [
-                    'payment_id' => $verify->input['payment']['id'],
-                    'message'    => 'payment id not found in the gateway database',
-                    'gateway'    => $this->gateway
-                ]
-            );
-
-            return null;
-        }
-
-        $this->sendPaymentVerifyRequest($verify);
-
-        $payment = $verify->payment;
-        $input = $verify->input;
-        $content = $verify->verifyResponseContent;
-
-        $verify->status = VerifyResult::STATUS_MATCH;
-
-        // Gateway marked payment as a failure
-        if ((isset($content[ResponseFields::STATUS]) === false) or
-            ($content[ResponseFields::STATUS] !== Status::TRANSACTION_SUCCESS))
-        {
-            $verify->match = false;
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-        }
-        else if ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS)
-        {
-            $verify->match = true;
-        }
-
-        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
-
-        if (($verify->amountMismatch === true) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\RuntimeException(
-                'Payment amount verification failed.',
-                [
-                    'payment_id' => $this->input['payment']['id'],
-                    'gateway'    => $this->gateway
-                ]
-            );
-        }
-
-        if (($verify->match === false) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify);
-        }
-
-        return $verify->getDataToTrace();
     }
 
     public function verifyRefund(array $input)
@@ -870,7 +792,7 @@ class Gateway extends Base\Gateway
 
         unset($response[ResponseFields::CHECKSUM]);
 
-        $expectedCheckSum  = $this->getHashOfArray($response);
+        $expectedCheckSum = $this->getHashOfArray($response);
 
         if (hash_equals($expectedCheckSum, $checkSum) === false)
         {
