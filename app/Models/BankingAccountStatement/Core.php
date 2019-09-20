@@ -87,14 +87,6 @@ class Core extends Base\Core
 
         $format = $input[Entity::FORMAT];
 
-        $sendEmail = $input[Entity::SEND_EMAIL];
-
-        $toEmails = $input[Entity::TO_EMAIL_LIST];
-
-        $toEmails = explode(',', $toEmails);
-
-        $sendEmail = filter_var($sendEmail, FILTER_VALIDATE_BOOLEAN);
-
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
             [
@@ -103,7 +95,7 @@ class Core extends Base\Core
                 'fromDate'       => $fromDate,
                 'toDate'         => $toDate,
                 'format'         => $format,
-                'sendEmail'      => $sendEmail,
+                'sendEmail'      => $input[Entity::SEND_EMAIL],
             ]);
 
         SupportedFormats::validate($channel, $format);
@@ -112,43 +104,34 @@ class Core extends Base\Core
 
         $statementFile = $statementGenerator->getStatement();
 
-        $fileURL = (new Accessor())->getSignedUrlOfFile($statementFile);
+        $fileAccessUrl = (new Accessor())->getSignedUrlOfFile($statementFile);
 
-        if ($sendEmail and count($toEmails) > 0)
-        {
-            $this->sendBankAccountStatementEmail($accountNumber, $channel, $toEmails, $fileURL, $fromDate, $toDate);
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+            [
+                'fileURL' => $fileAccessUrl
+            ]);
 
-            return ['message' => 'Email Sent'];
-        }
-        else
-        {
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
-                [
-                    'fileURL' => $fileURL
-                ]);
-
-            return ['message' => 'File Generated', 'file_path' => $fileURL];
-        }
+        return $fileAccessUrl;
     }
 
-    protected function sendBankAccountStatementEmail(string $accountNumber,
-                                                     string $channel,
-                                                     array $toEmails,
-                                                     string $fileURL,
-                                                     string $fromDate,
-                                                     string $toDate)
+    public function sendBankAccountStatementEmail(array $input, string $fileAccessUrl)
     {
-        $merchant = $bankingAccount = $this->repo
-                                           ->banking_account
-                                           ->findByAccountNumberAndChannel($accountNumber, $channel)
-                                           ->merchant;
+        $merchant = $this->merchant;
+
+        $toEmails = $input[Entity::TO_EMAIL_LIST];
+
+        $toEmails = explode(',', $toEmails);
+
+        $fromDate = $input[Entity::FROM_DATE];
+
+        $toDate = $input[Entity::TO_DATE];
 
         $email = new StatementMail($merchant,
                                    $toEmails,
                                    $fromDate,
                                    $toDate,
-                                   $fileURL);
+                                   $fileAccessUrl);
 
         Mail::queue($email);
     }

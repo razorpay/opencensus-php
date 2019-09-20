@@ -22,8 +22,17 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::ACCOUNT_STATEMENT_GENERATE, $input);
 
-        $response = $this->core()->generateBankAccountStatement($input);
+        $fileAccessUrl = $this->core()->generateBankAccountStatement($input);
 
-        return $response;
+        $sendEmail = filter_var($input[Entity::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
+
+        if($sendEmail)
+        {
+            $this->core->sendBankAccountStatementEmail($input, $fileAccessUrl);
+
+            return ['message' => 'Email Sent'];
+        }
+
+        return ['message' => 'File Generated', 'file_path' => $fileAccessUrl];
     }
 }

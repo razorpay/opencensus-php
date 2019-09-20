@@ -3,7 +3,9 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use RZP\Base;
+use Exception;
 use RZP\Exception\BadRequestValidationFailureException;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 
 class Validator extends Base\Validator
@@ -34,8 +36,29 @@ class Validator extends Base\Validator
         Entity::TO_DATE        => 'required|epoch',
         Entity::FORMAT         => 'required|string|custom',
         Entity::SEND_EMAIL     => 'required|boolean',
-        Entity::TO_EMAIL_LIST  => 'required'
+        Entity::TO_EMAIL_LIST  => 'required_if:send_email,1|custom'
     ];
+
+    protected function validateToEmails($attribute, $emailList)
+    {
+        # if this is not empty, then it must be a comma-separated list of valid emails
+        $emails = explode(',', $emailList);
+        foreach ($emails as $emailToVerify)
+        {
+            $validator = ValidatorFacade::make(['email' => $emailToVerify], [
+                'email' => 'required|email',
+            ]);
+
+            try
+            {
+                $validator->validate();
+            }
+            catch (Exception $e)
+            {
+                throw new BadRequestValidationFailureException("Invalid Email: $emailToVerify");
+            }
+        }
+    }
 
     protected function validateFormat($attribute, $format)
     {

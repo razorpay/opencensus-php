@@ -80,11 +80,6 @@ class StatementMail extends Mailable
         return $this;
     }
 
-    protected function addCc()
-    {
-        return $this;
-    }
-
     protected function getReadableDuration()
     {
         $formattedFromDate = $this->format($this->fromDate, self::DATE_FORMAT);
@@ -107,11 +102,6 @@ class StatementMail extends Mailable
 
         $this->with($data);
 
-        return $this;
-    }
-
-    protected function addHeaders()
-    {
         return $this;
     }
 
