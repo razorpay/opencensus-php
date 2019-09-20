@@ -67,27 +67,6 @@ class PayoutTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        // Test for Metrics -- to be added later
-        //$metricsMock = $this->createMetricsMock();
-        //
-        //$metricsMock->expects($this->at(10))
-        //            ->method('count')
-        //            ->withConsecutive(
-        //                [
-        //                    'payout_created_total',
-        //                    1,
-        //                    ['mode' => 'NEFT', 'channel' => 'yesbank']
-        //                ]);
-        //
-        //$metricsMock->expects($this->atLeast(1))
-        //            ->method('histogram')
-        //            ->withConsecutive(
-        //                [
-        //                    'payout_created_to_initiated_duration_millseconds.histogram',
-        //                    $this->greaterThanOrEqual(0),
-        //                    [],
-        //                ]);
-
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
@@ -1319,7 +1298,7 @@ class PayoutTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
 
@@ -1333,10 +1312,10 @@ class PayoutTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
-    
+
     public function createEsIndex()
     {
         $esMock = Config::get('database.es_mock');

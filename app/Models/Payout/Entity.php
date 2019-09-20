@@ -789,6 +789,8 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::STATUS, $status);
+
+        Metric::pushPayoutStatusChangeMetrics($this);
     }
 
     protected function setStatusAttribute($status)
@@ -814,8 +816,6 @@ class Entity extends Base\PublicEntity
 
             $this->setAttribute($timestampKey, $currentTime);
         }
-
-        Metric::pushPayoutStatusChangeMetrics(app('trace'), $this, $status);
     }
 
     public function setInitiatedAt()
