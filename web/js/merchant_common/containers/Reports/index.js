@@ -774,9 +774,7 @@ export default function Reports(store, opts) {
                                 isPartnerReport &&
                                 selectedConfig.referred_accounts === 'all'
                               ) && <option value="monthly">Monthly</option>}
-                              {user.isReportDateRangeEnabled && (
-                                <option value="dateRange">Custom</option>
-                              )}
+                              <option value="dateRange">Custom</option>
                             </Field>
                           </div>
                           {type === 'dateRange' && (
