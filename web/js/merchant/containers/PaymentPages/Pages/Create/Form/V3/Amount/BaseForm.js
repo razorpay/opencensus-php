@@ -9,6 +9,7 @@ import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
+import { paiseToRupees } from 'rzp/utils/rzp-utils';
 import { getCurrency } from 'rzp/ui/Amount';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
@@ -131,12 +132,23 @@ export default class BaseForm extends React.PureComponent {
     const amount = field.item.amount || ''; // Note: If amount is there, then isDisabled = false;
     const placeholder = isDisabled ? 'To be filled by customer' : '0.00';
 
+    const minAmountAllowed = isDisabled
+      ? ''
+      : paiseToRupees(getCurrency(currency).min_value);
+
     let inputField = (
       <Input
         name={isDisabled ? undefined : 'amount'}
         class="placeholder-field"
         placeholder={placeholder}
         defaultValue={amount}
+        validator={val => {
+          if (val) {
+            if (Number(val) < Number(minAmountAllowed)) {
+              return `Min amount must be atleast ${minAmountAllowed}`;
+            }
+          }
+        }}
         pattern="^[0-9]+(.([0-9]){1,2})?$"
         disabled={isDisabled}
         required={!isDisabled}
