@@ -37,13 +37,9 @@ abstract class Generator extends Base
                                            ->statement
                                            ->fetch(['balance_id' => $bankingAccount->getBalanceId()],
                                                     $bankingAccount->getMerchantId())
-                                            ->sortBy('created_at');
+                                           ->sortBy('created_at');
 
-        $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(),
-                                                         Timezone::IST)
-                                                          ->format(self::DATE_FORMAT);
-
-        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount, $accountOpeningDate);
+        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
 
         list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($allBankAccountTransactions);
 
@@ -174,8 +170,12 @@ abstract class Generator extends Base
      * @param string $accountOpeningDate
      * @return array
      */
-    protected function getAccountOwnerInfo(BankingAccountEntity $bankingAccount, string $accountOpeningDate): array
+    protected function getAccountOwnerInfo(BankingAccountEntity $bankingAccount): array
     {
+        $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(),
+                                                          Timezone::IST)
+                                    ->format(self::DATE_FORMAT);
+
         $fromDate = Carbon::createFromTimestamp($this->fromDate,
                                                 Timezone::IST)
                           ->format(self::DATE_FORMAT);
