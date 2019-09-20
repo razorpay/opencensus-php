@@ -125,7 +125,7 @@ abstract class Generator extends Base
 
     protected function convertToLineItem(TransactionEntity $transaction)
     {
-        $formattedTransactionDate = Carbon::createFromTimestamp($transaction->created, Timezone::IST)
+        $formattedTransactionDate = Carbon::createFromTimestamp($transaction->getCreatedAt(), Timezone::IST)
                                             ->format(TransactionLineItem::ITEM_DATE_FORMAT);
 
         $description = $this->extractDescription($transaction);
