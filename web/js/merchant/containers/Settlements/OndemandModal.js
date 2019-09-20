@@ -12,6 +12,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { AmountTooltip } from 'rzp/ui/Amount';
 import Amount from 'rzp/ui/Amount';
+import debounce from 'rzp/utils/debounce';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
@@ -39,20 +40,58 @@ export default class OndemandModal extends Component {
     }
     this.validateAmount = this.validateAmount.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
-
+    this.updateFee = this.updateFee.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.updateFeeDebounced = debounce(this.updateFee, 300);
     this.handleCloseModal = this.handleCloseModal.bind(this);
   }
 
-  resetInterval() {
-    console.log(hiaghaho);
-    clearInterval(timer);
+  // resetInterval() {
+  //   console.log(hiaghaho);
+  //   clearInterval(timer);
 
-    timer = setInterval(function() {
-      this.fetchFee;
-      console.log('restarted interval');
-      test1();
-    }, 400);
+  //   timer = setInterval(function() {
+  //     this.fetchFee;
+  //     console.log('restarted interval');
+  //     test1();
+  //   }, 400);
+  // }
+
+  updateFee() {
+    this.setState({
+      isLoadingBreakup: true,
+    });
+
+    let payload = {
+      amount: this.state.amount * 100,
+      currency: 'INR',
+    };
+    return ajax(
+      {
+        url: '/merchant/payout/demand/fees',
+        method: 'GET',
+        data: payload,
+      },
+      {},
+      '/merchant/api'
+    )
+      .then(response => {
+        this.setState({
+          isLoadingBreakup: false,
+          tax: response.data.items[1].amount,
+          instantFee: response.data.items[0].amount,
+        });
+        this.props.fetchCurrentBalance();
+      })
+      .catch(response => {
+        this.setState({
+          errors: response.errors,
+        });
+      });
+  }
+
+  componentDidMount() {
+    this.updateFee();
   }
 
   dropdown = () => {
@@ -71,7 +110,6 @@ export default class OndemandModal extends Component {
         '/merchant/api'
       )
         .then(response => {
-          console.log(response.data.items[1]);
           this.setState({
             breakupShow: true,
             needFetch: false,
@@ -139,6 +177,7 @@ export default class OndemandModal extends Component {
       validAmount: !this.validateAmount(e.target.value),
       breakupShow: false,
     });
+    this.updateFeeDebounced();
   }
 
   validateAmount(val) {
@@ -255,10 +294,23 @@ export default class OndemandModal extends Component {
                     />
                   </div>
                   <div>
-                    {/* <span>
-                  <p> maximum amount that can be setteled is </p>
-                  <Amount value={this.props.currentBalance} currency={'INR'} />
-                </span> */}
+                    <span>
+                      <div class="grey-border">
+                        <p> After Deduction </p>
+                        {this.state.instantFee === 0 ? (
+                          <div />
+                        ) : (
+                          <Amount
+                            value={
+                              this.state.amount * 100 -
+                              this.state.instantFee -
+                              this.state.tax
+                            }
+                            currency={'INR'}
+                          />
+                        )}
+                      </div>
+                    </span>
                   </div>
                 </div>
                 <div class="breakup">
