@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { withRouter } from 'react-router-dom';
 import { classList } from 'common/util';
+import RTracking from 'react-tracking';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Alert from 'component/Alert';
@@ -152,6 +153,7 @@ function WizardFields(field) {
   closeModal,
   luminateRow,
 })
+@RTracking(() => window.rzpQ.component('CreateNewContainer'))
 export default class CreateNewContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -369,6 +371,7 @@ export default class CreateNewContainer extends React.Component {
     }
 
     const IS_MODAL_VIEW = this.props.onClose;
+    const { tracking } = this.props;
 
     this.setState({
       parentFormLock: true,
@@ -417,6 +420,12 @@ export default class CreateNewContainer extends React.Component {
             message: notificationMSG,
           });
 
+          tracking.trackEvent(
+            window.rzpQ.onbr().success('dash.pl_action', {
+              action: 'PL_Creation_Successful',
+            })
+          );
+
           const entityId = resp.data.id;
 
           if (IS_MODAL_VIEW) {
@@ -430,6 +439,11 @@ export default class CreateNewContainer extends React.Component {
             this.props.history.push(redirectUrl);
           }
         } else {
+          tracking.trackEvent(
+            window.rzpQ.onbr().success('dash.pl_action', {
+              action: 'PL_Creation_Failed',
+            })
+          );
           throw new Error(resp.errors);
         }
       })

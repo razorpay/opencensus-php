@@ -48,8 +48,6 @@ class Service extends Base\Service
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
-    const INSTANT_ACTIVATION_TIMESTAMP = 1540901700;
-
     /**
      * @var Application
      */
@@ -453,6 +451,7 @@ class Service extends Base\Service
                     $data['experiments']['is_banner'] = $merchantService->getTreatment('is_banner');
                     $data['experiments']['capital_announcement'] = $merchantService->getTreatment('capital_announcement');
                     $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
+                    $data['experiments']['non_registered_onboarding'] = $merchantService->getTreatment('non_registered_onboarding');
                     $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
                     $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
                     $data['experiments']['show_extra_fields_in_pp'] = $merchantService->getTreatment('show_extra_fields_in_pp');
@@ -530,6 +529,23 @@ class Service extends Base\Service
             if ($user->created_at < self::PRE_SIGNUP_TIMESTAMP)
             {
                 $data['pre_signup_complete'] = true;
+            }
+
+            // for non-registered check if pre_signup_complete done or not;
+
+            if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
+            {
+                // check business_type
+
+                $businessType = $data['pre_signup']['business_type'] ?? null;
+
+                if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
+                {
+                    if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
+                    {
+                        $data['pre_signup_complete'] = true;
+                    }
+                }
             }
 
             // There are approx 3k merchants who have not

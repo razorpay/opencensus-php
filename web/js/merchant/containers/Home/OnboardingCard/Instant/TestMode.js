@@ -5,6 +5,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchToMode from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 import { showProductsModal } from 'merchant/modules/home';
+import RTracking from 'react-tracking';
 
 const TestProducts = ({ onClick }) => (
   <span className="btn-link cursor-pointer" onClick={onClick}>
@@ -19,6 +20,9 @@ const initialState = {
 };
 
 @connect(null, { showProductsModal })
+@RTracking(() => {
+  return window.rzpQ.component('TestMode');
+})
 export default class TestMode extends Component {
   constructor(props) {
     super(props);
