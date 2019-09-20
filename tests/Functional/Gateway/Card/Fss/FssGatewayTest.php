@@ -2,8 +2,14 @@
 
 namespace RZP\Tests\Functional\Gateway\Card\Fss;
 
+use RZP\Gateway\Card\Fss\Fields;
+use RZP\Gateway\Card\Fss\ErrorCodes\ErrorCodes;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+
 class FssGatewayTest extends BobGatewayTest
 {
+    use DbEntityFetchTrait;
+
     protected $acquirer = 'fss';
 
     public function testPaymentAuthWithCardHolderNameSpecialChars()
@@ -57,6 +63,39 @@ class FssGatewayTest extends BobGatewayTest
         $payment = $this->getLastEntity('payment');
 
         self::assertEquals('authorized',$payment['status']);
+    }
 
+    public function testPaymentFailure()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                unset($content[Fields::TRAN_DATA]);
+                $content[Fields::GATEWAY_ERROR_TEXT] = ErrorCodes::ISSUER_AUTHENTICATION_SERVER_FAILURE;
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+        $this->assertEquals('failed', $payment['status']);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('card_fss');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'payment_id'    => $payment['id'],
+                'action'        => 'authorize',
+                'error_message' => 'Issuer Authentication Server failure',
+            ],
+            $gatewayPayment
+        );
     }
 }

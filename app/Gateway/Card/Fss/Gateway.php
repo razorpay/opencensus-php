@@ -83,6 +83,10 @@ class Gateway extends Base\Gateway
         {
             $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA], $input);
 
+            // Sometimes, the error message comes in the encrypted gateway response
+            // Example: Check callback response of payment D768JzKpQXnpUE
+            $this->handleGatewayError($gatewayContent, $gatewayPayment);
+
             $attributes = $this->getCallbackFields($gatewayContent);
 
             $gatewayPayment->fill($attributes);
