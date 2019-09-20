@@ -1096,7 +1096,14 @@ class Gateway extends Base\Gateway
 
         if ($this->isRupayTransaction($input) === true)
         {
-            $this->setCardNumberAndCvv($input);
+            if (empty($card['vault_token']) === false)
+            {
+                $input['card']['number'] = (new Card\CardVault)->getCardNumber($card['vault_token']);
+            }
+            else
+            {
+                $this->setCardNumberAndCvv($input);
+            }
 
             $data = [
                 RequestFields::CARD_NUMBER         => $input['card']['number'],
