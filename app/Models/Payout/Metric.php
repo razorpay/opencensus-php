@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 
 final class Metric
@@ -13,16 +14,20 @@ final class Metric
     // Counters
     const PAYOUT_CREATED_TOTAL   = 'payout_created_total';
     const PAYOUT_PENDING_TOTAL   = 'payout_pending_total';
-    const PAYOUT_REJECTED_TOTAL  = 'payout_rejected_total';
     const PAYOUT_QUEUED_TOTAL    = 'payout_queued_total';
-    const PAYOUT_CANCELLED_TOTAL = 'payout_cancelled_total';
 
     // Histograms
-    const PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS       = 'payout_created_to_initiated_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS     = 'payout_initiated_to_processed_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS      = 'payout_initiated_to_reversed_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS        = 'payout_initiated_to_failed_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_FTA_INITIATED_DURATION_SECONDS = 'payout_initiated_to_fta_initiated_duration_seconds.histogram';
+    const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS      = 'payout_queued_to_created_duration_seconds.histogram';
+    const PAYOUT_QUEUED_TO_CANCELLED_DURATION_SECONDS    = 'payout_queued_to_cancelled_duration_seconds.histogram';
+    const PAYOUT_PENDING_TO_REJECTED_DURATION_SECONDS    = 'payout_pending_to_rejected_duration_seconds.histogram';
+    const PAYOUT_PENDING_TO_QUEUED_DURATION_SECONDS      = 'payout_pending_to_queued_duration_seconds.histogram';
+    const PAYOUT_PENDING_TO_CREATED_DURATION_SECONDS     = 'payout_pending_to_created_duration_seconds.histogram';
+    const PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS   = 'payout_created_to_initiated_duration_seconds.histogram';
+    const PAYOUT_CREATED_TO_FAILED_DURATION_SECONDS      = 'payout_created_to_failed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS = 'payout_initiated_to_processed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS  = 'payout_initiated_to_reversed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS    = 'payout_initiated_to_failed_duration_seconds.histogram';
+    const PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS  = 'payout_processed_to_reversed_duration_seconds.histogram';
 
     // Dimension constants
     const SOURCE    = 'source';
@@ -30,54 +35,45 @@ final class Metric
     const API       = 'api';
     const DASHBOARD = 'dashboard';
 
-    public static function pushPayoutStatusChangeMetrics(Entity $payout)
+    public static function pushPayoutStatusChangeMetrics(Entity $payout, $previousStatus)
     {
-        $status = $payout->getStatus();
+        $currentStatus = $payout->getStatus();
 
-        switch ($status)
+        try {
+            Status::validatePreviousToCurrentMapping($previousStatus, $currentStatus);
+
+            $functionName = self::getFunctionNameToCall($previousStatus, $currentStatus);
+
+            self::$functionName($payout);
+        }
+        catch (\Throwable $ex)
         {
-            case Status::PENDING:
-                self::pushPendingMetrics($payout);
-                break;
-
-            case Status::REJECTED:
-                self::pushRejectedMetrics($payout);
-                break;
-
-            case Status::QUEUED:
-                self::pushQueuedMetrics($payout);
-                break;
-
-            case Status::CANCELLED:
-                self::pushCancelledMetrics($payout);
-                break;
-
-            case Status::INITIATED:
-                self::pushFtaInitiatedMetrics($payout);
-                break;
-
-            case Status::CREATED:
-                self::pushPayoutInitiatedMetrics($payout);
-                break;
-
-            case Status::PROCESSED:
-                self::pushProcessedMetrics($payout);
-                break;
-
-            case Status::REVERSED:
-                self::pushReversedMetrics($payout);
-                break;
-
-            case Status::FAILED:
-                self::pushFailedMetrics($payout);
-                break;
-
-            default:
-                return;
+            app('trace')->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYOUT_METRIC_PUSH_EXCEPTION,
+                [
+                    'oldStatus' => $previousStatus,
+                    'newStatus' => $currentStatus,
+                ]);
         }
     }
 
-    public static function pushPayoutCreateMetrics(Entity $payout)
+    protected static function getFunctionNameToCall($previousStatus, $currentStatus)
+    {
+        $functionName = 'push';
+
+        if ($previousStatus !== null)
+        {
+            $functionName .= ucfirst($previousStatus) . 'To';
+        }
+
+        $functionName .= ucfirst($currentStatus) . 'Metrics';
+
+        return $functionName;
+    }
+
+    protected static function pushCreatedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
 
@@ -91,13 +87,6 @@ final class Metric
         app('trace')->count(self::PAYOUT_PENDING_TOTAL, $metricDimensions);
     }
 
-    protected static function pushRejectedMetrics(Entity $payout)
-    {
-        $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_REJECTED_TOTAL, $metricDimensions);
-    }
-
     protected static function pushQueuedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
@@ -105,62 +94,103 @@ final class Metric
         app('trace')->count(self::PAYOUT_QUEUED_TOTAL, $metricDimensions);
     }
 
-    protected static function pushCancelledMetrics(Entity $payout)
+    protected static function pushQueuedToCreatedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_CANCELLED_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushFtaInitiatedMetrics(Entity $payout)
-    {
-        $metricDimensions            = self::getMetricDimensions($payout);
-        $initiatedToFtaInitiatedTime = Carbon::now()->getTimestamp() - $payout->getInitiatedAt();
-
-        app('trace')->histogram(
-            self::PAYOUT_INITIATED_TO_FTA_INITIATED_DURATION_SECONDS,
-            $initiatedToFtaInitiatedTime,
-            $metricDimensions);
-    }
-
-    public static function pushPayoutInitiatedMetrics(Entity $payout)
-    {
-        $metricDimensions       = self::getMetricDimensions($payout);
-        $createdToInitiatedTime = $payout->getInitiatedAt() - $payout->getCreatedAt();
+        $timeDuration     = $payout->getCreatedAt() - $payout->getQueuedAt();
 
         app('trace')->getTrace()->histogram(
-            self::PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS,
-            $createdToInitiatedTime,
+            self::PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS,
+            $timeDuration,
             $metricDimensions);
     }
 
-    protected static function pushProcessedMetrics(Entity $payout)
+    protected static function pushQueuedToCancelledMetrics(Entity $payout)
     {
-        $metricDimensions         = self::getMetricDimensions($payout);
-        $initiatedToProcessedTime = $payout->getProcessedAt() - $payout->getInitiatedAt();
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getCancelledAt() - $payout->getQueuedAt();
+
+        app('trace')->getTrace()->histogram(
+            self::PAYOUT_QUEUED_TO_CANCELLED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushPendingToRejectedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getRejectedAt() - $payout->getPendingAt();
+
+        app('trace')->getTrace()->histogram(
+            self::PAYOUT_PENDING_TO_REJECTED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushPendingToQueuedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getQueuedAt() - $payout->getPendingAt();
+
+        app('trace')->getTrace()->histogram(
+            self::PAYOUT_PENDING_TO_QUEUED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushPendingToCreatedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getCreatedAt() - $payout->getPendingAt();
+
+        app('trace')->getTrace()->histogram(
+            self::PAYOUT_PENDING_TO_CREATED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    /**
+     * This represents the duration between payout.initiate and fta.initiate
+     * @param Entity $payout
+     */
+    protected static function pushCreatedToInitiatedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = Carbon::now()->getTimestamp() - $payout->getInitiatedAt();
 
         app('trace')->histogram(
-            self::PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS,
-            $initiatedToProcessedTime,
+            self::PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS,
+            $timeDuration,
             $metricDimensions);
     }
 
-    protected static function pushReversedMetrics(Entity $payout)
+    protected static function pushCreatedToFailedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getFailedAt() - $payout->getInitiatedAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_CREATED_TO_FAILED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushInitiatedToReversedMetrics(Entity $payout)
     {
         $extraDimensions = [
             Entity::FAILURE_REASON => $payout->getFailureReason(),
         ];
 
-        $metricDimensions        = self::getMetricDimensions($payout, $extraDimensions);
-        $initiatedToReversedTime = $payout->getReversedAt() - $payout->getInitiatedAt();
+        $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
+        $timeDuration     = $payout->getReversedAt() - $payout->getInitiatedAt();
 
         app('trace')->histogram(
             self::PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS,
-            $initiatedToReversedTime,
+            $timeDuration,
             $metricDimensions);
     }
 
-    protected static function pushFailedMetrics(Entity $payout)
+    protected static function pushInitiatedToFailedMetrics(Entity $payout)
     {
         $extraDimensions = [
             Entity::FAILURE_REASON => $payout->getFailureReason(),
@@ -172,6 +202,28 @@ final class Metric
         app('trace')->histogram(
             self::PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS,
             $initiatedToFailedTime,
+            $metricDimensions);
+    }
+
+    protected static function pushInitiatedToProcessedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getProcessedAt() - $payout->getInitiatedAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushProcessedToReversedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getReversedAt() - $payout->getProcessedAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS,
+            $timeDuration,
             $metricDimensions);
     }
 
@@ -190,14 +242,12 @@ final class Metric
 
     protected static function getSource(Entity $payout)
     {
-        if (empty($payout->getBatchId()) === false)
+        if ($payout->hasBatch() === true)
         {
             return self::BATCH;
         }
 
-        $dashboardUser = app('basicauth')->getUser();
-
-        if (empty($dashboardUser) === false)
+        if (empty($payout->getUserId()) === false)
         {
             return self::DASHBOARD;
         }

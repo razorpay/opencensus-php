@@ -53,11 +53,31 @@ class Status
      * @var array
      */
     protected static $fromToStatusMap = [
-        self::CREATED => [
-            self::FAILED,
+        null => [
+            Status::CREATED,
+            Status::PENDING,
+            Status::QUEUED,
         ],
-        self::INITIATED => [
-            self::FAILED,
+        Status::QUEUED => [
+            Status::CREATED,
+            Status::CANCELLED,
+        ],
+        Status::PENDING => [
+            Status::REJECTED,
+            Status::QUEUED,
+            Status::CREATED,
+        ],
+        Status::CREATED => [
+            Status::INITIATED,
+            Status::FAILED,
+        ],
+        Status::INITIATED => [
+            Status::REVERSED,
+            Status::FAILED,
+            Status::PROCESSED,
+        ],
+        Status::PROCESSED => [
+            Status::REVERSED,
         ],
     ];
 
@@ -176,7 +196,7 @@ class Status
                Status::$ftaToPayoutStatusMap[Entity::DEFAULT][Entity::DEFAULT][$ftaStatus];
     }
 
-    public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)
+    public static function validatePreviousToCurrentMapping($previousStatus, $currentStatus)
     {
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 

@@ -789,12 +789,12 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::STATUS, $status);
-
-        Metric::pushPayoutStatusChangeMetrics($this);
     }
 
     protected function setStatusAttribute($status)
     {
+        $previousStatus = $this->getStatus();
+
         $this->attributes[self::STATUS] = $status;
 
         if (in_array($status, Status::$timestampedStatuses, true) === true)
@@ -815,6 +815,8 @@ class Entity extends Base\PublicEntity
             $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
+
+            Metric::pushPayoutStatusChangeMetrics($this, $previousStatus);
         }
     }
 
