@@ -59,6 +59,7 @@ export default class OndemandModal extends Component {
 
   updateFee() {
     this.setState({
+      errors: [],
       isLoadingBreakup: true,
     });
 
@@ -79,6 +80,8 @@ export default class OndemandModal extends Component {
         this.setState({
           isLoadingBreakup: false,
           tax: response.data.items[1].amount,
+          instantFeePercent: response.data.items[0].pricing_rule.percent_rate,
+          taxPercent: response.data.items[1].percentage,
           instantFee: response.data.items[0].amount,
         });
         this.props.fetchCurrentBalance();
@@ -134,6 +137,14 @@ export default class OndemandModal extends Component {
   };
 
   onSubmit() {
+    const analyticsPayload = {
+      eventCategory: 'Dashboard - Instant Settlement Modal',
+      eventAction: `Confirm - Click`,
+    };
+
+    console.log(analyticsPayload);
+    window.rzpAnalytics(analyticsPayload);
+
     let payload = {
       amount: this.state.amount * 100,
       currency: 'INR',
@@ -296,26 +307,35 @@ export default class OndemandModal extends Component {
                   <div>
                     <span>
                       <div class="grey-border">
-                        <p> After Deduction </p>
-                        {this.state.instantFee === 0 ? (
-                          <div />
-                        ) : (
-                          <Amount
-                            value={
-                              this.state.amount * 100 -
-                              this.state.instantFee -
-                              this.state.tax
-                            }
-                            currency={'INR'}
-                          />
-                        )}
+                        <span>
+                          {this.state.isLoadingBreakup === false ? (
+                            <div>
+                              <p> After Deduction </p>
+                              <Amount
+                                value={
+                                  this.state.amount * 100 -
+                                  this.state.instantFee -
+                                  this.state.tax
+                                }
+                                currency={'INR'}
+                              />{' '}
+                            </div>
+                          ) : (
+                            <div class="loader" />
+                          )}
+                        </span>
                       </div>
                     </span>
                   </div>
                 </div>
                 <div class="breakup">
                   <div class="dropdown">
-                    <p>Additional Fee </p>
+                    <span>
+                      <p class="percent">
+                        {this.state.instantFeePercent / 100}
+                      </p>
+                      <p class="fixed">% Additional Fee </p>
+                    </span>
                     <AsyncBtn.Primary
                       class="drop-button"
                       disabled={
