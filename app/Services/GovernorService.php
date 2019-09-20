@@ -142,9 +142,24 @@ class GovernorService
         'method'    =>  "DELETE",
     ];
 
+    const UPDATE_RULE_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
+        'method'    =>  "PUT",
+    ];
+
     const LIST_RULE_CHAIN_V1  =   [
         'url'       =>  "namespaces/:namespace_id/rule_chains",
         'method'    =>  "GET",
+    ];
+
+    const CREATE_RULE_CHAIN_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains",
+        'method'    =>  "POST",
+    ];
+
+    const DELETE_RULE_CHAIN_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains",
+        'method'    =>  "DELETE",
     ];
 
     const LIST_RULE_GROUPS_V1  =   [
@@ -154,6 +169,11 @@ class GovernorService
 
     const CREATE_RULE_GROUP_V1  =   [
         'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups",
+        'method'    =>  "POST",
+    ];
+
+    const CREATE_BULK_RULE_GROUP_V1  =   [
+        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/bulk",
         'method'    =>  "POST",
     ];
 

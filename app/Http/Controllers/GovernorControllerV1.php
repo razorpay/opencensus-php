@@ -70,6 +70,24 @@ class GovernorControllerV1 extends Controller
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
 
+    public function createRuleChain($namespace_id)
+    {
+        $input = Request::all();
+
+        $response = $this->app['governor']->sendRequestV1(GovernorService::CREATE_RULE_CHAIN_V1, $input, null, $namespace_id);
+
+        return response()->json($response['response_body'])->setStatusCode($response['response_code']);
+    }
+
+    public function deleteRuleChain($namespace_id)
+    {
+        $input = Request::all();
+
+        $response = $this->app['governor']->sendRequestV1(GovernorService::DELETE_RULE_CHAIN_V1, $input, null, $namespace_id);
+
+        return response()->json($response['response_body'])->setStatusCode($response['response_code']);
+    }
+
     public function listRuleGroups($namespace_id, $rule_chain_id)
     {
         $input = Request::all();
@@ -84,6 +102,15 @@ class GovernorControllerV1 extends Controller
         $input = Request::all();
 
         $response = $this->app['governor']->sendRequestV1(GovernorService::CREATE_RULE_GROUP_V1, $input, null, $namespace_id, $rule_chain_id);
+
+        return response()->json($response['response_body'])->setStatusCode($response['response_code']);
+    }
+
+    public function createBulkRuleGroup($namespace_id, $rule_chain_id)
+    {
+        $input = Request::all();
+
+        $response = $this->app['governor']->sendRequestV1(GovernorService::CREATE_BULK_RULE_GROUP_V1, $input, null, $namespace_id, $rule_chain_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
@@ -147,6 +174,15 @@ class GovernorControllerV1 extends Controller
         $input = Request::all();
 
         $response = $this->app['governor']->sendRequestV1(GovernorService::DELETE_RULE_V1, $input, null, $namespace_id, $rule_chain_id, $rule_group_id, $rule_id);
+
+        return response()->json($response['response_body'])->setStatusCode($response['response_code']);
+    }
+
+    public function updateRule($namespace_id, $rule_chain_id, $rule_group_id, $rule_id)
+    {
+        $input = Request::all();
+
+        $response = $this->app['governor']->sendRequestV1(GovernorService::UPDATE_RULE_V1, $input, null, $namespace_id, $rule_chain_id, $rule_group_id, $rule_id);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }

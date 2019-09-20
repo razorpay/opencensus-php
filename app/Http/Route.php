@@ -1199,13 +1199,17 @@ final class Route
         'governor_list_rule_v1'                   => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',              'GovernorControllerV1@listRule'            ],
         'governor_get_rule_v1'                    => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorControllerV1@getRule'             ],
         'governor_delete_rule_v1'                 => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorControllerV1@deleteRule'          ],
+        'governor_update_rule_v1'                 => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorControllerV1@updateRule'          ],
 
         // Governor Proxy APIs New - Rule Chain
         'governor_list_rule_chains_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains',                                                                'GovernorControllerV1@listRuleChains'      ],
+        'governor_create_rule_chain_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains',                                                                'GovernorControllerV1@createRuleChain'     ],
+        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains',                                                                'GovernorControllerV1@deleteRuleChain'     ],
 
         // Governor Proxy APIs New - Rule Groups
         'governor_list_rule_groups_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                    'GovernorControllerV1@listRuleGroups'      ],
         'governor_create_rule_group_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                    'GovernorControllerV1@createRuleGroup'     ],
+        'governor_create_bulk_rule_group_v1'      => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/bulk',                               'GovernorControllerV1@createBulkRuleGroup' ],
         'governor_get_rule_group_v1'              => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorControllerV1@getRuleGroup'        ],
         'governor_delete_rule_group_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorControllerV1@deleteRuleGroup'     ],
         'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorControllerV1@updateRuleGroup'     ],
@@ -2334,11 +2338,15 @@ final class Route
         'governor_get_rule_v1',
         'governor_delete_rule_v1',
         'governor_list_rule_chains_v1',
+        'governor_create_rule_chain_v1',
+        'governor_delete_rule_chain_v1',
         'governor_list_rule_groups_v1',
         'governor_create_rule_group_v1',
+        'governor_create_bulk_rule_group_v1',
         'governor_get_rule_group_v1',
         'governor_delete_rule_group_v1',
         'governor_update_rule_group_v1',
+        'governor_update_rule_v1',
 
         // throttle settings routes
         'fetch_throttle_settings',
@@ -2823,9 +2831,13 @@ final class Route
         'governor_list_rule_v1'                    => Permission::VIEW_GATEWAY_RULE,
         'governor_get_rule_v1'                     => Permission::VIEW_GATEWAY_RULE,
         'governor_delete_rule_v1'                  => Permission::DELETE_GATEWAY_RULE,
+        'governor_update_rule_v1'                  => Permission::EDIT_GATEWAY_RULE,
         'governor_list_rule_chains_v1'             => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_rule_chain_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_delete_rule_chain_v1'            => Permission::DELETE_GATEWAY_RULE,
         'governor_list_rule_groups_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_create_bulk_rule_group_v1'       => Permission::CREATE_GATEWAY_RULE,
         'governor_get_rule_group_v1'               => Permission::VIEW_GATEWAY_RULE,
         'governor_delete_rule_group_v1'            => Permission::DELETE_GATEWAY_RULE,
         'governor_update_rule_group_v1'            => Permission::EDIT_GATEWAY_RULE,
