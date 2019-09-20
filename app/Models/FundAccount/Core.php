@@ -2,6 +2,9 @@
 
 namespace RZP\Models\FundAccount;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Error\Error;
+use RZP\Exception\BaseException;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -18,6 +21,8 @@ use RZP\Exception\LogicException;
  */
 class Core extends Base\Core
 {
+    use Base\Traits\SensitiviseCardDetails;
+
     /**
      * @param array                  $input
      * @param Merchant\Entity        $merchant
@@ -31,19 +36,36 @@ class Core extends Base\Core
                            Base\PublicEntity $source = null,
                            string $batchId = null): Entity
     {
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->sensitiveCardDetails($input));
+
+        $this->modifyRequestForBackwardCompatibility($input);
+
+        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails(
+            $input,
+            $this->merchant,
+            $source);
+
+        if (empty($fundAccount) === false)
+        {
+            $this->trace->info(
+                TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
+                [
+                    Entity::ID           => $fundAccount->getId(),
+                    Entity::BATCH_ID     => $batchId,
+                ]);
+            return $fundAccount;
+        }
+
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
             $result = $this->repo->fund_account->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                                                                      $merchant->getId(),
-                                                                      $batchId);
-
+                $merchant->getId(),
+                $batchId);
             if ($result !== null)
             {
                 return $result;
             }
         }
-
-        $this->modifyRequestForBackwardCompatibility($input);
 
         $fundAccount = (new Entity);
 

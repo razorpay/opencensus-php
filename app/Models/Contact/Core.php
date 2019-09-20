@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Contact;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -116,6 +117,12 @@ class Core extends Base\Core
         }
 
         $contact = $this->create($input, $this->merchant, $batchId);
+
+        if (optional($contact)->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Fund accounts cannot be created on an inactive ' . $contact->getEntity());
+        }
 
         return $contact;
     }

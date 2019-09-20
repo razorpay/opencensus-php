@@ -438,6 +438,8 @@ class Service extends Base\Service
 
                     $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
+                    $contact = $this->contactCore->processEntryForContact($item, $batchId);
+
                     $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
 
                     $fundAccount = null;
@@ -448,14 +450,13 @@ class Service extends Base\Service
                     //
                     if (empty($fundAccountId) === false)
                     {
-                        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId,
-                                                                                            $this->merchant);
+                        $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
                     }
 
                     // If fund_account is null then, it is not created before
                     if ($fundAccount === null)
                     {
-                        $fundAccount = $this->fundAccountService->create($item, $batchId);
+                        $fundAccount = $this->fundAccountService->createFundAcccount($item, $contact, $batchId);
                     }
                     else
                     {
@@ -465,9 +466,6 @@ class Service extends Base\Service
                                 Entity::FUND_ACCOUNT_ID          => $fundAccountId,
                                 Entity::BATCH_ID                 => $batchId
                             ]);
-
-                        // convert to array
-                        $fundAccount = $fundAccount->toArrayPublic();
                     }
 
                     $payout = $this->processEntryForPayoutForFundAccount($item,

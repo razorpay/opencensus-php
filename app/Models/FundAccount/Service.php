@@ -4,7 +4,6 @@ namespace RZP\Models\FundAccount;
 
 use RZP\Error\Error;
 use RZP\Models\Base;
-use RZP\Models\Card;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -23,6 +22,7 @@ use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 class Service extends Base\Service
 {
     use Base\Traits\ServiceHasCrudMethods;
+    use Base\Traits\SensitiviseCardDetails;
 
     /**
      * @var Core
@@ -50,63 +50,59 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->fund_account;
     }
 
-    public function create(array $input, string $batchId = null): array
+    public function create(array $input): array
     {
-        // The Idempotency key will be present in the batch request
-        // and is being used an as indicator of batch upload
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        try
         {
-            $contact = $this->contactCore->processEntryForContact($input, $batchId);
+            $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->sensitiveCardDetails($input));
 
-            $fundAccount = $this->checkFundAccountExistence($input, $contact);
+            (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
-            if (empty($fundAccount) === false)
-            {
-                $this->trace->info(
-                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
-                    [
-                        Entity::ID           => $fundAccount->getId(),
-                        Entity::BATCH_ID     => $batchId,
-                    ]);
+            $source = null;
 
-                return $fundAccount->toArrayPublic() +
-                       [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()];
+            if (isset($input[Entity::CONTACT_ID]) === true) {
+                /** @var Contact\Entity $source */
+                $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+            } else if (isset($input[Entity::CUSTOMER_ID]) === true) {
+                /** @var Customer\Entity $source */
+                $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
             }
-        }
 
-        $this->traceFundAccountNewRequest($input);
+            if (optional($source)->isActive() === false) //copy to contact core processEntryForContact
+            {
+                throw new BadRequestValidationFailureException(
+                    'Fund accounts cannot be created on an inactive ' . $source->getEntity());
+            }
 
-        (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
-
-        $source = null;
-
-        if (isset($input[Entity::CONTACT_ID]) === true)
-        {
-            /** @var Contact\Entity $source */
-            $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
-        }
-        else if (isset($input[Entity::CUSTOMER_ID]) === true)
-        {
-            /** @var Customer\Entity $source */
-            $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
-        }
-
-        if (optional($source)->isActive() === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Fund accounts cannot be created on an inactive ' . $source->getEntity());
-        }
-
-        if ($batchId !== null)
-        {
-            $entity = $this->core->create($input, $this->merchant, $source, $batchId);
-        }
-        else
-        {
             $entity = $this->core->create($input, $this->merchant, $source);
         }
+        catch (BaseException $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::INFO,
+                TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
 
-        return $entity->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $entity->getIdempotencyKey()];
+            throw ($exception);
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->traceException($throwable,
+                Trace::CRITICAL,
+                TraceCode::BATCH_SERVICE_BULK_EXCEPTION);
+
+            $exceptionData = [
+                Error::HTTP_STATUS_CODE => 500,
+                'error'                 => [
+                    Error::DESCRIPTION       => $throwable->getMessage(),
+                    Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                ],
+            ];
+
+            return($exceptionData);
+        }
+
+        return $entity->toArrayPublic();
     }
 
     public function fetch(string $id, array $input): array
@@ -114,28 +110,6 @@ class Service extends Base\Service
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $entity->toArrayPublic();
-    }
-
-    protected function traceFundAccountNewRequest(array $input)
-    {
-        $this->unsetSensitiveCardDetails($input);
-
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $input);
-    }
-
-    protected function unsetSensitiveCardDetails(array & $input)
-    {
-        if ((isset($input[Entity::CARD]) === true) and
-            (is_array($input[Entity::CARD]) === true))
-        {
-            if (empty($input[Entity::CARD][Card\Entity::NUMBER]) === false)
-            {
-                $input[Entity::CARD][Card\Entity::IIN] = substr($input[Entity::CARD][Card\Entity::NUMBER], 0, 6);
-            }
-
-            unset($input[Entity::CARD][Card\Entity::CVV]);
-            unset($input[Entity::CARD][Card\Entity::NUMBER]);
-        }
     }
 
     /**
@@ -180,9 +154,24 @@ class Service extends Base\Service
 
                     $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
-                    $fundAccount = $this->create($item, $batchId);
+                    $contact = $this->contactCore->processEntryForContact($item, $batchId);
 
-                    $fundaccountBatch->push($fundAccount);
+                    $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+
+                    if (empty($fundAccountId) === false)
+                    {
+                        $fundAccount = $this->checkFundAccountExistence($fundAccountId);
+
+                        $fundaccountBatch->push($fundAccount->toArrayPublic() +
+                            [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                    }
+                    else
+                    {
+                        $fundAccount = $this->createFundAcccount($item, $contact, $batchId);
+
+                        $fundaccountBatch->push($fundAccount->toArrayPublic() +
+                            [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                    }
                 });
             }
             catch (BaseException $exception)
@@ -227,32 +216,41 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array             $entry
-     * @param Contact\Entity    $contact
+     * @param array $item
+     * @param Contact\Entity $contact
+     * @param string $batchId
      * @return Entity           $fundAccount
      * @throws BadRequestValidationFailureException
      */
-
-    private function checkFundAccountExistence(
-        array & $entry,
-        Contact\Entity $contact)
+    public function createFundAcccount(array $item, Contact\Entity $contact, string $batchId)
     {
-        $fundAccountId = $entry[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+        $input = FundAccountHelper::getFundAccountInput($item, $contact);
 
-        if (empty($fundAccountId) === false)
+        (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
+
+        $fundAccount = $this->core->create($input, $this->merchant, $contact, $batchId);
+
+        return $fundAccount;
+    }
+
+    /**
+     * @param string            $fundAccountId
+     * @return Entity           $fundAccount
+     */
+
+    public function checkFundAccountExistence(string $fundAccountId)
+    {
+        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+        if (empty($fundAccount) === false)
         {
-            $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_EXIST,
+                [
+                    Entity::ID           => $fundAccountId,
+                ]);
 
             return $fundAccount;
         }
-
-        $entry = FundAccountHelper::getFundAccountInput($entry, $contact);
-
-        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails(
-            $entry,
-            $this->merchant,
-            $contact);
-
-        return $fundAccount;
     }
 }

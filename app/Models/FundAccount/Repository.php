@@ -41,8 +41,8 @@ class Repository extends Base\Repository
                 $account = $this->repo
                                 ->bank_account
                                 ->findLatestBankAccountByAccountNumber(
-                                    $input[Entity::DETAILS][BankAccount\Entity::ACCOUNT_NUMBER],
-                                    $input[Entity::DETAILS][BankAccount\Entity::IFSC],
+                                    $input[Type::BANK_ACCOUNT][BankAccount\Entity::ACCOUNT_NUMBER],
+                                    $input[Type::BANK_ACCOUNT][BankAccount\Entity::IFSC],
                                     E::CONTACT,
                                     $merchant->getId());
 
@@ -52,7 +52,7 @@ class Repository extends Base\Repository
                 $account = $this->repo
                                 ->vpa
                                 ->findLatestByAddressAndMerchantId(
-                                    $input[Entity::DETAILS][Vpa\Entity::ADDRESS],
+                                    $input[Type::VPA][Vpa\Entity::ADDRESS],
                                     $merchant->getId());
 
                 break;
