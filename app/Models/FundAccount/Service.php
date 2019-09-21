@@ -52,8 +52,6 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        try
-        {
             $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->sensitiveCardDetails($input));
 
             (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
@@ -75,32 +73,6 @@ class Service extends Base\Service
             }
 
             $entity = $this->core->create($input, $this->merchant, $source);
-        }
-        catch (BaseException $exception)
-        {
-            $this->trace->traceException(
-                $exception,
-                Trace::INFO,
-                TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
-
-            throw ($exception);
-        }
-        catch (\Throwable $throwable)
-        {
-            $this->trace->traceException($throwable,
-                Trace::CRITICAL,
-                TraceCode::BATCH_SERVICE_BULK_EXCEPTION);
-
-            $exceptionData = [
-                Error::HTTP_STATUS_CODE => 500,
-                'error'                 => [
-                    Error::DESCRIPTION       => $throwable->getMessage(),
-                    Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
-                ],
-            ];
-
-            return($exceptionData);
-        }
 
         return $entity->toArrayPublic();
     }
@@ -154,23 +126,35 @@ class Service extends Base\Service
 
                     $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
-                    $contact = $this->contactCore->processEntryForContact($item, $batchId);
-
-                    $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
-
-                    if (empty($fundAccountId) === false)
+                    $result = $this->repo->fund_account->fetchByIdempotentKey(
+                                                                              $item[Entity::IDEMPOTENCY_KEY],
+                                                                              $this->merchant->getId(),
+                                                                              $batchId);
+                    if ($result !== null)
                     {
-                        $fundAccount = $this->checkFundAccountExistence($fundAccountId);
-
-                        $fundaccountBatch->push($fundAccount->toArrayPublic() +
-                            [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                        $fundaccountBatch->push($result->toArrayPublic() +
+                            [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
                     }
                     else
                     {
-                        $fundAccount = $this->createFundAcccount($item, $contact, $batchId);
+                        $contact = $this->contactCore->processEntryForContact($item, $batchId);
 
-                        $fundaccountBatch->push($fundAccount->toArrayPublic() +
-                            [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                        $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+
+                        if (empty($fundAccountId) === false)
+                        {
+                            $fundAccount = $this->checkFundAccountExistence($fundAccountId);
+
+                            $fundaccountBatch->push($fundAccount->toArrayPublic() +
+                                [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                        }
+                        else
+                        {
+                            $fundAccount = $this->createFundAcccount($item, $contact, $batchId);
+
+                            $fundaccountBatch->push($fundAccount->toArrayPublic() +
+                                [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                        }
                     }
                 });
             }

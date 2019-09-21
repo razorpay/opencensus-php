@@ -8,16 +8,16 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\Contact\Service as ContactService;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
@@ -33,11 +33,18 @@ class Service extends Base\Service
      */
     protected $fundAccountService;
 
+    /**
+     * @var ContactCore
+     */
+    protected $contactCore;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->core = new Payout\Core;
+
+        $this->contactCore = new Contact\Core;
 
         $this->fundAccountService = new FundAccountService;
     }
@@ -402,6 +409,7 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function createBulkPayout(array $input): array
     {
@@ -522,7 +530,7 @@ class Service extends Base\Service
     }
 
     protected function processEntryForPayoutForFundAccount(array $entry,
-                                                           array $fundAccount,
+                                                           FundAccount\Entity $fundAccount,
                                                            string $batchId): Entity
     {
         $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount, $this->merchant);

@@ -40,6 +40,9 @@ class PayoutTest extends TestCase
             [
                 'id'           => '100000000000fa',
                 'account_type' => 'bank_account',
+
+
+
                 'account_id'   => '1000000lcustba'
             ]);
 
@@ -1161,6 +1164,8 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByContactName()
     {
+        $this->markTestSkipped();
+
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'name' => 'test']);
 
         $this->fixtures->edit(
@@ -1224,6 +1229,8 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByContactEmail()
     {
+        $this->markTestSkipped();
+
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -1256,6 +1263,8 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByFundAccountId()
     {
+        $this->markTestSkipped();
+
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -1296,7 +1305,7 @@ class PayoutTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
 
@@ -1310,10 +1319,10 @@ class PayoutTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
-    
+
     public function createEsIndex()
     {
         $esMock = Config::get('database.es_mock');

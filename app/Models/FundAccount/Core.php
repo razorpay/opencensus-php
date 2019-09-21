@@ -2,13 +2,10 @@
 
 namespace RZP\Models\FundAccount;
 
-use Razorpay\Trace\Logger as Trace;
-use RZP\Error\Error;
-use RZP\Exception\BaseException;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Batch;
+use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
@@ -39,31 +36,26 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->sensitiveCardDetails($input));
 
         $this->modifyRequestForBackwardCompatibility($input);
+        // calls a validator -> pre_create
 
-        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails(
-            $input,
-            $this->merchant,
-            $source);
+        (new Validator)->setStrictFalse()->validateInput('create', $input);
 
-        if (empty($fundAccount) === false)
+        if ($source instanceof Contact\Entity)
         {
-            $this->trace->info(
-                TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
-                [
-                    Entity::ID           => $fundAccount->getId(),
-                    Entity::BATCH_ID     => $batchId,
-                ]);
-            return $fundAccount;
-        }
+            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails(
+                $input,
+                $this->merchant,
+                $source);
 
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
-        {
-            $result = $this->repo->fund_account->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                $merchant->getId(),
-                $batchId);
-            if ($result !== null)
+            if (empty($fundAccount) === false)
             {
-                return $result;
+                $this->trace->info(
+                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
+                    [
+                        Entity::ID           => $fundAccount->getId(),
+                        Entity::BATCH_ID     => $batchId,
+                    ]);
+                return $fundAccount;
             }
         }
 

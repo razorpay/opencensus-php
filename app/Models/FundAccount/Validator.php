@@ -4,8 +4,10 @@ namespace RZP\Models\FundAccount;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Feature;
+use RZP\Models\BankAccount;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -32,8 +34,8 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID                         => 'sometimes|public_id',
         Entity::CONTACT_ID                          => 'sometimes|public_id',
         Entity::ACCOUNT_TYPE                        => 'required|string|custom',
-        Entity::VPA                                 => 'sometimes|associative_array',
-        Entity::BANK_ACCOUNT                        => 'sometimes|associative_array',
+        Entity::VPA                                 => 'sometimes|custom',
+        Entity::BANK_ACCOUNT                        => 'sometimes|custom',
         Entity::CARD                                => 'sometimes|associative_array|custom',
         // This is required to even create the card because we need to fill a
         // dummy cvv and that requires network and that requires card number.
@@ -82,6 +84,11 @@ class Validator extends Base\Validator
     protected function validateCard($attribute, $value)
     {
         if (empty($value) === true)
+        {
+            return;
+        }
+
+        if (empty($this->entity) === true)
         {
             return;
         }
@@ -141,5 +148,15 @@ class Validator extends Base\Validator
                 null
             );
         }
+    }
+
+    public function validateVpa($attribute, $value)
+    {
+        (new Vpa\Validator())->setStrictFalse()->validateInput('create', $value);
+    }
+
+    public function validateBankAccount($attribute, $value)
+    {
+        (new BankAccount\Validator())->setStrictFalse()->validateInput('create', $value);
     }
 }
