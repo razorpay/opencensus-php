@@ -70,11 +70,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                   <span class="Field-addon--before">
                     <AmountTooltip currency={paymentPageEntity.currency} />
                   </span>
-                  <input
-                    className="Field-el"
-                    placeholder="Enter Amount"
-                    disabled
-                  />
+                  <input class="Field-el" placeholder="Enter Amount" disabled />
                 </React.Fragment>;
               }
             } else {

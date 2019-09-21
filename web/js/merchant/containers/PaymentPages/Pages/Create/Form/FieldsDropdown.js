@@ -25,7 +25,7 @@ export default class FieldsDropdown extends React.PureComponent {
           <DropdownContent>
             <ul class="dropdown-menu nav nav-stacked OptionsDropdown-list">
               {!!beforeOptionsTxt && (
-                <div className="OptionsDropdown-title">{beforeOptionsTxt}</div>
+                <div class="OptionsDropdown-title">{beforeOptionsTxt}</div>
               )}
               {options.map((option, ix) => {
                 return (

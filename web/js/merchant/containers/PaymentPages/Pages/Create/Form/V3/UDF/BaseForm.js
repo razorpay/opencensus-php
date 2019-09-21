@@ -109,7 +109,7 @@ export default class BaseForm extends React.PureComponent {
 
     let _RepresentationEl = (
         <input
-          className="Field-el"
+          class="Field-el"
           placeholder="To be filled by customer"
           disabled
         />
@@ -127,7 +127,7 @@ export default class BaseForm extends React.PureComponent {
       _RepresentationClass = 'Field--textarea';
     } else if (field.enum) {
       _RepresentationEl = (
-        <select className="Field-el" disabled>
+        <select class="Field-el" disabled>
           <option>To be selected by customer</option>
         </select>
       );
@@ -233,7 +233,7 @@ export default class BaseForm extends React.PureComponent {
 
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>
-              <i className="i i-sort i-fix-sort" />
+              <i class="i i-sort i-fix-sort" />
               {this.state.hasDescription
                 ? 'Remove Description'
                 : 'Add Description'}

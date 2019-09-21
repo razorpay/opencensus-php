@@ -17,7 +17,7 @@ export default class FieldOptionsDropdown extends React.PureComponent {
 
           <DropdownContent>
             <ul class="dropdown-menu nav nav-stacked OptionsDropdown-list">
-              <div className="OptionsDropdown-title">Additional Options</div>
+              <div class="OptionsDropdown-title">Additional Options</div>
               {children}
             </ul>
           </DropdownContent>
@@ -35,6 +35,6 @@ export const OptionsItem = ({ children, isSelected }) => (
     )}
   >
     {children}
-    <i className="i i-check" />
+    <i class="i i-check" />
   </li>
 );

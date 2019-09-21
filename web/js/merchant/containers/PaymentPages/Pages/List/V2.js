@@ -11,8 +11,8 @@ import { trackListActions } from '../ga';
 
 export default ({ paymentPages, loading }) => {
   return (
-    <div className="table-responsive">
-      <table className="table table-hover table-striped">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped">
         <thead>
           <tr>
             <th>Title</th>
@@ -42,7 +42,7 @@ export default ({ paymentPages, loading }) => {
                   {item.title}
                 </NavLink>
               </td>
-              <td className="text-right">
+              <td class="text-right">
                 {item.amount ? (
                   <Amount value={item.amount} currency={item.currency} />
                 ) : (
@@ -50,7 +50,7 @@ export default ({ paymentPages, loading }) => {
                 )}
               </td>
 
-              <td className="text-right">
+              <td class="text-right">
                 <Amount
                   value={item.total_amount_paid}
                   currency={item.currency}
@@ -69,7 +69,7 @@ export default ({ paymentPages, loading }) => {
 
               <td>
                 {item.short_url && (
-                  <span className="CopyLink">
+                  <span class="CopyLink">
                     <span>{item.short_url}</span>
                     <CustomClipboard
                       value={item.short_url}
@@ -77,7 +77,7 @@ export default ({ paymentPages, loading }) => {
                         trackListActions('Click Copy URL');
                       }}
                     >
-                      <button className="btn btn-default btn-xs">copy</button>
+                      <button class="btn btn-default btn-xs">copy</button>
                     </CustomClipboard>
                   </span>
                 )}
