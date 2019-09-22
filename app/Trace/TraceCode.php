@@ -262,6 +262,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
     const MERCHANT_MAIL_UPDATE_FAIL                             = 'MERCHANT_MAIL_UPDATE_FAIL';
     const FTA_BANK_ACCOUNT_EMPTY                                = 'FTA_BANK_ACCOUNT_EMPTY';
+    const DELETING_SUSPENDED_MERCHANT_FROM_MAILING_LIST         = 'DELETING_SUSPENDED_MERCHANT_FROM_MAILING_LIST';
+    const DELETED_SUSPENDED_MERCHANT_FROM_MAILING_LIST          = 'DELETED_SUSPENDED_MERCHANT_FROM_MAILING_LIST';
     const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
 

@@ -336,40 +336,43 @@ return [
             ],
             'merchant_detail' => [
                 'properties' => [
-                    'merchant_id' => [
+                    'merchant_id'         => [
                         'type'  => 'keyword',
                         'index' => false,
                     ],
-                    'steps_finished' => [
+                    'steps_finished'      => [
                         'type'  => 'keyword',
                         'index' => false,
                     ],
                     'activation_progress' => [
                         'type' => 'byte',
                     ],
-                    'activation_status' => [
+                    'activation_status'   => [
                         'type' => 'keyword',
                     ],
-                    'activation_flow' => [
+                    'activation_flow'     => [
                         'type' => 'keyword',
                     ],
-                    'reviewer_id' => [
-                        'type'  => 'keyword',
+                    'reviewer_id'         => [
+                        'type' => 'keyword',
                     ],
-                    'archived_at' => [
+                    'archived_at'         => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
                     ],
-                    'submitted_at' => [
+                    'submitted_at'        => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
                         'index'  => false,
                     ],
-                    'updated_at' => [
+                    'updated_at'          => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
                         'index'  => false,
                     ],
+                    'business_type'       => [
+                        'type' => 'keyword',
+                    ]
                 ],
             ],
             'admins' => [

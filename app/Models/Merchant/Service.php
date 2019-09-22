@@ -3156,4 +3156,17 @@ class Service extends Base\Service
 
         return $this->core()->applyRestrictedSettings($merchant, $action);
     }
+
+    public function removeSuspendedMerchantsFromMailingList(array $input)
+    {
+        (new Validator)->validateInput('suspended_merchant_remove', $input);
+
+        $merchants = $this->repo->merchant
+                                ->fetchAllSuspendedMerchants($input);
+
+        foreach ($merchants as $merchant)
+        {
+            $this->core()->removeMerchantEmailToMailingList($merchant);
+        }
+    }
 }
