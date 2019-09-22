@@ -443,12 +443,30 @@ class Entity extends Base\PublicEntity
 
     public function getCurrency()
     {
-        return $this->getAttribute(self::CURRENCY);
+        $currency = $this->getAttribute(self::CURRENCY);
+        if(empty($currency))
+        {
+            return [];
+        }
+        if(is_array(json_decode($currency)))
+        {
+            $currency = json_decode($currency);
+        }
+        else
+        {
+            $currency = (array) $currency;
+        }
+        return $currency;
+    }
+
+    public function isCurrency($currency): bool
+    {
+        return in_array($currency, $this->getCurrency());
     }
 
     public function isCurrencyInr()
     {
-        return ($this->getCurrency() === Currency::INR);
+        return $this->isCurrency(Currency::INR);
     }
 
     public function getNetworkCategory()
