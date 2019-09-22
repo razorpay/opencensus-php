@@ -446,44 +446,56 @@ class Service extends Base\Service
 
                     $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
-                    $contact = $this->contactCore->processEntryForContact($item, $batchId);
+                    $result = $this->repo->payout->fetchByIdempotentKey($item[Entity::IDEMPOTENCY_KEY],
+                                                                        $this->merchant->getId(),
+                                                                        $batchId);
 
-                    $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
-
-                    $fundAccount = null;
-
-                    //
-                    // Check if fund_id is present in input and exists in DB
-                    // If yes skip contact and fund_account creation step
-                    //
-                    if (empty($fundAccountId) === false)
+                    if ($result !== null)
                     {
-                        $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
-                    }
-
-                    // If fund_account is null then, it is not created before
-                    if ($fundAccount === null)
-                    {
-                        $fundAccount = $this->fundAccountService->createFundAcccount($item, $contact, $batchId);
+                        $payoutBatch->push($result->toArrayPublic() +
+                            [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
                     }
                     else
                     {
-                        $this->trace->info(
-                            TraceCode::FUND_ACCOUNT_EXIST,
-                            [
-                                Entity::FUND_ACCOUNT_ID          => $fundAccountId,
-                                Entity::BATCH_ID                 => $batchId
-                            ]);
+                        $contact = $this->contactCore->processEntryForContact($item, $batchId);
+
+                        $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+
+                        $fundAccount = null;
+
+                        //
+                        // Check if fund_id is present in input and exists in DB
+                        // If yes skip contact and fund_account creation step
+                        //
+                        if (empty($fundAccountId) === false)
+                        {
+                            $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
+                        }
+
+                        // If fund_account is null then, it is not created before
+                        if ($fundAccount === null)
+                        {
+                            $fundAccount = $this->fundAccountService->createFundAcccount($item, $contact, $batchId);
+                        }
+                        else
+                        {
+                            $this->trace->info(
+                                TraceCode::FUND_ACCOUNT_EXIST,
+                                [
+                                    Entity::FUND_ACCOUNT_ID          => $fundAccountId,
+                                    Entity::BATCH_ID                 => $batchId
+                                ]);
+                        }
+
+                        $payout = $this->processEntryForPayoutForFundAccount($item,
+                            $fundAccount,
+                            $batchId
+                        );
+
+                        $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+                        $payoutBatch->push($payoutArr);
                     }
-
-                    $payout = $this->processEntryForPayoutForFundAccount($item,
-                                                                         $fundAccount,
-                                                                         $batchId
-                    );
-
-                    $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
-
-                    $payoutBatch->push($payoutArr);
                 });
 
             }
@@ -533,7 +545,7 @@ class Service extends Base\Service
                                                            FundAccount\Entity $fundAccount,
                                                            string $batchId): Entity
     {
-        $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount, $this->merchant);
+        $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount->toArrayPublic(), $this->merchant);
 
         return $this->core->createPayoutToFundAccount($input, $this->merchant, $batchId);
     }

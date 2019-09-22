@@ -133,18 +133,6 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
-        {
-            $result = $this->repo->payout->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                                                                $merchant->getId(),
-                                                                $batchId);
-
-            if ($result !== null)
-            {
-                return $result;
-            }
-        }
-
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
                        ->setBatch($batchId)

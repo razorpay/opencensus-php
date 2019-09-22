@@ -21,7 +21,7 @@ class BatchHelper
 
     public static function getPayoutInput(
         array $entry,
-        FundAccount\Entity $fundAccount,
+        array $fundAccount,
         Merchant\Entity $merchant): array
     {
         // Call to validateAndTranslateAccountNumberForBanking() expect the key in snake case.
@@ -36,7 +36,7 @@ class BatchHelper
             PayoutModel\Entity::CURRENCY        => $entry[self::PAYOUT][self::CURRENCY],
             // Key balance_id got appended in above validation call.
             PayoutModel\Entity::BALANCE_ID      => $entry[self::BALANCE_ID],
-            PayoutModel\Entity::FUND_ACCOUNT_ID => $fundAccount->getId(),
+            PayoutModel\Entity::FUND_ACCOUNT_ID => $fundAccount[FundAccount\Entity::ID],
             PayoutModel\Entity::MODE            => $entry[self::PAYOUT][self::MODE],
             PayoutModel\Entity::REFERENCE_ID    => $entry[self::PAYOUT][self::REFERENCE_ID],
             // Notes is optional.
