@@ -10,10 +10,14 @@ export default ({
   if (completedNachFileURL) {
     return (
       <React.Fragment>
-        <a href={completedNachFileURL} target="_blank">
+        <button
+          class="btn btn--primary"
+          href={completedNachFileURL}
+          target="_blank"
+        >
           View Scan
           <i class="i i-file-attach" />
-        </a>
+        </button>
       </React.Fragment>
     );
   }

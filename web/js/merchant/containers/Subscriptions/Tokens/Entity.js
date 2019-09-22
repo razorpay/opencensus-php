@@ -8,6 +8,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Time from 'rzp/ui/Time';
 import Definition from 'rzp/ui/Definition';
+import { AsyncBtn } from 'component/Button';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NACHDetails from 'merchant/components/Subscriptions/UploadNACHForm/Details';
@@ -18,7 +19,11 @@ import BankAccountDetails from 'merchant/components/Subscriptions/MandateBankAcc
 import ShowWhen from 'merchant/components/ShowWhen';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
-import { fetchToken, deleteToken } from 'merchant/modules/token';
+import {
+  fetchToken,
+  deleteToken,
+  resubmitNACHFile,
+} from 'merchant/modules/token';
 import { showNotification } from 'rzp/modules/notifications';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
@@ -37,6 +42,14 @@ export default class TokenEntityContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
+
+  get isNACHMethod() {
+    return this.props.entity.method === 'nach';
+  }
+
+  get isEmandateMethod() {
+    return this.props.entity.method === 'emandate';
+  }
 
   componentWillMount() {
     this.props.fetchToken(this.props.id);
@@ -97,10 +110,8 @@ export default class TokenEntityContainer extends Component {
   };
 
   render() {
-    const { loading: isLoading, entity = {}, error } = this.props;
-    paperMandate =
-      (!isLoading && entity.order.token && entity.order.token.paper_mandate) ||
-      {};
+    const { loading: isLoading, entity = {}, error } = this.props,
+      paperMandate = {};
 
     const completedNachFileURL = paperMandate.verified_url;
 
@@ -138,24 +149,25 @@ export default class TokenEntityContainer extends Component {
                     </EntityDetailRow>
 
                     <EntityDetailRow label="Failure Reason">
-                      {entity.recurring_details &&
-                      entity.recurring_details.failure_reason
-                        ? entity.recurring_details.failure_reason
-                        : '--'}
+                      <ErrorMessage
+                        id={entity.id}
+                        recurringDetails={entity.recurring_details}
+                      />
                     </EntityDetailRow>
 
-                    {/*  */}
                     <EntityDetailRow label="Payment Method">
                       <PaymentMethod mandate={entity} />
                     </EntityDetailRow>
 
-                    <EntityDetailRow label="Payment Method">
-                      <NACHDetails
-                        completedNachFileURL={completedNachFileURL}
-                      />
-                    </EntityDetailRow>
+                    {this.isNACHMethod && (
+                      <EntityDetailRow label="Payment Method">
+                        <NACHDetails
+                          completedNachFileURL={completedNachFileURL}
+                        />
+                      </EntityDetailRow>
+                    )}
 
-                    {entity.method === 'emandate' && (
+                    {this.isEmandateMethod && (
                       <ShowWhen featureEnabled="token_bank_details">
                         <EntityDetailRow label="Bank Account Details">
                           <BankAccountDetails
@@ -210,4 +222,33 @@ function TimeStamps({ token }) {
       </Definition>
     </ContentToggler>
   );
+}
+
+class ErrorMessage extends React.PureComponent {
+  resubmitNACHFile = () => {
+    return resubmitNACHFile(this.props.id);
+  };
+
+  render() {
+    const { recurringDetails: { failure_reason } } = this.props,
+      isNACHError = failure_reason && failure_reason.includes('nach');
+
+    if (true || isNACHError) {
+      return (
+        <React.Fragment>
+          <Alert type="error" message={failure_reason} showDismiss={false} />
+
+          <AsyncBtn.Primary
+            onClick={resubmitNACHFile}
+            pendingState="Resubmitting"
+            class="btn"
+          >
+            Resubmit
+          </AsyncBtn.Primary>
+        </React.Fragment>
+      );
+    }
+
+    return failure_reason || '--';
+  }
 }

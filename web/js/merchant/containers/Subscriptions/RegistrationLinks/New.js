@@ -71,7 +71,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   constructor(props) {
     super(props);
 
-    this.DEFAULT_MAX_AMOUNT = 10000;
+    this.DEFAULT_MAX_AMOUNT = 99999;
     this.state = {
       loading: true,
       currentTab: 0,
@@ -260,9 +260,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     }
 
     if (this.isNACHPayment) {
-      payload.subscription_registration.paper_mandate = {
-        bank_account: bankAccountDetails,
-      };
+      payload.subscription_registration.bank_account = bankAccountDetails;
     }
 
     if (this.isEmandatePayment || this.isNACHPayment) {
@@ -287,23 +285,33 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     return this.props
       .createRegistrationLink(payload)
       .then(response => {
-        if (response) {
-          this.props.showNotification({
-            type: 'success',
-            message: 'Registration Link Successfully created',
-          });
+        this.props.showNotification({
+          type: 'success',
+          message: 'Registration Link Successfully created',
+          duration: 1000,
+        });
 
-          const entityId = response.id;
+        return response;
+      })
+      .then(response => {
+        const entityId = response.id;
 
-          if (this.props.onClose) {
-            this.props.luminateRow(entityId);
-
-            !this.state.formFields.isNachFormAval && this.props.onClose(``);
-          } else {
-            const redirectUrl = '/registration_links/' + entityId;
+        if (this.state.formFields.isNachFormAval) {
+          setTimeout(() => {
+            const redirectUrl = `/registration_links/${entityId}/upload_nach`;
 
             this.props.history.push(redirectUrl);
-          }
+          }, 500);
+        }
+
+        if (this.props.onClose) {
+          this.props.luminateRow(entityId);
+
+          this.props.onClose();
+        } else {
+          const redirectUrl = '/registration_links/' + entityId;
+
+          this.props.history.push(redirectUrl);
         }
       })
       .catch(({ errors }) => {

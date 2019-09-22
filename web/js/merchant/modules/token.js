@@ -1,3 +1,5 @@
+import { merchantFetch } from 'merchant/utils/ajax';
+
 import Token from 'merchant/models/Token';
 
 import { makeEntityReducer } from 'rzp/modules/entity';
@@ -20,5 +22,12 @@ export const deleteToken = id => ({
   type: DELETE_TOKEN,
   payload: new Token({ id }).delete(),
 });
+
+export const resubmitNACHFile = id => {
+  return merchantFetch({
+    url: 'token.registration/paper_mandate/authenticate/proxy',
+    method: 'post',
+  });
+};
 
 export default makeEntityReducer(TOKEN_FETCH);

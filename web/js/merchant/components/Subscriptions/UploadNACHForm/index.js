@@ -162,6 +162,14 @@ export default class UploadNACHForm extends React.Component {
           type: 'success',
           message: 'NACH form uploaded successfully',
         });
+
+        if (this.props.onClose) {
+          this.props.onClose();
+        } else {
+          const redirectUrl = '/registration_links/' + this.props.id;
+
+          this.props.history.push(redirectUrl);
+        }
       })
       .catch(err => {
         this.props.showNotification({
@@ -203,7 +211,10 @@ export default class UploadNACHForm extends React.Component {
           <h5 class={`text-danger`}>
             <i class="i i-info-circle" /> {errors.heading}
           </h5>
-          <p class="description">{errors.description}</p>
+
+          {errors.description && (
+            <p class="description">{errors.description}</p>
+          )}
         </React.Fragment>
       );
     }
@@ -380,4 +391,8 @@ const getErrorMessage = ([error, status]) => {
         'Kindly upload an image with better quality and ensure that the form has been signed.',
     };
   }
+
+  return {
+    heading: error,
+  };
 };
