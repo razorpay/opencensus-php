@@ -505,16 +505,22 @@ class Core extends Merchant\Core
     {
         $registeredAddress = [];
 
+        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === true)
+        {
+            return $registeredAddress;
+        }
+
         foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $address)
         {
             if ($address[Constants::TYPE] === Constants::REGISTERED)
             {
                 $mapping = [
-                    Constants::LINE1   => Detail\Entity::BUSINESS_REGISTERED_ADDRESS,
-                    Constants::LINE2   => Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2,
-                    Constants::CITY    => Detail\Entity::BUSINESS_REGISTERED_CITY,
-                    Constants::PIN     => Detail\Entity::BUSINESS_REGISTERED_PIN,
-                    Constants::COUNTRY => Detail\Entity::BUSINESS_REGISTERED_COUNTRY,
+                    Constants::LINE1         => Detail\Entity::BUSINESS_REGISTERED_ADDRESS,
+                    Constants::LINE2         => Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2,
+                    Constants::CITY          => Detail\Entity::BUSINESS_REGISTERED_CITY,
+                    Constants::DISTRICT_NAME => Detail\Entity::BUSINESS_REGISTERED_DISTRICT,
+                    Constants::PIN           => Detail\Entity::BUSINESS_REGISTERED_PIN,
+                    Constants::COUNTRY       => Detail\Entity::BUSINESS_REGISTERED_COUNTRY,
                 ];
 
                 foreach ($mapping as $key => $value)
@@ -541,16 +547,22 @@ class Core extends Merchant\Core
     {
         $operationAddress = [];
 
+        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === true)
+        {
+            return $operationAddress;
+        }
+
         foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $address)
         {
             if ($address[Constants::TYPE] === Constants::OPERATION)
             {
                 $mapping = [
-                    Constants::LINE1   => Detail\Entity::BUSINESS_OPERATION_ADDRESS,
-                    Constants::LINE2   => Detail\Entity::BUSINESS_OPERATION_ADDRESS_L2,
-                    Constants::CITY    => Detail\Entity::BUSINESS_OPERATION_CITY,
-                    Constants::PIN     => Detail\Entity::BUSINESS_OPERATION_PIN,
-                    Constants::COUNTRY => Detail\Entity::BUSINESS_OPERATION_COUNTRY,
+                    Constants::LINE1         => Detail\Entity::BUSINESS_OPERATION_ADDRESS,
+                    Constants::LINE2         => Detail\Entity::BUSINESS_OPERATION_ADDRESS_L2,
+                    Constants::CITY          => Detail\Entity::BUSINESS_OPERATION_CITY,
+                    Constants::DISTRICT_NAME => Detail\Entity::BUSINESS_OPERATION_DISTRICT,
+                    Constants::PIN           => Detail\Entity::BUSINESS_OPERATION_PIN,
+                    Constants::COUNTRY       => Detail\Entity::BUSINESS_OPERATION_COUNTRY,
                 ];
 
                 foreach ($mapping as $key => $value)

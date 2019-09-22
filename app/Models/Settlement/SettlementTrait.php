@@ -79,7 +79,6 @@ trait SettlementTrait
             $bankAccount = $merchant->bankAccount;
         }
 
-
         // Do not proceed if merchant does not have active bank account
         if ($bankAccount === null)
         {
@@ -127,7 +126,7 @@ trait SettlementTrait
                 [
                     'reason'               => 'bank account created yesterday',
                     'bank_account_created' => Carbon::createFromTimestamp(
-                                                $txn->getCreatedAt(),
+                                                $bankAccount->getCreatedAt(),
                                                 Timezone::IST)->format('Y-m-d H:i:s'),
                 ]);
 

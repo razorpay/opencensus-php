@@ -493,11 +493,11 @@ class Core extends Base\Core
 
         foreach ($availableGatewaysForMerchant as $availableGateway)
         {
-            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
+            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway][$authType]) === true)
             {
                 $availableEmandateBanks = array_merge(
                                                 $availableEmandateBanks,
-                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+                    Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway][$authType]);
             }
         }
 
@@ -525,5 +525,19 @@ class Core extends Base\Core
         }
 
         return $provider;
+    }
+
+    public function checkPaypalTerminalForCurrency($merchant, $currency)
+    {
+        $terminals = $this->repo
+                          ->terminal
+                          ->findByMerchantIdGatewayAndCurrency(
+                              $merchant['id'],
+                              Payment\Gateway::WALLET_PAYPAL,
+                              $currency);
+
+        $result = $terminals === null ? false : true;
+
+        return $result;
     }
 }

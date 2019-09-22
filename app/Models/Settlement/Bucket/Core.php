@@ -6,7 +6,11 @@ use Cache;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Balance\Type;
 
 class Core extends Base\Core
@@ -18,6 +22,93 @@ class Core extends Base\Core
         $this->preference = new Preference;
 
         parent::__construct();
+    }
+
+    public function deleteCompletedBucketEntries(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::DELETING_COMPLETED_BUCKET_ENTRIES,
+            $input);
+
+        $timestamp = Carbon::now(Timezone::IST)->subDay();
+
+        if (isset($input['timestamp']) === true)
+        {
+            $timestamp = $input['timestamp'];
+        }
+
+        $recordsDeletedCount = $this->repo
+                                    ->settlement_bucket
+                                    ->removeCompletedEntriesBeforeTimestamp($timestamp);
+
+        $result = [
+            'count' => $recordsDeletedCount,
+        ];
+
+        $this->trace->info(
+            TraceCode::COMPLETED_BUCKET_ENTRIES_DELETED,
+            $result);
+
+        return $result;
+    }
+
+    public function backfillSettlementBucket(array $input)
+    {
+        // Time limit of 10 mins
+        RuntimeManager::setTimeLimit(600);
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $startTime = $currentTime->subMinutes($currentTime->minute)
+                                 ->subSecond($currentTime->second)
+                                 ->getTimestamp();
+        $endTime = null;
+
+        if (empty($input['start']) === false)
+        {
+            $startTime = $input['start'];
+        }
+
+        if (empty($input['end']) === false)
+        {
+            $endTime = $input['end'];
+        }
+
+        $this->trace->info(
+            TraceCode::BUCKETING_INITIATE,
+            [
+                'start' => $startTime,
+                'end'   => $endTime,
+            ]);
+
+        $featuredMids = $this->repo->feature->findMerchantsHavingFeatures([
+            Feature\Constants::ES_AUTOMATIC,
+            Feature\Constants::DAILY_SETTLEMENT,
+            Feature\Constants::BLOCK_SETTLEMENTS,
+        ])->pluck('entity_id')
+          ->toArray();
+
+        $featuredMids = array_merge($featuredMids, Preferences::NO_SETTLEMENT_MIDS);
+
+        $result = $this->repo->transaction->getMerchantSettledAtTime($featuredMids, $startTime, $endTime);
+
+        foreach ($result->toArray() as $record)
+        {
+            $this->addMerchantToSettlementBucket('', $record['merchant_id'], $record['settled_at']);
+        }
+
+        $this->trace->info(
+            TraceCode::BUCKETING_DONE,
+            [
+                'count' => $result->count(),
+                'start' => $startTime,
+                'end'   => $endTime,
+            ]
+        );
+
+        return [
+            'count' => $result->count(),
+        ];
     }
 
     /**
@@ -49,15 +140,16 @@ class Core extends Base\Core
      * @param string $transactionId
      * @param string $merchantId
      * @param        $settlementTime
+     * @return bool
      */
-    public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime)
+    public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime): bool
     {
         // check is the transaction can be settled
         $status = $this->isSettleableTransaction($transactionId);
 
         if ($status === false)
         {
-            return;
+            return false;
         }
 
         // check merchant specific conditions
@@ -66,7 +158,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return;
+            return false;
         }
 
         // check early settlement preferences
@@ -75,9 +167,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            $this->addToBucket($merchantId, $timestamp);
-
-            return;
+            return $this->addToBucket($merchantId, $timestamp, $settlementTime);
         }
 
         // check merchant preference
@@ -86,9 +176,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            $this->addToBucket($merchantId, $timestamp);
-
-            return;
+            return $this->addToBucket($merchantId, $timestamp, $settlementTime);
         }
 
         $currentTimestamp = Carbon::now(Timezone::IST);
@@ -97,7 +185,7 @@ class Core extends Base\Core
             Preference::getNextBucket($currentTimestamp->getTimestamp()) :
             Preference::getNextBucket($settlementTime);
 
-        $this->addToBucket($merchantId, $bucketTimestamp);
+        return $this->addToBucket($merchantId, $bucketTimestamp, $settlementTime);
     }
 
     /**
@@ -142,6 +230,13 @@ class Core extends Base\Core
      */
     protected function isSettleableTransaction(string $transactionId): bool
     {
+        // this is added only for back filling purpose.
+        // should remove once done.
+        if (empty($transactionId) === true)
+        {
+            return true;
+        }
+
         $balanceType = $this->repo
                             ->transaction
                             ->getTransactionBalanceType($transactionId);
@@ -163,14 +258,20 @@ class Core extends Base\Core
      * creates entry in settlement bucket for the merchant id if its not already added to that bucket
      *
      * @param string $merchantId
+     * @param string $settlementTime
      * @param int    $bucketTimestamp
+     * @return bool
      */
-    public function addToBucket(string $merchantId, int $bucketTimestamp)
+    public function addToBucket(string $merchantId, int $bucketTimestamp, $settlementTime = null): bool
     {
         $data = [
             Entity::MERCHANT_ID      => $merchantId,
             Entity::BUCKET_TIMESTAMP => $bucketTimestamp,
         ];
+
+        $traceData = [
+                'settled_at' => $settlementTime,
+            ] + $data;
 
         try
         {
@@ -179,10 +280,18 @@ class Core extends Base\Core
             $entity->fill($data);
 
             $entity->save();
+
+            $this->trace->info(
+                TraceCode::MERCHANT_ADDED_TO_BUCKET,
+                $traceData);
+
+            return true;
         }
         catch (\Throwable $e)
         {
             // todo: use insert ignore or ignore this error
         }
+
+        return false;
     }
 }

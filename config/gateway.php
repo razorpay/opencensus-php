@@ -12,6 +12,7 @@ return [
     'available' => [
         'amex',
         'atom',
+        'atos',
         'axis_genius',
         'axis_migs',
         'billdesk',
@@ -166,6 +167,7 @@ return [
     'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
+    'mock_atos'                   => env('ATOS_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
@@ -763,6 +765,7 @@ return [
         'test_hash_secret'            => env('NETBANKING_SBI_TEST_HASH_SECRET'),
         'test_hash_secret_recurring'  => env('NETBANKING_SBI_TEST_HASH_SECRET_RECURRING'),
         'iv'                          => env('NETBANKING_SBI_IV'),
+        'emandate_corporate_id'       => env('EMANDATE_SBI_CORPORATE_ID'),
     ],
 
     'mozart' => [

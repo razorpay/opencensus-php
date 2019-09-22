@@ -416,6 +416,13 @@ abstract class ApiProcessor extends NodalAccount
     {
         $input = Request::all();
 
+        if ((empty($input['amount']) === false) and
+            (($input['amount'] === '3470') or
+             ($input['amount'] === 3470)))
+        {
+            $input['failed_response'] = '1';
+        }
+
         $content = $this->mockResponseGenerator($input);
 
         $response = new \Requests_Response();

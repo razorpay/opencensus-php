@@ -18,9 +18,11 @@ class Core extends Base\Core
 {
     protected $card = null;
 
-    public function create($input, $merchant)
+    public function create($input, $merchant, $recurring = false)
     {
         $card = (new Card\Entity)->build($input);
+
+        $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
 
         $card->merchant()->associate($merchant);
 
@@ -89,7 +91,7 @@ class Core extends Base\Core
         return $this->card;
     }
 
-    public function createAndReturnWithSensitiveData(array $input, Merchant\Entity $merchant): array
+    public function createAndReturnWithSensitiveData(array $input, Merchant\Entity $merchant, bool $recurring): array
     {
         //
         // We are running modifiers outside the build() because
@@ -106,10 +108,22 @@ class Core extends Base\Core
         {
             $newCard = (new Card\Entity)->build($input);
 
+            $this->setVaultTokenAndFingerPrint($newCard, $input, $recurring);
+
             if (($newCard->getVaultToken() !== null) and
                 ($newCard->getVault() === Card\Vault::RZP_VAULT))
             {
                 $card = $this->findOneExistingCards($newCard, $merchant);
+
+                // temproary code
+                if (($card != null) and
+                    (empty($card->getGlobalFingerprint()) === true) and
+                    (empty($newCard->getGlobalFingerprint()) === false))
+                {
+                    $card->setGlobalFingerprint($newCard->getGlobalFingerprint());
+
+                    $this->repo->saveOrFail($card);
+                }
 
                 $this->card = $card;
             }
@@ -117,7 +131,7 @@ class Core extends Base\Core
 
         if ($card === null)
         {
-            $card = $this->create($input, $merchant);
+            $card = $this->create($input, $merchant, $recurring);
         }
 
         $messageType = $card->iinRelation ? $card->iinRelation['message_type'] : null;
@@ -131,17 +145,54 @@ class Core extends Base\Core
             ]);
     }
 
+    public function setVaultTokenAndFingerPrint(Card\Entity $card, array $input, bool $recurring)
+    {
+        if (empty($card->getVault()) === true)
+        {
+            return;
+        }
+
+        $cardVault = (new Card\CardVault);
+
+        $tempInput['card'] = $input['number'];
+
+        $response = $cardVault->getTokenAndFingerprint($tempInput);
+
+        $card->setVaultToken($response['token']);
+
+        $card->setGlobalFingerprint($response['fingerprint']);
+
+        $vault = Card\VAULT::RZP_ENCRYPTION;
+
+        if (isset($response['scheme']) === true)
+        {
+           $vault = Card\Vault::getVaultName($response['scheme']);
+        }
+
+        if (($recurring === true) and
+            ($vault === Card\Vault::RZP_ENCRYPTION))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_SAVE_FAILED,
+                []);
+        }
+
+        $card->setVault($vault);
+    }
+
     public function createDuplicateCard($input, $merchant)
     {
         $createInput = [
-            Entity::NUMBER          => $input[Entity::NUMBER],
-            Entity::EXPIRY_MONTH    => $input[Entity::EXPIRY_MONTH],
-            Entity::EXPIRY_YEAR     => $input[Entity::EXPIRY_YEAR],
-            Entity::CVV             => $input[Entity::CVV],
-            Entity::NAME            => $input[Entity::NAME],
+            Entity::NUMBER             => $input[Entity::NUMBER],
+            Entity::EXPIRY_MONTH       => $input[Entity::EXPIRY_MONTH],
+            Entity::EXPIRY_YEAR        => $input[Entity::EXPIRY_YEAR],
+            Entity::CVV                => $input[Entity::CVV],
+            Entity::NAME               => $input[Entity::NAME],
         ];
 
         $card = $this->create($createInput, $merchant);
+
+        $card->setGlobalFingerprint($input[Entity::GLOBAL_FINGERPRINT]);
 
         return $card;
     }

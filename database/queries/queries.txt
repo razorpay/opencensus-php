@@ -1,6 +1,12 @@
 Alter table cards
     add merchant_id varchar(14) after id;
 
+alter table merchant_documents
+    modify file_store_id char(14) NULL;
+
+ALTER TABLE merchant_documents
+    ADD INDEX (`file_store_id`);
+
 update cards, payments
     set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
 
@@ -5317,6 +5323,10 @@ ALTER TABLE `external`
     ADD INDEX `external_balance_id_index` (`balance_id`),
     ADD INDEX `external_transaction_id_index` (`transaction_id`);
 
+ALTER table terminals
+    ADD COLUMN `req_rrn` VARCHAR(255) NULL AFTER `ifsc_code`,
+    ADD INDEX terminals_req_rrn_index (`req_rrn`);
+
 ALTER TABLE adjustment
     ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
     ADD INDEX `adjustment_balance_id_index` (`balance_id`);
@@ -5328,3 +5338,7 @@ ALTER TABLE nodal_beneficiaries
     ADD INDEX `nodal_beneficiaries_card_id_index` (`card_id`);
 
 ALTER TABLE nodal_beneficiaries ADD INDEX nodal_beneficiaries_bank_account_id_channel_index(bank_account_id, channel);
+
+ALTER table merchant_details
+    ADD COLUMN `business_registered_district` VARCHAR(255) NULL AFTER `business_registered_city`,
+    ADD COLUMN `business_operation_district` VARCHAR(255) NULL AFTER  `business_operation_city`;

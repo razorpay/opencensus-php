@@ -417,6 +417,69 @@ trait Refund
         return $gatewayVerifyRefundResponse;
     }
 
+    // This route always calls the gateway - to be used in manual verify refund actions
+    public function scroogeVerifyRefund(RefundEntity $refund, array $input)
+    {
+        $payment = $refund->payment;
+
+        //
+        // Refunds are typically retried in groups using long-running
+        // loops. This ensures that if a refund has been updated by a
+        // different process, it is processed accordingly here.
+        //
+        $this->repo->reload($refund);
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $input[RefundConstants::IS_FTA] = (isset($input[RefundConstants::IS_FTA]) === true) ?
+            (bool) $input[RefundConstants::IS_FTA] : null;
+
+        $refundValidator = $refund->getValidator();
+
+        //
+        // Scrooge gateways return back an object in the `success` key
+        // non-scrooge gateways return back a boolean
+        // Scrooge gateways return back lot of data like `status_code`,
+        // `gateway_refund_id`, `success` etc in the object.
+        //
+        try
+        {
+            $refundValidator->validateInput('scrooge_gateway_refund', $input);
+
+            //
+            // Doing +1 here, because at gateway side, we decrement attempts with -1,
+            // doing this to keep backward compatibility of older refunds as well as scrooge refunds.
+            // For scrooge refunds, attempts will be the exact attempt on which verify should be called,
+            // and for old refunds, it will be the refund attempt, so we need to verify on previous refund
+            //
+            $refund->setAttempts(($input['attempts'] ?? -1) + 1) ;
+
+            $data = $input['fta_data'] ?? [];
+
+            $data[RefundConstants::IS_FTA] = $input[RefundConstants::IS_FTA] ?? null;
+
+            $gatewayVerifyRefundResponse = $this->verifyRefund($refund, $data);
+        }
+        catch (\Exception $ex)
+        {
+            $gatewayResponse = [];
+
+            // Only BaseException would have `getData` function
+            if ($ex instanceof Exception\BaseException)
+            {
+                $gatewayResponse = $ex->getData();
+            }
+
+            $gatewayVerifyRefundResponse = $this->prepareScroogeRefundResponse($gatewayResponse, false, $ex, Payment\Action::VERIFY);
+        }
+
+        $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_VERIFY_RESPONSE,
+            $refund,
+            $gatewayVerifyRefundResponse);
+
+        return $gatewayVerifyRefundResponse;
+    }
+
     /**
      * Using to verify UPI refunds for all previous attempts to check if any of the attempt was successful.
      * bulkRefundVerify param is used for returning response in the required format for `verifyRefundsInBulk` function.
@@ -787,7 +850,7 @@ trait Refund
         }
         catch (\Exception $e)
         {
-            (new TransferMetric)->pushReversalFailedMetrics(e);
+            (new TransferMetric)->pushReversalFailedMetrics($e);
 
             throw $e;
         }
@@ -2234,7 +2297,8 @@ trait Refund
 
             $fta = (new FundTransferAttempt\Core)->createWithVpa($this->refund,
                                                                  $this->refund->vpa,
-                                                                 $fundTransferAttemptInput);
+                                                                 $fundTransferAttemptInput,
+                                                                 true);
 
             return $fta;
         });
@@ -2282,7 +2346,8 @@ trait Refund
         {
             $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
                                                                   $payment->card,
-                                                                  $fundTransferAttemptInput);
+                                                                  $fundTransferAttemptInput,
+                                                                  true);
 
             return $fta;
         });

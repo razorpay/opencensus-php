@@ -178,6 +178,8 @@ class Repository extends Base\Repository
 
     public function findCardsWithVaultAndNoPayments(string $vault, int $limit)
     {
+        $window = 1200;
+
         $paymentRepo = $this->repo->payment;
 
         $paymentTable = $paymentRepo->getTableName();
@@ -190,7 +192,7 @@ class Repository extends Base\Repository
 
         $createdAt  = $this->dbColumn(Entity::CREATED_AT);
 
-        $timestamp = time() - Payment\Entity::PAYMENT_WINDOW;
+        $timestamp = time() - $window;
 
         return $this->newQuery()
                     ->leftJoin($paymentTable, $IdColumn, $paymentCardIdColumn)

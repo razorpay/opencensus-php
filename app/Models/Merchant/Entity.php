@@ -575,6 +575,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::PHONEPE_INTENT);
     }
 
+    public function isUseMswipeTerminalsEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::USE_MSWIPE_TERMINALS);
+    }
+
     public function canHoldPayment(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::PAYMENT_ONHOLD);
@@ -1671,6 +1676,16 @@ class Entity extends Base\PublicEntity
     public function releaseFunds()
     {
         $this->setHoldFunds(false);
+    }
+
+    public function setReceiptEmailEventAuthorized()
+    {
+        $this->setReceiptEmailTriggerEventAttribute(Event::AUTHORIZED);
+    }
+
+    public function setReceiptEmailEventCaptured()
+    {
+        $this->setReceiptEmailTriggerEventAttribute(Event::CAPTURED);
     }
 
     public function setHoldFunds($holdFunds)

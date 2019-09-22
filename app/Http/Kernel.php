@@ -50,6 +50,7 @@ class Kernel extends HttpKernel
         Middleware\UserAccess::class,
         Middleware\SubscriptionProxy::class,
         Middleware\ExcelStoreProxy::class,
+        Middleware\FailureEventsInterceptor::class,
         Middleware\Workflow::class,
         Middleware\MerchantIpFilter::class,
         Middleware\EventTracker::class,
@@ -69,16 +70,17 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'throttle'           => Middleware\Throttle::class,
-        'auth'               => Middleware\Authenticate::class,
-        'admin_access'       => Middleware\AdminAccess::class,
-        'user_access'        => Middleware\UserAccess::class,
-        'subscription_proxy' => Middleware\SubscriptionProxy::class,
-        'excel_store_proxy'  => Middleware\ExcelStoreProxy::class,
-        'workflow'           => Middleware\Workflow::class,
-        'merchant_ip_filter' => Middleware\MerchantIpFilter::class,
-        'event_tracker'      => Middleware\EventTracker::class,
-        'p2p'                => Middleware\P2p::class,
-        'idempotent'         => Middleware\IdempotentHandler::class,
+        'throttle'            => Middleware\Throttle::class,
+        'auth'                => Middleware\Authenticate::class,
+        'admin_access'        => Middleware\AdminAccess::class,
+        'user_access'         => Middleware\UserAccess::class,
+        'subscription_proxy'  => Middleware\SubscriptionProxy::class,
+        'excel_store_proxy'   => Middleware\ExcelStoreProxy::class,
+        'workflow'            => Middleware\Workflow::class,
+        'merchant_ip_filter'  => Middleware\MerchantIpFilter::class,
+        'event_tracker'       => Middleware\EventTracker::class,
+        'p2p'                 => Middleware\P2p::class,
+        'idempotent'          => Middleware\IdempotentHandler::class,
+        'failure_interceptor' => Middleware\FailureEventsInterceptor::class,
     ];
 }

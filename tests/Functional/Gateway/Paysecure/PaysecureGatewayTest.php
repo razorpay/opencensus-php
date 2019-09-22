@@ -760,6 +760,10 @@ class PaysecureGatewayTest extends TestCase
             ],
             $verify
         );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEquals('AZ', $gatewayPayment['status']);
     }
 
     // For terminal mode "purchase", capture would not be called

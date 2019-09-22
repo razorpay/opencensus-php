@@ -40,7 +40,7 @@ class Cbi extends Base
         {
             $date = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)->format('dmY');
 
-            $account_number = str_pad($row['gateway']['data']['account_number'], 17, "0", STR_PAD_LEFT);
+            $account_number = str_pad(substr($row['gateway']['data']['account_number'], 3), 17, "0", STR_PAD_LEFT);
 
             $narration_text = str_pad($row['merchant']->getFilteredDba(), 50, " ", STR_PAD_RIGHT);
 

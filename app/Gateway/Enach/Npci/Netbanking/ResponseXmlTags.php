@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Enach\Npci\Netbanking;
 
+// All Fields that are present in the xml response
 class ResponseXmlTags
 {
     // tags
@@ -39,4 +40,9 @@ class ResponseXmlTags
 
     //user defined tag : this is not sent by NPCI. Creating this for readability and used in callback code
     const REQUEST_DATE_TIME = 'Mandate_Request_Creation_Date_Time';
+
+    // verify response
+    const MERCHANT_ID     = 'MerchantID';
+    const REQ_INIT_DATE   = 'ReqInitDate';
+    const VER_NPCI_REF_ID = 'npcirefmsgID';
 }

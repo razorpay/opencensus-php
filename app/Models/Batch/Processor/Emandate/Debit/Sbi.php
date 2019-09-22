@@ -10,13 +10,15 @@ class Sbi extends Base
 {
     protected $gateway = Gateway::NETBANKING_SBI;
 
+    protected $useSpreadSheetLibrary = false;
+
     protected function getDataFromRow(array & $row): array
     {
         $row = array_map('trim', $row);
 
         return [
             self::PAYMENT_ID            => $row[ Batch\Header::SBI_EM_DEBIT_CUSTOMER_REF_NO ],
-            self::ACCOUNT_NUMBER        => $row[ Batch\Header::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER],
+            self::ACCOUNT_NUMBER        => ltrim($row[ Batch\Header::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER], '0'),
             self::GATEWAY_ERROR_MESSAGE => $row[ Batch\Header::SBI_EM_DEBIT_REASON],
             self::GATEWAY_RESPONSE_CODE => $row[ Batch\Header::SBI_EM_DEBIT_DEBIT_STATUS],
             self::AMOUNT                => $row[ Batch\Header::SBI_EM_DEBIT_AMOUNT],
@@ -47,5 +49,10 @@ class Sbi extends Base
     protected function getNumRowsToSkipExcelFile()
     {
         return 5;
+    }
+
+    protected function getStartRowExcelFiles()
+    {
+        return 6;
     }
 }
