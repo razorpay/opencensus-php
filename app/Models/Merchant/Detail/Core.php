@@ -472,6 +472,8 @@ class Core extends Base\Core
         $zapierData = $this->activationZapierData($customer, $merchant);
 
         $this->postFormSubmissionToZapier($zapierData, 'submissions', $merchant);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_FORM_SUBMIT_SUCCESS, $merchant, null);
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)

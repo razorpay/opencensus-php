@@ -71,6 +71,8 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
 
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null);
+
         return $response;
     }
 
@@ -280,6 +282,8 @@ class Service extends Base\Service
             return $response;
         }
         );
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, array_keys($input));
 
         return $response;
     }

@@ -333,6 +333,7 @@ class EventCode
         'name'  => 'reverse.feed.received'
     ];
 
+    // onboarding events
     const SIGNUP_CAPTCHA_VERIFICATION_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'signup.captcha_verification.success',
@@ -411,5 +412,30 @@ class EventCode
     const ACT_CHANGE_ACTIVATION_FLOW_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'act.change_activation_flow.success',
+    ];
+
+    const KYC_FORM_SUBMIT_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.form_submit.success',
+    ];
+
+    const KYC_SAVE_MODIFICATIONS_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.save_modifications.success',
+    ];
+
+    const KYC_UPLOAD_DOCUMENT_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.upload_document.success',
+    ];
+
+    const KYC_UPLOAD_DOCUMENT_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.upload_document.failed',
+    ];
+
+    const KYC_SAVE_MODIFICATIONS_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.save_registration_details.failed',
     ];
 }
