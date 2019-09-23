@@ -437,7 +437,7 @@ export default class OndemandModal extends Component {
                 </div>
                 <div class="border">
                   <p>
-                    Early settelment applies to domestic setelments only . For
+                    Early settlement applies to domestic setelments only . For
                     International, please{' '}
                   </p>
                   <a
