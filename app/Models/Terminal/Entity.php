@@ -470,10 +470,10 @@ class Entity extends Base\PublicEntity
     {
         if(!empty($value))
         {
-            if(is_array($value))
-            {
-                $value = json_encode($value);
-            }
+            $value = (array) $value;
+
+            $value = json_encode($value);
+
             $this->attributes[self::CURRENCY] = $value;
         }
     }
