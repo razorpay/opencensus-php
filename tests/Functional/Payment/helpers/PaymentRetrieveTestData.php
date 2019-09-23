@@ -271,9 +271,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'notes.value' => [
-                                    'value' => 'es',
+                                    'query' => 'es',
                                 ],
                             ],
                         ],
@@ -333,9 +333,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'notes.value' => [
-                                    'value' => 'es_random_1',
+                                    'query' => 'es_random_1',
                                 ],
                             ],
                         ],

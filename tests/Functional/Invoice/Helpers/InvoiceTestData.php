@@ -4738,9 +4738,9 @@ return [
                             ],
                         ],
                         [
-                            'term' => [
+                            'match' => [
                                 'notes.value' => [
-                                    'value' => 'info',
+                                    'query' => 'info',
                                 ],
                             ],
                         ]

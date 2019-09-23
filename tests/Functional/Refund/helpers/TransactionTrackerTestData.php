@@ -33,9 +33,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'notes.value' => [
-                                    'value' => 'GOBUSANDe2c92f0f46',
+                                    'query' => 'GOBUSANDe2c92f0f46',
                                 ],
                             ],
                         ],
@@ -64,9 +64,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'notes.value' => [
-                                    'value' => 'CCPjoWzlDJG0g7',
+                                    'query' => 'CCPjoWzlDJG0g7',
                                 ],
                             ],
                         ],
@@ -95,9 +95,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'notes.value' => [
-                                    'value' => 'REZDELKJe2c92f0f46',
+                                    'query' => 'REZDELKJe2c92f0f46',
                                 ],
                             ],
                         ],
@@ -126,9 +126,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'notes.value' => [
-                                    'value' => 'GOBUSANDe2c92f0f46',
+                                    'query' => 'GOBUSANDe2c92f0f46',
                                 ],
                             ],
                         ],
@@ -157,9 +157,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'notes.value' => [
-                                    'value' => 'CCPjoWzlDJG0g7',
+                                    'query' => 'CCPjoWzlDJG0g7',
                                 ],
                             ],
                         ],

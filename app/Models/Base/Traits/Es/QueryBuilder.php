@@ -111,9 +111,9 @@ trait QueryBuilder
     {
         // Refer- config/es_mappings.php on how notes is indexed.
         $clause = [
-            Es::TERM => [
+            Es::MATCH => [
                 'notes.value' => [
-                    Es::VALUE => $value,
+                    Es::QUERY => $value,
                 ],
             ],
         ];
