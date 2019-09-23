@@ -25,7 +25,7 @@
     if ('{{$env}}'==='dev' || String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
         isLocal = true;
     }
-    var disableEventEmitters = false; //If true events will not be emitted to LJ and PROM
+    var disableEventEmitters = '{{$env}}'==='dev' ? true : false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname=="dashboard.razorpay.com" ? 'prod' : 'stage';
     if(analytics){
         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','perf','taboola'], {
