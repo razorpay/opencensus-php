@@ -477,6 +477,26 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getBulkTreatment(array $features)
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        $featureString = implode(', ', $features);
+
+        list($error, $data) = $request->send("razorx/bulkevaluate?features=$featureString", 'GET');
+
+        if (empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return $data;
+    }
+
     public function getMerchantTags($merchantId)
     {
         $adminUser = Auth::guard('api')->user();
