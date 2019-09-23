@@ -23,6 +23,10 @@ class GatewayProcessor extends BaseGatewayProcessor
     // MID
     const ATOS_MID_INDEX_KEY     = 'atos_gateway_terminal_creation_mid_index';
     const ATOS_MID_OFFSET        = 999000000000000;
+
+    protected $tidGenerator;
+
+    protected $redisMidKey;
     
     public function __construct()
     {
@@ -35,6 +39,8 @@ class GatewayProcessor extends BaseGatewayProcessor
         $this->trace = $this->app['trace'];
 
         $this->tidGenerator = new TidGenerator();
+
+        $this->redisMidKey = $this->mode . '_' . self::ATOS_MID_INDEX_KEY;
     }
 
     // GetInput Value (params) for terminal creation
@@ -51,7 +57,7 @@ class GatewayProcessor extends BaseGatewayProcessor
             Terminal\Entity::IFSC_CODE           => $ifscCode,
             Terminal\Entity::GATEWAY             => Gateway::ATOS,
             Terminal\Entity::GATEWAY_MERCHANT_ID => $this->generateMid(),
-            // Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
+            Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
         ];
 
         $terminalData[Terminal\Entity::MC_MPAN] = $gatewayInput[Constants::MPAN][Constants::MASTERCARD];
@@ -134,7 +140,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     protected function generateMid()
     {
-        $newMid = self::ATOS_MID_OFFSET + $this->redis->incr(self::ATOS_MID_INDEX_KEY);
+        $newMid = self::ATOS_MID_OFFSET + $this->redis->incr($this->redisMidKey);
 
         return $newMid;
     }
