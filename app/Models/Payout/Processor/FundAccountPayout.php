@@ -48,14 +48,11 @@ class FundAccountPayout extends Base
      */
     public function validateFundAccountContact(FundAccount\Entity $fundAccount)
     {
-        if ($fundAccount->getSourceType() === Entity::CONTACT and
-            optional($fundAccount->source)->isActive() === true)
+        if ($fundAccount->getSourceType() != Entity::CONTACT)
         {
-            return;
+            throw new BadRequestValidationFailureException(
+                'Payouts cannot be created on an fund account without contact or inactive contact',
+                Payout\Entity::FUND_ACCOUNT_ID);
         }
-
-        throw new BadRequestValidationFailureException(
-            'Payouts cannot be created on an fund account without contact or inactive contact',
-            Payout\Entity::FUND_ACCOUNT_ID);
     }
 }
