@@ -26,6 +26,14 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
   { fetchRegistrationLink }
 )
 export default class RegistrationLinkEntityContainer extends Component {
+  get paymentMethod() {
+    return this.props.entity.subscription_registration.method;
+  }
+
+  get isNACHMethod() {
+    return this.paymentMethod === 'nach';
+  }
+
   componentWillMount() {
     this.props.fetchRegistrationLink(this.props.id);
   }
@@ -100,13 +108,15 @@ export default class RegistrationLinkEntityContainer extends Component {
                       <CustomerDetails customer={entity.customer_details} />
                     </EntityDetailRow>
 
-                    <EntityDetailRow label="NACH form">
-                      <NACHDetails
-                        registrationLinkId={entity.id}
-                        preFilledNachFileURL={preFilledNachFileURL}
-                        completedNachFileURL={completedNachFileURL}
-                      />
-                    </EntityDetailRow>
+                    {this.isNACHMethod && (
+                      <EntityDetailRow label="NACH form">
+                        <NACHDetails
+                          registrationLinkId={entity.id}
+                          preFilledNachFileURL={preFilledNachFileURL}
+                          completedNachFileURL={completedNachFileURL}
+                        />
+                      </EntityDetailRow>
+                    )}
 
                     {/* created at */}
                     <EntityDetailRow label="Created At">

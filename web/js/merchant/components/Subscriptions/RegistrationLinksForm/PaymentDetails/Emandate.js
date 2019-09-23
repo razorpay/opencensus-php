@@ -19,6 +19,7 @@ export default ({
     />
 
     <BankDetails
+      required={!skipBankDetails}
       disabled={skipBankDetails}
       options={emandateBanks}
       bankName={bankName}
