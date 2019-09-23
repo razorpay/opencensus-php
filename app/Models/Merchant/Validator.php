@@ -272,6 +272,11 @@ class Validator extends Base\Validator
         Entity::ACTION      => 'required|in:add,remove',
     ];
 
+    protected static $suspendedMerchantRemoveRules = [
+        'skip'  => 'sometimes|integer',
+        'limit' => 'sometimes|integer',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;

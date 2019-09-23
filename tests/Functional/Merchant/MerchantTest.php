@@ -1490,6 +1490,17 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateBankAccountWithAddressProof()
+    {
+        $documentType = 'address_proof_url';
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        (new MerchantDetailTest())->updateUploadDocumentData(__FUNCTION__, $documentType);
+
+        $this->startTest();
+    }
+
     public function testGetBankAccount()
     {
         $this->testAddBankAccount();
