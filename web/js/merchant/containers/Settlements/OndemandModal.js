@@ -306,7 +306,7 @@ export default class OndemandModal extends Component {
                 <p>Settle to your bank account instantly.</p>
                 <br />
                 <p>
-                  Upcomming Settlements follow the existing schedule.
+                  Upcoming Settlements follow the existing schedule.
                   <a
                     class="btn-link"
                     target="_blank"
