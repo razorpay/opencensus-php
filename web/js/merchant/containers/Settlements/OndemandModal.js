@@ -29,11 +29,10 @@ export default class OndemandModal extends Component {
       errors: [],
       breakupShow: false,
       isLoadingBreakup: false,
+      hasChangedAmount: false,
       needFetch: true,
       taxPercent: 0,
-      onMountFetch: true,
       instantFeePercent: 0,
-      hasInputAmount: false,
       tax: 0,
       instantFee: 0,
     };
@@ -60,22 +59,17 @@ export default class OndemandModal extends Component {
   // }
 
   updateFee() {
-    if (!this.onMountFetch) {
+    if (this.state.hasChangedAmount) {
       const analyticsPayload = {
         eventCategory: 'Dashboard - Instant Settlement Modal',
-        eventAction: `Input - Amount`,
+        eventAction: `Input - Amout - ${this.state.amount * 100}`,
+        Currentbalance: `Balance - ${this.props.currentBalance}`,
       };
+
       console.log(analyticsPayload);
       window.rzpAnalytics(analyticsPayload);
     }
-    var check = true;
-    if (this.state.onMountFetch) {
-      check = false;
-    }
-
     this.setState({
-      hasInputAmount: check,
-      onMountFetch: false,
       errors: [],
       isLoadingBreakup: true,
     });
@@ -94,7 +88,8 @@ export default class OndemandModal extends Component {
       '/merchant/api'
     )
       .then(response => {
-        console.log(instantFeePercent);
+        //TODDO add analytics
+        console.log(response.data.items[0].pricing_rule.percent_rate);
         this.setState({
           isLoadingBreakup: false,
           tax: response.data.items[1].amount,
@@ -168,8 +163,6 @@ export default class OndemandModal extends Component {
       currency: 'INR',
     };
 
-    console.log(payload);
-
     this.setState({
       isSaving: true,
       errors: [],
@@ -207,6 +200,7 @@ export default class OndemandModal extends Component {
       needFetch: true,
       validAmount: !this.validateAmount(e.target.value),
       breakupShow: false,
+      hasChangedAmount: true,
     });
     this.updateFeeDebounced();
   }
@@ -234,18 +228,20 @@ export default class OndemandModal extends Component {
         trackOndemand.trackSuccessCloseModal(this.props.fromWhere);
         break;
     }
-    if (this.state.hasInputAmount) {
+    if (this.state.hasChangedAmount) {
       const analyticsPayload = {
         eventCategory: 'Dashboard - Instant Settlement Modal',
-        eventAction: `Close-After-Input - Amount`,
+        eventAction: `Close -After -InputAmount`,
       };
+
       console.log(analyticsPayload);
       window.rzpAnalytics(analyticsPayload);
     } else {
       const analyticsPayload = {
         eventCategory: 'Dashboard - Instant Settlement Modal',
-        eventAction: `Close-Before-Input - Amount`,
+        eventAction: `Close -Before -InputAmount`,
       };
+
       console.log(analyticsPayload);
       window.rzpAnalytics(analyticsPayload);
     }
@@ -292,7 +288,7 @@ export default class OndemandModal extends Component {
             <div class="onmdemand-modal">
               <ModalHeader
                 class="header"
-                title="Instant Settelment"
+                title="Instant Settlement"
                 onCloseClick={() =>
                   this.handleCloseModal('Close Modal Screen 1')
                 }
