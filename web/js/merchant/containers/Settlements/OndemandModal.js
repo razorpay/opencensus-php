@@ -469,7 +469,7 @@ export default class OndemandModal extends Component {
                   <a
                     class="btn-link"
                     target="_blank"
-                    href="http://razorpay.com/settlement"
+                    href="https://razorpay.com/support/#request"
                   >
                     Contact support
                   </a>
