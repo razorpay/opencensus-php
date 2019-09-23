@@ -33,7 +33,9 @@ export default ({
         addonAfter={<i class="i i-date-range" />}
         description="Expiry of Token"
         onChange={handleDateChange('mandateExpireAt')}
-        value={mandateExpireAt}
+        defaultValue={
+          !Number(tokenHasNoExpiry) ? moment(mandateExpireAt) : null
+        }
         disabled={!!Number(tokenHasNoExpiry)}
       />
     </Input.Group>
@@ -47,12 +49,7 @@ export default ({
       class="Input--Amount"
       description="Amount of First Charge"
       value={firstPaymentAmount}
-      validator={value => {
-        return checkIfAmountForFirstCharge(
-          Number(mandateMaxAmount) || 100000,
-          value
-        );
-      }}
+      validator={firstPaymentAmountValidator(mandateMaxAmount)}
       addonBefore={
         <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
       }
@@ -73,3 +70,8 @@ export default ({
     />
   </React.Fragment>
 );
+
+function firstPaymentAmountValidator(mandateMaxAmount) {
+  return value =>
+    checkIfAmountForFirstCharge(Number(mandateMaxAmount) || 100000, value);
+}

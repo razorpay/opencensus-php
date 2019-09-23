@@ -43,10 +43,6 @@ export default class TokenEntityContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  get isNACHMethod() {
-    return this.props.entity.method === 'nach';
-  }
-
   get isEmandateMethod() {
     return this.props.entity.method === 'emandate';
   }
@@ -110,10 +106,7 @@ export default class TokenEntityContainer extends Component {
   };
 
   render() {
-    const { loading: isLoading, entity = {}, error } = this.props,
-      paperMandate = {};
-
-    const completedNachFileURL = paperMandate.verified_url;
+    const { loading: isLoading, entity = {}, error } = this.props;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -158,14 +151,6 @@ export default class TokenEntityContainer extends Component {
                     <EntityDetailRow label="Payment Method">
                       <PaymentMethod mandate={entity} />
                     </EntityDetailRow>
-
-                    {this.isNACHMethod && (
-                      <EntityDetailRow label="Payment Method">
-                        <NACHDetails
-                          completedNachFileURL={completedNachFileURL}
-                        />
-                      </EntityDetailRow>
-                    )}
 
                     {this.isEmandateMethod && (
                       <ShowWhen featureEnabled="token_bank_details">
@@ -225,6 +210,12 @@ function TimeStamps({ token }) {
 }
 
 class ErrorMessage extends React.PureComponent {
+  static defaultProps = {
+    recurringDetails: {
+      failure_reason: '',
+    },
+  };
+
   resubmitNACHFile = () => {
     return resubmitNACHFile(this.props.id);
   };
@@ -233,7 +224,7 @@ class ErrorMessage extends React.PureComponent {
     const { recurringDetails: { failure_reason } } = this.props,
       isNACHError = failure_reason && failure_reason.includes('nach');
 
-    if (true || isNACHError) {
+    if (isNACHError) {
       return (
         <React.Fragment>
           <Alert type="error" message={failure_reason} showDismiss={false} />

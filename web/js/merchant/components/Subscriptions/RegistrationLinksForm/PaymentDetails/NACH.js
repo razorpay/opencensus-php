@@ -1,3 +1,4 @@
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Input from 'component/Input';
 
 import { BankDetails, AccountDetails } from './commonFields';
@@ -15,7 +16,20 @@ export default ({
       label="NACH Form"
       class="InputGroup--vTop"
       checked={isNachFormAval}
-      fieldLabel="I have Customer's signed form"
+      fieldLabel={
+        <div>
+          I have Customer's signed Form{' '}
+          <span>
+            <i class="i i-info-circle" />
+            <Popover theme="dark">
+              <PopoverBody>
+                If you’ve already received the customer’s NACH form, you can
+                upload it after the registration link is created.
+              </PopoverBody>
+            </Popover>
+          </span>
+        </div>
+      }
     />
 
     <BankDetails required hideBankName bankAccountIFSC={bankAccountIFSC} />

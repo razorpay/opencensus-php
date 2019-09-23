@@ -94,6 +94,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         bankAccountIFSC: '',
         bankAccountNumber: '',
         notes: [],
+        expireAt: undefined,
+        mandateExpireAt: undefined,
         skipBankDetails: false,
         accountType: '',
       },
@@ -396,6 +398,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             disabled={this.state.disabled}
             validateForm={this.validateForm}
             receipt={formFields.receipt}
+            expireAt={formFields.expireAt}
             description={formFields.description}
             hasNoExpiry={formFields.hasNoExpiry}
             customerName={formFields.customerName}

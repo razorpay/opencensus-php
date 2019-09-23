@@ -25,7 +25,7 @@ export default ({
   return (
     <React.Fragment>
       <Alert
-        type="info"
+        type="warning"
         message="Customer’s NACH form has not been uploaded yet"
         showDismiss={false}
       />

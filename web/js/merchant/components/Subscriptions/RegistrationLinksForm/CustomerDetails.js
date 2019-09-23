@@ -4,6 +4,7 @@ import Input from 'component/Input';
 
 export default props => {
   const {
+    expireAt,
     isCustomerNameRequired,
     hasNoExpiry,
     handleDateChange,
@@ -97,6 +98,7 @@ export default props => {
           placement="topLeft"
           addonAfter={<i class="i i-date-range" />}
           disabled={!!Number(hasNoExpiry)}
+          defaultValue={!Number(hasNoExpiry) ? moment(expireAt) : null}
           onChange={handleDateChange('expireAt')}
           description="Expiry of Registration Link"
         />
