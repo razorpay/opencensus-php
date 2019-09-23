@@ -64,7 +64,8 @@ trait FundAccountValidationTrait
     }
 
 
-    protected function getDefaultFAVFundAccountArray(string $fundAccountId) {
+    protected function getDefaultFAVFundAccountArray(string $fundAccountId)
+    {
         return [
             FundAccount::ACCOUNT_NUMBER => '2224440041626905',
             Validation::FUND_ACCOUNT => [
@@ -76,7 +77,8 @@ trait FundAccountValidationTrait
         ];
     }
 
-    protected function buildFAVForFundAccountRequest(string $fundAccountId) {
+    protected function buildFAVForFundAccountRequest(string $fundAccountId)
+    {
 
         $request = [
             'method'  => 'POST',

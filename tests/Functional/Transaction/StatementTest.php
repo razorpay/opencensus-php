@@ -2,13 +2,13 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
-use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
-use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class StatementTest extends TestCase
 {
