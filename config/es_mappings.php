@@ -48,7 +48,7 @@ return [
                 // does not tokenized for a set of punctuation(set 1). So we use custom
                 // standard_analyzer where it's same as standard but also replaces
                 // those set 1 punctuation to '-' which will get used as word break
-                // char in normal standard anaylzer.
+                // char in normal standard analyzer.
                 //
                 //  This way, both index and search time analysis is consistent.
                 //
@@ -63,6 +63,16 @@ return [
                         'standard',
                         'lowercase',
                         'en_stopwords',
+                    ],
+                ],
+
+                // This is used as workaround until we use v5.1.
+                // Instead of type=keyword,normalizer=lowercase we will use type=text,analyzer=lowercase_keyword.
+                'lowercase_keyword' => [
+                    'type'      => 'custom',
+                    'tokenizer' => 'keyword',
+                    'filter'    => [
+                        'lowercase',
                     ],
                 ],
             ],
@@ -136,10 +146,12 @@ return [
                 'enabled'    => true,
                 'properties' => [
                     'key' => [
-                        'type' => 'keyword',
+                        'type'     => 'text',
+                        'analyzer' => 'lowercase_keyword',
                     ],
                     'value' => [
-                        'type' => 'keyword',
+                        'type'     => 'text',
+                        'analyzer' => 'lowercase_keyword',
                     ],
                 ],
             ],
