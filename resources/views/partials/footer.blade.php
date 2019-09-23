@@ -32,7 +32,7 @@
            ga: 'UA-53341507-2',
            fb: '697927486977350',
            lj:'{{$ljKey}}',
-        //    perf:'medash'
+           perf:'medash'
          },isLocal,appEnvironment,disableEventEmitters);
         // Init old key as well
         if(undefined!==analytics.createQ){
