@@ -31,7 +31,9 @@ export default class OndemandModal extends Component {
       isLoadingBreakup: false,
       needFetch: true,
       taxPercent: 0,
+      onMountFetch: true,
       instantFeePercent: 0,
+      hasInputAmount: false,
       tax: 0,
       instantFee: 0,
     };
@@ -58,7 +60,22 @@ export default class OndemandModal extends Component {
   // }
 
   updateFee() {
+    if (!this.onMountFetch) {
+      const analyticsPayload = {
+        eventCategory: 'Dashboard - Instant Settlement Modal',
+        eventAction: `Input - Amount`,
+      };
+      console.log(analyticsPayload);
+      window.rzpAnalytics(analyticsPayload);
+    }
+    var check = true;
+    if (this.state.onMountFetch) {
+      check = false;
+    }
+
     this.setState({
+      hasInputAmount: check,
+      onMountFetch: false,
       errors: [],
       isLoadingBreakup: true,
     });
@@ -77,6 +94,7 @@ export default class OndemandModal extends Component {
       '/merchant/api'
     )
       .then(response => {
+        console.log(instantFeePercent);
         this.setState({
           isLoadingBreakup: false,
           tax: response.data.items[1].amount,
@@ -150,6 +168,8 @@ export default class OndemandModal extends Component {
       currency: 'INR',
     };
 
+    console.log(payload);
+
     this.setState({
       isSaving: true,
       errors: [],
@@ -213,6 +233,21 @@ export default class OndemandModal extends Component {
       case 'Close Modal Screen 2':
         trackOndemand.trackSuccessCloseModal(this.props.fromWhere);
         break;
+    }
+    if (this.state.hasInputAmount) {
+      const analyticsPayload = {
+        eventCategory: 'Dashboard - Instant Settlement Modal',
+        eventAction: `Close-After-Input - Amount`,
+      };
+      console.log(analyticsPayload);
+      window.rzpAnalytics(analyticsPayload);
+    } else {
+      const analyticsPayload = {
+        eventCategory: 'Dashboard - Instant Settlement Modal',
+        eventAction: `Close-Before-Input - Amount`,
+      };
+      console.log(analyticsPayload);
+      window.rzpAnalytics(analyticsPayload);
     }
     this.props.closeModal();
   }
