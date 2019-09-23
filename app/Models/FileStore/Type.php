@@ -177,6 +177,7 @@ class Type
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
+    const BULK_DISPUTES_FILE                    = 'bulk_disputes_file';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -263,6 +264,7 @@ class Type
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,
             self::ISG_SUMMARY,
+            self::BULK_DISPUTES_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -388,6 +390,7 @@ class Type
         self::EQUITAS_NETBANKING_REFUND,
         self::ISG_REFUND,
         self::ISG_SUMMARY,
+        self::BULK_DISPUTES_FILE,
     ];
 
     /**

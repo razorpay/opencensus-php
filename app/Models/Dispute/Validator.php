@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\File;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -35,6 +36,10 @@ class Validator extends Base\Validator
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
         Entity::SKIP_DEDUCTION         => 'sometimes|boolean',
         Entity::COMMENTS               => 'sometimes|string|min:5|max:255|utf8',
+    ];
+
+    protected static $bulkCreateRules = [
+        File\Core::FILE => 'required|file',
     ];
 
     protected static $createValidators = [
@@ -110,6 +115,17 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'reason_id should be sent in the request to create a dispute.',
                 Entity::REASON_ID,
+                $input);
+        }
+    }
+
+    public function validateBulkDisputeRequest(array $input)
+    {
+        if (empty($input[File\Core::FILE]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'file should be attached in the request to create disputes in bulk',
+                File\Core::FILE,
                 $input);
         }
     }
