@@ -113,7 +113,7 @@ trait QueryBuilder
         $clause = [
             Es::TERM => [
                 'notes.value' => [
-                    Es::VALUE => strtolower($value),
+                    Es::VALUE => $value,
                 ],
             ],
         ];
