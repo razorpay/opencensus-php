@@ -11,7 +11,6 @@ use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
-use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
@@ -23,7 +22,6 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PayoutTest extends TestCase
 {
-    use TestsMetrics;
     use PaymentTrait;
     use SettlementTrait;
     use DbEntityFetchTrait;

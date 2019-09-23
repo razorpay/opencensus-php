@@ -44,7 +44,7 @@ class Service extends Base\Service
         // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
         if ($this->auth->isStrictPrivateAuth() === false)
         {
-//            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
 
         // Only allowed for Rx payouts, mandates account number
