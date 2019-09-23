@@ -22,7 +22,7 @@
     var isLocal = undefined;
     //Maintaining this for legacy reason. Should ideally be defined by the environments.
     //Below peice of code will turn off trackers other than LJ in non-prod environments, since LJ is environment specific we do not have to follow this approach.
-    if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
+    if ('{{$env}}'==='dev' || String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
         isLocal = true;
     }
     var disableEventEmitters = false; //If true events will not be emitted to LJ and PROM

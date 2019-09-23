@@ -340,13 +340,15 @@ app
               : 'merchant';
             trackDrip('account_created');
             pushToDrip();
-            window.ga &&
+            if (window.ga) {
+              window.ga('set', '&uid', btoa(payload.data.email));
               window.ga(
                 'send',
                 'event',
                 'Signup - Email Password',
                 'Click - Create Account (Success)'
               );
+            }
 
             window.trackHubs({
               id: 'SIGNUP_COMPLETE',
