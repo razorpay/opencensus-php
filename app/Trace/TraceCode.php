@@ -262,6 +262,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
     const MERCHANT_MAIL_UPDATE_FAIL                             = 'MERCHANT_MAIL_UPDATE_FAIL';
     const FTA_BANK_ACCOUNT_EMPTY                                = 'FTA_BANK_ACCOUNT_EMPTY';
+    const DELETING_SUSPENDED_MERCHANT_FROM_MAILING_LIST         = 'DELETING_SUSPENDED_MERCHANT_FROM_MAILING_LIST';
+    const DELETED_SUSPENDED_MERCHANT_FROM_MAILING_LIST          = 'DELETED_SUSPENDED_MERCHANT_FROM_MAILING_LIST';
     const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
 
@@ -810,7 +812,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUCKETING_INITIATE                                    = 'BUCKETING_INITIATE';
     const BUCKETING_DONE                                        = 'BUCKETING_DONE';
     const MERCHANT_ADDED_TO_BUCKET                              = 'MERCHANT_ADDED_TO_BUCKET';
-    const FAILED_TO_ADD_MERCHANT_TO_BUCKET                      = 'FAILED_TO_ADD_MERCHANT_TO_BUCKET';
     const DELETING_COMPLETED_BUCKET_ENTRIES                     = 'DELETING_COMPLETED_BUCKET_ENTRIES';
     const COMPLETED_BUCKET_ENTRIES_DELETED                      = 'COMPLETED_BUCKET_ENTRIES_DELETED';
 

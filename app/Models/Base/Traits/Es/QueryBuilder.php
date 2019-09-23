@@ -262,4 +262,18 @@ trait QueryBuilder
 
         $this->addNegativeFilter($query, $filter);
     }
+
+    public function addTermsFilter(array & $query, string $field, array $value)
+    {
+        $filter = [Es::TERMS => [$field => $value]];
+
+        $this->addFilter($query, $filter);
+    }
+
+    public function addNegativeTermsFilter(array & $query, string $field, array $value)
+    {
+        $filter = [Es::TERMS => [$field => $value]];
+
+        $this->addNegativeFilter($query, $filter);
+    }
 }
