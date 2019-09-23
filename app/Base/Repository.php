@@ -630,6 +630,7 @@ class Repository extends \Razorpay\Spine\Repository
             $serialized[Common::NOTES] = array_map(
                 function ($key, $value)
                 {
+                    $value = strtolower($value);
                     return compact('key', 'value');
                 },
                 array_keys($serialized[Common::NOTES]),

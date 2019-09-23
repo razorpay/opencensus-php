@@ -35,7 +35,7 @@ return [
                         [
                             'term' => [
                                 'notes.value' => [
-                                    'value' => 'GOBUSANDe2c92f0f46',
+                                    'value' => 'gobusande2c92f0f46',
                                 ],
                             ],
                         ],
@@ -66,7 +66,7 @@ return [
                         [
                             'term' => [
                                 'notes.value' => [
-                                    'value' => 'CCPjoWzlDJG0g7',
+                                    'value' => 'ccpjowzldjg0g7',
                                 ],
                             ],
                         ],
@@ -97,7 +97,7 @@ return [
                         [
                             'term' => [
                                 'notes.value' => [
-                                    'value' => 'REZDELKJe2c92f0f46',
+                                    'value' => 'rezdelkje2c92f0f46',
                                 ],
                             ],
                         ],
@@ -128,7 +128,7 @@ return [
                         [
                             'term' => [
                                 'notes.value' => [
-                                    'value' => 'GOBUSANDe2c92f0f46',
+                                    'value' => 'gobusande2c92f0f46',
                                 ],
                             ],
                         ],
@@ -159,7 +159,7 @@ return [
                         [
                             'term' => [
                                 'notes.value' => [
-                                    'value' => 'CCPjoWzlDJG0g7',
+                                    'value' => 'ccpjowzldjg0g7',
                                 ],
                             ],
                         ],
