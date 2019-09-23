@@ -66,8 +66,8 @@ class Validator extends Base\Validator
         ConfigKey::RX_SLA_FOR_IMPS_PAYOUT             => 'filled|integer',
 
 
-        ConfigKey::TEST_MODE_ATOS_TID_RANGE_LIST      => 'filled|array',
-        ConfigKey::LIVE_MODE_ATOS_TID_RANGE_LIST      => 'filled|array',
+        ConfigKey::ATOS_TID_RANGE_LIST                => 'filled|array',
+        ConfigKey::ATOS_TID_RANGE_LIST.'.*'           => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

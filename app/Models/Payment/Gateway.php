@@ -308,7 +308,45 @@ class Gateway
     ];
 
     // Please keep this list sorted. The list of Live Banks in API E-Mandate is available at https://www.npci.org.in/nach-e-mandates-new
-    const ENACH_NPCI_NETBANKING_BANKS = [
+
+    // banks supported by enach_npci_netbanking gateway for auth type netbanking
+    const ENACH_NPCI_NB_AUTH_NETBANKING_BANKS = [
+        IFSC::CBIN,
+        IFSC::CIUB,
+        IFSC::DEUT,
+        IFSC::ESFB,
+        IFSC::FDRL,
+        IFSC::HDFC,
+        IFSC::IBKL,
+        IFSC::ICIC,
+        IFSC::IDFB,
+        IFSC::INDB,
+        IFSC::IOBA,
+        IFSC::KKBK,
+        IFSC::MAHB,
+        IFSC::PYTM,
+        IFSC::RATN,
+        IFSC::TMBL,
+        IFSC::USFB,
+        IFSC::UTIB,
+        IFSC::YESB,
+        Netbanking::PUNB_R,
+        Netbanking::BARB_R,
+    ];
+
+    // banks supported by enach_npci_netbanking gateway for auth type card
+    const ENACH_NPCI_NB_AUTH_CARD_BANKS = [
+        IFSC::KKBK,
+        IFSC::YESB,
+        IFSC::USFB,
+        IFSC::INDB,
+        IFSC::ESFB,
+        IFSC::ICIC,
+        IFSC::SIBL,
+    ];
+
+    // this is a list of banks supporting netbanking and card as auth_type
+    const ENACH_NPCI_NB_ALL_BANKS = [
         IFSC::CBIN,
         IFSC::CIUB,
         IFSC::DEUT,
@@ -1147,6 +1185,9 @@ class Gateway
             Gateway::NETBANKING_SBI,
             Gateway::ENACH_NPCI_NETBANKING,
         ],
+        AuthType::DEBITCARD =>  [
+            Gateway::ENACH_NPCI_NETBANKING,
+        ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
         AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
     ];
@@ -1227,7 +1268,8 @@ class Gateway
             AuthType::NETBANKING       => [IFSC::SBIN],
         ],
         Gateway::ENACH_NPCI_NETBANKING => [
-            AuthType::NETBANKING       => self::ENACH_NPCI_NETBANKING_BANKS,
+            AuthType::NETBANKING       => self::ENACH_NPCI_NB_AUTH_NETBANKING_BANKS,
+            AuthType::DEBITCARD        => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
         ],
         Gateway::ENACH_RBL             => [
             AuthType::AADHAAR          => self::EMANDATE_AADHAAR_BANKS,
@@ -2065,7 +2107,7 @@ class Gateway
         $netbankingBanks = array_unique(
                                          array_merge(
                                              self::EMANDATE_NB_DIRECT_BANKS,
-                                             self::ENACH_NPCI_NETBANKING_BANKS
+                                             self::ENACH_NPCI_NB_AUTH_NETBANKING_BANKS
                                           )
                            );
 
@@ -2075,6 +2117,7 @@ class Gateway
             AuthType::NETBANKING  => $netbankingBanks,
             AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
             AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
+            AuthType::DEBITCARD   => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
         ];
     }
 

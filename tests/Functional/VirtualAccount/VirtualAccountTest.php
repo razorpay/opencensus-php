@@ -295,6 +295,19 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
     }
 
+    public function testCreateVirtualAccountForOrderWithCloseBy()
+    {
+        $order = $this->fixtures->create('order');
+
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+
+        $response = $this->createVirtualAccountForOrder($order, ['close_by' => $closeTimeStamp]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals($response['close_by'], $virtualAccount['close_by']);
+    }
+
     public function testCreateVirtualAccountInvalidReceiverTypes()
     {
         $this->startTest();
