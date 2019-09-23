@@ -118,10 +118,11 @@ app
               name: 'Not Yet Registered',
               value: 11,
             },
-            2: {
-              name: 'Individual',
-              value: 2,
-            },
+            // 2: {
+            //   name: 'Individual',
+            //   isIndividual: true,
+            //   value: 2,
+            // },
             3: {
               name: 'Proprietorship',
               value: 1,
