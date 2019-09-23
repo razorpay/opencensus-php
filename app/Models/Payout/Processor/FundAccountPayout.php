@@ -48,7 +48,8 @@ class FundAccountPayout extends Base
      */
     public function validateFundAccountContact(FundAccount\Entity $fundAccount)
     {
-        if ($fundAccount->getSourceType() === Entity::CONTACT && optional($fundAccount->source)->isActive() === true)
+        if ($fundAccount->getSourceType() === Entity::CONTACT and
+            optional($fundAccount->source)->isActive() === true)
         {
             return;
         }
