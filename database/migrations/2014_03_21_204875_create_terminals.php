@@ -162,7 +162,7 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::EXPECTED)
                   ->default(0);
 
-            $table->string(Terminal::CURRENCY, 255)
+            $table->string(Terminal::CURRENCY, 512)
                   ->default(Terminal::DEFAULT_CURRENCY);
 
             $table->string(Terminal::NETWORK_CATEGORY)

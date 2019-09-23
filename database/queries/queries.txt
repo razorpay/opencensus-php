@@ -5344,4 +5344,4 @@ ALTER table merchant_details
     ADD COLUMN `business_operation_district` VARCHAR(255) NULL AFTER  `business_operation_city`;
 
 ALTER TABLE terminals
-    MODIFY COLUMN currency VARCHAR(255) NOT NULL DEFAULT 'INR';
+    MODIFY COLUMN currency VARCHAR(512) NOT NULL DEFAULT 'INR';
