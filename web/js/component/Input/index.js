@@ -222,7 +222,7 @@ export default class Field extends React.Component {
       }
     }
 
-    if (this.props != nextProps) {
+    if (isDifferent) {
       this.el && this.valid();
     }
   }
