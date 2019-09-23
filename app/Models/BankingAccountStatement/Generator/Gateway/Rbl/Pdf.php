@@ -21,19 +21,17 @@ class Pdf extends Generator
 
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
 
-        $fileName = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate;
+        $tmpFileName = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.pdf';
 
-        $fileStoreHandle = (new FileStore\Creator())
-                                        ->name($fileName)
-                                        ->content($pdfAccountStatement)
-                                        ->extension(FileStore\Format::PDF)
-                                        ->mime(self::PDF_MIME_TYPE)
-                                        ->store(FileStore\Store::S3)
-                                        ->type(FileStore\Type::RBL_STATEMENT)
-                                        ->save()
-                                        ->getFileInstance();
+        $tmpFileFullPath = '/tmp/' . $tmpFileName;
 
-        return $fileStoreHandle;
+        $fileHandle = fopen($tmpFileFullPath, 'w');
+
+        fwrite($fileHandle, $pdfAccountStatement);
+
+        fclose($fileHandle);
+
+        return $tmpFileFullPath;
     }
 
     protected function getPdfContent(string $html): string
@@ -48,7 +46,6 @@ class Pdf extends Generator
             'zoom'             => 1,
             'ignoreWarnings'   => false,
             'encoding'         => 'UTF-8',
-            'binary'           => '/usr/local/bin/wkhtmltopdf',
         ];
 
         $pdf = (new PdfLibrary($options))->addPage($html);
