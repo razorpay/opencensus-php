@@ -339,6 +339,7 @@ return [
 
     'doppler' => [
         'mock'      => env('DOPPLER_MOCK'),
+        'topic'     => env('DOPPLER_SNS_TOPIC')
     ],
 
     'non_blocking_http' => [

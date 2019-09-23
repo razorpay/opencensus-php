@@ -25,9 +25,9 @@ class Doppler
 
     protected $trace;
 
-    const SNS_CLIENT = 'doppler';
+    protected $sns_topic;
 
-    public function __construct($app)
+    public function __construct($app, $dopplerTopic)
     {
         $this->app = $app;
 
@@ -36,6 +36,8 @@ class Doppler
         $this->sns = $app['sns'];
 
         $this->mode = $this->app['rzp.mode'];
+
+        $this->sns_topic = $dopplerTopic;
     }
 
     // sends event to doppler's topic
@@ -67,7 +69,7 @@ class Doppler
     {
         try
         {
-            $this->sns->publish(json_encode($eventData), self::SNS_CLIENT);
+            $this->sns->publish(json_encode($eventData), $this->sns_topic);
         }
         catch (\Throwable $e)
         {

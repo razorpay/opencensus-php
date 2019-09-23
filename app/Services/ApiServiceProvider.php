@@ -421,12 +421,14 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             $dopplerMock = $app['config']->get('applications.doppler.mock');
 
+            $dopplerTopic = $app['config']->get('applications.doppler.topic');
+
             if ($dopplerMock === true)
             {
-                return new Mock\Doppler($app);
+                return new Mock\Doppler($app, $dopplerTopic);
             }
 
-            return new Doppler($app);
+            return new Doppler($app, $dopplerTopic);
         });
     }
 
