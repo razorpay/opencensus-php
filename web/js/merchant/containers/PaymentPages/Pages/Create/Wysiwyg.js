@@ -415,27 +415,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       if (!paymentPageItems.length) {
         this.props.showNotification({
           type: 'error',
-          message: 'Add atleast 1 Price field which is mandatory to pay',
+          message: 'Add atleast 1 Price field',
         });
 
         return;
-      } else {
-        let has1PriceMandatory = false;
-        for (let i = 0; i < paymentPageItems.length; i++) {
-          if (paymentPageItems[i].mandatory) {
-            has1PriceMandatory = true;
-            break;
-          }
-        }
-
-        if (!has1PriceMandatory) {
-          this.props.showNotification({
-            type: 'error',
-            message: 'Add atleast 1 Price field which is mandatory to pay',
-          });
-
-          return;
-        }
       }
     }
 
