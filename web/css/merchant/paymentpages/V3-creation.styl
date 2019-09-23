@@ -133,9 +133,19 @@
     top: 0
     width: 100%
     bottom: 0
-    pointer-events: all
     box-shadow: 0 2px 8px 0 rgba(43,47,60,0.36)
     animation: 0.55s fadeIn cubic-bezier(0.08, 0.98, 1, 1)
+
+  .CreatorModal-BaseForm + .Modal-container
+    &::before
+      content: ""
+      position: fixed
+      top: 0
+      bottom: 0
+      left: 0
+      right: 0
+      background: rgba(43,47,60,0.36)
+      pointer-events: all
 
   .Input input:not([type=radio]):not([type=checkbox]),
   .Input--Currency .value
