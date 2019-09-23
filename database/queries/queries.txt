@@ -1,6 +1,12 @@
 Alter table cards
     add merchant_id varchar(14) after id;
 
+alter table merchant_documents
+    modify file_store_id char(14) NULL;
+
+ALTER TABLE merchant_documents
+    ADD INDEX (`file_store_id`);
+
 update cards, payments
     set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
 

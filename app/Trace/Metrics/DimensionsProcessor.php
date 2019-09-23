@@ -43,6 +43,9 @@ class DimensionsProcessor implements Processor
             $dimensions['rzp_mode'] = app()['rzp.mode'] ?? 'none';
         }
 
+        // Adds instance type label
+        $dimensions['instance_type'] = env('INSTANCE_TYPE');
+
         // Stringify php values e.g. true -> 'true', 0 -> '0', as only unicode chars in label values is expected
         $dimensions = array_map('stringify', $dimensions);
 

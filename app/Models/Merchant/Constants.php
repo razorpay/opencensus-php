@@ -38,6 +38,7 @@ final class Constants
     const RECORDS_PROCESSED                        = 'records_processed';
 
     const REMOVE                                  = 'remove';
+    const LIVE                                    = 'live';
 
     public static $partnerTypes = [
         self::BANK,
@@ -49,6 +50,9 @@ final class Constants
 
     // Used in merchant activation elastic search flows
     const INSTANT_ACTIVATION = 'instant_activation';
+
+    // Used in elastic search merchant search flows
+    const BUSINESS_TYPE_BUCKET = 'business_type_bucket';
 
     const IS_WHITELISTED_ACTIVATION = 'is_whitelisted_activation';
     /**
