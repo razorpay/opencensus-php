@@ -441,22 +441,46 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
-    public function getCurrency()
+    /**
+     * Currency Accessor
+     * @param $value
+     */
+    public function getCurrencyAttribute($value)
     {
-        $currency = $this->getAttribute(self::CURRENCY);
-        if(empty($currency))
+        if(empty($value))
         {
             return [];
         }
-        if(is_array(json_decode($currency)))
+        if(is_array(json_decode($value)))
         {
-            $currency = json_decode($currency);
+            $value = json_decode($value);
         }
         else
         {
-            $currency = (array) $currency;
+            $value = (array) $value;
         }
-        return $currency;
+        return $value;
+    }
+
+    /**
+     * Currency Mutator
+     * @param $value
+     */
+    public function setCurrencyAttribute($value)
+    {
+        if(!empty($value))
+        {
+            if(is_array($value))
+            {
+                $value = json_encode($value);
+            }
+            $this->attributes[self::CURRENCY] = $value;
+        }
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     public function isCurrency($currency): bool
