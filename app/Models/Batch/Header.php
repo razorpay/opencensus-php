@@ -55,14 +55,21 @@ class Header
     //
     // IRCTC Headers
     //
-    const MERCHANT_REFERENCE = 'merchant_reference';
-    const REFUND_TYPE        = 'refund_type';
-    const REFUND_AMOUNT      = 'refund_amount';
-    const CANCELLATION_DATE  = 'cancellation_date';
-    const PAYMENT_AMOUNT     = 'payment_amount';
-    const CANCELLATION_ID    = 'cancellation_id';
-    const PAYMENT_DATE       = 'payment_date';
-    const REFUND_DATE        = 'refund_date';
+    const MERCHANT_REFERENCE      = 'merchant_reference';
+    const REFUND_TYPE             = 'refund_type';
+    const REFUND_AMOUNT           = 'refund_amount';
+    const CANCELLATION_DATE       = 'cancellation_date';
+    const PAYMENT_AMOUNT          = 'payment_amount';
+    const CANCELLATION_ID         = 'cancellation_id';
+    const PAYMENT_DATE            = 'payment_date';
+    const REFUND_DATE             = 'refund_date';
+    const MERCHANT_TXN_ID         = "MERCHANT_TXN_ID";
+    const TRANSACTION_DATE        = "TRANSACTION_DATE";
+    const BANK_TRANSACTION_ID     = "BANK_TRANSACTION_ID";
+    const REFUND_STATUS           = "REFUND_STATUS";
+    const BANK_REMARKS            = "BANK_REMARKS";
+    const BANK_ACTUAL_REFUND_DATE = "BANK_ACTUAL_REFUND_DATE";
+    const BANK_REFUND_TXN_ID      = "BANK_REFUND_TXN_ID";
 
     //
     // Linked Account / Sub-merchant Headers
@@ -871,17 +878,14 @@ class Header
             ],
 
             self::OUTPUT => [
-                self::MERCHANT_REFERENCE,
-                self::REFUND_TYPE,
+                self::MERCHANT_TXN_ID,
+                self::TRANSACTION_DATE,
+                self::BANK_TRANSACTION_ID,
                 self::REFUND_AMOUNT,
-                self::PAYMENT_ID,
-                self::STATUS,
-                self::REFUND_DATE,
-                self::REFUND_ID,
-                self::CANCELLATION_DATE,
-                self::PAYMENT_AMOUNT,
-                self::CANCELLATION_ID,
-                self::ERROR_DESCRIPTION,
+                self::REFUND_STATUS,
+                self::BANK_REMARKS,
+                self::BANK_ACTUAL_REFUND_DATE,
+                self::BANK_REFUND_TXN_ID,
             ],
         ],
 

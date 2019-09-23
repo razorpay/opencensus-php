@@ -65,7 +65,7 @@ class Validator extends Merchant\Validator
         Constants::CHARGEBACK        => 'sometimes|array',
         Constants::REFUND            => 'sometimes|array',
         Constants::DISPUTE           => 'sometimes|array',
-        Constants::BILLING_LABEL     => 'sometimes|string',
+        Constants::BILLING_LABEL     => 'required|string',
         Constants::IDENTIFICATION    => 'sometimes|array',
     ];
 
@@ -87,23 +87,25 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $accountAddressRules = [
-        Constants::TYPE    => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
-        Constants::LINE1   => 'required|string',
-        Constants::LINE2   => 'required|string',
-        Constants::CITY    => 'required|string',
-        Constants::STATE   => 'required|string',
-        Constants::PIN     => 'required|string',
-        Constants::COUNTRY => 'required|string',
+        Constants::TYPE          => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::LINE1         => 'required|string',
+        Constants::LINE2         => 'required|string',
+        Constants::CITY          => 'required|string',
+        Constants::DISTRICT_NAME => 'required|string',
+        Constants::STATE         => 'required|string',
+        Constants::PIN           => 'required|string',
+        Constants::COUNTRY       => 'required|string',
     ];
 
     protected static $editAccountAddressRules = [
-        Constants::TYPE    => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
-        Constants::LINE1   => 'filled|string',
-        Constants::LINE2   => 'filled|string',
-        Constants::CITY    => 'filled|string',
-        Constants::STATE   => 'filled|string',
-        Constants::PIN     => 'filled|string',
-        Constants::COUNTRY => 'filled|string',
+        Constants::TYPE          => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::LINE1         => 'filled|string',
+        Constants::LINE2         => 'filled|string',
+        Constants::CITY          => 'filled|string',
+        Constants::DISTRICT_NAME => 'filled|string',
+        Constants::STATE         => 'filled|string',
+        Constants::PIN           => 'filled|string',
+        Constants::COUNTRY       => 'filled|string',
     ];
 
     protected static $brandRules = [

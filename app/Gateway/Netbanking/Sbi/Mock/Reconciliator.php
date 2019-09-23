@@ -70,8 +70,6 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         $this->content($data, 'sbi_recon');
 
-        $data = array_merge([$this->header], $data);
-
-        return $this->generateText($data, '|');
+        return $this->generateText($data, ',');
     }
 }

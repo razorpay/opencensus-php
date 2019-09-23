@@ -357,7 +357,9 @@ class AttemptReconcileTest extends TestCase
         $redisMock->method('hGetAll')
             ->will($this->returnValue(['axis' => 'enable']));
 
-        $content = $this->initiateTransfer(Channel::AXIS, Attempt\Type::SETTLEMENT);
+        $content = $this->initiateTransfer(Channel::AXIS,
+            Attempt\Purpose::SETTLEMENT,
+            Attempt\Type::SETTLEMENT);
 
         $this->assertEquals(Channel::AXIS,$content[Channel::AXIS]['channel']);
 
@@ -377,7 +379,9 @@ class AttemptReconcileTest extends TestCase
         $redisMock->method('hGetAll')
             ->will($this->returnValue(['axis' => 'disable']));
 
-        $content = $this->initiateTransfer(Channel::AXIS, Attempt\Type::SETTLEMENT);
+        $content = $this->initiateTransfer(Channel::AXIS,
+            Attempt\Purpose::SETTLEMENT,
+            Attempt\Type::SETTLEMENT);
 
         $this->assertEquals('failed',$content['status']);
 

@@ -18,6 +18,8 @@ class Service extends Base\Service
 {
     public function initiateFundTransfers(array $input, $channel = null)
     {
+        (new Validator)->validateInput('initiate_fund_transfer', $input);
+
         $this->trace->info(
             TraceCode::INITIATE_FUND_TRANSFER,
             [
@@ -355,5 +357,10 @@ class Service extends Base\Service
         }
 
         return $values;
+    }
+
+    public function processFundTransfersUsingFts(array $input, string $channel)
+    {
+        return (new Initiator)->processFundTransfersUsingFts($input, $channel);
     }
 }

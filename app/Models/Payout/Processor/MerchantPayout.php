@@ -3,8 +3,11 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Models\Payout;
-use RZP\Exception\LogicException;
+use RZP\Models\Pricing;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+use RZP\Exception\LogicException;
+use RZP\Models\Base\PublicCollection;
 
 class MerchantPayout extends Base
 {
@@ -33,5 +36,24 @@ class MerchantPayout extends Base
         $payout->destination()->associate($destination);
 
         $this->fundTransferDestination = $destination;
+    }
+
+    public function calculateFees(array $input)
+    {
+        $this->setPayoutBalance($input);
+
+        /** @var PublicCollection $feesSplit */
+        $feesSplit = $this->repo->beginTransactionAndRollback(function () use ($input)
+        {
+            $payout = $this->createPayoutEntity($input);
+
+            list($totalFee, $taxFee, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+            return $feesSplit;
+        });
+
+        $feesSplit->loadRelationWithForeignKey(Transaction\FeeBreakup\Entity::PRICING_RULE, Transaction\FeeBreakup\Entity::PRICING_RULE_ID);
+
+        return $feesSplit->toArrayPublic();
     }
 }

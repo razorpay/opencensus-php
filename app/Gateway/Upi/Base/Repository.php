@@ -98,7 +98,6 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where('merchant_reference', '=', $merchantReference)
-                    ->where('received', '=', true)
                     ->first();
     }
 

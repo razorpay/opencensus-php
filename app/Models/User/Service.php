@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
@@ -136,6 +137,8 @@ class Service extends Base\Service
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
 
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null);
+
         return $data;
     }
 
@@ -169,6 +172,8 @@ class Service extends Base\Service
         $this->updateUserMerchantMapping($userData['id'], $userMerchantMappingInputData);
 
         $this->sendConfirmationMail($userData['id']);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null);
 
         return [
             'id'    => $merchantData['id'],
@@ -393,6 +398,8 @@ class Service extends Base\Service
         $dashboardHeaders = $this->auth->getDashboardHeaders();
 
         $data = $this->sendConfirmationMail($dashboardHeaders['user_id']);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null);
 
         return $data;
     }
