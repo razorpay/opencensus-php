@@ -9,10 +9,10 @@ import { trackOndemand } from './ga';
 import { fetchCurrentBalance } from 'merchant/modules/home';
 import Input from 'component/Input';
 import Alert from 'rzp/ui/Forms/Alert';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { AmountTooltip } from 'rzp/ui/Amount';
 import Amount from 'rzp/ui/Amount';
 import debounce from 'rzp/utils/debounce';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
@@ -59,6 +59,7 @@ export default class OndemandModal extends Component {
   // }
 
   updateFee() {
+    console.log(this.state.errors);
     if (this.state.hasChangedAmount) {
       const analyticsPayload = {
         eventCategory: 'Dashboard - Instant Settlement Modal',
@@ -111,6 +112,14 @@ export default class OndemandModal extends Component {
   }
 
   dropdown = () => {
+    const analyticsPayload = {
+      eventCategory: 'Dashboard - Instant Settlement Modal',
+      eventAction: `Check - Breakup -amount - ${this.state.amount * 100}`,
+    };
+
+    console.log(analyticsPayload);
+    window.rzpAnalytics(analyticsPayload);
+
     if (this.state.needFetch) {
       let payload = {
         amount: this.state.amount * 100,
@@ -401,7 +410,24 @@ export default class OndemandModal extends Component {
                       />
                     </span>
                     <br />
-                    <p>Instant Fees</p>
+                    <span>
+                      <p>
+                        Instant Fees ({this.state.instantFeePercent / 100}%){' '}
+                      </p>
+                      <i class="i i-help" />
+                      <Popover
+                        align="right"
+                        theme="dark"
+                        parentQuerySelector=".onmdemand-modal"
+                      >
+                        <PopoverBody>
+                          <div style={{ textAlign: 'left' }}>
+                            The maximum amount is calculated after the deduction
+                            of instant settlement fee and taxes.
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </span>
                     <span class="float-right currency">
                       {' '}
                       <p>-</p>
