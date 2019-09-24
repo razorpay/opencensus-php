@@ -10,6 +10,8 @@ use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const COLUMN_PAYMENT_AMOUNT = 'Debit Amount';
+    
     protected function getPaymentId(array $row)
     {
         if (empty($row[ClaimFields::BANK_REFERENCE]) === false)
