@@ -873,9 +873,13 @@ class Service extends Base\Service
 
         $experiemtsResults = $merchantService->getBulkTreatment($features);
 
+        $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
+            'instant_activations' => $experiemtsResults,
+        ]);
+
         foreach ($experiemtsResults as $result)
         {
-            $data['experiments'][$result] = $experiemtsResults[$result];
+            //$data['experiments'][$result] = $experiemtsResults[$result];
         }
 
         return $data;
