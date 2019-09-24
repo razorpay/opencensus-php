@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "aws-sdk": "2.181.0",
-    "ecstatic": "^3.1.1",
+    "ecstatic": "^3.3.2",
     "glob": "^7.1.2",
     "multi-glob": "^1.0.1",
     "react-tracking": "^7.1.0",
