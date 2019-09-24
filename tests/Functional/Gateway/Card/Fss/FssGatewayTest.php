@@ -74,7 +74,7 @@ class FssGatewayTest extends BobGatewayTest
             if ($action === 'authorize')
             {
                 unset($content[Fields::TRAN_DATA]);
-                $content[Fields::GATEWAY_ERROR_TEXT] = ErrorCodes::ISSUER_AUTHENTICATION_SERVER_FAILURE;
+                $content['error_text'] = ErrorCodes::ISSUER_AUTHENTICATION_SERVER_FAILURE;
             }
         });
 
