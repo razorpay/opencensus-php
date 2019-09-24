@@ -1029,8 +1029,8 @@ final class Route
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+        'merchant_razorx_bulk_evaluate'            => ['get',      'razorx/bulkevaluate',                            'MerchantController@getRazorxTreatmentInBulk'                       ],
         'razorx_guest'                             => ['get',      'razorx/evaluate/{id}/{featureFlag}',             'RazorxController@getTreatment'                                     ],
-
         // batch service
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
@@ -1781,6 +1781,7 @@ final class Route
         'merchant_activation_business_categories',
         'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
+        'merchant_razorx_bulk_evaluate',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
         'file_get_signed_url',

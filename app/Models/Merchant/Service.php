@@ -2881,6 +2881,26 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getRazorxTreatmentInBulk(array $input)
+    {
+        $response = [];
+
+        $featureFlags = $input['features'] ?? "";
+
+        if (empty($featureFlags) === false)
+        {
+            $featureFlagArray = explode(',', $featureFlags);
+
+            foreach ($featureFlagArray as $featureFlag)
+            {
+                $featureFlag = trim($featureFlag);
+                $response[$featureFlag] = $this->getRazorxTreatment($featureFlag);
+            }
+        }
+
+        return $response;
+    }
+
     public function submitSupportCallRequest(array $input): array
     {
         $validator = new Validator;
