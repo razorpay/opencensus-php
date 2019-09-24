@@ -74,7 +74,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($user);
 
-        $customProperties[] = ['email' => $user->getEmail()];
+        $customProperties = ['email' => $user->getEmail()];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS, $this->merchant, null, $customProperties);
 

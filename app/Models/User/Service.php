@@ -177,7 +177,7 @@ class Service extends Base\Service
 
         $this->sendConfirmationMail($user);
 
-        $customProperties[] = ['email' => $user->getEmail()];
+        $customProperties = ['email' => $user->getEmail()];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null, $customProperties);
 
@@ -401,10 +401,13 @@ class Service extends Base\Service
     {
         $dashboardHeaders = $this->auth->getDashboardHeaders();
 
-        $data = $this->sendConfirmationMail($dashboardHeaders['user_id']);
+        $user = $this->repo->user->findOrFailPublic($dashboardHeaders['user_id']);
 
+        $data = $this->sendConfirmationMail($user);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null);
+        $customProperties = ['email' => $user->getEmail()];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null, $customProperties);
 
         return $data;
     }
