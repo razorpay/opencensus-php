@@ -16,30 +16,6 @@ import BatchDetails from 'merchant/containers/BatchNew/Details';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
-@connect(null, { fetchBatchDetails })
-export default class RegistrationLinksBatchEntityContainer extends React.Component {
-  render() {
-    return (
-      <BatchDetails
-        id={this.props.id}
-        fetchBatchDetails={this.props.fetchBatchDetails}
-        renderDetails={renderBatchDetails}
-        gaEvents={gaEvents}
-      />
-    );
-  }
-}
-
-function getStatsTable(stats) {
-  return [
-    [
-      { title: 'Total Rows', value: stats.totalCount },
-      { title: 'Payments Created', value: stats.successCount },
-      { title: 'Rows Failed', value: stats.failureCount },
-    ],
-  ];
-}
-
 function renderBatchDetails({ batch }) {
   const stats = getStatsTable({
     totalCount: batch.total_count,
@@ -65,4 +41,28 @@ function renderBatchDetails({ batch }) {
       </div>
     </React.Fragment>
   );
+}
+
+@connect(null, { fetchBatchDetails })
+export default class RegistrationLinksBatchEntityContainer extends React.Component {
+  render() {
+    return (
+      <BatchDetails
+        id={this.props.id}
+        fetchBatchDetails={this.props.fetchBatchDetails}
+        renderDetails={renderBatchDetails}
+        gaEvents={gaEvents}
+      />
+    );
+  }
+}
+
+function getStatsTable(stats) {
+  return [
+    [
+      { title: 'Total Rows', value: stats.totalCount },
+      { title: 'Payments Created', value: stats.successCount },
+      { title: 'Rows Failed', value: stats.failureCount },
+    ],
+  ];
 }

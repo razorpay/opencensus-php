@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { Switch, NavLink } from 'react-router-dom';
+import { Switch, NavLink, Route } from 'react-router-dom';
 
 import { classList } from 'common/util';
 
@@ -186,20 +186,11 @@ export default class SubscriptionsController extends React.Component {
                 additionalCondition={user => !user.isChargeAtWillEnabled}
               />
 
-              <ShowWhenRoute
-                path="/recurring_payments"
-                component={RecurringPayments}
-                additionalCondition={user => user.isChargeAtWillEnabled}
-              />
-              <ShowWhenRoute
-                path="/tokens"
-                component={TokensList}
-                additionalCondition={user => user.isChargeAtWillEnabled}
-              />
-              <ShowWhenRoute
+              <Route path="/recurring_payments" component={RecurringPayments} />
+              <Route path="/tokens" component={TokensList} />
+              <Route
                 path="/registration_links"
                 component={RegistrationLinksList}
-                additionalCondition={user => user.isChargeAtWillEnabled}
               />
             </Switch>
           </content>
