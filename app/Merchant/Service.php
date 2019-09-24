@@ -494,6 +494,8 @@ class Service extends Base\Service
 
         if (empty($error) === false)
         {
+            $data = [];
+
             $this->trace->info(TraceCode::BULK_RAZORX_CALL_FAILED, [
                 "error" => $error
             ]);
