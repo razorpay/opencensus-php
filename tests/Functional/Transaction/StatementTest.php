@@ -206,7 +206,8 @@ class StatementTest extends TestCase
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
-    public function testFAVBankAccountTransaction() {
+    public function testFAVBankAccountTransaction()
+    {
         $this->ba->privateAuth();
 
         $this->createFAVBankAccount();
