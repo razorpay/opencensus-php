@@ -30,6 +30,8 @@ class TraceCode
     const USER_LOGOUT                               = 'USER_LOGOUT';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
 
+    const BULK_RAZORX_CALL_FAILED                   = 'BULK_RAZORX_CALL_FAILED';
+
     const ADMIN_LOGIN                               = 'ADMIN_LOGIN';
     const ADMIN_LOGOUT                              = 'ADMIN_LOGOUT';
     const ADMIN_AS_MERCHANT                         = 'ADMIN_AS_MERCHANT';
