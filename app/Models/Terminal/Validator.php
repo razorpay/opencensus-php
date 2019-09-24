@@ -1047,6 +1047,9 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL,
         Entity::VPA,
         Entity::PROCURER,
+        Entity::MC_MPAN,
+        Entity::VISA_MPAN,
+        Entity::RUPAY_MPAN
     ];
 
     public function validateType()
