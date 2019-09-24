@@ -1523,15 +1523,18 @@ class Entity extends Base\PublicEntity
         return $role;
     }
 
+    /**
+     * Since we are pushing metrics on setStatusAttribute
+     * Therefore, it's important that while building the entity
+     * the status is set in the end.
+     * If we don't do so, there's a chance that some payout parameters
+     * might not be available at the time of setStatusAttribute
+     *
+     * @param array $attributes
+     * @return Base\PublicEntity
+     */
     public function fill(array $attributes)
     {
-        //
-        // Since we are pushing metrics on setStatusAttribute
-        // Therefore, it's important that while building the entity
-        // the status is set in the end.
-        // If we don't do so, there's a chance that some payout parameters
-        // might not be available at the time of setStatusAttribute
-        //
         if (array_key_exists(self::STATUS, $attributes) === true)
         {
             $status = $attributes[Entity::STATUS];

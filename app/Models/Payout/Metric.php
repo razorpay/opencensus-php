@@ -15,6 +15,8 @@ final class Metric
     const PAYOUT_CREATED_TOTAL   = 'payout_created_total';
     const PAYOUT_PENDING_TOTAL   = 'payout_pending_total';
     const PAYOUT_QUEUED_TOTAL    = 'payout_queued_total';
+    const PAYOUT_FAILED_TOTAL    = 'payout_failed_total';
+    const PAYOUT_REVERSED_TOTAL  = 'payout_reversed_total';
 
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS      = 'payout_queued_to_created_duration_seconds.histogram';
@@ -39,8 +41,9 @@ final class Metric
     {
         $currentStatus = $payout->getStatus();
 
-        try {
-            Status::validatePreviousToCurrentMapping($previousStatus, $currentStatus);
+        try
+        {
+            Status::validateStausUpdate($currentStatus, $previousStatus);
 
             $functionName = self::getFunctionNameToCall($previousStatus, $currentStatus);
 
@@ -94,6 +97,28 @@ final class Metric
         app('trace')->count(self::PAYOUT_QUEUED_TOTAL, $metricDimensions);
     }
 
+    protected static function pushFailedMetrics(Entity $payout)
+    {
+        $extraDimensions = [
+            Entity::FAILURE_REASON => $payout->getFailureReason(),
+        ];
+
+        $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
+
+        app('trace')->count(self::PAYOUT_FAILED_TOTAL, $metricDimensions);
+    }
+
+    protected static function pushReversedMetrics(Entity $payout)
+    {
+        $extraDimensions = [
+            Entity::FAILURE_REASON => $payout->getFailureReason(),
+        ];
+
+        $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
+
+        app('trace')->count(self::PAYOUT_REVERSED_TOTAL, $metricDimensions);
+    }
+
     protected static function pushQueuedToCreatedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
@@ -103,6 +128,8 @@ final class Metric
             self::PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
+
+        self::pushCreatedMetrics($payout);
     }
 
     protected static function pushQueuedToCancelledMetrics(Entity $payout)
@@ -147,6 +174,8 @@ final class Metric
             self::PAYOUT_PENDING_TO_CREATED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
+
+        self::pushCreatedMetrics($payout);
     }
 
     /**
@@ -156,6 +185,11 @@ final class Metric
     protected static function pushCreatedToInitiatedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
+        // Since we are not storing the timestamp when the fta was initiated,
+        // therefore we use the current timestamp
+        // payout.created_at is the time of payout entity creation
+        // payout.initiated_at is the time when the payout is is move to created state
+        // This is useful for queued payouts, where status moves from queued -> created
         $timeDuration     = Carbon::now()->getTimestamp() - $payout->getInitiatedAt();
 
         app('trace')->histogram(
@@ -166,13 +200,19 @@ final class Metric
 
     protected static function pushCreatedToFailedMetrics(Entity $payout)
     {
-        $metricDimensions = self::getMetricDimensions($payout);
+        $extraDimensions = [
+            Entity::FAILURE_REASON => $payout->getFailureReason(),
+        ];
+
+        $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
         $timeDuration     = $payout->getFailedAt() - $payout->getInitiatedAt();
 
         app('trace')->histogram(
             self::PAYOUT_CREATED_TO_FAILED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
+
+        self::pushFailedMetrics($payout);
     }
 
     protected static function pushInitiatedToReversedMetrics(Entity $payout)
@@ -188,6 +228,8 @@ final class Metric
             self::PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
+
+        self::pushReversedMetrics($payout);
     }
 
     protected static function pushInitiatedToFailedMetrics(Entity $payout)
@@ -203,6 +245,8 @@ final class Metric
             self::PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS,
             $initiatedToFailedTime,
             $metricDimensions);
+
+        self::pushFailedMetrics($payout);
     }
 
     protected static function pushInitiatedToProcessedMetrics(Entity $payout)
@@ -218,13 +262,19 @@ final class Metric
 
     protected static function pushProcessedToReversedMetrics(Entity $payout)
     {
-        $metricDimensions = self::getMetricDimensions($payout);
+        $extraDimensions = [
+            Entity::FAILURE_REASON => $payout->getFailureReason(),
+        ];
+
+        $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
         $timeDuration     = $payout->getReversedAt() - $payout->getProcessedAt();
 
         app('trace')->histogram(
             self::PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
+
+        self::pushReversedMetrics($payout);
     }
 
     protected static function getMetricDimensions(Entity $payout, array $extra = []): array

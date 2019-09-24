@@ -195,7 +195,11 @@ class Status
                self::$ftaToPayoutStatusMap[Entity::DEFAULT][Entity::DEFAULT][$ftaStatus];
     }
 
-    public static function validatePreviousToCurrentMapping($previousStatus, $currentStatus)
+    /**
+     * @param string      $currentStatus
+     * @param string|null $previousStatus
+     */
+    public static function validateStausUpdate(string $currentStatus, $previousStatus)
     {
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 

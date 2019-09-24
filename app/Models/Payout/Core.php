@@ -727,7 +727,7 @@ class Core extends Base\Core
         //
         // Payout can go to failed state from initiated or created state only
         //
-        Status::validatePreviousToCurrentMapping($currentStatus, Status::FAILED);
+        Status::validateStausUpdate(Status::FAILED, $currentStatus);
 
         $payout->setStatus(Status::FAILED);
 
