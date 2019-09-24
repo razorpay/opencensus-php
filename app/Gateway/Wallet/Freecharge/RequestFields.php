@@ -20,6 +20,8 @@ class RequestFields
     const CHECKSUM                = 'checksum';
     const CHANNEL                 = 'channel';
     const CALLBACK_URL            = 'callbackUrl';
+    const SURL                    = 'surl';
+    const FURL                    = 'furl';
     const LOGIN_TOKEN             = 'loginToken';
     const METADATA                = 'metadata';
     const TXN_TYPE                = 'txnType';

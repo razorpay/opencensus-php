@@ -185,6 +185,8 @@ class Gateway extends Base\Gateway
 
         $bank = $input['payment']['bank'];
 
+        $authType = AuthType::getAuthType($input);
+
         if (in_array($bank, Payment\Processor\Netbanking::$inconsistentIfsc) === true)
         {
             $bank = array_search ($bank, Payment\Processor\Netbanking::$defaultInconsistentBankCodesMapping);
@@ -195,6 +197,7 @@ class Gateway extends Base\Gateway
             RequestFields::REQUEST_XML => $signedxml,
             RequestFields::CHECKSUM    => $encryptedChecksum,
             RequestFields::BANK_ID     => $bank,
+            RequestFields::AUTH_MODE   => $authType,
         ];
 
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
@@ -206,6 +209,7 @@ class Gateway extends Base\Gateway
             RequestFields::REQUEST_XML => $xml,
             RequestFields::CHECKSUM    => $encryptedChecksum,
             RequestFields::BANK_ID     => $bank,
+            RequestFields::AUTH_MODE   => $authType
         ];
 
         $this->traceGatewayPaymentRequest($dataToTrace, $input);
