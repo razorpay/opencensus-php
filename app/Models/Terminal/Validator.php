@@ -57,7 +57,7 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'required_if:netbanking,1|string|max:30',
-        Entity::CURRENCY                    => 'sometimes|array|max:50',
+        Entity::CURRENCY                    => 'sometimes',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
