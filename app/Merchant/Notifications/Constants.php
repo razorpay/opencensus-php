@@ -159,12 +159,12 @@ class Constants
             'buttons'     => [
                 [
                     'type'  => 'button',
-                    'label' => ’Settle Now’,
-                    'url'   => '/settlements#settlenow’,
+                    'label' => 'Settle Now',
+                    'url'   => '/settlements#settlenow',
                 ],
             ],
             'filters'     => [
-                ‘features’         => ['es_on_demand'],
+                'features'         => ['es_on_demand'],
             ]
         ],
     ];
@@ -174,4 +174,3 @@ class Constants
         return self::NOTIFICATIONS;
     }
 }
-
