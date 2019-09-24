@@ -15,6 +15,8 @@ class Doppler
 {
     const PAYMENT_SUCCESS_EVENT    = 'success';
 
+    const PAYMENT_ATTEMPT_FAILURE  = 'attempt_failure';
+
     const PAYMENT_FAILURE_EVENT    = 'failure';
 
     protected $app;

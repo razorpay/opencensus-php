@@ -336,6 +336,8 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_ATTEMPT_FAILURE);
+
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
                 if ($retryOnSameGateway === true)
@@ -367,8 +369,6 @@ trait Authorize
                 $this->migrateCardDataIfApplicable($payment);
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
-
-                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_FAILURE_EVENT);
 
                 $this->updatePaymentOnExceptionAndThrow($e);
 
