@@ -14,11 +14,14 @@ use App\Base;
 use App\User;
 use App\Merchant;
 use App\MerchantDetails;
+use App\Trace\TraceCode;
 use App\Admin\ApiRequestAny;
 use App\Session\Entity as AppSession;
 
 class Service extends Base\Service
 {
+    protected $trace;
+
     const UPLOAD_KEYS = [
         'business_proof'           => 'business_proof_url',
         'business_operation_proof' => 'business_operation_proof_url',
@@ -32,6 +35,10 @@ class Service extends Base\Service
     public function __construct()
     {
         $this->currentUser = Auth::user();
+
+        $app = \App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
     }
 
     /**
@@ -472,6 +479,31 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
+        }
+
+        return $data;
+    }
+
+    public function getBulkTreatment(array $features)
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        $featureString = implode(', ', $features);
+
+        list($error, $data) = $request->send("razorx/bulkevaluate?features=$featureString", 'GET');
+
+        if (empty($error) === false)
+        {
+            $data = [];
+
+            $this->trace->info(TraceCode::BULK_RAZORX_CALL_FAILED, [
+                "error" => $error
+            ]);
+
+            foreach ($features as $feature)
+            {
+                $data[$feature] = ['result' => 'control'];
+            }
         }
 
         return $data;

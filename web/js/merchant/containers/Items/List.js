@@ -1,25 +1,43 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
+
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ItemsList from 'merchant/components/Items/ItemsList';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ItemCreation from 'merchant/containers/Items/New';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as ModalActions from 'rzp/modules/modals';
 import * as ItemActions from 'merchant/modules/items';
+import { fetchInvoices } from 'merchant/modules/invoices/list';
 import { luminateRow } from 'merchant/modules/app';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { RZPFeatures } from 'rzp/utils/constants';
 import { stringifyQueryParams } from '../../../rzp/utils/rzp-utils';
 
 @connect(
   state => ({
     ...state.items,
     session: state.session,
+    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.INVOICE
+    ),
   }),
-  { ...ItemActions, ...ModalActions, luminateRow }
+  {
+    ...ItemActions,
+    ...ModalActions,
+    luminateRow,
+    handleProductQuickGuide,
+    fetchInvoices,
+  }
 )
 @reduxForm({
   form: 'newItem',
@@ -30,6 +48,23 @@ export default class ItemsListContainer extends ListContainer {
       eventCategory: 'Dashboard - Invoices',
       eventAction: 'Go To - Items',
     });
+
+    if (this.props.isInvoiceView) {
+      this.props.fetchInvoices({ count: 25 });
+    }
+  }
+
+  componentWillUnmount() {
+    const { invoicesProductOnBoarding, isInvoiceView } = this.props;
+
+    if (isInvoiceView && invoicesProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...invoicesProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: this.state.isInvoiceView,
+        isTour: this.state.isInvoiceView,
+      });
+    }
   }
 
   fetchEntityList(params) {
@@ -117,20 +152,22 @@ export default class ItemsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, session } = this.props,
+    let { loading, items, session, isInvoiceView } = this.props,
       { mode } = session;
     let status = this.state.status;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen
-            additionalCondition={user =>
-              (mode !== 'live' || !user.isRejected) &&
-              user.isAllowedEdit('items')
-            }
-          >
-            <div class="btn-toolbar">
+          <div class="btn-toolbar">
+            {isInvoiceView && <TakeATourButton feature={RZPFeatures.INVOICE} />}
+
+            <ShowWhen
+              additionalCondition={user =>
+                (mode !== 'live' || !user.isRejected) &&
+                user.isAllowedEdit('items')
+              }
+            >
               <button
                 class="pull-right btn btn-primary"
                 onClick={() => this.showItemModal()}
@@ -138,8 +175,8 @@ export default class ItemsListContainer extends ListContainer {
                 <i class="i i-plus" />
                 <span>New Item</span>
               </button>
-            </div>
-          </ShowWhen>
+            </ShowWhen>
+          </div>
         </HeaderAction>
 
         <Alert type={status.type} message={status.message} />

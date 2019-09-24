@@ -36,6 +36,12 @@ export const paymentStatusMap = {
   refunded: 'bg-primary',
 };
 
+export const refundStatusMap = {
+  processed: 'label-success',
+  processing: 'label-info',
+  failed: 'label-danger',
+};
+
 export const settlementStatusMap = {
   created: 'bg-light',
   scheduled: 'bg-light',
@@ -97,6 +103,7 @@ export const tokenStatusMap = {
 
 const entityMap = {
   payment: paymentStatusMap,
+  refund: refundStatusMap,
   settlement: settlementStatusMap,
   invoice: invoiceStatusMap,
   payment_link: paymentPagesStatusMap,
@@ -122,5 +129,6 @@ export const PlanStatusLabel = StatusLabel(planStatusMap);
 export const ActivationStatusLabel = StatusLabel(activationStatusMap);
 export const DisputeStatusLabel = StatusLabel(disputeStatusMap);
 export const TokenStatusLabel = StatusLabel(tokenStatusMap);
+export const RefundStatusLabel = StatusLabel(refundStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);

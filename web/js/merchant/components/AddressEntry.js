@@ -1,7 +1,13 @@
-import { Component } from 'react';
-import { PowerSelect } from 'react-power-select';
 import PropTypes from 'prop-types';
+
+import { PowerSelect } from 'react-power-select';
+
 import State from 'merchant/models/State';
+
+import {
+  getCountryPINcodeType,
+  isValidZipcodeCountryWise,
+} from 'rzp/utils/rzp-utils';
 
 /**
  * Finds a state from the states-list by it's name.
@@ -11,7 +17,7 @@ import State from 'merchant/models/State';
  */
 const findStateByName = (states, name) => states.find(s => s.name === name);
 
-export default class AddressEntry extends Component {
+export default class AddressEntry extends React.Component {
   static propTypes = {
     /**
      * Address object.
@@ -145,6 +151,12 @@ export default class AddressEntry extends Component {
     });
   };
 
+  handleAddress = type => () => {
+    if (this.state[type].length < 2) return;
+
+    this.props.validateAddress(this.state);
+  };
+
   render() {
     const { line1, line2, zipcode, city, state, country } = this.state;
 
@@ -202,8 +214,10 @@ export default class AddressEntry extends Component {
               value={zipcode}
               placeholder="PIN Code"
               class="form-control input-number-no-arrows"
-              type="number"
+              type={getCountryPINcodeType(country)}
               onChange={this.onFieldChangeClosure('zipcode')}
+              onKeyDown={this.handleAddress('zipcode')}
+              onBlur={this.handleAddress('zipcode')}
               autoComplete="postal-code"
             />
           </div>
@@ -244,6 +258,8 @@ export default class AddressEntry extends Component {
                 selected={country}
                 options={countries}
                 onChange={this.updateCountry}
+                onKeyDown={this.handleAddress('country')}
+                onBlur={this.handleAddress('zipcode')}
                 autoComplete="country"
               />
             </div>

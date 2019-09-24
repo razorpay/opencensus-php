@@ -170,6 +170,11 @@ export default class CreateNewAuthLinkContainer extends Component {
       },
     };
 
+    if (data.mandateMethod === 'emandate') {
+      payload.subscription_registration.first_payment_amount =
+        rupeesToPaise(data.first_payment_amount) || 0;
+    }
+
     return this.props
       .createAuthLink(payload)
       .then(response => {
@@ -199,6 +204,7 @@ export default class CreateNewAuthLinkContainer extends Component {
         });
       });
   };
+
   renderForm = ({ isModalView }) => {
     const { mandateMethod: method, avlblMethods, loading } = this.state;
     const skipBankDetails = !!Number(this.state.skipBankDetails);
@@ -365,9 +371,32 @@ export default class CreateNewAuthLinkContainer extends Component {
                     disabled={!!Number(this.state.tokenHasNoExpiry)}
                   />
                 </Input.Group>
+
+                <Input
+                  name="first_payment_amount"
+                  type="number"
+                  placeholder="0"
+                  size="half_big"
+                  label="Amount"
+                  class="Input--Amount"
+                  description="Amount of First Charge"
+                  validator={value => {
+                    return checkIfAmountForFirstCharge(
+                      Number(this.state.mandateMaxAmount) || 99999,
+                      value
+                    );
+                  }}
+                  addonBefore={
+                    <AmountTooltip
+                      currency={'INR'}
+                      parentQuerySelector=".Modal"
+                    />
+                  }
+                />
+
                 <Input
                   name="mandateMaxAmount"
-                  placeholder="100000"
+                  placeholder="99999"
                   label="Token Max Amount"
                   addonBefore={
                     <AmountTooltip
@@ -426,6 +455,7 @@ export default class CreateNewAuthLinkContainer extends Component {
 
   render() {
     const isModalView = this.props.onClose;
+
     return isModalView ? (
       <Modal class="PaymentLinks animate-down" onClose={this.props.onClose}>
         <ModalContent>{this.renderForm({ isModalView })}</ModalContent>
@@ -470,3 +500,17 @@ function PaymentMethodPlaceHolder({ content }) {
 function checkIfAmount(value) {
   return !isAmount(Number(value)) && 'Invalid Amount';
 }
+
+const checkIfAmountForFirstCharge = (maxAmount, value) => {
+  const amount = Number(value);
+
+  if (amount === 0) {
+    return null;
+  }
+
+  if (amount > maxAmount) {
+    return 'Amount is should be less than or equal Token Max Amount';
+  }
+
+  return !isAmount(value) && 'Invalid Amount';
+};

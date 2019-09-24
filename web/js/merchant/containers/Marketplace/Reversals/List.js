@@ -1,13 +1,18 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
-import ReversalsListFilter from 'merchant/components/Marketplace/ReversalsListFilter';
+
+import { RZPFeatures } from 'rzp/utils/constants';
+import { reversalId, transferId, amount, createdAt } from 'rzp/ui/item/pair';
+
 import DataTable from 'rzp/ui/Table/DataTable';
-import ListContainer from 'merchant/containers/ListContainer';
 import HeaderAction from 'rzp/ui/HeaderAction';
+
 import DocsLink from 'merchant/components/DocsLink';
 import { fetchReversals as fetchAll } from 'merchant/modules/collection';
 
-import { reversalId, transferId, amount, createdAt } from 'rzp/ui/item/pair';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import ReversalsListFilter from 'merchant/components/Marketplace/ReversalsListFilter';
+
+import ListContainer from 'merchant/containers/ListContainer';
 
 @connect(
   state => ({
@@ -18,15 +23,15 @@ import { reversalId, transferId, amount, createdAt } from 'rzp/ui/item/pair';
 )
 export default class ReversalsListContainer extends ListContainer {
   render() {
-    let { loading, items, error, user } = this.props;
-
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/route/"/>
+            <TakeATourButton feature={RZPFeatures.ROUTE} />
+
+            <DocsLink url="https://razorpay.com/docs/route/" />
           </div>
-        </HeaderAction>        
+        </HeaderAction>
         <ReversalsListFilter
           form="reversalsListFilter"
           count={this.state.count}

@@ -27,6 +27,12 @@ class Service extends Base\Service
         'contact_mobile',
     ];
 
+    // for Registered Onboarding flow.
+    const NOT_REGISTERED_BUSINESS_PRE_SIGNUP_FIELDS = [
+      'contact_name',
+      'contact_mobile'
+    ];
+
     const WEBSITE_URLS = [
         'business_website',
         'website_about',
@@ -137,6 +143,19 @@ class Service extends Base\Service
         }
 
         return $presignupDetails;
+    }
+
+    public function isPreSignupDetailsSetForNotRegisteredBusiness(array $input)
+    {
+        foreach (self::NOT_REGISTERED_BUSINESS_PRE_SIGNUP_FIELDS as $key)
+        {
+            if (isset($input[$key]) === false)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function getDetailsFromAPI($merchantId = null)

@@ -7,6 +7,8 @@ import Alert from 'component/Alert';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { trackFormFields } from 'rzp/utils/track-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { classList, addPrefixToObjectKeys } from 'common/util';
 import { activationDuration } from 'common/data';
 import {
@@ -16,6 +18,7 @@ import {
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
+  trackTaboola,
 } from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
@@ -30,6 +33,8 @@ import accountFormTabsContent, {
 } from './AccountActivationFormMap';
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
+import RTracking from 'react-tracking';
+
 /*
 *             Main-form        LA-form
 * Submited      E F ~S        ~E ~F ~S
@@ -93,9 +98,13 @@ let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
+@RTracking((state, props, args) => {
+  return window.rzpQ.component('ActivationCard');
+})
 @connect(state => ({
   user: state.session.user,
 }))
+@RTracking(() => window.rzpQ.component('ActivationWizard'))
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: this.isLinkedAccountForm ? LOADING.DEFAULT : LOADING.INITIAL,
@@ -135,6 +144,7 @@ export default class ActivationWizard extends React.Component {
   }
 
   prepareTabs(props) {
+    const { tracking } = props;
     if (this.isLinkedAccountForm) {
       // Activation form for linked account
 
@@ -192,6 +202,12 @@ export default class ActivationWizard extends React.Component {
             updateHubSpotContactsProperties({
               [a.name]: true,
             });
+
+            tracking.trackEvent(
+              window.rzpQ.onbr().initiated('kyc.upload_document', {
+                name: a.name,
+              })
+            );
 
             this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
           });
@@ -273,10 +289,16 @@ export default class ActivationWizard extends React.Component {
 
   saveCurrentTab = () => {
     const currenActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.save_modifications', {
+          clickSource: 'save',
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
+        tracker();
         onAction.trackSave({
           tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
@@ -289,10 +311,16 @@ export default class ActivationWizard extends React.Component {
 
   next = e => {
     const currenActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.save_modifications', {
+          clickSource: 'save-next',
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
+        tracker();
         onAction.trackSaveAndNext({
           tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
@@ -322,12 +350,17 @@ export default class ActivationWizard extends React.Component {
   changeTab = ({ target }) => {
     const tabId = parseInt(target.getAttribute('data-index'));
     const currentActiveTab = this.state.activeTab;
-
+    const tracker = () =>
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.nav_action', {
+          clickSource: mainFormTabs[tabId],
+        })
+      );
     const callBack =
       onAction &&
       function(result, error) {
         onAction.trackTabClick(tabId); // Tracks current tab clicked
-
+        tracker();
         if (typeof result !== 'undefined') {
           onAction.trackSaveOnTabClick({
             tabId: currentActiveTab, // Tracks for tab that got saved
@@ -341,6 +374,17 @@ export default class ActivationWizard extends React.Component {
   };
 
   //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
+  @RTracking((props, state) => {
+    const { tracking } = props;
+    const fields = trackFormFields(props.data, state.dirty);
+    return fields.forEach(field =>
+      tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.provide_details', {
+          ...field,
+        })
+      )
+    );
+  })
   goto = (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
@@ -615,7 +659,7 @@ export default class ActivationWizard extends React.Component {
             type: false,
           });
       } else {
-        let data = new BingDataObj('kycform', 'complete', 'all', 1);
+        let compAllData = new BingDataObj('kycform', 'complete', 'all', 1);
 
         /**
          * Fire fb, bing, linkedin & twitter events
@@ -623,33 +667,46 @@ export default class ActivationWizard extends React.Component {
         fireAnalyticsEvents(
           {
             fbData: 'kyc_complete_all',
-            bingData: data,
+            bingData: compAllData,
             liData: 987452, //conversionId
             twiData: 'o1ua7',
           } //twitter
         );
 
-        let dataActivation = new BingDataObj(
-          'kycform',
-          'complete',
-          data.data.activation_flow,
-          1
-        );
+        let conversionId, txnId;
+        if ('greylist' === data.data.activation_flow) {
+          conversionId = 987428;
+          txnId = 'o1ua4';
+          let greylistData = new BingDataObj(
+            'kycform',
+            'complete',
+            'greylist',
+            1
+          );
+          fireAnalyticsEvents({
+            fbData: `KYC_complete_greylist`,
+            bingData: greylistData,
+            liData: conversionId,
+            twiData: txnId,
+          });
+        } else if ('whitelist' === data.data.activation_flow) {
+          conversionId = 987436;
+          txnId = 'o1ua5';
+          let whitelistData = new BingDataObj(
+            'kycform',
+            'complete',
+            'whitelist',
+            1
+          );
+          fireAnalyticsEvents({
+            fbData: `KYC_complete_whitelist`,
+            bingData: whitelistData,
+            liData: conversionId,
+            twiData: txnId,
+          });
+        }
 
-        let conversionId = this.props.user.instantActivation.isGraylistFlow
-          ? 987428
-          : this.props.user.instantActivation.isWhitelistFlow && 987436;
-
-        let txnId = this.props.user.instantActivation.isGraylistFlow
-          ? 'o1ua4'
-          : this.props.user.instantActivation.isWhitelistFlow && 'o1ua5';
-
-        fireAnalyticsEvents({
-          fbData: `KYC_complete_${data.data.activation_flow}`,
-          bingData: dataActivation,
-          liData: conversionId,
-          twiData: txnId,
-        });
+        trackTaboola('l2_submission');
 
         updateHubSpotContactsProperties(
           {
@@ -665,6 +722,8 @@ export default class ActivationWizard extends React.Component {
             type: true,
             activationFlow: data.data && data.data.activation_flow,
           });
+
+        window.hj && window.hj('trigger', 'L0_NPS_Post_KYC');
       }
     });
   };
@@ -1392,37 +1451,78 @@ class SubmitForm extends React.Component {
             {/* Primary copy */}
             <p>
               I have read and understood the{' '}
-              <a
-                href="https://razorpay.com/terms/"
-                target="_blank"
-                class="highlight"
-                onClick={() =>
-                  onAction && onAction.trackLinkClick('Terms of use')
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                Terms & Conditions
-              </a>,{' '}
-              <a
-                href="https://razorpay.com/agreement/"
-                target="_blank"
-                class="highlight"
-                onClick={() =>
-                  onAction && onAction.trackLinkClick('Merchant Agreement')
+                <a
+                  href="https://razorpay.com/terms/"
+                  target="_blank"
+                  class="highlight"
+                  onClick={() =>
+                    onAction && onAction.trackLinkClick('Terms of use')
+                  }
+                >
+                  Terms & Conditions
+                </a>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={user =>
+                  !user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                Merchant Agreement
-              </a>{' '}
+                <span class="highlight">Terms & Conditions</span>
+              </ShowWhen>
+              ,{' '}
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <a
+                  href="https://razorpay.com/agreement/"
+                  target="_blank"
+                  class="highlight"
+                  onClick={() =>
+                    onAction && onAction.trackLinkClick('Merchant Agreement')
+                  }
+                >
+                  Merchant Agreement
+                </a>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={user =>
+                  !user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <span class="highlight">Merchant Agreement</span>
+              </ShowWhen>{' '}
               and the{' '}
-              <a
-                href="https://razorpay.com/privacy/"
-                target="_blank"
-                class="highlight"
-                onClick={() =>
-                  onAction && onAction.trackLinkClick('Privacy Policy')
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                Privacy Policy
-              </a>. By submitting the form, I agree to abide by the rules at all
+                <a
+                  href="https://razorpay.com/privacy/"
+                  target="_blank"
+                  class="highlight"
+                  onClick={() =>
+                    onAction && onAction.trackLinkClick('Privacy Policy')
+                  }
+                >
+                  Privacy Policy
+                </a>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={user =>
+                  !user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <span class="highlight">Privacy Policy</span>
+              </ShowWhen>
+              . By submitting the form, I agree to abide by the rules at all
               times.
             </p>
           </div>

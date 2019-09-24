@@ -2,7 +2,7 @@ require('it-each')();
 const expect = require('chai').expect;
 import {
   FIELD_CONST,
-  FIELD_TYPES,
+  getFieldTypes,
   flattenFIELD_TYPES,
   constructFieldSchema,
   validateUISchema,

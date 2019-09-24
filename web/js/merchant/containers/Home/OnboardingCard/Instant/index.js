@@ -6,6 +6,7 @@ import { trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
+import RTracking from 'react-tracking';
 
 import {
   showAcceptPaymentsModal,
@@ -31,6 +32,9 @@ import {
     hideAcceptPaymentsModal,
   }
 )
+@RTracking((state, props, args) => {
+  return window.rzpQ.component('OnboardingCardInstant');
+})
 export default class OnboardingCardInstant extends Component {
   constructor(props) {
     super(props);

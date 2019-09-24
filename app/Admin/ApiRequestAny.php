@@ -42,6 +42,23 @@ class ApiRequestAny
 
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
 
+    // field passed by the API in case of errors are exposed
+    // dashboard handles these error in a custom way
+    // by passing the data to the frontend
+    const INTERNAL_ERROR_CODE = 'internal_error_code';
+
+    const INTERNAL_ERROR_CODES = [
+        'BAD_REQUEST_LOCKED_USER_LOGIN',
+        'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED',
+        'BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP',
+        'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED',
+        'BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED',
+        'BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED',
+        'BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA',
+        'BAD_REQUEST_USER_2FA_ALREADY_SETUP',
+        'BAD_REQUEST_2FA_SETUP_INCORRECT_OTP',
+    ];
+
     /**
      * Construct a RawApiRequest instance
      *
@@ -84,9 +101,14 @@ class ApiRequestAny
 
         $originDomain = ApiUrl::getRequestOriginUrl();
 
+        $requestedClientIPS = \Request::ips();
+
+        $clientIp = end($requestedClientIPS);
+
         $defaultHeaders = [
             'X-Dashboard'       => 'true',
             'X-User-Agent'      => Request::header('User-Agent'),
+            'X-Dashboard-Ip'    => $clientIp,
             'X-IP-Address'      => Request::ip(),
             'X-Org-Hostname'    => $domain,
             'X-Request-Origin'  => $originDomain,
@@ -388,6 +410,22 @@ class ApiRequestAny
         {
             $json = $e->getResponse()->json();
             $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
+
+            //in case of 2fa api calls we need the data passed by the api
+            // and dashboard will consume that data. For eg.
+            // even if username and password is correct we can have failures, if otp was not passed.
+            // dashboard needs to explicitly handle these issues.
+            if ((empty($json['error']['data']) === false) and
+                (empty($json['error']['data'][self::INTERNAL_ERROR_CODE]) === false) and
+                (in_array($json['error']['data'][self::INTERNAL_ERROR_CODE], self::INTERNAL_ERROR_CODES) === true))
+            {
+                $errors = [
+                    self::INTERNAL_ERROR_CODE => $json['error'][self::INTERNAL_ERROR_CODE],
+                    'description'             => $json['error']['description'],
+                    'status_code'             => $json['error']['http_status_code'],
+                    'code'                    => $json['error']['code'],
+                ];
+            }
         }
         catch(\GuzzleHttp\Exception\ServerException $e)
         {

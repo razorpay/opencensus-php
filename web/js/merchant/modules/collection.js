@@ -11,6 +11,8 @@ import Dispute from 'merchant/models/Dispute';
 import Submerchant from 'merchant/models/Submerchant';
 import Token from 'merchant/models/Token';
 import Commission from 'merchant/models/Commission';
+import Team from 'merchant/models/Team';
+import Invitation from 'merchant/models/Invitation';
 
 import AuthLink from 'merchant/models/AuthLink';
 
@@ -59,7 +61,7 @@ export const updateEntityInList = (state, action) => {
 };
 
 export const removeEntityFromList = (state, action) => {
-  let itemsList = remove(state.items, item => item.id === action.id);
+  let itemsList = remove(state.items, item => item.id === action.payload.id);
   return set(state, 'items', itemsList);
 };
 
@@ -173,3 +175,8 @@ export const commissionsReducer = makeActionCollectionReducer('COMMISSIONS');
 export const commissionsAggregateReducer = makeCollectionReducer(
   'COMMISSION_AGGREGATE'
 );
+
+// Invitations
+export const fetchInvitations = params =>
+  fetchAll(params, Invitation, 'INVITATIONS');
+export const invitationsReducer = makeActionCollectionReducer('INVITATIONS');

@@ -1,0 +1,114 @@
+/* latin-ext */
+@font-face
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v14/S6uyw4BMUTPHjxAwXiWtFCfQ7A.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+/* latin */
+@font-face
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v14/S6uyw4BMUTPHjx4wXiWtFCc.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+
+/* latin-ext */
+@font-face
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v14/S6u9w4BMUTPHh6UVSwaPGQ3q5d0N7w.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+
+/* latin */
+@font-face
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v14/S6u9w4BMUTPHh6UVSwiPGQ3q5d0.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+
+html
+  font-family: 'Lato'
+  background: #F0F3F4
+
+.ExtensionPopup
+  max-width: 320px
+  position: absolute
+  top: 30px
+  right: 50px
+  font-size: 13px
+  background-color: #f7f7f9
+  box-shadow: 0 0 8px 0 rgba(0,0,0,0.12)
+  text-align: center
+
+  &::after
+    bottom: 100%
+    left: 75%
+    border: solid transparent
+    content: " "
+    height: 0
+    width: 0
+    position: absolute
+    pointer-events: none
+    border-color: rgba(51, 97, 204, 0)
+    border-bottom-color: #2b53c2
+    border-width: 18px 12px
+
+
+  & > div
+    margin: 20px 24px
+
+  .ExtensionPopup-Header
+    display: flex
+    justify-content: center
+    min-height: 50px
+    margin: 0
+    background-image: url('https://betacdn.razorpay.com/static/assets/extension/bg.svg')
+    background-position: 50%
+
+    & img
+      margin: 0px auto
+      width: 100px
+
+   .ExtensionPopup-Text
+      color: #7B8199
+
+      &--dark
+        color: #515978
+
+      &--small
+        color: #528FF0
+        cursor: pointer
+
+    .ExtensionPopup-Icon
+      width: 16px
+      margin: 0px 6px
+      vertical-align: text-bottom
+
+  .ExtensionPopup-BtnClose
+    padding: 10px 20px
+    border-radius: 2px
+    border: 1px solid #DEE5E7
+    cursor: pointer
+    background-color: #FAFAFA
+    position: relative
+
+    &::after
+      content: ''
+      height: 38px
+      background-color: #528FF0
+      position: absolute
+      top: 0
+      left: 0
+      opacity: 0.1
+      animation: progress 6s linear 1 both
+
+@keyframes progress
+  from
+    width: 0px
+
+  to
+    width: 270px
+

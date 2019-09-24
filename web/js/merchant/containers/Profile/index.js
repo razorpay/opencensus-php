@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 import Alert from 'rzp/ui/Forms/Alert';
 import Spinner from 'rzp/ui/Spinner';
 import * as ModalActions from 'rzp/modules/modals';
@@ -38,6 +39,7 @@ import { updateSession } from 'merchant/modules/session';
     updateSession,
   }
 )
+@RTracking(() => window.rzpQ.component('Profile'))
 export default class Profile extends Component {
   state = {
     loggedInUser: {},
@@ -151,6 +153,11 @@ export default class Profile extends Component {
       });
   };
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.my_account_actions', {
+      action: 'Change_Password_Initiated',
+    })
+  )
   openChangePasswordModal = () => {
     this.props.openModal({
       size: 'small',

@@ -1,127 +1,144 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
-import { updateFeatures } from 'merchant/modules/config';
-import { showNotification } from 'rzp/modules/notifications';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
-import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
-import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
-import * as ModalActions from 'rzp/modules/modals';
 
-import SubscriptionsList from 'merchant/containers/Subscriptions/List';
-import PlansList from 'merchant/containers/Plans/List';
+import { classList } from 'common/util';
 
-import ActivationBanner from 'merchant/components/ActivationBanner';
+import { RZPFeatures } from 'rzp/utils/constants';
+
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import SubscriptionLinkAnnouncement from 'merchant/components/Announcements/SubscriptionLinks';
 
-import HostedEmanadateBatches from './Batch/List';
-import RecurringPayments from './RecurringPayments/List';
+import { fetchPlans } from 'merchant/modules/plans';
+import { fetchSubscriptions } from 'merchant/modules/subscriptions';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+
+import PlansList from 'merchant/containers/Plans/List';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
+import SubscriptionsList from 'merchant/containers/Subscriptions/List';
+
 import TokensList from './Tokens/List';
 import AuthLinksList from './AuthLinks/List';
+import HostedEmanadateBatches from './Batch/List';
+import RecurringPayments from './RecurringPayments/List';
 
-const heading =
-  'Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.';
+import OnBoarding, {
+  getIsAllowedResetSubscriptionBoarding,
+} from './OnBoarding';
+import QuickGuide, { getSubscriptionQuickGuideIsClosed } from './QuickGuide';
 
 @connect(
-  state => {
-    return {
-      user: state.session.user,
-      business_website: state.session.user.business_website,
-      mode: state.session.mode,
-    };
-  },
-  { updateFeatures, showNotification, ...ModalActions }
+  state => ({
+    mode: state.session.mode,
+    user: state.session.user,
+    plans: state.plans,
+    subscriptions: state.subscriptions,
+    subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.SUBSCRIPTIONS
+    ),
+  }),
+  {
+    fetchPlans,
+    fetchSubscriptions,
+    handleProductQuickGuide,
+  }
 )
-export default class SubscriptionsController extends Component {
-  constructor(props) {
-    super(props);
-
-    this.prefix = '';
-    if (props.user.isOrgRZP) {
-      this.prefix = 'Razorpay ';
-    }
-
-    this.heading = `Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.`;
+export default class SubscriptionsController extends React.Component {
+  componentDidMount() {
+    this.initSubscriptions();
+    this.fetchDataForOnboarding();
   }
 
-  enableFeature = () => {
-    var data = {
-      features: {
-        subscriptions: 1,
-      },
-    };
+  componentWillUnmount() {
+    const { subscriptionProductOnBoarding } = this.props;
 
-    return this.props
-      .updateFeatures(data, this.props.user.current)
-      .then(res => {
-        this.props.showNotification({
-          type: 'success',
-          message: `${this.prefix}Subscriptions has been enabled!`,
-        });
-        setTimeout(() => location.reload());
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
+    if (subscriptionProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...subscriptionProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: false,
+        isTour: false,
       });
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (
+      nextProps.subscriptions.loading !== this.props.subscriptions.loading ||
+      nextProps.subscriptions.loading != this.props.subscriptions.loading
+    ) {
+      this.initSubscriptions(nextProps);
+    }
+  }
+
+  fetchDataForOnboarding = () => {
+    if (this.props.user.isChargeAtWillEnabled) return;
+
+    const { subscriptions, plans, location } = this.props;
+
+    const isPlanRoute = location.pathname.includes('plan');
+
+    if (subscriptions.items.length || plans.items.length) {
+      return;
+    }
+
+    if (isPlanRoute) {
+      this.props.fetchSubscriptions({ count: 25 });
+
+      return;
+    }
+
+    this.props.fetchPlans({ count: 25 });
   };
 
-  openActivationModal = () => {
-    this.props.openModal({
-      component: (
-        <div className="subscriptions-onboarding-modal">
-          <FeatureOnboardingModal
-            onClose={this.props.closeModal}
-            heading={`${this.prefix}Subscriptions`}
-            description={this.heading}
-            formType="subscriptions"
-            isTestMode={false}
-            isPreStepCompleted={() => !!this.props.business_website}
-          />
-        </div>
-      ),
-      size: 'large',
+  initSubscriptions = (props = this.props) => {
+    if (
+      props.user.isChargeAtWillEnabled ||
+      props.subscriptionProductOnBoarding.isTour
+    ) {
+      return;
+    }
+
+    const { subscriptionProductOnBoarding } = props,
+      { isSubscriptionsEnabled } = props.user;
+
+    let showOnboarding = !isSubscriptionsEnabled;
+
+    if (isSubscriptionsEnabled) {
+      showOnboarding = getIsAllowedResetSubscriptionBoarding({
+        plans: props.plans,
+        subscriptions: props.subscriptions,
+      });
+    } else {
+      this.props.handleProductQuickGuide({
+        ...subscriptionProductOnBoarding,
+        showOnboarding,
+      });
+
+      return;
+    }
+
+    this.props.handleProductQuickGuide({
+      ...subscriptionProductOnBoarding,
+      showOnboarding,
+      isQuickGuideOpen: !getSubscriptionQuickGuideIsClosed(props),
     });
   };
 
   render() {
-    const { isSubscriptionsEnabled, isChargeAtWillEnabled } = this.props.user;
-    if (!isSubscriptionsEnabled && !isChargeAtWillEnabled) {
-      return (
-        <FeatureOnboarding
-          heading={`${this.prefix}Subscriptions`}
-          description={this.heading}
-          formType="subscriptions"
-          isTestMode={this.props.mode === 'test'}
-          enableFeatureInTestMode={this.enableFeature}
-          isPreStepCompleted={!!this.props.business_website}
-        />
-      );
+    const { subscriptionProductOnBoarding } = this.props;
+
+    if (subscriptionProductOnBoarding.showOnboarding) {
+      return <OnBoarding />;
     }
 
-    let ClonedPlanList = (props) => (
-      <PlansList docUrl="https://razorpay.com/docs/subscriptions/" {...props}/>
-    )
-
     return (
-      <div>
-        {this.props.mode === 'test' &&
-          !isChargeAtWillEnabled && (
-            <>
-              <ActivationBanner
-                productName={`${this.prefix}Subscriptions`}
-                productDocs="https://razorpay.com/docs/subscriptions"
-                feature="subscriptions"
-                symbol="sub"
-                onActivate={this.openActivationModal}
-              />
-              <SubscriptionLinkAnnouncement />
-            </>
-          )}
+      <div class={classList('Subscriptions-Container')}>
         <tabbed-container>
+          {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
+
           <header id="subscriptions-header">
             <ShowWhen additionalCondition={user => !user.isChargeAtWillEnabled}>
               <NavLink exact to="/subscriptions">
@@ -139,7 +156,9 @@ export default class SubscriptionsController extends Component {
               </NavLink>
             </ShowWhen>
           </header>
+
           <TestModeBanner />
+
           <content>
             <Switch>
               <ShowWhenRoute
@@ -163,3 +182,7 @@ export default class SubscriptionsController extends Component {
     );
   }
 }
+
+const ClonedPlanList = props => (
+  <PlansList docUrl="https://razorpay.com/docs/subscriptions/" {...props} />
+);

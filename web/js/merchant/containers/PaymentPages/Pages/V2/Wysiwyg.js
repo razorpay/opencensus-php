@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { render } from 'react-dom';
 
 import { Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 import Button, { AsyncBtn } from 'component/Button';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Svelte from './Svelte';
@@ -57,6 +58,7 @@ const ERROR = {
     updateTemplateType,
   }
 )
+@RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -313,9 +315,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   // Handles both Create and Edit payment page.
+  @RTracking(() =>
+    window.rzpQ.onbr().success('dash.pp_action', {
+      action: 'Initiate_PP_Launch',
+    })
+  )
   handleSavePublish = () => {
     const { FORM_SCHEMA, paymentPageEntity } = this.props;
-    // console.log('Handle Create..', paymentPageEntity);
 
     const {
       currency,
@@ -327,6 +333,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       support_email,
       support_contact,
       settings,
+      expire_by,
     } = paymentPageEntity;
 
     // Remove Email and Phone in all cases before sending to API.
@@ -342,6 +349,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const reqPayload = {
       currency,
       amount: amount || null,
+      expire_by: expire_by || null,
       title,
       description: description || null,
       times_payable: quantity || null,

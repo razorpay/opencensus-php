@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import Banner from 'rzp/ui/Banner';
@@ -32,6 +33,7 @@ const selector = formValueSelector('newGST');
     ...NotificationsActions,
   }
 )
+@RTracking(() => window.rzpQ.component('AddGST'))
 @reduxForm({
   form: 'newGST',
 })
@@ -64,11 +66,19 @@ export default class AddGST extends Component {
     return this.props
       .saveGST(fieldProps)
       .then(item => {
+        const {
+          updateSession,
+          tracking,
+          showNotification,
+          closeModal,
+        } = this.props;
+
         let user = new User({
           ...this.props.session.user,
           ...item.data,
         });
-        this.props.updateSession({
+
+        updateSession({
           user,
         });
 
@@ -76,15 +86,22 @@ export default class AddGST extends Component {
           saved: true,
         });
 
-        this.props.showNotification({
+        tracking.trackEvent(
+          window.rzpQ.onbr().initiated('dash.my_account_actions', {
+            action: 'Add_GSTIN_Successful',
+          })
+        );
+
+        showNotification({
           type: 'success',
           message: `Your GST details are added. ${this.gst_success_msg}`,
           closeTimeout: 7000,
         });
+
         if (this.props.reloadAfterSave) {
           setTimeout(window.location.reload, 2500);
         } else {
-          this.props.closeModal();
+          closeModal();
         }
       })
       .catch(err => {

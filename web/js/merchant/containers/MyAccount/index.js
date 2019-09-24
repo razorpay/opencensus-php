@@ -36,7 +36,7 @@ export default function MyAccount() {
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
 
-          <ShowWhen additionalCondition={user => user.isAllowedView('team')}>
+          <ShowWhen additionalCondition={user => user.isAllowedTeamManagement}>
             <NavLink to="/team">Manage Team</NavLink>
           </ShowWhen>
         </header>

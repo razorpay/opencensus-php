@@ -1,103 +1,94 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
-import { Redirect } from 'react-router-dom';
+import PropTypes from 'prop-types';
+
 import HeaderAction from 'rzp/ui/HeaderAction';
-import { fetchTeamDetails } from 'merchant/modules/team';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import NewInvitation from './NewInvitation';
-import Invitation from './Invitation';
-import User from './User';
+import ModalHeader from 'rzp/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
+
+import { sendInvitation } from 'merchant/modules/invitation';
+import { openModal, closeModal } from 'rzp/modules/modals';
+
+import InvitationsList from './Invitations/List';
+import MembersList from './Members/List';
+import Toggle2FA from './Toggle2FA';
+import NewInvitation from './NewInvitation';
 
 @connect(
-  state => {
-    return {
-      invitations: state.team.invitations,
-      users: state.team.users,
-      merchant: state.session.user,
-    };
-  },
-  {
-    fetchTeamDetails,
-    ...NotificationsActions,
-  }
+  state => ({
+    user: state.session.user.user,
+  }),
+  { sendInvitation, openModal, closeModal }
 )
-export default class TeamContainer extends Component {
-  componentWillMount() {
-    this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
-  }
+export default class ManageTeamContainer extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
+  inviteNewMember = () => {
+    const visibleFields = {
+      email: true,
+      role: true,
+    };
+
+    const defaults = {
+      sender_name: this.props.user.name,
+      role: 'manager',
+    };
+
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <>
+          <ModalHeader
+            title="Invite New Member"
+            onCloseClick={this.props.closeModal}
+          />
+          <div class="modal-body">
+            <NewInvitation
+              visibleFields={visibleFields}
+              defaults={defaults}
+              onSuccess={this.props.closeModal}
+              onFormSubmit={this.props.sendInvitation}
+              successMsg={data =>
+                'Invitation has been successfully sent to ' + data.email
+              }
+              ctaText="Send Invitation"
+            />
+          </div>
+        </>
+      ),
+    });
+  };
 
   render() {
-    let invitations = this.props.invitations;
-    let users = this.props.users;
-    let otherUsers = users.filter(
-      user => user.email !== this.props.merchant.user.email
-    );
-
     return (
-      <div>
+      <div class="content-wrapper content-sm" id="settings-content">
+        <ShowWhen
+          additionalCondition={user => user.getExpStatus('second_factor_auth')}
+        >
+          <Toggle2FA />
+        </ShowWhen>
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
-            >
-              <a
-                class="btn btn-link"
-                href="https://razorpay.com/docs/team-support/"
-                target="_blank"
-              >
-                Documentation &nbsp;
-                <i class="icon icon-external-link" />
-              </a>
+            <DocsLink url="https://razorpay.com/docs/team-support/" />
+            <ShowWhen myRole="owner">
+              <button class="btn btn-primary" onClick={this.inviteNewMember}>
+                Invite New Member
+              </button>
             </ShowWhen>
           </div>
         </HeaderAction>
+        <div class="ManageTeam--list">
+          <ShowWhen
+            additionalCondition={user => user.isAllowedView('invitations')}
+          >
+            <InvitationsList {...this.props} />
+          </ShowWhen>
 
-        <div class="content-wrapper content-sm">
-          <NewInvitation />
+          <div class="m-t" />
 
-          {otherUsers.length ? (
-            <div>
-              <div class="panel-heading">
-                <b>Team Members</b>
-              </div>
-              <table class="table table-noborder" style={{ margin: '0 12px' }}>
-                <tbody>
-                  {otherUsers.map(user => (
-                    <User
-                      key={user.id}
-                      user={user}
-                      form={`editUser_${user.id}`}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
-
-          {!!otherUsers.length && <div class="section-divide" />}
-
-          {invitations.length ? (
-            <div>
-              <div class="panel-heading">
-                <b>Pending Invitations</b>
-              </div>
-              <table class="table table-noborder" style={{ margin: '0 12px' }}>
-                <tbody>
-                  {invitations.map(invite => (
-                    <Invitation
-                      key={invite.id}
-                      invite={invite}
-                      form={`editInvitation_${invite.id}`}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
+          <MembersList {...this.props} />
         </div>
       </div>
     );

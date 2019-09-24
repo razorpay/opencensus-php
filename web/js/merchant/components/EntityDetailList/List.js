@@ -1,6 +1,7 @@
-import { Component } from 'react';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityRow from 'merchant/components/EntityDetailList/Row';
+import Time from 'rzp/ui/Time';
+import Amount from 'rzp/ui/Amount';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 /*
@@ -9,10 +10,16 @@ import EntityRow from 'merchant/components/EntityDetailList/Row';
  2. Passing props 'customClass' is advised so as to have more control on `progress loader` length
  */
 
-export default class EntityDetailList extends Component {
+export default class EntityDetailList extends React.Component {
   constructor(props) {
-    super(props);
-    this.state = { curLimit: props.moreAfterlimit };
+    super();
+
+    this.INVOICE_MAP = {};
+    this.CREDIT_NOTE_MAP = {};
+
+    this.state = {
+      curLimit: props.moreAfterlimit,
+    };
   }
 
   countHaltedInvoices(items) {
@@ -34,6 +41,11 @@ export default class EntityDetailList extends Component {
       mode,
       subscriptionId,
     } = this.props;
+
+    if (loading) {
+      return [<EntityRow item={{}} loading={loading} />];
+    }
+
     let list = [];
 
     let limit = this.state.curLimit; // Show curLimit number of loaders. Also, default curLimit rows unless items.length is lesser
@@ -97,29 +109,115 @@ export default class EntityDetailList extends Component {
         isChargeAttemptFailed = true;
       }
 
+      if (item.id === 'inv_upcoming') {
+        this.INVOICE_MAP['upcoming'] = index;
+      } else {
+        this.INVOICE_MAP[item.created_at] = index;
+      }
+
       list.push(
         <EntityRow
+          mode={mode}
           key={index}
-          goToLink={goToLink}
-          activeSecEntityId={activeSecEntityId}
-          index={recurringInvoiceIndex}
           item={item}
           loading={loading}
+          goToLink={goToLink}
           isUpfront={isUpfrontInvoice}
-          authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
-          isInvoiceWithAttemptsFailed={isInvoiceWithAttemptsFailed}
-          subscriptionchargeAt={subscriptionchargeAt}
-          onManualAttempt={onManualAttempt}
-          subscriptionStatus={subscriptionStatus}
-          subscriptionType={subscriptionType}
-          mode={mode}
+          index={recurringInvoiceIndex}
           subscriptionId={subscriptionId}
+          onManualAttempt={onManualAttempt}
+          subscriptionType={subscriptionType}
+          activeSecEntityId={activeSecEntityId}
+          subscriptionStatus={subscriptionStatus}
+          subscriptionchargeAt={subscriptionchargeAt}
+          isInvoiceWithAttemptsFailed={isInvoiceWithAttemptsFailed}
+          authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
         />
       );
     }
 
     return list;
   }
+
+  getCreditNotesRow = () => {
+    const { creditNotes, goToLink } = this.props;
+
+    return creditNotes.map((creditNote, index) => {
+      this.CREDIT_NOTE_MAP[creditNote.created_at] = index;
+
+      return (
+        <div
+          class="entity-detail-row clickable credit-note-row"
+          onClick={() => goToLink(creditNote.id, index)}
+        >
+          <div class="row-item content">
+            <i class="i i-replay item-left" />
+            <div className="item-right">
+              <div class="detail-row">
+                <div class="row-element left">
+                  <Time value={creditNote.created_at} format="MMM DD, YYYY" />
+                </div>
+                <span class="row-element right">
+                  <Amount
+                    currency={creditNote.currency}
+                    value={creditNote.amount}
+                  />
+                </span>
+              </div>
+              <div class="detail-row">
+                <span class="label--secondary">
+                  Refund due to subscription update.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    });
+  };
+
+  mergeCreditNotesRows = () => {
+    const { items, creditNotes, loading } = this.props,
+      rowList = this.getRowList(),
+      creditNoteList = this.getCreditNotesRow();
+
+    if (loading) {
+      return rowList;
+    }
+
+    const createdAtList = [...creditNotes, ...items]
+      .map(note => note.created_at)
+      .sort()
+      .reverse();
+
+    const components = [];
+    if (this.INVOICE_MAP['upcoming'] >= 0) {
+      const upcomingInvoice = rowList[this.INVOICE_MAP['upcoming']];
+
+      components.push(upcomingInvoice);
+
+      delete this.INVOICE_MAP['upcoming'];
+    }
+
+    createdAtList.forEach(id => {
+      const creditNoteLoc = this.CREDIT_NOTE_MAP[id],
+        invoiceLoc = this.INVOICE_MAP[id];
+
+      if (creditNoteLoc >= 0) {
+        components.push(creditNoteList[creditNoteLoc]);
+
+        delete this.CREDIT_NOTE_MAP[id];
+      }
+
+      if (invoiceLoc >= 0) {
+        components.push(rowList[invoiceLoc]);
+
+        delete this.INVOICE_MAP[id];
+      }
+    });
+
+    return components;
+  };
 
   render() {
     let { title, subTitle, error, loading, items } = this.props;
@@ -147,7 +245,7 @@ export default class EntityDetailList extends Component {
       );
     }
 
-    let rowList = (rowList = this.getRowList());
+    let rowList = this.mergeCreditNotesRows();
 
     if (!loading && !items.length) {
       rowList = <h4 class="empty-table-message">{`No '${title}' Found!`}</h4>;
