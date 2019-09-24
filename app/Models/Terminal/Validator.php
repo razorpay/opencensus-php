@@ -1254,7 +1254,8 @@ class Validator extends Base\Validator
         if (isset($input['currency']) === true)
         {
             $currency = array_unique((array) $input['currency']);
-            if( count(array_intersect($currency, Currency::SUPPORTED_CURRENCIES)) !== count($currency) )
+
+            if (count(array_intersect($currency, Currency::SUPPORTED_CURRENCIES)) !== count($currency))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);

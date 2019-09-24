@@ -162,7 +162,7 @@ class Service extends Base\Service
         foreach ($terminals as $terminal)
         {
             if (($terminal->getGateway() === $gateway) and
-                ($terminal->isCurrency($currency)) and
+                ($terminal->supportsCurrency($currency)) and
                 ($terminal->isDirectForMerchant() === true) and
                 ($terminal->getCategory() === $category))
             {

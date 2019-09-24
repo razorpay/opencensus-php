@@ -448,36 +448,34 @@ class Entity extends Base\PublicEntity
      * Currency Accessor
      * @param $value
      */
-    public function getCurrencyAttribute($value)
+    public function getCurrencyAttribute($currency)
     {
-        if(empty($value))
+        if (empty($currency) === true)
         {
             return [];
         }
-        if(is_array(json_decode($value)))
+
+        if (is_array(json_decode($currency)) === true)
         {
-            $value = json_decode($value);
+            $currency = json_decode($currency);
         }
-        else
-        {
-            $value = (array) $value;
-        }
-        return $value;
+
+        return ((array) $currency);
     }
 
     /**
      * Currency Mutator
      * @param $value
      */
-    public function setCurrencyAttribute($value)
+    public function setCurrencyAttribute($currency)
     {
-        if(!empty($value))
+        if (empty($currency) === false)
         {
-            $value = (array) $value;
+            $currency = (array) $currency;
 
-            $value = json_encode($value);
+            $currency = json_encode($currency);
 
-            $this->attributes[self::CURRENCY] = $value;
+            $this->attributes[self::CURRENCY] = $currency;
         }
     }
 
@@ -486,14 +484,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
-    public function isCurrency($currency): bool
+    public function supportsCurrency($currency): bool
     {
-        return in_array($currency, $this->getCurrency());
+        return in_array($currency, $this->getCurrency(), true);
     }
 
     public function isCurrencyInr()
     {
-        return $this->isCurrency(Currency::INR);
+        return $this->supportsCurrency(Currency::INR);
     }
 
     public function getNetworkCategory()

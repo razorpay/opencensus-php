@@ -808,7 +808,7 @@ class Entity extends Base\PublicEntity
 
     protected function compareCurrency(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
     {
-        return in_array($this->getCurrency(), $terminal->getCurrency());
+        return in_array($this->getCurrency(), $terminal->getCurrency(), true);
     }
 
     protected function compareMethod(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
