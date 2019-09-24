@@ -62,7 +62,7 @@ const entityDetailsMap = {
     component: OrderDetails,
     additionalCondition: user => user.isAllowedView('orders'),
   },
-  '/settlements/:id': {
+  '/settlements/:id(setl_.+)': {
     component: SettlementDetails,
     additionalCondition: user => user.isAllowedView('settlements'),
   },

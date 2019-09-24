@@ -47,6 +47,16 @@ export default class SettlementsListContainer extends ListContainer {
     showRequestESButton: this.props.user.showEarlySettlementAnnouncement,
   };
 
+  constructor(props) {
+    super(props);
+    this.settleButton = React.createRef();
+    this.showSettle = this.showSettle.bind(this);
+  }
+
+  showSettle() {
+    this.settleButton.current.click();
+  }
+
   componentWillReceiveProps(nextProps) {
     if (
       nextProps.location.hash !== this.props.location.hash &&
@@ -73,6 +83,14 @@ export default class SettlementsListContainer extends ListContainer {
     if (this.props.location.hash === '#requestearlyaccess') {
       this.showRequestEarySettlementForm();
     }
+
+    if (this.props.location.hash === '#settlenow') {
+      //setTimeout(()=>{
+      this.showOndemandSettlementForm();
+      //}, 1000);
+    }
+
+    console.log(this.props);
   }
 
   onSearchAnalytics = params => {
@@ -219,13 +237,14 @@ export default class SettlementsListContainer extends ListContainer {
                   )}
 
                   {this.props.user.isOndemandSettlementEnabled && (
-                    <Button.Secondary
+                    <Button.Primary
                       class="settle-btn"
+                      ref={this.settleButton}
                       onClick={this.showOndemandSettlementForm}
                       disabled={current_balance.loading || balance < 100}
                     >
                       Settle Now
-                    </Button.Secondary>
+                    </Button.Primary>
                   )}
                 </React.Fragment>
               </HeaderAction>
