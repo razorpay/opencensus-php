@@ -28,7 +28,7 @@ class FreechargeGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_freecharge_terminal', ['currency' => ["INR"]]);
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_freecharge_terminal', ['currency' => 'INR']);
 
         $this->gateway = 'wallet_freecharge';
 

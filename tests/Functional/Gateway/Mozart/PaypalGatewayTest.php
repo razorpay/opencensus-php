@@ -20,7 +20,7 @@ class PaypalGatewayTest extends TestCase
 
         $this->gateway = 'mozart';
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal', ['currency' => ["USD", "INR"]]);
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal', ['currency' => ['USD','INR']]);
 
         $this->fixtures->merchant->enableInternational();
 
@@ -31,7 +31,7 @@ class PaypalGatewayTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 0]);
 
         $this->payment = $this->getDefaultWalletPaymentArray('paypal');
-        $this->payment['currency'] = "USD";
+        $this->payment['currency'] = 'USD';
 
     }
 
