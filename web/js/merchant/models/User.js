@@ -1,10 +1,12 @@
 import ajax from 'merchant/utils/ajax';
 import { filterBy } from 'rzp/utils/rzp-utils';
+import { RZPFeatures } from 'rzp/utils/constants';
 
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import LocalStorageService from 'rzp/utils/localStorage';
-import { getOrg } from 'merchant/store';
+import { getOrg, getMode } from 'merchant/store';
 import { getExperiment } from 'common/util';
+import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 
 import {
   roleEditPermissions,
@@ -100,20 +102,30 @@ export default class User {
   }
 
   isAllowedEdit(moduleName) {
-    const isEditAllowed = _isAllowed(
+    let isEditAllowed = _isAllowed(
       this.userRole,
       moduleName,
       roleEditPermissions
     );
+
+    if (this.isEditRestrictedByRazorX(moduleName)) {
+      isEditAllowed = false;
+    }
+
     return isEditAllowed;
   }
 
   isAllowedView(moduleName) {
-    const isViewAllowed = _isAllowed(
+    let isViewAllowed = _isAllowed(
       this.userRole,
       moduleName,
       roleViewPermissions
     );
+
+    if (this.isViewRestrictedByRazorX(moduleName)) {
+      isViewAllowed = false;
+    }
+
     return isViewAllowed;
   }
 
@@ -209,6 +221,28 @@ export default class User {
     return this.isFeatureEnabled('subscriptions');
   }
 
+  get isPaymentPagesEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
+
+    return !!isEnabled;
+  }
+
+  get isPaymentLinksEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState('payment_links');
+
+    return !!isEnabled;
+  }
+
+  get isInvoicesEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.INVOICE);
+
+    return isEnabled;
+  }
+
+  get currentMerchant() {
+    return this.merchants[this.current];
+  }
+
   get isGSTDisabled() {
     return this.findTag('Gst_Invoice_Disabled');
   }
@@ -219,6 +253,10 @@ export default class User {
 
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
+  }
+
+  get isMerchantRestricted() {
+    return this.restricted;
   }
 
   get isAgentRole() {
@@ -343,6 +381,36 @@ export default class User {
 
   get getCurrencyList() {
     return window.currencyList;
+  }
+
+  get toShowExtraFieldsInPP() {
+    return this.getExpStatus('show_extra_fields_in_pp');
+  }
+
+  get isEnhancedEPOSEnabled() {
+    return this.getExpStatus('sellerapp_plus');
+  }
+
+  get isMobileHotjarSurveyEnabled() {
+    return this.getExpStatus('mobile_hotjar_survey');
+  }
+
+  get isAllowedTeamManagement() {
+    return this.isMerchantRestricted
+      ? this.isAllowedView('team')
+      : this.isAllowedEdit('team');
+  }
+
+  // No experiment of disable-edit-<moduleName> => Module is not restricted
+  isViewRestrictedByRazorX(moduleName) {
+    // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
+    return this.getExpStatus(`disable-view-${moduleName}`);
+  }
+
+  // No experiment of disable-edit-<moduleName> => Module is not restricted
+  isEditRestrictedByRazorX(moduleName) {
+    // Eg: disable-edit-reports (if corresponding experiment is "on", it can't be edited for those merchants)
+    return this.getExpStatus(`disable-edit-${moduleName}`);
   }
 }
 

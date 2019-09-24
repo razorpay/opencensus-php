@@ -1,17 +1,6 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import DataTable from 'rzp/ui/Table/DataTable';
-import ListContainer from 'merchant/containers/ListContainer';
-import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
-import ShowWhen from 'merchant/components/ShowWhen';
-import DocsLink from 'merchant/components/DocsLink';
-import CreateVirtualAccount from './CreateVirtualAccount';
-import { updateFeatures } from 'merchant/modules/config';
-import { showNotification } from 'rzp/modules/notifications';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import { fetchVirtualAccounts as fetchAll } from 'merchant/modules/virtualaccounts';
+
 import {
   virtualAccountId,
   accountDescription,
@@ -19,17 +8,34 @@ import {
   status,
   createdAt,
 } from 'rzp/ui/item/pair';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
-import ActivationBanner from 'merchant/components/ActivationBanner';
-import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
-import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
-import {
-  getKeysSeparatedByPipe,
-  getEventCategoryFromPath,
-} from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { RZPFeatures } from 'rzp/utils/constants';
 
-const heading =
-  'A powerful system to easily collect payments via direct bank transfers (NEFT/RTGS). Automate the tedious reconciliation process, starting now.';
+import HeaderAction from 'rzp/ui/HeaderAction';
+import DataTable from 'rzp/ui/Table/DataTable';
+
+import { openModal, closeModal } from 'rzp/modules/modals';
+
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+import { fetchVirtualAccounts as fetchAll } from 'merchant/modules/virtualaccounts';
+
+import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
+
+import ListContainer from 'merchant/containers/ListContainer';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
+
+import OnBoarding, { getIsAllowedResetVAOnBoarding } from './OnBoarding';
+
+import QuickGuide, { getVAQuickGuideIsClosed } from './QuickGuide';
+
+import CreateVirtualAccount from './CreateVirtualAccount';
+import EmptyList from 'merchant/components/EmptyList';
 
 @connect(
   state => {
@@ -37,29 +43,25 @@ const heading =
       ...state.virtualaccounts,
       user: state.session.user,
       mode: state.session.mode,
+      VAProductOnBoarding: getCurrentProductOnBoardingDetails(
+        state,
+        RZPFeatures.VA
+      ),
     };
   },
   {
     fetchAll,
     openModal,
     closeModal,
-    updateFeatures,
-    showNotification,
+    handleProductQuickGuide,
   }
 )
 export default class VirtualAccountsListContainer extends ListContainer {
-  constructor(props) {
-    super(props);
-
-    this.prefix = '';
-    if (props.user.isOrgRZP) {
-      this.prefix = 'Razorpay ';
-    }
-  }
-
   componentWillMount() {
     // TODO: Don't call below when feature is disbaled
     super.componentWillMount();
+
+    this.initVAOnboarding();
   }
 
   componentDidMount() {
@@ -68,6 +70,53 @@ export default class VirtualAccountsListContainer extends ListContainer {
       eventAction: 'Go To - Smart Collect',
     });
   }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.loading != this.props.loading) {
+      this.initVAOnboarding(nextProps);
+    }
+  }
+
+  componentWillUnmount() {
+    const { VAProductOnBoarding } = this.props;
+
+    if (VAProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...VAProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: false,
+        isTour: false,
+      });
+    }
+  }
+
+  initVAOnboarding = (props = this.props) => {
+    if (props.VAProductOnBoarding.isTour) {
+      return;
+    }
+
+    const data = {
+      user: props.user,
+      items: props.items,
+      loading: props.loading,
+    };
+
+    const { isVirtualAccountsEnabled } = props.user;
+
+    let showOnboarding = !isVirtualAccountsEnabled;
+
+    if (isVirtualAccountsEnabled) {
+      showOnboarding = getIsAllowedResetVAOnBoarding(data);
+    }
+
+    let VAProductOnBoarding = {
+      ...props.VAProductOnBoarding,
+      showOnboarding,
+      isQuickGuideOpen: !getVAQuickGuideIsClosed(props),
+    };
+
+    this.props.handleProductQuickGuide(VAProductOnBoarding);
+  };
 
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
@@ -85,30 +134,6 @@ export default class VirtualAccountsListContainer extends ListContainer {
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Clear Search Params - Virtual Accounts',
     });
-  };
-
-  enableFeature = () => {
-    var data = {
-      features: {
-        virtual_accounts: 1,
-      },
-    };
-
-    return this.props
-      .updateFeatures(data, this.props.user.current)
-      .then(res => {
-        this.props.showNotification({
-          type: 'success',
-          message: `${this.prefix}Smart Collect has been enabled!`,
-        });
-        setTimeout(() => location.reload());
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      });
   };
 
   onVAModalMount = () => {
@@ -143,7 +168,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
   showCreateVAModal = () => {
     this.props.openModal({
-      size: 'small',
+      size: 'medium',
+      className: 'create-virtual-account',
       component: (
         <CreateVirtualAccount
           showCreateVAModal={this.showCreateVAModal}
@@ -156,100 +182,84 @@ export default class VirtualAccountsListContainer extends ListContainer {
     });
   };
 
-  openActivationModal = () => {
-    this.props.openModal({
-      component: (
-        <FeatureOnboardingModal
-          onClose={this.props.closeModal}
-          heading={`${this.prefix}Smart Collect`}
-          description={heading}
-          formType="virtual_accounts"
-          isTestMode={false}
-        />
-      ),
-      size: 'large',
-    });
-  };
-
   render() {
-    let featureEnabled = this.props.user.isVirtualAccountsEnabled;
-    if (!featureEnabled) {
-      return (
-        <FeatureOnboarding
-          heading={`${this.prefix}Smart Collect`}
-          s
-          description={heading}
-          formType="virtual_accounts"
-          isTestMode={this.props.mode === 'test'}
-          enableFeatureInTestMode={this.enableFeature}
-        />
-      );
+    const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
+
+    if (showOnboarding) {
+      return <OnBoarding />;
     }
 
     return (
-      <div>
-        {this.props.mode === 'test' && (
-          <ActivationBanner
-            productName={`${this.prefix}Smart Collect`}
-            productDocs="https://razorpay.com/docs/smart-collect"
-            feature="virtual_accounts"
-            symbol="sc"
-            onActivate={this.openActivationModal}
-          />
-        )}
-        <tabbed-container>
-          <header id="#va-header">
-            <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
+      <tabbed-container>
+        {isQuickGuideOpen && <QuickGuide />}
 
-            <HeaderAction>
-              <div class="btn-toolbar">
-                <DocsLink url="https://razorpay.com/docs/smart-collect/" />
-                <ShowWhen
-                  additionalCondition={user =>
-                    user.isAllowedEdit('virtual_accounts')
-                  }
+        <header id="#va-header">
+          <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
+
+          <HeaderAction>
+            <div class="btn-toolbar">
+              <TakeATourButton feature={RZPFeatures.VA} />
+
+              <DocsLink url="https://razorpay.com/docs/smart-collect/" />
+
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isAllowedEdit('virtual_accounts')
+                }
+              >
+                <button
+                  class="btn btn-primary"
+                  onClick={this.showCreateVAModal}
                 >
-                  <button
-                    class="btn btn-primary"
-                    onClick={this.showCreateVAModal}
-                  >
-                    <i class="i i-plus" />
-                    <span>Create Virtual Account</span>
-                  </button>
-                </ShowWhen>
-              </div>
-            </HeaderAction>
-          </header>
-          <TestModeBanner />
-
-          <content>
-            <div class="content-wrapper">
-              <VirtualAccountsListFilter
-                form="virtualAccountsListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-                onSearchAnalytics={this.onSearchAnalytics}
-                onClearAnalytics={this.onClearAnalytics}
-              />
-
-              <DataTable
-                title="Virtual Accounts"
-                columns={[
-                  virtualAccountId,
-                  accountDescription,
-                  amountPaid,
-                  status,
-                  createdAt,
-                ]}
-                count={this.state.count}
-                skip={this.state.skip}
-                paginate={this.paginate}
-                {...this.props}
-              />
+                  <i class="i i-plus" />
+                  <span>Create Virtual Account</span>
+                </button>
+              </ShowWhen>
             </div>
-          </content>
-        </tabbed-container>
-      </div>
+          </HeaderAction>
+        </header>
+
+        <TestModeBanner />
+
+        <content>
+          <div class="content-wrapper">
+            <VirtualAccountsListFilter
+              form="virtualAccountsListFilter"
+              count={this.state.count}
+              onSubmit={this.search}
+              onSearchAnalytics={this.onSearchAnalytics}
+              onClearAnalytics={this.onClearAnalytics}
+            />
+
+            <DataTable
+              title="Virtual Accounts"
+              columns={[
+                virtualAccountId,
+                accountDescription,
+                amountPaid,
+                status,
+                createdAt,
+              ]}
+              count={this.state.count}
+              skip={this.state.skip}
+              paginate={this.paginate}
+              EmptyComponent={EmptyComponent}
+              {...this.props}
+            />
+          </div>
+        </content>
+      </tabbed-container>
     );
   }
 }
+
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no virtual accounts yet!!</div>
+        <div>Start creating new account now.</div>
+      </React.Fragment>
+    }
+  />
+);

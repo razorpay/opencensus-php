@@ -25,9 +25,12 @@ class TraceCode
     const API_REQUEST_FAILURE                       = 'API_REQUEST_FAILURE';
 
     const USER_LOGIN                                = 'USER_LOGIN';
+    const USER_LOGIN_FAILURE                        = 'USER_LOGIN_FAILURE';
     const SWITCH_MERCHANT                           = 'SWITCH_MERCHANT';
     const USER_LOGOUT                               = 'USER_LOGOUT';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
+
+    const BULK_RAZORX_CALL_FAILED                   = 'BULK_RAZORX_CALL_FAILED';
 
     const ADMIN_LOGIN                               = 'ADMIN_LOGIN';
     const ADMIN_LOGOUT                              = 'ADMIN_LOGOUT';

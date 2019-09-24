@@ -17,6 +17,21 @@ class BusinessType
     const TYPE11    = 'Not yet registered';
     const TYPE12    = 'Other';
 
+    const INDIVIDUAL             = 'individual';
+    const NOT_YET_REGISTERED     = 'not_yet_registered';
+
+    protected static $typeIndexMap = [
+        self::INDIVIDUAL             => 2,
+        self::NOT_YET_REGISTERED     => 11,
+    ];
+
+    public static function isBusinessTypeForNotRegisteredBusiness($key)
+    {
+        $typeArray = array_flip(self::$typeIndexMap);
+
+        return (isset($typeArray[$key]) === true);
+    }
+
     public static function getType($num)
     {
         if (empty($num) === true)

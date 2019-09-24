@@ -1,0 +1,47 @@
+import { Link } from 'react-router-dom';
+
+import ModalHeader from 'rzp/ui/ModalHeader';
+
+export default ({ user, switchToTestMode, closeModal }) => {
+  if (user.activation_status === 'under_review') {
+    return (
+      <div class="MarketPlace--KYC-UnderReview-Modal">
+        <ModalHeader title="KYC is Under Review" onCloseClick={closeModal} />
+
+        <div class="modal-body">
+          Please note that your KYC document is under review. Meanwhile, you can
+          switch to <a onClick={switchToTestMode}>Test Mode</a> to try out the
+          product.
+          <div class="Modal__actions">
+            <button class="btn btn-primary btn-block" onClick={closeModal}>
+              Okay!
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div class="MarketPlace--KYC-Required-Modal">
+      <ModalHeader title="KYC Document Required" onCloseClick={closeModal} />
+
+      <div class="modal-body">
+        Please complete KYC form to start using Route.
+        <br />
+        Once the form is completed, our team will review it and your account
+        will get activated. Meanwhile, you can try it out in{' '}
+        <a onClick={switchToTestMode}>Test Mode</a>
+        <div class="Modal__actions">
+          <Link
+            to={'/activation'}
+            class="btn btn-primary btn-block"
+            onClick={closeModal}
+          >
+            Fill KYC Form
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};

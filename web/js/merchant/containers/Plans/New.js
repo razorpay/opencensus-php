@@ -13,10 +13,14 @@ import { savePlan } from 'merchant/modules/plans';
 import { showNotification } from 'rzp/modules/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
+import { fetchPlan } from 'merchant/modules/plans';
+import { trackSaveDuplicatePlan } from './ga';
 
 import {
   getKeysSeparatedByPipe,
   getEventCategoryFromPath,
+  getURLQueryParams,
+  paiseToRupees,
 } from 'rzp/utils/rzp-utils';
 
 const selector = formValueSelector('newPlan');
@@ -41,6 +45,7 @@ let Label = ({ text, htmlFor, required }) => {
     };
   },
   {
+    fetchPlan,
     savePlan,
     showNotification,
   }
@@ -68,6 +73,36 @@ export default class AddPlan extends Component {
     if (this.props.plan) {
       this.props.initialize(this.props.plan);
     }
+
+    this.fetchIfIntentDuplicate();
+  }
+
+  fetchIfIntentDuplicate() {
+    const searchQuery = getURLQueryParams(this.props.location.search);
+    if (searchQuery.duplicate_id) {
+      this.props.fetchPlan(searchQuery.duplicate_id).then(data => {
+        this.isIntentDuplicate = true;
+
+        const newPlan = {};
+
+        newPlan.item = {
+          amount: paiseToRupees(data.item.amount),
+          currency: data.item.currency,
+          description: data.item.description,
+          name: data.item.name,
+        };
+
+        newPlan.interval = data.interval;
+        newPlan.period = data.period;
+
+        newPlan.notes = Object.keys(data.notes).map(key => ({
+          key,
+          value: data.notes[key],
+        }));
+
+        this.props.initialize(newPlan);
+      });
+    }
   }
 
   componentDidMount() {
@@ -91,6 +126,10 @@ export default class AddPlan extends Component {
   }
 
   save = props => {
+    if (this.isIntentDuplicate) {
+      trackSaveDuplicatePlan();
+    }
+
     return this.props
       .savePlan(props)
       .then(plan => {

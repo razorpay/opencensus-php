@@ -2,12 +2,11 @@
 
 namespace App\Base;
 
-use Razorpay\Api\Request as ApiRequest;
-use Razorpay\Api\Errors\BadRequestError;
+use Auth;
+use Slack;
 use Config;
 use App\RZP\Api;
-use Slack;
-use Auth;
+use Razorpay\Api\Request as ApiRequest;
 
 class Service
 {
@@ -15,9 +14,15 @@ class Service
 
     private function setHeaders()
     {
+
+        $requestedClientIPS = \Request::ips();
+
+        $clientIp = end($requestedClientIPS);
+
         ApiRequest::addHeader('X-Dashboard', 'true');
         ApiRequest::addHeader('X-User-Agent', \Request::header('User-Agent'));
         ApiRequest::addHeader('X-IP-Address', \Request::ip());
+        ApiRequest::addHeader('X-Dashboard-Ip', $clientIp);
 
         $user = Auth::guard('user')->user();
 

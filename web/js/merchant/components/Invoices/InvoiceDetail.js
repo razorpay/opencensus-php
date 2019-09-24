@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Definition from 'rzp/ui/Definition';
@@ -11,6 +12,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Button, { AsyncBtn } from 'component/Button';
+import Tooltip from 'rzp/ui/Tooltip';
 
 import {
   EditExpiry,
@@ -22,6 +24,7 @@ import {
 import {
   trackDetailViewEdits,
   trackTogglePartialPayment,
+  trackClickDuplicatePaymentLink,
 } from 'merchant/containers/PaymentLinks/Links/ga';
 
 const notificationClassMap = {
@@ -135,14 +138,23 @@ export default props => {
             <i class="i i-link text-primary icon--formal" />{' '}
             <strong>{invoice.id}</strong>
             <div class="btn-toolbar pull-right">
+              <NavLink
+                onClick={trackClickDuplicatePaymentLink}
+                class="btn Button--primary--invert"
+                to={`/paymentlinks/new?duplicate_id=${invoice.id}`}
+              >
+                <i class="i i-copy" />
+                <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
+              </NavLink>
               {(isRoleAllowedEdit || user.role === 'rbl_agent') &&
                 invoice.customer_id &&
                 (isDraft || isIssued || isPartiallyPaid) && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={props.onIssue}
-                  >
-                    {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                  <button class="btn Button--primary" onClick={props.onIssue}>
+                    <Tooltip theme="dark">
+                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                    </Tooltip>
+
+                    <i className="i i-send" />
                   </button>
                 )}
             </div>

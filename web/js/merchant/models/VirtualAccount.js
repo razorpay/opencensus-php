@@ -11,6 +11,7 @@ const fields = [
   'status',
   'receivers',
   'notes',
+  'close_by',
 ];
 
 export default class VirtualAccount extends GenericEntity {

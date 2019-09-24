@@ -89,3 +89,38 @@ export const RBLRoles = {
     desc: 'RBL Agent Role',
   },
 };
+
+const loading = 'loading',
+  progress = 'progress',
+  locked = 'locked',
+  done = 'done',
+  active = 'active',
+  blocked = 'blocked';
+
+export const PossibleStatuses = {
+  loading,
+  progress,
+  locked,
+  done,
+  active,
+  blocked,
+};
+
+export const RZPFeatures = {
+  SUBSCRIPTIONS: 'subscriptions',
+  ROUTE: 'marketplace',
+  VA: 'virtual_accounts',
+  PP: 'payment_pages',
+  PL: 'payment_links',
+  INVOICE: 'invoices',
+};
+
+export const SubscriptionsStates = {
+  ACTIVE: 'active',
+  CREATED: 'created',
+  PENDING: 'pending',
+  AUTHENTICATED: 'authenticated',
+  HALTED: 'halted',
+  EXPIRED: 'expired',
+  COMPLETED: 'completed',
+};

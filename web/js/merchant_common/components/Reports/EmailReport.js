@@ -106,6 +106,8 @@ export default function Reports(opts) {
         selectedConfig,
         selectedAccount,
         defaultAccount,
+        dateRangeData,
+        getFullUnixTimeStamps,
       } = this.props;
 
       let reqData = null,
@@ -132,15 +134,27 @@ export default function Reports(opts) {
           selectedConfig.label
         );
       } else {
-        const timeFactor = selectedType === 'daily' ? 'day' : 'month',
-          startTime = selectedDate
-            .clone()
-            .startOf(timeFactor)
-            .unix(),
-          endTime = selectedDate
-            .clone()
-            .endOf(timeFactor)
-            .unix();
+        var startTime, endTime;
+        switch (selectedType) {
+          case 'daily':
+          case 'monthly': {
+            const timeFactor = selectedType === 'daily' ? 'day' : 'month';
+            startTime = selectedDate
+              .clone()
+              .startOf(timeFactor)
+              .unix();
+            endTime = selectedDate
+              .clone()
+              .endOf(timeFactor)
+              .unix();
+            break;
+          }
+
+          case 'dateRange': {
+            [startTime, endTime] = getFullUnixTimeStamps(dateRangeData);
+            break;
+          }
+        }
 
         reqData = {
           config_id: selectedConfig._item.id,

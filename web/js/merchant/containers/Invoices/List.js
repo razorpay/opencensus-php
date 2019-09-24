@@ -1,27 +1,46 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
-import HeaderAction from 'rzp/ui/HeaderAction';
+
+import { RZPFeatures } from 'rzp/utils/constants';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
 import Pager from 'rzp/ui/Pager';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'rzp/ui/HeaderAction';
+
+import { merchantFetch } from 'merchant/utils/ajax';
+import * as InvoiceActions from 'merchant/modules/invoices/list';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/modules/onboarding';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
-import ListContainer from 'merchant/containers/ListContainer';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
-import * as InvoiceActions from 'merchant/modules/invoices/list';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
+import ListContainer from 'merchant/containers/ListContainer';
+
 import { track } from './ga';
-import { merchantFetch } from 'merchant/utils/ajax';
 
 import OnboardingInvoices from './OnboardingInvoices';
 
+@withRouter
 @connect(
   state => {
-    return { ...state.invoices, ...state.session };
+    return {
+      ...state.invoices,
+      ...state.session,
+      invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(
+        state,
+        RZPFeatures.INVOICE
+      ),
+    };
   },
-  { ...InvoiceActions }
+  { ...InvoiceActions, handleProductQuickGuide }
 )
 export default class InvoicesListContainer extends ListContainer {
   componentWillMount() {
@@ -42,10 +61,15 @@ export default class InvoicesListContainer extends ListContainer {
   }
 
   fetchEntityList(params) {
+    params.subscriptions = '0';
     params.type = 'invoice';
 
     return this.props.fetchInvoices(params);
   }
+
+  onDuplicate = invoiceId => {
+    this.props.history.push(`/invoices/new?duplicate_id=${invoiceId}`);
+  };
 
   /* Fetch all payment pages list to find whether first-time user */
   fetchAllEntityList() {
@@ -54,6 +78,7 @@ export default class InvoicesListContainer extends ListContainer {
       params: {
         count: 1,
         type: 'invoice',
+        subscriptions: '0',
       },
     })
       .then(resp => {
@@ -94,12 +119,44 @@ export default class InvoicesListContainer extends ListContainer {
     });
   }
 
-  triggerHotjar = () => {
-    // Hotjar tag and events.
-    if (typeof window.hj === 'function') {
-      window.hj('trigger', 'create_invoice');
-      window.hj('tagRecording', ['create_invoice']);
+  componentWillUnmount() {
+    const { invoicesProductOnBoarding } = this.props;
+
+    if (invoicesProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...invoicesProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: this.state.isInvoiceView,
+        isTour: this.state.isInvoiceView,
+        lastItemId: null,
+      });
     }
+  }
+
+  onClickNewInvoice = () => {
+    const { history, invoices, invoicesProductOnBoarding } = this.props;
+
+    if (invoicesProductOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...invoicesProductOnBoarding,
+        lastElementId: (invoices[0] || {}).id,
+      });
+    }
+
+    this.setState(
+      {
+        isInvoiceView: true,
+      },
+      () => {
+        history.push('/invoices/new');
+
+        // Hotjar tag and events.
+        if (typeof window.hj === 'function') {
+          window.hj('trigger', 'create_invoice');
+          window.hj('tagRecording', ['create_invoice']);
+        }
+      }
+    );
   };
 
   render() {
@@ -141,6 +198,7 @@ export default class InvoicesListContainer extends ListContainer {
                 eventLabel: `invoice_id=${invoiceId}`,
               });
             }}
+            onDuplicate={this.onDuplicate}
           />
 
           <Pager
@@ -156,21 +214,20 @@ export default class InvoicesListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <TakeATourButton feature={RZPFeatures.INVOICE} />
+
             <DocsLink url="https://razorpay.com/docs/invoices/" />
+
             <ShowWhen
               additionalCondition={user =>
                 (mode !== 'live' || !user.isRejected) &&
                 user.isAllowedEdit('invoices')
               }
             >
-              <NavLink
-                to="/invoices/new"
-                class="btn btn-primary"
-                onClick={this.triggerHotjar}
-              >
+              <span class="btn btn-primary" onClick={this.onClickNewInvoice}>
                 <i class="i i-plus" />
                 <span>Create Invoice</span>
-              </NavLink>
+              </span>
             </ShowWhen>
           </div>
         </HeaderAction>

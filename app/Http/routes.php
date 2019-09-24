@@ -12,6 +12,19 @@
 
 Route::get('/status', 'AdminController@getStatus');
 
+Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
+
+Route::group(['middleware' => ['jwt_session']], function() {
+    Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtension')
+            ->where(['path' => '.*'])
+            ->name('extension_merchant')
+            ->middleware(['jwt']);
+
+    Route::get('/extension/jwt/validate', 'UserController@validateJWT')
+            ->name('extension_validate_jwt')
+            ->middleware(['jwt']);
+});
+
 // Everything in this group is a unauthenticated route
 // Please take care to not return any sensitive information
 // here
@@ -24,22 +37,15 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::get('/', 'UserController@getIndex')->name('dashboard');
 
-    Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
-
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
         ->name('user');
 
-    Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtension')
-        ->where(['path' => '.*'])
-        ->name('extension_merchant')
-        ->middleware(['jwt']);
-
     Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
         ->name('extension_user_logout')
         ->middleware(['jwt']);
-
+    
     // Org
     Route::group(['prefix' => 'admin'], function () {
         Route::get('/org', 'AdminController@getOrg');
@@ -51,7 +57,7 @@ Route::group(['middleware' => ['web']], function () {
     {
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
-
+        Route::post('/2fa_setup/verify-mobile', 'UserController@postSetup2faVerifyMobile');
         Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user']);
     });
 

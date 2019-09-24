@@ -1,39 +1,29 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import { Field, reduxForm, formValueSelector } from 'redux-form';
+
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import { required, email, phone } from 'rzp/utils/validators';
-import * as CustomerActions from 'merchant/modules/customers';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import { PowerSelect } from 'react-power-select';
-import { fetchStates } from 'merchant/modules/states';
+
 import {
   getKeysSeparatedByPipe,
   isAddressValid,
   isValidZipcodeCountryWise,
   isValidGSTIN,
 } from 'rzp/utils/rzp-utils';
+import { email, phone, validateGSTIN } from 'rzp/utils/validators';
+
+import * as CustomerActions from 'merchant/modules/customers';
+import * as ModalActions from 'rzp/modules/modals';
+import * as NotificationsActions from 'rzp/modules/notifications';
+
+import { fetchStates } from 'merchant/modules/states';
+
 import AddressEntry from 'merchant/components/AddressEntry.js';
-import { validateGSTIN } from 'rzp/utils/validators';
+
 import Countries from 'common/countries.json';
-
-const CountryNames = Object.keys(Countries);
-
-function validate(values) {
-  let errors = {};
-
-  if (values.gstin && !isValidGSTIN(values.gstin)) {
-    errors._error = 'Please provide a valid GSTIN';
-  }
-
-  return errors;
-}
-
-const selector = formValueSelector('newCustomer');
 
 @connect(
   state => {
@@ -72,6 +62,7 @@ export default class AddCustomer extends Component {
         editedBillingAddress: {
           country: this.DEFAULT_COUNTRY,
         },
+        editedShippingAddress: {},
         states: Countries[this.DEFAULT_COUNTRY],
         billingAddressStates: Countries[this.DEFAULT_COUNTRY],
         shippingAddressStates: Countries[this.DEFAULT_COUNTRY],
@@ -79,7 +70,6 @@ export default class AddCustomer extends Component {
       };
     } else {
       this.state = {
-        errors: null,
         screenIndex: 0, // Start on screen 1.
       };
     }
@@ -263,6 +253,24 @@ export default class AddCustomer extends Component {
     this.setState({
       address: e.target.checked,
     });
+  };
+
+  validateAddress = address => {
+    const zipcodeError = validateZipCode(address.country, address.zipcode);
+
+    if (zipcodeError) {
+      this.setState({
+        errors: [zipcodeError],
+      });
+
+      return;
+    }
+
+    if (this.state.errors && this.state.errors.length) {
+      this.setState({
+        errors: [],
+      });
+    }
   };
 
   /**
@@ -548,6 +556,7 @@ export default class AddCustomer extends Component {
             address={editedBillingAddress}
             showDisabledCountry={true}
             hideCountry={!isInttCurrenciesEnabled}
+            validateAddress={this.validateAddress}
             {...extraProps}
           />
           <div class="row CustomerCreationModal__bottom">
@@ -640,6 +649,7 @@ export default class AddCustomer extends Component {
             address={editedShippingAddress}
             showDisabledCountry={true}
             hideCountry={!isInttCurrenciesEnabled}
+            validateAddress={this.validateAddress}
             {...extraProps}
           />
           <div class="row">
@@ -678,3 +688,25 @@ AddCustomer.defaultProps = {
   saveLabel: 'Save',
   showGSTN: true,
 };
+
+const validateZipCode = (country, zipcode) => {
+  if (zipcode && country && !isValidZipcodeCountryWise(country, zipcode)) {
+    return 'Please enter a valid pin code for the selected country';
+  }
+
+  return null;
+};
+
+const CountryNames = Object.keys(Countries);
+
+function validate(values) {
+  let errors = {};
+
+  if (values.gstin && !isValidGSTIN(values.gstin)) {
+    errors._error = 'Please provide a valid GSTIN';
+  }
+
+  return errors;
+}
+
+const selector = formValueSelector('newCustomer');

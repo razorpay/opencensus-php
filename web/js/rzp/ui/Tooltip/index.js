@@ -346,6 +346,10 @@ class Tooltip extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    if (nextProps.persistent !== this.props.persistent) {
+      nextProps.persistent ? this.showTooltip() : this.hideTooltip();
+    }
+
     if (this.props.align !== nextProps.align) {
       this.showTooltip({ align: nextProps.align });
     }

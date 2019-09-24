@@ -4,6 +4,7 @@ const MODAL_OPEN = 'MODAL_OPEN';
 const MODAL_CLOSE = 'MODAL_CLOSE';
 const SLIDER_OPEN = 'SLIDER_OPEN';
 const SLIDER_CLOSE = 'SLIDER_CLOSE';
+const SETTELMENT_CONFIRMATION = 'SETTELMENT_CONFIRMATION';
 
 export const openModal = payload => {
   return {

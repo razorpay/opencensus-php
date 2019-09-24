@@ -11,6 +11,7 @@ export default function SubventionsDailyList(props) {
     <CommissionsDailyList
       amountColumn={amountColumn}
       queryType="subvention_daily"
+      dailyEntityRoute="subventions"
       {...props}
     />
   );
