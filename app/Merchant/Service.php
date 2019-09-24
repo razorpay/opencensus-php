@@ -14,11 +14,14 @@ use App\Base;
 use App\User;
 use App\Merchant;
 use App\MerchantDetails;
+use App\Trace\TraceCode;
 use App\Admin\ApiRequestAny;
 use App\Session\Entity as AppSession;
 
 class Service extends Base\Service
 {
+    protected $trace;
+
     const UPLOAD_KEYS = [
         'business_proof'           => 'business_proof_url',
         'business_operation_proof' => 'business_operation_proof_url',
@@ -32,6 +35,10 @@ class Service extends Base\Service
     public function __construct()
     {
         $this->currentUser = Auth::user();
+
+        $app = \App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
     }
 
     /**
@@ -487,11 +494,14 @@ class Service extends Base\Service
 
         if (empty($error) === false)
         {
-            throw new BadRequestError(
-                $error[0],
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
+            $this->trace->info(TraceCode::BULK_RAZORX_CALL_FAILED, [
+                "error" => $error
+            ]);
+
+            foreach ($features as $feature)
+            {
+                $data[$feature] = ['result' => 'control'];
+            }
         }
 
         return $data;
