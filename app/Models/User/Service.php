@@ -137,7 +137,9 @@ class Service extends Base\Service
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null);
+        $customProperties = ['email' => $user[Entity::EMAIL]];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
 
         return $data;
     }
@@ -171,9 +173,13 @@ class Service extends Base\Service
 
         $this->updateUserMerchantMapping($userData['id'], $userMerchantMappingInputData);
 
-        $this->sendConfirmationMail($userData['id']);
+        $user = $this->repo->user->findOrFailPublic($userData['id']);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null);
+        $this->sendConfirmationMail($user);
+
+        $customProperties[] = ['email' => $user->getEmail()];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null, $customProperties);
 
         return [
             'id'    => $merchantData['id'],
@@ -183,14 +189,12 @@ class Service extends Base\Service
     }
 
     /**
-     * @param $userId
+     * @param Entity $user
      *
      * @return array
      */
-    public function sendConfirmationMail($userId)
+    public function sendConfirmationMail(Entity $user)
     {
-        $user = $this->repo->user->findOrFailPublic($userId);
-
         // Only send the confirmation email if the user isn't already confirmed
         if ($user->getConfirmedAttribute() === false)
         {
@@ -398,6 +402,7 @@ class Service extends Base\Service
         $dashboardHeaders = $this->auth->getDashboardHeaders();
 
         $data = $this->sendConfirmationMail($dashboardHeaders['user_id']);
+
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null);
 
