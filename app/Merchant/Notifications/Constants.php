@@ -155,7 +155,7 @@ class Constants
             'description' => 'Get your payments settled on the same working day! Avoid cash-flow issues and prepare better for working capital needs.',
             'start_ts'    => 1569329294,
             'end_ts'      => 1577791088,
-            'icon'        => 'early-settlement',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/early-settlement.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
