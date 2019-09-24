@@ -79,7 +79,6 @@ trait FundAccountValidationTrait
 
     protected function buildFAVForFundAccountRequest(string $fundAccountId)
     {
-
         $request = [
             'method'  => 'POST',
             'url'     => '/fund_accounts/validations',
