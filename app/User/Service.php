@@ -877,10 +877,14 @@ class Service extends Base\Service
             'instant_activations' => $experiemtsResults,
         ]);
 
-        foreach ($experiemtsResults as $result)
+        foreach ($experiemtsResults as $result => $val)
         {
-            //$data['experiments'][$result] = $experiemtsResults[$result];
+            $data['experiments'][$result] = $val;
         }
+
+        $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
+            'instant_activations' => $data,
+        ]);
 
         return $data;
     }
