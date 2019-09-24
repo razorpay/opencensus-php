@@ -57,7 +57,7 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'required_if:netbanking,1|string|max:30',
-        Entity::CURRENCY                    => 'sometimes|array|max:50',
+        Entity::CURRENCY                    => 'sometimes',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
@@ -178,7 +178,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::CURRENCY                   => 'sometimes|array|max:1',
+        Entity::CURRENCY                   => 'sometimes',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
@@ -188,7 +188,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::CURRENCY                   => 'sometimes|array|max:1',
+        Entity::CURRENCY                   => 'sometimes',
         Entity::MC_MPAN                    => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
@@ -254,7 +254,7 @@ class Validator extends Base\Validator
         Entity::EMI                        => 'sometimes|boolean',
         Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
-        Entity::CURRENCY                   => 'sometimes|array|max:1',
+        Entity::CURRENCY                   => 'sometimes',
     ];
 
     protected static $amexTerminalRules = [
