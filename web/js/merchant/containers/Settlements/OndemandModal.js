@@ -47,27 +47,13 @@ export default class OndemandModal extends Component {
     this.handleCloseModal = this.handleCloseModal.bind(this);
   }
 
-  // resetInterval() {
-  //   console.log(hiaghaho);
-  //   clearInterval(timer);
-
-  //   timer = setInterval(function() {
-  //     this.fetchFee;
-  //     console.log('restarted interval');
-  //     test1();
-  //   }, 400);
-  // }
-
   updateFee() {
-    console.log(this.state.errors);
     if (this.state.hasChangedAmount) {
       const analyticsPayload = {
         eventCategory: 'Dashboard - Instant Settlement Modal',
         eventAction: `Input - Amout - ${this.state.amount * 100}`,
         Currentbalance: `Balance - ${this.props.currentBalance}`,
       };
-
-      console.log(analyticsPayload);
       window.rzpAnalytics(analyticsPayload);
     }
     this.setState({
@@ -89,8 +75,6 @@ export default class OndemandModal extends Component {
       '/merchant/api'
     )
       .then(response => {
-        //TODDO add analytics
-        console.log(response.data.items[0].pricing_rule.percent_rate);
         this.setState({
           isLoadingBreakup: false,
           tax: response.data.items[1].amount,
@@ -111,13 +95,12 @@ export default class OndemandModal extends Component {
     this.updateFee();
   }
 
-  dropdown = () => {
+  fetchBreakup = () => {
     const analyticsPayload = {
       eventCategory: 'Dashboard - Instant Settlement Modal',
       eventAction: `Check - Breakup -amount - ${this.state.amount * 100}`,
     };
 
-    console.log(analyticsPayload);
     window.rzpAnalytics(analyticsPayload);
 
     if (this.state.needFetch) {
@@ -164,7 +147,6 @@ export default class OndemandModal extends Component {
       eventAction: `Confirm - Click`,
     };
 
-    console.log(analyticsPayload);
     window.rzpAnalytics(analyticsPayload);
 
     let payload = {
@@ -243,7 +225,6 @@ export default class OndemandModal extends Component {
         eventAction: `Close -After -InputAmount`,
       };
 
-      console.log(analyticsPayload);
       window.rzpAnalytics(analyticsPayload);
     } else {
       const analyticsPayload = {
@@ -251,7 +232,6 @@ export default class OndemandModal extends Component {
         eventAction: `Close -Before -InputAmount`,
       };
 
-      console.log(analyticsPayload);
       window.rzpAnalytics(analyticsPayload);
     }
     this.props.closeModal();
@@ -350,7 +330,7 @@ export default class OndemandModal extends Component {
                         <span>
                           {this.state.isLoadingBreakup === false ? (
                             <div>
-                              <p> After Deduction </p>
+                              <p> After Deduction : </p>
                               <Amount
                                 value={
                                   this.state.amount * 100 -
@@ -382,7 +362,7 @@ export default class OndemandModal extends Component {
                         this.state.isLoadingBreakup || !this.state.validAmount
                       }
                       pendingState=""
-                      onClick={this.dropdown}
+                      onClick={this.fetchBreakup}
                     >
                       {this.state.breakupShow ? (
                         <span>
