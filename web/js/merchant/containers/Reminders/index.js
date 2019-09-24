@@ -1,6 +1,6 @@
 import HeaderAction from 'rzp/ui/HeaderAction';
 
-import PaymentLinksSettings from 'merchant/components/Reminders/Settings/PaymentLinks';
+import PaymentLinksSettings from './PaymentLinksSettings';
 
 export default function Reminders() {
   return (

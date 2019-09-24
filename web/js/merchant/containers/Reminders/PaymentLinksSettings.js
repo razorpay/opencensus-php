@@ -1,4 +1,4 @@
-import Setting from './Setting';
+import Setting from 'merchant/components/Reminders/Settings';
 
 export default class PaymentLinksSettings extends React.Component {
   state = {
