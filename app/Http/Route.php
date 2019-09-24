@@ -2911,6 +2911,10 @@ final class Route
      * Throttling middleware (and hence, rate limiting) is applied for all routes, except for the ones
      * defined here
      *
+     * Todo-
+     * In throttle middleware(first) request.ctx is initialized.
+     * Following skipping is bypassing it and should not have been done here.
+     *
      * @var array
      */
     public static $skipThrottling = [
@@ -3413,11 +3417,18 @@ final class Route
         'excel_store_page_by_url',
     ];
 
+    /**
+     * Register all routes here whose
+     * exception/errors needs to be send to DataLake.
+     */
     const FAILURE_EVENTS_INTERCEPTOR_ROUTES = [
         'user_register',
         'merchant_edit_pre_signup_details',
         'user_confirm_by_data',
         'merchant_instant_activation_post',
+        'merchant_activation_upload_file',
+        'merchant_activation_save',
+        'merchant_document_upload',
     ];
 
     // These routes are redirected after a feature check
