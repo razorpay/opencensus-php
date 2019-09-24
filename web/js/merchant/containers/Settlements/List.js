@@ -56,6 +56,16 @@ export default class SettlementsListContainer extends ListContainer {
     }
   }
 
+  componentDidUpdate() {
+    this.popupIfSettle();
+  }
+
+  popupIfSettle() {
+    if (this.props.location.hash === '#settlenow') {
+      this.showOndemandSettlementForm();
+    }
+  }
+
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settlements',
@@ -73,6 +83,8 @@ export default class SettlementsListContainer extends ListContainer {
     if (this.props.location.hash === '#requestearlyaccess') {
       this.showRequestEarySettlementForm();
     }
+
+    this.popupIfSettle();
   }
 
   onSearchAnalytics = params => {
@@ -219,13 +231,14 @@ export default class SettlementsListContainer extends ListContainer {
                   )}
 
                   {this.props.user.isOndemandSettlementEnabled && (
-                    <Button.Secondary
+                    <Button.Primary
                       class="settle-btn"
                       onClick={this.showOndemandSettlementForm}
                       disabled={current_balance.loading || balance < 100}
                     >
+                      <i className="i i-early-settlement settle-now-early" />
                       Settle Now
-                    </Button.Secondary>
+                    </Button.Primary>
                   )}
                 </React.Fragment>
               </HeaderAction>
