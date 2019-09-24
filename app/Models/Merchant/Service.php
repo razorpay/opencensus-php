@@ -2462,6 +2462,8 @@ class Service extends Base\Service
 
     protected function mapSubMerchantPartnerAppIfApplicable(Entity $merchant, Entity $subMerchant)
     {
+        $this->trace->info(TraceCode::MAP_PARTNER_SUBMERCHANT_ENTITY);
+
         if ($merchant->isPartner() === false)
         {
             return;

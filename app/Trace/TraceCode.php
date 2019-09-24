@@ -994,6 +994,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_UPDATE_KEY_ACCESS                            = 'MERCHANT_UPDATE_KEY_ACCESS';
     const MERCHANT_TAGS_ADD                                     = 'MERCHANT_TAGS_ADD';
     const MERCHANT_TAGS_APPEND                                  = 'MERCHANT_TAGS_APPEND';
+    const MERCHANT_TAGS_APPEND_COMPLETED                        = 'MERCHANT_TAGS_APPEND_COMPLETED';
+    const MAP_PARTNER_SUBMERCHANT_ENTITY                        = 'MAP_PARTNER_SUBMERCHANT_ENTITY';
     const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST                  = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
     const MERCHANT_LIVE_ENABLE_REQUEST                          = 'MERCHANT_LIVE_ENABLE_REQUEST';
     const MERCHANT_ES_SYNC_RESPONSE                             = 'MERCHANT_ES_SYNC_RESPONSE';
