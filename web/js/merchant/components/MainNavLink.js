@@ -74,7 +74,6 @@ export default class MainNavLink extends Component {
       icon,
       label,
       isNew,
-      isCurrent,
       isBeta = false,
       isPending,
       baseLocation,
@@ -93,10 +92,6 @@ export default class MainNavLink extends Component {
       );
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
-    } else if (isCurrent) {
-      tag = (
-        <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />
-      );
     }
     //show infinite spin loader if there are some pending items in that section of the app
     if (isPending) {

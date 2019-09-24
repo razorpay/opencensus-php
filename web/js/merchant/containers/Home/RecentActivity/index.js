@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import Button from '../../../../component/Button';
 
 import {
   fetchPayments,
@@ -18,7 +17,6 @@ import GenericPanel, {
 import { tabs, tabsMeta } from './data';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
-import { trackSettlementsClick } from '../ga';
 
 const shouldDisplayCompact = windowWidth => {
   return windowWidth < 480;
@@ -112,7 +110,6 @@ export default class RecentActivity extends Component {
   }
 
   componentWillMount() {
-    console.log('Will mount');
     this.fetchData({ count: 5 });
   }
 
@@ -127,10 +124,6 @@ export default class RecentActivity extends Component {
       selectedTabData = this.props[selectedTab],
       numColumns = tabsMeta[selectedTab].columns.length,
       selectedTabTitle = titleCase(selectedTab);
-
-    console.log('Render');
-    console.log(selectedTabData);
-    console.log(this.props);
 
     let body = null;
 
@@ -192,26 +185,6 @@ export default class RecentActivity extends Component {
         </PanelBody>
         <PanelFooter>
           <div className="clearfix">
-            {selectedTab.toLowerCase() === 'settlements' &&
-            this.props.user.isOndemandSettlementEnabled &&
-            this.props.currentBalance.data.balance >= 100 ? (
-              <React.Fragment>
-                <span>
-                  <i className="i i-early-settlement" />
-                  <span className="early-stl-label">
-                    You are eligible for instant settlements
-                  </span>
-                </span>
-                <Button.Secondary
-                  class="settle-btn-act"
-                  onClick={this.props.onSelect}
-                >
-                  Settle Now
-                </Button.Secondary>
-              </React.Fragment>
-            ) : (
-              <></>
-            )}
             <div className="pull-right">
               <Link
                 target="_blank"

@@ -150,24 +150,6 @@ class Constants
                 'experiments'  => ['checkout_survey'],
             ],
         ],
-        [
-            'title'       => 'Instant Settlements!',
-            'description' =>
-            'Get your payments settled on the same working day! Avoid cash-flow issues and prepare better for working capital needs.',
-            'start_ts'    => 1548909000,
-            'end_ts'      => 1577791088,
-            'icon'        => 'settlements',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => ’Settle Now’,
-                    'url'   => '/settlements#settlenow’,
-                ],
-            ],
-            'filters'     => [
-                ‘features’         => ['es_on_demand'],
-            ]
-        ]
     ];
 
     public static function getNotifications(): array
@@ -175,3 +157,4 @@ class Constants
         return self::NOTIFICATIONS;
     }
 }
+

@@ -23,7 +23,6 @@ export default function MerchantNavLinks(props) {
         label="Settlements"
         icon="i i-done-all text-success"
         to="/settlements"
-        isCurrent
         additionalCondition={user => user.isAllowedView('settlements')}
       />
 

@@ -286,9 +286,6 @@ class AnalyticsDesktop extends Component {
                     <RecentActivity
                       sectionTitle={recentActivityTitle}
                       onFetchPayments={onFetchPayments}
-                      user={this.props.user}
-                      currentBalance={current_balance}
-                      onSelect={this.showOndemandSettlementForm}
                     />
                   </div>
                 </div>
