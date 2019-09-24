@@ -20,7 +20,7 @@ class PaypalGatewayTest extends TestCase
 
         $this->gateway = 'mozart';
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal', ['currency' => ["USD", "INR"]]);
 
         $this->fixtures->merchant->enableInternational();
 
