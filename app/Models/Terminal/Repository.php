@@ -459,7 +459,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY, '=', $gateway)
-                      ->where(Entity::CURRENCY, 'like', '%'.$currency.'%')
+                      ->where(Entity::CURRENCY, 'LIKE', '%'.$currency.'%')
                       ->enabled();
 
         $this->addMerchantWhereCondition($query, [$merchantId, Account::SHARED_ACCOUNT]);
