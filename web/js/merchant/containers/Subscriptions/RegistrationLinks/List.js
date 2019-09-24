@@ -19,6 +19,29 @@ import ListContainer from 'merchant/containers/ListContainer';
 
 import ListFilter from './ListFilter';
 
+const id = {
+  title: 'Link ID',
+  value: item => <Link to={'/registration_links/' + item.id}>{item.id}</Link>,
+};
+
+const link = {
+  title: 'Registration Link',
+  value: item => <CopyLink url={item.short_url} />,
+};
+
+const customer = {
+  title: 'Customer',
+  value: ({ customer_details = {} }) => [
+    <div>Email: {customer_details.email}</div>,
+    <div>Contact: {customer_details.contact}</div>,
+  ],
+};
+
+const createdAt = {
+  title: createdAtProperty.title,
+  value: getTime('created_at', 'll'),
+};
+
 @connect(state => state.registrationLinks, { fetchAll })
 export default class RegistrationLinksList extends ListContainer {
   render() {
@@ -51,26 +74,3 @@ export default class RegistrationLinksList extends ListContainer {
     );
   }
 }
-
-const id = {
-  title: 'Link ID',
-  value: item => <Link to={'/registration_links/' + item.id}>{item.id}</Link>,
-};
-
-const link = {
-  title: 'Registration Link',
-  value: item => <CopyLink url={item.short_url} />,
-};
-
-const customer = {
-  title: 'Customer',
-  value: ({ customer_details = {} }) => [
-    <div>Email: {customer_details.email}</div>,
-    <div>Contact: {customer_details.contact}</div>,
-  ],
-};
-
-const createdAt = {
-  title: createdAtProperty.title,
-  value: getTime('created_at', 'll'),
-};
