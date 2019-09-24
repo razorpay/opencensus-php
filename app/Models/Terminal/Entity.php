@@ -489,11 +489,6 @@ class Entity extends Base\PublicEntity
         return in_array($currency, $this->getCurrency(), true);
     }
 
-    public function isCurrencyInr()
-    {
-        return $this->supportsCurrency(Currency::INR);
-    }
-
     public function getNetworkCategory()
     {
         return $this->getAttribute(self::NETWORK_CATEGORY);
