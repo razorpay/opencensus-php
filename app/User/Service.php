@@ -871,20 +871,13 @@ class Service extends Base\Service
             'mobile_hotjar_survey'
         ];
 
-        $experiemtsResults = $merchantService->getBulkTreatment($features);
+        $experimentsResults = $merchantService->getBulkTreatment($features);
 
-        $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
-            'instant_activations' => $experiemtsResults,
-        ]);
-
-        foreach ($experiemtsResults as $result => $val)
+        foreach ($experimentsResults as $result => $val)
         {
             $data['experiments'][$result] = $val;
         }
 
-        $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
-            'instant_activations' => $data,
-        ]);
 
         return $data;
     }
