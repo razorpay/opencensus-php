@@ -15,12 +15,13 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Bank;
+use RZP\Models\Terminal\Status;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
-        Entity::STATUS                      => 'sometimes',
+        Entity::STATUS                      => 'sometimes|string|custom',
         Entity::GATEWAY                     => 'required',
         Entity::PROCURER                    => 'sometimes|in:razorpay,merchant',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
@@ -93,6 +94,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_SIB,
         Payment\Gateway::NETBANKING_FEDERAL,
         Payment\Gateway::NETBANKING_CUB,
+        Payment\Gateway::NETBANKING_SBI,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
@@ -800,8 +802,15 @@ class Validator extends Base\Validator
     protected static $netbankingSbiTerminalRules = [
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::TYPE                        => 'sometimes|array',
+    ];
+
+    protected static $netbankingSbiEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [
@@ -1038,6 +1047,9 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL,
         Entity::VPA,
         Entity::PROCURER,
+        Entity::MC_MPAN,
+        Entity::VISA_MPAN,
+        Entity::RUPAY_MPAN
     ];
 
     public function validateType()
@@ -1073,6 +1085,15 @@ class Validator extends Base\Validator
         throw new Exception\BadRequestValidationFailureException(
             'Bank Transfer Terminal should be either Numeric or Alpha Numeric.',
             Entity::TYPE);
+    }
+
+    protected function validateStatus(string $attribute, string $value)
+    {
+        if (Status::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid terminal status: ' . $value);
+        }
     }
 
     protected function validateGateway($input)

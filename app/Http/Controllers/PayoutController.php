@@ -171,4 +171,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function calculateEsOnDemandFees()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->calculateEsOnDemandFees($input);
+
+        return ApiResponse::json($response);
+    }
 }

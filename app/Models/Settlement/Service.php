@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
+use Cache;
 use Carbon\Carbon;
 
 use RZP\Exception;
@@ -10,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Constants\Entity as E;
+use RZP\Jobs\Settlement\Create;
 use RZP\Models\FundTransfer\Kotak;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Report\Types\BasicEntityReport;
@@ -360,5 +362,32 @@ class Service extends Base\Service
         $data = (new Settlement\Processor)->settlementAmount();
 
         return $data;
+    }
+
+    public function getProcessDetails(): array
+    {
+        $redis = $this->app['redis']->connection();
+
+        $countKey            = sprintf(Create::TOTAL_MERCHANT_COUNT, $this->mode);
+        $channelWiseCountKey = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
+        return [
+            'pending_merchants'    => Cache::get($countKey),
+            'channel_wise_process' => $redis->HGETALL($channelWiseCountKey),
+        ];
+    }
+
+    public function resetProcessDetails()
+    {
+        $countKey            = sprintf(Create::TOTAL_MERCHANT_COUNT, $this->mode);
+        $channelWiseCountKey = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
+        Cache::forget($countKey);
+
+        $redis = $this->app['redis']->connection();
+
+        $redis->del($channelWiseCountKey);
+
+        return $this->getProcessDetails();
     }
 }

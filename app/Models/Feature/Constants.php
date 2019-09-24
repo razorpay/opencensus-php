@@ -128,7 +128,8 @@ class Constants
     const PHONEPE_INTENT                  = 'phonepe_intent';
     const ISSUE_MPANS                     = 'issue_mpans';
     const BLOCK_DEBIT_2K                  = 'block_debit_2k';
-
+    const WALLET_AUTO_DEBIT               = 'wallet_auto_debit';
+    const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
      * this functionality will be there by default for new merchants , flag need to be enabled if
@@ -159,6 +160,8 @@ class Constants
      * to be paid for the first payment.
      */
     const PL_FIRST_MIN_AMOUNT             = 'pl_first_min_amount';
+
+    const PL_HIDE_ISSUED_TO               = 'pl_hide_issued_to';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -357,6 +360,7 @@ class Constants
         self::IIN_LISTING                     => true,
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
+        self::PL_HIDE_ISSUED_TO               => true,
         self::REPORTING_GENRERIC_NOTES        => true,
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
@@ -391,6 +395,8 @@ class Constants
         self::CUST_CONTACT_EMAIL_NULL         => true,
         self::PHONEPE_INTENT                  => true,
         self::BLOCK_DEBIT_2K                  => true,
+        self::USE_MSWIPE_TERMINALS            => true,
+        self::WALLET_AUTO_DEBIT               => true,
     ];
 
     // Entity type constants

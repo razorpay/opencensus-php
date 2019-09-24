@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Balance\Type;
 
@@ -23,8 +24,39 @@ class Core extends Base\Core
         parent::__construct();
     }
 
+    public function deleteCompletedBucketEntries(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::DELETING_COMPLETED_BUCKET_ENTRIES,
+            $input);
+
+        $timestamp = Carbon::now(Timezone::IST)->subDay();
+
+        if (isset($input['timestamp']) === true)
+        {
+            $timestamp = $input['timestamp'];
+        }
+
+        $recordsDeletedCount = $this->repo
+                                    ->settlement_bucket
+                                    ->removeCompletedEntriesBeforeTimestamp($timestamp);
+
+        $result = [
+            'count' => $recordsDeletedCount,
+        ];
+
+        $this->trace->info(
+            TraceCode::COMPLETED_BUCKET_ENTRIES_DELETED,
+            $result);
+
+        return $result;
+    }
+
     public function backfillSettlementBucket(array $input)
     {
+        // Time limit of 10 mins
+        RuntimeManager::setTimeLimit(600);
+
         $currentTime = Carbon::now(Timezone::IST);
 
         $startTime = $currentTime->subMinutes($currentTime->minute)
@@ -62,16 +94,7 @@ class Core extends Base\Core
 
         foreach ($result->toArray() as $record)
         {
-            $status = $this->addMerchantToSettlementBucket("", $record['merchant_id'], $record['settled_at']);
-
-            // Adding this to debug the issues,
-            // should be removed once the bucketing is fixed and bucket/fill route is removed.
-            if ($status === true)
-            {
-                $this->trace->info(
-                    TraceCode::MERCHANT_ADDED_TO_BUCKET,
-                    $record);
-            }
+            $this->addMerchantToSettlementBucket('', $record['merchant_id'], $record['settled_at']);
         }
 
         $this->trace->info(
@@ -84,7 +107,7 @@ class Core extends Base\Core
         );
 
         return [
-            'count' => count($result)
+            'count' => $result->count(),
         ];
     }
 
@@ -144,7 +167,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return $this->addToBucket($merchantId, $timestamp);
+            return $this->addToBucket($merchantId, $timestamp, $settlementTime);
         }
 
         // check merchant preference
@@ -153,16 +176,20 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return $this->addToBucket($merchantId, $timestamp);
+            return $this->addToBucket($merchantId, $timestamp, $settlementTime);
         }
 
         $currentTimestamp = Carbon::now(Timezone::IST);
 
-        $bucketTimestamp = ($settlementTime < $currentTimestamp->getTimestamp()) ?
-            Preference::getNextBucket($currentTimestamp->getTimestamp()) :
-            Preference::getNextBucket($settlementTime);
+        $settlementTime = Carbon::createFromTimestamp($settlementTime, Timezone::IST);
 
-        return $this->addToBucket($merchantId, $bucketTimestamp);
+        $settlementTime = Preference::getCeilTimestamp($settlementTime);
+
+        $bucketTimestamp = ($settlementTime->getTimestamp() < $currentTimestamp->getTimestamp()) ?
+            Preference::getNextBucket($currentTimestamp->getTimestamp()) :
+            Preference::getNextBucket($settlementTime->getTimestamp());
+
+        return $this->addToBucket($merchantId, $bucketTimestamp, $settlementTime);
     }
 
     /**
@@ -235,15 +262,20 @@ class Core extends Base\Core
      * creates entry in settlement bucket for the merchant id if its not already added to that bucket
      *
      * @param string $merchantId
+     * @param string $settlementTime
      * @param int    $bucketTimestamp
      * @return bool
      */
-    public function addToBucket(string $merchantId, int $bucketTimestamp): bool
+    public function addToBucket(string $merchantId, int $bucketTimestamp, $settlementTime = null): bool
     {
         $data = [
             Entity::MERCHANT_ID      => $merchantId,
             Entity::BUCKET_TIMESTAMP => $bucketTimestamp,
         ];
+
+        $traceData = [
+                'settled_at' => $settlementTime,
+            ] + $data;
 
         try
         {
@@ -251,7 +283,13 @@ class Core extends Base\Core
 
             $entity->fill($data);
 
-            return $entity->save();
+            $entity->save();
+
+            $this->trace->info(
+                TraceCode::MERCHANT_ADDED_TO_BUCKET,
+                $traceData);
+
+            return true;
         }
         catch (\Throwable $e)
         {

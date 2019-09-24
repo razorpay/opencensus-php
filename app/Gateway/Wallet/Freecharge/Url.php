@@ -24,7 +24,7 @@ class Url
     // Wallet API
     const GET_BALANCE       = '/api/v1/co/oauth/wallet/balance';
     const DEBIT_WALLET      = '/api/v1/co/oauth/wallet/debit';
-    const TOPUP_REDIRECT    = '/api/v1/co/oauth/wallet/add';
+    const TOPUP_REDIRECT    = '/api/v1/co/pay/init';
 
     // Verify API
     const VERIFY            = '/api/v1/co/transaction/status';

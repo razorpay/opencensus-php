@@ -1018,6 +1018,15 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testOnDemandPayoutFetchFees()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testSearchPayoutByTransactionId()
     {
         $payout = $this->testCreatePayout();

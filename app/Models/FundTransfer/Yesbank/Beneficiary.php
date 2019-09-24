@@ -81,7 +81,10 @@ class Beneficiary extends ApiProcessor
                     $this->summary[] = $account->getId();
                 }
 
-                $this->updateBeneficiaryStatus($account, $beneStatus);
+                if ($beneStatus !== Status::REGISTERED)
+                {
+                    $this->updateBeneficiaryStatus($account, $beneStatus);
+                }
             }
             catch (\Throwable $e)
             {
@@ -187,6 +190,11 @@ class Beneficiary extends ApiProcessor
             if ($errorMessage === BeneficiaryRequest::RECORD_EXIST)
             {
                 return Status::VERIFIED;
+            }
+
+            if ($errorMessage === BeneficiaryRequest::RECORD_DOES_NOT_EXIST)
+            {
+                return Status::REGISTERED;
             }
         }
 
