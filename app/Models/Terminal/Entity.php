@@ -455,7 +455,7 @@ class Entity extends Base\PublicEntity
             return [];
         }
 
-        if (is_array(json_decode($currency)) === true)
+        if (is_array($currencies = json_decode($currency)) === true)
         {
             $currency = json_decode($currency);
         }
