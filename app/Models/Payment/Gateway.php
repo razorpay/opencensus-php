@@ -175,6 +175,15 @@ class Gateway
         // Wallet::MPESA,
     ];
 
+    //
+    // Temporarily uses a different constant. Ideally POWER_WALLETS should be
+    // used. Once auto debit functionality is implemented for all power wallets
+    // @todo: Deprecate it.
+    //
+    const AUTO_DEBIT_POWER_WALLETS = array(
+        self::WALLET_FREECHARGE,
+    );
+
     /**
      * These are the wallets that support both
      * auth as well as power wallet flow
@@ -1965,6 +1974,11 @@ class Gateway
         return (in_array($wallet, self::POWER_WALLETS));
     }
 
+    public static function isAutoDebitPowerWallet($gateway)
+    {
+        return (in_array($gateway, self::AUTO_DEBIT_POWER_WALLETS, true));
+    }
+
     public static function isAuthAndPowerWallet(string $wallet)
     {
         return (in_array($wallet, self::AUTH_AND_POWER_WALLETS, true));
@@ -2143,5 +2157,18 @@ class Gateway
         return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
     }
 
+    public static function isAutoDebitPowerWalletSupported($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        // We support power wallet flow if we can topup and autodebit.
+        // Generally, power wallets allow topup of requests.
+        if (self::isAutoDebitPowerWallet($gateway) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
 }
