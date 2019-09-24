@@ -206,6 +206,10 @@ class Gateway
         self::BILLDESK,
     ];
 
+    const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
+        self::ATOS,
+    ];
+
     // TODO: Add gateway and gateway_acquirer map to fix
     // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [

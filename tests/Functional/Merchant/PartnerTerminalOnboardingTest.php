@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Redis;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -9,6 +11,7 @@ use RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal as TerminalFixture;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Exception\BadRequestException;
 
 class PartnerTerminalOnboardingTest extends TestCase
 {
@@ -177,6 +180,32 @@ class PartnerTerminalOnboardingTest extends TestCase
         $url = '/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $terminalArray = $this->startTest();
+
+        $terminal1 = (new Terminal\Repository)->find($terminalArray['id']);
+
+        $this->assertEquals($terminal1->getGatewayMerchantId(), 999000000000001);
+
+        $this->assertEquals($terminal1->getGatewayTerminalId(), 12380001);
+
+        $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreateTerminal2'];
+
+        $terminalArray = $this->startTest();
+
+        $terminal2 = (new Terminal\Repository)->find($terminalArray['id']);
+
+        $this->assertEquals($terminal2->getGatewayMerchantId(), 999000000000001);
+
+        $this->assertEquals($terminal2->getGatewayTerminalId(), 12380002);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS);
+
+        $this->expectExceptionMessage(
+            'A terminal with the same field exists');
 
         $this->startTest();
     }
