@@ -448,7 +448,7 @@ class Entity extends Base\PublicEntity
      * Currency Accessor
      * @param $value
      */
-    public function getCurrencyAttribute($currency)
+    protected function getCurrencyAttribute($currency)
     {
         if (empty($currency) === true)
         {
@@ -467,7 +467,7 @@ class Entity extends Base\PublicEntity
      * Currency Mutator
      * @param $value
      */
-    public function setCurrencyAttribute($currency)
+    protected function setCurrencyAttribute($currency)
     {
         if (empty($currency) === false)
         {
