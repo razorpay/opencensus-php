@@ -57,7 +57,7 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'required_if:netbanking,1|string|max:30',
-        Entity::CURRENCY                    => 'sometimes',
+        Entity::CURRENCY                    => 'sometimes|array|max:50',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
@@ -178,7 +178,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::CURRENCY                   => 'sometimes',
+        Entity::CURRENCY                   => 'sometimes|array|max:1',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
@@ -254,7 +254,7 @@ class Validator extends Base\Validator
         Entity::EMI                        => 'sometimes|boolean',
         Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
-        Entity::CURRENCY                   => 'sometimes',
+        Entity::CURRENCY                   => 'sometimes|array|max:1',
     ];
 
     protected static $amexTerminalRules = [
