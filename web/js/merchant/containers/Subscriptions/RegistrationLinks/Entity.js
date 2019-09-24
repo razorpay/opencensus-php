@@ -1,4 +1,3 @@
-import { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -14,7 +13,10 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import NACHDetails from 'merchant/components/Subscriptions/UploadNACHForm/Details';
 
-import { fetchRegistrationLink } from 'merchant/modules/registration_link';
+import {
+  fetchRegistrationLink,
+  downloadSignedNACHFile,
+} from 'merchant/modules/registration_link';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 
@@ -25,9 +27,12 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
   }),
   { fetchRegistrationLink }
 )
-export default class RegistrationLinkEntityContainer extends Component {
+export default class RegistrationLinkEntityContainer extends React.Component {
   get paymentMethod() {
-    return this.props.entity.subscription_registration.method;
+    return (
+      this.props.entity.subscription_registration &&
+      this.props.entity.subscription_registration.method
+    );
   }
 
   get isNACHMethod() {
@@ -44,11 +49,12 @@ export default class RegistrationLinkEntityContainer extends Component {
     }
   }
 
+  downloadSignedNACHFile = () => {
+    return downloadSignedNACHFile(this.props.id);
+  };
+
   render() {
     const { loading: isLoading, entity, error } = this.props;
-
-    const preFilledNachFileURL = entity.created_url,
-      completedNachFileURL = entity.verified_url;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -57,7 +63,7 @@ export default class RegistrationLinkEntityContainer extends Component {
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
+          <div class="panel panel-default SliderPanel RegistrationLinks--Details">
             <div class="panel-heading">{entity.id}</div>
             <Alert type="error" message={error} />
             {!!Object.keys(entity).length && (
@@ -96,7 +102,7 @@ export default class RegistrationLinkEntityContainer extends Component {
 
                     {/* method */}
                     <EntityDetailRow label="Method">
-                      {entity.subscription_registration.method && (
+                      {this.paymentMethod && (
                         <PaymentMethod
                           mandate={entity.subscription_registration}
                         />
@@ -112,8 +118,11 @@ export default class RegistrationLinkEntityContainer extends Component {
                       <EntityDetailRow label="NACH form">
                         <NACHDetails
                           registrationLinkId={entity.id}
-                          preFilledNachFileURL={preFilledNachFileURL}
-                          completedNachFileURL={completedNachFileURL}
+                          downloadSignedNACHFile={
+                            entity.is_nach_form_uploaded &&
+                            this.downloadSignedNACHFile
+                          }
+                          preFilledNachFileURL={entity.created_url}
                         />
                       </EntityDetailRow>
                     )}

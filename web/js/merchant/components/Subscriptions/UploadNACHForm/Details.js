@@ -1,23 +1,24 @@
 import { Link } from 'react-router-dom';
 
 import Alert from 'rzp/ui/Forms/Alert';
+import AsyncButton from 'react-async-button';
 
 export default ({
-  completedNachFileURL,
+  downloadSignedNACHFile,
   registrationLinkId,
   preFilledNachFileURL,
 }) => {
-  if (completedNachFileURL) {
+  if (downloadSignedNACHFile) {
     return (
       <React.Fragment>
-        <button
-          class="btn btn--primary"
-          href={completedNachFileURL}
+        <AsyncButton
+          class="btn btn-link nach-download-btn"
+          onClick={downloadSignedNACHFile}
           target="_blank"
         >
-          View Scan
           <i class="i i-file-attach" />
-        </button>
+          View Scan
+        </AsyncButton>
       </React.Fragment>
     );
   }

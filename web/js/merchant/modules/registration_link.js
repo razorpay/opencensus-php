@@ -1,4 +1,4 @@
-import { merchantFetch } from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 
 import RegistrationLink from 'merchant/models/RegistrationLink';
 import { makeEntityReducer } from 'rzp/modules/entity';
@@ -8,7 +8,9 @@ const REGISTRATION_LINK_CREATE = 'REGISTRATION_LINK_CREATE';
 
 export const fetchRegistrationLink = id => ({
   type: REGISTRATION_LINK_FETCH,
-  payload: new RegistrationLink().fetch(id),
+  payload: merchantFetch(
+    `subscription_registration/auth_links/${id}/internal`
+  ).then(resp => resp.data),
 });
 
 export const createRegistrationLink = params => ({
@@ -24,12 +26,7 @@ export const validateNachFile = (file, id) => {
   return merchantFetch({
     url: `token.registration/paper_mandate/validate/proxy`,
     method: 'post',
-    mode: 'test',
     data: formData,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
-    withCredentials: true,
   });
 };
 
@@ -43,6 +40,12 @@ export const authenticateNACHFile = (file, id) => {
     method: 'post',
     data: formData,
   });
+};
+
+export const downloadSignedNACHFile = id => {
+  return merchantFetch(
+    `token.registration/paper_mandate/uploaded_form/${id}`
+  ).then(resp => ajax(resp.data.url));
 };
 
 export default makeEntityReducer(REGISTRATION_LINK_FETCH);
