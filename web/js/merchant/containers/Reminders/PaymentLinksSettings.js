@@ -1,9 +1,23 @@
+import { connect } from 'react-redux';
 import Setting from 'merchant/components/Reminders/Settings';
 
+import { fetchReminders } from 'merchant/modules/reminders';
+
+@connect(state => state.reminders, {
+  fetchReminders,
+})
 export default class PaymentLinksSettings extends React.Component {
-  state = {
-    totalUnpaidLinks: 12, // TODO: Update when API is ready according API response.
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      totalUnpaidLinks: 12, // TODO: Update when API is ready according API response.
+    };
+  }
+
+  componentDidMount() {
+    this.props.fetchReminders();
+  }
 
   saveSettings = () => {};
 
