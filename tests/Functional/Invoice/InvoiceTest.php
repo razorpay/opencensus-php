@@ -1099,7 +1099,10 @@ class InvoiceTest extends TestCase
         // for why this is being asserted differently.
 
         $expectedNotes = [
-            'key' => 'new value',
+            [
+                'key'   => 'key',
+                'value' => 'new value',
+            ],
         ];
 
         $esMock->expects($this->once())
