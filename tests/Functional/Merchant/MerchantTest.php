@@ -1653,6 +1653,16 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutPublicRoute()
+    {
+        $this->ba->directAuth();
+
+        $response = $this->call('GET', '/v1/checkout/public');
+
+        $response->assertStatus(200);
+        $this->assertContains('<title>Razorpay Checkout</title>', $response->getContent());
+    }
+
     public function testGetCheckoutPreferencesWithNetbankingDisabled()
     {
         $this->ba->publicLiveAuth();
