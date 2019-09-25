@@ -13,6 +13,7 @@ return [
                 'description' => 'random desc',
                 'currency'    => 'INR',
                 'channel'     => 'axis',
+                'type'        => 'primary',
             ],
             'url' => '/adjustments',
             'method' => 'POST'
@@ -24,6 +25,57 @@ return [
                 'channel'     => 'axis',
                 'currency'    => 'INR',
             ],
+        ],
+    ],
+
+    'testAddNegativeAdjustment' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => -100,
+                'description' => 'random desc',
+                'currency'    => 'INR',
+                'channel'     => 'axis',
+                'type'        => 'primary',
+            ],
+            'url' => '/adjustments',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'amount'      => -100,
+                'description' => 'random desc',
+                'channel'     => 'axis',
+                'currency'    => 'INR',
+            ],
+        ],
+    ],
+
+    'testAddAdjustmentBalanceDoesNotExist' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 100,
+                'description' => 'random desc',
+                'currency'    => 'INR',
+                'channel'     => 'axis',
+                'type'        => 'banking',
+            ],
+            'url' => '/adjustments',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
         ],
     ],
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Enach\Npci\Netbanking;
 
+// All Fields that are used while preparing the xml request
 class RequestNpciTags
 {
     const MESSAGE_ID            = 'MsgId';

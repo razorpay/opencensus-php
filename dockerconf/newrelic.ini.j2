@@ -94,6 +94,7 @@ newrelic.loglevel = "info"
 ;
 ;newrelic.high_security = false
 
+;setting multiple app name for canary instance for better tracking INSTANCE_TYPE env variable to be set in deployment. https://docs.newrelic.com/docs/agents/manage-apm-agents/app-naming/use-multiple-names-app#example1
 ; Setting: newrelic.appname
 ; Type   : string
 ; Scope  : per-directory
@@ -104,7 +105,15 @@ newrelic.loglevel = "info"
 ;          list is considered the 'primary' application name and must be unique
 ;          for each account / license key.
 ;
-newrelic.appname = kube-{{ env }}-api
+{% if env == "prod"  %}
+    {% if ENV['INSTANCE_TYPE']  == 'canary' %}
+        newrelic.appname = "canary-api;kube-{{ env }}-api"
+    {% else  %}
+        newrelic.appname = "{{env}}-api;kube-{{ env }}-api"
+    {% endif %}
+{% else %}
+ newrelic.appname = "kube-{{ env }}-api"
+{% endif %}
 
 ; Setting: newrelic.process_host.display_name
 ; Type   : string

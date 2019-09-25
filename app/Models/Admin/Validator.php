@@ -63,6 +63,11 @@ class Validator extends Base\Validator
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',
+        ConfigKey::RX_SLA_FOR_IMPS_PAYOUT             => 'filled|integer',
+
+
+        ConfigKey::ATOS_TID_RANGE_LIST                => 'filled|array',
+        ConfigKey::ATOS_TID_RANGE_LIST.'.*'           => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [
@@ -100,7 +105,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $getConfigKeyRules = [
-        'key'   => 'required|in:merchant_enach_configs,settlement_transaction_limit,'.ConfigKey::GATEWAY_UNPROCESSED_REFUNDS
+        'key'   => 'required'
     ];
 
     protected static $deleteConfigKeyRules = [
@@ -135,5 +140,10 @@ class Validator extends Base\Validator
     protected static $setEsPricingKeyRules = [
         'on_demand' => 'sometimes|integer',
         'scheduled' => 'sometimes|integer',
+    ];
+
+    protected static $bulkCreateEntityRules = [
+        'type' => 'required|string',
+        'data' => 'required|array|min:1',
     ];
 }

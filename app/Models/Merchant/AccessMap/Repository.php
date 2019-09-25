@@ -116,4 +116,31 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_OWNER_ID, $partnerId)
                     ->get();
     }
+
+    public function fetchMerchantsMappedToPartner(array $merchantIds): array
+    {
+        $subMerchantIds = [];
+
+        if (empty($merchantIds) === true)
+        {
+            return $subMerchantIds;
+        }
+
+        $chunkedIdsList = array_chunk($merchantIds, 5000);
+
+        foreach ($chunkedIdsList as $chunkedIds)
+        {
+            $accessMaps = $this->newQuery()
+                               ->select(Entity::MERCHANT_ID)
+                               ->whereIn(Entity::MERCHANT_ID, $chunkedIds)
+                               ->get();
+
+            foreach ($accessMaps as $accessMap)
+            {
+                $subMerchantIds[] = $accessMap->getAttribute(Entity::MERCHANT_ID);
+            }
+        }
+
+        return $subMerchantIds;
+    }
 }

@@ -40,6 +40,6 @@ class CreateQuboleInvitationsView extends Migration
      */
     public function down()
     {
-        DB::statement('DROP VIEW IF EXISTS qubole_gateway_invitations_view');
+        DB::statement('DROP VIEW IF EXISTS qubole_invitations_view');
     }
 }

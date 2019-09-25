@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use RZP\Models;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Document\Entity;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
@@ -39,11 +38,11 @@ final class FactoryData
             'activated_at'             => time(),
         ]);
 
-        $factory(Entity::class, [
+        $factory(\RZP\Models\Merchant\Document\Entity::class, [
             'id'            => $faker->uniqueid,
             'merchant_id'   => '10000000000000',
-            'file_store_id' => 'abcdef',
-            'document_type' => 'address',
+            'file_store_id' => 'abcdef12345678',
+            'document_type' => 'address_proof_url',
             'entity_type'   => 'merchant',
         ]);
 
@@ -336,7 +335,7 @@ final class FactoryData
             'network' => 'Visa',
             'type' => 'credit',
             'country' => 'IN',
-            'issuer' => 'SBI',
+            'issuer' => 'SBIN',
             'trivia' => $faker->sentence,
         ]);
 

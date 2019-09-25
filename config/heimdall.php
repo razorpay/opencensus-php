@@ -34,6 +34,10 @@ return [
                 'assignable'  => true,
             ],
             Permission::CANCEL_BATCH => 'cancel batch',
+            Permission::BULK_CREATE_ENTITY      => [
+                'assignable' => true,
+                'workflow'   => false,
+            ],
         ],
 
         PermissionCategory::RAZORX => [
@@ -296,6 +300,7 @@ return [
             ],
             Permission::EDIT_MERCHANT_ENABLE_RECEIPT        => '',
             Permission::EDIT_MERCHANT_DISABLE_RECEIPT       => '',
+            Permission::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT   => '',
             Permission::EDIT_BULK_MERCHANT                  => '',
             Permission::ASSIGN_MERCHANT_TERMINAL            => '',
             Permission::ASSIGN_MERCHANT_BANKS               => '',

@@ -2,8 +2,6 @@
 
 namespace RZP\Reconciliator\Base;
 
-use RZP\Error\ErrorCode;
-
 class Constants
 {
     const RECON_PUBLIC_DESCRIPTIONS = [
@@ -54,6 +52,6 @@ class Constants
 
         InfoCode::RECON_UNABLE_TO_IDENTIFY_RECON_TYPE           => 'Could not identify the row as payment or refund.',
 
-        ErrorCode::SERVER_ERROR_DB_QUERY_FAILED                 => 'DB query failed.',
+        InfoCode::RECON_INSUFFICIENT_DATA_FOR_MANUAL_RECON      => 'Insufficient data given for manual reconciliation of txn.',
     ];
 }

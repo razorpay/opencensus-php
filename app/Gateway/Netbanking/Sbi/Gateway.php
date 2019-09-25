@@ -15,6 +15,7 @@ use RZP\Models\Customer\Token;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Gateway\Netbanking\Base\Entity as GatewayEntity;
 
 class Gateway extends Base\Gateway
@@ -47,6 +48,23 @@ class Gateway extends Base\Gateway
         ResponseFields::MANDATE_SBI_STATUS   => Base\Entity::STATUS,
         ResponseFields::MANDATE_SBI_REF      => Base\Entity::BANK_PAYMENT_ID,
     ];
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        if (isset($input['payment']) === true)
+        {
+            if ($input['payment']['recurring'] === true)
+            {
+                $this->setBankingType(BankingType::RECURRING);
+            }
+            else
+            {
+                $this->setBankingType(BankingType::RETAIL);
+            }
+        }
+    }
 
     /**
      * This function initiates a transaction on sbi.
@@ -207,6 +225,11 @@ class Gateway extends Base\Gateway
                 RequestFields::REDIRECT_URL => $input['callbackUrl'],
                 RequestFields::CANCEL_URL   => $input['callbackUrl'],
             ];
+
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+                $requestArray[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+            }
         }
 
         $contentToEncrypt = $this->getFormattedRequest($requestArray);
@@ -353,6 +376,16 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
+        $input = $verify->input;
+
+        // Throw exception as verify is not available for second recurring request
+        if (($input['payment']['recurring_type'] === Payment\RecurringType::AUTO) and
+            ($input['payment']['recurring'] === true))
+        {
+            throw new Exception\PaymentVerificationException(
+                [], $verify, Payment\Verify\Action::FINISH);
+        }
+
         $request = $this->getVerifyRequestData($verify);
 
         $response = $this->sendGatewayRequest($request);
@@ -619,5 +652,29 @@ class Gateway extends Base\Gateway
         }
 
         return hex2bin($this->getLiveSecret());
+    }
+
+    protected function getTestSecret()
+    {
+        $secret = parent::getTestSecret();
+
+        if ($this->bankingType === BankingType::RECURRING)
+        {
+            $secret = $this->config['test_hash_secret_recurring'];
+        }
+
+        return $secret;
+    }
+
+    protected function getTestMerchantId()
+    {
+        $code = parent::getTestMerchantId();
+
+        if ($this->bankingType === BankingType::RECURRING)
+        {
+            $code = $this->config['test_merchant_id_recurring'];
+        }
+
+        return $code;
     }
 }

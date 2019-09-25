@@ -111,7 +111,7 @@ class BugFixer extends Base\Service
                 $adjRepo = new Adjustment\Repository;
                 $adjRepo->saveOrFail($adj);
 
-                $txn = (new Transaction\Core)->createFromAdjustment($adj, $updateEscrow);
+                $txn = (new Transaction\Core)->createFromAdjustment($adj);
 
                 $x = range (6, 13);
                 $newTxnId = $setlId;

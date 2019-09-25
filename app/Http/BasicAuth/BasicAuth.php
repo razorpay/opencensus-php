@@ -2264,4 +2264,17 @@ class BasicAuth
 
         return [$originType, $originId];
     }
+
+    public function getRequestMetricDimensions(): array
+    {
+        $ctx = app('request.ctx');
+
+        return [
+            'mode'   => $ctx->getMode(),
+            'route'  => $ctx->getRoute(),
+            'auth'   => $ctx->getAuth(),
+            'proxy'  => $ctx->getProxy(),
+            'bearer' => empty($ctx->getBearerToken()) === false,
+        ];
+    }
 }

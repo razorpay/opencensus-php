@@ -100,4 +100,17 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException('Invalid bankAccount id : '. $bankAccountId);
         }
     }
+
+    /**
+     * @param $nodalBeneficiary
+     * @param $cardId
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateCard(Entity $nodalBeneficiary, string $cardId)
+    {
+        if ($nodalBeneficiary == null)
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid card id : '. $cardId);
+        }
+    }
 }

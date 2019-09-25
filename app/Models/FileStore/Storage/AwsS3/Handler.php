@@ -239,6 +239,14 @@ class Handler extends BaseHandler
             'Metadata'    => $fileDetails['metadata'],
         ];
 
+        if (isset($fileDetails['additional_parameters']) === true)
+        {
+            foreach ($fileDetails['additional_parameters'] as $key => $value)
+            {
+                $s3ContentObj[$key] = $value;
+            }
+        }
+
         $s3Obj = array_merge($s3Obj, $s3ContentObj);
 
         return $s3Obj;

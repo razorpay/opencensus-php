@@ -4,6 +4,7 @@ namespace RZP\Models\Coupon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -106,9 +107,20 @@ class Core extends Base\Core
 
     public function apply(Merchant\Entity $merchant, array $input): array
     {
-        $coupon = $this->validateAndGetDetails($merchant, $input);
+        try
+        {
+            $coupon = $this->validateAndGetDetails($merchant, $input);
 
-        $this->applyMerchantPromotion($merchant, $coupon);
+            $this->applyMerchantPromotion($merchant, $coupon);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_FAILED, $merchant, $exception);
+
+            throw $exception;
+        }
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_SUCCESS, $merchant, null);
 
         return [
             'message' => self::SUCCESS_MESSAGE

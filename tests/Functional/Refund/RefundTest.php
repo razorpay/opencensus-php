@@ -2089,7 +2089,14 @@ class RefundTest extends TestCase
 
         $this->assertEquals(false, $refund['gateway_refunded']);
         $this->assertEquals('optimum', $refund['speed_requested']);
-        $this->assertEquals(RefundStatus::CREATED, $refund['status']);
+        $this->assertEquals(RefundStatus::INITIATED, $refund['status']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('failed', $fta['status']);
 
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
@@ -2210,7 +2217,7 @@ class RefundTest extends TestCase
 
         $this->assertEquals(false, $refund['gateway_refunded']);
         $this->assertEquals('optimum', $refund['speed_requested']);
-        $this->assertEquals(RefundStatus::CREATED, $refund['status']);
+        $this->assertEquals(RefundStatus::INITIATED, $refund['status']);
 
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
@@ -2335,6 +2342,13 @@ class RefundTest extends TestCase
         $this->assertEquals('optimum', $refund['speed_requested']);
         $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
         $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
 
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
@@ -2559,5 +2573,48 @@ class RefundTest extends TestCase
         $this->assertEquals('normal', $refund['speed_processed']);
         $this->assertEquals(0, $refund['fee']);
         $this->assertEquals(0, $refund['tax']);
+    }
+
+    public function testRefundProcessedToFileInitEvent()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $refund['reference1'] = '1234567890';
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertNotNull($refund['processed_at']);
+        $this->assertEquals('1234567890', $refund['reference1']);
+
+        $this->scroogeUpdateRefundStatus($refund, 'processed_to_file_init_event', 'file_init');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals(RefundStatus::CREATED, $refund['status']);
+        $this->assertNull($refund['processed_at']);
+        $this->assertNull($refund['reference1']);
     }
 }

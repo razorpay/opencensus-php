@@ -51,6 +51,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         parent::__construct($gateway, $batch);
 
         $this->messenger->batch = $batch;
+
+        $this->batch = $batch;
     }
 
     /**
@@ -76,6 +78,10 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         {
             return $this->handleUnprocessedRow($row);
         }
+
+        $this->setMerchantIdInOutput($this->refund->getMerchantId());
+
+        $this->setProcessedAtInOutput();
 
         $refundId = $rowDetails[BaseReconciliate::REFUND_ID];
 

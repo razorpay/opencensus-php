@@ -1022,6 +1022,147 @@ class SettlementTest extends TestCase
 
     /**
      * Asserts that the settlement and fta is associated with correct bank account when -
+     * 1. Partner config is defined for an application and merchant bank account does not exists.
+     */
+    public function testSettleToPartnerWhenNoMerchantBA()
+    {
+        $partnerBankAccount = $this->createPlatformMerchantsAndSubmerchants();
+
+        $this->assertNotNull($partnerBankAccount);
+
+        $merchantCore = (new MerchantCore());
+
+        $this->createConfigForPartnerApp(
+            Partner\Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            null,
+            [PartnerConfig\Entity::SETTLE_TO_PARTNER => true]);
+
+        $merchantIds = [
+            Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+        ];
+
+        $results = $merchantCore->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        $expectedResult = [
+            Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID   => $partnerBankAccount->getId(),
+            Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2 => $partnerBankAccount->getId(),
+        ];
+
+        $this->assertEquals($expectedResult, $results);
+
+        $this->ba->appAuth();
+
+        $amount = 10000;
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $firstMerchant = Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID;
+
+        $secondMerchant = Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2;
+
+        $this->fixtures->merchant->edit($firstMerchant, ['channel' => Channel::AXIS2]);
+
+        $this->fixtures->merchant->edit($secondMerchant, ['channel' => Channel::AXIS2]);
+
+        $this->createTransactionForMerchants($merchantIds, $amount);
+
+        $firstSubMerchantBankAccount = $this->getDbEntity(
+            'bank_account',
+            [
+                'merchant_id' => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'   => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            ]);
+
+        $deletedTimestamp = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
+
+        //Deleting bank account for first submerchant.
+        $this->fixtures->edit('bank_account',
+            $firstSubMerchantBankAccount->getId(),
+            [
+                'deleted_at' => $deletedTimestamp
+            ]);
+
+        $secondSubMerchantBankAccount = $this->getDbEntity(
+            'bank_account',
+            [
+                'merchant_id' => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+                'entity_id'   => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+            ]);
+
+        //Deleting bank account for second submerchant.
+        $this->fixtures->edit('bank_account',
+            $secondSubMerchantBankAccount->getId(),
+            [
+                'deleted_at' => $deletedTimestamp
+            ]);
+
+        $setlResponse = $this->initiateSettlements(Channel::AXIS2);
+
+        $this->assertTestResponse($setlResponse);
+
+        // Verifiy settlement amounts
+        $firstSettlements = $this->getEntities('settlement', ['merchant_id' => $firstMerchant], true);
+
+        $this->assertEquals(1, $firstSettlements['count']);
+        $this->assertEquals(19600, $firstSettlements['items'][0]['amount']);
+
+        $firstSubMerchantBankAccount = $this->getDbEntity(
+            'bank_account',
+            [
+                'merchant_id' => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'   => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            ]);
+
+        // Verify bank account associated with the settlements
+        $firstSettlementBankAccount = $firstSettlements['items'][0]['bank_account_id'];
+
+        // Bank account associated with settlement should be partner BA and submerchant BA should not exist.
+        $this->assertEquals($partnerBankAccount->getId(), $firstSettlementBankAccount);
+        $this->assertEmpty($firstSubMerchantBankAccount);
+
+        $secondSettlements = $this->getEntities('settlement', ['merchant_id' => $secondMerchant], true);
+
+        $this->assertEquals(1, $secondSettlements['count']);
+        $this->assertEquals(39200, $secondSettlements['items'][0]['amount']);
+
+        $secondSubMerchantBankAccount = $this->getDbEntity(
+            'bank_account',
+            [
+                'merchant_id' => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+                'entity_id'   => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+            ]);
+
+        $secondSettlementBankAccount = $secondSettlements['items'][0]['bank_account_id'];
+
+        // Bank account associated with settlement should be partner BA and submerchant BA should not exist.
+        $this->assertEquals($partnerBankAccount->getId(), $secondSettlementBankAccount);
+        $this->assertEmpty($secondSubMerchantBankAccount);
+
+        // Verify bank account associated with the ftas
+        $firstFta = $this->getDbEntity(
+            'fund_transfer_attempt',
+            [
+                'merchant_id' => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID
+            ]);
+
+        // Bank account associated with fta should be partner BA and not submerchant BA.
+        $this->assertEquals($partnerBankAccount->getId(), $firstFta->bankAccount->getId());
+
+        $secondFta = $this->getDbEntity(
+            'fund_transfer_attempt',
+            [
+                'merchant_id' => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2
+            ]);
+
+        // Bank account associated with fta should be partner BA and not submerchant BA.
+        $this->assertEquals($partnerBankAccount->getId(), $secondFta->bankAccount->getId());
+    }
+
+    /**
+     * Asserts that the settlement and fta is associated with correct bank account when -
      * 1. Partner configs are defined for both - application and submerchant
      * 2. Partner configs are defined for both - application and submerchant and the submerchant config has
      * settle_to_flag set to false
@@ -1091,8 +1232,6 @@ class SettlementTest extends TestCase
                 'merchant_id' => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                 'entity_id'   => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
             ]);
-
-
 
         // Verify bank account associated with the settlements
         $firstSettlementBankAccount = $firstSettlements['items'][0]['bank_account_id'];

@@ -101,6 +101,7 @@ class Name
     const ADD_MERCHANT_ADJUSTMENT             = 'add_merchant_adjustment';
     const EDIT_MERCHANT_EMAIL                 = 'edit_merchant_email';
     const EDIT_MERCHANT_ADDITIONAL_EMAIL      = 'edit_merchant_additional_email';
+    const BULK_CREATE_ENTITY                  = 'bulk_create_entity';
     const MERCHANT_AUTOFILL_FORM              = 'merchant_autofill_form';
     const EDIT_MERCHANT_MARK_REFERRED         = 'edit_merchant_mark_referred';
     const VIEW_AS_ENTITY                      = 'view_as_entity';
@@ -164,6 +165,7 @@ class Name
     const EDIT_MERCHANT_INVITE                = 'edit_merchant_invite';
     const VIEW_MERCHANT_INVITE                = 'view_merchant_invite';
     const EDIT_MERCHANT_FORCE_ACTIVATION      = 'edit_merchant_force_activation';
+    const EDIT_MERCHANT_RECEIPT_EMAIL_EVENT   = 'edit_merchant_receipt_email_event';
     const VIEW_WORKFLOW                       = 'view_workflow';
     const CREATE_WORKFLOW                     = 'create_workflow';
     const VIEW_ALL_WORKFLOW                   = 'view_all_workflow';
@@ -256,20 +258,23 @@ class Name
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
     public static $actionMap = [
-        Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
-        Merchant\Action::UNARCHIVE              => self::EDIT_MERCHANT_UNARCHIVE,
-        Merchant\Action::SUSPEND                => self::EDIT_MERCHANT_SUSPEND,
-        Merchant\Action::UNSUSPEND              => self::EDIT_MERCHANT_UNSUSPEND,
-        Merchant\Action::LOCK                   => self::EDIT_MERCHANT_LOCK_ACTIVATION,
-        Merchant\Action::UNLOCK                 => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
-        Merchant\Action::EDIT_COMMENT           => self::EDIT_MERCHANT_COMMENTS,
-        Merchant\Action::HOLD_FUNDS             => self::EDIT_MERCHANT_HOLD_FUNDS,
-        Merchant\Action::RELEASE_FUNDS          => self::EDIT_MERCHANT_RELEASE_FUNDS,
-        Merchant\Action::ENABLE_RECEIPT_EMAILS  => self::EDIT_MERCHANT_ENABLE_RECEIPT,
-        Merchant\Action::DISABLE_RECEIPT_EMAILS => self::EDIT_MERCHANT_DISABLE_RECEIPT,
-        Merchant\Action::ENABLE_INTERNATIONAL   => self::EDIT_MERCHANT_ENABLE_INTERNATIONAL,
-        Merchant\Action::DISABLE_INTERNATIONAL  => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
-        Merchant\Action::FORCE_ACTIVATE         => self::EDIT_MERCHANT_FORCE_ACTIVATION,
+        Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
+        Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
+        Merchant\Action::SUSPEND                            => self::EDIT_MERCHANT_SUSPEND,
+        Merchant\Action::UNSUSPEND                          => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LOCK                               => self::EDIT_MERCHANT_LOCK_ACTIVATION,
+        Merchant\Action::UNLOCK                             => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
+        Merchant\Action::EDIT_COMMENT                       => self::EDIT_MERCHANT_COMMENTS,
+        Merchant\Action::HOLD_FUNDS                         => self::EDIT_MERCHANT_HOLD_FUNDS,
+        Merchant\Action::RELEASE_FUNDS                      => self::EDIT_MERCHANT_RELEASE_FUNDS,
+        Merchant\Action::ENABLE_RECEIPT_EMAILS              => self::EDIT_MERCHANT_ENABLE_RECEIPT,
+        Merchant\Action::DISABLE_RECEIPT_EMAILS             => self::EDIT_MERCHANT_DISABLE_RECEIPT,
+        Merchant\Action::ENABLE_INTERNATIONAL               => self::EDIT_MERCHANT_ENABLE_INTERNATIONAL,
+        Merchant\Action::DISABLE_INTERNATIONAL              => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
+        Merchant\Action::FORCE_ACTIVATE                     => self::EDIT_MERCHANT_FORCE_ACTIVATION,
+        Merchant\Action::SET_RECEIPT_EMAIL_EVENT_AUTHORIZED => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT,
+        Merchant\Action::SET_RECEIPT_EMAIL_EVENT_CAPTURED   => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT
+
     ];
 
     /**

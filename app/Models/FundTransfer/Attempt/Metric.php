@@ -32,6 +32,14 @@ final class Metric
      */
     const ATTEMPTS_FAILED_TOTAL             = 'attempts_failed_total';
 
+    /**
+     * Method: Count
+     * Dimensions: Sla
+     *
+     * Number of times initiated attempts are sent for transfer after sla expiry
+     */
+    const FTA_SLA_EXPIRED                   = 'fta_sla_expired';
+
     // ------ Histograms ------
 
     /**
@@ -44,6 +52,7 @@ final class Metric
 
     // ------------------------- Dimensions -------------------------
 
+    const SLA               = 'sla';
     const CHANNEL           = 'channel';
     const PURPOSE           = 'purpose';
     const SOURCE_TYPE       = 'source_type';

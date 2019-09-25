@@ -28,6 +28,7 @@ class Type
     protected static $instantReconEntities = [
         self::PAYOUT,
         self::FUND_ACCOUNT_VALIDATION,
+        self::REFUND,
     ];
 
     protected static $notifyTypes = [

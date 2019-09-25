@@ -274,6 +274,8 @@ class Processor
 
             if ($ret !== null)
             {
+                $this->logPaymentRespawnEvent($input, $ret);
+
                 return $ret;
             }
 
@@ -331,6 +333,24 @@ class Processor
         {
             (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
         }
+    }
+
+    protected function logPaymentRespawnEvent(array $request, array $data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $properties = [
+            'payment' => $request,
+            'reason'  => $data['missing'] ?? "Unknown",
+            'merchant'     => [
+                'id'        => $merchant->getId(),
+                'name'      => $merchant->getBillingLabel(),
+                'mcc'       => $merchant->getCategory(),
+                'category'  => $merchant->getCategory2(),
+            ],
+        ];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
     }
 
     public function getPayment(): Payment\Entity
@@ -459,11 +479,16 @@ class Processor
             return;
         }
 
-        $payment = $this->createPaymentEntity($input, $payment);
+        $payment = $this->repo->transaction(function() use ($input, $payment)
+        {
+            $payment = $this->createPaymentEntity($input, $payment);
 
-        $payment->setBaseAmount($payment->getAmount());
+            $payment->setBaseAmount($payment->getAmount());
 
-        $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
+
+            return $payment;
+        });
 
         $input['payment_id'] = $payment->getPublicId();
 
@@ -1055,6 +1080,14 @@ class Processor
                 'razorx_variant' => $variant,
             ]);
 
+            // Hardcoding this till wallet phonepe intent is moved to cps.
+            if (($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and ($gatewayInput['wallet']['flow'] === 'intent'))
+            {
+                $payment->disableCpsRoute();
+
+                return;
+            }
+
             if (strtolower($variant) === 'cps')
             {
                 $payment->enableCpsRoute();
@@ -1146,6 +1179,37 @@ class Processor
         }
 
         throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
+    }
+
+    /*
+     * This is a temporary measure to block payments for certain merchants who have "block_debit_2k" feature enabled
+     * and if the amount is >2k and method is card and type is debit
+     * In the future, this function will have validations for max amount that are method/type/currency etc specific
+     * per merchant
+     */
+    protected function validateForMaxAmount(array $input, Payment\Entity $payment)
+    {
+        if (($this->merchant->isFeatureEnabled(Feature::BLOCK_DEBIT_2K) === false) or
+            ($payment->getMethod() !== Payment\Method::CARD) or
+            ($payment->getAmount() <= 200000)) //INR 2000
+        {
+            return;
+        }
+
+        if ($payment->card === null)
+        {
+            return;
+        }
+
+        if ($payment->card->getType() !== Card\Type::DEBIT)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'Amount exceeds maximum amount allowed.',
+            'amount',
+            ['amount' => $payment->getAmount()]);
     }
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
@@ -1784,8 +1848,6 @@ class Processor
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
-            $gatewayDowntimeError = false;
-
             return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
         }
         catch (Exception\GatewayErrorException $ex)
@@ -1813,8 +1875,6 @@ class Processor
 
             $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
 
-            $gatewayDowntimeError = true;
-
             throw $ex;
         }
         finally
@@ -1830,16 +1890,23 @@ class Processor
             // action individually, which we might do at later point of time.
             // For Example: Action AUTH and CALLBACK both need to succeed
             // for the payment to be successful. If one is working fine, then
-            // Downtime configuration might now work properly.
+            // Downtime configuration might not work properly.
+
+            // Also, though we are putting the check here that
+            // we only want these actions to succeed but inside
+            // $this->app['gateway']->call(), we might call other actions.
+            // Example: In case of international payments we call capture immediately.
             if ((strtolower($variant) === 'on') and
                 ($this->isGatewayDowntimeAction($action) == true))
             {
                 try
                 {
-                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gateway, $gatewayData, $gatewayDowntimeError);
+                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gatewayData);
                 }
                 catch (\Throwable $e)
                 {
+                    // This can be removed later.
+                    // This is added for some time to test this feature.
                     $this->trace->traceException($e);
                 }
             }
@@ -2976,18 +3043,13 @@ class Processor
 
         $key = $payment->getCacheInputKey();
 
-        $inputDetails = $this->cache->get($key);
+        $inputDetails = $this->getInputDetails($payment, $key);
 
         if ($inputDetails === null)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
             );
-        }
-
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
-        {
-            $this->setCardNumberAndCvv($inputDetails);
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -3010,7 +3072,19 @@ class Processor
 
                 $this->repo->saveOrFail($payment);
 
-                return $this->authorize($payment, $inputDetails);
+                // temporary code
+                if (empty($inputDetails['gateway_input']) === true)
+                {
+                    return $this->authorize($payment, $inputDetails);
+                }
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                $gatewayInput['selected_terminals_ids'] = [$payment->getTerminalId()];
+
+                unset($inputDetails['gatewayInput']);
+
+                return $this->gatewayRelatedProcessing($payment, $inputDetails, $gatewayInput);
             },
             120,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
@@ -3074,6 +3148,17 @@ class Processor
         20,
         1000,
         2000);
+    }
+
+    public function revertProcessedRefundToCreatedState(Payment\Refund\Entity &$refund)
+    {
+        $refund->setStatus(Payment\Refund\Status::CREATED);
+
+        $refund->setReference1();
+
+        $refund->setProcessedAt(null);
+
+        $refund->setGatewayRefunded(null);
     }
 
     protected function resetPaymentStatusAndRefundStatus(Payment\Entity $payment)

@@ -133,6 +133,7 @@ class Netbanking
         IFSC::CIUB,
         IFSC::IDIB,
         IFSC::CBIN,
+        IFSC::SBIN,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -573,6 +574,9 @@ class Netbanking
         Gateway::NETBANKING_SBI => [
             'retail' => [
                 IFSC::SBIN,
+            ],
+            'tpv' => [
+                IFSC::SBIN
             ]
         ],
 

@@ -881,6 +881,38 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT,
         ],
     ],
+    'testOnDemandPayoutFetchFees' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/merchant/payout/demand/fees',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'entity'=> 'collection',
+                    'count'=> 2,
+                    'items'=> [
+                         [
+                            'name'=> 'payout',
+                            'amount'=> 510,
+                            'percentage'=> null,
+                            'pricing_rule'=> [
+                                'percent_rate'=> 100,
+                                'fixed_rate'=> 500,
+                            ]
+                        ],
+                        [
+                            'name'=> 'tax',
+                            'amount'=> 92,
+                            'percentage'=> 1800,
+                        ]
+                    ]
+            ],
+        ],
+    ],
 
     'testSearchPayoutByTransactionId' => [
         'request' => [
@@ -1371,5 +1403,40 @@ return [
                 ]
             ],
         ],
-    ]
+    ],
+
+    'testRxPayoutForSlaExpiry' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 200000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'King',
+                'fund_account_id' => 'fa_100000000000fa',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 200000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'King',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
 ];

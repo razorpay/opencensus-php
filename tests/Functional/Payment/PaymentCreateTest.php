@@ -7,8 +7,10 @@ use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
@@ -1960,5 +1962,66 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    // tests for merchant that have/do not have block_debit_2k feature enabled
+
+    public function testBlockDebit2kEnabledMerchant()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BLOCK_DEBIT_2K]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'debit'
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        //test  payment with amount less than 2k
+        $payment['amount'] = 100000;
+
+        $content = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        //test  payment with amount more than 2k
+        $payment['amount'] = 300000;
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Amount exceeds maximum amount allowed');
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testBlockDebit2kDisabledMerchant()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->iin->create([
+            'iin'     => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'debit'
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        foreach ([100000, 300000] as $amount)
+        {
+            $payment['amount'] = $amount;
+
+            $content = $this->doAuthPayment($payment);
+
+            $this->assertArrayHasKey('razorpay_payment_id', $content);
+        }
     }
 }

@@ -127,6 +127,13 @@ class NodalAccount extends NodalBase\FileProcessor
 
         foreach ($entities as $entity)
         {
+            //if BA is not present for attempt
+            // marking FTA as failed, if source is settlement
+            if($this->markFailedIfBANotExists($entity) === true)
+            {
+                continue;
+            }
+
             $amount = $entity->source->getAmount() / 100;
 
             $ba = $entity->bankAccount;
@@ -297,13 +304,21 @@ class NodalAccount extends NodalBase\FileProcessor
         // In seconds
         $timelines = [15, 30, 45, 60, 90, 120, 150, 180, 210];
 
+        $batchFTAId = null;
+
+        //Batchfta can be null in case of test mode
+        if(empty($this->batchFundTransfer) === false)
+        {
+            $batchFTAId = $this->batchFundTransfer->getId();
+        }
+
         $mailInfo = [
             'fileInfo'              => $fileInfo,
             'channel'               => $this->channel,
             'filetype'              => self::BEAM_FILE_TYPE,
             'subject'               => 'File Send failure',
             'recipient'             => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS],
-            'batchFundTransferId'   => $this->batchFundTransfer->getId(),
+            'batchFundTransferId'   => $batchFTAId,
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);

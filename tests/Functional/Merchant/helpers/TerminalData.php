@@ -148,6 +148,27 @@ return [
         ]
     ],
 
+    'testCreateSbiTpvTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_sbi',
+                'gateway_merchant_id'       => 'netbanking_sbi_merchant_id',
+                'gateway_secure_secret'     => 'random_secret',
+                'netbanking'                => '1',
+                'tpv'                       => '1',
+                'network_category'          => 'ecommerce',
+                ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => 'netbanking_sbi_merchant_id',
+                'enabled'              => true,
+                'tpv'                  => 1
+            ]
+        ]
+    ],
+
     'testBankAccountTerminalValidationRules' => [
         'request' => [
             'content' => [
@@ -2185,7 +2206,7 @@ return [
         'response' => [
             'content' => [
                 'entity'              => 'terminal',
-                'status' => "activated",
+                'status'              => 'activated',
                 'enabled'             =>  true,
                 'notes'               =>  'some notes',
                 'mpan'                =>  [
@@ -2204,7 +2225,7 @@ return [
         'response' => [
             'content' => [
                 'entity'              => 'terminal',
-                'status'              => "activated",
+                'status'              => 'activated',
                 'enabled'             =>  false,
                 'notes'               =>  'some notes',
                 'mpan'                =>  [
@@ -2216,6 +2237,25 @@ return [
         ]
     ],
 
+    'testOnlyActivatedTerminalShouldBeEnabled'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only terminals in activated state can be enabled',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED
+        ],
+    ],
+
     'testSubMerchantsShouldNotBeAbleToDisableTerminals'  => [
         'request' => [
             'method' => 'PUT'
@@ -2224,14 +2264,14 @@ return [
             'content'  => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'Bad request',
+                    'description'   => 'Merchant is not a partner',
                 ],
             ],
             'status_code' => 400
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER
         ],
     ],
 
@@ -2245,25 +2285,25 @@ return [
                 'entity'  => 'collection',
                 'items'   => [
                     [
-                        'entity'  => "terminal",
-                        'status'  => "activated",
+                        'entity'  => 'terminal',
+                        'status'  => 'activated',
                         'enabled' => true,
                         'notes'   => null,
                         'mpan' => [
-                            'mc_mpan' =>  "5220240401208405",
-                            'rupay_mpan' =>  "6100030401208403",
-                            'visa_mpan' =>  "4403844012084006"
+                            'mc_mpan'    => '5220240401208405',
+                            'rupay_mpan' => '6100030401208403',
+                            'visa_mpan'  => '4403844012084006'
                         ]
                     ],
                     [
-                        'entity'  => "terminal",
-                        'status'  => "activated",
+                        'entity'  => 'terminal',
+                        'status'  => 'activated',
                         'enabled' => true,
                         'notes'   => null,
                         'mpan' => [
-                            'mc_mpan' =>  "4287346823986423",
-                            'rupay_mpan' =>  "6287346823986423",
-                            'visa_mpan' =>  "5287346823986423"
+                            'mc_mpan'    => '4287346823986423',
+                            'rupay_mpan' => '6287346823986423',
+                            'visa_mpan'  => '5287346823986423'
                         ]
                     ]
                 ]
@@ -2271,7 +2311,7 @@ return [
         ]
     ],
 
-    'testPartnerWithouTerminalControlFeatureShouldNotBeAbleToFetchTerminals'  => [
+    'testPartnerWithoutTerminalOnboardingFeatureShouldNotBeAbleToFetchTerminals'  => [
         'request' => [
             'method' => 'GET'
         ],
@@ -2279,7 +2319,7 @@ return [
             'content'  => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'Bad request',
+                    'description'   => 'Terminal onboarding feature is disabled',
                 ],
             ],
             'status_code' => 400
@@ -2298,24 +2338,24 @@ return [
             'content'  => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'Bad request',
+                    'description'   => 'Merchant is not a partner',
                 ],
             ],
             'status_code' => 400
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER
         ],
     ],
 
     'testTerminalOnboardingCreateTerminal' => [
         'request' => [
             'content' => [
-                "mpan" => [
-                  "mastercard"  => "1234567880123456",
-                  "visa"        => "1234567890123456",
-                  "rupay"       => "1234567890123457"
+                'mpan' => [
+                  'mastercard'  => '1234567880123456',
+                  'visa'        => '1234567890123456',
+                  'rupay'       => '1234567890123457'
                 ]
             ],
             'method' => 'POST'
@@ -2326,12 +2366,40 @@ return [
                 'enabled'  => false,
                 'status'   => 'created',
                 'mpan'     => [
-                    'mc_mpan'       =>  "1234567880123456",
-                    'rupay_mpan'    =>  "1234567890123457",
-                    'visa_mpan'     =>  "1234567890123456"
+                    'mc_mpan'       =>  '1234567880123456',
+                    'rupay_mpan'    =>  '1234567890123457',
+                    'visa_mpan'     =>  '1234567890123456'
                 ]
 
             ]
         ]
     ],
+
+    'testTerminalOnboardingCreateTerminal2' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '1234567880123458',
+                  'visa'        => '1234567890123458',
+                  'rupay'       => '1234567890123458'
+                ]
+            ],
+            'url'    => '/terminals',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  '1234567880123458',
+                    'rupay_mpan'    =>  '1234567890123458',
+                    'visa_mpan'     =>  '1234567890123458'
+                ]
+
+            ]
+        ]
+    ],
+
 ];

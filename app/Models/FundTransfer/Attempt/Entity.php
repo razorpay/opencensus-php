@@ -6,9 +6,11 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Card\Issuer;
 use RZP\Constants\Entity as E;
+use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
+use RZP\Trace\TraceCode;
 
 /**
  * @property mixed batchFundTransfer
@@ -65,6 +67,8 @@ class Entity extends Base\PublicEntity
     const FUND_TRANSFER_ID      = 'fund_transfer_id';
 
     protected $entity = 'fund_transfer_attempt';
+
+    protected static $sign = 'fta';
 
     protected $fillable = [
         self::PURPOSE,
@@ -548,17 +552,60 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    public function shouldUseGateway(): bool
+    public function shouldUseGateway($mode = null): bool
     {
+        if ((empty($mode) === false) and
+            ($mode !== Mode::UPI))
+        {
+            return false;
+        }
+
+        $source = $this->source;
+
+        $amount = ($source->getAmount() / 100);
+
+        $amount = round($amount, 2);
+
+        if ($amount > Constants::MAX_UPI_AMOUNT)
+        {
+            // Throw Exception if Mode is sent by Source and Amount is greater than UPI limit
+            if ($mode === Mode::UPI)
+            {
+                throw new LogicException(
+                    "Amount for Mode $mode is greater than limit.",
+                    null,
+                    [
+                        'amount' => $amount
+                    ]);
+            }
+
+            return false;
+        }
+
         if ($this->hasVpa() === true)
         {
             return true;
         }
 
-        if (($this->hasCard() === true) and
-            ($this->card->getIssuer() === Issuer::ICIC))
+        if ($this->hasCard() === true)
         {
-            return true;
+            $iin = $this->card->iinRelation;
+
+            if ($iin === null)
+            {
+                return false;
+            }
+
+            $issuer = $iin->getIssuer();
+
+            $networkCode = $this->card->getNetworkCode();
+
+            $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
+
+            if (in_array(Mode::UPI, $supportedModes, true) === true)
+            {
+                return true;
+            }
         }
 
         return false;

@@ -19,26 +19,4 @@ class Validator extends Base\Validator
         Entity::COMPONENT,
         Entity::COUNT,
     );
-
-    protected function validateComponent($input)
-    {
-        $component = $input[Entity::COMPONENT];
-
-        Details\Component::validateComponent($type);
-    }
-
-    protected function validateCount($input)
-    {
-        $count = $input[Entity::COUNT];
-
-        if (($type === Component::FEE) or
-            ($type === Component::TAX))
-        {
-            assertTrue ($count === null);
-        }
-        else
-        {
-            assertTrue (is_int($count));
-        }
-    }
 }
