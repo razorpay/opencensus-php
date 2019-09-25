@@ -158,11 +158,12 @@ class EsController extends Controller
         $endpoint = 'http://' . env('ES_AUDIT_HOST') . ':9200/' . $path . '?' . Request::getQueryString();
         // Symfony returns each header key as an array.
         $headers  = array_map(function($v) { return current($v); }, Request::header());
+        $headers  = array_only($headers, ['content-type']);
         $method   = Request::method();
         // For Requests::request call expects raw body.
         $body     = Request::getContent();
 
-        $this->trace->info(TraceCode::ES_PROXY_REQUEST, compact('endpoint', 'headers', 'method', 'body'));
+        $this->trace->info(TraceCode::ES_PROXY_REQUEST, compact('endpoint', 'method', 'body'));
 
         $resp        = Requests::request($endpoint, $headers, $body, $method);
         $respCode    = $resp->status_code;
