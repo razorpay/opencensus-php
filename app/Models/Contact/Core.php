@@ -22,16 +22,18 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
-        {
-            $result = $this->repo->contact->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                                                                 $merchant->getId(),
-                                                                 $batchId);
+        $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
 
-            if ($result !== null)
-            {
-                return $result;
-            }
+        if ($contact !== null)
+        {
+            $this->trace->info(
+                TraceCode::DUPLICATE_CONTACT_FOUND,
+                [
+                    Entity::ID         => $contact->getId(),
+                    Entity::BATCH_ID   => $batchId,
+                ]);
+
+            return $contact;
         }
 
         $contact = (new Entity)->build($input);
@@ -93,6 +95,18 @@ class Core extends Base\Core
     {
         $contact = $entry[ContactBatchHelper::CONTACT];
 
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->contact->fetchByIdempotentKey($entry[Entity::IDEMPOTENCY_KEY],
+                                                                 $this->merchant->getId(),
+                                                                 $batchId);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
+
         $contactId = (isset($contact[ContactBatchHelper::ID]) === true) ? $contact[ContactBatchHelper::ID] : null;
 
         if (empty($contactId) === false)
@@ -101,20 +115,6 @@ class Core extends Base\Core
         }
 
         $input = ContactBatchHelper::getContactInput($entry);
-
-        $contact = $this->repo->contact->getContactWithSimilarDetails($input, $this->merchant);
-
-        if ($contact !== null)
-        {
-            $this->trace->info(
-              TraceCode::DUPLICATE_CONTACT_FOUND,
-              [
-                  Entity::ID         => $contact->getId(),
-                  Entity::BATCH_ID   => $batchId,
-              ]);
-
-            return $contact;
-        }
 
         $contact = $this->create($input, $this->merchant, $batchId);
 
