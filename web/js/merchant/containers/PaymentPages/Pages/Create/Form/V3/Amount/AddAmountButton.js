@@ -50,5 +50,6 @@ export const AmountDropdown = ({
     trigger={children}
     onSelect={onSelect}
     selectedOption={selectedOption && selectedOption.label}
+    showInfo
   />
 );

@@ -535,9 +535,11 @@
         padding: 8px 20px
         margin-right: 0
 
+  .dropdown__content
+    position: relative
 
   .OptionsDropdown-list
-    margin-bottom: 8px
+    margin-bottom: 40px
     width: 224px
     max-height: 252px
     border-radius: 4px
@@ -635,6 +637,33 @@
       border-top: 2px solid #e8e9ee
       .i
         color: #D26A6A
+
+  .FieldsDropdown--withInfo
+    .info
+      position: absolute
+      padding: 8px
+      width: 192px
+      min-height: 220px
+      right: 100%
+      bottom: 100%
+      margin-bottom: 40px
+      background: #f6f7fa
+      border: 1px solid #eee
+      box-shadow: 0 0 14px rgba(0,0,0,0.09)
+
+      .title
+        color: #0D2366
+        font-size: 13px
+        margin: 6px 0
+
+      .description
+        color: #515978
+        font-size: 12px
+        line-height: 17px
+
+    .OptionsDropdown-list
+      min-height: 220px
+
 
 @keyframes dropdownAppearIn
   0%

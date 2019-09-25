@@ -1,5 +1,6 @@
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import { classList } from 'common/util';
+import debounce from 'rzp/utils/debounce';
 
 export default class FieldsDropdown extends React.PureComponent {
   state = { selectedLabel: this.props.selectedLabel };
@@ -8,15 +9,24 @@ export default class FieldsDropdown extends React.PureComponent {
     this.props.onSelect && this.props.onSelect(option);
   };
 
+  _setOnHoverOption(option) {
+    this.setState({
+      hoverOption: option,
+    });
+  }
+
+  setOnHoverOption = debounce(this._setOnHoverOption, 50);
+
   render() {
-    const { selectedLabel } = this.state;
-    const { options, type, beforeOptionsTxt, trigger } = this.props;
+    const { selectedLabel, hoverOption } = this.state;
+    const { options, type, beforeOptionsTxt, trigger, showInfo } = this.props;
 
     return (
       <div
         class={classList(
           'OptionsDropdown FieldsDropdown',
-          type && 'FieldsDropdown--' + type
+          type && 'FieldsDropdown--' + type,
+          showInfo && 'FieldsDropdown--withInfo'
         )}
       >
         <Dropdown>
@@ -37,6 +47,12 @@ export default class FieldsDropdown extends React.PureComponent {
                         'OptionsDropdown-item--selected'
                     )}
                     onClick={_ => this.onSelect(option)}
+                    onMouseOver={
+                      showInfo ? _ => this.setOnHoverOption(option) : undefined
+                    }
+                    onMouseLeave={
+                      showInfo ? _ => this.setOnHoverOption(null) : undefined
+                    }
                   >
                     <i
                       class={classList('i', option.icon && 'i-' + option.icon)}
@@ -47,6 +63,14 @@ export default class FieldsDropdown extends React.PureComponent {
                 );
               })}
             </ul>
+            {showInfo &&
+              hoverOption && (
+                <div class="info">
+                  <img src={hoverOption.info.img} width="176" />
+                  <div class="title">{hoverOption.info.title}</div>
+                  <div class="description">{hoverOption.info.description}</div>
+                </div>
+              )}
           </DropdownContent>
         </Dropdown>
       </div>

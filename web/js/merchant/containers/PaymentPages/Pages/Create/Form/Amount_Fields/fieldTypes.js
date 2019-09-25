@@ -3,18 +3,36 @@ const FIELD_TYPES = {
     label: 'Fixed Amount',
     key: 'fixed_price',
     icon: 'fixed_price',
+    info: {
+      img: 'img/payment_pages/fixed_price.png',
+      title: 'Fixed Amount',
+      description:
+        'Add a field which contains the price value which customer should pay.',
+    },
   },
 
   dynamic_price: {
     label: 'Customers Decide Amount',
     key: 'dynamic_price',
     icon: 'dynamic_price',
+    info: {
+      img: 'img/payment_pages/dynamic_price.png',
+      title: 'Customers Decide Amount',
+      description:
+        'Add a free field which helps customer to fill a amount which they wish to pay.',
+    },
   },
 
   multiple_purchase: {
     label: 'Item with Quantity',
     key: 'multiple_purchase',
     icon: 'multiple_purchase',
+    info: {
+      img: 'img/payment_pages/multiple_purchase.png',
+      title: 'Item with Quantity',
+      description:
+        'Add a price field with quantity selection widget to facilitate to purchase multiple quantities.',
+    },
   },
 };
 
