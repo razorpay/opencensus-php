@@ -33,13 +33,13 @@ abstract class Generator extends Base
                                ->banking_account
                                ->findByAccountNumberAndChannel($this->accountNumber, $this->channel);
 
+        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
+
         $allBankAccountTransactions = $this->repo
                                            ->statement
                                            ->fetch(['balance_id' => $bankingAccount->getBalanceId()],
                                                     $bankingAccount->getMerchantId())
                                            ->sortBy('created_at');
-
-        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
 
         list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($allBankAccountTransactions);
 
@@ -72,7 +72,7 @@ abstract class Generator extends Base
         {
             $openingBalance = $bankAccountStatements[count($bankAccountStatements) - 1]->getBalance();
 
-            $closingBalance =  $bankAccountStatements[0]->getBalance();
+            $closingBalance = $bankAccountStatements[0]->getBalance();
 
             $effectiveBalance = $closingBalance;
 
@@ -174,15 +174,15 @@ abstract class Generator extends Base
     {
         $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(),
                                                           Timezone::IST)
-                                    ->format(self::DATE_FORMAT);
+                                                          ->format(self::DATE_FORMAT);
 
         $fromDate = Carbon::createFromTimestamp($this->fromDate,
                                                 Timezone::IST)
-                          ->format(self::DATE_FORMAT);
+                                                ->format(self::DATE_FORMAT);
 
         $toDate = Carbon::createFromTimestamp($this->toDate,
                                               Timezone::IST)
-                        ->format(self::DATE_FORMAT);
+                                               ->format(self::DATE_FORMAT);
 
         $statementPeriod = $fromDate . ' - ' . $toDate;
 
