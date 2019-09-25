@@ -52,7 +52,10 @@ class FundAccountPayout extends Base
         {
             throw new BadRequestValidationFailureException(
                 'Payouts cannot be created for fund account without contact.',
-                Payout\Entity::FUND_ACCOUNT_ID);
+                Payout\Entity::FUND_ACCOUNT_ID,
+                [
+                    'fund_account_id' => $fundAccount->getId()
+                ]);
         }
     }
 }
