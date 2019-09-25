@@ -83,9 +83,4 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         return null;
     }
-
-    protected function setAllowForceAuthorization(Payment\Entity $payment)
-    {
-        $this->allowForceAuthorization = true;
-    }
 }

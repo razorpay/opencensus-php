@@ -5342,3 +5342,6 @@ ALTER TABLE nodal_beneficiaries ADD INDEX nodal_beneficiaries_bank_account_id_ch
 ALTER table merchant_details
     ADD COLUMN `business_registered_district` VARCHAR(255) NULL AFTER `business_registered_city`,
     ADD COLUMN `business_operation_district` VARCHAR(255) NULL AFTER  `business_operation_city`;
+
+ALTER TABLE terminals
+    MODIFY COLUMN currency VARCHAR(1024) NOT NULL DEFAULT 'INR';

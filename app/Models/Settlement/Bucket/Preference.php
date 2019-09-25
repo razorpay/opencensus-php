@@ -43,7 +43,7 @@ class Preference extends Base\Core
         return $timestamp->getTimestamp();
     }
 
-    public function getCeilTimestamp(Carbon $timestamp): Carbon
+    public static function getCeilTimestamp(Carbon $timestamp): Carbon
     {
         $hourOffset = 1;
 
@@ -154,36 +154,6 @@ class Preference extends Base\Core
             return $data;
         }
 
-        $data = $this->getWealthySettlementBucket($merchant, $settlementTime);
-
-        if ($data[0] === true)
-        {
-            return $data;
-        }
-
-        return [false, $settlementTime->getTimestamp()];
-    }
-
-    /**
-     * Specific check for wealthy
-     * they dont want settlement on saturdays
-     *
-     * @param Merchant\Entity $merchant
-     * @param Carbon          $settlementTime
-     * @return array
-     */
-    protected function getWealthySettlementBucket(Merchant\Entity $merchant, Carbon $settlementTime): array
-    {
-        if (($merchant->getParentId() === Merchant\Preferences::MID_WEALTHY) and
-            ($settlementTime->dayOfWeek === Carbon::SATURDAY))
-        {
-            $timestamp = Holidays::getNextWorkingDay($settlementTime);
-
-            $timestamp = self::getNextBucket($timestamp->getTimestamp(), Constants::NINE_AM);
-
-            return [true, $timestamp];
-        }
-
         return [false, $settlementTime->getTimestamp()];
     }
 
@@ -242,7 +212,7 @@ class Preference extends Base\Core
             }
         }
 
-        return self::getNextBucket($settlementTime, $hour);
+        return self::getNextBucket($settlementTime->getTimestamp(), $hour);
     }
 
     /**
@@ -324,6 +294,16 @@ class Preference extends Base\Core
             {
                 $hour = Constants::ONE_PM;
             }
+        }
+
+        if (($parentMerchantId === Merchant\Preferences::MID_WEALTHY) and
+            ($settlementTime->dayOfWeek === Carbon::SATURDAY))
+        {
+            $timestamp = Holidays::getNextWorkingDay($settlementTime);
+
+            $timestamp = self::getNextBucket($timestamp->getTimestamp(), Constants::NINE_AM);
+
+            return [true, $timestamp];
         }
 
         $timestamp = self::getNextBucket($settlementTime->getTimestamp(), $hour);

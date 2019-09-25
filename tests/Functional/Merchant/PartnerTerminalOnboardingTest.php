@@ -159,20 +159,18 @@ class PartnerTerminalOnboardingTest extends TestCase
 
     public function testTerminalOnboardingCreateTerminal()
     {
-        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+        $this->ba->adminAuth();
 
-        $this->redis = Redis::connection()->client();
-
-        $ranges = [
-            [123800, 123899],
-            [133800, 133899],
-            [143800, 143899]
+        $request = [
+            'method'  => 'put',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:atos_tid_range_list' => [ [12380001, 123899999], [13380001, 13389999]]
+            ]
         ];
+        $this->makeRequestAndGetContent($request);
 
-        foreach ($ranges as $range)
-        {
-            $this->redis->rpush('test_mode_' . Atos\TidGenerator::ATOS_TID_RANGE_LIST, json_encode($range));
-        }
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
