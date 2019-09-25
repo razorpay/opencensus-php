@@ -181,9 +181,13 @@ class Core extends Base\Core
 
         $currentTimestamp = Carbon::now(Timezone::IST);
 
-        $bucketTimestamp = ($settlementTime < $currentTimestamp->getTimestamp()) ?
+        $settlementTime = Carbon::createFromTimestamp($settlementTime, Timezone::IST);
+
+        $settlementTime = Preference::getCeilTimestamp($settlementTime);
+
+        $bucketTimestamp = ($settlementTime->getTimestamp() < $currentTimestamp->getTimestamp()) ?
             Preference::getNextBucket($currentTimestamp->getTimestamp()) :
-            Preference::getNextBucket($settlementTime);
+            Preference::getNextBucket($settlementTime->getTimestamp());
 
         return $this->addToBucket($merchantId, $bucketTimestamp, $settlementTime);
     }

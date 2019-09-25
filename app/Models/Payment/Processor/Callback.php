@@ -511,21 +511,10 @@ trait Callback
 
         $this->logRiskFailureForGateway($this->payment, $internalErrorCode);
 
-        if (Error\Error::hasAction($internalErrorCode) === false)
-        {
-            $this->updatePaymentAuthFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
-        }
-        else
-        {
-            $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
-        }
-
         switch ($internalErrorCode)
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
-                $payment->incrementOtpAttempts();
-
-                $this->repo->saveOrFail($payment);
+                $this->payment->incrementOtpAttempts();
 
                 $this->app['segment']->trackPayment($payment,
                                                     ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
@@ -539,6 +528,22 @@ trait Callback
                         'amount' => $payment->getAmount()
                     ]);
                 break;
+        }
+
+        $this->updatePaymentOnExceptionAndThrow($e);
+    }
+
+    protected function updatePaymentOnExceptionAndThrow($e)
+    {
+        $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+        if (Error\Error::hasAction($internalErrorCode) === false)
+        {
+            $this->updatePaymentAuthFailed($e);
+        }
+        else
+        {
+            $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
         }
 
         throw $e;
