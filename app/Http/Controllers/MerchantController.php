@@ -1219,6 +1219,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getRazorxTreatmentInBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT)->getRazorxTreatmentInBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * Input JSON sample:
      * {

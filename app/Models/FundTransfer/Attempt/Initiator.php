@@ -546,6 +546,15 @@ class Initiator extends Base\Core
         {
             return [false, 'Invalid mode to initiate transfer'];
         }
+        //
+        // If the force flag is set,
+        // let the fund transfer go
+        //
+        if ((isset($input['ignore_time_limit']) === true) and
+            ($input['ignore_time_limit'] === '1'))
+        {
+            return [true, null];
+        }
 
         if ($this->isValidTime($channel) === false)
         {

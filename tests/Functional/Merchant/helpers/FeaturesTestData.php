@@ -2,8 +2,8 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'updateFeatureAsMerchant' => [
@@ -221,6 +221,27 @@ return [
                     'entity_id'   => '10000000000003',
                     'entity_type' => 'merchant'
                 ],
+            ]
+        ]
+    ],
+
+    'testMultiRemoveFeatureFailure' => [
+        'request'  => [
+            'content' => [
+                'name'       => 'dummy',
+                'entity_ids' => ['10000000000001', '10000000000002', '10000000000003']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'failed_count'  => 1,
+                'success_count' => 2,
+                'failed'        => [
+                    '10000000000002',
+                ],
+                'failed_reason' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST
             ]
         ]
     ],

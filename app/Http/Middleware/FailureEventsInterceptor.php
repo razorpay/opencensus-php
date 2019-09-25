@@ -89,6 +89,18 @@ class FailureEventsInterceptor
                 [
                     'event_code' => EventCode::ACT_SUBMIT_FORM_FAILED,
                 ],
+            'merchant_activation_save'         =>
+                [
+                    'event_code' => EventCode::KYC_SAVE_MODIFICATIONS_FAILED,
+                ],
+            'merchant_activation_upload_file'  =>
+                [
+                    'event_code' => EventCode::KYC_UPLOAD_DOCUMENT_FAILED,
+                ],
+            'merchant_document_upload'         =>
+                [
+                    'event_code' => EventCode::KYC_UPLOAD_DOCUMENT_FAILED,
+                ],
         ];
 
         if (array_key_exists($routeName, $eventCodeNameRouteMappings) === true)

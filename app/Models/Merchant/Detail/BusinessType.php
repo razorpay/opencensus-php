@@ -79,6 +79,7 @@ class BusinessType
             self::TRUST,
             self::SOCIETY,
             self::OTHER,
+            self::NGO,
         ],
         self::UNREGISTERED => [
             self::INDIVIDUAL,
@@ -113,14 +114,13 @@ class BusinessType
     /**
      * Checks business type is a unregistered business type or not
      *
-     * @param string $businessType
+     * @param  $businessType
      *
      * @return bool
-     * @throws Exception\BadRequestValidationFailureException
      */
-    public static function isUnregisteredBusiness(string $businessType): bool
+    public static function isUnregisteredBusiness($businessType): bool
     {
-        if ($businessType == null)
+        if (empty($businessType))
         {
             return false;
         }

@@ -942,14 +942,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setCaptureTimestamp()
     {
-        $this->setAttribute(self::CAPTURED_AT, time());
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->setAttribute(self::CAPTURED_AT, $timestamp);
     }
 
     public function setAuthorizeTimestamp($authTimestamp = null)
     {
         if (is_null($authTimestamp))
         {
-            $this->setAttribute(self::AUTHORIZED_AT, time());
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $this->setAttribute(self::AUTHORIZED_AT, $timestamp);
         }
         else
         {

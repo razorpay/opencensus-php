@@ -33,8 +33,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min_amount',
-        Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min_amount',
+        Entity::AMOUNT              => 'sometimes|nullable|mysql_unsigned_int|min_amount',
+        Entity::UNIT_AMOUNT         => 'sometimes|nullable|mysql_unsigned_int|min_amount',
         Entity::CURRENCY            => 'required|currency|custom',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'filled|string|max:512',
@@ -50,8 +50,8 @@ class Validator extends Base\Validator
         Entity::ACTIVE              => 'filled|boolean',
         Entity::NAME                => 'filled|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
-        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int',
+        Entity::AMOUNT              => 'sometimes|nullable|mysql_unsigned_int',
+        Entity::UNIT_AMOUNT         => 'sometimes|nullable|mysql_unsigned_int',
         Entity::CURRENCY            => 'filled|currency|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
@@ -66,13 +66,25 @@ class Validator extends Base\Validator
         Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
+    protected static $amountCreateRules = [
+        Entity::AMOUNT      => 'required_without:unit_amount',
+        Entity::UNIT_AMOUNT => 'required_without:amount',
+    ];
+
+    protected static $amountUpdateRules = [
+        Entity::AMOUNT      => 'filled',
+        Entity::UNIT_AMOUNT => 'filled',
+    ];
+
     protected static $createValidators = [
+        Entity::AMOUNT,
         'tax_attributes_international',
         self::TAX_INPUTS,
         self::TAX_CODES,
     ];
 
     protected static $editValidators = [
+        'amount_payment_page',
         'tax_attributes_international',
         self::TAX_INPUTS,
         self::TAX_CODES,
@@ -82,6 +94,23 @@ class Validator extends Base\Validator
     public function validateType($attribute, $value)
     {
         Type::checkType($value);
+    }
+
+    public function validateAmount(array $input)
+    {
+        if ((isset($input[Entity::TYPE]) !== true) or
+            ($input[Entity::TYPE] !== Type::PAYMENT_PAGE))
+        {
+            $this->validateInputValues('amount_create', $input);
+        }
+    }
+
+    public function validateAmountPaymentPage(array $input)
+    {
+        if ($this->entity->getType() !== Type::PAYMENT_PAGE)
+        {
+            $this->validateInputValues('amount_update', $input);
+        }
     }
 
     /**
@@ -161,7 +190,8 @@ class Validator extends Base\Validator
 
     public function validateUpdateOperation(Entity $item)
     {
-        if ($item->isNotOfType(Type::INVOICE) === true)
+        if (($item->isNotOfType(Type::INVOICE) === true) and
+            ($item->isNotOfType(Type::PAYMENT_PAGE) === true))
         {
             $type = $item->getType();
 

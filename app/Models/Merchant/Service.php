@@ -2462,6 +2462,8 @@ class Service extends Base\Service
 
     protected function mapSubMerchantPartnerAppIfApplicable(Entity $merchant, Entity $subMerchant)
     {
+        $this->trace->info(TraceCode::MAP_PARTNER_SUBMERCHANT_ENTITY);
+
         if ($merchant->isPartner() === false)
         {
             return;
@@ -2877,6 +2879,26 @@ class Service extends Base\Service
         $result = $this->app['razorx']->getTreatment($merchantId, $featureFlag, $mode);
 
         $response = ['result' => $result];
+
+        return $response;
+    }
+
+    public function getRazorxTreatmentInBulk(array $input)
+    {
+        $response = [];
+
+        $featureFlags = $input['features'] ?? "";
+
+        if (empty($featureFlags) === false)
+        {
+            $featureFlagArray = explode(',', $featureFlags);
+
+            foreach ($featureFlagArray as $featureFlag)
+            {
+                $featureFlag = trim($featureFlag);
+                $response[$featureFlag] = $this->getRazorxTreatment($featureFlag);
+            }
+        }
 
         return $response;
     }

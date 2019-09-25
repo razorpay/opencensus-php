@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
@@ -185,6 +186,8 @@ class Gateway extends Base\Gateway
 
         $bank = $input['payment']['bank'];
 
+        $authType = AuthType::getAuthType($input);
+
         if (in_array($bank, Payment\Processor\Netbanking::$inconsistentIfsc) === true)
         {
             $bank = array_search ($bank, Payment\Processor\Netbanking::$defaultInconsistentBankCodesMapping);
@@ -195,6 +198,7 @@ class Gateway extends Base\Gateway
             RequestFields::REQUEST_XML => $signedxml,
             RequestFields::CHECKSUM    => $encryptedChecksum,
             RequestFields::BANK_ID     => $bank,
+            RequestFields::AUTH_MODE   => $authType,
         ];
 
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
@@ -206,6 +210,7 @@ class Gateway extends Base\Gateway
             RequestFields::REQUEST_XML => $xml,
             RequestFields::CHECKSUM    => $encryptedChecksum,
             RequestFields::BANK_ID     => $bank,
+            RequestFields::AUTH_MODE   => $authType
         ];
 
         $this->traceGatewayPaymentRequest($dataToTrace, $input);
@@ -255,6 +260,8 @@ class Gateway extends Base\Gateway
 
         $mcc = $input['terminal']['category'];
 
+        $merchantName = $this->getMerchantName($input['terminal'], $input['merchant']);
+
         $creditorAccount = $this->getCreditorAccount();
 
         $sponserIfsc = $this->getSponsorIfsc();
@@ -275,7 +282,7 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::CATEGORY_CODE         => $catCode,
                 RequestNpciTags::UTILITY_CODE          => $mid,
                 RequestNpciTags::CATEGORY_DESCRIPTION  => Base\CategoryCode::getCategoryDescriptionFromCode($catCode),
-                RequestNpciTags::NAME                  => 'Razorpay software pvt ltd',
+                RequestNpciTags::NAME                  => $merchantName,
             ],
 
             RequestNpciTags::MANDATE_ID           => $pid,
@@ -295,7 +302,7 @@ class Gateway extends Base\Gateway
             ],
 
             NpciXmlHeaderTags::CREDITOR            => [
-                RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd',
+                RequestNpciTags::CREDITOR_NAME         => $merchantName,
                 RequestNpciTags::CREDITOR_ACCOUNT      => $creditorAccount,
                 RequestNpciTags::IFSC_SPONSOR          => $sponserIfsc,
             ]
@@ -399,6 +406,20 @@ class Gateway extends Base\Gateway
         }
 
         return $sponsor;
+    }
+
+    protected function getMerchantName($terminal, $merchant)
+    {
+        if (($this->isShared($terminal)) or ($this->isTestMode() === true))
+        {
+            $merchantName =  'Razorpay software pvt ltd';
+        }
+        else
+        {
+            $merchantName = $merchant->getFilteredDba();
+        }
+
+        return str_limit($merchantName, 25, '');
     }
 
     // -------------------------- callback helper functions ----------------------------------
@@ -741,16 +762,23 @@ class Gateway extends Base\Gateway
         // For api based emandate initial payments, if late authorized,
         // we need to update the token status to confirmed
         if ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
-            {
-                $recurringData = $this->getRecurringData($gatewayPayment);
+        {
+            $recurringData = $this->getRecurringData($gatewayPayment);
 
-                $response = array_merge($response, $recurringData);
-            }
+            $response = array_merge($response, $recurringData);
+        }
 
         return $response;
     }
 
     // -------------------------- general helper functions ----------------------------------
+
+    protected function isShared($terminal)
+    {
+        $merchant = $terminal->getMerchantId();
+
+        return ($merchant === Merchant\Account::DEMO_ACCOUNT);
+    }
 
     public function generateHash($content)
     {

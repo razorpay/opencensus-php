@@ -295,6 +295,9 @@ class Entity extends Base\PublicEntity
         self::NOTES                      => null,
         self::OMNICHANNEL                => 0,
         self::VPA                        => null,
+        self::MC_MPAN                    => null,
+        self::VISA_MPAN                  => null,
+        self::RUPAY_MPAN                 => null,        
     ];
 
     protected $casts = [

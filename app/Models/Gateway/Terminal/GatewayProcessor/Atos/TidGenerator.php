@@ -3,11 +3,13 @@
 namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
 
 use App;
+use Cache;
 use Config;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
+use RZP\Models\Admin\ConfigKey;
 use Illuminate\Support\Facades\Redis;
 use RZP\Exception\ServerErrorException;
 
@@ -17,15 +19,28 @@ class TidGenerator extends core
     const RANGE_START_INDEX                    = 0;
     const RANGE_END_INDEX                      = 1;
     const ATOS_TID_RANGE_LIST                  = 'atos_tid_range_list';
-    const ATOS_TID_EXHAUSTION_ALERT_THRESHOLD  = 30000;
-    
+    const ATOS_TID_EXHAUSTION_ALERT_THRESHOLD  = 20000;
+
     public function __construct()
     {
         parent::__construct();
     
         $this->redis = Redis::Connection();
 
-        $this->redisTidKey = $this->mode . '_mode_' . self::ATOS_TID_RANGE_LIST;
+        $this->redisTidKey = $this->mode . '_' . self::ATOS_TID_RANGE_LIST;
+    }
+
+    protected function insertTidRangesIntoRedisIfEmpty()
+    {   
+        if (empty($this->app->redis->lrange($this->redisTidKey, 0, -1)))
+        {
+            $staticTidRanges = Cache::get(ConfigKey::ATOS_TID_RANGE_LIST, false);
+
+            foreach ($staticTidRanges as $tidRange)
+            {
+                $this->redis->rpush($this->redisTidKey, json_encode($tidRange));
+            }
+        }
     }
 
       /**
@@ -39,22 +54,23 @@ class TidGenerator extends core
 
         $tid = $mutex->acquireAndRelease($this->redisTidKey, function ()
         {
+            $this->insertTidRangesIntoRedisIfEmpty();
+
             $currentTidRange = $this->leftPopFromTidRangeList();
 
+            // This will also update the passed currentTidRange
             $nextTid = $this->allocateTidFrom($currentTidRange);
 
-            if ($this->isTidRangeExhausted($currentTidRange) === true)
+            $tidRangeList = $this->getTidRangeList();
+
+            $tidAvailableCount = $this->getTidAvailableCount($tidRangeList);
+
+            if ($tidAvailableCount < self::ATOS_TID_EXHAUSTION_ALERT_THRESHOLD)
             {
-                $tidRangeList = $this->getTidRangeList();
-
-                $tidAvailableCount = $this->getTidAvailableCount($tidRangeList);
-
-                if ($tidAvailableCount < self::ATOS_TID_EXHAUSTION_ALERT_THRESHOLD)
-                {
-                    $this->sendApproachingTidExhaustionAlert($tidAvailableCount, $tidRangeList);
-                }
+                $this->sendApproachingTidExhaustionAlert($tidAvailableCount, $tidRangeList);
             }
-            else
+
+            if ($this->isTidRangeExhausted($currentTidRange) === false)
             {
                 $this->leftInsertIntoTidRangeList($currentTidRange);
             }
