@@ -452,7 +452,11 @@ class TerminalTest extends TestCase
         $t = $this->deleteTerminal2('1000HdfcShared');
         $this->assertNotNull($t['deleted_at']);
 
-        $dt = Terminal\Entity::withTrashed()->findOrFail($t['id']);
+        $tId = $t['id'];
+
+        $this->fixtures->stripSign($tId);
+
+        $dt = Terminal\Entity::withTrashed()->findOrFail($tId);
 
         $this->assertEquals(0, $dt->merchants->count());
     }

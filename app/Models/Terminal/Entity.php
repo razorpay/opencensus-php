@@ -123,6 +123,8 @@ class Entity extends Base\PublicEntity
 
     const CATEGORY_LENGTH               = 4;
 
+    protected static $sign              = 'term';
+
     protected $fillable = [
         self::GATEWAY,
         self::PROCURER,
