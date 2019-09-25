@@ -457,7 +457,7 @@ class Entity extends Base\PublicEntity
 
         if (is_array($currencies = json_decode($currency)) === true)
         {
-            $currency = json_decode($currency);
+            $currency = $currencies;
         }
 
         return ((array) $currency);
