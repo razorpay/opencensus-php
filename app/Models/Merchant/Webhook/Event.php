@@ -229,7 +229,7 @@ class Event
         self::PAYMENT_DISPUTE_WON               => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_LOST              => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
-        self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY],
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY, Product::BANKING],
         self::TRANSACTION_CREATED               => [Product::BANKING],
         self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],

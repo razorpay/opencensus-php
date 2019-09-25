@@ -47,7 +47,7 @@ class Processor extends Base\Core
 
     const MUTEX_LOCK_TIMEOUT    = 1800;
 
-    const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s';
+    const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s_%s';
 
     const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 600;
 
@@ -161,7 +161,7 @@ class Processor extends Base\Core
         // - time taken to complete the process
         //
         $this->trace->count(
-            Metric::SETTLEMENTS_INITIATE_RUNTIME,
+            Metric::SETTLEMENTS_INITIATE_EXECUTION_TIME,
             [
                 Metric::CHANNEL                 => $channel,
                 Metric::USING_QUEUE             => $useQueue,
@@ -731,10 +731,11 @@ class Processor extends Base\Core
      */
     protected function pushMerchantsToSettlementQueue(array $merchantIds, $bucketTimestamp = null): array
     {
-        $totalCount = [
+        $result = [
             'total_merchants' => count($merchantIds),
             'enqueued'        => 0,
             'enqueue_failed'  => 0,
+            'time_taken'      => 0,
         ];
 
         $this->trace->info(
@@ -743,13 +744,14 @@ class Processor extends Base\Core
                 'merchant_count' => count($merchantIds)
             ]);
 
+        $CountKey = sprintf(Create::TOTAL_MERCHANT_COUNT, $this->mode);
         //
         // add cout of total merchant IDs in cache
         // so that it can be used to initate transfer when settlement creation is complete
         //
-        Cache::increment(Create::TOTAL_MERCHANT_COUNT, count($merchantIds));
+        Cache::increment($CountKey, count($merchantIds));
 
-        $startTime = time();
+        $startTime = microtime(true);
 
         foreach ($merchantIds as $merchantId)
         {
@@ -770,18 +772,18 @@ class Processor extends Base\Core
 
                 $this->trace->count(Metric::NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT);
 
-                $totalCount['enqueued'] += 1;
+                $result['enqueued'] += 1;
             }
             catch(\Throwable $e)
             {
-                $totalCount['enqueue_failed'] += 1;
+                $result['enqueue_failed'] += 1;
 
                 //
                 // in case of failures decremenet the total count stored
                 // this will help maintain the exact count pushed to queue
                 // and also when to iniatie the transfer
                 //
-                Cache::decrement(Create::TOTAL_MERCHANT_COUNT);
+                Cache::decrement($CountKey);
 
                 $this->trace->traceException(
                     $e,
@@ -794,18 +796,13 @@ class Processor extends Base\Core
             }
         }
 
-        // trace metric to get idea on time taken
-        $this->trace->count(
-            Metric::TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT,
-            [
-                'total_count' => $totalCount,
-            ], get_diff_in_millisecond($startTime));
+        $result['time_taken'] = get_diff_in_millisecond($startTime);
 
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE,
-            $totalCount);
+            $result);
 
-        return $totalCount;
+        return $result;
     }
 
     public function fetchAndProcessTransactionsForSettlement(MerchantModel\Entity $merchant)
@@ -822,7 +819,7 @@ class Processor extends Base\Core
         }
 
         // Avoiding race condition here
-        $resource = sprintf(self::MUTEX_SETTLEMENT_CREATE_RESOURCE, $merchant->getId());
+        $resource = sprintf(self::MUTEX_SETTLEMENT_CREATE_RESOURCE, $merchant->getId(), $this->mode);
 
         $result = $this->mutex->acquireAndRelease(
             $resource,
@@ -830,7 +827,8 @@ class Processor extends Base\Core
             {
                 return $this->createSettlementForMerchant($merchant);
             },
-            self::MUTEX_SETTLEMENT_CREATE_TIMEOUT);
+            self::MUTEX_SETTLEMENT_CREATE_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         //
         // Marking merchant settlement as complete here (update the bucket entity)
@@ -862,18 +860,20 @@ class Processor extends Base\Core
                      ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel);
 
         // If there are no transactions to settle then return
-        if ($txns->count() === 0)
+        if ($txns->isEmpty() === true)
         {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'No transactions to settle',
+                ]);
+
             return [
                 'settlement_count'  => 0,
                 'attempt_count'     => 0,
                 'txn_count'         => 0,
             ];
         }
-
-        $merchantIds = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
-
-        $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
 
         $this->merchants = $this->repo
                                 ->merchant

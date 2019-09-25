@@ -64,6 +64,72 @@ class BusinessType
         self::OTHER                  => 12,
     ];
 
+    const REGISTERED   = 'registered';
+    const UNREGISTERED = 'unregistered';
+
+    // business type is divided into two category which decides on-boarding experience
+    protected static $businessTypeBuckets = [
+        self::REGISTERED   => [
+            self::PROPRIETORSHIP,
+            self::PARTNERSHIP,
+            self::PRIVATE_LIMITED,
+            self::PUBLIC_LIMITED,
+            self::LLP,
+            self::EDUCATIONAL_INSTITUTES,
+            self::TRUST,
+            self::SOCIETY,
+            self::OTHER,
+            self::NGO,
+        ],
+        self::UNREGISTERED => [
+            self::INDIVIDUAL,
+            self::NOT_YET_REGISTERED,
+        ]
+    ];
+
+    /**
+     * @param string $businessTypeBucket
+     *
+     * @return bool
+     */
+    public static function isValidBusinessTypeBucket(string $businessTypeBucket)
+    {
+        return isset(self::$businessTypeBuckets[$businessTypeBucket]) === true;
+    }
+
+    /**
+     * Returns indexes of un-registered business type
+     *
+     * @return array
+     */
+    public static function getIndexForUnregisteredBusiness(): array
+    {
+        $unRegisteredBusiness = self::$businessTypeBuckets[self::UNREGISTERED];
+
+        return array_map(function($businessType) {
+            return self::getIndexFromKey($businessType);
+        }, $unRegisteredBusiness);
+    }
+
+    /**
+     * Checks business type is a unregistered business type or not
+     *
+     * @param  $businessType
+     *
+     * @return bool
+     */
+    public static function isUnregisteredBusiness($businessType): bool
+    {
+        if (empty($businessType))
+        {
+            return false;
+        }
+
+        $unRegisteredBusiness = self::$businessTypeBuckets[self::UNREGISTERED];
+
+        return in_array($businessType, $unRegisteredBusiness, true);
+    }
+
     public static function getType($num)
     {
         if (empty($num) === true)

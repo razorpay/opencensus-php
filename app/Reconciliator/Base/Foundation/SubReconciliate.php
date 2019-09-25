@@ -15,7 +15,6 @@ use RZP\Reconciliator\Messenger;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\InfoCode;
-use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -529,9 +528,7 @@ class SubReconciliate extends Base\Core
      */
     protected function setRowReconStatusAndError(string $status, string $errorCode = null, int $reconciledAt = null)
     {
-        $statusDescription = Constants::RECON_PUBLIC_DESCRIPTIONS[$status] ?? $status;
-
-        static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS] = $statusDescription;
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS] = $status;
 
         if ($status === InfoCode::ALREADY_RECONCILED)
         {
@@ -543,9 +540,7 @@ class SubReconciliate extends Base\Core
 
         if (empty($errorCode) === false)
         {
-            $errorMsg = Constants::RECON_PUBLIC_DESCRIPTIONS[$errorCode] ?? $errorCode;
-
-            static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorMsg;
+            static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorCode;
         }
     }
 

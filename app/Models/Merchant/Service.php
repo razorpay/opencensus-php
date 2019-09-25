@@ -1139,7 +1139,7 @@ class Service extends Base\Service
             TraceCode::WEBHOOK_EDIT,
             [
                 'webhook_id' => $webhookId,
-                'input'      => $input,
+                'input'      => array_except($input, [Webhook\Entity::SECRET]),
             ]);
 
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
@@ -2462,6 +2462,8 @@ class Service extends Base\Service
 
     protected function mapSubMerchantPartnerAppIfApplicable(Entity $merchant, Entity $subMerchant)
     {
+        $this->trace->info(TraceCode::MAP_PARTNER_SUBMERCHANT_ENTITY);
+
         if ($merchant->isPartner() === false)
         {
             return;
@@ -2881,6 +2883,26 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getRazorxTreatmentInBulk(array $input)
+    {
+        $response = [];
+
+        $featureFlags = $input['features'] ?? "";
+
+        if (empty($featureFlags) === false)
+        {
+            $featureFlagArray = explode(',', $featureFlags);
+
+            foreach ($featureFlagArray as $featureFlag)
+            {
+                $featureFlag = trim($featureFlag);
+                $response[$featureFlag] = $this->getRazorxTreatment($featureFlag);
+            }
+        }
+
+        return $response;
+    }
+
     public function submitSupportCallRequest(array $input): array
     {
         $validator = new Validator;
@@ -3155,5 +3177,18 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         return $this->core()->applyRestrictedSettings($merchant, $action);
+    }
+
+    public function removeSuspendedMerchantsFromMailingList(array $input)
+    {
+        (new Validator)->validateInput('suspended_merchant_remove', $input);
+
+        $merchants = $this->repo->merchant
+                                ->fetchAllSuspendedMerchants($input);
+
+        foreach ($merchants as $merchant)
+        {
+            $this->core()->removeMerchantEmailToMailingList($merchant);
+        }
     }
 }

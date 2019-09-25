@@ -35,12 +35,14 @@ class Entity extends Base\PublicEntity
     const BUSINESS_REGISTERED_COUNTRY        = 'business_registered_country';
     const BUSINESS_REGISTERED_STATE          = 'business_registered_state';
     const BUSINESS_REGISTERED_CITY           = 'business_registered_city';
+    const BUSINESS_REGISTERED_DISTRICT       = 'business_registered_district';
     const BUSINESS_REGISTERED_PIN            = 'business_registered_pin';
     const BUSINESS_OPERATION_ADDRESS         = 'business_operation_address';
     const BUSINESS_OPERATION_ADDRESS_L2      = 'business_operation_address_l2';
     const BUSINESS_OPERATION_COUNTRY         = 'business_operation_country';
     const BUSINESS_OPERATION_STATE           = 'business_operation_state';
     const BUSINESS_OPERATION_CITY            = 'business_operation_city';
+    const BUSINESS_OPERATION_DISTRICT        = 'business_operation_district';
     const BUSINESS_OPERATION_PIN             = 'business_operation_pin';
     const BUSINESS_DOE                       = 'business_doe';
     const GSTIN                              = 'gstin'; // Goods and Services Tax Identification Number
@@ -54,6 +56,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_VALUE                  = 'transaction_value';
     const PROMOTER_PAN                       = 'promoter_pan';
     const PROMOTER_PAN_NAME                  = 'promoter_pan_name';
+    const DATE_OF_BIRTH                      = 'date_of_birth';
     const BANK_NAME                          = 'bank_name';
     const BANK_ACCOUNT_NUMBER                = 'bank_account_number';
     const BANK_ACCOUNT_NAME                  = 'bank_account_name';
@@ -90,6 +93,9 @@ class Entity extends Base\PublicEntity
     const ACTIVATION_PROGRESS                = 'activation_progress';
     const LOCKED                             = 'locked';
     const ACTIVATION_STATUS                  = 'activation_status';
+    const BANK_DETAILS_VERIFICATION_STATUS   = 'bank_details_verification_status';
+    const POI_VERIFICATION_STATUS            = 'poi_verification_status';
+    const POA_VERIFICATION_STATUS            = 'poa_verification_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
     const REVIEWER_ID                        = 'reviewer_id';
@@ -157,12 +163,14 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_DISTRICT,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
         self::BUSINESS_OPERATION_ADDRESS_L2,
         self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_DISTRICT,
         self::BUSINESS_OPERATION_PIN,
         self::BUSINESS_DOE,
         self::GSTIN,
@@ -223,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT,
         self::INTERNATIONAL_ACTIVATION_FLOW,
         self::CUSTOM_FIELDS,
+        self::DATE_OF_BIRTH,
     ];
 
     protected $public = [
@@ -242,15 +251,18 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_DISTRICT,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
         self::BUSINESS_OPERATION_ADDRESS_L2,
         self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_DISTRICT,
         self::BUSINESS_OPERATION_PIN,
         self::PROMOTER_PAN,
         self::PROMOTER_PAN_NAME,
+        self::DATE_OF_BIRTH,
         self::BUSINESS_DOE,
         self::GSTIN,
         self::P_GSTIN,
@@ -274,6 +286,9 @@ class Entity extends Base\PublicEntity
         self::ACTIVATION_PROGRESS,
         self::LOCKED,
         self::ACTIVATION_STATUS,
+        self::BANK_DETAILS_VERIFICATION_STATUS,
+        self::POA_VERIFICATION_STATUS,
+        self::POI_VERIFICATION_STATUS,
         self::CLARIFICATION_MODE,
         self::ARCHIVED,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
@@ -546,6 +561,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_CITY);
     }
 
+    public function getBusinessRegisteredDistrict()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_DISTRICT);
+    }
+
     public function getBusinessRegisteredState()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
@@ -590,6 +610,11 @@ class Entity extends Base\PublicEntity
     public function getBusinessOperationCity()
     {
         return $this->getAttribute(self::BUSINESS_OPERATION_CITY);
+    }
+
+    public function getBusinessOperationDistrict()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_DISTRICT);
     }
 
     public function getBusinessOperationState()

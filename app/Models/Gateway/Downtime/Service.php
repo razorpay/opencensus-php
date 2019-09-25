@@ -93,4 +93,9 @@ class Service extends Base\Service
     {
         (new GatewayDowntimeDetection())->purgeKeys();
     }
+
+    public function stats()
+    {
+        return (new GatewayDowntimeDetection())->stats();
+    }
 }

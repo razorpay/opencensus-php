@@ -678,6 +678,17 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function makeScroogeVerifyRefundCall(string $refundId, array $input)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->scroogeVerifyRefund($refund, $input);
+
+        return $response;
+    }
+
     public function createScroogeRefund(string $refundId)
     {
         $refund = $this->repo->refund->findOrFail($refundId);
@@ -1257,7 +1268,14 @@ class Service extends Base\Service
     {
         $refund = $this->repo->refund->findByPublicId($id);
 
-        $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+        if ($refund->isScrooge() === true)
+        {
+            $verifySuccess = $this->app['scrooge']->verifyRefund($refund['id'])['body'];
+        }
+        else
+        {
+            $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+        }
 
         return [
             'refund_id'      => $id,
@@ -1411,7 +1429,31 @@ class Service extends Base\Service
                                 $refund->setSpeedProcessed(RefundSpeed::NORMAL);
 
                                 $processor->eventRefundSpeedChanged($refund);
+
                                 $processor->eventRefundProcessed($refund);
+
+                                break;
+
+                            case 'processed_to_file_init_event':
+
+                                $this->trace->info(
+                                    TraceCode::REFUND_PROCESSED_TO_CREATED,
+                                    [
+                                        'refund_id'        => $refundId,
+                                        'status'           => $refund->getStatus(),
+                                        'reference1'       => $refund->getReference1(),
+                                        'processed_at'     => $refund->getProcessedAt(),
+                                        'gateway_refunded' => $refund->getGatewayRefunded(),
+                                    ]);
+
+                                if ((isset($input[RefundEntity::STATUS])) and
+                                    ($input[RefundEntity::STATUS] === 'file_init') and
+                                    ($refund->getStatus() === Refund\Status::PROCESSED))
+                                {
+                                    $processor->revertProcessedRefundToCreatedState($refund);
+                                }
+
+                                break;
                         }
 
                         $this->repo->saveOrFail($refund);

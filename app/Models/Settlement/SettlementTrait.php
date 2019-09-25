@@ -79,7 +79,6 @@ trait SettlementTrait
             $bankAccount = $merchant->bankAccount;
         }
 
-
         // Do not proceed if merchant does not have active bank account
         if ($bankAccount === null)
         {
@@ -126,7 +125,9 @@ trait SettlementTrait
                 $merchant,
                 [
                     'reason'               => 'bank account created yesterday',
-                    'bank_account_created' => Carbon::createFromTimestamp($txn->getCreatedAt(), Timezone::IST)->format('Y-m-d H:i:s'),
+                    'bank_account_created' => Carbon::createFromTimestamp(
+                                                $bankAccount->getCreatedAt(),
+                                                Timezone::IST)->format('Y-m-d H:i:s'),
                 ]);
 
             return false;
@@ -647,10 +648,10 @@ trait SettlementTrait
                 Metric::MERCHANTS_SKIPPED_FOR_SETTLEMENT_TOTAL,
                 [
                     Metric::SKIP_REASON => $skipReason
-                ],
-                1);
+                ]);
 
-            $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
+            $this->traceMerchantSettlementSkip(
+                $merchant,
                 [
                     'balance'    => $balance,
                     'merchant'   => $merchant->getId(),

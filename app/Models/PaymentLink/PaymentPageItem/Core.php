@@ -1,0 +1,239 @@
+<?php
+
+namespace RZP\Models\PaymentLink\PaymentPageItem;
+
+use RZP\Models\Base;
+use RZP\Models\Item;
+use RZP\Models\Merchant;
+use RZP\Models\PaymentLink;
+
+class Core extends Base\Core
+{
+    public function create(
+        array $input,
+        Merchant\Entity $merchant,
+        PaymentLink\Entity $paymentLink
+    ): Entity
+    {
+        $paymentPageItem = (new Entity)->generateId();
+
+        $paymentPageItem->merchant()->associate($merchant);
+
+        $paymentPageItem->paymentLink()->associate($paymentLink);
+
+        $paymentPageItem->build($input);
+
+        $item = (new Item\Core)->getOrCreateItemForType(
+            $input,
+            $merchant,
+            Item\Type::PAYMENT_PAGE
+        );
+
+        (new Validator)->validateItemCurrency($item, $paymentLink);
+
+        $paymentPageItem->item()->associate($item);
+
+        $this->upsertSettings($paymentPageItem, $input[Entity::SETTINGS] ?? []);
+
+        $this->repo->saveOrFail($paymentPageItem);
+
+        $this->repo->loadRelations($paymentPageItem);
+
+        return $paymentPageItem;
+    }
+
+    public function fetch(string $id)
+    {
+        $paymentPageItem = $this->repo->payment_page_item->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $paymentPageItem;
+    }
+
+    public function createMany(
+        array $input,
+        Merchant\Entity $merchant,
+        PaymentLink\Entity $paymentLink
+    ): array
+    {
+        (new Validator)->validateInput(
+            'create_many',
+            [Entity::PAYMENT_PAGE_ITEMS => $input]
+        );
+
+        $paymentPageItems = [];
+
+        $this->repo->transaction(
+            function() use ($merchant, $paymentLink, $input, & $paymentPageItems)
+            {
+                foreach ($input as $paymentPageItem)
+                {
+                    $paymentPageItems[] = $this->create(
+                        $paymentPageItem,
+                        $merchant,
+                        $paymentLink
+                    );
+                }
+            }
+        );
+
+        return $paymentPageItems;
+    }
+
+    public function update(Entity $paymentPageItem, array $input)
+    {
+        $paymentPageItem->edit($input);
+
+        if (isset($input[Entity::ITEM]) === true)
+        {
+            (new Item\Core)->update(
+                $paymentPageItem->item,
+                $input[Entity::ITEM],
+                $this->merchant
+            );
+        }
+
+        $this->upsertSettings($paymentPageItem, $input[Entity::SETTINGS] ?? []);
+
+        $this->repo->saveOrFail($paymentPageItem);
+
+        return $paymentPageItem;
+    }
+
+    public function updatePaymentPageItemsAsPut(
+        array $paymentPageItemsDetails,
+        Merchant\Entity $merchant,
+        PaymentLink\Entity $paymentLink)
+    {
+        $this->deletePaymentPageItemsViaUpdate($paymentLink, $paymentPageItemsDetails);
+
+        $this->createOrUpdatePaymentPageItemsViaUpdate(
+            $paymentPageItemsDetails,
+            $paymentLink,
+            $merchant
+        );
+    }
+
+    public function delete(Entity $paymentPageItem)
+    {
+        return $this->repo->line_item->deleteOrFail($paymentPageItem);
+    }
+
+    public function migratePaymentPageItem(PaymentLink\Entity $paymentPage)
+    {
+        if ($paymentPage->paymentPageItems()->count() === 0)
+        {
+            $itemInput = $this->getPaymentPageItemInput($paymentPage);
+
+            $paymentPageItem = (new Entity)->generateId();
+
+            $paymentPageItem->forceFill($itemInput);
+
+            $this->upsertSettings(
+                $paymentPageItem,
+                [
+                    Entity::POSITION => 0,
+                ]
+            );
+
+            $this->repo->payment_page_item->saveOrFail($paymentPageItem);
+        }
+    }
+
+    protected function getPaymentPageItemInput(PaymentLink\Entity $paymentPage)
+    {
+        $itemInput = [
+            Item\Entity::MERCHANT_ID => $paymentPage->getMerchantId(),
+            Item\Entity::ACTIVE      => true,
+            Item\Entity::NAME        => 'amount',
+            Item\Entity::TYPE        => Item\Type::PAYMENT_PAGE,
+            Item\Entity::CURRENCY    => $paymentPage->getCurrency(),
+            Item\Entity::AMOUNT      => $paymentPage->getAmount(),
+        ];
+
+        $item = new Item\Entity;
+
+        $item->forceFill($itemInput);
+
+        $this->repo->item->saveOrFail($item);
+
+        $paymentPageItemInput = [
+            Entity::MERCHANT_ID       => $paymentPage->getMerchantId(),
+            Entity::PAYMENT_LINK_ID   => $paymentPage->getId(),
+            Entity::ITEM_ID           => $item->getId(),
+            Entity::MANDATORY         => true,
+            Entity::STOCK             => $paymentPage->getTimesPayable(),
+            Entity::QUANTITY_SOLD     => $paymentPage->getTimesPaid(),
+            Entity::TOTAL_AMOUNT_PAID => $paymentPage->getTotalAmountPaid(),
+        ];
+
+        return $paymentPageItemInput;
+    }
+
+    protected function deletePaymentPageItemsViaUpdate(
+        PaymentLink\Entity $paymentLink,
+        array $paymentPageItemsDetails)
+    {
+        $existingPaymentPageItems = $paymentLink->paymentPageItems()->get();
+
+        $inputPaymentPageItemIds = collect($paymentPageItemsDetails)->pluck('id')->all();
+
+        $existingPaymentPageItems->map(
+            function($existingPaymentPageItem, $i) use ($inputPaymentPageItemIds, $paymentLink)
+            {
+                if (in_array(
+                        $existingPaymentPageItem->getPublicId(),
+                        $inputPaymentPageItemIds,
+                        true) === false)
+                {
+                    $this->delete($existingPaymentPageItem);
+                }
+            }
+        );
+    }
+
+    protected function createOrUpdatePaymentPageItemsViaUpdate(
+        array $paymentPageItemsDetails,
+        PaymentLink\Entity $paymentLink,
+        Merchant\Entity $merchant)
+    {
+        foreach ($paymentPageItemsDetails as $paymentPageItemDetails)
+        {
+            if (isset($paymentPageItemDetails[Entity::ID]) === true)
+            {
+                $paymentPageItemId = $paymentPageItemDetails[Entity::ID];
+
+                unset($paymentPageItemDetails[Entity::ID]);
+
+                $paymentPageItemId = Entity::verifyIdAndStripSign($paymentPageItemId);
+
+                $paymentPageItem = $this->repo->payment_page_item
+                                       ->findByIdAndPaymentLinkEntityOrFail(
+                                           $paymentPageItemId,
+                                           $paymentLink
+                                       );
+
+                $this->update(
+                    $paymentPageItem,
+                    $paymentPageItemDetails
+                );
+            }
+            else
+            {
+                $this->create($paymentPageItemDetails, $merchant, $paymentLink);
+            }
+        }
+    }
+
+    /**
+     * Every payment page item could have set of setting associated. Ref: Model\Settings.
+     * @param  Entity $paymentPageItem
+     * @param  array  $settings
+     */
+    protected function upsertSettings(Entity $paymentPageItem, array $settings)
+    {
+        if (empty($settings) === false)
+        {
+            $paymentPageItem->getSettingsAccessor()->upsert($settings)->save();
+        }
+    }
+}

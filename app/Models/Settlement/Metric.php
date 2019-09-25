@@ -19,7 +19,7 @@ final class Metric
      * Dimensions: Channel
      *             Total Merchant count
      */
-    const SETTLEMENTS_INITIATE_RUNTIME                       = 'settlements_initiate_runtime';
+    const SETTLEMENTS_INITIATE_EXECUTION_TIME               = 'settlements_initiate_execution_time';
 
     /**
      * Method: Count
@@ -47,17 +47,17 @@ final class Metric
     /**
      * Method: Count
      */
-    const TIME_TAKEN_TO_CREATE_MERCHANT_SETTLEMENT          = 'time_taken_to_create_merchant_settlement';
-
-    /**
-     * Method: Gauge
-     */
-    const TIME_TAKEN_TO_ENQUEUE_MERCHANTS_FOR_SETTLEMENT    = 'time_taken_t0_enqueue_merchants_for_settlement';
+    const SETTLEMENT_CREATED_COUNT                          = 'settlement_created_count';
 
     /**
      * Method: Count
      */
-    const SETTLEMENT_CREATED_COUNT                          = 'settlement_created_count';
+    const MERCHANT_SETTLEMENT_PROCESSED                     = 'merchant_settlement_processed';
+
+    /**
+     * Method: Count
+     */
+    const DISPATCH_FOR_SETTLEMENT_INITIATE                  = 'dispatch_for_settlement_initiate';
 
     // ------ Histograms ------
 

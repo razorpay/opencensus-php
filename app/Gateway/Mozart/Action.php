@@ -17,4 +17,6 @@ class Action
     const OMNI_PAY          = 'omni_pay';
 
     const INTENT            = 'intent';
+
+    const CREATE_TERMINAL   = 'create_terminal';
 }

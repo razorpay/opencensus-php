@@ -73,7 +73,22 @@ class InvoiceMetricTest extends TestCase
                     $expectedHttpMetricTags,
                 ]);
 
-        $mock->expects($this->once())
+        $mock->expects($this->at(0))
+             ->method('histogram')
+             ->withConsecutive(
+                [
+                    'authenticate_handle_milliseconds.histogram',
+                    $this->greaterThanOrEqual(0),
+                    [
+                        'mode'   => 'test',
+                        'route'  => 'invoice_fetch_multiple',
+                        'auth'   => 'private',
+                        'proxy'  => false,
+                        'bearer' => false,
+                    ],
+                ]);
+
+        $mock->expects($this->at(1))
              ->method('histogram')
              ->withConsecutive(
                 [
@@ -163,7 +178,22 @@ class InvoiceMetricTest extends TestCase
                     $expectedHttpMetricTags,
                 ]);
 
-        $mock->expects($this->once())
+        $mock->expects($this->at(0))
+             ->method('histogram')
+             ->withConsecutive(
+                [
+                    'authenticate_handle_milliseconds.histogram',
+                    $this->greaterThanOrEqual(0),
+                    [
+                        'mode'   => 'test',
+                        'route'  => 'invoice_create',
+                        'auth'   => 'private',
+                        'proxy'  => false,
+                        'bearer' => false,
+                    ],
+                ]);
+
+        $mock->expects($this->at(1))
              ->method('histogram')
              ->withConsecutive(
                 [

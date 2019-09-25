@@ -33,6 +33,26 @@ return [
                 'notes'         => [
                     'sample_key' => 'Sample notes',
                 ],
+                'payment_page_items' => [
+                     [
+                        'item' => [
+                            'name' =>  'amount',
+                            'description' => NULL,
+                            'amount' => 100000,
+                            'currency' => 'INR',
+                            'type' => 'payment_page',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => NULL,
+                        'stock' => NULL,
+                        'quantity_sold' => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ]
+                ],
             ],
         ],
     ],
@@ -55,6 +75,26 @@ return [
                 'currency'      => 'INR',
                 'title'         => 'Sample title',
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name' =>  'amount',
+                            'description' => NULL,
+                            'amount' => NULL,
+                            'currency' => 'INR',
+                            'type' => 'payment_page',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => NULL,
+                        'stock' => NULL,
+                        'quantity_sold' => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ]
+                ],
             ],
         ],
     ],
@@ -139,7 +179,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Amount exceeds maximum payment amount allowed',
+                    'description' => 'amount exceeds maximum payment amount allowed',
                 ],
             ],
             'status_code' => 400,

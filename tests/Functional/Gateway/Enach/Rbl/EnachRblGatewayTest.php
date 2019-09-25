@@ -1176,14 +1176,14 @@ class EnachRblGatewayTest extends TestCase
 
         $content = $this->initiateTransfer(
             $channel,
-            Attempt\Purpose::REFUND);
+            Attempt\Purpose::REFUND, Attempt\Type::REFUND);
 
         $data = $this->reconcileOnlineSettlements($channel, false);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertNotNull($attempt['utr']);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
 
         // Process entities
         $this->reconcileEntitiesForChannel($channel);

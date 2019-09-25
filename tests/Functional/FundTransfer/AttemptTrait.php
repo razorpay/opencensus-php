@@ -21,7 +21,7 @@ trait AttemptTrait
     use PaymentTrait;
     use SettlementTrait;
 
-    protected function initiateTransfer(string $channel, string $purpose, bool $failureTest = false)
+    protected function initiateTransfer(string $channel, string $purpose, string $sourceType, bool $failureTest = false)
     {
         $content['purpose'] = $purpose;
 
@@ -30,6 +30,7 @@ trait AttemptTrait
             'method'    => 'POST',
             'content'   =>  [
                 Attempt\Entity::PURPOSE => $purpose,
+                Attempt\Entity::SOURCE_TYPE => $sourceType,
                 'failed_response'       => (int) $failureTest,
             ]
         ];
@@ -67,7 +68,7 @@ trait AttemptTrait
     protected function initiateTransferViaFileAndAssertSuccess(
         string $channel, string $purpose, int $sourceCount, string $sourceType)
     {
-        $content = $this->initiateTransfer($channel, $purpose);
+        $content = $this->initiateTransfer($channel, $purpose, $sourceType);
 
         $this->assertInitiateTransferResponseSuccess($channel, $content, $sourceCount);
 
@@ -82,10 +83,10 @@ trait AttemptTrait
     protected function initiateTransferAndAssertSuccess(
         string $channel, string $purpose, int $sourceCount, string $sourceType)
     {
-        $content = $this->initiateTransfer($channel, $purpose);
+        $content = $this->initiateTransfer($channel, $purpose, $sourceType);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
 
         return $content;
     }
@@ -95,7 +96,7 @@ trait AttemptTrait
     {
         $this->createDataForChannel($channel, $purpose, $setlCount, $sourceType);
 
-        $content = $this->initiateTransfer($channel, $purpose);
+        $content = $this->initiateTransfer($channel, $purpose, $sourceType);
 
         $this->assertInitiateTransferResponseSuccess($channel, $content, $setlCount);
 
@@ -107,7 +108,7 @@ trait AttemptTrait
     {
         $this->createDataForChannel($channel, $purpose, $setlCount, $sourceType);
 
-        $this->initiateTransfer($channel, $purpose, $failureTest);
+        $this->initiateTransfer($channel, $purpose, $sourceType, $failureTest);
     }
 
     protected function createDataAndAssertInitiateOnlineTransferResponseForVpa(
@@ -115,7 +116,7 @@ trait AttemptTrait
     {
         $this->createDataForChannelForVpa($channel, $purpose, $setlCount, $sourceType);
 
-        $this->initiateTransfer($channel, $purpose, $failureTest);
+        $this->initiateTransfer($channel, $purpose, $sourceType, $failureTest);
     }
 
     protected function createDataAndAssertInitiateTransferSuccess(string $channel, int $setlCount, string $sourceType)

@@ -99,6 +99,8 @@ class MailTags
     const HDFC_EMANDATE_REGISTER_MAIL      = 'hdfc_emandate_register_mail';
     const HDFC_EMANDATE_DEBIT_MAIL         = 'hdfc_emandate_debit_mail';
 
+    const SBI_EMANDATE_DEBIT_MAIL          = 'sbi_emandate_debit_mail';
+
     const AXIS_EMANDATE_DEBIT_MAIL         = 'axis_emandate_debit_mail';
 
     const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';

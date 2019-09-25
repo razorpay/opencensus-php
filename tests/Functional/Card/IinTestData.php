@@ -304,7 +304,7 @@ return [
                 'type'           => 'credit',
                 'country'        => 'IN',
                 'issuer'         => 'HDFC',
-                'issuer_name'    => 'HDFC',
+                'issuer_name'    => 'HDFC Bank',
                 'emi'            => true,
                 'message_type'   => 'SMS',
                 'recurring'      => false,
@@ -339,11 +339,35 @@ return [
                 'network'       => 'RuPay',
                 'type'          => 'debit',
                 'country'       => 'IN',
-                'issuer_name'   => 'PUNJAB NATIONAL BANK',
+                'issuer'        => 'SBIN',
+                'issuer_name'   => 'State Bank of India',
                 'trivia'        => 'random trivia'
             ]
         ],
     ],
+
+    'testBatchServiceIinUpdate' => [
+        'request' => [
+            'url' => '/iins/iin_npci_rupay/process',
+            'method' => 'post',
+            'content' => [
+                'row'   => 'ABHY065000160726100060726199916S010101E&M01D356IN140513000000N'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'           => 607261,
+                'category'      => null,
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'sub_type'      => 'consumer',
+                'country'       => 'IN',
+                'issuer'        => 'ABHY',
+                'issuer_name'   => 'Abhyudaya Co-operative Bank',
+            ]
+        ],
+    ],
+
 
     'testGetIins' => [
         'request' => [
