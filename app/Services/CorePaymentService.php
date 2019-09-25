@@ -366,6 +366,12 @@ class CorePaymentService
 
         $description = $error['description'] ?? null;
 
+        if ($errorCode == ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
+        }
+
         if (empty($error['gateway_error_code']) === false)
         {
             $this->handleGatewayErrors($error);
