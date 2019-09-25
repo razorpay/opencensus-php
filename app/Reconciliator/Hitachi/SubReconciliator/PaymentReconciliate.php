@@ -63,6 +63,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         Network::MC     => '280000',
     ];
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getPaymentId(array $row)
     {
         // Unsettled rows should be skipped while processing.

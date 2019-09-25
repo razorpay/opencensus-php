@@ -15,6 +15,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_PAYMENT_ID         = 'partner_txn_id';
     const COLUMN_REFUND_AMOUNT      = 'original_input_amt';
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getRefundId($row)
     {
         $refundId = null;
