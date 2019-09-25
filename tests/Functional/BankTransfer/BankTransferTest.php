@@ -1698,7 +1698,7 @@ class BankTransferTest extends TestCase
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertNotNull($attempt['utr']);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
 
         // Process entities
         $this->reconcileEntitiesForChannel($channel);
@@ -2154,5 +2154,35 @@ class BankTransferTest extends TestCase
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('UDAN', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
+    }
+
+    public function testBankTransferPreferences()
+    {
+        $methods = $this->getPreferences()['methods'];
+
+        // Key is not present in preferences, even though method is enabled
+        $this->assertArrayNotHasKey('bank_transfer', $methods);
+
+        $this->fixtures->merchant->addFeatures(['bank_transfer_on_checkout']);
+
+        $methods = $this->getPreferences()['methods'];
+
+        // Key becomes available when feature is enabled
+        $this->assertArrayHasKey('bank_transfer', $methods);;
+    }
+
+    protected function getPreferences()
+    {
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent([
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ]);
+
+        return $response;
     }
 }

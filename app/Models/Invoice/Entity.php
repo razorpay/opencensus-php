@@ -369,6 +369,8 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::INTERNAL_REF,
         self::IDEMPOTENCY_KEY,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,

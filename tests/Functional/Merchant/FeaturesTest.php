@@ -124,6 +124,15 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testMultiAssignFeatures()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $this->fixtures->create('merchant', ['id' => '10000000000002']);
+        $this->fixtures->create('merchant', ['id' => '10000000000003']);
+
+        $this->startTest();
+    }
+
     public function testMultiRemoveFeature()
     {
         $this->fixtures->create(
@@ -143,6 +152,24 @@ class FeaturesTest extends TestCase
             [
                 'entity_id' => '10000000000003',
                 'name' => 'dummy'
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testMultiRemoveFeatureFailure()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000001',
+                'name'      => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000003',
+                'name'      => 'dummy'
             ]);
 
         $this->startTest();

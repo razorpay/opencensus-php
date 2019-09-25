@@ -12,12 +12,6 @@ class ScroogeRefundUpdate extends Job
     const MAX_JOB_ATTEMPTS = 5;
     const JOB_RELEASE_WAIT = 300;
 
-    //
-    // Make sure that this is below 900 (seconds) because
-    // SQS doesn't support delay over 15 minutes.
-    //
-    public $delay = 5;
-
     protected $trace;
 
     protected $data;

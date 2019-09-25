@@ -25,6 +25,18 @@ class Validator extends Base\Validator
         'merchant_ids'  => 'sometimes|string'
     ];
 
+    protected static $associateTokenRules = [
+        Entity::TOKEN_ID => 'required|public_id',
+    ];
+
+    protected static $authenticateTokensRules = [
+        Entity::IDS => 'required|array',
+    ];
+
+    protected static $publicIdRules = [
+        Entity::ID => 'required|public_id',
+    ];
+
     public function validateMethodAndFirstPaymentAmount(array $input)
     {
         if (array_key_exists(Entity::FIRST_PAYMENT_AMOUNT, $input))
@@ -46,8 +58,6 @@ class Validator extends Base\Validator
         }
     }
 
-
-
     public function validateMethodWithOrder(array $input, Order\Entity $order)
     {
         if ((empty($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD]) === false) and
@@ -56,6 +66,36 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'order method doesn\'t match with token method',
                 Entity::METHOD
+            );
+        }
+    }
+
+    public function validateTokenRegistrationToAssociate()
+    {
+        if ($this->entity->token !== null)
+        {
+            throw new BadRequestValidationFailureException(
+                'token is already associated',
+                Entity::TOKEN
+            );
+        }
+    }
+
+    public function validateTokenRegistrationToAuthenticate()
+    {
+        if ($this->entity->token === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'token must be associated first to authenticate',
+                Entity::TOKEN
+            );
+        }
+
+        if ($this->entity->getStatus() !== Status::CREATED)
+        {
+            throw new BadRequestValidationFailureException(
+                'token can be authorized only in created state of token registration',
+                Entity::TOKEN
             );
         }
     }

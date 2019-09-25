@@ -89,6 +89,7 @@ class Validator extends Base\Validator
         'offer_id'                      => 'filled|public_id|size:20',
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
+        'payment_id'                    => 'sometimes_if:method,cardless_emi',
     ];
 
     protected static $editAcquirerRules = [
@@ -743,17 +744,28 @@ class Validator extends Base\Validator
                 'The contact field is required.', Entity::CONTACT);
         }
 
-        if (in_array($input['method'],
-                [Payment\Method::WALLET, Payment\Method::CARDLESS_EMI, Payment\Method::PAYLATER],
-                true) === true)
+        if ($input['method'] === Payment\Method::WALLET)
         {
-            $number = new PhoneBook($input['contact'], true);
-
-            if ($number->isValidNumberForRegion('IN') === false)
+            if (in_array($input['wallet'], Wallet::$indianContactWallets, true) === true)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
+                $this->validateIndianContact($input['contact']);
             }
+        }
+
+        if (in_array($input['method'], [Payment\Method::CARDLESS_EMI, Payment\Method::PAYLATER], true) === true)
+        {
+            $this->validateIndianContact($input['contact']);
+        }
+    }
+
+    protected function validateIndianContact($contact)
+    {
+        $number = new PhoneBook($contact, true);
+
+        if ($number->isValidNumberForRegion('IN') === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
         }
     }
 

@@ -4,12 +4,11 @@ namespace RZP\Models\Invoice;
 
 use Config;
 use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Constants\Mode;
-use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -72,14 +71,15 @@ class ViewDataSerializer extends Base\Core
     public function serializeForHosted(): array
     {
         return [
-            'environment'       => $this->app->environment(),
-            'is_test_mode'      => ($this->mode === Mode::TEST),
-            'invoicejs_url'     => Config::get('app.cdn_v1_url') . '/invoice.js',
-            'key_id'            => $this->getMerchantKeyId(),
-            'merchant'          => $this->serializeMerchantForHosted(),
-            'invoice'           => $this->serializeInvoiceForHosted(),
-            'custom_labels'     => $this->getCustomLabelValues(),
-            'checkout_options'  => $this->getCheckoutOptions(),
+            'environment'      => $this->app->environment(),
+            'is_test_mode'     => ($this->mode === Mode::TEST),
+            'invoicejs_url'    => Config::get('app.cdn_v1_url') . '/invoice.js',
+            'key_id'           => $this->getMerchantKeyId(),
+            'merchant'         => $this->serializeMerchantForHosted(),
+            'invoice'          => $this->serializeInvoiceForHosted(),
+            'custom_labels'    => $this->getCustomLabelValues(),
+            'checkout_options' => $this->getCheckoutOptions(),
+            'view_preferences' => $this->getViewPreferences(),
         ];
     }
 
@@ -93,6 +93,19 @@ class ViewDataSerializer extends Base\Core
     }
 
     /**
+     * Get view preferences for this Merchant
+     * @return array
+     */
+    protected function getViewPreferences(): array
+    {
+        $hideIssuedTo = $this->merchant->isFeatureEnabled(Feature\Constants::PL_HIDE_ISSUED_TO);
+
+        $viewPreferences = ['hide_issued_to' => $hideIssuedTo];
+
+        return $viewPreferences;
+    }
+
+    /**
      * Get custom view label values, if defined for the merchant
      * @return array
      */
@@ -101,8 +114,7 @@ class ViewDataSerializer extends Base\Core
         $merchantId = $this->merchant->getId();
 
         $customLabels = [
-            'hide_issued_to' => false,
-            'expire_by'      => 'EXPIRES ON',
+            'expire_by' => 'EXPIRES ON',
         ];
 
         switch ($merchantId)
@@ -114,7 +126,6 @@ class ViewDataSerializer extends Base\Core
                 $customLabels = [
                     'receipt_number'           => 'CREDIT CARD NUMBER',
                     'first_payment_min_amount' => 'MAD', // I.e. Minimum Amount Due.
-                    'hide_issued_to'           => true,
                 ];
 
                 break;
@@ -126,7 +137,6 @@ class ViewDataSerializer extends Base\Core
                 $customLabels = [
                     'receipt_number'           => 'LOAN ACCOUNT NUMBER',
                     'first_payment_min_amount' => 'EMI AMOUNT',
-                    'hide_issued_to'           => true,
                 ];
 
                 break;
@@ -136,7 +146,6 @@ class ViewDataSerializer extends Base\Core
                 $customLabels = [
                     'receipt_number' => 'CREDIT CARD NUMBER',
                     'amount'         => 'TAD', // I.e. Total Amount Due.
-                    'hide_issued_to' => true,
                 ];
 
                 break;
@@ -356,6 +365,21 @@ class ViewDataSerializer extends Base\Core
         if (($this->invoice->isNotTypeInvoice() === true) and (blank($serialized[Entity::DESCRIPTION]) === true))
         {
             $serialized[Entity::DESCRIPTION] = optional($this->invoice->lineItems->first())->getDescriptionElseName();
+        }
+
+        switch ($this->merchant->getId())
+        {
+            case Preferences::MID_RBL_RETAIL_ASSETS:
+
+                $serialized['rbl_emandate_retail_asset'] = true;
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS:
+
+                $serialized['rbl_emandate_interim_process'] = true;
+
+                break;
         }
     }
 

@@ -110,7 +110,7 @@ class Core extends Base\Core
     {
         $email->edit($input);
 
-        $email->saveOrFail();
+        $this->repo->saveOrFail($email);
 
         return $email;
     }

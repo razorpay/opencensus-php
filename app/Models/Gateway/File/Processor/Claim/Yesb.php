@@ -27,7 +27,7 @@ class Yesb extends Base
 
         foreach ($data as $row)
         {
-            $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('dmY');
+            $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d/m/Y');
 
             $formattedData[] = [
                 ClaimFields::MERCHANT_CODE      => $row['terminal']['gateway_merchant_id'],
@@ -46,7 +46,7 @@ class Yesb extends Base
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
         // the serial no is hardcoded as the file is generated only once
-        return $this->gatewayMerchantId. '-' . $date . '_' . '01';
+        return 'RAZORPAY'.'_'. $date . '_' . '01';
     }
 
     protected function getFormattedAmount($amount): String

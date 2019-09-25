@@ -91,6 +91,10 @@ class Checkout
 
         $this->fillEnabledFeatures($merchant, $data);
 
+        $this->checkAndFillPartnerUrl($merchant, $data);
+
+        $this->updateCurrencyMethodsIfApplicable($input, $merchant, $data);
+
         return $data;
     }
 
@@ -847,6 +851,16 @@ class Checkout
         }
     }
 
+    protected function checkAndFillPartnerUrl(Merchant\Entity $merchant, array & $data)
+    {
+        $partnershipUrl = $merchant->getPartnershipUrl();
+
+        if (empty($partnershipUrl) === false)
+        {
+            $data['options']['partnership_logo'] = $partnershipUrl;
+        }
+    }
+
     protected function fillEnabledFeatures(Merchant\Entity $merchant, array & $data)
     {
         foreach (Feature\Constants::CHECKOUT_FEATURES as $feature)
@@ -854,6 +868,32 @@ class Checkout
             if ($merchant->isFeatureEnabled($feature) === true)
             {
                 $data['features'][$feature] = true;
+            }
+        }
+    }
+
+    protected function updateCurrencyMethodsIfApplicable($input, $merchant, array & $data)
+    {
+        if ((isset($data['methods']['wallet']['paypal']) === true) and
+            ($data['methods']['wallet']['paypal'] === true))
+        {
+            try
+            {
+                $currency = isset($data['order']) ? $data['order']['currency'] : $input['currency'][0];
+
+                $isPaypalTerminalPresent = (new Methods\Core)->checkPaypalTerminalForCurrency($merchant, $currency);
+
+                if ($isPaypalTerminalPresent === false)
+                {
+                    unset($data['methods']['wallet']['paypal']);
+                }
+            }
+
+            catch (\Throwable $exception)
+            {
+                $this->trace->info(TraceCode::CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION, $data);
+
+                unset($data['methods']['wallet']['paypal']);
             }
         }
     }

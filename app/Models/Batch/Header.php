@@ -55,14 +55,21 @@ class Header
     //
     // IRCTC Headers
     //
-    const MERCHANT_REFERENCE = 'merchant_reference';
-    const REFUND_TYPE        = 'refund_type';
-    const REFUND_AMOUNT      = 'refund_amount';
-    const CANCELLATION_DATE  = 'cancellation_date';
-    const PAYMENT_AMOUNT     = 'payment_amount';
-    const CANCELLATION_ID    = 'cancellation_id';
-    const PAYMENT_DATE       = 'payment_date';
-    const REFUND_DATE        = 'refund_date';
+    const MERCHANT_REFERENCE      = 'merchant_reference';
+    const REFUND_TYPE             = 'refund_type';
+    const REFUND_AMOUNT           = 'refund_amount';
+    const CANCELLATION_DATE       = 'cancellation_date';
+    const PAYMENT_AMOUNT          = 'payment_amount';
+    const CANCELLATION_ID         = 'cancellation_id';
+    const PAYMENT_DATE            = 'payment_date';
+    const REFUND_DATE             = 'refund_date';
+    const MERCHANT_TXN_ID         = "MERCHANT_TXN_ID";
+    const TRANSACTION_DATE        = "TRANSACTION_DATE";
+    const BANK_TRANSACTION_ID     = "BANK_TRANSACTION_ID";
+    const REFUND_STATUS           = "REFUND_STATUS";
+    const BANK_REMARKS            = "BANK_REMARKS";
+    const BANK_ACTUAL_REFUND_DATE = "BANK_ACTUAL_REFUND_DATE";
+    const BANK_REFUND_TXN_ID      = "BANK_REFUND_TXN_ID";
 
     //
     // Linked Account / Sub-merchant Headers
@@ -109,6 +116,16 @@ class Header
     const COMPANY_PAN_NAME         = 'company_pan_name';
     const COMPANY_CIN              = 'company_cin';
     const COMPANY_PAN              = 'company_pan';
+
+    //
+    // Mpan Bulk creation headers
+    //
+    const MPAN_ID                      =   'mpan_id';
+    const MPAN_SERIAL_NUMBER           =   'SrNo';
+    const MPAN_ADDED_ON                =   'ADDEDON';
+    const MPAN_VISA_PAN                =   'VPAN';
+    const MPAN_MASTERCARD_PAN          =   'MPAN';
+    const MPAN_RUPAY_PAN               =   'RPAN';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -673,6 +690,21 @@ class Header
      * @var array
      */
     const HEADER_MAP = [
+        Type::MPAN => [
+            self::INPUT => [
+                self::MPAN_SERIAL_NUMBER,
+                self::MPAN_ADDED_ON,
+                self::MPAN_VISA_PAN,
+                self::MPAN_MASTERCARD_PAN,
+                self::MPAN_RUPAY_PAN,
+            ],
+            self::OUTPUT => [
+                self::MPAN_SERIAL_NUMBER,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
 
         Type::TERMINAL_CREATION => [
             self::INPUT => [
@@ -846,17 +878,14 @@ class Header
             ],
 
             self::OUTPUT => [
-                self::MERCHANT_REFERENCE,
-                self::REFUND_TYPE,
+                self::MERCHANT_TXN_ID,
+                self::TRANSACTION_DATE,
+                self::BANK_TRANSACTION_ID,
                 self::REFUND_AMOUNT,
-                self::PAYMENT_ID,
-                self::STATUS,
-                self::REFUND_DATE,
-                self::REFUND_ID,
-                self::CANCELLATION_DATE,
-                self::PAYMENT_AMOUNT,
-                self::CANCELLATION_ID,
-                self::ERROR_DESCRIPTION,
+                self::REFUND_STATUS,
+                self::BANK_REMARKS,
+                self::BANK_ACTUAL_REFUND_DATE,
+                self::BANK_REFUND_TXN_ID,
             ],
         ],
 
@@ -2172,6 +2201,13 @@ class Header
         {
             // header is dynamic for these dat files, adding hack to ignore
             $actualHeaders = [];
+        }
+
+        if ($type === Type::MPAN)
+        {
+            // header can contain empty columns when input file is CSV
+            // this is due to trailing comma in the given input file
+            $actualHeaders = array_filter($actualHeaders);
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);

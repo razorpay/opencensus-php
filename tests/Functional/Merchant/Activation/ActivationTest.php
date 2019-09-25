@@ -157,6 +157,8 @@ class ActivationTest extends TestCase
 
     public function testInstantActivationOfRoutesForActiveMerchants()
     {
+        $this->markTestSkipped("Skipping the test until Route is added to instant Activation bucket");
+
         $merchantId = '1cXSLlUU8V9sXl';
         $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
 
@@ -180,6 +182,8 @@ class ActivationTest extends TestCase
 
     public function testInstantActivationOfRoutesForInActiveMerchants()
     {
+        $this->markTestSkipped("Skipping the test until Route is added to instant Activation bucket");
+
         $merchantId = '1cXSLlUU8V9sXl';
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);

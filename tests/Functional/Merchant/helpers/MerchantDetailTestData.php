@@ -958,4 +958,16 @@ return [
             ],
         ],
     ],
+
+    'testFileUploadSyncInDetailAndDocumentTable' => [
+        'request'  => [
+            'method' => 'post',
+            'url'    => '/merchant/activation/upload',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
 ];

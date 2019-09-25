@@ -9,6 +9,7 @@ use RZP\Models\Batch\Status;
 use RZP\Models\Payment\Refund;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\GatewayRequestException;
 use RZP\Reconciliator\RequestProcessor\Base;
@@ -16,9 +17,11 @@ use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
 use RZP\Tests\Functional\Gateway\Reconciliation\TestTraits;
+use RZP\Reconciliator\Base\SubReconciliator\ManualReconciliate;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
+use RZP\Reconciliator\Axis\SubReconciliator\RefundReconciliate as AxisRefundRecon;
 use RZP\Reconciliator\HDFC\SubReconciliator\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\SubReconciliator\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\SubReconciliator\PaymentReconciliate as AxisPaymentRecon;
@@ -27,6 +30,7 @@ use RZP\Reconciliator\FirstData\SubReconciliator\PaymentReconciliate as FDPaymen
 use RZP\Reconciliator\Hitachi\SubReconciliator\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\BillDesk\SubReconciliator\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\SubReconciliator\PaymentReconciliate as HitachiPaymentRecon;
+use RZP\Reconciliator\BillDesk\SubReconciliator\PaymentReconciliate as BilldeskPaymentRecon;
 use RZP\Reconciliator\Freecharge\SubReconciliator\PaymentReconciliate as FreechargePaymentRecon;
 use RZP\Reconciliator\VirtualAccYesBank\SubReconciliator\PaymentReconciliate as VirtualAccYesBank;
 
@@ -145,6 +149,42 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testFirstDataReconNonInrPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment = $this->getNewPaymentEntity(true, false);
+
+        $this->fixtures->edit('payment',
+            $payment['id'],
+            [
+                'base_amount'       => 7000,
+                'amount'            => 100,
+                'convert_currency'  => 0,
+                'currency'          => 'USD',
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
+
+        $entries[] = $this->overrideFirstDataNonInrPayment($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData');
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+
+        $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $updatedTransaction = $this->getDbLastEntity('transaction');
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertBatchStatus();
+    }
     public function testFirstDataForceAuthorizePayment()
     {
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
@@ -382,22 +422,58 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         // Recurring authorised payment
-        $payment1 = $this->getNewPaymentEntity(true, false);
-        $gatewayPayment1 = $this->getDbLastEntityToArray('axis_migs');
+        $payment = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment = $this->getDbLastEntityToArray('axis_migs');
 
-        $this->assertNull($payment1['reference1']);
-        $this->assertNull($payment1['reference2']);
+        $this->assertNull($payment['reference1']);
+        $this->assertNull($payment['reference2']);
 
-        $entries[] = $this->overrideAxisPayment($gatewayPayment1,[],'migs');
+        $entries[] = $this->overrideAxisPayment($gatewayPayment,[],'migs');
 
         $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
         $this->runForFiles([$file], 'Axis');
 
-        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+        $updatedPayment = $this->getDbEntityById('payment' ,$payment['id']);
 
-        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
-        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
-        $this->assertTrue($updatedPayment1['gateway_captured']);
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+        $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $updatedTransaction = $this->getDbEntityById('transaction', $updatedPayment['transaction_id'])->toArrayAdmin();
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testAxisMigsReconRefundFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $refund = $this->getNewRefundEntity(true);
+        $gatewayRefund = $this->getDbLastEntityToArray('axis_migs');
+
+        $this->assertNull($refund['acquirer_data']['arn']);
+
+        $entries[] = $this->overrideAxisRefund($gatewayRefund);
+
+        $this->fixtures->edit('axis_migs',
+            $gatewayRefund['id'],
+            [
+                'vpc_ReceiptNo' => $entries[0]['rrn_no'],
+            ]);
+
+        $file = $this->writeToExcelFile($entries, 'axis','files/settlement','refund');
+
+        $this->runForFiles([$file], 'Axis');
+
+        $updatedTransaction = $this->getDbEntityById('transaction', $refund['transaction_id'])->toArrayAdmin();
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testCardFssReconCombinedFile()
@@ -1056,6 +1132,42 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testBillDeskReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $gatewayPayment = $this->getLastEntity('billdesk', true);
+
+        $paymentEntity = $this->getEntityById('payment', $gatewayPayment['payment_id'], true);
+
+        $transaction = $this->getEntityById('transaction', $paymentEntity['transaction_id'], true);
+
+        //Reconciled at should be null
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
+
+        $entries[] = $this->overrideBillDeskPayment($gatewayPayment);
+
+        $file = $this->writeToCsvFile($entries, 'billdesk_success');
+
+        $this->runForFiles([$file], 'BillDesk');
+
+        $updatedTransaction = $this->getEntityById('transaction', $paymentEntity['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
+        $this->assertNotNull($updatedTransaction['gateway_fee']);
+        $this->assertNotNull($updatedTransaction['gateway_service_tax']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     /**
      * Test for success and failure count of a processed batch
      */
@@ -1238,6 +1350,20 @@ class ReconciliationFileTest extends TestCase
         return array_merge($facade, $forceOverride);
     }
 
+    private function overrideFirstDataNonInrPayment(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->testData['facades']['first_data'];
+
+        $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID]                = $payment['payment_id'];
+        $facade[FDPaymentRecon::COLUMN_AUTH_CODE]                      = random_integer(6);
+        $facade[FDPaymentRecon::COLUMN_ARN]                            = str_random(24);
+        $facade[FDPaymentRecon::COLUMN_CURRENCY]                       = 'USD';
+        $facade[FDPaymentRecon::COLUMN_PAYMENT_AMOUNT]                 = 70;
+        $facade[FDPaymentRecon::COLUMN_INTERNATIONAL_PAYMENT_AMOUNT]   = 1;
+
+        return array_merge($facade, $forceOverride);
+    }
+
     private function overrideHdfcPayment(array $payment, array $forceOverride = [], $gateway = 'fss')
     {
         $facade = $this->testData['facades']['hdfc'];
@@ -1266,6 +1392,22 @@ class ReconciliationFileTest extends TestCase
         {
             $facade[AxisPaymentRecon::COLUMN_MID] = 'RAZORPAYCYBS';
             $facade[AxisPaymentRecon::COLUMN_ORDER_ID] = $payment['ref'];
+        }
+
+        return $facade;
+    }
+
+    private function overrideAxisRefund(array $refund, array $forceOverride = [], $gateway = 'migs')
+    {
+        $facade = $this->testData['facades']['axis'];
+
+        $facade[AxisRefundRecon::COLUMN_PAYMENT_ID[0]] = $refund['refund_id'];
+        $facade[AxisRefundRecon::COLUMN_ARN]           = str_random(24);
+
+        if ($gateway === 'cybersource')
+        {
+            $facade[AxisRefundRecon::COLUMN_MID] = 'RAZORPAYCYBS';
+            $facade[AxisRefundRecon::COLUMN_ORDER_ID] = $refund['ref'];
         }
 
         return $facade;
@@ -1387,10 +1529,20 @@ class ReconciliationFileTest extends TestCase
 
     private function overrideBilldeskRefund(array $refund)
     {
-        $facade = $this->testData['facades']['billdesk'];
+        $facade = $this->testData['facades']['billdesk_refund'];
 
         $facade[BilldeskRefundRecon::COLUMN_REFUND_ID]  = $refund['RefundId'];
         $facade[BilldeskRefundRecon::COLUMN_PAYMENT_ID] = $refund['payment_id'];
+
+        return $facade;
+    }
+
+    private function overrideBillDeskPayment(array $gatewayPayment)
+    {
+        $facade = $this->testData['facades']['billdesk_payment'];
+
+        $facade[BilldeskPaymentRecon::COLUMN_PAYMENT_ID]     = $gatewayPayment['payment_id'];
+        $facade[BilldeskPaymentRecon::COLUMN_PAYMENT_AMOUNT] = $gatewayPayment['TxnAmount'];
 
         return $facade;
     }
@@ -1426,6 +1578,20 @@ class ReconciliationFileTest extends TestCase
         return array_merge($facade, $forceOverride);
     }
 
+    private function overrideHitachiPaymentManualReconFile(array $payment)
+    {
+        $row = [
+            ManualReconciliate::RECON_TYPE      => Reconciliate::PAYMENT,
+            ManualReconciliate::RECON_ID        => $payment['payment_id'],
+            ManualReconciliate::AMOUNT          => intval($payment['amount'] / 100),
+            Reconciliate::GATEWAY_FEE           => intval($payment['amount'] / 1000),
+            Reconciliate::GATEWAY_SERVICE_TAX   => intval($payment['amount'] / 2000),
+            Reconciliate::ARN                   => '1234567890',
+        ];
+
+        return $row;
+    }
+
     private function overrideHitachiRefund(array $payment, array $forceOverride = [])
     {
         $facade = $this->overrideHitachiPayment($payment, $forceOverride);
@@ -1457,7 +1623,7 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [], array $forceAuthorizePayments = [])
+    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [], array $forceAuthorizePayments = [], $manualFile = false)
     {
         $this->ba->appAuth();
 
@@ -1469,6 +1635,11 @@ class ReconciliationFileTest extends TestCase
         foreach ($files as $index => $file)
         {
             $testData['request']['files']['attachment-' . ($index + 1)] = $this->createUploadedFile($file);
+        }
+
+        if ($manualFile === true)
+        {
+            $testData['request']['content'][Base::MANUAL_RECON_FILE] = 1;
         }
 
         if (empty($forceUpdate) === false)
@@ -1677,6 +1848,43 @@ class ReconciliationFileTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    //
+    // Test for manually prepared recon file.
+    // Here we have taken Hitachi payment to test card payment recon
+    //
+    public function testHitachiManualReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment1 = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment1['reference1']);
+
+        $entries[] = $this->overrideHitachiPaymentManualReconFile($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi', [], [], true);
+
+        $updatedPayment1 = $this->getEntityById('payment', $payment1['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }

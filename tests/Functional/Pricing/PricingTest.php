@@ -1284,7 +1284,7 @@ class PricingTest extends TestCase
             'percent_rate'              => 1000,
             'fixed_rate'                =>  0,
             'payment_network'           => 'MC',
-            'payment_issuer'            => 'SBI',
+            'payment_issuer'            => 'SBIN',
             'org_id'                    => '10000000000000',
             'type'                      => 'pricing',
         ];
@@ -1423,7 +1423,7 @@ class PricingTest extends TestCase
             'percent_rate'        => 1000,
             'fixed_rate'          => 0,
             'payment_network'     => 'VISA',
-            'payment_issuer'      => 'SBI',
+            'payment_issuer'      => 'SBIN',
             'org_id'              => '10000000000000',
             'type'                => 'pricing',
         ];
@@ -1464,7 +1464,7 @@ class PricingTest extends TestCase
             'percent_rate'        => 2000,
             'fixed_rate'          => 0,
             'payment_network'     => 'VISA',
-            'payment_issuer'      => 'SBI',
+            'payment_issuer'      => 'SBIN',
             'org_id'              => '10000000000000',
             'type'                => 'pricing',
         ];

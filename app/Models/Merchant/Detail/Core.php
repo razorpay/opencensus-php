@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models\Base;
 use RZP\Models\State;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
@@ -132,22 +133,27 @@ class Core extends Base\Core
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
         $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
+
         $activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getActivationFlow());
-        $this->trace->count(
-            Metric::MERCHANT_ACTIVATION,
-            $activation_metric_dimensions);
+
+        $this->trace->count(Metric::MERCHANT_ACTIVATION, $activation_metric_dimensions);
 
         $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($this->merchant);
 
+        $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
+
         if ($autoEnableInternational === true)
         {
-            $merchantDetails->setInternationalActivationFlow(
-                $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
+            $merchantDetails->setInternationalActivationFlow($subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
+
+            $eventAttributes['international_activation_flow'] = $merchantDetails->getInternationalActivationFlow();
+
             $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getInternationalActivationFlow());
-            $this->trace->count(
-                Metric::INTERNATIONAL_MERCHANT_ACTIVATION,
-                $international_activation_metric_dimensions);
+
+            $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION, $international_activation_metric_dimensions);
         }
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS, $this->merchant, null, $eventAttributes);
     }
 
     /**
@@ -180,12 +186,38 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used for Not Registered Onboarding flow where there is need to set Default Volume/Department
+     * in MerchantDetails table. The reason for doing so is if Business type is changed from Non registered
+     * to some other business type, then need to skip pre signup form from Dashboard login.
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function updateToDefaultDepartmentVolumeIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if ($merchantDetails->isDirty((Entity::BUSINESS_TYPE)) === true)
+        {
+            $merchantBusinessType = BusinessType::getKeyFromIndex($merchant->merchantDetail[Entity::BUSINESS_TYPE]);
+
+            if (BusinessType::isUnregisteredBusiness($merchantBusinessType))
+            {
+                $merchantDetails->setAttribute(Entity::TRANSACTION_VOLUME, Department::getDefaultDepartment());
+
+                $merchantDetails->setAttribute(Entity::DEPARTMENT, TransactionVolume::getDefaultVolume());
+            }
+        }
+    }
+
+    /**
      * Saves the instant activation details and also instantly activates the merchant based on the business details.
      *
      * @param array           $input
      * @param Merchant\Entity $merchant
      *
      * @return array
+     * @throws \Throwable
      */
     public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
     {
@@ -224,7 +256,7 @@ class Core extends Base\Core
             $merchantDetails->setActivationProgress($activationProgress);
             $this->repo->saveOrFail($merchantDetails);
 
-            $this->trackActivationProgressEvents($merchant, $activationProgress);
+            $this->trackActivationProgressEvents($merchant, $activationProgress, $merchantDetails->getActivationFlow());
 
             $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
 
@@ -238,14 +270,19 @@ class Core extends Base\Core
     /**
      * @param Merchant\Entity $merchant
      * @param                 $activationProgress
+     * @param string          $activationFlow
      */
-    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress)
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow)
     {
         $eventAttributes = $merchant->toArrayEvent();
 
         $eventAttributes['activation_progress'] = $activationProgress;
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+
+        $eventAttributes['activation_flow'] = $activationFlow ;
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_SUBMIT_FORM_SUCCESS, $merchant, null, $eventAttributes);
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
@@ -435,6 +472,8 @@ class Core extends Base\Core
         $zapierData = $this->activationZapierData($customer, $merchant);
 
         $this->postFormSubmissionToZapier($zapierData, 'submissions', $merchant);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_FORM_SUBMIT_SUCCESS, $merchant, null);
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)
@@ -683,6 +722,10 @@ class Core extends Base\Core
                 (new Reason\Core)->addRejectionReasons($rejectionReasons, $state);
             }
         });
+
+        $customProperties['activation_status'] = $currentActivationStatus;
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS, $this->merchant, null, $customProperties);
 
         $this->trace->count(
             Metric::MERCHANT_ACTIVATION_STATE_TRANSITION,

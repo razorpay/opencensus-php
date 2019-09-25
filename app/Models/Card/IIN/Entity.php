@@ -75,7 +75,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING
     ];
 
-    protected $public = [
+    protected $visible = [
         self::IIN,
         self::ENTITY,
         self::CATEGORY,
@@ -97,6 +97,18 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    protected $public = [
+        self::IIN,
+        self::ENTITY,
+        self::NETWORK,
+        self::CATEGORY,
+        self::TYPE,
+        self::COUNTRY,
+        self::ISSUER,
+        self::ISSUER_NAME,
+        self::MESSAGE_TYPE
+    ];
+
     protected $publicSetters = [
         self::FLOWS,
     ];
@@ -111,6 +123,7 @@ class Entity extends Base\PublicEntity
         self::MESSAGE_TYPE   => null,
         self::SUBTYPE        => Card\SubType::CONSUMER,
         self::CATEGORY       => null,
+        self::ISSUER         => null,
     ];
 
     protected $casts = [
@@ -261,9 +274,14 @@ class Entity extends Base\PublicEntity
 
     public function getIssuerName()
     {
-        $dbName = $this->getAttribute(self::ISSUER_NAME);
+        return $this->getAttribute(self::ISSUER_NAME);
+    }
 
-        $issuer = $this->getAttribute(self::ISSUER);
+    protected function getIssuerNameAttribute()
+    {
+        $dbName = $this->attributes[self::ISSUER_NAME];
+
+        $issuer = $this->attributes[self::ISSUER];
 
         if (IFSC::exists($issuer) === true)
         {
@@ -314,11 +332,6 @@ class Entity extends Base\PublicEntity
     protected function getOtpReadAttribute()
     {
         return (bool) $this->attributes[self::OTP_READ];
-    }
-
-    protected function getIssuerAttribute()
-    {
-        return $this->attributes[self::ISSUER];
     }
 
     protected function getInternationalAttribute()

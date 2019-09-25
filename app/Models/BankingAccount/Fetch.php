@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount;
 
+use RZP\Http\BasicAuth;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
 
@@ -17,7 +18,11 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID            => 'sometimes|unsigned_id',
             Entity::BANK_REFERENCE_NUMBER => 'sometimes|string',
             Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|unsigned_id',
+            Entity::ACCOUNT_TYPE          => 'sometimes|string',
         ],
+        BasicAuth\Type::PRIVILEGE_AUTH => [
+            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail',
+        ]
     ];
 
     const ACCESSES = [
@@ -30,18 +35,9 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID,
             Entity::BANK_REFERENCE_NUMBER,
             Entity::FTS_FUND_ACCOUNT_ID,
+            Entity::ACCOUNT_TYPE ,
+            self::EXPAND_EACH,
         ],
-    ];
-
-    const COMMON_FIELDS = [
-        Entity::MERCHANT_ID,
-        Entity::STATUS,
-        Entity::ACCOUNT_NUMBER,
-        Entity::CHANNEL,
-        Entity::BANK_INTERNAL_STATUS,
-        Entity::BALANCE_ID,
-        Entity::BANK_REFERENCE_NUMBER,
-        Entity::FTS_FUND_ACCOUNT_ID,
     ];
 
     public function validateStatus(string $attribute, string $status)

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction\FeeBreakup;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
@@ -11,6 +13,7 @@ class Entity extends Base\PublicEntity
     const ID                           = 'id';
     const TRANSACTION_ID               = 'transaction_id';
     const PRICING_RULE_ID              = 'pricing_rule_id';
+    const PRICING_RULE                 = 'pricing_rule';
     const NAME                         = 'name';
     const PERCENTAGE                   = 'percentage';
     const AMOUNT                       = 'amount';
@@ -36,8 +39,17 @@ class Entity extends Base\PublicEntity
         self::PERCENTAGE,
         self::TRANSACTION_ID,
         self::PRICING_RULE_ID,
+        self::PRICING_RULE,
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected $relations = [
+        self::PRICING_RULE,
+    ];
+
+    protected $publicSetters = [
+        self::PRICING_RULE,
     ];
 
     protected $casts = [
@@ -107,6 +119,17 @@ class Entity extends Base\PublicEntity
     public function setCreatedAt($createdAt)
     {
         $this->setAttribute(self::CREATED_AT, $createdAt);
+    }
+
+    // ----------------------- Public setters ---------------------------------
+
+    public function setPublicPricingRuleAttribute(array & $array)
+    {
+        // TODO: Move to serializer
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($array[self::PRICING_RULE]);
+        }
     }
 
 }

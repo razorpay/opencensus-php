@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     const PAYLATER          = 'paylater';
     const CARD_NETWORKS     = 'card_networks';
     const PHONEPE           = 'phonepe';
+    const PAYPAL            = 'paypal';
 
     const METHODS           = 'methods';
 
@@ -87,6 +88,7 @@ class Entity extends Base\PublicEntity
         self::PAYLATER,
         self::CARD_NETWORKS,
         self::PHONEPE,
+        self::PAYPAL,
     ];
 
     protected $visible = [
@@ -120,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::PAYLATER,
         self::CARD_NETWORKS,
         self::PHONEPE,
+        self::PAYPAL,
     ];
 
     protected $public = [
@@ -154,6 +157,7 @@ class Entity extends Base\PublicEntity
         self::CARD_NETWORKS,
         self::PHONEPE,
         self::PAYLATER,
+        self::PAYPAL,
     ];
 
     protected $defaults = array(
@@ -186,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI   => false,
         self::PAYLATER       => false,
         self::PHONEPE        => false,
+        self::PAYPAL         => false,
     );
 
     protected $wallets = array(
@@ -202,6 +207,7 @@ class Entity extends Base\PublicEntity
         self::OPENWALLET,
         self::MPESA,
         self::PHONEPE,
+        self::PAYPAL,
     );
 
     protected static $methods = [
@@ -225,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI,
         self::PAYLATER,
         self::PHONEPE,
+        self::PAYPAL,
     ];
 
     // Casts the attributes to native types
@@ -254,6 +261,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI  => 'bool',
         self::PAYLATER      => 'bool',
         self::PHONEPE       => 'bool',
+        self::PAYPAL        => 'bool',
     ];
 
     public function merchant()
@@ -266,6 +274,11 @@ class Entity extends Base\PublicEntity
         return (($this->isDebitCardEnabled()) or
                 ($this->isCreditCardEnabled()) or
                 ($this->isPrepaidCardEnabled()));
+    }
+
+    public function isPaypalEnabled()
+    {
+        return $this->getAttribute(self::PAYPAL);
     }
 
     public function isDebitCardEnabled()

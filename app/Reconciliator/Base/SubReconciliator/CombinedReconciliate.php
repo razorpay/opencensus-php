@@ -7,7 +7,6 @@ use App;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
@@ -240,6 +239,12 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                     ]
                 );
             }
+
+            //
+            // setting the variable null here to free up the memory associated with this variable.
+            // not calling unset as that only removes the reference and the GC will free up the memory.
+            //
+            $fileContents = null;
 
             $this->setReconOutputData($batchProcessor);
 

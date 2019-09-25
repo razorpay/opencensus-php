@@ -21,6 +21,7 @@ class Wallet
     const OPENWALLET  = 'openwallet';
     const MPESA       = 'mpesa';
     const PHONEPE     = 'phonepe';
+    const PAYPAL      = 'paypal';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
@@ -36,6 +37,7 @@ class Wallet
         self::MPESA         => 'Vodafone mPesa',
         self::AMAZONPAY     => 'AmazonPay',
         self::PHONEPE       => 'PhonePe',
+        self::PAYPAL        => 'PayPal',
     );
 
     public static $emailRequiredWallets = array(
@@ -50,6 +52,22 @@ class Wallet
         self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
+    );
+
+    public static $indianContactWallets = array(
+        self::AIRTELMONEY,
+        self::AMAZONPAY,
+        self::FREECHARGE,
+        self::JIOMONEY,
+        self::MOBIKWIK,
+        self::MPESA,
+        self::OLAMONEY,
+        self::OPENWALLET,
+        self::PAYTM,
+        self::PAYZAPP,
+        self::PAYUMONEY,
+        self::PHONEPE,
+        self::SBIBUDDY,
     );
 
     public static function exists($wallet)

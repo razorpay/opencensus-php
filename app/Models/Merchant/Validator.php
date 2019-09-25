@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
 
 /**
@@ -191,8 +192,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $irctcRules = [
-        'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
-        'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
+        'refund'       => 'sometimes|filled|file|mimes:txt|max:1024',
+        'delta_refund' => 'sometimes|filled|file|mimes:txt|max:1024',
+        'settlement'   => 'sometimes|filled|file|mimes:txt|max:1024',
     ];
 
     protected static $createSubMerchantUserRules = [
@@ -268,6 +270,11 @@ class Validator extends Base\Validator
     protected static $restrictSettingsMerchantRules = [
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
         Entity::ACTION      => 'required|in:add,remove',
+    ];
+
+    protected static $suspendedMerchantRemoveRules = [
+        'skip'  => 'sometimes|integer',
+        'limit' => 'sometimes|integer',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -821,6 +828,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
+        }
+    }
+
+    protected function validateSetReceiptEmailEventAuthorized()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->getReceiptEmailTriggerEvent() === Event::AUTHORIZED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_AUTHORISED);
+        }
+    }
+
+    protected function validateSetReceiptEmailEventCaptured()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->getReceiptEmailTriggerEvent() === Event::CAPTURED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_CAPTURED);
         }
     }
 

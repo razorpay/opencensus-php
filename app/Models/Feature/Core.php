@@ -783,9 +783,8 @@ class Core extends Base\Core
         //For instantly activated merchants or already activated merchants instantly approve subscription and
         //marketplace request.
         //
-        $merchantRequestCore = new MerchantRequest\Core;
-        if (($merchantRequestCore->isInstantActivationOfProductsEnabled() === true) and
-            (Merchant\Request\Constants::isAutoApproveFeatureRequest($merchant, $featureName)))
+
+        if ((Merchant\Request\Constants::isAutoApproveFeatureRequest($merchant, $featureName)))
         {
             $featureStatus = Merchant\Detail\Entity::APPROVED;
         }

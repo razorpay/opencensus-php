@@ -1797,6 +1797,53 @@ class TerminalSelectionTest extends TestCase
         }
     }
 
+    public function testMswipeTerminalAssigning()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $this->fixtures->merchant->addFeatures('use_mswipe_terminals');
+
+        $this->fixtures->create('terminal', ['id' => 'C7EW8LggSH7FnY']);
+        $this->fixtures->create('terminal', ['id' => 'CXjvHPZlPnqWBX']);
+        $this->fixtures->create('terminal', ['id' => 'CNqL80h9pI0hsI']);
+        $this->fixtures->create('terminal', ['id' => 'CHYaN0FnjkG5ni']);
+        $this->fixtures->create('terminal', ['id' => 'CWybuzsFqa9KDz']);
+
+        $cardArray = [
+            'number'        => CardNumber::VALID_ENROLL_NUMBER,
+            'expiry_month'  => '1',
+            'expiry_year'   => '35',
+            'cvv'           => '123',
+            'name'          => 'Test',
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+
+        $selectedTerminals = $selector->select();
+
+        $this->assertEquals(6, sizeof($selectedTerminals));
+    }
+
     public function testGatewayFilterRejectsCyberSource()
     {
         $attributes = [

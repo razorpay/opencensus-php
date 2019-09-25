@@ -10,6 +10,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Services\FTS\Base as FtsService;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
@@ -24,10 +25,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $initiateFundTransferRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|custom',
-        Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout',
+        Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement,penny_testing',
+        Entity::SOURCE_TYPE     => 'required|filled|string|max:32|in:refund,payout,settlement,fund_account_validation',
         // This will be used while generating response while mock. Only used in api based settlements
-        'failed_response'       => 'sometimes|int'
+        'failed_response'       => 'sometimes|int',
+        'ignore_time_limit'     => 'sometimes|string',
     ];
 
     protected static $ftaControlRules = [
@@ -60,6 +62,15 @@ class Validator extends Base\Validator
         'fund_transfer_id'     => 'required|int',
         'extra_info'           => 'sometimes',
         'extra_info.*'         => 'sometimes',
+    ];
+
+    protected  static $ftsFundTransferRules = [
+        Entity::ID => 'required_without_all:from,to,limit,size|public_id|size:18',
+        'from'     => 'required_with:to,limit|epoch|date_format:U',
+        'to'       => 'required_with:from,limit|epoch|date_format:U',
+        'limit'    => 'required_with:from,to|int',
+        'size'     => 'required_without_all:from,to,limit,id|filled|int',
+        'action'   => 'required|filled|custom'
     ];
 
     protected function validateStatus($attribute, $value)
@@ -103,6 +114,11 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     */
     public function validateModeIfSet()
     {
         /** @var Entity $attempt */
@@ -114,6 +130,7 @@ class Validator extends Base\Validator
         }
 
         $mode = $attempt->getMode();
+
         $destinationType = $attempt->getDestinationType();
 
         Mode::validateModeOfAccountType($mode, $destinationType);
@@ -122,7 +139,9 @@ class Validator extends Base\Validator
         {
             $cardIssuer = $attempt->card->getIssuer();
 
-            Mode::validateModeOfIssuer($mode, $cardIssuer);
+            $networkCode = $attempt->card->getNetworkCode();
+
+            Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
 
         $channel = $attempt->getChannel();
@@ -171,6 +190,19 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invalid purpose passed to FTA',
+                $attribute,
+                [
+                    'value' => $value
+                ]);
+        }
+    }
+
+    protected function validateAction($attribute, $value)
+    {
+        if (FtsService::isValidFtsAction($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid action for FTS',
                 $attribute,
                 [
                     'value' => $value

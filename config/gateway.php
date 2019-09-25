@@ -12,6 +12,7 @@ return [
     'available' => [
         'amex',
         'atom',
+        'atos',
         'axis_genius',
         'axis_migs',
         'billdesk',
@@ -80,6 +81,7 @@ return [
         'wallet_openwallet',
         'wallet_mpesa',
         'wallet_phonepe',
+        'wallet_paypal',
         'bt_yesbank',
         'bt_kotak',
         'bajajfinserv',
@@ -162,8 +164,10 @@ return [
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
     'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
+    'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
+    'mock_atos'                   => env('ATOS_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
@@ -756,9 +760,12 @@ return [
         'merchant_id'       => env('PAYSECURE_TEST_MERCHANT_ID'),
     ],
     'netbanking_sbi' => [
-        'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_SBI_TEST_HASH_SECRET'),
-        'iv'                => env('NETBANKING_SBI_IV'),
+        'test_merchant_id'            => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
+        'test_merchant_id_recurring'  => env('NETBANKING_SBI_TEST_MERCHANT_ID_RECURRING'),
+        'test_hash_secret'            => env('NETBANKING_SBI_TEST_HASH_SECRET'),
+        'test_hash_secret_recurring'  => env('NETBANKING_SBI_TEST_HASH_SECRET_RECURRING'),
+        'iv'                          => env('NETBANKING_SBI_IV'),
+        'emandate_corporate_id'       => env('EMANDATE_SBI_CORPORATE_ID'),
     ],
 
     'mozart' => [

@@ -548,6 +548,7 @@ class DatabaseSeeder extends Seeder
                     'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'aeps'          => '1',
+                    'paypal'        => '1',
                     'mobikwik'      => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
@@ -609,7 +610,7 @@ class DatabaseSeeder extends Seeder
                     'id'          => '7NamQFIGFyyNdc',
                     'org_id'      => '100000razorpay',
                     'entity_name' => 'admin',
-                    'fields'      => "name,email,allow_all_merchants,disabled,oauth_access_token,oauth_provider_id,roles,groups",
+                    'fields'      => 'name,email,allow_all_merchants,disabled,oauth_access_token,oauth_provider_id,roles,groups',
                     'created_at'  => time(),
                     'updated_at'  => time(),
                 ],
@@ -927,6 +928,22 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1n25f6uN5S1Zak',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::WALLET_PAYPAL,
+                'card'                  => '0',
+                'gateway_merchant_id'   => 'NXR8P4C58AYQE',
+                'gateway_terminal_password2'=> Crypt::encrypt('AR2npSdWeXHqtuW2iGNL2_9q2TGsWl16ZnsTpNNoxrJ2Kv8vjGFPH_HjUVriDDh_-ZxDtA1IKLdJlLf4'),
+                'gateway_terminal_password' => Crypt::encrypt('EPaeTqZhSRferbORXbPF9Ew7uX7sErYkR1C6GCsjrVJFPriHKE3AJFGHQQzwiGvnwWxA_oUyNiTaKv_f'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 0,
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1n25f6uN5S1Z7c',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
@@ -941,8 +958,6 @@ class DatabaseSeeder extends Seeder
                 'type'                  => 65,
             )
         );
-
-
 
         DB::table(Table::TERMINAL)->insert(
             array(
@@ -1685,6 +1700,23 @@ class DatabaseSeeder extends Seeder
                 'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NETBANKING_SBI_REC_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_SBI,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'emandate'                  => '1',
+                'gateway_merchant_id'       => 'RAZORPAY',
+                'gateway_secure_secret'     => Crypt::encrypt('test_secure_secret'),
+                'recurring'                 => 1,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'type'                      => 6,
             ]
         );
     }

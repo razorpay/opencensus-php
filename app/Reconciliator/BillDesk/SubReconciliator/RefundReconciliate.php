@@ -13,6 +13,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      *******************/
     const COLUMN_REFUND_ID      = 'refund_id';
     const COLUMN_PAYMENT_ID     = 'ref_1';
+    const COLUMN_REFUND_AMOUNT  = 'refund_amount_rs_ps';
 
     /**
      * BillDesk reconciliation files only send us the gateway refund ID,

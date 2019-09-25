@@ -13,8 +13,6 @@ class DefaultPlan
     const PROMOTIONAL_PLAN_ID         = '1In3Yh5Mluj605';
     const HDFC_PROMOTIONAL_PLAN_ID    = 'BAJq6FJDNJ4ZqD';
     const BOB_PROMOTIONAL_PLAN_ID     = 'BAJvpnuxy4AUq3';
-    const DIWALI_PROMOTIONAL_PLAN_ID  = 'BI7O6FmHlzLFZm';
-
 
     public static function getPricingSeedData()
     {

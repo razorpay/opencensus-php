@@ -8,4 +8,10 @@ class RequestFields
     const REQUEST_XML = 'MandateReqDoc';
     const CHECKSUM    = 'CheckSumVal';
     const BANK_ID     = 'BankID';
+    const AUTH_MODE   = 'AuthMode';
+
+    // Verify Request
+    const MANDATE_REQ_ID_LIST = 'mandateReqIDList';
+    const MANDATE_ID          = 'MndtReqId';
+    const REQ_INIT_DATE       = 'ReqInitDate';
 }

@@ -13,6 +13,7 @@ use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Merchant\MerchantUser;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\BankingAccountStatement as BAS;
 
 /**
@@ -560,10 +561,15 @@ class AdminFetch
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
+                        'failed',
                         'created',
-                        'processing',
                         'processed',
+                        'partially_processed',
                     ],
+                ],
+                'processing' => [
+                    Fetch::LABEL  => 'Processing',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN,
                 ],
                 'type' => [
                     Fetch::LABEL  => 'Type',
@@ -591,15 +597,20 @@ class AdminFetch
                         'acknowledge',
                         'debit',
                         'register',
+                        'combined',
+                        'payment',
+                        'refund',
                     ],
                 ],
                 'gateway' => [
                     Fetch::LABEL  => 'Gateway',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => [
-                        'enach_rbl',
-                        'hdfc'
-                    ],
+                    Fetch::VALUES => array_merge(
+                                        array_keys(RequestProcessor\Base::GATEWAY_SENDER_MAPPING),
+                                        [
+                                            'enach_rbl',
+                                            'hdfc'
+                                        ]),
                 ],
             ],
 

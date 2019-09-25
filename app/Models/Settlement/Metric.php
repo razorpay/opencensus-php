@@ -17,6 +17,13 @@ final class Metric
     /**
      * Method: Count
      * Dimensions: Channel
+     *             Total Merchant count
+     */
+    const SETTLEMENTS_INITIATE_EXECUTION_TIME               = 'settlements_initiate_execution_time';
+
+    /**
+     * Method: Count
+     * Dimensions: Channel
      */
     const TRANSACTIONS_PICKED_FOR_SETTLEMENT_TOTAL          = 'transaction_picked_for_settlement_total';
 
@@ -31,6 +38,26 @@ final class Metric
      * Dimensions: SkipReason
      */
     const MERCHANTS_SKIPPED_FOR_SETTLEMENT_TOTAL            = 'merchants_skipped_for_settlement_total';
+
+    /**
+     * Method: Count
+     */
+    const NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT       = 'number_of_merchants_in_queue_for_settlement';
+
+    /**
+     * Method: Count
+     */
+    const SETTLEMENT_CREATED_COUNT                          = 'settlement_created_count';
+
+    /**
+     * Method: Count
+     */
+    const MERCHANT_SETTLEMENT_PROCESSED                     = 'merchant_settlement_processed';
+
+    /**
+     * Method: Count
+     */
+    const DISPATCH_FOR_SETTLEMENT_INITIATE                  = 'dispatch_for_settlement_initiate';
 
     // ------ Histograms ------
 
@@ -62,4 +89,7 @@ final class Metric
     const BLOCK_KARVY_OUTSIDE_TIME_PERIOD       = 'block_karvy_outside_time_period';
     const BENEFICIARY_REGISTRATION_STATUS       = 'bene_reg_status';
     const RECORD_EXIST_PENDING_APPROVAL         = 'record_exist_pending_approval';
+    const TOTAL_MERCHANTS_COUNT                 = 'total_merchants_count';
+    const USING_QUEUE                           = 'using_queue';
+    const TIME_TAKEN_IN_MILLI                   = 'time_taken_in_milli';
 }

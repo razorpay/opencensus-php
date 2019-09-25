@@ -92,9 +92,9 @@ return [
             'transaction_type'     => 'PURCHASE',
             'transaction_amt'      => 500,
             'transaction_currency' => 'INR',
-            'amount'               => 12940,
-            'comm_amount'          => 129.40000000000001,
-            'net_amt'              => 12940,
+            'amount'               => 500,
+            'comm_amount'          => 50,
+            'net_amt'              => 500,
             'creditdebit'          => 'CREDIT',
             'transaction_status'   => 'CLEARED',
             'ft_no'                => '000065640855853',
@@ -219,13 +219,13 @@ return [
             'merchant_type'        => 'RazorPay',
             'card_category'        => 'PREMIUM',
             'mer_comm'             => '0.25',
-            'txn_amount'           => 192.06,
+            'txn_amount'           => 500,
             'dcc_amount'           => 0,
             'commission'           => 0,
             'agg_comm_amt'         => 0,
             'gst'                  => 0,
             'agg_gst'              => 0,
-            'payment'              => 192.06,
+            'payment'              => 500,
             'txn_date'             => '2017-10-23 16:51:33',
             'mcc'                  => '8299',
             'mcc_description'      => 'Schools and Educational Services-not elsewhere classified',
@@ -246,10 +246,16 @@ return [
             'arn'                  => '75105177297000905183277',
         ],
 
-        'billdesk' => [
+        'billdesk_refund' => [
             'refund_id'                 => 'uibpgthqndxmwcf',
             'ref_1'                     => '9LRjiRNokiZ3Ww',
             'refund_amount_rs_ps'       => 500
+        ],
+
+        'billdesk_payment' => [
+            'ref_1'                     => 1,
+            'gross_amountrsps'          => 500,
+            'charges_rsps'              => 3,
         ],
 
         'atom' => [

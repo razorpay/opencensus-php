@@ -87,9 +87,11 @@ class Gateway extends Base\Gateway
         $this->verifyCallback($input, $content);
 
         // Saving callback response only if the verification passes
-        $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->saveCallbackResponse($content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)

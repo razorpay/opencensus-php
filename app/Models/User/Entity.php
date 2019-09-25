@@ -315,7 +315,9 @@ class Entity extends Base\PublicEntity
     protected function getSecondFactorAuthEnforcedAttribute(): bool
     {
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
-                    ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)->count() > 0;
+                    ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)
+                    ->limit(1)
+                    ->count() > 0;
     }
 
     protected function getSecondFactorAuthSetupAttribute(): bool
@@ -326,7 +328,7 @@ class Entity extends Base\PublicEntity
 
     protected function getRestrictedAttribute(): bool
     {
-        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID));
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 2);
         
         if (count($merchantIds) !== 1)
         {
@@ -334,6 +336,7 @@ class Entity extends Base\PublicEntity
         }
 
         $merchant = (new Merchant\Repository)->find($merchantIds[0]);
+
         return $merchant->getRestricted();
     }
 

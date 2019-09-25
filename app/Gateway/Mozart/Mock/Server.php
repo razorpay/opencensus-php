@@ -46,6 +46,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $verifyObj, 'verify');
     }
 
+    public function capture($input)
+    {
+        $captureObj = new CaptureData();
+
+        return $this->processMockResponse($input, $captureObj, 'capture');
+    }
+
     public function refund($input)
     {
         $refundObj = new RefundData();
@@ -215,6 +222,26 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function wallet_paypal($input)
+    {
+        $content = $input;
+        $content = [
+            'token'     => 'PayPal_Token',
+            'PayId'     => '8DS61651XA862144J',
+            'status'    => 'callback_successful',
+        ];
+
+        $this->content($content, 'authorize');
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function netbanking_sib($input)
     {
         // this encrypted value is never used as the pay_verify response from mozart is mocked
@@ -321,6 +348,28 @@ class Server extends Base\Mock\Server
         ];
     }
 
+    public function createTerminal($body)
+    {
+        $response_body = [
+            'data' => [
+                'Description'   => "Success",
+                'Status'        => "00",
+                '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
+            ],
+            'error'             => [],
+            'external_trace_id' => "",
+            'mozart_id'         => "blfq216r1gunssphbs01",
+            'next'              => null,
+            'success'           => true
+        ];
+        
+        $response = \Response::make($response_body);
+        
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+ 
+        return $response;
+    }
+    
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');

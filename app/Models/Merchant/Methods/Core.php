@@ -185,12 +185,16 @@ class Core extends Base\Core
 
         $data[Payment\Method::WALLET]        = $methods->getEnabledWallets();
         $data[Payment\Method::UPI]           = $methods->isUpiEnabled();
-        $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
         $data[Payment\Method::CARDLESS_EMI] =
                   $methods->isCardlessEmiEnabled() ? $this->getProviders($merchant, Payment\Method::CARDLESS_EMI) : [];
 
         $data[Payment\Method::PAYLATER] =
             $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER) : [];
+
+        if ($merchant->isFeatureEnabled(Constants::BANK_TRANSFER_ON_CHECKOUT) === true)
+        {
+            $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
+        }
 
         $emi = $methods->isEmiEnabled();
 
@@ -267,7 +271,7 @@ class Core extends Base\Core
         // this is temporary (read as hack), just to disable aadhaar auth type.
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::BLOCK_AADHAAR_REG, true) === true)
         {
-            $authTypes = [Payment\AuthType::NETBANKING];
+            $authTypes = [Payment\AuthType::NETBANKING, Payment\AuthType::DEBITCARD];
         }
 
         foreach ($authTypes as $authType)
@@ -332,7 +336,10 @@ class Core extends Base\Core
             $methods->setMobikwik(false);
             $methods->setPayzapp(true);
             $methods->setPayumoney(true);
-            $methods->setOlamoney(true);
+            // OlaMoney is facing fraud issues, not going to
+            // enable by default for new merchants anymore.
+            // Ref: https://razorpay.slack.com/archives/C0X84TUTH/p1568200366022300
+            // $methods->setOlamoney(false);
             $methods->setFreecharge(true);
             $methods->setAirtelmoney(false);
             $methods->setAmazonpay(false);
@@ -486,11 +493,11 @@ class Core extends Base\Core
 
         foreach ($availableGatewaysForMerchant as $availableGateway)
         {
-            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
+            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway][$authType]) === true)
             {
                 $availableEmandateBanks = array_merge(
                                                 $availableEmandateBanks,
-                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+                    Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway][$authType]);
             }
         }
 
@@ -518,5 +525,19 @@ class Core extends Base\Core
         }
 
         return $provider;
+    }
+
+    public function checkPaypalTerminalForCurrency($merchant, $currency)
+    {
+        $terminals = $this->repo
+                          ->terminal
+                          ->findByMerchantIdGatewayAndCurrency(
+                              $merchant['id'],
+                              Payment\Gateway::WALLET_PAYPAL,
+                              $currency);
+
+        $result = $terminals === null ? false : true;
+
+        return $result;
     }
 }

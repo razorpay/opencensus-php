@@ -26,6 +26,45 @@ class PublicCollection extends Collection
         return $array;
     }
 
+    /**
+     * `load` on a collection fails if some items of the collection don't have the given foreign_key/relation.
+     * This function removes those items from the collection by checking explicitly whether the foreign_key is set.
+     * It then runs `load` on the collection and then adds back the previous items that were removed from the collection.
+     * This ensures that we are able to load for all those items in the collection which have the foreign_key/relation set.
+     *
+     * @param string $relation
+     * @param string $foreignKey
+     *
+     * @return $this
+     */
+    public function loadRelationWithForeignKey(string $relation, string $foreignKey = null)
+    {
+        $entitiesWithoutRelation = [];
+
+        if (empty($foreignKey) === true)
+        {
+            $foreignKey = snake_case($relation) . '_id';
+        }
+
+        foreach ($this->items as $index => $entity)
+        {
+            if (empty($entity[$foreignKey]) === true)
+            {
+                $entitiesWithoutRelation[$index] = $entity;
+
+                $this->forget($index);
+            }
+        }
+
+        $this->load(camel_case($relation));
+
+        $this->items = array_replace($this->items, $entitiesWithoutRelation);
+
+        ksort($this->items, SORT_NUMERIC);
+
+        return $this;
+    }
+
     public function toArrayAdmin()
     {
         $array[static::ENTITY] = $this->entity;

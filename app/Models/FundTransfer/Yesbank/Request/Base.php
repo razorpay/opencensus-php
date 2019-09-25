@@ -36,6 +36,8 @@ abstract class Base extends ApiProcessor
 
     protected $entity = null;
 
+    protected $entityType;
+
     protected $requestIdentifier;
 
     protected $responseIdentifier;
@@ -252,6 +254,19 @@ abstract class Base extends ApiProcessor
         $this->entity = $entity;
 
         $this->ftaId = $entity->getId();
+
+        return $this;
+    }
+
+    /**
+     * Sets Entity type
+     *
+     * @param $entityType
+     * @return $this
+     */
+    public function setEntityType($entityType)
+    {
+        $this->entityType = $entityType;
 
         return $this;
     }

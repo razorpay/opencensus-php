@@ -257,7 +257,6 @@ class Entity extends Base\PublicEntity
         self::REJECTED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
-        self::IDEMPOTENCY_KEY,
     ];
 
     protected static $modifiers = [
@@ -780,6 +779,11 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    protected function setStatusAttribute($status)
+    {
+        $this->attributes[self::STATUS] = $status;
 
         if (in_array($status, Status::$timestampedStatuses, true) === true)
         {

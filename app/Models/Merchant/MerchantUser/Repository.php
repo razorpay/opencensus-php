@@ -20,25 +20,15 @@ class Repository extends Base\Repository
     }
 
     //Returns an array of distinct merchant ids a user id is associated with
-    public function returnMerchantIdsForUserId(string $userId): array
+    public function returnMerchantIdsForUserId(string $userId, int $limit = 100): array
     {
         return $this->newQuery()
                     ->select(Entity::MERCHANT_ID)
                     ->where(Entity::USER_ID, $userId)
+                    ->limit($limit)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
-    }
-
-    public function getMerchantUserRelation(string $userId, string $merchantId, string $product)
-    {
-        return $this->newQUery()
-                    ->select(Entity::MERCHANT_ID, Entity::USER_ID)
-                    ->where(Entity::USER_ID, $userId)
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->where(Entity::PRODUCT, $product)
-                    ->get()
                     ->toArray();
     }
 }

@@ -29,10 +29,24 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
+        $payment = $this->repo->payment->find($paymentId);
+
+        if ($payment === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'            => TraceCode::RECON_INFO_ALERT,
+                    'info_code'             => Base\InfoCode::REFUND_PAYMENT_ABSENT,
+                    'refund_reference_id'   => $gatewayPaymentId,
+                    'payment_id'            => $paymentId,
+                    'gateway'               => $this->gateway,
+                ]);
+
+            return $refundId;
+        }
+
         try
         {
-            $payment = $this->repo->payment->findOrFail($paymentId);
-
             $method = $payment->getMethod();
 
             if ($method === Method::WALLET)
