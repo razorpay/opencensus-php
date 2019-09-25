@@ -137,9 +137,7 @@ class Service extends Base\Service
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
 
-        $customProperties = ['email' => $user[Entity::EMAIL]];
-
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
+        (new Core)->trackOnboardingEvent($user[Entity::EMAIL], EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS);
 
         return $data;
     }
@@ -177,9 +175,7 @@ class Service extends Base\Service
 
         $this->sendConfirmationMail($user);
 
-        $customProperties = ['email' => $user->getEmail()];
-
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null, $customProperties);
+        (new Core)->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS);
 
         return [
             'id'    => $merchantData['id'],
@@ -405,9 +401,7 @@ class Service extends Base\Service
 
         $data = $this->sendConfirmationMail($user);
 
-        $customProperties = ['email' => $user->getEmail()];
-
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null, $customProperties);
+        (new Core)->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS);
 
         return $data;
     }
