@@ -9,6 +9,7 @@ use Config;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -375,6 +376,23 @@ class PayoutTest extends TestCase
         $this->assertEquals(1000, $txn['debit']);
 
         return $payout;
+    }
+
+    public function testCreateMerchantPayoutOnDemandWithAmountLessThan2L()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $merchant = $this->getEntityById('merchant', '10000000000000', true);
+
+        $this->assertNotEquals(\RZP\Models\Settlement\Channel::YESBANK, $merchant[Merchant\Entity::CHANNEL]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreatePayoutForAmountLessThanMinFee()
