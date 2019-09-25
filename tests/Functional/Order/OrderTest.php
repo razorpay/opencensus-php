@@ -243,6 +243,35 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testEmandateRegistrationOrderWithTokenMaxAmount()
+    {
+        $this->mockCardVault();
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate();
+
+        $order = $this->startTest();
+
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('UTIB', 0);
+
+        $payment['order_id'] = $order['id'];
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
+
+        $this->assertEquals(2500, $token['max_amount']);
+    }
+
     public function testEmandateRegistrationOrderWithZeroRupeeAndTokenWithFirstAmount()
     {
         $order = $this->startTest();
