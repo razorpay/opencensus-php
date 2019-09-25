@@ -32,18 +32,27 @@ final class Metric
     const PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS  = 'payout_processed_to_reversed_duration_seconds.histogram';
 
     // Dimension constants
-    const SOURCE    = 'source';
-    const BATCH     = 'batch';
-    const API       = 'api';
-    const DASHBOARD = 'dashboard';
+    const SOURCE     = 'source';
+    const BATCH      = 'batch';
+    const API        = 'api';
+    const DASHBOARD  = 'dashboard';
+    const IS_BANKING = 'is_banking';
 
-    public static function pushPayoutStatusChangeMetrics(Entity $payout, $previousStatus)
+    public static function pushStatusChangeMetrics(Entity $payout, $previousStatus)
     {
         $currentStatus = $payout->getStatus();
 
         try
         {
-            Status::validateStausUpdate($currentStatus, $previousStatus);
+            $isInternalChange = Status::isInternalStatusUpdate($currentStatus, $previousStatus);
+
+            if ($isInternalChange === true)
+            {
+                sd($currentStatus, $previousStatus);
+                return;
+            }
+
+            Status::validateStatusUpdate($currentStatus, $previousStatus);
 
             $functionName = self::getFunctionNameToCall($previousStatus, $currentStatus);
 
@@ -58,7 +67,8 @@ final class Metric
                 [
                     'oldStatus' => $previousStatus,
                     'newStatus' => $currentStatus,
-                ]);
+
+           ]);
         }
     }
 
@@ -124,7 +134,7 @@ final class Metric
         $metricDimensions = self::getMetricDimensions($payout);
         $timeDuration     = $payout->getCreatedAt() - $payout->getQueuedAt();
 
-        app('trace')->getTrace()->histogram(
+        app('trace')->histogram(
             self::PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
@@ -137,7 +147,7 @@ final class Metric
         $metricDimensions = self::getMetricDimensions($payout);
         $timeDuration     = $payout->getCancelledAt() - $payout->getQueuedAt();
 
-        app('trace')->getTrace()->histogram(
+        app('trace')->histogram(
             self::PAYOUT_QUEUED_TO_CANCELLED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
@@ -148,7 +158,7 @@ final class Metric
         $metricDimensions = self::getMetricDimensions($payout);
         $timeDuration     = $payout->getRejectedAt() - $payout->getPendingAt();
 
-        app('trace')->getTrace()->histogram(
+        app('trace')->histogram(
             self::PAYOUT_PENDING_TO_REJECTED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
@@ -159,7 +169,7 @@ final class Metric
         $metricDimensions = self::getMetricDimensions($payout);
         $timeDuration     = $payout->getQueuedAt() - $payout->getPendingAt();
 
-        app('trace')->getTrace()->histogram(
+        app('trace')->histogram(
             self::PAYOUT_PENDING_TO_QUEUED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
@@ -170,7 +180,7 @@ final class Metric
         $metricDimensions = self::getMetricDimensions($payout);
         $timeDuration     = $payout->getCreatedAt() - $payout->getPendingAt();
 
-        app('trace')->getTrace()->histogram(
+        app('trace')->histogram(
             self::PAYOUT_PENDING_TO_CREATED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
@@ -285,6 +295,7 @@ final class Metric
                 Entity::CHANNEL       => $payout->getChannel(),
                 Balance::ACCOUNT_TYPE => $payout->balance->getAccountType(),
                 self::SOURCE          => self::getSource($payout),
+                self::IS_BANKING      => $payout->balance->isTypeBanking(),
             ];
 
         return $dimensions;

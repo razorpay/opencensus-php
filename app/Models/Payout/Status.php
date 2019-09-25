@@ -48,7 +48,6 @@ class Status
      * to next possible statuses. This is to ensure the status
      * change on Payout Entity happens in an order.
      *
-     *
      * @var array
      */
     protected static $fromToStatusMap = [
@@ -77,6 +76,20 @@ class Status
         ],
         self::PROCESSED => [
             self::REVERSED,
+        ],
+    ];
+
+    /**
+     * This contains a status map that keeps mapping of an internal status change.
+     * This ideally should never get committed to the db, it's just an intermittent state change
+     *
+     * TODO: This is a temporary fix, need to fix this later properly
+     *
+     * @var array
+     */
+    protected static $internalFromToStatusMap = [
+        self::CREATED => [
+            self::QUEUED,
         ],
     ];
 
@@ -196,10 +209,12 @@ class Status
     }
 
     /**
+     * Validate status change based on state machine
+     *
      * @param string      $currentStatus
      * @param string|null $previousStatus
      */
-    public static function validateStausUpdate(string $currentStatus, $previousStatus)
+    public static function validateStatusUpdate(string $currentStatus, $previousStatus)
     {
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 
@@ -214,4 +229,19 @@ class Status
                 ]);
         }
     }
+
+    /**
+     * Returns true if status change is internal
+     *
+     * @param string $currentStatus
+     * @param string|null $previousStatus
+     * @return bool
+     */
+    public static function isInternalStatusUpdate(string $currentStatus, $previousStatus)
+    {
+        $nextStatusList = self::$internalFromToStatusMap[$previousStatus] ?? [];
+
+        return in_array($currentStatus, $nextStatusList, true);
+    }
+
 }

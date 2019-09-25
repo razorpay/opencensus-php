@@ -156,7 +156,6 @@ class Entity extends Base\PublicEntity
         self::PURPOSE,
         self::AMOUNT,
         self::CURRENCY,
-        self::STATUS,
         self::NOTES,
         self::PROCESSED_AT,
         self::PENDING_AT,
@@ -816,7 +815,7 @@ class Entity extends Base\PublicEntity
 
             $this->setAttribute($timestampKey, $currentTime);
 
-            Metric::pushPayoutStatusChangeMetrics($this, $previousStatus);
+            Metric::pushStatusChangeMetrics($this, $previousStatus);
         }
     }
 
