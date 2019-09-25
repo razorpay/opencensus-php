@@ -43,6 +43,13 @@ class Reconciliate extends Base\Core
 
     const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::MANUAL, self::EMANDATE_DEBIT];
 
+    /**
+     * Except combined recon type, we want to keep the analytics file
+     * in a subfolder named as gateway_reconType. For combined recon type
+     * we keep the files under gateway/ folder itself.
+     */
+    const DEFAULT_S3_PATH_RECON_TYPE = [self::COMBINED];
+
     //
     // Used to define start_row for the MIS files.
     // Some of them have some random crap at the start of the file.
@@ -356,19 +363,18 @@ class Reconciliate extends Base\Core
 
         $this->messenger->raiseReconInfo($traceData);
 
-        $this->generateReconAnalyticsData($data, $batch, $sheetName);
+        $reconciliationType = $this->getReconciliationType($extraDetails);
+
+        $this->generateReconAnalyticsData($data, $batch, $sheetName, $reconciliationType);
     }
 
     /**
      * @param $data
      * @param $batch
      * @param $sheetName
-     * @throws \RZP\Exception\LogicException
-     *
-     * output file stored in a rzp-edh bucket for analytics. once all the gateways are migrated,
-     * output file will be stored only in this bucket.
+     * @param $reconciliationType
      */
-    protected function generateReconAnalyticsData($data, $batch, $sheetName)
+    protected function generateReconAnalyticsData($data, $batch, $sheetName, $reconciliationType)
     {
         if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
         {
@@ -381,6 +387,12 @@ class Reconciliate extends Base\Core
             $analyticsOutputFileName = $batchId . $sheetName . '_analytics' . self::OUTPUT_FILE_SUFFIX;
 
             $dirPath = 'reconciliation_output/' . $this->gateway;
+
+            if ((in_array($reconciliationType, self::DEFAULT_S3_PATH_RECON_TYPE, true) === false))
+            {
+                // Append _ReconType
+                $dirPath .= '_' . $reconciliationType;
+            }
 
             $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
 

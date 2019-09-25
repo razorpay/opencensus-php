@@ -548,7 +548,7 @@ class SubReconciliate extends Base\Core
         if ($status === InfoCode::ALREADY_RECONCILED)
         {
             // Add the already reconciled_at time
-            $reconciledTime = Carbon::createFromTimestamp($reconciledAt, Timezone::IST)->format('d M Y H:i:s');
+            $reconciledTime = Carbon::createFromTimestamp($reconciledAt, Timezone::IST)->format('Y-m-d H:i:s');
 
             static::$reconOutputData[static::$currentRowNumber][self::ALREADY_RECONCILED_AT] = $reconciledTime;
         }
