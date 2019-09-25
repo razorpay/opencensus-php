@@ -466,7 +466,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts cannot be created on an fund account without contact or inactive contact',
+                    'description' => 'Payouts cannot be created for fund account without contact.',
                 ],
             ],
             'status_code' => 400,
