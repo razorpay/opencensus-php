@@ -48,7 +48,6 @@ final class Metric
 
             if ($isInternalChange === true)
             {
-                sd($currentStatus, $previousStatus);
                 return;
             }
 
@@ -65,10 +64,9 @@ final class Metric
                 Trace::ERROR,
                 TraceCode::PAYOUT_METRIC_PUSH_EXCEPTION,
                 [
-                    'oldStatus' => $previousStatus,
-                    'newStatus' => $currentStatus,
-
-           ]);
+                    'previous_status' => $previousStatus,
+                    'current_status'  => $currentStatus,
+                ]);
         }
     }
 

@@ -48,6 +48,7 @@ class Status
      * to next possible statuses. This is to ensure the status
      * change on Payout Entity happens in an order.
      *
+     * TODO: Complete this and use it before setting status in payout entity.
      * @var array
      */
     protected static $fromToStatusMap = [
