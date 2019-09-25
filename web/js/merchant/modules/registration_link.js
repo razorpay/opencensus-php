@@ -1,4 +1,4 @@
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 import RegistrationLink from 'merchant/models/RegistrationLink';
 import { makeEntityReducer } from 'rzp/modules/entity';
@@ -44,8 +44,8 @@ export const authenticateNACHFile = (file, id) => {
 
 export const downloadSignedNACHFile = id => {
   return merchantFetch(
-    `token.registration/paper_mandate/uploaded_form/${id}`
-  ).then(resp => ajax(resp.data.url));
+    `token.registration/paper_mandate/uploaded_form?auth_link_id=${id}`
+  ).then(resp => axios(resp.data.url));
 };
 
 export default makeEntityReducer(REGISTRATION_LINK_FETCH);
