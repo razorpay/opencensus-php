@@ -4,7 +4,8 @@ import { Field } from 'redux-form';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({ type, isInttCurrenciesEnabled, ...otherProps }) => {
-  let label = type === 'link' ? 'Payment Link' : 'Invoice';
+  const isTypeLink = type === 'link';
+  let label = isTypeLink ? 'Payment Link' : 'Invoice';
 
   return (
     <ListFilter {...otherProps}>
@@ -12,7 +13,8 @@ export default ({ type, isInttCurrenciesEnabled, ...otherProps }) => {
         <label>{label} Status</label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
-          <option value="draft">Draft</option>
+          {!isTypeLink && <option value="draft">Draft</option>}
+
           <option value="issued">Issued</option>
           <option value="partially_paid">Partially Paid</option>
           <option value="paid">Paid</option>
