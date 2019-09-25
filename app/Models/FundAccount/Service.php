@@ -52,7 +52,7 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-            $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->sensitiveCardDetails($input));
+            $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->unsetSensitiveCardDetails($input));
 
             (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 

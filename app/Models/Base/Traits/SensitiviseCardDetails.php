@@ -15,12 +15,12 @@ use RZP\Models\FundAccount\Entity;
 trait SensitiviseCardDetails
 {
     /**
-     * Mandate Account number and Replaces it with balance id
+     * Unset sensitive card details
      *
      * @param array $input
      * @return array
      */
-    protected function sensitiveCardDetails(array $input)
+    protected function unsetSensitiveCardDetails(array $input)
     {
         if ((isset($input[Entity::CARD]) === true) and
             (is_array($input[Entity::CARD]) === true))

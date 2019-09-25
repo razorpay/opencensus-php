@@ -451,7 +451,7 @@ return [
 
     'testBulkFundAccount' => [
         'request'   => [
-            'url'     => '/fund_accounts/bulk',
+            'url'     => '/contacts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -584,7 +584,7 @@ return [
     ],
     'testBulkFundAccountWithInvalidContactId' => [
         'request'   => [
-            'url'     => '/fund_accounts/bulk',
+            'url'     => '/contacts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -706,7 +706,7 @@ return [
     ],
     'testBulkFundAccountWithValidContactId' => [
         'request'   => [
-            'url'     => '/fund_accounts/bulk',
+            'url'     => '/contacts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -840,7 +840,7 @@ return [
     ],
     'testBulkFundAccountWithSameIdempotencyKey' => [
         'request'   => [
-            'url'     => '/fund_accounts/bulk',
+            'url'     => '/contacts/bulk',
             'method'  => 'POST',
             'content' => [
                 [

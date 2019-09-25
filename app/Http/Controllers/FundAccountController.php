@@ -25,7 +25,6 @@ class FundAccountController extends Controller
         return ApiResponse::json($entity);
     }
 
-
     /**
      *  Route to create bulk contacts.
      *  Currently it is used by batch Service

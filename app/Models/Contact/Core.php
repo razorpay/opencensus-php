@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Contact;
 
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 
 /**

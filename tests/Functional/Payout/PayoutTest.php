@@ -40,9 +40,6 @@ class PayoutTest extends TestCase
             [
                 'id'           => '100000000000fa',
                 'account_type' => 'bank_account',
-
-
-
                 'account_id'   => '1000000lcustba'
             ]);
 

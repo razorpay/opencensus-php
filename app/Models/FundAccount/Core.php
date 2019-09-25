@@ -33,7 +33,7 @@ class Core extends Base\Core
                            Base\PublicEntity $source = null,
                            string $batchId = null): Entity
     {
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->sensitiveCardDetails($input));
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->unsetSensitiveCardDetails($input));
 
         $this->modifyRequestForBackwardCompatibility($input);
         // calls a validator -> pre_create
