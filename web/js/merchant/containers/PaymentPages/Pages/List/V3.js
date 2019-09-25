@@ -5,6 +5,7 @@ import Amount from 'rzp/ui/Amount';
 import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 import { trackListActions } from '../ga';
 
@@ -69,8 +70,45 @@ export default ({ paymentPages, loading }) => {
                     {item.payment_page_items.length > 2 && (
                       <tr>
                         <td>
-                          <span class="more-btn">
-                            <b>+ {item.payment_page_items.length - 2} more</b>
+                          <span class="help-content">
+                            <span class="more-btn">
+                              <b>+ {item.payment_page_items.length - 2} more</b>
+                            </span>
+
+                            <Popover align="right">
+                              <PopoverBody>
+                                <div class="more-items">
+                                  <div>
+                                    <span class="title">Item Name</span>
+
+                                    {item.payment_page_items
+                                      .slice(2)
+                                      .map((pi, ix) => (
+                                        <span class="item-ellipsis" key={ix}>
+                                          {pi.item.name}
+                                        </span>
+                                      ))}
+                                  </div>
+                                  <div>
+                                    <span class="title">Quantities Sold</span>
+
+                                    {item.payment_page_items
+                                      .slice(2)
+                                      .map((pi, ix) => (
+                                        <span class="item-ellipsis" key={ix}>
+                                          {Number(pi.quantity_sold)}
+                                          {!!pi.stock && (
+                                            <span style={{ opacity: 0.7 }}>
+                                              {' '}
+                                              of {Number(pi.stock)}
+                                            </span>
+                                          )}
+                                        </span>
+                                      ))}
+                                  </div>
+                                </div>
+                              </PopoverBody>
+                            </Popover>
                           </span>
                         </td>
                       </tr>
