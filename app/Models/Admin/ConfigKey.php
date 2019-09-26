@@ -55,8 +55,7 @@ class ConfigKey
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
 
 
-    const TEST_MODE_ATOS_TID_RANGE_LIST         = self::PREFIX . 'test_mode_atos_tid_range_list';
-    const LIVE_MODE_ATOS_TID_RANGE_LIST         = self::PREFIX . 'live_mode_atos_tid_range_list';
+    const ATOS_TID_RANGE_LIST                   = self::PREFIX . 'atos_tid_range_list';
 
     // Gateway level configs
     const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
@@ -92,8 +91,7 @@ class ConfigKey
         self::PAYSECURE_BLACKLISTED_MCCS,
         self::DOWNTIME_THROTTLE,
         self::RX_SLA_FOR_IMPS_PAYOUT,
-        self::TEST_MODE_ATOS_TID_RANGE_LIST,
-        self::LIVE_MODE_ATOS_TID_RANGE_LIST
+        self::ATOS_TID_RANGE_LIST
     ];
 
     public static function isSensitive(string $key)

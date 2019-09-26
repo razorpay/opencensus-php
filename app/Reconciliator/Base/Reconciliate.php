@@ -4,19 +4,18 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use Razorpay\Trace\Logger;
-use RZP\Constants\Timezone;
 use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Reconciliate extends Base\Core
@@ -43,6 +42,13 @@ class Reconciliate extends Base\Core
     const INVALID_RECON_TYPE = 'invalid_recon_type';
 
     const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::MANUAL, self::EMANDATE_DEBIT];
+
+    /**
+     * Except combined recon type, we want to keep the analytics file
+     * in a subfolder named as gateway_reconType. For combined recon type
+     * we keep the files under gateway/ folder itself.
+     */
+    const DEFAULT_S3_PATH_RECON_TYPE = [self::COMBINED];
 
     //
     // Used to define start_row for the MIS files.
@@ -256,8 +262,12 @@ class Reconciliate extends Base\Core
             }
             finally
             {
+                $data = $batchProcessor->getReconBatchOutputData();
+
+                $this->setBatchFailureSummary($batch, $data);
+
                 // Create the output file
-                $this->generateReconOutputFile($batchProcessor, $extraDetails);
+                $this->generateReconOutputFile($batch, $data, $extraDetails);
 
                 self::$isReconRunning = false;
             }
@@ -278,19 +288,15 @@ class Reconciliate extends Base\Core
      * This output file contains all valid rows of input MIS file and 3 additional
      * columns i.e. recon_type, recon_status, error_msg
      *
-     * @param Batch\Processor\Reconciliation $batchProcessor
+     * @param Batch\Entity $batch
+     * @param array $data
      * @param array $extraDetails
      */
-    protected function generateReconOutputFile(Batch\Processor\Reconciliation $batchProcessor, array $extraDetails)
+    protected function generateReconOutputFile(Batch\Entity $batch, array $data, array $extraDetails)
     {
-
-        $batch = $batchProcessor->batch;
-
         $batchId = $batch->getId();
 
         $attempt = $batch->getAttempts();
-
-        $data = $batchProcessor->getReconBatchOutputData();
 
         $this->getOutputWithRemovedBlackListedColumns($data, $batchId, $attempt);
 
@@ -357,19 +363,18 @@ class Reconciliate extends Base\Core
 
         $this->messenger->raiseReconInfo($traceData);
 
-        $this->generateReconAnalyticsData($data, $batch, $sheetName);
+        $reconciliationType = $this->getReconciliationType($extraDetails);
+
+        $this->generateReconAnalyticsData($data, $batch, $sheetName, $reconciliationType);
     }
 
     /**
      * @param $data
      * @param $batch
      * @param $sheetName
-     * @throws \RZP\Exception\LogicException
-     *
-     * output file stored in a rzp-edh bucket for analytics. once all the gateways are migrated,
-     * output file will be stored only in this bucket.
+     * @param $reconciliationType
      */
-    protected function generateReconAnalyticsData($data, $batch, $sheetName)
+    protected function generateReconAnalyticsData($data, $batch, $sheetName, $reconciliationType)
     {
         if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
         {
@@ -382,6 +387,12 @@ class Reconciliate extends Base\Core
             $analyticsOutputFileName = $batchId . $sheetName . '_analytics' . self::OUTPUT_FILE_SUFFIX;
 
             $dirPath = 'reconciliation_output/' . $this->gateway;
+
+            if ((in_array($reconciliationType, self::DEFAULT_S3_PATH_RECON_TYPE, true) === false))
+            {
+                // Append _ReconType
+                $dirPath .= '_' . $reconciliationType;
+            }
 
             $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
 
@@ -428,6 +439,49 @@ class Reconciliate extends Base\Core
             $row['batch_id'] = $batchId;
 
             $row['attempt_number'] = $attemptNumber;
+        }
+    }
+
+    /**
+     * Sets failure count summary (if any recon failure)
+     * in failure_reason column of batch entity.
+     * Also modifies corresponding recon status
+     * description and error code description
+     *
+     * @param Batch\Entity $batch
+     * @param $data
+     */
+    protected function setBatchFailureSummary(Batch\Entity $batch, &$data)
+    {
+        $failureSummary = [];
+
+        foreach ($data as &$row)
+        {
+            $reconStatus = $row[SubReconciliate::RECON_STATUS];
+
+            if ($reconStatus === InfoCode::RECON_FAILED)
+            {
+                $errorCode = $row[SubReconciliate::RECON_ERROR_MSG];
+
+                $prevCount = $failureSummary[$errorCode] ?? 0;
+
+                $failureSummary[$errorCode] = $prevCount + 1;
+
+                // Set error description
+                $errorMsg = Constants::RECON_PUBLIC_DESCRIPTIONS[$errorCode] ?? $errorCode;
+
+                $row[SubReconciliate::RECON_ERROR_MSG] = $errorMsg;
+            }
+
+            // Set recon status description
+            $statusDescription = Constants::RECON_PUBLIC_DESCRIPTIONS[$reconStatus] ?? $reconStatus;
+
+            $row[SubReconciliate::RECON_STATUS] = $statusDescription;
+        }
+
+        if (empty($failureSummary)  === false)
+        {
+            $batch->setFailureReason(json_encode($failureSummary));
         }
     }
 

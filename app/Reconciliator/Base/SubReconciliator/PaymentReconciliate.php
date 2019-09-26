@@ -141,6 +141,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
 
+        if (static::SHOULD_ADD_ENTITY_ID_COLUMN === true)
+        {
+            $this->setReconEntityIdInOutput($paymentId);
+        }
+
         $this->setMerchantIdInOutput($this->payment->getMerchantId());
 
         $this->setProcessedAtInOutput();

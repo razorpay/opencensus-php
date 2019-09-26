@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Redis;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -9,6 +11,7 @@ use RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal as TerminalFixture;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Exception\BadRequestException;
 
 class PartnerTerminalOnboardingTest extends TestCase
 {
@@ -18,7 +21,7 @@ class PartnerTerminalOnboardingTest extends TestCase
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/TerminalData.php';
- 
+
         parent::setUp();
 
         $this->ba->adminAuth();
@@ -40,7 +43,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'notes'       => 'some notes'
         ]);
 
-        $url = '/terminals/'.$terminal['id'] . '/enable';
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/enable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -62,7 +65,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'notes'       => 'some notes'
         ]);
 
-        $url = '/terminals/' . $terminal['id'] . '/disable';
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/disable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -85,7 +88,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'notes'       => 'some notes'
         ]);
 
-        $url = '/terminals/' . $terminal['id'] . '/enable';
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/enable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -105,7 +108,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'notes'       => 'some notes'
         ]);
 
-        $url = '/terminals/' . $terminal['id'] . '/disable';
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/disable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -159,26 +162,58 @@ class PartnerTerminalOnboardingTest extends TestCase
 
     public function testTerminalOnboardingCreateTerminal()
     {
-        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+        $this->ba->adminAuth();
 
-        $this->redis = Redis::connection()->client();
-
-        $ranges = [
-            [123800, 123899],
-            [133800, 133899],
-            [143800, 143899]
+        $request = [
+            'method'  => 'put',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:atos_tid_range_list' => [ [12380001, 123899999], [13380001, 13389999]]
+            ]
         ];
+        $this->makeRequestAndGetContent($request);
 
-        foreach ($ranges as $range)
-        {
-            $this->redis->rpush('test_mode_' . Atos\TidGenerator::ATOS_TID_RANGE_LIST, json_encode($range));
-        }
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
         $url = '/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $terminalArray = $this->startTest();
+
+        $tid = $terminalArray['id'];
+
+        $this->fixtures->stripSign($tid);
+
+        $terminal1 = (new Terminal\Repository)->find($tid);
+
+        $this->assertEquals($terminal1->getGatewayMerchantId(), 999000000000001);
+
+        $this->assertEquals($terminal1->getGatewayTerminalId(), 12380001);
+
+        $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreateTerminal2'];
+
+        $terminalArray = $this->startTest();
+
+        $tid = $terminalArray['id'];
+
+        $this->fixtures->stripSign($tid);
+
+        $terminal2 = (new Terminal\Repository)->find($tid);
+
+        $this->assertEquals($terminal2->getGatewayMerchantId(), 999000000000001);
+
+        $this->assertEquals($terminal2->getGatewayTerminalId(), 12380002);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS);
+
+        $this->expectExceptionMessage(
+            'A terminal with the same field exists');
 
         $this->startTest();
     }

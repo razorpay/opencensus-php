@@ -22,14 +22,6 @@ class IrctcDeltaRefund extends IrctcRefund
     protected function processEntry(array &$entry)
     {
         parent::processEntry($entry);
-
-        $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
-
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
-
-        $ts = $payment->getCreatedAt();
-
-        $entry[Batch\Header::PAYMENT_DATE] = Carbon::createFromTimestamp($ts, Timezone::IST)->format('Ymd');
     }
 
     protected function postProcessEntries(array &$entries)
@@ -47,14 +39,10 @@ class IrctcDeltaRefund extends IrctcRefund
                 $remarks = 'Refunded';
             }
 
-            $payment_id = (strpos($entry[Batch\Header::PAYMENT_ID], 'pay_') !== false) ?
-                          substr($entry[Batch\Header::PAYMENT_ID], 4) :
-                          $entry[Batch\Header::PAYMENT_ID];
-
             $entry = [
                 Batch\Header::MERCHANT_TXN_ID         => $entry[Batch\Header::MERCHANT_REFERENCE],
                 Batch\Header::TRANSACTION_DATE        => $entry[Batch\Header::PAYMENT_DATE],
-                Batch\Header::BANK_TRANSACTION_ID     => $payment_id,
+                Batch\Header::BANK_TRANSACTION_ID     => $entry[Batch\Header::PAYMENT_ID],
                 Batch\Header::REFUND_AMOUNT           => $entry[Batch\Header::REFUND_AMOUNT],
                 Batch\Header::REFUND_STATUS           => $status,
                 Batch\Header::BANK_REMARKS            => $remarks,
@@ -62,5 +50,16 @@ class IrctcDeltaRefund extends IrctcRefund
                 Batch\Header::BANK_REFUND_TXN_ID      => $entry[Batch\Header::REFUND_ID],
             ];
         }
+    }
+
+    protected function processFinally(& $entry)
+    {
+        $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
+
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        $ts = $payment->getCreatedAt();
+
+        $entry[Batch\Header::PAYMENT_DATE] = Carbon::createFromTimestamp($ts, Timezone::IST)->format('Ymd');
     }
 }

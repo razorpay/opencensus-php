@@ -140,6 +140,10 @@ class ManualReconciliate extends CombinedReconciliate
             throw $ex;
         }
 
+        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+
+        $this->setProcessedAtInOutput();
+
         // check if already reconciled
         if ($this->payment->transaction->isReconciled() === true)
         {

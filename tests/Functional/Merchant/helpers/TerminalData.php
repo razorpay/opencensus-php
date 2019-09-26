@@ -1026,6 +1026,29 @@ return [
         ]
     ],
 
+    'testCreateMpgsTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'mpgs',
+                'gateway_merchant_id'       => 'MPGS0000000001202',
+                'card'                      => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl',
+                'gateway_acquirer'          => 'hdfc',
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MPGS0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
@@ -2374,4 +2397,32 @@ return [
             ]
         ]
     ],
+
+    'testTerminalOnboardingCreateTerminal2' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '1234567880123458',
+                  'visa'        => '1234567890123458',
+                  'rupay'       => '1234567890123458'
+                ]
+            ],
+            'url'    => '/terminals',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  '1234567880123458',
+                    'rupay_mpan'    =>  '1234567890123458',
+                    'visa_mpan'     =>  '1234567890123458'
+                ]
+
+            ]
+        ]
+    ],
+
 ];

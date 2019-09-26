@@ -8,6 +8,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class AuthType
 {
     const NETBANKING   = 'netbanking';
+    const DEBITCARD    = 'debitcard';
     const AADHAAR      = 'aadhaar';
     const AADHAAR_FP   = 'aadhaar_fp';
     const SKIP         = 'skip';
@@ -23,6 +24,7 @@ class AuthType
             self::NETBANKING,
             self::AADHAAR,
             self::AADHAAR_FP,
+            self::DEBITCARD,
         ],
         Method::CARD    => [
             self::PIN,
