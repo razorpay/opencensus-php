@@ -8,6 +8,14 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
+    const MESSAGE        = 'message';
+
+    const EMAIL_SENT     = 'Email Sent';
+
+    const FILE_PATH      = 'file_path';
+
+    const FILE_GENERATED = 'File Generated';
+
     public function fetchStatementForAccount(array $input): array
     {
         $response = $this->core()->processStatementForAccount($input);
@@ -22,17 +30,17 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::ACCOUNT_STATEMENT_GENERATE, $input);
 
-        $fileAccessUrl = $this->core()->generateBankAccountStatement($input);
+        $statementAccessUrl = $this->core()->generateBankAccountStatement($input);
 
         $sendEmail = filter_var($input[Entity::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
 
-        if($sendEmail)
+        if ($sendEmail === true)
         {
-            $this->core->sendBankAccountStatementEmail($input, $fileAccessUrl);
+            $this->core()->sendBankAccountStatementEmail($input, $statementAccessUrl);
 
-            return ['message' => 'Email Sent'];
+            return [self::MESSAGE => self::EMAIL_SENT];
         }
 
-        return ['message' => 'File Generated', 'file_path' => $fileAccessUrl];
+        return [self::MESSAGE => self::FILE_GENERATED, self::FILE_PATH => $statementAccessUrl];
     }
 }

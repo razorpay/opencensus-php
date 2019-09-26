@@ -36,13 +36,14 @@ class Validator extends Base\Validator
         Entity::TO_DATE        => 'required|epoch',
         Entity::FORMAT         => 'required|string|custom',
         Entity::SEND_EMAIL     => 'required|boolean',
-        Entity::TO_EMAIL_LIST  => 'required_if:send_email,1|custom'
+        Entity::TO_EMAIL_LIST  => 'required_if:send_email,1|string|custom'
     ];
 
     protected function validateToEmails($attribute, $emailList)
     {
         # if this is not empty, then it must be a comma-separated list of valid emails
         $emails = explode(',', $emailList);
+
         foreach ($emails as $emailToVerify)
         {
             $validator = ValidatorFacade::make(['email' => $emailToVerify], [
