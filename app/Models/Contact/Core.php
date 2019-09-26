@@ -49,6 +49,12 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($contact);
 
+        if (optional($contact)->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Inactive contact cannot be created ' . $contact->getEntity());
+        }
+
         return $contact;
     }
 
@@ -95,18 +101,6 @@ class Core extends Base\Core
     {
         $contact = $entry[ContactBatchHelper::CONTACT];
 
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
-        {
-            $result = $this->repo->contact->fetchByIdempotentKey($entry[Entity::IDEMPOTENCY_KEY],
-                                                                 $this->merchant->getId(),
-                                                                 $batchId);
-
-            if ($result !== null)
-            {
-                return $result;
-            }
-        }
-
         $contactId = (isset($contact[ContactBatchHelper::ID]) === true) ? $contact[ContactBatchHelper::ID] : null;
 
         if (empty($contactId) === false)
@@ -117,12 +111,6 @@ class Core extends Base\Core
         $input = ContactBatchHelper::getContactInput($entry);
 
         $contact = $this->create($input, $this->merchant, $batchId);
-
-        if (optional($contact)->isActive() === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Fund accounts cannot be created on an inactive ' . $contact->getEntity());
-        }
 
         return $contact;
     }

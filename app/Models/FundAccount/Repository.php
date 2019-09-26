@@ -43,6 +43,7 @@ class Repository extends Base\Repository
                                 ->findLatestBankAccountByAccountNumber(
                                     $input[Type::BANK_ACCOUNT][BankAccount\Entity::ACCOUNT_NUMBER],
                                     $input[Type::BANK_ACCOUNT][BankAccount\Entity::IFSC],
+                                    $input[Type::BANK_ACCOUNT][BankAccount\Entity::NAME],
                                     E::CONTACT,
                                     $merchant->getId());
 

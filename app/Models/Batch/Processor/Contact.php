@@ -34,6 +34,8 @@ class Contact extends Base
     {
         $input = Batch\Helpers\Contact::getContactInput($entry);
 
+        $contact = $this->repo->contact->getContactWithSimilarDetails($input, $this->merchant);
+
         return $this->core->create($input, $this->merchant, $this->batch);
     }
 }

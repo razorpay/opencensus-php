@@ -52,27 +52,22 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-            $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->unsetSensitiveCardDetails($input));
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->unsetSensitiveCardDetails($input));
 
-            (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
+        (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
-            $source = null;
+        $source = null;
 
-            if (isset($input[Entity::CONTACT_ID]) === true) {
-                /** @var Contact\Entity $source */
-                $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
-            } else if (isset($input[Entity::CUSTOMER_ID]) === true) {
-                /** @var Customer\Entity $source */
-                $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
-            }
+        if (isset($input[Entity::CONTACT_ID]) === true) {
+            /** @var Contact\Entity $source */
+            $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+        }
+        else if (isset($input[Entity::CUSTOMER_ID]) === true) {
+            /** @var Customer\Entity $source */
+            $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
+        }
 
-            if (optional($source)->isActive() === false) //copy to contact core processEntryForContact
-            {
-                throw new BadRequestValidationFailureException(
-                    'Fund accounts cannot be created on an inactive ' . $source->getEntity());
-            }
-
-            $entity = $this->core->create($input, $this->merchant, $source);
+        $entity = $this->core->create($input, $this->merchant, $source);
 
         return $entity->toArrayPublic();
     }
@@ -132,6 +127,10 @@ class Service extends Base\Service
                                                                               $batchId);
                     if ($result !== null)
                     {
+                        $this->trace->info(TraceCode::FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
+                                            ['input' => $result->toArrayPublic(),
+                                             Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY]]);
+
                         $fundaccountBatch->push($result->toArrayPublic() +
                             [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
                     }

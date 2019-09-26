@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -21,12 +22,13 @@ class Core extends Base\Core
     use Base\Traits\SensitiviseCardDetails;
 
     /**
-     * @param array                  $input
-     * @param Merchant\Entity        $merchant
+     * @param array $input
+     * @param Merchant\Entity $merchant
      * @param Base\PublicEntity|null $source
-     * @param string                 $batchId
+     * @param string $batchId
      *
      * @return Entity
+     * @throws BadRequestValidationFailureException
      */
     public function create(array $input,
                            Merchant\Entity $merchant,
@@ -35,8 +37,13 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->unsetSensitiveCardDetails($input));
 
+        if (optional($source)->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Fund accounts cannot be created on an inactive ' . $source->getEntity());
+        }
+
         $this->modifyRequestForBackwardCompatibility($input);
-        // calls a validator -> pre_create
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 

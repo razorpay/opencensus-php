@@ -282,15 +282,17 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param  string $accountNumber
-     * @param  string $ifscCode
-     * @param  string $type
-     * @param  string $merchantId
+     * @param string $accountNumber
+     * @param string $ifscCode
+     * @param string $type
+     * @param string $name
+     * @param string $merchantId
      * @return Entity|null
      */
     public function findLatestBankAccountByAccountNumber(
         string $accountNumber,
         string $ifscCode,
+        string $name,
         string $type,
         string $merchantId)
     {
@@ -298,6 +300,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->where(Entity::IFSC_CODE, $ifscCode)
                     ->where(Entity::TYPE, $type)
+                    ->where(Entity::BENEFICIARY_NAME, $name)
                     ->merchantId($merchantId)
                     ->latest()
                     ->first();

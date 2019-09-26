@@ -457,6 +457,10 @@ class Service extends Base\Service
 
                     if ($result !== null)
                     {
+                        $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
+                                            ['input' => $result->toArrayPublic(),
+                                             Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY]]);
+
                         $payoutBatch->push($result->toArrayPublic() +
                             [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
                     }

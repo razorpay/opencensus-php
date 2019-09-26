@@ -2101,6 +2101,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
 
+    const FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY          = 'FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
+    const PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                = 'PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
@@ -2244,7 +2247,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORG_MAILER_BLOCKED                                    => 'Email blocked for given org',
         self::NO_MERCHANT_CONTEXT_MAIL                              => 'The mail flow does not have merchant in auth context',
         self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    => 'Fund Account Validation Failed due to critical reasons. We should retry.',
-        self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.'
+        self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.',
+        self::FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY          => 'Fund account already exist with same idempotency key',
+        self::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                => 'Payout already exist with same idempotency key'
     ];
 
     /**
