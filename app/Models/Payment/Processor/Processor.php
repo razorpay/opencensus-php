@@ -302,6 +302,8 @@ class Processor
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PAYMENT_PROCESSING_ERROR);
+
             $payment = $payment ?? null;
 
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;

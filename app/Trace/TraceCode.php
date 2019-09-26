@@ -618,6 +618,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_RECURRING_STATUS_ALREADY_SET                    = 'TOKEN_RECURRING_STATUS_ALREADY_SET';
     const GATEWAY_RECURRING_STATUS_NOT_SET                      = 'GATEWAY_RECURRING_STATUS_NOT_SET';
     const GATEWAY_RECURRING_REJECTED_WITHOUT_REASON             = 'GATEWAY_RECURRING_REJECTED_WITHOUT_REASON';
+    const PAYMENT_PROCESSING_ERROR                              = 'PAYMENT_PROCESSING_ERROR';
 
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
