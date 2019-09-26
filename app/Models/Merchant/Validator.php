@@ -277,6 +277,10 @@ class Validator extends Base\Validator
         'limit' => 'sometimes|integer',
     ];
 
+    protected static $updatePartnerTypeRules = [
+        Entity::PARTNER_TYPE    => 'required|string|in:aggregator,reseller',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;
