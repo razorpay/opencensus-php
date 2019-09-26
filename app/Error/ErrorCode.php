@@ -181,6 +181,7 @@ class ErrorCode
     const GATEWAY_ERROR_ISSUER_DOWN                                                 = 'GATEWAY_ERROR_ISSUER_DOWN';
     const GATEWAY_ERROR_UNACCEPTABLE_TRANSACTION_FEE                                = 'GATEWAY_ERROR_UNACCEPTABLE_TRANSACTION_FEE';
     const GATEWAY_ERROR_INVALID_TRANSACTION                                         = 'GATEWAY_ERROR_INVALID_TRANSACTION';
+    const GATEWAY_ERROR_UNEXPECTED_PAYMENT_PENDING                                  = 'GATEWAY_ERROR_UNEXPECTED_PAYMENT_PENDING';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH                                  = 'GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH';
