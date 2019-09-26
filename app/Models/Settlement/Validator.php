@@ -89,7 +89,10 @@ class Validator extends Base\Validator
         'all'                 => 'sometimes|integer',
         'testSettleTimeStamp' => 'sometimes|integer',
         'logging'             => 'sometimes|boolean',
-        'ignore_time_limit'   => 'sometimes|string'
+        'ignore_time_limit'   => 'sometimes|string',
+        'created_at'          => 'sometimes|epoch',
+        'settled_at'          => 'sometimes|epoch',
+        'initiated_at'        => 'required_with:settled_at,created_at|epoch',
     ];
 
     protected function validateFailedResponse($attribute, $value)
