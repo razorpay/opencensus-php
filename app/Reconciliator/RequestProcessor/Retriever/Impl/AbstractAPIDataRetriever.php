@@ -32,6 +32,8 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
     const GATEWAY = 'gateway';
     const IDENTIFIER = 'identifier';
+    const START_DATE = 'start_date';
+    const END_DATE = 'end_date';
 
     public function __construct()
     {
@@ -53,7 +55,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
         $responseList = [];
 
-        while (!empty($request = $this->getNextRequest($input, $request, $response)))
+        while (empty($request = $this->getNextRequest($input, $request, $response)) === false)
         {
             $terminal = $this->fetchTerminal($input, $request);
             list($key, $response) = $this->processRequest($input, $request, $terminal);
@@ -64,7 +66,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
         foreach ($responseList as $key => $value)
         {
-            $fileName = $key."_".$input["gateway"]."_reconcile_".date('Y-m-d_h:i:s');
+            $fileName = $key.'_'.$input['gateway'].'_reconcile_'.date('Y-m-d_h:i:s');
             array_push($files, $this->prepareFile($fileName, $value));
         }
         return $files;
@@ -83,7 +85,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
         $gatewayData = [];
         $gatewayData['terminal'] = $terminal;
         $gatewayData[self::GATEWAY] = $request[self::GATEWAY];
-        $gatewayData['payment'] = ["gateway" => $request['gateway'], ];
+        $gatewayData['payment'] = ['gateway' => $request['gateway'], ];
         $gatewayData['reconRequest'] = $request;
         return [$request[self::IDENTIFIER], $this->gatewayManager->call($request['gateway'], 'reconcile', $gatewayData, $this->mode, $terminal)];
     }
@@ -112,7 +114,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
         }
         finally
         {
-            if($f !== null)
+            if (empty($f) === false)
             {
                 fclose($f);
             }
