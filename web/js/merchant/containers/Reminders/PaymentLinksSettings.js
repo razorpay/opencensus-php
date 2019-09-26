@@ -15,10 +15,6 @@ export default class PaymentLinksSettings extends React.Component {
     };
   }
 
-  componentDidMount() {
-    this.props.fetchReminders();
-  }
-
   saveSettings = () => {};
 
   saveToggleChange = () => {};

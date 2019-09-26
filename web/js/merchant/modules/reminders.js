@@ -5,6 +5,7 @@ export const REMINDERS_FETCH = 'REMINDERS_FETCH';
 
 export const fetchReminders = () => {
   const reminders = new Reminders();
+
   return {
     type: REMINDERS_FETCH,
     payload: reminders.fetchAll(),
@@ -12,8 +13,8 @@ export const fetchReminders = () => {
 };
 
 let initialState = {
-  loading: true,
-  reminders: [],
+  loading: false,
+  items: [],
   count: 0,
 };
 
@@ -22,11 +23,13 @@ export default function(state = initialState, action) {
     case `${REMINDERS_FETCH}::PENDING`:
       return set(state, 'loading', true);
 
-    case `${REMINDERS_FETCH}::SUCCESS`:
+    case `${REMINDERS_FETCH}::SUCCESS`: {
       return merge(state, {
         loading: false,
-        reminders: action.payload,
+        items: action.payload.data.items,
+        count: action.payload.data.count,
       });
+    }
 
     default:
       return state;
