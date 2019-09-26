@@ -86,25 +86,6 @@ class CardVault
         return $response[self::TOKEN];
     }
 
-    public function getTokenAndFingerprint($input)
-    {
-        $payload = [
-            self::SECRET => $input['card'],
-        ];
-
-        $key = $input['card'];
-
-        $response = $this->sendRequest('tokenize', 'post', $payload);
-
-        if (empty($response[self::TOKEN]) === true)
-        {
-            throw new Exception\RuntimeException(
-                'card vault request failed', ['data' => $response]);
-        }
-
-        return $response;
-    }
-
     public function validateToken($token)
     {
         $input = [

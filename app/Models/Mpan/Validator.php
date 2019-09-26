@@ -17,7 +17,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $issueMpansRules = [
-        Constants::COUNT     => 'required|numeric|min:1|max:5000',
+        Constants::COUNT     => 'required|numeric|max:5000',
         Entity::NETWORK      => 'required|in:Visa,RuPay,MasterCard',
     ];
 }

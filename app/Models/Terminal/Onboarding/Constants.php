@@ -1,5 +1,5 @@
 <?php
-namespace RZP\Models\Gateway\Terminal;
+namespace RZP\Models\Terminal\Onboarding;
 
 class Constants
 {

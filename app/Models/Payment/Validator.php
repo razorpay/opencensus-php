@@ -744,28 +744,17 @@ class Validator extends Base\Validator
                 'The contact field is required.', Entity::CONTACT);
         }
 
-        if ($input['method'] === Payment\Method::WALLET)
+        if (in_array($input['method'],
+                [Payment\Method::WALLET, Payment\Method::CARDLESS_EMI, Payment\Method::PAYLATER],
+                true) === true)
         {
-            if (in_array($input['wallet'], Wallet::$indianContactWallets, true) === true)
+            $number = new PhoneBook($input['contact'], true);
+
+            if ($number->isValidNumberForRegion('IN') === false)
             {
-                $this->validateIndianContact($input['contact']);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
             }
-        }
-
-        if (in_array($input['method'], [Payment\Method::CARDLESS_EMI, Payment\Method::PAYLATER], true) === true)
-        {
-            $this->validateIndianContact($input['contact']);
-        }
-    }
-
-    protected function validateIndianContact($contact)
-    {
-        $number = new PhoneBook($contact, true);
-
-        if ($number->isValidNumberForRegion('IN') === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
         }
     }
 

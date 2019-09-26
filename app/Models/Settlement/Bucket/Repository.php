@@ -25,12 +25,4 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->update([Entity::COMPLETED => 1]);
     }
-
-    public function removeCompletedEntriesBeforeTimestamp($timestamp)
-    {
-        return $this->newQuery()
-                    ->where(Entity::BUCKET_TIMESTAMP, '<=', $timestamp)
-                    ->where(Entity::COMPLETED, 1)
-                    ->delete();
-    }
 }

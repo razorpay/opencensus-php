@@ -59,9 +59,9 @@ class Sbi extends Base
         else
         {
             return Netbanking\Sbi\Emandate\ErrorCode::getRegisterErrorCode(
-                $entry[Batch\Header::SBI_EM_REGISTER_STATUS_DESCRIPTION] ??
-                $entry[Batch\Header::SBI_EM_REGISTER_REJECT_REASON]
-            );
+                                    $entry[Batch\Header::SBI_EM_REGISTER_STATUS_DESCRIPTION] ??
+                                    $entry[Batch\Header::SBI_EM_REGISTER_REJECT_REASON]
+                                  );
         }
     }
 
@@ -100,11 +100,11 @@ class Sbi extends Base
 
         if (array_key_exists(Batch\Header::SBI_EM_REGISTER_UMRN_REJECT_RILE, $entries[0]) === true)
         {
-            $fileType = 'reject';
+            $fileType = 'success';
         }
         else
         {
-            $fileType = 'success';
+            $fileType = 'rejected';
         }
 
         $headers = $headers[$fileType];

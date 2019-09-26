@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
-use RZP\Constants;
 use Illuminate\Http\UploadedFile;
+
 use RZP\Services\HubspotClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -14,9 +14,9 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
-use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 
 /**
  * @group dns-sensitive
@@ -858,56 +858,5 @@ class MerchantDetailTest extends TestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
         $this->assertEquals($merchantDetails->getBusinessName(), 'facebook');
-    }
-
-    public function testFileUploadSyncInDetailAndDocumentTable()
-    {
-        $merchantId = "1cXSLlUU8V9sXl";
-
-        $documentType = MerchantDetails::PROMOTER_PAN_URL;
-
-        $fileStoreId = 'DG7xtA4fkoXNaa';
-
-        $merchantDetail = $this->fixtures->create(Constants\Entity::MERCHANT_DETAIL, [
-            MerchantDetails::MERCHANT_ID => $merchantId,
-            $documentType                => $fileStoreId,
-        ]);
-
-        $this->fixtures->create(Constants\Entity::MERCHANT_DOCUMENT, [
-            MerchantDocuments::MERCHANT_ID   => $merchantId,
-            MerchantDocuments::DOCUMENT_TYPE => $documentType,
-            MerchantDocuments::FILE_STORE_ID => $fileStoreId,
-        ]);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
-
-        $this->updateUploadDocumentData(__FUNCTION__, $documentType);
-
-        $this->startTest();
-
-        $merchantDetail = $this->getDbEntityById(Constants\Entity::MERCHANT_DETAIL, $merchantId);
-
-        $this->assertNotEquals($merchantDetail->getAttribute($documentType), $fileStoreId);
-
-        $document = $this->getDbEntity(Constants\Entity::MERCHANT_DOCUMENT, [MerchantDocuments::FILE_STORE_ID => $fileStoreId]);
-
-        $this->assertNULL($document);
-
-        $document = $this->getDbEntity(Constants\Entity::MERCHANT_DOCUMENT, [MerchantDocuments::FILE_STORE_ID => $merchantDetail->getAttribute($documentType)]);
-
-        $this->assertNotNull($document);
-    }
-
-    public function updateUploadDocumentData(string $callee, string $documentType)
-    {
-        $testData = &$this->testData[$callee];
-
-        $testData['request']['files'][$documentType] = new UploadedFile(
-            __DIR__ . '/../Storage/a.png',
-            'a.png',
-            'image/png',
-            filesize(__DIR__ . '/../Storage/a.png'),
-            null,
-            true);
     }
 }

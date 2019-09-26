@@ -4,7 +4,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 return [
-    'generateFiles' => [
+    'testGenerateCombinedFile' => [
         'request' => [
             'content' => [
                 'type'    => 'combined',

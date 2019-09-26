@@ -88,13 +88,4 @@ class FundTransferAttemptController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function processFundTransfersUsingFts(string $channel)
-    {
-        $input = Request::all();
-
-        $response = $this->service()->processFundTransfersUsingFts($input, $channel);
-
-        return ApiResponse::json($response);
-    }
 }

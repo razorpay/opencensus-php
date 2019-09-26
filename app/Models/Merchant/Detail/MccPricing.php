@@ -23,38 +23,38 @@ class MccPricing
         0    => [
             self::MCC_NAME                      => 'Default MCC',
             self::MANDATORY_FLAG                => 'Mandatory',
-            self::DEBIT_CARD_QR_ONUS            => '0.004',
-            self::DEBIT_CARD_QR_OFFUS           => '0.004',
-            self::CREDIT_CARD_PREMIUM_ONUS      => '0.006',
-            self::CREDIT_CARD_PREMIUM_OFFUS     => '0.006',
-            self::CREDIT_CARD_NON_PREMIUM_ONUS  => '0.006',
-            self::CREDIT_CARD_NON_PREMIUM_OFFUS => '0.006',
-            self::AXIS_UPI_MSF_L20K             => '0.0065',
-            self::AXIS_UPI_MSF_G20K             => '0.0065'
+            self::DEBIT_CARD_QR_ONUS            => 0.004,
+            self::DEBIT_CARD_QR_OFFUS           => 0.004,
+            self::CREDIT_CARD_PREMIUM_ONUS      => 0.006,
+            self::CREDIT_CARD_PREMIUM_OFFUS     => 0.006,
+            self::CREDIT_CARD_NON_PREMIUM_ONUS  => 0.006,
+            self::CREDIT_CARD_NON_PREMIUM_OFFUS => 0.006,
+            self::AXIS_UPI_MSF_L20K             => 0.0065,
+            self::AXIS_UPI_MSF_G20K             => 0.0065
         ],
         9399 => [
             self::MCC_NAME                      => 'Government Services—not elsewhere classified',
             self::MANDATORY_FLAG                => 'Non-Mandatory',
-            self::DEBIT_CARD_QR_ONUS            => '0.003',
-            self::DEBIT_CARD_QR_OFFUS           => '0.003',
-            self::CREDIT_CARD_PREMIUM_ONUS      => '0.004',
-            self::CREDIT_CARD_PREMIUM_OFFUS     => '0.004',
-            self::CREDIT_CARD_NON_PREMIUM_ONUS  => '0.004',
-            self::CREDIT_CARD_NON_PREMIUM_OFFUS => '0.004',
-            self::AXIS_UPI_MSF_L20K             => '0.0065',
-            self::AXIS_UPI_MSF_G20K             => '0.0065'
+            self::DEBIT_CARD_QR_ONUS            => 0.003,
+            self::DEBIT_CARD_QR_OFFUS           => 0.003,
+            self::CREDIT_CARD_PREMIUM_ONUS      => 0.004,
+            self::CREDIT_CARD_PREMIUM_OFFUS     => 0.004,
+            self::CREDIT_CARD_NON_PREMIUM_ONUS  => 0.004,
+            self::CREDIT_CARD_NON_PREMIUM_OFFUS => 0.004,
+            self::AXIS_UPI_MSF_L20K             => 0.0065,
+            self::AXIS_UPI_MSF_G20K             => 0.0065
         ],
         5411 => [
             self::MCC_NAME                      => 'Grocery Stores, Supermarkets',
             self::MANDATORY_FLAG                => 'Non-Mandatory',
-            self::DEBIT_CARD_QR_ONUS            => '0.0025',
-            self::DEBIT_CARD_QR_OFFUS           => '0.0025',
-            self::CREDIT_CARD_PREMIUM_ONUS      => '0.003',
-            self::CREDIT_CARD_PREMIUM_OFFUS     => '0.003',
-            self::CREDIT_CARD_NON_PREMIUM_ONUS  => '0.003',
-            self::CREDIT_CARD_NON_PREMIUM_OFFUS => '0.003',
-            self::AXIS_UPI_MSF_L20K             => '0.0065',
-            self::AXIS_UPI_MSF_G20K             => '0.0065'
+            self::DEBIT_CARD_QR_ONUS            => 0.0025,
+            self::DEBIT_CARD_QR_OFFUS           => 0.0025,
+            self::CREDIT_CARD_PREMIUM_ONUS      => 0.003,
+            self::CREDIT_CARD_PREMIUM_OFFUS     => 0.003,
+            self::CREDIT_CARD_NON_PREMIUM_ONUS  => 0.003,
+            self::CREDIT_CARD_NON_PREMIUM_OFFUS => 0.003,
+            self::AXIS_UPI_MSF_L20K             => 0.0065,
+            self::AXIS_UPI_MSF_G20K             => 0.0065
         ],
     ];
 

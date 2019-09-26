@@ -66,7 +66,7 @@ return [
     'testCreateContact' => [
         'request'  => [
             'content' => [
-                'name'         => 'Test / Contact',
+                'name'         => 'Test Contact',
                 'type'         => 'self',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',
@@ -81,7 +81,7 @@ return [
         'response' => [
             'content' => [
                 'entity'       => 'contact',
-                'name'         => 'Test / Contact',
+                'name'         => 'Test Contact',
                 'type'         => 'self',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',

@@ -50,7 +50,6 @@ class Validator extends Base\Validator
         Entity::TYPE                    => 'sometimes|string|custom',
         Entity::ACCOUNT_TYPE            => 'required_only_if:product,banking|filled|custom',
         Entity::CHANNEL                 => 'required_if:account_type,direct|filled|custom',
-        Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
     ];
 
     protected static $editPlanRuleRules = [
@@ -58,7 +57,6 @@ class Validator extends Base\Validator
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
-        Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
     ];
 
     protected static $addPlanRuleValidators = [

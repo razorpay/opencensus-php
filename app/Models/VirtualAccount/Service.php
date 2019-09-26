@@ -93,11 +93,6 @@ class Service extends Base\Service
                     ],
                 ];
 
-                if(isset($input[Entity::CLOSE_BY]) === true)
-                {
-                    $createArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
-                }
-
                 $virtualAccount = $this->create($createArray);
 
                 $this->editAmountExpectedToIncludeFees($order, $virtualAccount);

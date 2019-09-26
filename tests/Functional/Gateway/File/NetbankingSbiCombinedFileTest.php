@@ -4,25 +4,15 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Gateway\Netbanking\Sbi\EMandate\EmandateSbiTestTrait;
 
 class NetbankingSbiCombinedFileTest extends TestCase
 {
     use PaymentTrait;
-    use EmandateSbiTestTrait;
-    use DbEntityFetchTrait;
-
-    // For making an e-mandate Payment
-    const ACCOUNT_NUMBER    = '12345678901234';
-    const IFSC              = 'SBIN0000001';
-    const NAME              = 'Test account';
 
     protected $terminal;
 
@@ -43,55 +33,6 @@ class NetbankingSbiCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->createClaimAndRefundPayment();
-
-        $content = $this->generateFiles();
-
-        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNotNull(File\Entity::SENT_AT);
-        $this->assertNull($content[File\Entity::FAILED_AT]);
-        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
-
-        $this->performPostFileGenerationAssertions();
-    }
-
-    public function testClaimFileWithEmandatePayment()
-    {
-        Mail::fake();
-
-        $this->createClaimAndRefundPayment();
-
-        $this->setUpEmandate();
-
-        $this->createEmandatePayment();
-
-        $content = $this->generateFiles();
-
-        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNotNull(File\Entity::SENT_AT);
-        $this->assertNull($content[File\Entity::FAILED_AT]);
-        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
-
-        $this->performPostFileGenerationAssertions();
-    }
-
-    protected function checkRefundsFile(array $refundsFileData)
-    {
-        $this->assertFileExists($refundsFileData['url']);
-
-        $refundsFileContents = file($refundsFileData['url']);
-
-        $this->assertCount(1, $refundsFileContents);
-
-        $refundsFileRow = explode('|', $refundsFileContents[0]);
-
-        $this->assertCount(6, $refundsFileRow);
-
-        $this->assertEquals($refundsFileRow[4], 500);
-    }
-
-    protected function createClaimAndRefundPayment()
-    {
         $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
 
         $payment = $this->doAuthAndCapturePayment($payment);
@@ -103,54 +44,17 @@ class NetbankingSbiCombinedFileTest extends TestCase
         ]);
 
         $this->refundPayment($payment['id']);
-    }
 
-    protected function createEmandatePayment()
-    {
-        $this->payment = $this->getEmandateNetbankingRecurringPaymentArray('SBIN');
-
-        $this->payment['bank_account'] = [
-            'account_number'    => self::ACCOUNT_NUMBER,
-            'ifsc'              => self::IFSC,
-            'name'              => self::NAME,
-        ];
-
-        unset($this->payment['card']);
-
-        $registerPayments[] = [
-            'payment' => $this->createRegistrationPayment(),
-            'status'  => 'SUCCESS',
-            'umrn'    => '111111111111111'
-        ];
-
-        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
-        $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
-    }
-
-    protected function generateFiles()
-    {
         $this->ba->adminAuth();
 
         $content = $this->startTest();
+        $content = $content['items'][0];
 
-        return $content['items'][0];
-    }
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-    protected function setUpEmandate()
-    {
-        $this->fixtures->create('customer');
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
-
-        $this->fixtures->merchant->enableEmandate();
-
-        $this->fixtures->create('terminal:shared_emandate_sbi_terminal');
-    }
-
-    protected function performPostFileGenerationAssertions()
-    {
         $files = $this->getEntities('file_store', ['count' => 2], true);
 
         $date = Carbon::now(Timezone::IST)->format('dmY');
@@ -199,5 +103,20 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
             return true;
         });
+    }
+
+    protected function checkRefundsFile(array $refundsFileData)
+    {
+        $this->assertFileExists($refundsFileData['url']);
+
+        $refundsFileContents = file($refundsFileData['url']);
+
+        $this->assertCount(1, $refundsFileContents);
+
+        $refundsFileRow = explode('|', $refundsFileContents[0]);
+
+        $this->assertCount(6, $refundsFileRow);
+
+        $this->assertEquals($refundsFileRow[4], 500);
     }
 }

@@ -10,9 +10,7 @@ class TransactionVolume
     const RANGE4    = 5000000;
     const RANGE5    = 10000000;
     const RANGE6    = 1000000000;
-    const RANGE7    = 'NA';
 
-    const DefaultVolume = 7;
 
     public static function getVolume($num)
     {
@@ -22,11 +20,6 @@ class TransactionVolume
         }
 
         return constant(__CLASS__.'::'.'RANGE'.$num);
-    }
-
-    public static function getDefaultVolume()
-    {
-        return self::DefaultVolume;
     }
 
     public static function mapTransactionVolume($volume)

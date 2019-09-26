@@ -554,10 +554,9 @@ class Notifier extends Base\Core
                 $sender = 'RBLBNK';
                 $template = 'sms.custom_invoice.rbl_pl_non_del_cust';
                 $params = [
-                    'invoice_link'   => $invoiceLink,
-                    'receipt'        => $receipt,
-                    'expiry_date'    => $expireBy ?? '',
-                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'invoice_link'  => $invoiceLink,
+                    'receipt'       => $receipt,
+                    'expiry_date'   => $expireBy ?? '',
                 ];
 
                 break;

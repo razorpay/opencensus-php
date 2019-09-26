@@ -1219,15 +1219,6 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getRazorxTreatmentInBulk()
-    {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT)->getRazorxTreatmentInBulk($input);
-
-        return ApiResponse::json($response);
-    }
-
     /**
      * Input JSON sample:
      * {
@@ -1347,12 +1338,5 @@ class MerchantController extends Controller
         $response = $this->service()->applyRestrictedSettings($input);
 
         return ApiResponse::json($response);
-    }
-
-    public function deleteSuspendedMerchantsFromMailingList()
-    {
-        $input = Request::all();
-
-        $this->service()->removeSuspendedMerchantsFromMailingList($input);
     }
 }

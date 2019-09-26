@@ -6,11 +6,8 @@ use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Core as TerminalCore;
-use RZP\Models\Terminal\Onboarding\Processor\AtosTerminalOnboardingProcessor;
-use RZP\Models\Gateway\Terminal\Service as GatewayOnboardingService;
-use RZP\Models\Terminal\Status;
+use RZP\Models\Terminal\Onboarding\Processor\FreechargeTerminalOnboardingProcessor;
 
 class Service extends Base\Service
 {
@@ -27,26 +24,20 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $submerchant = $this->merchant;
+        $submerchantId = $this->merchant->getId();
 
         $this->trace->info(
             TraceCode::TERMINAL_ONBOARDING_REQUEST,
             [
                 'merchant_id'    => $this->merchant->getId(),
                 'partner_id'     => $this->app['basicauth']->getPartnerMerchantId(),
-                'submerchant_id' => $submerchant->getId(),
+                'submerchant_id' => $submerchantId,
                 'input'          => $input,
             ]);
     
         $this->verifyPartnerTerminalOnboardingAccess();
-        
-        $onboardInput['gateway'] = Gateway::ATOS;
-
-        $onboardInput['gateway_input'] = $input;
-        
-        $onboardedTerminal = (new GatewayOnboardingService)->onboardMerchantAsync($submerchant, $onboardInput);
-
-        return $onboardedTerminal->toArrayPublic();    
+                      
+        return (new FreechargeTerminalOnboardingProcessor)->process($input, $submerchantId);
     }
 
     public function enableTerminal(string $id)
@@ -64,12 +55,6 @@ class Service extends Base\Service
         $this->verifyPartnerTerminalOnboardingAccess();
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
-
-        if ($terminal->getStatus() !== Status::ACTIVATED)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED);
-        }
 
         $terminal = (new TerminalCore)->toggle($terminal, true);
 
@@ -128,7 +113,6 @@ class Service extends Base\Service
             return $partnerMerchant->isTerminalOnboardingEnabled();
         }
 
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+        return false;
     }
 }

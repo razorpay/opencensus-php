@@ -348,13 +348,6 @@ class Gateway
         $this->action = Action::OMNI_PAY;
     }
 
-    public function createTerminal(array $input)
-    {
-        $this->input = $input;
-
-        $this->action = ACTION::CREATE_TERMINAL;
-    }
-
     public function debit(array $input)
     {
         $this->input = $input;
@@ -1040,20 +1033,6 @@ class Gateway
                 'request'    => $request,
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
-            ]);
-    }
-
-    protected function traceGatewayTerminalOnboarding(
-        array $data,
-        $dataKey,
-        $input,
-        $traceCode)
-    {
-        $this->trace->info(
-            $traceCode,
-            [
-                $dataKey     => $data,
-                'gateway'    => $input['gateway'],
             ]);
     }
 

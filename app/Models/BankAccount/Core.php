@@ -15,7 +15,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Models\Merchant\Document\Core as DocumentCore;
 
 class Core extends Base\Core
 {
@@ -187,26 +186,6 @@ class Core extends Base\Core
 
                 if ($merchantDetails !== null)
                 {
-                    //
-                    // for backward compatibility in case of re upload delete entries
-                    // from merchant documents and merchant_detail also
-                    //
-                    if (isset($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
-                    {
-                        $previousAddressProof = $merchantDetails->getAttribute(Detail\Entity::ADDRESS_PROOF_URL);
-
-                        if (isset($previousAddressProof) === true)
-                        {
-                            (new DocumentCore)->deleteDocuments([$previousAddressProof]);
-                        }
-
-                        $params = [
-                            Detail\Entity::ADDRESS_PROOF_URL => $input[Detail\Entity::ADDRESS_PROOF_URL],
-                        ];
-
-                        (new DocumentCore)->storeInMerchantDocument($merchant, $params);
-                    }
-
                     // Doing a fill only for ADDRESS_PROOF_URL because Details\Validator
                     // expects it to be a file object where as we're passing a File ID.
                     $merchantDetails->fill($input);

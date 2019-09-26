@@ -722,6 +722,11 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Batch type is not enabled for merchant');
         }
 
+        if (in_array(app()->basicauth->getUserRole(), [User\Role::ADMIN, User\Role::OWNER], true) === false)
+        {
+            throw new BadRequestValidationFailureException('Only admins and owners are allowed to take this action');
+        }
+
         $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
         {
             $this->validateInput('payoutTypeRow', $entry);

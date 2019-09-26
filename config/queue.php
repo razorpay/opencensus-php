@@ -334,10 +334,6 @@ return [
         'test'       => env('AWS_BENEFICIARY_VERIFY_TEST_QUEUE'),
         'live'       => env('AWS_BENEFICIARY_VERIFY_LIVE_QUEUE'),
     ],
-    'mailing_list_update' => [
-        'test'       => env('AWS_MAILING_LIST_UPDATE_TEST_QUEUE'),
-        'live'       => env('AWS_MAILING_LIST_UPDATE_LIVE_QUEUE'),
-    ],
     /*
      | Lists various queues to be used per mailable
      */

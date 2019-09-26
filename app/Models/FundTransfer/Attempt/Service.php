@@ -27,7 +27,7 @@ class Service extends Base\Service
                 'channel'   => $channel
             ]);
 
-        if(($input[Entity::PURPOSE] === Purpose::SETTLEMENT) and ($input[Entity::SOURCE_TYPE] === Type::SETTLEMENT))
+        if($input['purpose'] === Purpose::SETTLEMENT)
         {
             $channelState = $this->getChannelState();
 
@@ -357,10 +357,5 @@ class Service extends Base\Service
         }
 
         return $values;
-    }
-
-    public function processFundTransfersUsingFts(array $input, string $channel)
-    {
-        return (new Initiator)->processFundTransfersUsingFts($input, $channel);
     }
 }

@@ -104,7 +104,8 @@ class Entity extends Base\PublicEntity
         self::IIN,
         self::TYPE,
         self::LAST4,
-        self::LENGTH
+        self::LENGTH,
+        self::VAULT_TOKEN
     ];
 
     protected $hidden = [];

@@ -115,29 +115,6 @@ class MerchantEsFetchTest extends TestCase
             ]);
     }
 
-    public function testGetMerchantsFromEsByBusinessTypeRegistered()
-    {
-        $this->startTestAndMakeAssertions(
-            __FUNCTION__,
-            '10000000000011',
-            [
-                '10000000000013',
-                '10000000000014',
-                '10000000000015',
-            ]);
-    }
-
-    public function testGetMerchantsFromEsByBusinessTypeNonRegistered()
-    {
-        $this->startTestAndMakeAssertions(
-            __FUNCTION__,
-            '10000000000011',
-            [
-                '10000000000011',
-                '10000000000012',
-            ]);
-    }
-
     public function testGetMerchantsFromEsByAccountStatusArchived()
     {
         $this->startTestAndMakeAssertions(

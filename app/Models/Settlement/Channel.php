@@ -256,12 +256,4 @@ class Channel
             self::YESBANK,
         ];
     }
-
-    public static function getFtsSupportedChannels()
-    {
-        return [
-            self::RBL,
-            self::ICICI,
-        ];
-    }
 }

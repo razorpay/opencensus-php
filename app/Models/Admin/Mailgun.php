@@ -3,14 +3,14 @@
 namespace RZP\Models\Admin;
 
 use Config;
-use RZP\Error;
 use Carbon\Carbon;
+
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
 use RZP\Constants\HashAlgo;
-use RZP\Constants\Timezone;
+use RZP\Trace\TraceCode;
 
 /**
  * Defines functions to process Mailgun webhook requests
@@ -20,7 +20,6 @@ class Mailgun extends Base\Core
     const EVENT         = 'event';
     const BOUNCED_EVENT = 'bounced';
     const DROPPED_EVENT = 'dropped';
-    const LIVE          = 'live';
 
     /**
      * Process request and notify on slack channel
@@ -137,70 +136,5 @@ class Mailgun extends Base\Core
         $channel = Config::get('slack.channels.tech_logs_mail');
 
         $this->app['slack']->queue($message, $input, ['channel' => $channel]);
-    }
-
-    /**
-     * @param array $merchants
-     * the array contains the name and the email id of the merchant to be added to mailing list
-     * refer-https://documentation.mailgun.com/en/latest/api-mailinglists.html#mailing-lists
-     */
-    public function addMemberToMailingList(array $merchants)
-    {
-        $listAddress = $this->getMailgunListAddress(self::LIVE);
-
-        $this->trace->info(
-            TraceCode::ADDING_MEMBER_TO_MAILING_LIST,
-            [
-                'pre_addition_timestamp' => Carbon::now(Timezone::IST)->getTimestamp(),
-                'merchants'              => $merchants
-            ]);
-
-        $relativeUrl = 'lists/' . $listAddress . '/members.json';
-
-        $this->app['mailgun']->getMailgunInstance()->post($relativeUrl,[
-            'upsert'     => true,
-            'members'    => json_encode($merchants)
-        ]);
-
-        $this->trace->info(
-            TraceCode::ADDED_MEMBER_TO_MAILING_LIST,
-            [
-                'post_addition_timestamp' => Carbon::now(Timezone::IST)->getTimestamp(),
-                'merchants'               => $merchants
-            ]);
-    }
-
-    /**
-     * @param string $emailAddress
-     * refer-https://documentation.mailgun.com/en/latest/api-mailinglists.html#mailing-lists
-     */
-    public function deleteMemberFromMailingList(string $emailAddress)
-    {
-        $listAddress = $this->getMailgunListAddress(self::LIVE);
-
-        $this->trace->info(
-            TraceCode::DELETING_MEMBER_FROM_MAILING_LIST,
-            [
-                'pre_delete_timestamp' => Carbon::now(Timezone::IST)->getTimestamp(),
-                'email_address'        => $emailAddress
-            ]);
-
-        $relativeUrl = 'lists/' . $listAddress . '/members/' . $emailAddress;
-
-        $this->app['mailgun']->getMailgunInstance()->delete($relativeUrl);
-
-        $this->trace->info(
-            TraceCode::DELETED_MEMBER_FROM_MAILING_LIST,
-            [
-                'post_delete_timestamp' => Carbon::now(Timezone::IST)->getTimestamp(),
-                'email_address'         => $emailAddress
-            ]);
-    }
-
-    protected function getMailgunListAddress(string $listName)
-    {
-        $listAddress = $listName.'@'.Config::get('applications.mailgun')['url'];
-
-        return $listAddress;
     }
 }

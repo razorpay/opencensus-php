@@ -71,6 +71,6 @@ class EmandateSorter extends Terminal\Sorter
 
     protected function isBankSupportedByNpciEmandate($bank)
     {
-        return in_array($bank, Gateway::ENACH_NPCI_NB_ALL_BANKS);
+        return in_array($bank, Gateway::ENACH_NPCI_NETBANKING_BANKS);
     }
 }

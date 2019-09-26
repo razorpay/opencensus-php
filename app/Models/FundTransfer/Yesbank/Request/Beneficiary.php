@@ -8,6 +8,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\FundAccount\Type;
 use RZP\Models\Settlement\Metric;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Yesbank\RequestConstants;
 
 class Beneficiary extends Base

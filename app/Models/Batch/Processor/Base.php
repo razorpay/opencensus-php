@@ -125,8 +125,6 @@ class Base extends BaseModel\Core
      */
     protected $delimiter = '|';
 
-    protected $ignoreHeaders = false;
-
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
@@ -543,14 +541,8 @@ class Base extends BaseModel\Core
             finally
             {
                 $this->batch->incrementProcessedCount();
-                $this->processFinally($entry);
             }
         }
-    }
-
-    protected function processFinally(& $entry)
-    {
-        return;
     }
 
     /**
@@ -814,17 +806,8 @@ class Base extends BaseModel\Core
         {
             case FileStore\Format::TXT:
             case FileStore\Format::DAT:
-                if ($this->ignoreHeaders === true)
-                {
-                    $txt = $this->generateText($entries, $this->delimiter,
-                               false);
-
-                }
-                else
-                {
-                    $txt = $this->generateTextWithHeadings($entries, $this->delimiter,
-                                           false, array_keys(current($entries)));
-                }
+                $txt = $this->generateTextWithHeadings($entries, $this->delimiter,
+                                       false, array_keys(current($entries)));
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 

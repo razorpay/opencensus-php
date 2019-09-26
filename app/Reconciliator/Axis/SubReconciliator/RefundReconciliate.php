@@ -24,8 +24,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const PREAUTH               = 'PREAUTH';
     const CYBS                  = 'CYBS';
 
-    const COLUMN_REFUND_AMOUNT  = 'txn_amount';
-
     /**
      * If we are not able to find refund id to reconcile,
      * this ratio defines the minimum proportion of columns to be filled in a valid row.

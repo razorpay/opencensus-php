@@ -215,6 +215,7 @@ trait Authorize
 
         $this->runShieldCheck($payment);
 
+
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -338,6 +339,7 @@ trait Authorize
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
                 if ($retryOnSameGateway === true)
+
                 {
                     continue;
                 }
@@ -367,7 +369,7 @@ trait Authorize
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
-                $this->updatePaymentOnExceptionAndThrow($e);
+                $this->updatePaymentAuthFailedAndThrowException($e);
             }
             finally
             {
@@ -382,21 +384,7 @@ trait Authorize
 
     protected function runOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput)
     {
-        //
-        // If the appToken and walletToken is set then for a power wallet, run the
-        // power wallet flow. Run otp flow if appToken and walletToken are set
-        // but the wallet is not a power wallet.
-        //
-        if ((Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true) and
-            ($payment->getGlobalTokenId() !== null) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::WALLET_AUTO_DEBIT) === true))
-        {
-            $request = $this->runAutoDebitFlow($payment, $gatewayInput);
-        }
-        else
-        {
-            $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
-        }
+        $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
 
         return $request;
     }
@@ -1634,10 +1622,6 @@ trait Authorize
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
 
-        // We are doing it in post processing because terminal id is required for
-        // fetching the wallet token as they are terminal specific
-        $this->associateWalletTokenIfApplicable($payment);
-
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
         $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
@@ -1692,24 +1676,6 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
-    }
-
-    protected function associateWalletTokenIfApplicable(Payment\Entity $payment)
-    {
-        if (($payment->getGlobalCustomerId() !== null) and
-            (Payment\Gateway::isAutoDebitPowerWalletSupported($payment) === true))
-        {
-            $terminalId = $payment->getTerminalId();
-            $wallet = $payment->getWallet();
-            $customerId = $payment->getGlobalCustomerId();
-
-            $token = (new Token\Repository)->getByWalletTerminalAndCustomerId($wallet, $terminalId, $customerId);
-
-            if (($token !== null) and (($token->getExpiredAt() === null) or ($token->getExpiredAt() > time())))
-            {
-                $payment->globalToken()->associate($token);
-            }
-        }
     }
 
     /**
@@ -3016,8 +2982,6 @@ trait Authorize
         else if ($payment->isWallet() === true)
         {
             $payment->setWallet($token->getWallet());
-
-            $payment->globalToken()->associate($token);
         }
         else if ($payment->isEmandate() === true)
         {
@@ -4869,41 +4833,6 @@ trait Authorize
         return false;
     }
 
-    protected function runAutoDebitFlow(Payment\Entity $payment, array $gatewayInput)
-    {
-        $this->trace->info(
-            TraceCode::PAYMENT_POWER_WALLET_INITIATED,
-            [
-                'payment_id'  => $payment->getId(),
-                'gateway'     => $payment->getGateway(),
-                'terminal_id' => $payment->getTerminalId(),
-            ]);
-
-        try
-        {
-            $gatewayInput['isAutoDebitFlow'] = true;
-
-            $this->callGatewayFunction(Action::CHECK_BALANCE, $gatewayInput);
-        }
-        catch (Exception\GatewayErrorException $e)
-        {
-            $error = $e->getError();
-
-            //
-            // If the accessToken for the wallet is invalid, run the
-            // otpGenerate flow for it.
-            //
-            if ($error->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN)
-            {
-                return $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
-            }
-
-            throw $e;
-        }
-
-        return $this->callGatewayFunction(Action::DEBIT, $gatewayInput);
-    }
-
     protected function callGatewayOtpGenerate(array $data, Payment\Entity $payment, $otpResend = false)
     {
         try
@@ -4938,10 +4867,7 @@ trait Authorize
 
         $cardCore = new Card\Core;
 
-        $recurring = (($this->payment->isRecurring()) or
-                      ($this->isPreferredRecurring($input)));
-
-        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant, $recurring);
+        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant);
 
         $card = $cardCore->getCard();
 
@@ -4973,7 +4899,19 @@ trait Authorize
         //
         // Creates card entity. Card number is vaulted if vault is true
         //
-        $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
+
+        if ($vault === true)
+        {
+            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
+        }
+
+        if (($this->payment->isRecurring() === false) and
+            ($this->isPreferredRecurring($input) === false) and
+            ($this->payment->isMoto() === false))
+        {
+
+            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
+        }
 
         if (isset($cardInput[Card\Entity::VAULT]) === true)
         {
@@ -5693,6 +5631,7 @@ trait Authorize
 
         $input['payment']['id'] = $payment->getId();
 
+
         $cache = Cache::getFacadeRoot();
 
         if ($type === 'fallback')
@@ -5861,6 +5800,7 @@ trait Authorize
 
             $payload['track_id'] = $trackId;
             $payload['request'] = $data;
+
 
             $this->trace->info(
                 TraceCode::PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW,

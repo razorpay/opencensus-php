@@ -98,7 +98,6 @@ class Repository extends Base\Repository
                     ->where(Token\Entity::WALLET, '=', $wallet)
                     ->where(Token\Entity::TERMINAL_ID, '=', $terminal)
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer)
-                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
                     ->first();
     }
 

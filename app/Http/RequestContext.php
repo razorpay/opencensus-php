@@ -183,8 +183,7 @@ final class RequestContext
         return $this->mode;
     }
 
-    // Todo: Refer: Route.php's $skipThrottling.
-    public function getAuth()
+    public function getAuth(): string
     {
         return $this->auth;
     }

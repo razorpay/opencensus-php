@@ -11,9 +11,6 @@ class Department
     const TYPE5 = 'Strategy';
     const TYPE6 = 'Others';
     const TYPE7 = 'Founder/Proprietor';
-    const TYPE8 = 'NA';
-
-    const DefaultDepartment = 8;
 
     public static function getType($num)
     {
@@ -23,10 +20,5 @@ class Department
         }
 
         return constant(__CLASS__.'::'.'TYPE'.$num);
-    }
-
-    public static function getDefaultDepartment()
-    {
-        return self::DefaultDepartment;
     }
 }

@@ -18,8 +18,6 @@ class IndexCreate extends Command
                             {entity       : Entity name (e.g. item|merchant) }
                             {index_prefix : ES index prefix (e.g. 20171201_beta_api_) }
                             {type_prefix  : ES type prefix (e.g. beta_api_) }
-                            {num_shards=5 : Number of shards (Defaults to 5) }
-                            {num_reps=1   : Number of replicas (Defaults to 1) }
 
                             {--pretend    : Whether to run the command in pretend mode?}
                             {--reindex    : Whether to delete existing index?}';
@@ -29,8 +27,6 @@ class IndexCreate extends Command
     protected $entity;
     protected $index;
     protected $type;
-    protected $numShards;
-    protected $numReplicas;
 
     /**
      * Just outputs the settings with which the index will get created.
@@ -85,8 +81,6 @@ class IndexCreate extends Command
         $this->entity  = $this->argument('entity');
         $this->pretend = $this->option('pretend');
         $this->reindex = $this->option('reindex');
-        $this->numShards = (int) $this->argument('num_shards');
-        $this->numReplicas = (int) $this->argument('num_reps');
 
         // Sets index and type names
         $mode        = $this->argument('mode');
@@ -112,8 +106,6 @@ class IndexCreate extends Command
         $config = Config::get('es_mappings');
 
         $settings = $config['settings'];
-        $settings['number_of_shards'] = $this->numShards;
-        $settings['number_of_replicas'] = $this->numReplicas;
 
         //
         // Get mappings:

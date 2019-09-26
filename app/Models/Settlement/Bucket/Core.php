@@ -24,34 +24,6 @@ class Core extends Base\Core
         parent::__construct();
     }
 
-    public function deleteCompletedBucketEntries(array $input): array
-    {
-        $this->trace->info(
-            TraceCode::DELETING_COMPLETED_BUCKET_ENTRIES,
-            $input);
-
-        $timestamp = Carbon::now(Timezone::IST)->subDay();
-
-        if (isset($input['timestamp']) === true)
-        {
-            $timestamp = $input['timestamp'];
-        }
-
-        $recordsDeletedCount = $this->repo
-                                    ->settlement_bucket
-                                    ->removeCompletedEntriesBeforeTimestamp($timestamp);
-
-        $result = [
-            'count' => $recordsDeletedCount,
-        ];
-
-        $this->trace->info(
-            TraceCode::COMPLETED_BUCKET_ENTRIES_DELETED,
-            $result);
-
-        return $result;
-    }
-
     public function backfillSettlementBucket(array $input)
     {
         // Time limit of 10 mins
@@ -181,13 +153,9 @@ class Core extends Base\Core
 
         $currentTimestamp = Carbon::now(Timezone::IST);
 
-        $settlementTime = Carbon::createFromTimestamp($settlementTime, Timezone::IST);
-
-        $settlementTime = Preference::getCeilTimestamp($settlementTime);
-
-        $bucketTimestamp = ($settlementTime->getTimestamp() < $currentTimestamp->getTimestamp()) ?
+        $bucketTimestamp = ($settlementTime < $currentTimestamp->getTimestamp()) ?
             Preference::getNextBucket($currentTimestamp->getTimestamp()) :
-            Preference::getNextBucket($settlementTime->getTimestamp());
+            Preference::getNextBucket($settlementTime);
 
         return $this->addToBucket($merchantId, $bucketTimestamp, $settlementTime);
     }
@@ -295,6 +263,10 @@ class Core extends Base\Core
         {
             // todo: use insert ignore or ignore this error
         }
+
+        $this->trace->info(
+            TraceCode::FAILED_TO_ADD_MERCHANT_TO_BUCKET,
+            $traceData);
 
         return false;
     }

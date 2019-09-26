@@ -3,7 +3,6 @@
 namespace RZP\Services\Mock;
 
 use RZP\Services\CardVault as BaseCardVault;
-use RZP\Models\Card\Vault;
 
 class CardVault extends BaseCardVault
 {
@@ -51,13 +50,5 @@ class CardVault extends BaseCardVault
         $response['fingerprint'] = strrev($token);
 
         return $response;
-    }
-
-    public function getTokenAndFingerprint($input)
-    {
-        $token = base64_encode($input['card']);
-        $response['token'] = $token;
-        $response['fingerprint'] = strrev($token);
-        $response['scheme'] = Vault::RZP_VAULT_SCHEME;
     }
 }

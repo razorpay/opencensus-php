@@ -42,7 +42,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $data = json_decode($gatewayPayment['raw'], true);
 
-        $dbReferenceNumber = $data['bank_payment_id'] ?? null;
+        $dbReferenceNumber = $data['bank_payment_id'];
 
         //
         // Sometimes we have db reference number saved as string 'null'.

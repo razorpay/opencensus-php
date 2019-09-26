@@ -34,7 +34,7 @@ class InvoiceCommunicationTest extends TestCase
 
         $metrics = $this->createMetricsMock();
 
-        $metrics->expects($this->at(11))
+        $metrics->expects($this->at(10))
                 ->method('count')
                 ->with(
                     'invoice_email_notify_total',
@@ -46,7 +46,7 @@ class InvoiceCommunicationTest extends TestCase
                         'has_subscription' => 0,
                     ]);
 
-        $metrics->expects($this->at(12))
+        $metrics->expects($this->at(11))
                 ->method('count')
                 ->with(
                     'invoice_sms_notify_total',

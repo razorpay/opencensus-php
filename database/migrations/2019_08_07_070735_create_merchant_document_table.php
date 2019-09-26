@@ -39,8 +39,6 @@ class CreateMerchantDocumentTable extends Migration
 
             //index
             $table->index(Document::MERCHANT_ID);
-
-            $table->index(Document::FILE_STORE_ID);
         });
     }
 

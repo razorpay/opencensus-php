@@ -14,10 +14,8 @@ class Validator extends Base\Validator
         'channel'               => 'required|string|custom',
         'loginToken'            => 'required|string',
         'checksum'              => 'required|string|regex:"^[a-f0-9]+$"',
+        'callbackUrl'           => 'required|url',
         'metadata'              => 'sometimes|string',
-        'surl'                  => 'sometimes|string',
-        'furl'                  => 'sometimes|string',
-        'merchantTxnId'         => 'sometimes|string'
     );
 
     protected static $debitWalletRules = array(

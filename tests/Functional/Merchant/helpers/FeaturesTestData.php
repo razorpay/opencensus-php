@@ -140,57 +140,6 @@ return [
         ]
     ],
 
-    'testMultiAssignFeatures' => [
-        'request'  => [
-            'content' => [
-                'name'        => ['dummy', 'terminal_onboarding'],
-                'entity_ids'  => ['10000000000001', '10000000000002', '10000000000003'],
-                'entity_type' => 'merchant'
-            ],
-            'url'     => '/features/assign',
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Dashboard'                => 'true',
-                'HTTP_X-Dashboard-Admin-Username' => 'admin',
-                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000001',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'terminal_onboarding',
-                    'entity_id'   => '10000000000001',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000002',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'terminal_onboarding',
-                    'entity_id'   => '10000000000002',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000003',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'terminal_onboarding',
-                    'entity_id'   => '10000000000003',
-                    'entity_type' => 'merchant'
-                ],
-            ]
-        ]
-    ],
-
     'testMultiRemoveFeature' => [
         'request'  => [
             'content' => [

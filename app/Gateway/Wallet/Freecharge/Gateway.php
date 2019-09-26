@@ -76,13 +76,19 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        if ((isset($content[ResponseFields::STATUS]) === false) or
-            ($content[ResponseFields::STATUS] !== Status::TOPUP_SUCCESS))
+        if ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
                 $content[ResponseFields::ERROR_CODE],
                 $content[ResponseFields::ERROR_MESSAGE]);
+        }
+
+        // OTP_REDIRECT sends a authCode as query param
+        // If it exists, handle it as callback for OTP_REDIRECT
+        if (isset($input['gateway'][ResponseFields::AUTH_CODE]) === true)
+        {
+            return $this->callbackOtpRedirectFlow($input);
         }
 
         return $this->callbackTopupFlow($input);
@@ -215,26 +221,6 @@ class Gateway extends Base\Gateway
 
     public function debit(array $input)
     {
-        if (isset($input['gateway'][ResponseFields::TXN_ID]) === true)
-        {
-            $contentToSave = array(
-                RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
-                RequestFields::EMAIL         => $input['payment']['email'],
-                RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
-                RequestFields::STATUS        => $input['gateway'][ResponseFields::STATUS],
-                RequestFields::AMOUNT        => $input['payment']['amount'],
-                RequestFields::TXN_ID        => $input['gateway'][ResponseFields::TXN_ID],
-                RequestFields::RECEIVED      => true
-            );
-
-            $wallet = $this->repo->findByPaymentIdAndActionOrFail(
-                $input['payment']['id'], Action::AUTHORIZE);
-
-            $this->updateGatewayPaymentEntity($wallet, $contentToSave);
-
-            return;
-        }
-
         $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
@@ -278,6 +264,8 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+
+        $this->action = Action::DEBIT_WALLET;
     }
 
     public function topup($input)
@@ -793,7 +781,7 @@ class Gateway extends Base\Gateway
 
         unset($response[ResponseFields::CHECKSUM]);
 
-        $expectedCheckSum = $this->getHashOfArray($response);
+        $expectedCheckSum  = $this->getHashOfArray($response);
 
         if (hash_equals($expectedCheckSum, $checkSum) === false)
         {
@@ -852,19 +840,6 @@ class Gateway extends Base\Gateway
         $content = $this->jsonToArray($response->body);
 
         $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_CHECK_BALANCE_RESPONSE);
-
-        if ((isset($input['isAutoDebitFlow']) === true) and
-            ($input['isAutoDebitFlow'] === true))
-        {
-            $contentToSave = [
-                RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
-                RequestFields::EMAIL         => $input['payment']['email'],
-                RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
-                RequestFields::AMOUNT        => $input['payment']['amount'],
-            ];
-
-            $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
-        }
 
         if (isset($content[ResponseFields::WALLET_BALANCE]))
         {
@@ -1015,18 +990,16 @@ class Gateway extends Base\Gateway
         // Wallet Balance is in paise
         $walletBalance = $this->app['cache']->get($key, 0);
 
-        $topupAmount = ($input['payment']['amount']) / 100;
+        $topupAmount = ($input['payment']['amount'] - $walletBalance) / 100;
 
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
-            RequestFields::AMOUNT          => (string) $topupAmount,
-            RequestFields::SURL            => $input['callbackUrl'],
-            RequestFields::FURL            => $input['callbackUrl'],
-            RequestFields::CHANNEL         => self::DEFAULT_TXN_CHANNEL,
-            RequestFields::LOGIN_TOKEN     => '',
-            RequestFields::MERCHANT_ID     => $this->getMerchantId1($input['terminal']),
-            RequestFields::METADATA        => $input['payment']['public_id'],
-            RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
+            RequestFields::AMOUNT       => (string) ceil($topupAmount),
+            RequestFields::CALLBACK_URL => $input['callbackUrl'],
+            RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
+            RequestFields::LOGIN_TOKEN  => '',
+            RequestFields::MERCHANT_ID  => $this->getMerchantId1($input['terminal']),
+            RequestFields::METADATA     => $input['payment']['public_id'],
         );
 
         $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_TOPUP_REQUEST);

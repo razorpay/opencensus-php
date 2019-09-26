@@ -112,22 +112,6 @@ class Core extends Base\Core
         return $payout;
     }
 
-    public function calculateEsOnDemandFees(array $input, Merchant\Entity $merchant): array
-    {
-        (new Validator)->validateInput(Validator::CALCULATE_ES_ON_DEMAND_FEES, $input);
-
-        $payoutInput = [
-            Entity::PURPOSE   => Purpose::PAYOUT, // this purpose should be mapped to FundTransfer\Attempt\Purpose::SETTLEMENT
-            Entity::AMOUNT    => $input[Entity::AMOUNT],
-            Entity::CURRENCY  => $input[Entity::CURRENCY],
-            Entity::TYPE      => Entity::ON_DEMAND,
-        ];
-
-        return $this->getProcessor('merchant_payout')
-                    ->setMerchant($merchant)
-                    ->calculateFees($payoutInput);
-    }
-
     /**
      * Payouts to a fund account
      *

@@ -271,7 +271,7 @@ class Core extends Base\Core
         // this is temporary (read as hack), just to disable aadhaar auth type.
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::BLOCK_AADHAAR_REG, true) === true)
         {
-            $authTypes = [Payment\AuthType::NETBANKING, Payment\AuthType::DEBITCARD];
+            $authTypes = [Payment\AuthType::NETBANKING];
         }
 
         foreach ($authTypes as $authType)
@@ -493,11 +493,11 @@ class Core extends Base\Core
 
         foreach ($availableGatewaysForMerchant as $availableGateway)
         {
-            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway][$authType]) === true)
+            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
             {
                 $availableEmandateBanks = array_merge(
                                                 $availableEmandateBanks,
-                    Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway][$authType]);
+                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
             }
         }
 

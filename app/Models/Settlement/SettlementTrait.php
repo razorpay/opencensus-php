@@ -79,6 +79,7 @@ trait SettlementTrait
             $bankAccount = $merchant->bankAccount;
         }
 
+
         // Do not proceed if merchant does not have active bank account
         if ($bankAccount === null)
         {

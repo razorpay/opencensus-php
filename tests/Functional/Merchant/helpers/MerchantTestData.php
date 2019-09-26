@@ -1339,26 +1339,6 @@ return [
         ]
     ],
 
-    'testUpdateBankAccountWithAddressProof' => [
-        'request'  => [
-            'content' => [
-                'ifsc_code'        => 'ICIC0001206',
-                'account_number'   => '0002020000304030434',
-                'beneficiary_name' => 'Test R4zorpay:',
-            ],
-            'url'     => '/merchants/bank_account',
-            'method'  => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'merchant_id'      => '10000000000000',
-                'ifsc_code'        => 'ICIC0001206',
-                'account_number'   => '0002020000304030434',
-                'beneficiary_name' => 'Test R4zorpay:',
-            ]
-        ]
-    ],
-
     'testAddBankAccountWithMerchantIdInURL' => [
         'request' => [
             'content' => [
@@ -5077,23 +5057,6 @@ return [
             'content'     => [
                 'account_locked' => false,
                 'user_id'        => '',
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
-    'testMerchantRazorxBulkExperimentFetch' => [
-        'request'  => [
-            'url'     => '/razorx/bulkevaluate',
-            'method'  => 'get',
-            'content' => [
-                'features' => 'feature1,feature2'
-            ],
-        ],
-        'response' => [
-            'content'     => [
-                'feature1' => ['result' => 'on'],
-                'feature2' => ['result' => 'off'],
             ],
             'status_code' => 200,
         ],

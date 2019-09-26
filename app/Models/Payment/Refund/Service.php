@@ -678,17 +678,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function makeScroogeVerifyRefundCall(string $refundId, array $input)
-    {
-        $refund = $this->repo->refund->findOrFail($refundId);
-
-        $merchant = $refund->merchant;
-
-        $response = $this->getNewProcessor($merchant)->scroogeVerifyRefund($refund, $input);
-
-        return $response;
-    }
-
     public function createScroogeRefund(string $refundId)
     {
         $refund = $this->repo->refund->findOrFail($refundId);
@@ -1268,14 +1257,7 @@ class Service extends Base\Service
     {
         $refund = $this->repo->refund->findByPublicId($id);
 
-        if ($refund->isScrooge() === true)
-        {
-            $verifySuccess = $this->app['scrooge']->verifyRefund($refund['id'])['body'];
-        }
-        else
-        {
-            $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
-        }
+        $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
 
         return [
             'refund_id'      => $id,

@@ -18,8 +18,6 @@ abstract class BaseGatewayProcessor
 
     protected $trace;
 
-    protected $mode;
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -29,11 +27,6 @@ abstract class BaseGatewayProcessor
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
-
-        if (isset($this->app['rzp.mode']))
-        {
-            $this->mode = $this->app['rzp.mode'];
-        }
     }
 
     abstract public function getInputValue($gatewayInput, $merchant);

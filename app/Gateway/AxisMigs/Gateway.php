@@ -60,14 +60,10 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::MPI_ENSTAGE:
                 $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
-                if ($authResponse === null)
-                {
-                    $this->traceGatewayPaymentRequest([], $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
-                }
-                else
-                {
-                    $this->traceGatewayPaymentRequest($authResponse, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+                $this->traceGatewayPaymentRequest($authResponse, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
+                if ($authResponse !== null)
+                {
                     $this->persistCardDetailsTemporarily($input);
 
                     return $authResponse;

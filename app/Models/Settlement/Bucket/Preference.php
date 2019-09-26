@@ -25,6 +25,18 @@ class Preference extends Base\Core
     {
         $timestamp = Carbon::createFromTimestamp($timestamp, Timezone::IST);
 
+        $hourOffset = 1;
+
+        // if the schedule is already anchored to some hour then don't add offset
+        if ($timestamp->minute === 0)
+        {
+            $hourOffset = 0;
+        }
+
+        $timestamp->subSeconds($timestamp->second)
+                  ->subMinutes($timestamp->minute)
+                  ->addHours($hourOffset);
+
         // If no hour anchor is given then used the calculated timestamp
         if ($hour === 0)
         {
@@ -41,21 +53,6 @@ class Preference extends Base\Core
         $timestamp = $timestamp->setDateTime($timestamp->year, $timestamp->month, $timestamp->day, $hour, 0);
 
         return $timestamp->getTimestamp();
-    }
-
-    public static function getCeilTimestamp(Carbon $timestamp): Carbon
-    {
-        $hourOffset = 1;
-
-        // if the schedule is already anchored to some hour then don't add offset
-        if (($timestamp->minute === 0))
-        {
-            $hourOffset = 0;
-        }
-
-        return  $timestamp->subSeconds($timestamp->second)
-                          ->subMinutes($timestamp->minute)
-                          ->addHours($hourOffset);
     }
 
     /**
@@ -131,8 +128,6 @@ class Preference extends Base\Core
 
         $settlementTime = Carbon::createFromTimestamp($settlementTime, Timezone::IST);
 
-        $settlementTime = $this->getCeilTimestamp($settlementTime);
-
         $data = $this->getDSPMerchantBucket($merchant, $settlementTime);
 
         if ($data[0] === true)
@@ -152,6 +147,36 @@ class Preference extends Base\Core
         if ($data[0] === true)
         {
             return $data;
+        }
+
+        $data = $this->getWealthySettlementBucket($merchant, $settlementTime);
+
+        if ($data[0] === true)
+        {
+            return $data;
+        }
+
+        return [false, $settlementTime->getTimestamp()];
+    }
+
+    /**
+     * Specific check for wealthy
+     * they dont want settlement on saturdays
+     *
+     * @param Merchant\Entity $merchant
+     * @param Carbon          $settlementTime
+     * @return array
+     */
+    protected function getWealthySettlementBucket(Merchant\Entity $merchant, Carbon $settlementTime): array
+    {
+        if (($merchant->getParentId() === Merchant\Preferences::MID_WEALTHY) and
+            ($settlementTime->dayOfWeek === Carbon::SATURDAY))
+        {
+            $timestamp = Holidays::getNextWorkingDay($settlementTime);
+
+            $timestamp = self::getNextBucket($timestamp->getTimestamp(), Constants::NINE_AM);
+
+            return [true, $timestamp];
         }
 
         return [false, $settlementTime->getTimestamp()];
@@ -194,7 +219,7 @@ class Preference extends Base\Core
     {
         $settlementTime = Carbon::createFromTimestamp($settlementTime, Timezone::IST);
 
-        $settlementTime = $this->getCeilTimestamp($settlementTime);
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         $settlementHour = $settlementTime->hour;
 
@@ -205,14 +230,19 @@ class Preference extends Base\Core
         // Nearest 3PM bucket
         if (in_array(Feature\Constants::ES_AUTOMATIC_THREE_PM, $featureList, true) === true)
         {
-            if ($hour === Constants::FIVE_PM)
+            if ($hour === Constants::NINE_AM)
             {
-                $hour = (($settlementHour <= Constants::THREE_PM) or ($settlementHour > Constants::FIVE_PM)) ?
+                $hour = (($settlementHour < Constants::NINE_AM) or ($settlementHour > Constants::THREE_PM)) ?
+                    Constants::NINE_AM : Constants::THREE_PM;
+            }
+            else
+            {
+                $hour = (($settlementHour < Constants::THREE_PM) or ($settlementHour > Constants::FIVE_PM)) ?
                     Constants::THREE_PM : Constants::FIVE_PM;
             }
         }
 
-        return self::getNextBucket($settlementTime->getTimestamp(), $hour);
+        return self::getNextBucket($now, $hour);
     }
 
     /**
@@ -232,7 +262,7 @@ class Preference extends Base\Core
 
         $hour = Constants::THREE_PM;
 
-        if (($settlementTime->hour <= Constants::ONE_PM) or ($settlementTime->hour > Constants::THREE_PM))
+        if (($settlementTime->hour < Constants::ONE_PM) or ($settlementTime->hour >= Constants::THREE_PM))
         {
             $hour = Constants::ONE_PM;
         }
@@ -290,20 +320,10 @@ class Preference extends Base\Core
             // These merchants will have two settlements per day (@ 1 and 2 PM)
             $hour = Constants::TWO_PM;
 
-            if (($settlementTime->hour <= Constants::ONE_PM) or ($settlementTime->hour > Constants::TWO_PM))
+            if (($settlementTime->hour < Constants::ONE_PM) or ($settlementTime->hour >= Constants::TWO_PM))
             {
                 $hour = Constants::ONE_PM;
             }
-        }
-
-        if (($parentMerchantId === Merchant\Preferences::MID_WEALTHY) and
-            ($settlementTime->dayOfWeek === Carbon::SATURDAY))
-        {
-            $timestamp = Holidays::getNextWorkingDay($settlementTime);
-
-            $timestamp = self::getNextBucket($timestamp->getTimestamp(), Constants::NINE_AM);
-
-            return [true, $timestamp];
         }
 
         $timestamp = self::getNextBucket($settlementTime->getTimestamp(), $hour);
@@ -313,7 +333,7 @@ class Preference extends Base\Core
 
     /**
      * DSP merchant preference
-     * this merchant wants settlement only between 10AM - 4PM
+     * this merchant wants settlement only between 10AM - 3PM
      *
      * @param Merchant\Entity $merchant
      * @param Carbon          $settlementTime
@@ -327,7 +347,7 @@ class Preference extends Base\Core
         {
             $hour = 0;
 
-            if (($settlementTime->hour > Constants::THREE_PM) or ($settlementTime->hour <= Constants::TEN_AM))
+            if (($settlementTime->hour > Constants::THREE_PM) or ($settlementTime->hour < Constants::TEN_AM))
             {
                 $hour = Constants::TEN_AM;
             }

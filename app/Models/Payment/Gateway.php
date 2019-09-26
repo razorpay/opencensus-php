@@ -175,15 +175,6 @@ class Gateway
         // Wallet::MPESA,
     ];
 
-    //
-    // Temporarily uses a different constant. Ideally POWER_WALLETS should be
-    // used. Once auto debit functionality is implemented for all power wallets
-    // @todo: Deprecate it.
-    //
-    const AUTO_DEBIT_POWER_WALLETS = array(
-        self::WALLET_FREECHARGE,
-    );
-
     /**
      * These are the wallets that support both
      * auth as well as power wallet flow
@@ -206,10 +197,6 @@ class Gateway
         self::BILLDESK,
     ];
 
-    const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
-        self::ATOS,
-    ];
-
     // TODO: Add gateway and gateway_acquirer map to fix
     // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [
@@ -226,7 +213,6 @@ class Gateway
         self::UPI_AXIS          => self::AXIS,
         self::UPI_MINDGATE      => self::HDFC,
         self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
-        self::ATOS              => self::ATOS,
     ];
 
     /**
@@ -321,45 +307,7 @@ class Gateway
     ];
 
     // Please keep this list sorted. The list of Live Banks in API E-Mandate is available at https://www.npci.org.in/nach-e-mandates-new
-
-    // banks supported by enach_npci_netbanking gateway for auth type netbanking
-    const ENACH_NPCI_NB_AUTH_NETBANKING_BANKS = [
-        IFSC::CBIN,
-        IFSC::CIUB,
-        IFSC::DEUT,
-        IFSC::ESFB,
-        IFSC::FDRL,
-        IFSC::HDFC,
-        IFSC::IBKL,
-        IFSC::ICIC,
-        IFSC::IDFB,
-        IFSC::INDB,
-        IFSC::IOBA,
-        IFSC::KKBK,
-        IFSC::MAHB,
-        IFSC::PYTM,
-        IFSC::RATN,
-        IFSC::TMBL,
-        IFSC::USFB,
-        IFSC::UTIB,
-        IFSC::YESB,
-        Netbanking::PUNB_R,
-        Netbanking::BARB_R,
-    ];
-
-    // banks supported by enach_npci_netbanking gateway for auth type card
-    const ENACH_NPCI_NB_AUTH_CARD_BANKS = [
-        IFSC::KKBK,
-        IFSC::YESB,
-        IFSC::USFB,
-        IFSC::INDB,
-        IFSC::ESFB,
-        IFSC::ICIC,
-        IFSC::SIBL,
-    ];
-
-    // this is a list of banks supporting netbanking and card as auth_type
-    const ENACH_NPCI_NB_ALL_BANKS = [
+    const ENACH_NPCI_NETBANKING_BANKS = [
         IFSC::CBIN,
         IFSC::CIUB,
         IFSC::DEUT,
@@ -1198,9 +1146,6 @@ class Gateway
             Gateway::NETBANKING_SBI,
             Gateway::ENACH_NPCI_NETBANKING,
         ],
-        AuthType::DEBITCARD =>  [
-            Gateway::ENACH_NPCI_NETBANKING,
-        ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
         AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
     ];
@@ -1268,35 +1213,19 @@ class Gateway
      * @var array
      */
     public static $gatewaysEmandateBanksMap = [
-        Gateway::NETBANKING_ICICI      => [
-            AuthType::NETBANKING       => [ IFSC::ICIC],
-        ],
-        Gateway::NETBANKING_AXIS       => [
-            AuthType::NETBANKING       => [IFSC::UTIB],
-        ],
-        Gateway::NETBANKING_HDFC       => [
-            AuthType::NETBANKING       => [IFSC::HDFC],
-        ],
-        Gateway::NETBANKING_SBI        => [
-            AuthType::NETBANKING       => [IFSC::SBIN],
-        ],
-        Gateway::ENACH_NPCI_NETBANKING => [
-            AuthType::NETBANKING       => self::ENACH_NPCI_NB_AUTH_NETBANKING_BANKS,
-            AuthType::DEBITCARD        => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
-        ],
-        Gateway::ENACH_RBL             => [
-            AuthType::AADHAAR          => self::EMANDATE_AADHAAR_BANKS,
-            AuthType::AADHAAR_FP       => self::EMANDATE_AADHAAR_BANKS,
-        ],
+        Gateway::NETBANKING_ICICI      => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS       => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC       => [IFSC::HDFC],
+        Gateway::NETBANKING_SBI        => [IFSC::SBIN],
+        Gateway::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING_BANKS,
+        Gateway::ENACH_RBL             => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
         // We are using UTIB in test cases
         Gateway::ESIGNER_DIGIO         => [
-            AuthType::AADHAAR          => [IFSC::UTIB],
-            AuthType::AADHAAR_FP       => [IFSC::UTIB],
+            IFSC::UTIB,
         ],
         Gateway::ESIGNER_LEGALDESK     => [
-            AuthType::AADHAAR          => [IFSC::UTIB],
-            AuthType::AADHAAR_FP       => [IFSC::UTIB],
+            IFSC::UTIB,
         ],
     ];
 
@@ -1444,6 +1373,7 @@ class Gateway
         IFSC::ICIC          => Gateway::NETBANKING_ICICI,
         IFSC::IDIB          => Gateway::NETBANKING_IBK,
         IFSC::HDFC          => Gateway::NETBANKING_HDFC,
+        IFSC::CBIN          => Gateway::NETBANKING_CBI,
         IFSC::CORP          => Gateway::NETBANKING_CORPORATION,
         IFSC::KKBK          => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB          => Gateway::NETBANKING_AXIS,
@@ -1978,11 +1908,6 @@ class Gateway
         return (in_array($wallet, self::POWER_WALLETS));
     }
 
-    public static function isAutoDebitPowerWallet($gateway)
-    {
-        return (in_array($gateway, self::AUTO_DEBIT_POWER_WALLETS, true));
-    }
-
     public static function isAuthAndPowerWallet(string $wallet)
     {
         return (in_array($wallet, self::AUTH_AND_POWER_WALLETS, true));
@@ -2125,7 +2050,7 @@ class Gateway
         $netbankingBanks = array_unique(
                                          array_merge(
                                              self::EMANDATE_NB_DIRECT_BANKS,
-                                             self::ENACH_NPCI_NB_AUTH_NETBANKING_BANKS
+                                             self::ENACH_NPCI_NETBANKING_BANKS
                                           )
                            );
 
@@ -2135,7 +2060,6 @@ class Gateway
             AuthType::NETBANKING  => $netbankingBanks,
             AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
             AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
-            AuthType::DEBITCARD   => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
         ];
     }
 
@@ -2161,18 +2085,5 @@ class Gateway
         return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
     }
 
-    public static function isAutoDebitPowerWalletSupported($payment)
-    {
-        $gateway = $payment->getGateway();
-
-        // We support power wallet flow if we can topup and autodebit.
-        // Generally, power wallets allow topup of requests.
-        if (self::isAutoDebitPowerWallet($gateway) === true)
-        {
-            return true;
-        }
-
-        return false;
-    }
 
 }

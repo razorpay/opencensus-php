@@ -18,26 +18,24 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID     = ['merchant_trans_ref', 'merchant_tran_ref'];
-    const COLUMN_CARD_TYPE      = 'card_type';
-    const COLUMN_SERVICE_TAX    = ['service_tax', 'service_taxat145', 'service_taxat1450',
+    const COLUMN_PAYMENT_ID    = ['merchant_trans_ref', 'merchant_tran_ref'];
+    const COLUMN_CARD_TYPE     = 'card_type';
+    const COLUMN_SERVICE_TAX   = ['service_tax', 'service_taxat145', 'service_taxat1450',
                                   'service_taxat135', 'service_taxat1350', 'service_taxat1500'];
-    const COLUMN_GST            = ['gst'];
-    const COLUMN_FEE            = 'commission';
-    const COLUMN_CARD_TRIVIA    = ['card', 'network', 'card_category'];
-    const COLUMN_ORDER_ID       = 'order_id';
-    const COLUMN_CARD_LOCALE    = 'lofo';
-    const COLUMN_ISSUER         = 'transaction_category';
-    const COLUMN_SETTLED_AT     = 'settlement_date';
-    const COLUMN_MSG_TYPE       = 'msg_type';
-    const COLUMN_MID            = 'mid';
-    const COLUMN_ARN            = 'arn';
-    const COLUMN_AUTH_CODE      = 'appr_code';
+    const COLUMN_GST           = ['gst'];
+    const COLUMN_FEE           = 'commission';
+    const COLUMN_CARD_TRIVIA   = ['card', 'network', 'card_category'];
+    const COLUMN_ORDER_ID      = 'order_id';
+    const COLUMN_CARD_LOCALE   = 'lofo';
+    const COLUMN_ISSUER        = 'transaction_category';
+    const COLUMN_SETTLED_AT    = 'settlement_date';
+    const COLUMN_MSG_TYPE      = 'msg_type';
+    const COLUMN_MID           = 'mid';
+    const COLUMN_ARN           = 'arn';
+    const COLUMN_AUTH_CODE     = 'appr_code';
 
-    const PREAUTH               = 'PREAUTH';
-    const CYBS                  = 'CYBS';
-
-    const COLUMN_PAYMENT_AMOUNT = 'txn_amount';
+    const PREAUTH              = 'PREAUTH';
+    const CYBS                 = 'CYBS';
 
     const POSSIBLE_DATE_FORMATS = [
         'd-M-y',

@@ -80,36 +80,35 @@ class Table
     const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
     //Subscriptions Tables end
 
-    const METHODS                    = 'merchant_banks';
-    const BANK_TRANSFER              = 'bank_transfers';
-    const GATEWAY_TOKEN              = 'gateway_tokens';
-    const SCHEDULE_TASK              = 'schedule_tasks';
-    const PARTNER_CONFIG             = 'partner_configs';
-    const MERCHANT_USERS             = 'merchant_users';
-    const MERCHANT_OFFER             = 'merchant_offer';
-    const LINE_ITEM_TAX              = 'line_item_taxes';
-    const DISPUTE_REASON             = 'dispute_reasons';
-    const MERCHANT_USER              = 'merchant_users';
-    const MERCHANT_EMAIL             = 'merchant_emails';
-    const VIRTUAL_ACCOUNT            = 'virtual_accounts';
-    const MERCHANT_DETAIL            = 'merchant_details';
-    const CUSTOMER_BALANCE           = 'customer_balance';
-    const MERCHANT_INVOICE           = 'merchant_invoice';
-    const MERCHANT_REQUEST           = 'merchant_requests';
-    const MERCHANT_TERMINAL          = 'merchant_terminal';
-    const NODAL_BENEFICIARY          = 'nodal_beneficiaries';
-    const MERCHANT_PROMOTION         = 'merchant_promotion';
-    const CREDIT_TRANSACTION         = 'credit_transaction';
-    const SETTLEMENT_DETAILS         = 'settlement_details';
-    const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
-    const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
-    const BATCH_FUND_TRANSFER        = 'daily_settlements';
-    const CUSTOMER_TRANSACTION       = 'customer_transactions';
-    const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempts';
-    const FUND_ACCOUNT_VALIDATION    = 'fund_account_validations';
-    const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
-    const MERCHANT_DOCUMENT          = 'merchant_documents';
-    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details'; 
+    const METHODS                   = 'merchant_banks';
+    const BANK_TRANSFER             = 'bank_transfers';
+    const GATEWAY_TOKEN             = 'gateway_tokens';
+    const SCHEDULE_TASK             = 'schedule_tasks';
+    const PARTNER_CONFIG            = 'partner_configs';
+    const MERCHANT_USERS            = 'merchant_users';
+    const MERCHANT_OFFER            = 'merchant_offer';
+    const LINE_ITEM_TAX             = 'line_item_taxes';
+    const DISPUTE_REASON            = 'dispute_reasons';
+    const MERCHANT_USER             = 'merchant_users';
+    const MERCHANT_EMAIL            = 'merchant_emails';
+    const VIRTUAL_ACCOUNT           = 'virtual_accounts';
+    const MERCHANT_DETAIL           = 'merchant_details';
+    const CUSTOMER_BALANCE          = 'customer_balance';
+    const MERCHANT_INVOICE          = 'merchant_invoice';
+    const MERCHANT_REQUEST          = 'merchant_requests';
+    const MERCHANT_TERMINAL         = 'merchant_terminal';
+    const NODAL_BENEFICIARY         = 'nodal_beneficiaries';
+    const MERCHANT_PROMOTION        = 'merchant_promotion';
+    const CREDIT_TRANSACTION        = 'credit_transaction';
+    const SETTLEMENT_DETAILS        = 'settlement_details';
+    const MERCHANT_EMI_PLANS        = 'merchant_emi_plans';
+    const MERCHANT_ACCESS_MAP       = 'merchant_access_map';
+    const BATCH_FUND_TRANSFER       = 'daily_settlements';
+    const CUSTOMER_TRANSACTION      = 'customer_transactions';
+    const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempts';
+    const FUND_ACCOUNT_VALIDATION   = 'fund_account_validations';
+    const SUBSCRIPTION_REGISTRATION = 'subscription_registrations';
+    const MERCHANT_DOCUMENT         = 'merchant_documents';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other

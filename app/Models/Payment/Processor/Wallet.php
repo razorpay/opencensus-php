@@ -54,22 +54,6 @@ class Wallet
         self::MPESA,
     );
 
-    public static $indianContactWallets = array(
-        self::AIRTELMONEY,
-        self::AMAZONPAY,
-        self::FREECHARGE,
-        self::JIOMONEY,
-        self::MOBIKWIK,
-        self::MPESA,
-        self::OLAMONEY,
-        self::OPENWALLET,
-        self::PAYTM,
-        self::PAYZAPP,
-        self::PAYUMONEY,
-        self::PHONEPE,
-        self::SBIBUDDY,
-    );
-
     public static function exists($wallet)
     {
         return (isset(self::$fullName[$wallet]) === true);

@@ -1648,8 +1648,6 @@ class Repository extends Base\Repository
 
     public function findPaymentsWithCardVault(string $vault, int $limit)
     {
-        $window = 1200;
-
         $cardRepo = $this->repo->card;
 
         $cardTableName = $cardRepo->getTableName();
@@ -1660,7 +1658,7 @@ class Repository extends Base\Repository
 
         $paymentData = $this->dbColumn('*');
 
-        $timestamp = time() - $window;
+        $timestamp = time() - Entity::PAYMENT_WINDOW;
 
         $createdAt  = $this->dbColumn(Entity::CREATED_AT);
 

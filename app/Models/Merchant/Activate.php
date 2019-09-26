@@ -15,7 +15,6 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
-use RZP\Jobs\MailingListUpdate;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -94,24 +93,17 @@ class Activate extends Base\Core
         $this->app['workflow']
              ->handle();
 
-        $merchantCore = new Merchant\Core;
+        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetail);
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        (new Merchant\Core)->createBalance($merchant, 'live');
 
-        $merchantCore->createBalance($merchant, 'live');
-
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail)
         {
             $this->repo->saveOrFail($merchant);
 
             $merchantDetail->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetail);
-
-            if($merchant->isActivated() === true)
-            {
-                $merchantCore->addMerchantEmailToMailingList($merchant);
-            }
 
             $this->activateBusinessBankingIfApplicable($merchant);
         });
@@ -175,11 +167,6 @@ class Activate extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        if($merchant->isActivated() === true)
-        {
-            (new Merchant\Core)->addMerchantEmailToMailingList($merchant);
-        }
-
         $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
         $this->activateBusinessBankingIfApplicable($merchant);
@@ -215,22 +202,15 @@ class Activate extends Base\Core
         $this->app['workflow']
              ->handle();
 
-        $merchantCore = new Merchant\Core;
+        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetail);
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
-
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail)
         {
             $this->repo->saveOrFail($merchant);
 
             $merchantDetail->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetail);
-
-            if($merchant->isActivated() === true)
-            {
-                $merchantCore->addMerchantEmailToMailingList($merchant);
-            }
         });
 
         $this->activateBusinessBankingIfApplicable($merchant);
@@ -686,4 +666,5 @@ class Activate extends Base\Core
 
         return $merchant;
     }
+
 }

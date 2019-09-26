@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Models;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Document\Entity;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
@@ -38,11 +39,11 @@ final class FactoryData
             'activated_at'             => time(),
         ]);
 
-        $factory(\RZP\Models\Merchant\Document\Entity::class, [
+        $factory(Entity::class, [
             'id'            => $faker->uniqueid,
             'merchant_id'   => '10000000000000',
-            'file_store_id' => 'abcdef12345678',
-            'document_type' => 'address_proof_url',
+            'file_store_id' => 'abcdef',
+            'document_type' => 'address',
             'entity_type'   => 'merchant',
         ]);
 

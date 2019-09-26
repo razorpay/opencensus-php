@@ -224,11 +224,6 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
-    public function calculateEsOnDemandFees(array $input)
-    {
-        return (new Payout\Core)->calculateEsOnDemandFees($input, $this->merchant);
-    }
-
     public function fetch(string $id, array $input): array
     {
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);

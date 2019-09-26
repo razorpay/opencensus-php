@@ -9,11 +9,6 @@ class Service extends Base\Service
     use Base\Traits\ServiceHasCrudMethods;
 
     /**
-     * @var Core
-     */
-    protected $core;
-
-    /**
      * @var Repository
      */
     protected $entityRepo;
@@ -27,15 +22,4 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->merchant_document;
     }
 
-    /**
-     * upload a document in MerchantDocument table
-     *
-     * @param array $input
-     *
-     * @return array
-     */
-    public function uploadActivationFileMerchant(array $input)
-    {
-        return $this->core->uploadActivationFile($this->merchant, $input);
-    }
 }

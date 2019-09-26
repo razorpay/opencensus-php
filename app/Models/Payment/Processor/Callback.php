@@ -277,7 +277,7 @@ trait Callback
         {
             $this->preProcessGatewayCallback($input);
         }
-        catch (Exception\BaseException $e)
+        catch (\Throwable $e)
         {
             $this->processHeadlessExceptionIfApplicable($e);
         }
@@ -303,15 +303,17 @@ trait Callback
         $this->updateAndNotifyPaymentAuthorized($data);
     }
 
-    // headless exception handling
-    protected function processHeadlessExceptionIfApplicable($exception)
+    // headless exception handling where we fail the payment on NO_AVAILABLE_ACTIONS
+    protected function processHeadlessExceptionIfApplicable($e)
     {
-        if ($this->isHeadlessRetryableException($exception) === true)
+        $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+        if ($internalErrorCode !== ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED)
         {
-            throw $exception;
+            throw $e;
         }
 
-        $this->processPaymentCallbackException($exception);
+        $this->processPaymentCallbackException($e);
     }
 
     protected function acquireLockAndProcessCallback($payment, $gatewayInput)
@@ -511,10 +513,21 @@ trait Callback
 
         $this->logRiskFailureForGateway($this->payment, $internalErrorCode);
 
+        if (Error\Error::hasAction($internalErrorCode) === false)
+        {
+            $this->updatePaymentAuthFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+        }
+        else
+        {
+            $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
+        }
+
         switch ($internalErrorCode)
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
-                $this->payment->incrementOtpAttempts();
+                $payment->incrementOtpAttempts();
+
+                $this->repo->saveOrFail($payment);
 
                 $this->app['segment']->trackPayment($payment,
                                                     ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
@@ -528,22 +541,6 @@ trait Callback
                         'amount' => $payment->getAmount()
                     ]);
                 break;
-        }
-
-        $this->updatePaymentOnExceptionAndThrow($e);
-    }
-
-    protected function updatePaymentOnExceptionAndThrow($e)
-    {
-        $internalErrorCode = $e->getError()->getInternalErrorCode();
-
-        if (Error\Error::hasAction($internalErrorCode) === false)
-        {
-            $this->updatePaymentAuthFailed($e);
-        }
-        else
-        {
-            $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
         }
 
         throw $e;
