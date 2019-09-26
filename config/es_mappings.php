@@ -373,7 +373,6 @@ return [
                     'submitted_at'        => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
-                        'index'  => false,
                     ],
                     'updated_at'          => [
                         'type'   => 'date',
