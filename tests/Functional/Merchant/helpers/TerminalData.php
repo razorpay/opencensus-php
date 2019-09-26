@@ -1026,6 +1026,29 @@ return [
         ]
     ],
 
+    'testCreateMpgsTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'mpgs',
+                'gateway_merchant_id'       => 'MPGS0000000001202',
+                'card'                      => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl',
+                'gateway_acquirer'          => 'hdfc',
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MPGS0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [

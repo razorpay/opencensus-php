@@ -95,7 +95,7 @@ class PayVerifyData extends Base\Mock\Server
             'data' => [
                 'paymentId' => $entities['payment']['id'],
                 'amount' => $entities['payment']['amount'] / 100,
-                'bank_payment_id' => 999999,
+                'bank_payment_id' => '999999',
                 'status' => 'callback_successful',
                 '_raw' => null
                 ],
@@ -115,7 +115,7 @@ class PayVerifyData extends Base\Mock\Server
             'data' => [
                 'paymentId' => $entities['payment']['id'],
                 'amount' => $entities['payment']['amount'] / 100,
-                'bank_payment_id' => 999999,
+                'bank_payment_id' => '999999',
                 'status' => 'callback_successful',
                 '_raw' => []
             ],
@@ -309,7 +309,7 @@ class PayVerifyData extends Base\Mock\Server
     }
 
     public function wallet_paypal($entities)
-    {   
+    {
          try
          {
              $response = [

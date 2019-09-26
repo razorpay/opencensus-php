@@ -152,6 +152,8 @@ class Gateway
 
     const BAJAJ = 'bajajfinserv';
 
+    const MPGS = 'mpgs';
+
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
@@ -165,6 +167,7 @@ class Gateway
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
         self::PAYLATER     => [PayLater::EPAYLATER],
+        self::MPGS         => [self::ACQUIRER_HDFC],
     ];
 
     const POWER_WALLETS = [
