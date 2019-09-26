@@ -1232,7 +1232,7 @@ class SettlementTest extends TestCase
                 'merchant_id' => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                 'entity_id'   => Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
             ]);
-        
+
         // Verify bank account associated with the settlements
         $firstSettlementBankAccount = $firstSettlements['items'][0]['bank_account_id'];
 

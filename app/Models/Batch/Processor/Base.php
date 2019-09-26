@@ -543,8 +543,14 @@ class Base extends BaseModel\Core
             finally
             {
                 $this->batch->incrementProcessedCount();
+                $this->processFinally($entry);
             }
         }
+    }
+
+    protected function processFinally(& $entry)
+    {
+        return;
     }
 
     /**

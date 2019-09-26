@@ -6,7 +6,9 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
+use RZP\Error\PublicErrorDescription;
 
 class Service extends Base\Service
 {
@@ -203,22 +205,49 @@ class Service extends Base\Service
 
         $response = new Base\Collection;
 
+        $failed = $processed = [];
+
         foreach ($entityIds as $entityId)
         {
-            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
-                        Constants::MERCHANT,
-                        $entityId,
-                        $featureName);
-
-            if ($feature !== null)
+            try
             {
-                $response->push($feature);
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                    Constants::MERCHANT,
+                    $entityId,
+                    $featureName);
 
-                (new Core)->delete($feature, $shouldSync);
+                if ($feature !== null)
+                {
+                    $response->push($feature);
+
+                    (new Core)->delete($feature, $shouldSync);
+                    array_push($processed, $entityId);
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST
+                );
+
+                array_push($failed, $entityId);
             }
         }
 
-        return $response->toArray();
+        $summary = [
+            'failed_count'  => count($failed),
+            'success_count' => count($processed),
+            'failed'        => $failed,
+            'failed_reason' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST
+        ];
+
+        if (count($failed)>0)
+        {
+            return $summary;
+        }
+
+        return $response;
     }
 
     protected function increaseAllowedSystemLimits()

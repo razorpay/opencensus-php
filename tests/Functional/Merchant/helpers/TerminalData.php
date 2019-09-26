@@ -2374,4 +2374,32 @@ return [
             ]
         ]
     ],
+
+    'testTerminalOnboardingCreateTerminal2' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '1234567880123458',
+                  'visa'        => '1234567890123458',
+                  'rupay'       => '1234567890123458'
+                ]
+            ],
+            'url'    => '/terminals',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  '1234567880123458',
+                    'rupay_mpan'    =>  '1234567890123458',
+                    'visa_mpan'     =>  '1234567890123458'
+                ]
+
+            ]
+        ]
+    ],
+
 ];

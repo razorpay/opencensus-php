@@ -17,6 +17,7 @@ class Server extends Base\Mock\Server
     const ACCESS_TOKEN_EXPIRY   = '2025-09-21T14:18:06';
     const REFRESH_TOKEN         = '8c31d80b-83ed-4f52-8377-71301790ccaa';
     const REFRESH_TOKEN_EXPIRY  = '2025-09-21T14:18:06';
+    const INVALID_GATEWAY_TOKEN = 'invalid-gateway-token';
 
     public function authorize($input)
     {
@@ -27,14 +28,13 @@ class Server extends Base\Mock\Server
         $content = [
             'status'        => 'COMPLETED',
             'walletBalance' => '1234',
-            'errorCode'     => 'E000',
             'errorMessage'  => 'SUCCESS',
             'metadata'      => 'dummy',
         ];
 
         $content['checksum'] = $this->generateHash($content);
 
-        $callbackUrl = $input['callbackUrl'];
+        $callbackUrl = $input['surl'];
 
         $callbackUrl .= '?' . http_build_query($content);
 
@@ -173,6 +173,11 @@ class Server extends Base\Mock\Server
     public function getBalance($input)
     {
         $this->validateActionInput($input, 'getBalance');
+
+        if ($input[RequestFields::ACCESS_TOKEN] === self::INVALID_GATEWAY_TOKEN)
+        {
+            return $this->getErrorResponse('E620');
+        }
 
         $response = [
             ResponseFields::WALLET_BALANCE     => '500',
