@@ -1776,6 +1776,28 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createDirectSettlementRefundIciciTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10iciciDrtseTl',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_icici',
+            'gateway_merchant_id'       => 'test',
+            'gateway_merchant_id2'      => 'test2',
+            'gateway_secure_secret'     => 'razorpay_password',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::NON_RECURRING                 => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingIciciTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;

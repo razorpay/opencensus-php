@@ -29,7 +29,10 @@
         </tr>
     </tbody>
 </table>
-
+    @if ($pid !== "direct")
+        <p> Payee Id : {{{$pid}}}</p>
+        <p> Account Number : {{{$acc}}}</p>
+    @endif
 </td>
 </tr></table>
 </div>
