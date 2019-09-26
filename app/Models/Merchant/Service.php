@@ -909,7 +909,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function action($id, array $input)
+    public function action($id, array $input, bool $useWorkflows = true)
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT_ACTION,
@@ -920,7 +920,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant = $this->core()->action($merchant, $input);
+        $merchant = $this->core()->action($merchant, $input, $useWorkflows);
 
         return $merchant->toArrayPublic();
     }
@@ -1391,7 +1391,7 @@ class Service extends Base\Service
                 }
                 else
                 {
-                    $this->action($merchantId, $input);
+                    $this->action($merchantId, $input,false);
                 }
 
                 $successCount++;
