@@ -577,7 +577,10 @@ class PaymentCreateTest extends TestCase
         // this is being asserted differently.
 
         $expectedNotes = [
-            'merchant_order_id' => 'random order id',
+            [
+                'key'   => 'merchant_order_id',
+                'value' => 'random order id',
+            ],
         ];
 
         $esMock->expects($this->once())

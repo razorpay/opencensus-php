@@ -21,7 +21,7 @@ class PartnerTerminalOnboardingTest extends TestCase
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/TerminalData.php';
- 
+
         parent::setUp();
 
         $this->ba->adminAuth();
@@ -43,7 +43,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'notes'       => 'some notes'
         ]);
 
-        $url = '/terminals/'.$terminal['id'] . '/enable';
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/enable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -65,7 +65,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'notes'       => 'some notes'
         ]);
 
-        $url = '/terminals/' . $terminal['id'] . '/disable';
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/disable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -88,7 +88,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'notes'       => 'some notes'
         ]);
 
-        $url = '/terminals/' . $terminal['id'] . '/enable';
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/enable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -108,7 +108,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'notes'       => 'some notes'
         ]);
 
-        $url = '/terminals/' . $terminal['id'] . '/disable';
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/disable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -183,7 +183,11 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $terminalArray = $this->startTest();
 
-        $terminal1 = (new Terminal\Repository)->find($terminalArray['id']);
+        $tid = $terminalArray['id'];
+
+        $this->fixtures->stripSign($tid);
+
+        $terminal1 = (new Terminal\Repository)->find($tid);
 
         $this->assertEquals($terminal1->getGatewayMerchantId(), 999000000000001);
 
@@ -193,7 +197,11 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $terminalArray = $this->startTest();
 
-        $terminal2 = (new Terminal\Repository)->find($terminalArray['id']);
+        $tid = $terminalArray['id'];
+
+        $this->fixtures->stripSign($tid);
+
+        $terminal2 = (new Terminal\Repository)->find($tid);
 
         $this->assertEquals($terminal2->getGatewayMerchantId(), 999000000000001);
 

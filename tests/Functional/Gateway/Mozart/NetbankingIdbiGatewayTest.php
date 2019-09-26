@@ -32,7 +32,7 @@ class NetbankingIdbiGatewayTest extends TestCase
     {
         $this->doNetbankingIdbiAuthAndCapturePayment();
 
-        $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
+        $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($paymentEntity);
 

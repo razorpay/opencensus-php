@@ -37,7 +37,7 @@ class NetbankingYesbGatewayTest extends TestCase
     {
         $this->doNetbankingYesbAuthAndCapturePayment();
 
-        $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
+        $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($paymentEntity);
 

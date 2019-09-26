@@ -1848,7 +1848,7 @@ class OtpPaymentTest extends TestCase
 
         $payment = $this->fixtures->create('payment:status_created', [
             'card_id'           => substr($this->getLastEntity('card', true)['id'], 5),
-            'terminal_id'       => $this->getLastEntity('terminal',true)['id'],
+            'terminal_id'       => ltrim($this->getLastEntity('terminal', true)['id'], 'term_'),
             'gateway'           => 'hitachi',
         ]);
 
