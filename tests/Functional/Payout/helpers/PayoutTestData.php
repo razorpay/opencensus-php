@@ -881,6 +881,38 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT,
         ],
     ],
+    'testOnDemandPayoutFetchFees' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/merchant/payout/demand/fees',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'entity'=> 'collection',
+                    'count'=> 2,
+                    'items'=> [
+                         [
+                            'name'=> 'payout',
+                            'amount'=> 510,
+                            'percentage'=> null,
+                            'pricing_rule'=> [
+                                'percent_rate'=> 100,
+                                'fixed_rate'=> 500,
+                            ]
+                        ],
+                        [
+                            'name'=> 'tax',
+                            'amount'=> 92,
+                            'percentage'=> 1800,
+                        ]
+                    ]
+            ],
+        ],
+    ],
 
     'testSearchPayoutByTransactionId' => [
         'request' => [

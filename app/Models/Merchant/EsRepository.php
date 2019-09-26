@@ -10,6 +10,7 @@ use RZP\Constants\Es;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -46,6 +47,7 @@ class EsRepository extends Base\EsRepository
         DetailEntity::SUBMITTED_AT,
         DetailEntity::UPDATED_AT,
         DetailEntity::REVIEWER_ID,
+        DetailEntity::BUSINESS_TYPE,
         DetailEntity::ACTIVATION_FLOW,
     ];
 
@@ -85,6 +87,7 @@ class EsRepository extends Base\EsRepository
         Entity::PARTNER_TYPE,
         DetailEntity::REVIEWER_ID,
         Constants::INSTANT_ACTIVATION,
+        Constants::BUSINESS_TYPE_BUCKET,
     ];
 
     /**
@@ -343,6 +346,25 @@ class EsRepository extends Base\EsRepository
         else
         {
             $this->addNegativeTermFilter($query, $attribute, ActivationFlow::WHITELIST);
+        }
+    }
+
+    public function buildQueryForBusinessTypeBucket(array & $query, string $value)
+    {
+        $attribute = E::MERCHANT_DETAIL . '.' . DetailEntity::BUSINESS_TYPE;
+
+        $unregisteredBusiness = BusinessType::getIndexForUnregisteredBusiness();
+
+        switch ($value)
+        {
+            case BusinessType::UNREGISTERED :
+
+                $this->addTermsFilter($query, $attribute, $unregisteredBusiness);
+
+                break;
+            default :
+
+                $this->addNegativeTermsFilter($query, $attribute, $unregisteredBusiness);
         }
     }
 

@@ -55,15 +55,9 @@ class VerifyBeneficiary extends Beneficiary
             . '<PaymentType>'
             . Constants::BENE_PAYMENT_TYPE
             . '</PaymentType>'
-            . '<BeneName>'
-            . $this->normalizedBeneName
-            . '</BeneName>'
             . '<BeneType>'
             . Constants::BENE_TYPE
             . '</BeneType>'
-            . '<BankName>'
-            . $this->normalizedBankName
-            . '</BankName>'
             . '<IfscCode>'
             . $this->ifscCode
             . '</IfscCode>'
@@ -235,15 +229,9 @@ class VerifyBeneficiary extends Beneficiary
             . '<PaymentType>'
             . Constants::BENE_PAYMENT_TYPE
             . '</PaymentType>'
-            . '<BeneName>'
-            . $this->normalizedBeneName
-            . '</BeneName>'
             . '<BeneType>'
             . Constants::BENE_TYPE
             . '</BeneType>'
-            . '<BankName>'
-            . $this->normalizedBankName
-            . '</BankName>'
             . '<IfscCode>'
             . $this->ifscCode
             . '</IfscCode>'

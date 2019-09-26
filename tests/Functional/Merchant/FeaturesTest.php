@@ -124,6 +124,15 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testMultiAssignFeatures()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $this->fixtures->create('merchant', ['id' => '10000000000002']);
+        $this->fixtures->create('merchant', ['id' => '10000000000003']);
+
+        $this->startTest();
+    }
+
     public function testMultiRemoveFeature()
     {
         $this->fixtures->create(

@@ -399,4 +399,18 @@ trait HeadlessOtp
 
         return false;
     }
+
+    protected function isHeadlessRetryableException($exception)
+    {
+        $internalErrorCode = $exception->getError()->getInternalErrorCode();
+
+        $errorCodes = array_values(self::$elfErrorCodeMapping);
+
+        if (in_array($internalErrorCode, $errorCodes, true) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -1,6 +1,12 @@
 Alter table cards
     add merchant_id varchar(14) after id;
 
+alter table merchant_documents
+    modify file_store_id char(14) NULL;
+
+ALTER TABLE merchant_documents
+    ADD INDEX (`file_store_id`);
+
 update cards, payments
     set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
 
@@ -5317,6 +5323,10 @@ ALTER TABLE `external`
     ADD INDEX `external_balance_id_index` (`balance_id`),
     ADD INDEX `external_transaction_id_index` (`transaction_id`);
 
+ALTER table terminals
+    ADD COLUMN `req_rrn` VARCHAR(255) NULL AFTER `ifsc_code`,
+    ADD INDEX terminals_req_rrn_index (`req_rrn`);
+
 ALTER TABLE adjustment
     ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
     ADD INDEX `adjustment_balance_id_index` (`balance_id`);
@@ -5332,3 +5342,16 @@ ALTER TABLE nodal_beneficiaries ADD INDEX nodal_beneficiaries_bank_account_id_ch
 ALTER table merchant_details
     ADD COLUMN `business_registered_district` VARCHAR(255) NULL AFTER `business_registered_city`,
     ADD COLUMN `business_operation_district` VARCHAR(255) NULL AFTER  `business_operation_city`;
+
+ALTER TABLE terminals
+    MODIFY COLUMN currency VARCHAR(1024) NOT NULL DEFAULT 'INR';
+
+ALTER TABLE merchant_details
+    ADD COLUMN `date_of_birth` varchar(30) DEFAULT NULL AFTER `promoter_pan_name`,
+    ADD COLUMN `poi_verification_status` varchar(30) DEFAULT NULL AFTER `activation_status`,
+    ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
+    ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;
+
+
+ALTER TABLE pricing
+    ADD COLUMN fee_bearer INT UNSIGNED DEFAULT 0 AFTER international; # 0 is platform fee bearer

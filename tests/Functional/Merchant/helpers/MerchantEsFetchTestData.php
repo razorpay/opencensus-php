@@ -16,11 +16,37 @@ return [
     ],
 
     'testGetMerchantsFromEsByAccountStatusAll' => [
-        'request' => [
+        'request'  => [
             'url'     => '/admins/merchants',
             'method'  => 'GET',
             'content' => [
                 'account_status' => 'all',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetMerchantsFromEsByBusinessTypeRegistered' => [
+        'request'  => [
+            'url'     => '/admins/merchants',
+            'method'  => 'GET',
+            'content' => [
+                'business_type_bucket' => 'registered',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetMerchantsFromEsByBusinessTypeNonRegistered' => [
+        'request'  => [
+            'url'     => '/admins/merchants',
+            'method'  => 'GET',
+            'content' => [
+                'business_type_bucket' => 'unregistered',
             ],
         ],
         'response' => [

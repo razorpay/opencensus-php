@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Merchant\Balance\AccountType;
 
@@ -29,6 +30,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_METHOD_SUBTYPE        = 'payment_method_subtype';
     const PAYMENT_NETWORK               = 'payment_network';
     const INTERNATIONAL                 = 'international';
+    const FEE_BEARER                    = 'fee_bearer';
 
     //
     // By default, all the rules are of type pricing
@@ -77,6 +79,11 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $public = [
+        self::PERCENT_RATE,
+        self::FIXED_RATE,
+    ];
+
     protected $fillable = [
         self::ID,
         self::PLAN_ID,
@@ -105,6 +112,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::CHANNEL,
         self::ACCOUNT_TYPE,
+        self::FEE_BEARER,
     ];
 
     protected $entity = 'pricing';
@@ -139,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION              => null,
         self::RECEIVER_TYPE             => null,
         self::TYPE                      => Type::PRICING,
+        self::FEE_BEARER                => FeeBearer::PLATFORM,
     ];
 
     /**
@@ -201,6 +210,11 @@ class Entity extends Base\PublicEntity
         $this->fillRule($input, $plan);
 
         return $this;
+    }
+
+    protected function setFeeBearerAttribute($bearer)
+    {
+        $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
     }
 
     public function isInternational()
@@ -376,6 +390,11 @@ class Entity extends Base\PublicEntity
         return ($max === null) ? $max : (int) $max;
     }
 
+    protected function getFeeBearerAttribute()
+    {
+        return FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+    }
+
     public function getFeature()
     {
         return $this->getAttribute(self::FEATURE);
@@ -394,6 +413,11 @@ class Entity extends Base\PublicEntity
     public function getAccountType()
     {
         return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
+    public function getFeeBearer()
+    {
+        return $this->getAttribute(self::FEE_BEARER);
     }
 
     public function isPrimaryProduct(): bool

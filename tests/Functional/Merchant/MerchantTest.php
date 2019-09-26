@@ -1490,6 +1490,17 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateBankAccountWithAddressProof()
+    {
+        $documentType = 'address_proof_url';
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        (new MerchantDetailTest())->updateUploadDocumentData(__FUNCTION__, $documentType);
+
+        $this->startTest();
+    }
+
     public function testGetBankAccount()
     {
         $this->testAddBankAccount();
@@ -1640,6 +1651,16 @@ class MerchantTest extends TestCase
 
         $headers = $response->headers->all();
         $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
+    public function testGetCheckoutPublicRoute()
+    {
+        $this->ba->directAuth();
+
+        $response = $this->call('GET', '/v1/checkout/public');
+
+        $response->assertStatus(200);
+        $this->assertContains('<title>Razorpay Checkout</title>', $response->getContent());
     }
 
     public function testGetCheckoutPreferencesWithNetbankingDisabled()
@@ -4922,5 +4943,29 @@ class MerchantTest extends TestCase
         $userDB = $this->getDbEntityById('user', $user['id']);
 
         $this->assertEquals($userDB['account_locked'], $response['account_locked']);
+    }
+
+    public function testMerchantRazorxBulkExperimentFetch()
+    {
+        $merchantId = 10000000000000;
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $razorxMock->method('getTreatment')
+                   ->will($this->onConsecutiveCalls('on', 'off'));
+
+        $this->app->instance('razorx', $razorxMock);
     }
 }

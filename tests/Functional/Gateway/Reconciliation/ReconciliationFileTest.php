@@ -21,6 +21,7 @@ use RZP\Reconciliator\Base\SubReconciliator\ManualReconciliate;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
+use RZP\Reconciliator\Axis\SubReconciliator\RefundReconciliate as AxisRefundRecon;
 use RZP\Reconciliator\HDFC\SubReconciliator\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\SubReconciliator\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\SubReconciliator\PaymentReconciliate as AxisPaymentRecon;
@@ -420,22 +421,58 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         // Recurring authorised payment
-        $payment1 = $this->getNewPaymentEntity(true, false);
-        $gatewayPayment1 = $this->getDbLastEntityToArray('axis_migs');
+        $payment = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment = $this->getDbLastEntityToArray('axis_migs');
 
-        $this->assertNull($payment1['reference1']);
-        $this->assertNull($payment1['reference2']);
+        $this->assertNull($payment['reference1']);
+        $this->assertNull($payment['reference2']);
 
-        $entries[] = $this->overrideAxisPayment($gatewayPayment1,[],'migs');
+        $entries[] = $this->overrideAxisPayment($gatewayPayment,[],'migs');
 
         $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
         $this->runForFiles([$file], 'Axis');
 
-        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+        $updatedPayment = $this->getDbEntityById('payment' ,$payment['id']);
 
-        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
-        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
-        $this->assertTrue($updatedPayment1['gateway_captured']);
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+        $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $updatedTransaction = $this->getDbEntityById('transaction', $updatedPayment['transaction_id'])->toArrayAdmin();
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testAxisMigsReconRefundFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $refund = $this->getNewRefundEntity(true);
+        $gatewayRefund = $this->getDbLastEntityToArray('axis_migs');
+
+        $this->assertNull($refund['acquirer_data']['arn']);
+
+        $entries[] = $this->overrideAxisRefund($gatewayRefund);
+
+        $this->fixtures->edit('axis_migs',
+            $gatewayRefund['id'],
+            [
+                'vpc_ReceiptNo' => $entries[0]['rrn_no'],
+            ]);
+
+        $file = $this->writeToExcelFile($entries, 'axis','files/settlement','refund');
+
+        $this->runForFiles([$file], 'Axis');
+
+        $updatedTransaction = $this->getDbEntityById('transaction', $refund['transaction_id'])->toArrayAdmin();
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testCardFssReconCombinedFile()
@@ -1318,6 +1355,22 @@ class ReconciliationFileTest extends TestCase
         {
             $facade[AxisPaymentRecon::COLUMN_MID] = 'RAZORPAYCYBS';
             $facade[AxisPaymentRecon::COLUMN_ORDER_ID] = $payment['ref'];
+        }
+
+        return $facade;
+    }
+
+    private function overrideAxisRefund(array $refund, array $forceOverride = [], $gateway = 'migs')
+    {
+        $facade = $this->testData['facades']['axis'];
+
+        $facade[AxisRefundRecon::COLUMN_PAYMENT_ID[0]] = $refund['refund_id'];
+        $facade[AxisRefundRecon::COLUMN_ARN]           = str_random(24);
+
+        if ($gateway === 'cybersource')
+        {
+            $facade[AxisRefundRecon::COLUMN_MID] = 'RAZORPAYCYBS';
+            $facade[AxisRefundRecon::COLUMN_ORDER_ID] = $refund['ref'];
         }
 
         return $facade;

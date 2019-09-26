@@ -154,6 +154,7 @@ final class Route
         // Both the following routes refund_verify_call, refund_gateway_call must always point to master DB
         'refund_gateway_call'                      => ['post',     'refunds/{id}/gateway_refund',                    'RefundController@postGatewayRefundCall'                            ],
         'refund_verify_call'                       => ['post',     'refunds/{id}/gateway_verify',                    'RefundController@postGatewayVerifyRefundCall'                      ],
+        'scrooge_verify_refund_call'               => ['post',     'refunds/{id}/verify_refund',                     'RefundController@postScroogeVerifyRefundCall'                      ],
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
         'scrooge_refund_create_bulk'               => ['post',     'refunds/scrooge_create/bulk',                    'RefundController@scroogeRefundCreateBulk'                          ],
         'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
@@ -241,6 +242,7 @@ final class Route
         'get_merchant_partner_status'              => ['get',      'merchant/partner_status',                        'MerchantController@getMerchantPartnerStatus'                       ],
         'merchant_invoice_update_gstin'            => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         // TODO: Should be removed once the correction has run for all the merchant
         'merchant_invoice_correction'              => ['post',     'merchants/invoice/correction',                   'MerchantInvoiceController@createCorrectionInvoice'                 ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
@@ -303,6 +305,7 @@ final class Route
         'fund_transfer_attempt_reconcile'          => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
         'fund_transfer_attempt_process'            => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'fund_transfer_attempt_initiate_action'    => ['post',     'fund_transfer_attempts/initiate_action/{channel}','FundTransferAttemptController@initiateFundTransfers',             ],
+        'fund_transfer_attempts_process_fts'       => ['post',     'fund_transfer_attempts/fts/process/{channel}',   'FundTransferAttemptController@processFundTransfersUsingFts'        ],
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
         'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
@@ -383,6 +386,7 @@ final class Route
         'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                            => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
         'setl_bucket_backfill'                     => ['post',     'settlements/bucket/fill',                        'SettlementController@postSettlementBucketBackfill'                 ],
+        'setl_bucket_delete'                       => ['delete',   'settlements/bucket',                             'SettlementController@deleteCompletedBucketEntries'                 ],
         'setl_initiate_daily'                      => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_initiate_adhoc'                      => ['post',     'settlements/initiate_adhoc',                     'SettlementController@processAdhocSettlements'                      ],
         'setl_initiate_action'                     => ['post',     'settlements/initiate_action/{channel?}',         'SettlementController@postSettlementInitiate'                       ],
@@ -941,6 +945,7 @@ final class Route
         'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postInternalMerchantPayout'                       ],
         // TODO: Fix the route. Changes on dashboard would be required.
         'on_demand_settlement'                     => ['post',     'merchant/payout/demand',                         'PayoutController@postMerchantPayoutOnDemand'                       ],
+        'on_demand_settlement_fees'                => ['get',      'merchant/payout/demand/fees',                    'PayoutController@calculateEsOnDemandFees'                          ],
 
         // Settings routes
         'settings_delete'                          => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
@@ -1024,8 +1029,8 @@ final class Route
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+        'merchant_razorx_bulk_evaluate'            => ['get',      'razorx/bulkevaluate',                            'MerchantController@getRazorxTreatmentInBulk'                       ],
         'razorx_guest'                             => ['get',      'razorx/evaluate/{id}/{featureFlag}',             'RazorxController@getTreatment'                                     ],
-
         // batch service
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
@@ -1232,7 +1237,7 @@ final class Route
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
-
+        'merchant_document_upload'                => ['post',     'merchant/documents/upload',                                 'DocumentController@uploadMerchantDocuments'                ],
 
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -1621,6 +1626,7 @@ final class Route
         'refund_update_status',
         'refund_gateway_call',
         'refund_verify_call',
+        'scrooge_verify_refund_call',
         'refund_fetch_status',
         'scrooge_entities',
         'schedule_migration',
@@ -1628,6 +1634,7 @@ final class Route
         'scorecard',
         'setl_initiate',
         'setl_bucket_backfill',
+        'setl_bucket_delete',
         'setl_reconcile_pull',
         'setl_initiate_daily',
         'setl_post_details_old',
@@ -1691,6 +1698,7 @@ final class Route
         'banking_account_statement_process',
         'subscription_registration_auto_charge',
         'partner_submerchant_map',
+        'fund_transfer_attempts_process_fts',
         'refund_speed_processed_backfill',
         'get_setl_amount',
         'cps_sync_gateway_entities_cron',
@@ -1698,6 +1706,7 @@ final class Route
         'iin_batch_process_record',
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
+        'mailing_list_remove_suspended_merchant',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1734,6 +1743,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'merchant_document_upload',
         'merchant_document_delete',
         'get_es_pricing_merchant',
         'merchant_edit_config_la',
@@ -1805,6 +1815,7 @@ final class Route
         'merchant_activation_business_categories',
         'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
+        'merchant_razorx_bulk_evaluate',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
         'file_get_signed_url',
@@ -1889,6 +1900,7 @@ final class Route
         'merchant_methods_edit',
         'merchant_fetch_methods',
         'on_demand_settlement',
+        'on_demand_settlement_fees',
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
@@ -2878,7 +2890,7 @@ final class Route
         'p2p_admin_manage_banks'                    => Permission::P2P_MANAGE_MERCHANT,
         'recon_fetch_batchs_files_multiple'         => '*',
         'recon_fetch_files_count'                   => '*',
-
+        'on_demand_settlement_fees'                 => '*',
         'gateway_downtime_detection_get_stats'      => '*',
     ];
 
@@ -2977,6 +2989,10 @@ final class Route
      * Throttling middleware (and hence, rate limiting) is applied for all routes, except for the ones
      * defined here
      *
+     * Todo-
+     * In throttle middleware(first) request.ctx is initialized.
+     * Following skipping is bypassing it and should not have been done here.
+     *
      * @var array
      */
     public static $skipThrottling = [
@@ -3039,6 +3055,7 @@ final class Route
             'entity_tax_update',
             'setl_initiate',
             'setl_bucket_backfill',
+            'setl_bucket_delete',
             'setl_initiate_daily',
             'setl_reconcile_generate',
             'setl_reconcile_test',
@@ -3116,9 +3133,11 @@ final class Route
             'virtual_account_close_cron',
             'gateway_downtime_detection_purge_keys',
             'subscription_registration_auto_charge',
+            'fund_transfer_attempts_process_fts',
             'refund_speed_processed_backfill',
             'get_setl_amount',
             'cps_sync_gateway_entities_cron',
+            'mailing_list_remove_suspended_merchant',
         ],
 
         'subscriptions' => [
@@ -3185,6 +3204,7 @@ final class Route
             'refunds_reconcile_bulk',
             'scrooge_refund_create_bulk',
             'refund_verify_call',
+            'scrooge_verify_refund_call',
             'refund_fetch_status',
             'scrooge_entities',
             'scrooge_refund_reference1_bulk_update',
@@ -3332,6 +3352,7 @@ final class Route
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'la_fetch'                             => [Feature::MARKETPLACE],
         'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
+        'on_demand_settlement_fees'            => [Feature::ES_ON_DEMAND],
         'card_issuer_validate'                 => [Feature::BIN_ISSUER_VALIDATOR],
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
         'mpans_issue'                          => [Feature::ISSUE_MPANS],
@@ -3474,11 +3495,18 @@ final class Route
         'excel_store_page_by_url',
     ];
 
+    /**
+     * Register all routes here whose
+     * exception/errors needs to be send to DataLake.
+     */
     const FAILURE_EVENTS_INTERCEPTOR_ROUTES = [
         'user_register',
         'merchant_edit_pre_signup_details',
         'user_confirm_by_data',
         'merchant_instant_activation_post',
+        'merchant_activation_upload_file',
+        'merchant_activation_save',
+        'merchant_document_upload',
     ];
 
     // These routes are redirected after a feature check

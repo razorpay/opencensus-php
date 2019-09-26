@@ -101,4 +101,27 @@ class CardVault extends Base\Core
             );
         }
     }
+
+    public function getTokenAndFingerprint($input)
+    {
+        try
+        {
+            $cardNumber = preg_replace('/[^0-9]/', '', $input['card']);
+
+            $input['card'] = $cardNumber;
+
+            return $this->cardVault->getTokenAndFingerprint($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'message' => 'Failed to tokenize data'
+                ]
+            );
+
+            throw $e;
+        }
+    }
 }

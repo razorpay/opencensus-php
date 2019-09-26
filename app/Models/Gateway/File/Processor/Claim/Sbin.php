@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
@@ -28,6 +29,18 @@ class Sbin extends Base
     const FILE_TYPE = FileStore\Type::SBI_NETBANKING_CLAIM;
 
     const FILE_NAME = 'SBI_CLAIM';
+
+    protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $claims = parent::fetchReconciledPaymentsToClaim($begin, $end, $statuses);
+
+        $claims = $claims->reject(function($claim)
+        {
+            return $claim->isEmandate() === true;
+        });
+
+        return $claims;
+    }
 
     protected function formatDataForFile($data)
     {

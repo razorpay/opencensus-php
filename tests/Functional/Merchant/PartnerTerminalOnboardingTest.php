@@ -1,0 +1,212 @@
+<?php
+
+namespace RZP\Tests\Functional\Merchant;
+
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
+use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\Redis;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal as TerminalFixture;
+use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Exception\BadRequestException;
+
+class PartnerTerminalOnboardingTest extends TestCase
+{
+    use PaymentTrait;
+    use PartnerTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/TerminalData.php';
+ 
+        parent::setUp();
+
+        $this->ba->adminAuth();
+    }
+
+    public function testEnableTerminal()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'status'      => 'activated',
+            'merchant_id' => $subMerchantId,
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+            'notes'       => 'some notes'
+        ]);
+
+        $url = '/terminals/'.$terminal['id'] . '/enable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testDisableTerminal()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => true,
+            'merchant_id' => $subMerchantId,
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+            'notes'       => 'some notes'
+        ]);
+
+        $url = '/terminals/' . $terminal['id'] . '/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testOnlyActivatedTerminalShouldBeEnabled()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => true,
+            'status'      => 'pending',
+            'merchant_id' => $subMerchantId,
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+            'notes'       => 'some notes'
+        ]);
+
+        $url = '/terminals/' . $terminal['id'] . '/enable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testSubMerchantsShouldNotBeAbleToDisableTerminals()
+    {
+        $this->ba->privateAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => true,
+            'merchant_id' => '10000000000000',
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+            'notes'       => 'some notes'
+        ]);
+
+        $url = '/terminals/' . $terminal['id'] . '/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testFetchTerminals()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $terminal1 = (new TerminalFixture)->createBharatQrTerminal();
+
+        $terminal1['merchant_id'] = $subMerchantId;
+
+        $terminal1->save();
+
+        $terminal2 = (new TerminalFixture)->createBharatQrIsgTerminal();
+
+        $terminal2['merchant_id'] = $subMerchantId;
+
+        $terminal2->save();
+
+        $this->startTest();
+    }
+
+    public function testPartnerWithoutTerminalOnboardingFeatureShouldNotBeAbleToFetchTerminals()
+    {
+        $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testSubMerchantsShouldNotBeAbleToFetchTerminals()
+    {
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals';
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingCreateTerminal()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:atos_tid_range_list' => [ [12380001, 123899999], [13380001, 13389999]]
+            ]
+        ];
+        $this->makeRequestAndGetContent($request);
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $terminalArray = $this->startTest();
+
+        $terminal1 = (new Terminal\Repository)->find($terminalArray['id']);
+
+        $this->assertEquals($terminal1->getGatewayMerchantId(), 999000000000001);
+
+        $this->assertEquals($terminal1->getGatewayTerminalId(), 12380001);
+
+        $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreateTerminal2'];
+
+        $terminalArray = $this->startTest();
+
+        $terminal2 = (new Terminal\Repository)->find($terminalArray['id']);
+
+        $this->assertEquals($terminal2->getGatewayMerchantId(), 999000000000001);
+
+        $this->assertEquals($terminal2->getGatewayTerminalId(), 12380002);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS);
+
+        $this->expectExceptionMessage(
+            'A terminal with the same field exists');
+
+        $this->startTest();
+    }
+}
