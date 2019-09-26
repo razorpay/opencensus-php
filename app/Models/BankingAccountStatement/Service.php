@@ -34,9 +34,9 @@ class Service extends Base\Service
 
         $sendEmail = filter_var($input[Entity::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
 
-        if($sendEmail === true)
+        if ($sendEmail === true)
         {
-            $this->core->sendBankAccountStatementEmail($input, $statementAccessUrl);
+            $this->core()->sendBankAccountStatementEmail($input, $statementAccessUrl);
 
             return [self::MESSAGE => self::EMAIL_SENT];
         }
