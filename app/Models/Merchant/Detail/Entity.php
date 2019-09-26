@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_VALUE                  = 'transaction_value';
     const PROMOTER_PAN                       = 'promoter_pan';
     const PROMOTER_PAN_NAME                  = 'promoter_pan_name';
+    const DATE_OF_BIRTH                      = 'date_of_birth';
     const BANK_NAME                          = 'bank_name';
     const BANK_ACCOUNT_NUMBER                = 'bank_account_number';
     const BANK_ACCOUNT_NAME                  = 'bank_account_name';
@@ -92,6 +93,9 @@ class Entity extends Base\PublicEntity
     const ACTIVATION_PROGRESS                = 'activation_progress';
     const LOCKED                             = 'locked';
     const ACTIVATION_STATUS                  = 'activation_status';
+    const BANK_DETAILS_VERIFICATION_STATUS   = 'bank_details_verification_status';
+    const POI_VERIFICATION_STATUS            = 'poi_verification_status';
+    const POA_VERIFICATION_STATUS            = 'poa_verification_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
     const REVIEWER_ID                        = 'reviewer_id';
@@ -227,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT,
         self::INTERNATIONAL_ACTIVATION_FLOW,
         self::CUSTOM_FIELDS,
+        self::DATE_OF_BIRTH,
     ];
 
     protected $public = [
@@ -257,6 +262,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_OPERATION_PIN,
         self::PROMOTER_PAN,
         self::PROMOTER_PAN_NAME,
+        self::DATE_OF_BIRTH,
         self::BUSINESS_DOE,
         self::GSTIN,
         self::P_GSTIN,
@@ -280,6 +286,9 @@ class Entity extends Base\PublicEntity
         self::ACTIVATION_PROGRESS,
         self::LOCKED,
         self::ACTIVATION_STATUS,
+        self::BANK_DETAILS_VERIFICATION_STATUS,
+        self::POA_VERIFICATION_STATUS,
+        self::POI_VERIFICATION_STATUS,
         self::CLARIFICATION_MODE,
         self::ARCHIVED,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,

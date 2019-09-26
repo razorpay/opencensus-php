@@ -487,7 +487,7 @@ class Repository extends Base\Repository
 
         if (($fa === null) or ($fa->getSourceType() !== E::CONTACT))
         {
-            // I.e. this documentn will not be indexed.
+            // I.e. this document will not be indexed.
             return [];
         }
 

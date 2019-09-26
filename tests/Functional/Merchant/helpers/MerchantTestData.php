@@ -5081,4 +5081,21 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testMerchantRazorxBulkExperimentFetch' => [
+        'request'  => [
+            'url'     => '/razorx/bulkevaluate',
+            'method'  => 'get',
+            'content' => [
+                'features' => 'feature1,feature2'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'feature1' => ['result' => 'on'],
+                'feature2' => ['result' => 'off'],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

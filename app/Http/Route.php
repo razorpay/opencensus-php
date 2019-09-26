@@ -595,6 +595,7 @@ final class Route
         'payment_link_deactivate'                  => ['patch',    'payment_links/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
         'payment_link_activate'                    => ['patch',    'payment_links/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'payment_link_slug_exists'                 => ['get',      'payment_links/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
+        'payment_page_items_migrate'               => ['post',     'payment_pages/migrate_payment_page_items',       'PaymentLinkController@migratePaymentPageItems'                     ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -608,6 +609,7 @@ final class Route
         'es_aliases_post'                          => ['post',     'es/aliases',                                     'EsController@postAliases'                                          ],
         'es_index_create'                          => ['post',     'es/index_create',                                'EsController@postIndexCreate'                                      ],
         'es_index'                                 => ['post',     'es/index',                                       'EsController@postIndex'                                            ],
+        'es_proxy'                                 => ['any',      'es/proxy/{path?}',                               'EsController@proxy'                                                ],
         'gateway_add_priorities'                   => ['post',     'gateway/priorities/{method}',                    'GatewayController@createGatewayPriority'                           ],
         'gateway_fetch_priorities'                 => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'                => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
@@ -1029,8 +1031,8 @@ final class Route
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+        'merchant_razorx_bulk_evaluate'            => ['get',      'razorx/bulkevaluate',                            'MerchantController@getRazorxTreatmentInBulk'                       ],
         'razorx_guest'                             => ['get',      'razorx/evaluate/{id}/{featureFlag}',             'RazorxController@getTreatment'                                     ],
-
         // batch service
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
@@ -1643,6 +1645,7 @@ final class Route
         'refunds_reconcile_bulk',
         'setl_notify_h2h',
         'entity_balance_id_update',
+        'payment_page_items_migrate',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
         'cps_downtime_vajra_webhook',
@@ -1781,6 +1784,7 @@ final class Route
         'merchant_activation_business_categories',
         'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
+        'merchant_razorx_bulk_evaluate',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
         'file_get_signed_url',
@@ -2088,6 +2092,7 @@ final class Route
         'es_aliases_post',
         'es_index_create',
         'es_index',
+        'es_proxy',
         'feature_add',
         'feature_bulk_assign',
         'feature_bulk_remove',
@@ -2568,6 +2573,7 @@ final class Route
         'es_aliases_post'                          => Permission::ES_WRITE_OPERATION,
         'es_index_create'                          => Permission::ES_WRITE_OPERATION,
         'es_index'                                 => Permission::ES_WRITE_OPERATION,
+        'es_proxy'                                 => Permission::ES_WRITE_OPERATION,
         'feature_add'                              => '*',
         'feature_bulk_assign'                      => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'feature_bulk_remove'                      => Permission::MANAGE_BULK_FEATURE_MAPPING,
@@ -2741,6 +2747,7 @@ final class Route
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => '*',
+        'payment_page_items_migrate'               => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
         'set_redis_keys'                           => '*',
@@ -2911,6 +2918,10 @@ final class Route
      * Throttling middleware (and hence, rate limiting) is applied for all routes, except for the ones
      * defined here
      *
+     * Todo-
+     * In throttle middleware(first) request.ctx is initialized.
+     * Following skipping is bypassing it and should not have been done here.
+     *
      * @var array
      */
     public static $skipThrottling = [
@@ -3042,6 +3053,7 @@ final class Route
             'billdesk_reconcile_cancelled',
             'merchant_es_sync_cron',
             'entity_balance_id_update',
+            'payment_page_items_migrate',
             'scrooge_refund_verify_bulk',
             'payouts_process_queued',
             'scrooge_tagging_backfill',
@@ -3414,11 +3426,18 @@ final class Route
         'excel_store_page_by_url',
     ];
 
+    /**
+     * Register all routes here whose
+     * exception/errors needs to be send to DataLake.
+     */
     const FAILURE_EVENTS_INTERCEPTOR_ROUTES = [
         'user_register',
         'merchant_edit_pre_signup_details',
         'user_confirm_by_data',
         'merchant_instant_activation_post',
+        'merchant_activation_upload_file',
+        'merchant_activation_save',
+        'merchant_document_upload',
     ];
 
     // These routes are redirected after a feature check

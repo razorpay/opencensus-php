@@ -183,7 +183,8 @@ final class RequestContext
         return $this->mode;
     }
 
-    public function getAuth(): string
+    // Todo: Refer: Route.php's $skipThrottling.
+    public function getAuth()
     {
         return $this->auth;
     }
@@ -540,6 +541,11 @@ final class RequestContext
             if (($config['secret'] ?? '') === $this->secret)
             {
                 $this->internalAppName = $name;
+
+                if ($name === 'dashboard_v2')
+                {
+                    $this->internalAppName = 'dashboard';
+                }
 
                 return;
             }

@@ -5342,3 +5342,12 @@ ALTER TABLE nodal_beneficiaries ADD INDEX nodal_beneficiaries_bank_account_id_ch
 ALTER table merchant_details
     ADD COLUMN `business_registered_district` VARCHAR(255) NULL AFTER `business_registered_city`,
     ADD COLUMN `business_operation_district` VARCHAR(255) NULL AFTER  `business_operation_city`;
+
+ALTER TABLE terminals
+    MODIFY COLUMN currency VARCHAR(1024) NOT NULL DEFAULT 'INR';
+
+ALTER TABLE merchant_details
+    ADD COLUMN `date_of_birth` varchar(30) DEFAULT NULL AFTER `promoter_pan_name`,
+    ADD COLUMN `poi_verification_status` varchar(30) DEFAULT NULL AFTER `activation_status`,
+    ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
+    ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;

@@ -3,10 +3,11 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Models\Payout;
-use RZP\Models\Settlement;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Exception\BadRequestException;
+use RZP\Models\Contact\Entity;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class FundAccountPayout extends Base
 {
@@ -38,5 +39,23 @@ class FundAccountPayout extends Base
         }
 
         return $payout;
+    }
+
+    /**
+     * @param FundAccount\Entity $fundAccount
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateFundAccountContact(FundAccount\Entity $fundAccount)
+    {
+        if ($fundAccount->getSourceType() !== Entity::CONTACT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payouts cannot be created for fund account without contact.',
+                Payout\Entity::FUND_ACCOUNT_ID,
+                [
+                    'fund_account_id' => $fundAccount->getId()
+                ]);
+        }
     }
 }

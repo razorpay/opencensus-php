@@ -452,6 +452,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_LINK_DEACTIVATED                              = 'PAYMENT_LINK_DEACTIVATED';
     const PAYMENT_LINK_ACTIVATE_REQUEST                         = 'PAYMENT_LINK_ACTIVATE_REQUEST';
     const PAYMENT_LINK_ACTIVATED                                = 'PAYMENT_LINK_ACTIVATED';
+    const PAYMENT_PAGES_MIGRATED                                = 'PAYMENT_PAGES_MIGRATED';
+    const PAYMENT_PAGE_MIGRATED                                 = 'PAYMENT_PAGE_MIGRATED';
+    const PAYMENT_PAGES_MIGRATION_REQUEST_RECEIVED              = 'PAYMENT_PAGES_MIGRATION_REQUEST_RECEIVED';
 
     const SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE            = 'SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE';
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED            = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED';
@@ -991,6 +994,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_UPDATE_KEY_ACCESS                            = 'MERCHANT_UPDATE_KEY_ACCESS';
     const MERCHANT_TAGS_ADD                                     = 'MERCHANT_TAGS_ADD';
     const MERCHANT_TAGS_APPEND                                  = 'MERCHANT_TAGS_APPEND';
+    const MERCHANT_TAGS_APPEND_COMPLETED                        = 'MERCHANT_TAGS_APPEND_COMPLETED';
+    const MAP_PARTNER_SUBMERCHANT_ENTITY                        = 'MAP_PARTNER_SUBMERCHANT_ENTITY';
     const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST                  = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
     const MERCHANT_LIVE_ENABLE_REQUEST                          = 'MERCHANT_LIVE_ENABLE_REQUEST';
     const MERCHANT_ES_SYNC_RESPONSE                             = 'MERCHANT_ES_SYNC_RESPONSE';
@@ -1177,6 +1182,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_INDEX_CREATE_REQUEST                               = 'ES_INDEX_CREATE_REQUEST';
     const ES_INDEX_REQUEST                                      = 'ES_INDEX_REQUEST';
     const ES_INDEX_PROGRESS                                     = 'ES_INDEX_PROGRESS';
+    const ES_PROXY_REQUEST                                      = 'ES_PROXY_REQUEST';
+    const ES_PROXY_RESPONSE                                     = 'ES_PROXY_RESPONSE';
 
     const RECON_ALERT                                           = 'RECON_ALERT';
     const RECON_EMAIL_VALIDATION_FAILED                         = 'RECON_EMAIL_VALIDATION_FAILED';
@@ -1982,7 +1989,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
     const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
 
-
     const CREDITNOTE_CREATE_REQUEST                             = 'CREDITNOTE_CREATE_REQUEST';
     const CREDITNOTE_APPLY_REQUEST                              = 'CREDITNOTE_APPLY_REQUEST';
     const CREDITNOTE_APPLIED                                    = 'CREDITNOTE_APPLIED';
@@ -2077,6 +2083,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
     const SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR          = 'SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR';
 
+    /*
+     * Trace codes for PowerWallet
+     */
+    const PAYMENT_POWER_WALLET_INITIATED            = 'PAYMENT_POWER_WALLET_INITIATED';
+    const PAYMENT_POWER_WALLET_TOPUP                = 'PAYMENT_POWER_WALLET_TOPUP';
 
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';
     const PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY                 = 'PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY';
