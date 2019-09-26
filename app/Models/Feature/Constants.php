@@ -130,6 +130,8 @@ class Constants
     const BLOCK_DEBIT_2K                  = 'block_debit_2k';
     const WALLET_AUTO_DEBIT               = 'wallet_auto_debit';
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
+    const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
+
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
      * this functionality will be there by default for new merchants , flag need to be enabled if
@@ -397,6 +399,7 @@ class Constants
         self::BLOCK_DEBIT_2K                  => true,
         self::USE_MSWIPE_TERMINALS            => true,
         self::WALLET_AUTO_DEBIT               => true,
+        self::EXPOSE_GATEWAY_PROVIDER         => true,
     ];
 
     // Entity type constants

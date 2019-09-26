@@ -6,51 +6,59 @@ use RZP\Gateway\Base\ErrorCodes\Cards;
 
 class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
 {
-    const AGGREGATOR_DOWN                  = 'Aggregator is down';
-    const BANK_ID_NOT_ENABLED_AGGREGATOR   = 'Bank ID is not enabled in Aggregator Terminal';
-    const CAF_STATUS                       = 'CAF status= 0 or 9';
-    const ERROR_CONNECTION_PAYMENT_GATEWAY = 'Error while connecting Payment Gateway';
-    const FAILURE                          = 'FAILURE';
-    const HOST_TIMEOUT                     = 'HOST TIMEOUT';
-    const INVALID_EXPIRY_DATE              = 'Invalid expiration date';
-    const NOT_CAPTURED                     = 'NOT CAPTURED';
-    const TRANSACTION_TIME_LIMIT_EXCEED    = 'Transaction time limit exceeds.';
-    const UNSUPPORTED_CARD                 = 'card not supported';
-    const WITHDRAWAL_LIMIT_EXCEEDED        = 'exceeds withdrawal frequency';
-    const INCORRECT_PIN                    = 'incorrect PIN';
-    const ISSUER_DOWN                      = 'issuer down';
-    const LOST_CARD                        = 'lost card';
-    const NO_CARD_RECORD                   = 'no card record';
-    const NOT_SUFFICIENT_FUND              = 'not sufficient fund';
-    const OVER_DAILY_LIMIT                 = 'over daily limit';
-    const PIN_TRIES_EXCEEDED               = 'pin tries exceeded';
-    const RESERVED_PRIVATE_USE             = 'reserved for private use';
-    const SUSPECT_FRAUD                    = 'suspect fraud';
-    const TRANSACTION_NOT_PERMITTED        = 'tran not permitted';
+    const AGGREGATOR_DOWN                      = 'Aggregator is down';
+    const BANK_ID_NOT_ENABLED_AGGREGATOR       = 'Bank ID is not enabled in Aggregator Terminal';
+    const CAF_STATUS                           = 'CAF status= 0 or 9';
+    const ERROR_CONNECTION_PAYMENT_GATEWAY     = 'Error while connecting Payment Gateway';
+    const FAILURE                              = 'FAILURE';
+    const HOST_TIMEOUT                         = 'HOST TIMEOUT';
+    const INVALID_EXPIRY_DATE                  = 'Invalid expiration date';
+    const NOT_CAPTURED                         = 'NOT CAPTURED';
+    const TRANSACTION_TIME_LIMIT_EXCEED        = 'Transaction time limit exceeds.';
+    const UNSUPPORTED_CARD                     = 'card not supported';
+    const WITHDRAWAL_LIMIT_EXCEEDED            = 'exceeds withdrawal frequency';
+    const INCORRECT_PIN                        = 'incorrect PIN';
+    const ISSUER_DOWN                          = 'issuer down';
+    const LOST_CARD                            = 'lost card';
+    const NO_CARD_RECORD                       = 'no card record';
+    const NOT_SUFFICIENT_FUND                  = 'not sufficient fund';
+    const OVER_DAILY_LIMIT                     = 'over daily limit';
+    const PIN_TRIES_EXCEEDED                   = 'pin tries exceeded';
+    const RESERVED_PRIVATE_USE                 = 'reserved for private use';
+    const SUSPECT_FRAUD                        = 'suspect fraud';
+    const TRANSACTION_NOT_PERMITTED            = 'tran not permitted';
+    const ISSUER_AUTHENTICATION_SERVER_FAILURE = 'Issuer Authentication Server failure';
+    const CHECKBIN_FAILURE                     = 'Checkbin Failure';
+    const AUTHORIZE_PARSE_ERROR                = 'AUTHORIZE PARSE ERROR';
+    const SQL_EXCEPTION                        = 'SQL Exception';
 
     public static $resultToErrorCodeMap = array(
-        self::AGGREGATOR_DOWN                     => 'RP00001',
-        self::BANK_ID_NOT_ENABLED_AGGREGATOR      => 'RP00002',
-        self::CAF_STATUS                          => 'RP00003',
-        self::NOT_CAPTURED                        => 'RP00004',
-        self::ERROR_CONNECTION_PAYMENT_GATEWAY    => 'RP00005',
-        self::FAILURE                             => 'RP00006',
-        self::HOST_TIMEOUT                        => 'RP00007',
-        self::INVALID_EXPIRY_DATE                 => 'RP00008',
-        self::NOT_CAPTURED                        => 'RP00009',
-        self::TRANSACTION_TIME_LIMIT_EXCEED       => 'RP00010',
-        self::UNSUPPORTED_CARD                    => 'RP00011',
-        self::WITHDRAWAL_LIMIT_EXCEEDED           => 'RP00012',
-        self::INCORRECT_PIN                       => 'RP00013',
-        self::ISSUER_DOWN                         => 'RP00014',
-        self::LOST_CARD                           => 'RP00015',
-        self::NO_CARD_RECORD                      => 'RP00016',
-        self::NOT_SUFFICIENT_FUND                 => 'RP00017',
-        self::OVER_DAILY_LIMIT                    => 'RP00018',
-        self::PIN_TRIES_EXCEEDED                  => 'RP00019',
-        self::RESERVED_PRIVATE_USE                => 'RP00020',
-        self::SUSPECT_FRAUD                       => 'RP00021',
-        self::TRANSACTION_NOT_PERMITTED           => 'RP00022',
+        self::AGGREGATOR_DOWN                      => 'RP00001',
+        self::BANK_ID_NOT_ENABLED_AGGREGATOR       => 'RP00002',
+        self::CAF_STATUS                           => 'RP00003',
+        self::NOT_CAPTURED                         => 'RP00004',
+        self::ERROR_CONNECTION_PAYMENT_GATEWAY     => 'RP00005',
+        self::FAILURE                              => 'RP00006',
+        self::HOST_TIMEOUT                         => 'RP00007',
+        self::INVALID_EXPIRY_DATE                  => 'RP00008',
+        self::NOT_CAPTURED                         => 'RP00009',
+        self::TRANSACTION_TIME_LIMIT_EXCEED        => 'RP00010',
+        self::UNSUPPORTED_CARD                     => 'RP00011',
+        self::WITHDRAWAL_LIMIT_EXCEEDED            => 'RP00012',
+        self::INCORRECT_PIN                        => 'RP00013',
+        self::ISSUER_DOWN                          => 'RP00014',
+        self::LOST_CARD                            => 'RP00015',
+        self::NO_CARD_RECORD                       => 'RP00016',
+        self::NOT_SUFFICIENT_FUND                  => 'RP00017',
+        self::OVER_DAILY_LIMIT                     => 'RP00018',
+        self::PIN_TRIES_EXCEEDED                   => 'RP00019',
+        self::RESERVED_PRIVATE_USE                 => 'RP00020',
+        self::SUSPECT_FRAUD                        => 'RP00021',
+        self::TRANSACTION_NOT_PERMITTED            => 'RP00022',
+        self::ISSUER_AUTHENTICATION_SERVER_FAILURE => 'RP00023',
+        self::CHECKBIN_FAILURE                     => 'RP00024',
+        self::AUTHORIZE_PARSE_ERROR                => 'RP00025',
+        self::SQL_EXCEPTION                        => 'RP00026',
     );
 
     public static $errorDescMap = [
@@ -465,6 +473,10 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         'RP00020' => 'reserved for private use',
         'RP00021' => 'suspect fraud',
         'RP00022' => 'tran not permitted',
+        'RP00023' => self::ISSUER_AUTHENTICATION_SERVER_FAILURE,
+        'RP00024' => self::CHECKBIN_FAILURE,
+        'RP00025' => self::AUTHORIZE_PARSE_ERROR,
+        'RP00026' => self::SQL_EXCEPTION,
     ];
 
     public static function getRelevantGatewayErrorCode($errorFieldName, $content)

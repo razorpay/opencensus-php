@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
@@ -99,6 +100,13 @@ class CorePaymentService
         {
             $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
         }
+
+        if (empty($input[Entity::UPI]) === false &&
+            empty($input['upi']['expiry_time']) === false)
+        {
+            $input['upi']['expiry_time'] = (float)$input['upi']['expiry_time'];
+        }
+
 
         $content = [
             self::ACTION  => $action,
@@ -253,6 +261,11 @@ class CorePaymentService
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::NAME]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::EMAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::WEBSITE]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::DISPLAY_NAME]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::MERCHANT_DETAIL]);
 
         $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_REQUEST, $request);
     }
@@ -358,6 +371,12 @@ class CorePaymentService
         $data = $error['data'] ?? null;
 
         $description = $error['description'] ?? null;
+
+        if ($errorCode == ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
+        }
 
         if (empty($error['gateway_error_code']) === false)
         {

@@ -1278,6 +1278,11 @@ class BasicAuth
 
                 $this->internalApp = $name;
 
+                if ($name === 'dashboard_v2')
+                {
+                    $this->internalApp = 'dashboard';
+                }
+
                 // if ((isset($info['cloud'])) and
                 //     ($info['cloud'] === true))
                 // {

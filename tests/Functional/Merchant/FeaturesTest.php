@@ -157,6 +157,24 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testMultiRemoveFeatureFailure()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000001',
+                'name'      => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000003',
+                'name'      => 'dummy'
+            ]);
+
+        $this->startTest();
+    }
+
     public function testDummyFeatureRouteWithAccess()
     {
         $this->fixtures->merchant->addFeatures(['dummy']);

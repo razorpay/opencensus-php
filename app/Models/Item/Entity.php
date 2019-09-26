@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
+        self::AMOUNT        => null,
         self::ACTIVE        => 1,
         self::DESCRIPTION   => null,
         self::TYPE          => Type::INVOICE,
@@ -166,7 +167,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
-    public function getAmount(): int
+    public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
     }
@@ -257,9 +258,9 @@ class Entity extends Base\PublicEntity
 
     // Appends
 
-    public function getUnitAmountAttribute(): int
+    public function getUnitAmountAttribute()
     {
-        return (int) $this->getAmount();
+        return $this->getAmount();
     }
 
     // -------------------- Relations --------------------------------
