@@ -66,7 +66,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
         foreach ($responseList as $key => $value)
         {
-            $fileName = $key.'_'.$input['gateway'].'_reconcile_'.date('Y-m-d_h:i:s');
+            $fileName = $key.'_'.$input[self::GATEWAY].'_reconcile_'.date('Y-m-d_h:i:s');
             array_push($files, $this->prepareFile($fileName, $value));
         }
         return $files;
@@ -85,16 +85,15 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
         $gatewayData = [];
         $gatewayData['terminal'] = $terminal;
         $gatewayData[self::GATEWAY] = $request[self::GATEWAY];
-        $gatewayData['payment'] = ['gateway' => $request['gateway'], ];
+        $gatewayData['payment'] = [self::GATEWAY => $request[self::GATEWAY], ];
         $gatewayData['reconRequest'] = $request;
-        return [$request[self::IDENTIFIER], $this->gatewayManager->call($request['gateway'], 'reconcile', $gatewayData, $this->mode, $terminal)];
+        return [$request[self::IDENTIFIER], $this->gatewayManager->call($request[self::GATEWAY], 'reconcile', $gatewayData, $this->mode, $terminal)];
     }
 
     protected abstract function refactorResponse(array $responseList): array;
 
     protected function prepareFile($filename, array $data)
     {
-
         $f = null;
         $filePath = storage_path('files/filestore') . '/'  . $filename . '.csv';
         try
@@ -107,7 +106,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
                 fputcsv($f, array_values($record), ',');
             }
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
             unlink($filePath);
             throw $e;

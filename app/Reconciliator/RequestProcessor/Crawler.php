@@ -24,7 +24,7 @@ class Crawler extends Base
         $files = DataRetrieverManager::getDataRetriever($this->gateway)->fetchData($input);
 
         $input['gateway'] = $this->gateway;
-        
+
         $fileCount = 0;
         $input = [];
         foreach ($files as $file)
