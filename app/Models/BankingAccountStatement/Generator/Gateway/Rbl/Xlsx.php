@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 
-use RZP\Models\FileStore;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -11,8 +10,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 
 class Xlsx extends Generator
 {
-    const HEADER_TO_CELL_MAP
-        = [
+    const HEADER_TO_CELL_MAP =
+        [
             XLSXHeaders::SHEET_TITLE          => 'A2',
             XLSXHeaders::SHEET_SUB_TITLE      => 'A3',
             XLSXHeaders::ACCOUNT_NAME         => 'A4',
@@ -43,8 +42,8 @@ class Xlsx extends Generator
             XLSXHeaders::BALANCE              => 'G30',
         ];
 
-    const ACCOUNT_OWNER_INFO_CELL_MAP
-        = [
+    const ACCOUNT_OWNER_INFO_CELL_MAP =
+        [
             AccountOwnerInfo::ACCOUNT_NAME         => 'B4',
             AccountOwnerInfo::CUSTOMER_ADDRESS     => 'B5',
             AccountOwnerInfo::CUSTOMER_ADDRESS_L2  => 'B7',
@@ -73,8 +72,8 @@ class Xlsx extends Generator
         ];
 
     # this will be determined after we know the transaction counts
-    protected $SUMMARY_KEY_MAP
-        = [
+    protected $SUMMARY_KEY_MAP =
+        [
             XLSXHeaders::STATEMENT_SUMMARY        => '',
             XLSXHeaders::OPENING_BALANCE          => '',
             XLSXHeaders::CLOSING_BALANCE          => '',
@@ -85,8 +84,8 @@ class Xlsx extends Generator
             XLSXHeaders::LIEN_AMOUNT              => '',
         ];
 
-    protected $SUMMARY_DATA_MAP
-        = [
+    protected $SUMMARY_DATA_MAP =
+        [
             StatementSummary::OPENING_BALANCE          => '',
             StatementSummary::CLOSING_BALANCE          => '',
             StatementSummary::EFFECTIVE_BALANCE        => '',
@@ -96,8 +95,8 @@ class Xlsx extends Generator
             StatementSummary::LIEN_AMOUNT              => '',
         ];
 
-    const TRANSACTION_DATA_TO_COLUMN
-                                        = [
+    const TRANSACTION_DATA_TO_COLUMN =
+        [
             TransactionLineItem::TRANSACTION_DATE    => 'A',
             TransactionLineItem::TRANSACTION_DETAILS => 'B',
             TransactionLineItem::CHEQUE_ID           => 'C',
@@ -186,11 +185,11 @@ class Xlsx extends Generator
 
     function getStatement()
     {
-        $spreadsheet   = $this->createTableView($this->data);
+        $spreadsheet = $this->createTableView($this->data);
 
-        $tmpFileName     = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.xlsx';
+        $tmpFileName = $this->generateFileName('xlsx');
 
-        $tmpFileFullPath = '/tmp/' . $tmpFileName;
+        $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
 
         $writer = new XlsxWriter($spreadsheet);
 
@@ -222,7 +221,7 @@ class Xlsx extends Generator
         return $spreadsheet;
     }
 
-    protected function addHeaders(&$sheet)
+    protected function addHeaders(& $sheet)
     {
         foreach (self::HEADER_TO_CELL_MAP as $header => $columnNumber)
         {
@@ -255,7 +254,7 @@ class Xlsx extends Generator
         }
     }
 
-    protected function addTransactionTitle(&$sheet)
+    protected function addTransactionTitle(& $sheet)
     {
         $basicInfo = $this->data[AccountStatementData::ACCOUNT_OWNER_INFO];
 
@@ -267,7 +266,7 @@ class Xlsx extends Generator
         $sheet->setCellValue(self::TRANSACTION_TITLE_CELL, $transactionTitle);
     }
 
-    protected function addLogo(&$sheet)
+    protected function addLogo(& $sheet)
     {
         $drawing = new Drawing();
 
@@ -278,7 +277,7 @@ class Xlsx extends Generator
         $drawing->setWorksheet($sheet);
     }
 
-    protected function addTransactions(&$sheet)
+    protected function addTransactions(& $sheet)
     {
         # loop over the statements and put in the transactions
         $transactions = $this->data[AccountStatementData::TRANSACTIONS];
@@ -298,7 +297,7 @@ class Xlsx extends Generator
         }
     }
 
-    protected function addStyling(&$sheet)
+    protected function addStyling(& $sheet)
     {
         $this->makeCellsBold($sheet);
 

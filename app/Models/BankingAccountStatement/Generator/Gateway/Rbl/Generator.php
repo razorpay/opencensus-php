@@ -13,6 +13,8 @@ use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
 
 abstract class Generator extends Base
 {
+    const TEMP_STORAGE_DIR = '/tmp/';
+
     abstract function getStatement();
 
     # This will be set during class initialization, and will be available to all the Child Classes
@@ -27,19 +29,24 @@ abstract class Generator extends Base
         $this->data = $this->accountStatementData();
     }
 
+    protected function generateFileName(string $format)
+    {
+        return $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.' . $format;
+    }
+
     protected function accountStatementData()
     {
         $bankingAccount = $this->repo
                                ->banking_account
                                ->findByAccountNumberAndChannel($this->accountNumber, $this->channel);
 
+        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
+
         $allBankAccountTransactions = $this->repo
                                            ->statement
                                            ->fetch(['balance_id' => $bankingAccount->getBalanceId()],
                                                     $bankingAccount->getMerchantId())
                                            ->sortBy('created_at');
-
-        $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
 
         list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($allBankAccountTransactions);
 
@@ -72,7 +79,7 @@ abstract class Generator extends Base
         {
             $openingBalance = $bankAccountStatements[count($bankAccountStatements) - 1]->getBalance();
 
-            $closingBalance =  $bankAccountStatements[0]->getBalance();
+            $closingBalance = $bankAccountStatements[0]->getBalance();
 
             $effectiveBalance = $closingBalance;
 
@@ -174,15 +181,15 @@ abstract class Generator extends Base
     {
         $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(),
                                                           Timezone::IST)
-                                    ->format(self::DATE_FORMAT);
+                                                          ->format(self::DATE_FORMAT);
 
         $fromDate = Carbon::createFromTimestamp($this->fromDate,
                                                 Timezone::IST)
-                          ->format(self::DATE_FORMAT);
+                                                ->format(self::DATE_FORMAT);
 
         $toDate = Carbon::createFromTimestamp($this->toDate,
                                               Timezone::IST)
-                        ->format(self::DATE_FORMAT);
+                                               ->format(self::DATE_FORMAT);
 
         $statementPeriod = $fromDate . ' - ' . $toDate;
 

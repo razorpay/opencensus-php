@@ -177,6 +177,9 @@ class Core extends Base\Core
 
         $error = null;
 
+        # Setting as Test, because UploadedFile expects the file instance to be a temporary uploaded file, and
+        # reads from Local Path only in test mode. As our requirement is to always read from local path, so
+        # creating the UploadedFile instance in test mode.
         $test = true;
 
         $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);

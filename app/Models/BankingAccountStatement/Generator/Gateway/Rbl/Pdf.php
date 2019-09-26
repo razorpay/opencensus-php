@@ -21,9 +21,9 @@ class Pdf extends Generator
 
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
 
-        $tmpFileName = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.pdf';
+        $tmpFileName = $this->generateFileName('pdf');
 
-        $tmpFileFullPath = '/tmp/' . $tmpFileName;
+        $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
 
         $fileHandle = fopen($tmpFileFullPath, 'w');
 
