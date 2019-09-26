@@ -37,9 +37,9 @@ abstract class Generator extends Base
 
         $allBankAccountTransactions = $this->repo
                                            ->statement
-                                           ->fetch(['balance_id' => $bankingAccount->getBalanceId()],
-                                                    $bankingAccount->getMerchantId())
-                                           ->sortBy('created_at');
+                                           ->getStatementsWithInRange($bankingAccount->getMerchantId(),
+                                                                      $this->fromDate,
+                                                                      $this->toDate);
 
         list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($allBankAccountTransactions);
 
