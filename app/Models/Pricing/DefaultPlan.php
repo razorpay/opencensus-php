@@ -13,6 +13,7 @@ class DefaultPlan
     const PROMOTIONAL_PLAN_ID         = '1In3Yh5Mluj605';
     const HDFC_PROMOTIONAL_PLAN_ID    = 'BAJq6FJDNJ4ZqD';
     const BOB_PROMOTIONAL_PLAN_ID     = 'BAJvpnuxy4AUq3';
+    const PARTNER_COMMISSION_PLAN_ID  = 'C43grffqN6jTIh';
 
     public static function getPricingSeedData()
     {

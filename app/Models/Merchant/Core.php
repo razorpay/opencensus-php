@@ -1107,6 +1107,43 @@ class Core extends Base\Core
     }
 
     /**
+     * Updates partner type on merchant's request
+     *
+     * @param Entity $merchant
+     * @param String $partnerType
+     *
+     * @return Entity
+     */
+    public function updatePartnerType(Entity $merchant, string $partnerType): array
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
+        {
+            $partner = $this->markAsPartner($merchant, $partnerType);
+
+            $application = (new OAuthApp\Repository)
+                            ->findActiveApplicationsByMerchantIdAndType(
+                                $partner->getId(),
+                                OAuthApp\Type::PARTNER)
+                            ->first();
+
+            $config = [
+                PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID,
+                PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
+                PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
+                PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
+            ];
+
+            $config = (new PartnerConfig\Core)->create($application, $config);
+
+        });
+
+        return [
+            'partner_type'              => $partnerType,
+            'has_commission_configs'    => true,
+        ];
+    }
+
+    /**
      * This function also adds ref-tag and creates user-merchant mapping in addition to the
      * access map. The aggregator user is mapped to submerchant as an owner in cases of
      * fully managed and aggregator type partners. The aggregator type will not get mapped

@@ -1185,6 +1185,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updatePartnerType()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePartnerType($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantBeneficiaryThroughApi($channel)
     {
         $input = Request::all();

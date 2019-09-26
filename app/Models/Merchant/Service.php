@@ -2608,6 +2608,15 @@ class Service extends Base\Service
         return $partner;
     }
 
+    public function updatePartnerType(array $input): array
+    {
+        (new Validator)->validateInput('update_partner_type', $input);
+
+        $partnerType = $input[Entity::PARTNER_TYPE];
+
+        return $this->core()->updatePartnerType($this->merchant, $partnerType);
+    }
+
     public function getSubmerchant(string $submerchantId, array $input): array
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
