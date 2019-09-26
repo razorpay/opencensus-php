@@ -43,6 +43,7 @@ class Validator extends Base\Validator
     {
         # if this is not empty, then it must be a comma-separated list of valid emails
         $emails = explode(',', $emailList);
+
         foreach ($emails as $emailToVerify)
         {
             $validator = ValidatorFacade::make(['email' => $emailToVerify], [

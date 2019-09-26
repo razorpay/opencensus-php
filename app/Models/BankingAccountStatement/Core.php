@@ -133,6 +133,15 @@ class Core extends Base\Core
                                    $toDate,
                                    $fileAccessUrl);
 
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_EMAIL,
+            [
+                'merchantId' => $this->merchant->getId(),
+                'to_emails'  => $toEmails,
+                'from_date'  => $fromDate,
+                'to_date'    => $toDate,
+            ]);
+
         Mail::queue($email);
     }
 
