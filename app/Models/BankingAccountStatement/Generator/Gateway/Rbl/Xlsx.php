@@ -187,9 +187,9 @@ class Xlsx extends Generator
     {
         $spreadsheet = $this->createTableView($this->data);
 
-        $tmpFileName     = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.xlsx';
+        $tmpFileName = $this->generateFileName('xlsx');
 
-        $tmpFileFullPath = '/tmp/' . $tmpFileName;
+        $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
 
         $writer = new XlsxWriter($spreadsheet);
 
