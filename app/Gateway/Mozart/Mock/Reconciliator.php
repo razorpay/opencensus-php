@@ -163,7 +163,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 NetbankingCbi\ReconFields::AMOUNT                => $row['payment']['amount'] / 100,
                 NetbankingCbi\ReconFields::STATUS                => 'Y',
                 NetbankingCbi\ReconFields::DATE                  => $date,
-                NetbankingCbi\ReconFields::ACCOUNT_NUMBER        => '123456789',
+                NetbankingCbi\ReconFields::ACCOUNT_NUMBER        => 'HS-123456789',
                 NetbankingCbi\ReconFields::ACCOUNT_TYPE          => '01',
             ];
 

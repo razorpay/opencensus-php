@@ -10,9 +10,11 @@ use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
@@ -71,6 +73,8 @@ class Core extends Base\Core
         $user->setConfirmTokenNull();
 
         $this->repo->saveOrFail($user);
+
+        $this->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS);
 
         return $user;
     }
@@ -505,7 +509,7 @@ class Core extends Base\Core
                     $input[Entity::CONTACT_MOBILE] : $user->getContactMobile();
 
         return [
-            Entity::ACTION      =>  'setup_2fa',
+            Entity::ACTION      =>  'second_factor_auth',
             'receiver'          =>  $contact,
             'unique_id'         =>  $user->getId(),
         ];
@@ -549,28 +553,10 @@ class Core extends Base\Core
 
         $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 
-        // Prepares unique list of merchants for users out of pivot relations.
-        $merchantsUnique = [];
-
-        array_walk($merchants, function ($merchant) use (& $merchantsUnique)
-        {
-            $id   = $merchant[Entity::ID];
-            $role = $merchant[Entity::ROLE];
-
-            if (isset($merchantsUnique[$id]) === false)
-            {
-                $merchantsUnique[$id]                       = $merchant;
-                $merchantsUnique[$id][Entity::BANKING_ROLE] = null;
-                $merchantsUnique[$id][Entity::ROLE]         = null;
-            }
-
-            // Push pivot's role to one of the keys in response basis product type.
-            $key = $merchant[Entity::PRODUCT] === Product::BANKING ? Entity::BANKING_ROLE : Entity::ROLE;
-            $merchantsUnique[$id][$key] = $role;
-        });
+        $merchantsUnique = $this->getUnifiedMerchants($merchants);
 
         // Additional resources for users.
-        $merchantsUnique = $this->appendBankingSpecificDetails(array_values($merchantsUnique));
+        $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique);
         $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
         $settings        = $user->getAllSettings();
 
@@ -1239,5 +1225,100 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_RESTRICTED_TO_PERFORM_ACTION);
         }
+    }
+
+    /**
+     * Prepares unified
+     * @param Array       $merchants
+     */
+    protected function getUnifiedMerchants($merchants): array
+    {
+        $merchantsUnique = [];
+
+        array_walk($merchants, function ($merchant) use (& $merchantsUnique)
+        {
+            $id = $merchant[Entity::ID];
+            $role = $merchant[Entity::ROLE];
+
+            if(isset($merchantsUnique[$id]) === false)
+            {
+                $merchantsUnique[$id]                       = $merchant;
+                $merchantsUnique[$id][Entity::BANKING_ROLE] = null;
+                $merchantsUnique[$id][Entity::ROLE]         = null;
+            }
+
+            // Push pivot's role to one of the keys in response basis product type.
+            $key = $merchant[Entity::PRODUCT] === Product::BANKING ? Entity::BANKING_ROLE : Entity::ROLE;
+            $merchantsUnique[$id][$key] = $role;
+        });
+
+        return array_values($merchantsUnique);
+    }
+
+    /**
+     * This function checks if
+     * the current user has an access on a certain merchant
+     *
+     * @param user\Entity $user
+     * @param String      $merchantId
+     * @param String      $product
+     * @throws Exception\BadRequestException
+     *
+     *
+     */
+    public function checkAccessForMerchant(Entity $user, $merchantId, $product)
+    {
+        $merchants = $user->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                        ->withPivot([Entity::ROLE, Entity::PRODUCT])
+                        ->where(Merchant\Entity::ID,$merchantId)
+                        ->get()
+                        ->callOnEveryItem('toArrayUser');
+
+        // this is to verify if user has access to merchant
+        // for the given product
+        $merchantForCurrentProduct = array_filter(
+            $merchants,
+            function ($entity) use ($product) {
+                return $entity[Entity::PRODUCT] === $product;
+            });
+
+        if(empty($merchantForCurrentProduct) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    Entity::USER_ID      => $user->getId(),
+                    Entity::MERCHANT_ID  => $merchantId,
+                    Entity::PRODUCT      => $product,
+                ]
+            );
+        }
+
+        $merchants = $this->getUnifiedMerchants($merchants);
+
+        $merchants = $this->appendBankingSpecificDetails($merchants);
+
+        return [
+            // just to maintain backward compatibility
+            // sending access key
+            // dashboard application determines the access currently
+            // based value of access key being true or false
+            'access'   => true,
+            'merchant' => $merchants[0],
+        ];
+    }
+
+    /**
+     * Tracking Onboarding event along with User Email.
+     *
+     * @param string $userEmail
+     * @param array  $eventCode
+     */
+    public function trackOnboardingEvent(string $userEmail, array $eventCode)
+    {
+        $customProperties = ['email' => $userEmail];
+
+        $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
     }
 }

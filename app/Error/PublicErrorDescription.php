@@ -122,6 +122,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                  = 'Contact number should not be greater than 15 digits, including country code';
     const BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED                       = 'Contact number needs to be Indian.';
     const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported';
+    const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED                        = 'Corporate card is not allowed for this payment';
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';
@@ -180,6 +181,7 @@ class PublicErrorDescription
     const BAD_REQUEST_AIRTEL_MONEY_RESET_MPIN                                   = 'Payment failed as airtel money mPIN has not been changed. Please call 121 to reset your mPIN.';
     const BAD_REQUEST_CONTACT_AIRTEL_MONEY_CUSTOMER_CARE_FOR_REFUND             = 'Refund failed. Please contact airtel money customer care.';
     const BAD_REQUEST_PAYMENT_TOPUP_INVALID_WALLET_TOKEN                        = 'Payment failed';
+    const BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN                      = 'Payment failed';
     const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                   = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_UNMAPPED_VPA                                              = 'This VPA is not mapped to any bank account.';
     const BAD_REQUEST_INVALID_P2P                                               = 'P2p fields are invalid.';
@@ -345,6 +347,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK                     = 'Payment processing declined by card issuing bank. Please contact issuing bank to determine reason.';
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                      = 'Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page';
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication failure';
+    const BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED                         = 'Payment processing failed due to 3dsecure or OTP authentication failure';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK                   = 'Payment processing failed by gateway due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD              = 'Payment processing failed because cardholder\'s card was blocked';
@@ -542,6 +545,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER                           = 'Invalid Invoice Number.';
 
     const BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS               = 'Request failed because another fund transfer operation in progress';
+    const BAD_REQUEST_FUND_TRANSFER_FTS_ANOTHER_OPERATION_IN_PROGRESS           = 'Request failed because another fund transfer operation via fts in progress';
 
     const BAD_REQUEST_PERMISSION_ERROR                                          = 'Permissions not found for this request/route';
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                              = 'Invalid type specified for callback';
@@ -564,6 +568,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
     const BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE                       = 'You cannot enable/disable features in live mode';
     const BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED                         = 'The given feature is already assigned to the merchant';
+    const BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST                                = 'The given feature do not exist for above merchants. Rest are processed';
     const BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_INVALID                = 'The product onboarding status provided is invalid';
     const BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED        = 'The product activation form is already submitted.';
 
@@ -612,7 +617,7 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_2FA_ENFORCED                                         = 'Second factor authentication is mandated by one (or more) merchants';
     const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                           = 'Operation is only allowed by the owner of the merchant.';
     const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                 = 'Owner 2FA setup should already be done to perform this action';
-    const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                  = 'Merchant Restricted Settings failed to apply';
+    const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                  = 'Merchant Restricted Settings failed to apply because users of merchant are associated with multiple merchants';
     const BAD_REQUEST_USER_OTP_REQUIRED                                         = 'OTP is required';
     const BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION                     = 'Restricted user cannot perform action';
 
@@ -707,6 +712,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MORPHED_ENTITY_INVALID                                    = 'Invalid entity passed in query parameters';
 
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                       = 'Merchant does not have enough balance for negative adjustment';
+    const BAD_REQUEST_BALANCE_DOES_NOT_EXIST                                    = 'Balance does not exist';
 
     const BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE                                  = 'Payment cannot be made on this payment link';
 
@@ -758,6 +764,10 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';
     const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                             = 'An error occurred performing this action';
     const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                   = 'An error occurred while creating the payout. Payout workflow could not be initiated';
+
+    // Terminal Onboarding
+    const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
+    const BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED                   = 'Only terminals in activated state can be enabled';
 
     // Scrooge
     const GATEWAY_VERIFY_REFUND_ABSENT                                          = 'Refund is not present at gateway';
@@ -878,4 +888,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
+
+    // Excel Store
+    const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
 }

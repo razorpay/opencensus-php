@@ -24,9 +24,15 @@ class Response extends Core
             Constants::REVIEW_STATUS   => $this->getReviewStatusData($account, $accountDetails),
             Constants::PROFILE         => $this->getProfileData($account, $accountDetails),
             Constants::PAYMENT         => $this->getPaymentData($account),
-            Constants::SETTLEMENT      => $this->getSettlementData($account),
             Constants::CREATED_AT      => $account->getCreatedAt(),
         ];
+
+        $settlementData = $this->getSettlementData($account);
+
+        if (empty($settlementData) === false)
+        {
+            $data[Constants::SETTLEMENT] = $settlementData;
+        }
 
         $customFields = $accountDetails->getCustomFields();
 
@@ -103,26 +109,28 @@ class Response extends Core
         if ($accountDetails->hasBusinessRegisteredAddress() === true)
         {
             $data[] = [
-                Constants::TYPE    => Constants::REGISTERED,
-                Constants::LINE1   => $accountDetails->getBusinessRegisteredAddress(),
-                Constants::LINE2   => $accountDetails->getBusinessRegisteredAddressLine2(),
-                Constants::CITY    => $accountDetails->getBusinessRegisteredCity(),
-                Constants::STATE   => IndianStates::getStateNameByCode($accountDetails->getBusinessRegisteredState()),
-                Constants::COUNTRY => $accountDetails->getBusinessRegisteredCountry(),
-                Constants::PIN     => $accountDetails->getBusinessRegisteredPin(),
+                Constants::TYPE          => Constants::REGISTERED,
+                Constants::LINE1         => $accountDetails->getBusinessRegisteredAddress(),
+                Constants::LINE2         => $accountDetails->getBusinessRegisteredAddressLine2(),
+                Constants::CITY          => $accountDetails->getBusinessRegisteredCity(),
+                Constants::DISTRICT_NAME => $accountDetails->getBusinessRegisteredDistrict(),
+                Constants::STATE         => IndianStates::getStateNameByCode($accountDetails->getBusinessRegisteredState()),
+                Constants::COUNTRY       => $accountDetails->getBusinessRegisteredCountry(),
+                Constants::PIN           => $accountDetails->getBusinessRegisteredPin(),
             ];
         }
 
         if ($accountDetails->hasBusinessOperationAddress() === true)
         {
             $data[] = [
-                Constants::TYPE    => Constants::OPERATION,
-                Constants::LINE1   => $accountDetails->getBusinessOperationAddress(),
-                Constants::LINE2   => $accountDetails->getBusinessOperationAddressLine2(),
-                Constants::CITY    => $accountDetails->getBusinessOperationCity(),
-                Constants::STATE   => IndianStates::getStateNameByCode($accountDetails->getBusinessOperationState()),
-                Constants::COUNTRY => $accountDetails->getBusinessOperationCountry(),
-                Constants::PIN     => $accountDetails->getBusinessOperationPin(),
+                Constants::TYPE          => Constants::OPERATION,
+                Constants::LINE1         => $accountDetails->getBusinessOperationAddress(),
+                Constants::LINE2         => $accountDetails->getBusinessOperationAddressLine2(),
+                Constants::CITY          => $accountDetails->getBusinessOperationCity(),
+                Constants::DISTRICT_NAME => $accountDetails->getBusinessOperationDistrict(),
+                Constants::STATE         => IndianStates::getStateNameByCode($accountDetails->getBusinessOperationState()),
+                Constants::COUNTRY       => $accountDetails->getBusinessOperationCountry(),
+                Constants::PIN           => $accountDetails->getBusinessOperationPin(),
             ];
         }
 

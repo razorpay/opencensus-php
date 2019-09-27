@@ -231,6 +231,17 @@ class Channel
         ];
     }
 
+    /**
+     * Supported FTA (API based) channels for razorpayX payouts
+     * @return array
+     */
+    public static function getFTASupportedPayoutChannels()
+    {
+        return [
+            self::YESBANK,
+        ];
+    }
+
     public static function getNonTransactionChannels()
     {
         return [
@@ -243,6 +254,14 @@ class Channel
         return [
             self::RBL,
             self::YESBANK,
+        ];
+    }
+
+    public static function getFtsSupportedChannels()
+    {
+        return [
+            self::RBL,
+            self::ICICI,
         ];
     }
 }

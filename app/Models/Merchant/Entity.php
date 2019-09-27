@@ -28,12 +28,14 @@ use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Event;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
@@ -105,6 +107,7 @@ class Entity extends Base\PublicEntity
     const RESTRICTED                     = 'restricted';
     const DASHBOARD_WHITELISTED_IPS_LIVE = 'dashboard_whitelisted_ips_live';
     const DASHBOARD_WHITELISTED_IPS_TEST = 'dashboard_whitelisted_ips_test';
+    const PARTNERSHIP_URL                = 'partnership_url';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -113,6 +116,9 @@ class Entity extends Base\PublicEntity
 
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
+
+    // Receipt email to be triggered at payment status
+    const RECEIPT_EMAIL_TRIGGER_EVENT = "receipt_email_trigger_event";
 
     //
     // Followings are derived data indexed in ES and goes to
@@ -249,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::INVOICE_LABEL_FIELD,
         self::LINKED_ACCOUNT_KYC,
         self::RECEIPT_EMAIL_ENABLED,
+        self::RECEIPT_EMAIL_TRIGGER_EVENT,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
         self::NOTES,
@@ -259,6 +266,7 @@ class Entity extends Base\PublicEntity
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
         self::DASHBOARD_WHITELISTED_IPS_TEST,
         self::DEFAULT_REFUND_SPEED,
+        self::PARTNERSHIP_URL,
     ];
 
     const CONFIG_LIST = [
@@ -306,6 +314,7 @@ class Entity extends Base\PublicEntity
         self::REFUND_SOURCE,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
+        self::RECEIPT_EMAIL_TRIGGER_EVENT,
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_LABEL_FIELD,
         self::CHANNEL,
@@ -339,6 +348,7 @@ class Entity extends Base\PublicEntity
         self::SECOND_FACTOR_AUTH,
         self::RESTRICTED,
         self::DEFAULT_REFUND_SPEED,
+        self::PARTNERSHIP_URL,
      ];
 
     protected $defaults = [
@@ -377,7 +387,9 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL                  => 0,
         self::DASHBOARD_WHITELISTED_IPS_TEST => [],
         self::DASHBOARD_WHITELISTED_IPS_LIVE => [],
+        self::RECEIPT_EMAIL_TRIGGER_EVENT    => Event::AUTHORIZED,
         self::DEFAULT_REFUND_SPEED           => RefundSpeed::NORMAL,
+        self::PARTNERSHIP_URL                => null,
     ];
 
     protected $publicSetters = [
@@ -500,6 +512,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATED_AT);
     }
 
+    public function getReceiptEmailTriggerEvent()
+    {
+        return $this->getAttribute(self::RECEIPT_EMAIL_TRIGGER_EVENT);
+    }
+
+    public function getPartnershipUrl()
+    {
+        return $this->getAttribute(self::PARTNERSHIP_URL);
+    }
+
     public function isSecondFactorAuth(): bool
     {
         return ($this->getAttribute(self::SECOND_FACTOR_AUTH) === true);
@@ -514,7 +536,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
-
+      
     public function setRestricted(bool $restricted)
     {
         $this->setAttribute(self::RESTRICTED, $restricted);
@@ -548,6 +570,16 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_OMNICHANNEL);
     }
 
+    public function isPhonePeIntentEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::PHONEPE_INTENT);
+    }
+
+    public function isUseMswipeTerminalsEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::USE_MSWIPE_TERMINALS);
+    }
+
     public function canHoldPayment(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::PAYMENT_ONHOLD);
@@ -576,6 +608,31 @@ class Entity extends Base\PublicEntity
     public function setActivationSource(string $activationSource)
     {
         $this->setAttribute(self::ACTIVATION_SOURCE, $activationSource);
+    }
+
+    protected function setReceiptEmailTriggerEventAttribute($event)
+    {
+        // For now we are allowing only one of the bit to be set to true, ensuring this by allowing one element in
+        // $eventArray and passing initial $hex as 0
+        $hex = 0;
+
+        if ($event !== null)
+        {
+            $eventArray = [$event => '1'];
+
+            $hex = Event::getCustomerEventHexValue($eventArray, $hex);
+        }
+
+        $this->attributes[self::RECEIPT_EMAIL_TRIGGER_EVENT] = $hex;
+    }
+
+    protected function getReceiptEmailTriggerEventAttribute()
+    {
+        $hex = $this->attributes[self::RECEIPT_EMAIL_TRIGGER_EVENT];
+
+        $events =  Event::getCustomerEventsFromHex($hex);
+
+        return $events[0] ?? null;
     }
 
     public function getReferrer()
@@ -695,7 +752,6 @@ class Entity extends Base\PublicEntity
 
     public function activate()
     {
-        $this->setDiwaliPromotionalFeatureIfApplicable();
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
         $this->setAttribute(self::ACTIVATED_AT, time());
@@ -855,10 +911,11 @@ class Entity extends Base\PublicEntity
     public function bankingBalance()
     {
         return $this->hasOne(Balance\Entity::class)
-                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
+                    ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
     }
 
-    public function getBalanceByProductType(string $product): Balance\Entity
+    public function getBalanceByProductType(string $product)
     {
         switch ($product)
         {
@@ -876,6 +933,24 @@ class Entity extends Base\PublicEntity
                         Entity::MERCHANT_ID => $this->getId(),
                     ]);
         }
+    }
+
+    public function getBalanceByProductTypeOrFail(string $product): Balance\Entity
+    {
+        $balance = $this->getBalanceByProductType($product);
+
+        if ($balance === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
+                null,
+                [
+                    self::ID      => $this->getKey(),
+                    self::PRODUCT => $product,
+                ]);
+        }
+
+        return $balance;
     }
 
     public function bankAccount()
@@ -1462,6 +1537,12 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
     }
 
+    public function createCustomerOnContactEmailNull(): bool
+    {
+        return (($this->isFeatureEnabled(Feature\Constants::CUST_CONTACT_EMAIL_NULL) === false) and
+            ($this->getCreatedAt() < 1566478483));
+    }
+
     public function isOptionalEmailAllowedAggregator(): bool
     {
         return (($this->isAggregatorPartner() === true) and ($this->hasOptionalSubmerchantEmailFeature() === true));
@@ -1582,6 +1663,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOLD_FUNDS);
     }
 
+    public function isFundsOnHold(): bool
+    {
+        return (bool) $this->getHoldFunds();
+    }
+
     public function holdFunds()
     {
         $this->setHoldFunds(true);
@@ -1590,6 +1676,16 @@ class Entity extends Base\PublicEntity
     public function releaseFunds()
     {
         $this->setHoldFunds(false);
+    }
+
+    public function setReceiptEmailEventAuthorized()
+    {
+        $this->setReceiptEmailTriggerEventAttribute(Event::AUTHORIZED);
+    }
+
+    public function setReceiptEmailEventCaptured()
+    {
+        $this->setReceiptEmailTriggerEventAttribute(Event::CAPTURED);
     }
 
     public function setHoldFunds($holdFunds)
@@ -2015,6 +2111,7 @@ class Entity extends Base\PublicEntity
             self::DISPLAY_NAME   => $this->getAttribute(self::DISPLAY_NAME),
             self::REFUND_SOURCE  => $this->getAttribute(self::REFUND_SOURCE),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
+            self::RESTRICTED     => $this->getAttribute(self::RESTRICTED),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
         ];
@@ -2143,32 +2240,5 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
-    }
-
-    // delete this after 31st
-    protected function setDiwaliPromotionalFeatureIfApplicable()
-    {
-        // Linked accounts don't have Diwali
-        if ($this->isLinkedAccount() === true)
-        {
-            return;
-        }
-
-        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-        if (($currentTimeStamp >= Pricing\Fee::DIWALI_END_TIMESTAMP) or
-            ($this->getPricingPlanId() !== Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID))
-        {
-            return;
-        }
-
-        $featureParams = [
-            Feature\Entity::ENTITY_ID    => $this->getId(),
-            Feature\Entity::ENTITY_TYPE  => 'merchant',
-            Feature\Entity::NAMES        => [Feature\Constants::DIWALI_PROMOTIONAL_PLAN],
-            Feature\Entity::SHOULD_SYNC  => true,
-        ];
-
-        (new Feature\Service)->addFeatures($featureParams);
     }
 }

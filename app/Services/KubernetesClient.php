@@ -48,6 +48,22 @@ class KubernetesClient
         BatchModel\Type::RECURRING_CHARGE => self::NODE_SELECTOR_HITACHI,
     ];
 
+    /**
+     * Maintains the cpu request based on batch type
+     * @var array
+     */
+    protected $batchNodeCpuRequest = [
+        BatchModel\Type::RECONCILIATION => '200m',
+    ];
+
+    /**
+     * Maintains the memory request based on batch type
+     * @var array
+     */
+    protected $batchNodeMemoryRequest = [
+        BatchModel\Type::RECONCILIATION => '1024Mi',
+    ];
+
     public function __construct($app)
     {
         $this->trace        = $app['trace'];
@@ -172,11 +188,17 @@ class KubernetesClient
 
     private function generateJobSpec(string $mode, string $batchId, array $params, string $batchType = null)
     {
-        $metaName = strtolower('batch-' . $batchId);
+        $batchName = $params['job_name'] ?? $batchId;
+
+        $metaName = strtolower('batch-' . $batchName);
 
         $dockerImage = $this->getDockerImage();
 
         $this->nodeSelector = $params['node_selector'] ?? $this->nodeSelector;
+
+        $cpuRequest = $this->batchNodeCpuRequest[$batchType] ?? '100m';
+
+        $memoryRequest = $this->batchNodeMemoryRequest[$batchType] ?? '150Mi';
 
         $jobSpec = [
             'metadata' => [
@@ -218,8 +240,8 @@ class KubernetesClient
                                 'image' => $dockerImage,
                                 'resources' => [
                                     'requests' => [
-                                        'cpu' => '100m',
-                                        'memory' => '150Mi'
+                                        'cpu' => $cpuRequest,
+                                        'memory' => $memoryRequest
                                     ],
                                     'limits' => [
                                         'cpu' => '500m',

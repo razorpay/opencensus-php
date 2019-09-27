@@ -2,7 +2,6 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
-use RZP\Models\Card\Issuer;
 
 final class Constants
 {
@@ -178,13 +177,4 @@ final class Constants
 
     // Fund transfer type is denoted by this while using yesbank transfer
     const FT    = 'FT';
-
-    const BANK_IFSC = [
-        Issuer::UTIB => 'UTIB0000400',
-        Issuer::HDFC => 'HDFC0000128',
-        Issuer::INDB => 'INDB0000018',
-        Issuer::KKBK => 'KKBK0000958',
-        Issuer::SCBL => 'SCBL0036020',
-        Issuer::ANDB => 'ANDB0000782',
-    ];
 }

@@ -95,6 +95,7 @@ class Service extends Base\Service
                 unset($gateways[IFSC::CSBK]);
                 unset($gateways[IFSC::VIJB]);
                 unset($gateways[IFSC::CNRB]);
+                unset($gateways[IFSC::SBIN]);
                 unset($gateways[Netbanking::PUNB_R]);
                 unset($gateways[Netbanking::BARB_R]);
                 unset($gateways[IFSC::ALLA]);
@@ -436,15 +437,20 @@ class Service extends Base\Service
                                         if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
                                         {
                                             $entity = $this->repo
-                                                ->$gatewayEntity
-                                                ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
-                                                ->toArray();
+                                                           ->$gatewayEntity
+                                                           ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                           ->toArray();
 
                                             $map = [];
 
+                                            if ($gatewayEntity === RefundConstants::MOZART)
+                                            {
+                                                $entity = json_decode($entity['raw'], true);
+                                            }
+
                                             foreach ($columns as $column)
                                             {
-                                                $map[$column] = $entity[$column];
+                                                $map[$column] = $entity[$column] ?? '';
                                             }
 
                                             $response[RefundConstants::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
@@ -497,6 +503,16 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
+        // We are masking status for merchants
+        if ((($this->app['basicauth']->isProxyAuth() === true) or
+             ($this->app['basicauth']->isPrivateAuth() === true)) and
+            (isset($input[Entity::STATUS]) === true))
+        {
+            $input[Entity::PUBLIC_STATUS] = $input[Entity::STATUS];
+
+            unset($input[Entity::STATUS]);
+        }
+
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
 
         $refundsArray = $refunds->toArrayPublic();
@@ -595,6 +611,8 @@ class Service extends Base\Service
                 foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
                 {
                     $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
+
+                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
                 }
             }
             else
@@ -608,6 +626,8 @@ class Service extends Base\Service
                     Entity::verifyIdAndStripSign($refundId);
 
                     $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+                    $refundArray[Entity::STATUS] = $refundStatus[$refundId];
                 }
             }
         }
@@ -630,6 +650,8 @@ class Service extends Base\Service
                 $refundArray[Entity::MODE] = $refundModes[$refundId];
 
                 $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+                $refundArray[Entity::STATUS] = $refundStatus[$refundId];
             }
         }
     }
@@ -652,6 +674,17 @@ class Service extends Base\Service
         $merchant = $refund->merchant;
 
         $response = $this->getNewProcessor($merchant)->scroogeGatewayVerifyRefund($refund, $input);
+
+        return $response;
+    }
+
+    public function makeScroogeVerifyRefundCall(string $refundId, array $input)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->scroogeVerifyRefund($refund, $input);
 
         return $response;
     }
@@ -1235,7 +1268,14 @@ class Service extends Base\Service
     {
         $refund = $this->repo->refund->findByPublicId($id);
 
-        $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+        if ($refund->isScrooge() === true)
+        {
+            $verifySuccess = $this->app['scrooge']->verifyRefund($refund['id'])['body'];
+        }
+        else
+        {
+            $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+        }
 
         return [
             'refund_id'      => $id,
@@ -1389,7 +1429,31 @@ class Service extends Base\Service
                                 $refund->setSpeedProcessed(RefundSpeed::NORMAL);
 
                                 $processor->eventRefundSpeedChanged($refund);
+
                                 $processor->eventRefundProcessed($refund);
+
+                                break;
+
+                            case 'processed_to_file_init_event':
+
+                                $this->trace->info(
+                                    TraceCode::REFUND_PROCESSED_TO_CREATED,
+                                    [
+                                        'refund_id'        => $refundId,
+                                        'status'           => $refund->getStatus(),
+                                        'reference1'       => $refund->getReference1(),
+                                        'processed_at'     => $refund->getProcessedAt(),
+                                        'gateway_refunded' => $refund->getGatewayRefunded(),
+                                    ]);
+
+                                if ((isset($input[RefundEntity::STATUS])) and
+                                    ($input[RefundEntity::STATUS] === 'file_init') and
+                                    ($refund->getStatus() === Refund\Status::PROCESSED))
+                                {
+                                    $processor->revertProcessedRefundToCreatedState($refund);
+                                }
+
+                                break;
                         }
 
                         $this->repo->saveOrFail($refund);
@@ -1527,6 +1591,296 @@ class Service extends Base\Service
         }
     }
 
+    public function fetchRefundsDetailsForCustomer(array $input)
+    {
+        $traceInput = $input;
+        unset($traceInput['captcha']);
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_TRACK_REFUND_STATUS_V2_INITIATED,
+            [
+                'input' => $traceInput
+            ]
+        );
+
+        (new Validator)->validateInput('customer_refunds_details', $input);
+
+        $mode = $input['mode'] ?? Mode::LIVE;
+
+        $this->auth->setModeAndDbConnection($mode);
+
+        // Since this is a direct auth route - and we do not have the merchant ID
+        // we need to allow multiple fetch without merchant ID
+        $merchantIdRequiredForMultipleFetch = false;
+
+        $this->repo->payment->setMerchantIdRequiredForMultipleFetch($merchantIdRequiredForMultipleFetch);
+        $this->repo->refund->setMerchantIdRequiredForMultipleFetch($merchantIdRequiredForMultipleFetch);
+
+        $return = [
+            RefundConstants::ID_TYPE => RefundConstants::UNKNOWN,
+            RefundConstants::PAYMENTS => [],
+        ];
+
+        switch(true)
+        {
+            case (empty($input[RefundConstants::PAYMENT_ID]) === false):
+                // Given RZP public payment_id
+                $this->populateDetailsFromPaymentId($input[RefundConstants::PAYMENT_ID], $return);
+
+                break;
+
+            case (empty($input[RefundConstants::REFUND_ID]) === false):
+                // Given RZP public refund_id
+                $this->populateDetailsFromRefundId($input[RefundConstants::REFUND_ID], $return);
+
+                break;
+
+            case (empty($input[RefundConstants::ORDER_ID]) === false):
+                // Given RZP public order_id
+                $this->populateDetailsFromOrderId($input[RefundConstants::ORDER_ID], $return);
+
+                break;
+
+            default:
+                // Given id - could be RZP internal id, UPI RRN, Merchant reference number (from notes)
+                $this->fetchRefundDetailsForCustomerFromId($input, $return);
+        }
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_TRACK_REFUND_STATUS_V2_SERVED,
+            [
+                'input' => $traceInput
+            ] + $return
+        );
+
+        return $return;
+    }
+
+    public static function verifyUpiRrn($id)
+    {
+        $rrnCheckRegex = '/^[0-9]{'. '12' .'}$/i';
+
+        // preg_match() returns int 0 when the pattern does not match
+        // and int 1 if a match is found. false (boolean) is returned
+        // whenever any error happens.
+        $res = (bool) preg_match($rrnCheckRegex, $id);
+
+        return $res;
+    }
+
+    /**
+     * @param array $return
+     * @param Payment\Entity $payment
+     */
+    protected function populateRefundDetailsForCustomer(array &$return, Payment\Entity $payment)
+    {
+        $refunds = $payment->refunds;
+
+        $populateMessages = true;
+
+        array_push($return[RefundConstants::PAYMENTS], [
+            RefundConstants::REFUNDS => isset($refunds) ? $refunds->toArrayPublicCustomer($populateMessages) : [],
+            RefundConstants::PAYMENT => isset($payment) ? $payment->toArrayPublicCustomer($populateMessages) : [],
+        ]);
+    }
+
+    /**
+     * @param $id
+     * @param array $return
+     * @param bool $continueSearch
+     */
+    protected function populateDetailsFromPaymentId($id, array &$return, bool &$continueSearch = true)
+    {
+        $payment = $this->getPaymentFromPaymentIdForCustomerDetails($id);
+
+        if (empty($payment) === false)
+        {
+            $this->populateRefundDetailsForCustomer($return, $payment);
+
+            $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
+
+            $continueSearch = false;
+        }
+    }
+
+    /**
+     * @param $id
+     * @param array $return
+     * @param bool $continueSearch
+     */
+    protected function populateDetailsFromRefundId($id, array &$return, bool &$continueSearch = true)
+    {
+        $refund = $this->getRefundFromRefundIdForCustomerDetails($id);
+
+        if (empty($refund) === false)
+        {
+            $payment = $refund->payment;
+
+            $this->populateRefundDetailsForCustomer($return, $payment);
+
+            $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
+
+            $continueSearch = false;
+        }
+    }
+
+    /**
+     * @param $id
+     * @param array $return
+     * @param bool $continueSearch
+     */
+    protected function populateDetailsFromOrderId($id, array &$return, bool &$continueSearch = true)
+    {
+        $order = $this->getOrderFromOrderIdForCustomerDetails($id);
+
+        if (empty($order) === false)
+        {
+            $payments = $order->payments;
+
+            foreach ($payments as $payment)
+            {
+                $this->populateRefundDetailsForCustomer($return, $payment);
+            }
+
+            $return[RefundConstants::ID_TYPE] = RefundConstants::RZP_ID;
+
+            $continueSearch = false;
+        }
+    }
+
+    /**
+     * @param array $input
+     * @param array $return
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
+    protected function fetchRefundDetailsForCustomerFromId(array $input, array &$return)
+    {
+        $id = $input[RefundConstants::ID];
+
+        $continueSearch = true;
+
+        // check if RRN
+        if (self::verifyUpiRrn($id) === true)
+        {
+            $actions = [Payment\Action::AUTHORIZE, Payment\Action::REFUND];
+
+            // Check upi table - authorize action
+            $this->fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, $return, $continueSearch);
+        }
+        // check if RZP ID
+        else if(Base\UniqueIdEntity::verifyUniqueId($id, false) === true)
+        {
+            // Check payment/refund/order tables
+            $this->populateDetailsFromPaymentId($id, $return, $continueSearch);
+
+            if ($continueSearch === true)
+            {
+                $this->populateDetailsFromRefundId($id, $return, $continueSearch);
+            }
+
+            if ($continueSearch === true)
+            {
+                $this->populateDetailsFromOrderId($id, $return, $continueSearch);
+            }
+        }
+
+        // Fetch from merchant notes
+        if ($continueSearch === true)
+        {
+            (new Validator)->validateCustomerRefundFetchDetailsFromMerchantNotes($id);
+
+            $this->fetchRefundDetailsForCustomerFromMerchantNotes($id, $return);
+        }
+    }
+
+    /**
+     * @param $id
+     * @param $actions
+     * @param array $return
+     * @param bool $continueSearch
+     */
+    protected function fetchRefundDetailsForCustomerFromUpiRRN($id, $actions, array &$return, bool &$continueSearch = true)
+    {
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndActions($id, $actions);
+
+        if (empty($upiEntity) === false)
+        {
+            $paymentId = $upiEntity->getPaymentId();
+
+            $payment = $this->repo->payment->find($paymentId);
+
+            if (empty($payment) === false)
+            {
+                $this->populateRefundDetailsForCustomer($return, $payment);
+
+                $return[RefundConstants::ID_TYPE] = RefundConstants::NPCI_RRN;
+
+                $continueSearch = false;
+            }
+        }
+    }
+
+    /**
+     * @param $id
+     * @param array $return
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
+    protected function fetchRefundDetailsForCustomerFromMerchantNotes($id, array &$return)
+    {
+        $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id]);
+
+        if (empty($payment->toArray()) === false)
+        {
+
+            if (count($payment->toArray()) > 1)
+            {
+                $this->trace->info(
+                    TraceCode::CUSTOMER_TRACK_REFUND_STATUS_V2_MULTIPLE_ENTITIES,
+                    [
+                        'search_id' => $id,
+                    ]
+                );
+            }
+
+            $payment = $this->repo->payment->find($payment->toArray()[0][Payment\Entity::ID]);
+
+            $this->populateRefundDetailsForCustomer($return, $payment);
+
+            $return[RefundConstants::ID_TYPE] = RefundConstants::MERCHANT_REFERENCE;
+        }
+        else
+        {
+            $refund = $this->repo->refund->fetch([Entity::NOTES => $id]);
+
+            if (empty($refund->toArray()) === false)
+            {
+                if (count($refund->toArray()) > 1)
+                {
+                    $this->trace->info(
+                        TraceCode::CUSTOMER_TRACK_REFUND_STATUS_V2_MULTIPLE_ENTITIES,
+                        [
+                            'search_id' => $id,
+                        ]
+                    );
+                }
+
+                $refund = $this->repo->refund->find($refund->toArray()[0][Entity::ID]);
+
+                $payment = $refund->payment;
+
+                $this->populateRefundDetailsForCustomer($return, $payment);
+
+                $return[RefundConstants::ID_TYPE] = RefundConstants::MERCHANT_REFERENCE;
+            }
+        }
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
     public function fetchRefundDetailsForCustomer(array $input)
     {
         $traceInput = $input;
@@ -1641,6 +1995,20 @@ class Service extends Base\Service
         }
 
         return $refund;
+    }
+
+    protected function getOrderFromOrderIdForCustomerDetails($orderId)
+    {
+        Entity::stripSignWithoutValidation($orderId);
+
+        $order = $this->repo->order->find($orderId);
+
+        if (empty($order) === true)
+        {
+            return null;
+        }
+
+        return $order;
     }
 
     protected function updateRefund($refund, $input)

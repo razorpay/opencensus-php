@@ -46,6 +46,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $verifyObj, 'verify');
     }
 
+    public function capture($input)
+    {
+        $captureObj = new CaptureData();
+
+        return $this->processMockResponse($input, $captureObj, 'capture');
+    }
+
     public function refund($input)
     {
         $refundObj = new RefundData();
@@ -95,6 +102,52 @@ class Server extends Base\Mock\Server
         $response = $this->makeResponseJson($response);
 
         return $response;
+    }
+
+    public function getCallbackRequest(array $payment)
+    {
+        $url = '/callback/' . $payment['gateway'];
+        $method = 'post';
+        $server = [
+            'CONTENT_TYPE' => 'application/json'
+        ];
+
+        switch ($payment['gateway'])
+        {
+            case 'upi_citi':
+                $content = [
+                    'TxnRefNo'             => '700000135-100000001120',
+                    'OrderNo'              => $payment['id'],
+                    'NPCITxnId'            => 'CITI7FA2285C01AC932AE05392BCBBA925A',
+                    'TimeStamp'            => '2019-01-17T15:42:44+05:30',
+                    'TranAuthDate'         => '2019-01-17T00:00:00',
+                    'StatusCode'           => '1',
+                    'StatusDesc'           => 'NPCI Success - Pending Posting',
+                    'RespCode'             => '00',
+                    'SettlementAmount'     => amount_format_IN($payment['amount']),
+                    'SettlementCurrency'   => 'INR'
+                ];
+
+                switch ($payment['description'])
+                {
+                    case 'toBeRejected':
+                        $content['StatusCode'] = '3';
+                        $content['RespCode']   = 'ZA';
+                        break;
+
+                    case 'callbackAmountMismatch':
+                        $content['SettlementAmount'] = amount_format_IN($payment['amount'] - 1);
+                }
+
+                $raw = json_encode(['PushNotificationToSSG' => $content]);
+        }
+
+        return [
+            'url'       => $url,
+            'method'    => $method,
+            'raw'       => $raw,
+            'server'    => $server,
+        ];;
     }
 
     public function getAsyncCallbackContent(array $payment)
@@ -162,6 +215,26 @@ class Server extends Base\Mock\Server
         $url = $this->route->getPublicCallbackUrlWithHash($publicId);
         $request = [
             'url'          => $url,
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function wallet_paypal($input)
+    {
+        $content = $input;
+        $content = [
+            'token'     => 'PayPal_Token',
+            'PayId'     => '8DS61651XA862144J',
+            'status'    => 'callback_successful',
+        ];
+
+        $this->content($content, 'authorize');
+
+        $request = [
+            'url'          => $input['callbackUrl'],
             'content'      => $content,
             'method'       => 'post',
         ];
@@ -275,6 +348,28 @@ class Server extends Base\Mock\Server
         ];
     }
 
+    public function createTerminal($body)
+    {
+        $response_body = [
+            'data' => [
+                'Description'   => "Success",
+                'Status'        => "00",
+                '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
+            ],
+            'error'             => [],
+            'external_trace_id' => "",
+            'mozart_id'         => "blfq216r1gunssphbs01",
+            'next'              => null,
+            'success'           => true
+        ];
+        
+        $response = \Response::make($response_body);
+        
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+ 
+        return $response;
+    }
+    
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');

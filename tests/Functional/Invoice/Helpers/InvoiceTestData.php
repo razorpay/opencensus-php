@@ -781,6 +781,57 @@ return [
         ],
     ],
 
+    'testCreateLinkCustomerContactEmailNullOldMerchantFlagDisabled' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'        => 1234,
+                'description'   => 'Sample Description',
+                'type'          => 'link',
+                'customer'      => [],
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateLinkCustomerContactEmailNullOldMerchantFlagEnabled' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'        => 1234,
+                'description'   => 'Sample Description',
+                'type'          => 'link',
+                'customer'      => [],
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateLinkCustomerContactEmailNullNewMerchant' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'        => 1234,
+                'description'   => 'Sample Description',
+                'type'          => 'link',
+                'customer'      => [],
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreateInvoiceWithMultipleLineItems' => [
         'request' => [
             'url' => '/invoices',
@@ -4687,12 +4738,10 @@ return [
                             ],
                         ],
                         [
-                            'multi_match' => [
-                                'query'                => 'info',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '75%',
+                            'match' => [
+                                'notes.value' => [
+                                    'query' => 'info',
+                                ],
                             ],
                         ]
                     ],
@@ -4763,7 +4812,7 @@ return [
                                     'customer_email',
                                     'description',
                                     'terms',
-                                    'notes.*',
+                                    'notes.value',
                                 ],
                                 'boost'                => 1,
                                 'minimum_should_match' => '75%',

@@ -5,8 +5,9 @@ namespace RZP\Reconciliator\FirstData\SubReconciliator;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Models\Currency\Currency;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -16,16 +17,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     // session_id_aspd maps to caps_payment_id
     // comm_amount (commission amount) maps to gateway fee
-    const COLUMN_CAPS_PAYMENT_ID = 'session_id_aspd';
-    const COLUMN_GATEWAY_FEE     = 'comm_amount';
-    const COLUMN_PAYMENT_AMOUNT  = 'transaction_amt';
-    const COLUMN_CARD_CATEGORY   = 'card_category';
-    const COLUMN_CARD_TRIVIA     = 'card_type';
-    const COLUMN_AUTH_CODE       = 'auth_code';
-    const COLUMN_ARN             = 'arn_no';
+    const COLUMN_CAPS_PAYMENT_ID                = 'session_id_aspd';
+    const COLUMN_GATEWAY_FEE                    = 'comm_amount';
+    const COLUMN_CARD_CATEGORY                  = 'card_category';
+    const COLUMN_CARD_TRIVIA                    = 'card_type';
+    const COLUMN_AUTH_CODE                      = 'auth_code';
+    const COLUMN_ARN                            = 'arn_no';
+    const INTERNATIONAL                         = 'international';
+    const ONUS                                  = 'onus';
+    const COLUMN_CURRENCY                       = 'transaction_currency';
+    const COLUMN_PAYMENT_AMOUNT                 = 'transaction_amt';
+    const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT   = 'transaction_amt';
 
-    const INTERNATIONAL          = 'international';
-    const ONUS                   = 'onus';
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
     /**
      * The payment id in the file is under column 'SESSION ID ASPD'.
@@ -77,17 +81,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * @param array $row
      * @return integer $paymentAmount
      */
-    protected function getReconPaymentAmount(array $row)
-    {
-        $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
-
-        // We are converting to int after casting to string as PHP randomly
-        // returns wrong int values due to differing floating point precisions
-        // So something like intval(31946.0) may give 31945 or 31946.
-        // Converting to string using number_format and then converting
-        // is a hack to avoid this issue
-        return intval(number_format($paymentAmount, 2, '.', ''));
-    }
 
     /**
      * Gateway Fee is given as commission amount.
@@ -121,31 +114,21 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     }
 
     /**
-     * Checks if payment amount is equal to amount from row
-     * raises alert in case of mismatch
-     *
      * @param array $row
      * @return bool
      */
-    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    protected function isInternationalPayment(array $row)
     {
-        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'payment_id'      => $this->payment->getId(),
-                    'expected_amount' => $this->payment->getBaseAmount(),
-                    'recon_amount'    => $this->getReconPaymentAmount($row),
-                    'currency'        => $this->payment->getCurrency(),
-                    'gateway'         => $this->gateway
-                ]);
+        $convertCurrencyFlag = $this->payment->getConvertCurrency();
 
-            return false;
+        $isNonInrCurrency = (strtoupper($row[self::COLUMN_CURRENCY] ?? null) !== Currency::INR);
+
+        if (($isNonInrCurrency === true) and ($convertCurrencyFlag === false))
+        {
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -304,5 +287,35 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return [
             BaseReconciliate::AUTH_CODE => $this->getAuthCode($row)
         ];
+    }
+
+    /**
+     * @param array $row
+     * @return bool
+     */
+    protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getCurrency();
+
+        $reconCurrency = $row[self::COLUMN_CURRENCY] ?? null;
+
+        if (strtoupper($expectedCurrency) !== strtoupper($reconCurrency))
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'         => Base\InfoCode::CURRENCY_MISMATCH,
+                    'expected_currency' => $expectedCurrency,
+                    'recon_currency'    => $reconCurrency,
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

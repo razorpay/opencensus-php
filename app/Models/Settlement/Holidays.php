@@ -184,11 +184,16 @@ class Holidays
                 17 => 'Parsi New Year',
             ],
             9 => [
+                2  => 'Ganesh Chaturthi',
                 10 => 'Muharram',
             ],
             10 => [
-                2 => 'Mahatma Gandhi Jayanti',
-                8 => 'Dussehra / Vijaya Dasami',
+                2  => 'Mahatma Gandhi Jayanti',
+                8  => 'Dussehra / Vijaya Dasami',
+                28 => 'Diwali',
+            ],
+            11 => [
+                12 => 'Guru Nanak Jayanti',
             ],
             12 => [
                 25 => 'Christmas',

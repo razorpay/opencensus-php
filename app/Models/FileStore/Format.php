@@ -77,7 +77,7 @@ class Format
         self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
         self::XML   => ['application/xml'],
         self::RPT   => ['text/plain'],
-        self::DAT   => ['text/plain'],
+        self::DAT   => ['text/plain', 'application/octet-stream'],
         self::NONE  => ['text/plain'],
     ];
 

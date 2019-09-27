@@ -854,10 +854,21 @@ class Service extends Base\Service
         // use demo accounts for unexpected payments
         $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
+        $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $data['terminal']);
+
+        if ($terminal->isDirectSettlement() === true)
+        {
+            $merchantId = $terminal->getMerchantId();
+        }
+
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         return $this->getNewProcessor($merchant)
-                    ->authorizePush($input, $referenceId, $gateway);
+                    ->authorizePush($input, $referenceId, $data, $terminal);
     }
 
     public function fetchMultiple(array $input)
@@ -1824,8 +1835,13 @@ class Service extends Base\Service
 
         $data = [
             Entity::CONTACT   => $input[Entity::CONTACT],
-            Entity::PROVIDER  => $input[Entity::PROVIDER]
+            Entity::PROVIDER  => $input[Entity::PROVIDER],
         ];
+
+        if (isset($input['payment_id']) === true)
+        {
+            $data['payment_id'] = $input['payment_id'];
+        }
 
         $this->app['cache']->put($key, $data, $cacheTtl);
 
@@ -1891,12 +1907,16 @@ class Service extends Base\Service
             $card = $payment->card;
             $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
 
-            $payload['card'] = [
+            $cardDetails = $card->toArrayPublic();
+
+            $cardFormatted = [
                 'number'  => '**** **** **** ' . $card->getLast4(),
                 'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
                 'network' => $card->getNetworkCode(),
                 'color'   => $card->getNetworkColorCode()
             ];
+
+            $payload['card'] = array_merge($cardDetails, $cardFormatted);
         }
 
         if ($payment->hasInvoice() === true)

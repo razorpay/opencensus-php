@@ -11,6 +11,7 @@ use RZP\Gateway\Hitachi;
 use RZP\Services\DowntimeMetric;
 use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Exception\GatewayTimeoutException;
@@ -30,18 +31,11 @@ class PaysecureGatewayTest extends TestCase
 
     protected $terminal;
 
-    /** @var $downtimeMetric DowntimeMetric */
-    protected $downtimeMetric;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
 
         parent::setUp();
-
-        $app = App::getFacadeRoot();
-
-        $this->downtimeMetric = $app['gateway_downtime_metric'];
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
@@ -89,6 +83,25 @@ class PaysecureGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->mockCardVault();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'save_all_cards')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
 
         $this->payment = $this->getDefaultPaymentArray();
     }
@@ -416,14 +429,11 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertEquals([
             $this->gateway => [
-                DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 1,
-                ],
                 DowntimeMetric::Failure   => [
                     'SERVER_ERROR_INVALID_ARGUMENT' => 1,
                 ]
             ],
-        ], $this->downtimeMetric->getMetrics());
+        ], $this->app['gateway_downtime_metric']->getMetrics());
     }
 
     public function testAuthorizeFailureWithNoErrorMessage()
@@ -750,6 +760,10 @@ class PaysecureGatewayTest extends TestCase
             ],
             $verify
         );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEquals('AZ', $gatewayPayment['status']);
     }
 
     // For terminal mode "purchase", capture would not be called

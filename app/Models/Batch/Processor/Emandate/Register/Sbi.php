@@ -14,6 +14,8 @@ class Sbi extends Base
 {
     const GATEWAY   = Gateway::NETBANKING_SBI;
 
+    protected $useSpreadSheetLibrary = false;
+
     protected $gatewayPaymentMapping = [
         self::TOKEN_STATUS     => NetbankingEntity::SI_STATUS,
         self::TOKEN_ERROR_CODE => NetbankingEntity::SI_MSG,
@@ -57,9 +59,9 @@ class Sbi extends Base
         else
         {
             return Netbanking\Sbi\Emandate\ErrorCode::getRegisterErrorCode(
-                                    $entry[Batch\Header::SBI_EM_REGISTER_STATUS_DESCRIPTION] ??
-                                    $entry[Batch\Header::SBI_EM_REGISTER_REJECT_REASON]
-                                  );
+                $entry[Batch\Header::SBI_EM_REGISTER_STATUS_DESCRIPTION] ??
+                $entry[Batch\Header::SBI_EM_REGISTER_REJECT_REASON]
+            );
         }
     }
 
@@ -83,6 +85,12 @@ class Sbi extends Base
         return 5;
     }
 
+
+    protected function getStartRowExcelFiles()
+    {
+        return 6;
+    }
+
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
     {
         if (isset($entries[0]) === false)
@@ -92,11 +100,11 @@ class Sbi extends Base
 
         if (array_key_exists(Batch\Header::SBI_EM_REGISTER_UMRN_REJECT_RILE, $entries[0]) === true)
         {
-            $fileType = 'success';
+            $fileType = 'reject';
         }
         else
         {
-            $fileType = 'rejected';
+            $fileType = 'success';
         }
 
         $headers = $headers[$fileType];

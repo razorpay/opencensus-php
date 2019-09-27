@@ -29,6 +29,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Action;
 use RZP\Constants\Entity as E;
+use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
@@ -560,6 +561,15 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($merchant);
+
+        if($action === Constants::SUSPEND)
+        {
+            $this->removeMerchantEmailToMailingList($merchant);
+        }
+        else if($action === Constants::UNSUSPEND)
+        {
+            $this->addMerchantEmailToMailingList($merchant);
+        }
 
         // pipe to slack if the action is defined
         if (empty(SlackActions::$actionMsgMap[$action]) === false)
@@ -1335,6 +1345,8 @@ class Core extends Base\Core
         $merchant->tag($tagName);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_APPEND_COMPLETED);
     }
 
     /**
@@ -2382,9 +2394,52 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED,
                                                     null,
                                                     [
-                                                        'total_users' => count($userIds),
-                                                        'users'       => $userIds,
+                                                        'count_users_with_multiple_merchants' => count($userIds),
+                                                        'users_with_mutiple_merchants'        => $userIds,
                                                     ]);
+        }
+    }
+
+    public function addMerchantEmailToMailingList($merchant)
+    {
+        $transactionReportEmails = $merchant->getTransactionReportEmail();
+
+        $transactionReportEmails = array_merge($transactionReportEmails, [$merchant->getEmail()]);
+
+        $merchantEmailList = [] ;
+
+        foreach ($transactionReportEmails as $transactionReportEmail)
+        {
+            if (isset($merchantEmailList[$transactionReportEmail]) === false)
+            {
+                $merchantEmailList[$transactionReportEmail] = [
+                    'address' => $transactionReportEmail,
+                    'name'    => $merchant->getName()
+                ];
+            }
+        }
+
+        $merchantEmailList = array_values($merchantEmailList);
+
+        MailingListUpdate::dispatch(
+            $this->mode,
+            $merchantEmailList);
+    }
+
+    public function removeMerchantEmailToMailingList($merchant)
+    {
+        $transactionReportEmails = $merchant->getTransactionReportEmail();
+
+        $transactionReportEmails = array_merge($transactionReportEmails, [$merchant->getEmail()]);
+
+        $transactionReportEmails = array_unique($transactionReportEmails);
+
+        foreach ($transactionReportEmails as $transactionReportEmail)
+        {
+            MailingListUpdate::dispatch(
+                $this->mode,
+                [$transactionReportEmail],
+                true);
         }
     }
 

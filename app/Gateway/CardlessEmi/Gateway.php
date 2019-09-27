@@ -119,7 +119,15 @@ class Gateway extends Base\Gateway
 
         $this->checkEmiPlansExists($responseArray);
 
-        $this->addCacheData($input['contact'], $responseArray);
+        $this->addCacheData($input, $responseArray);
+
+        if (isset($input['payment_id']) === true)
+        {
+            unset($input['payment_id']);
+
+            $this->addCacheData($input, $responseArray);
+
+        }
 
         if (in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
         {
@@ -133,11 +141,24 @@ class Gateway extends Base\Gateway
         return;
     }
 
-    protected function addCacheData($contact, $responseArray)
+    protected function addCacheData($input, $responseArray)
     {
         $emiPlans = $responseArray[ResponseFields::EMI_PLANS];
 
-        $cacheKey = $this->provider . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID];
+        $input = Customer\Validator::validateAndParseContactInInput($input);
+
+        $contact = $input['contact'];
+
+        $merchantId = $this->terminal[Terminal\Entity::MERCHANT_ID];
+
+        $paymentIdString = '';
+
+        if (isset($input['payment_id']) === true)
+        {
+            $paymentIdString = '_' . $input['payment_id'];
+        }
+
+        $cacheKey = $this->provider . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID] . $paymentIdString;
 
         $emiPlanKey = sprintf(self::EMI_PLAN_CACHE_KEY, $cacheKey);
 
@@ -814,7 +835,14 @@ class Gateway extends Base\Gateway
 
         $contact = $input['contact'];
 
-        $cacheKey = $input['provider'] . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID];
+        $paymentIdString = '';
+
+        if (isset($input['payment_id']) === true)
+        {
+            $paymentIdString = '_' . $input['payment_id'];
+        }
+
+        $cacheKey = $input['provider'] . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID] . $paymentIdString;
 
         $emiPlanKey = sprintf(self::EMI_PLAN_CACHE_KEY, $cacheKey );
 
@@ -1154,7 +1182,7 @@ class Gateway extends Base\Gateway
         return [
             Entity::RECEIVED                => true,
             Entity::STATUS                  => $response[ResponseFields::STATUS],
-            Entity::GATEWAY_REFERENCE_ID    => $response[ResponseFields::PROVIDER_PAYMENT_ID],
+            Entity::GATEWAY_REFERENCE_ID    => $response[ResponseFields::PROVIDER_PAYMENT_ID] ?? '',
         ];
     }
 

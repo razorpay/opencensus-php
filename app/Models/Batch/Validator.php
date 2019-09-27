@@ -170,6 +170,12 @@ class Validator extends Base\Validator
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
     ];
 
+    protected static $iinNpciRupayCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:4096' . self::DEFAULT_MIME_RULE,
+    ];
+
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -205,9 +211,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $subMerchantCreateRules = [
-        Entity::TYPE                  => 'required|in:sub_merchant',
-        Entity::NAME                  => 'filled|string|max:255',
-        Entity::FILE                  => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE   => 'required|in:sub_merchant',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'filled|array',
+    ];
+
+    protected static $subMerchantConfigRules = [
         ME::AUTO_SUBMIT               => 'filled|boolean',
         ME::INSTANTLY_ACTIVATE        => 'filled|boolean',
         ME::AUTOFILL_DETAILS          => 'filled|boolean',
@@ -712,11 +722,6 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Batch type is not enabled for merchant');
         }
 
-        if (in_array(app()->basicauth->getUserRole(), [User\Role::ADMIN, User\Role::OWNER], true) === false)
-        {
-            throw new BadRequestValidationFailureException('Only admins and owners are allowed to take this action');
-        }
-
         $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
         {
             $this->validateInput('payoutTypeRow', $entry);
@@ -801,8 +806,12 @@ class Validator extends Base\Validator
 
     protected function validateSubMerchantEntries(array & $entries, array $params, ME $merchant)
     {
+        $this->validateInput('subMerchantConfig', $params[Entity::CONFIG] ?? []);
+
+        $partnerId = $params[Entity::CONFIG][ME::PARTNER_ID] ?? null;
+
         /** @var Merchant\Entity $partner */
-        $partner = (new Merchant\Repository)->findOrFailPublic($params[ME::PARTNER_ID]);
+        $partner = (new Merchant\Repository)->findOrFailPublic($partnerId);
 
         if ($partner->isNonPurePlatformPartner() === false)
         {

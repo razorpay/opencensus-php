@@ -20,6 +20,8 @@ class Service extends Base\Service
 
     public function copyTerminal($mid, $tid, $input)
     {
+        Entity::verifyIdAndSilentlyStripSign($tid);
+
         $terminal = $this->repo->terminal->findByIdAndMerchantId($tid, $mid);
 
         $terminals = (new Terminal\Core)->copy($input, $terminal);
@@ -47,6 +49,8 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
+        Entity::verifyIdAndSilentlyStripSign($tid);
+
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
         return $terminal->toArrayAdmin();
@@ -55,6 +59,8 @@ class Service extends Base\Service
     public function deleteTerminal($mid, $tid)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        Entity::verifyIdAndSilentlyStripSign($tid);
 
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
@@ -68,6 +74,8 @@ class Service extends Base\Service
 
     public function deleteTerminal2($id)
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $terminal = $this->repo->terminal->findOrFailPublic($id);
 
         $terminal = $this->repo->deleteOrFail($terminal);
@@ -80,6 +88,8 @@ class Service extends Base\Service
 
     public function modifyTerminal($mid, $tid, $input)
     {
+        Entity::verifyIdAndSilentlyStripSign($tid);
+
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
         $terminal = (new Terminal\Core)->edit($terminal, $input);
@@ -89,6 +99,8 @@ class Service extends Base\Service
 
     public function editTerminal($tid, $input)
     {
+        Entity::verifyIdAndSilentlyStripSign($tid);
+
         $terminal = $this->repo->terminal->findOrFail($tid);
 
         $terminal = (new Terminal\Core)->edit($terminal, $input);
@@ -98,6 +110,8 @@ class Service extends Base\Service
 
     public function restoreTerminal($id)
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $terminal = $this->repo->terminal->getById($id);
 
         if ($terminal->isDeleted() === false)
@@ -115,6 +129,8 @@ class Service extends Base\Service
 
     public function removeMerchantFromTerminal(string $id, string $merchantId)
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $terminal = $this->repo->terminal->getById($id);
 
         $terminal = (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
@@ -124,6 +140,8 @@ class Service extends Base\Service
 
     public function reassignMerchantForTerminal(string $id, array $input)
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $terminal = $this->repo->terminal->getById($id);
 
         $terminal->getValidator()->validateInput('reassign', $input);
@@ -139,6 +157,8 @@ class Service extends Base\Service
 
     public function addMerchantToTerminal(string $id, string $mid)
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $terminal = $this->repo->terminal->getById($id);
 
         $terminal = (new Terminal\Core)->addMerchantToTerminal($terminal, $mid);
@@ -148,6 +168,8 @@ class Service extends Base\Service
 
     public function toggleTerminal($id, $input)
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $terminal = $this->repo->terminal->getById($id);
 
         $toggle = (bool) $input['toggle'];
@@ -159,41 +181,37 @@ class Service extends Base\Service
 
     public function checkTerminalEncryptedValue($id, $input)
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
+        (new Terminal\Validator())->validateInput('terminalCheckSecret', $input);
+
         $terminal = $this->repo->terminal->findOrFail($id);
 
-        $flag = true;
+        $secretFields = [
+            Terminal\Entity::GATEWAY_TERMINAL_PASSWORD,
+            Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2,
+            Terminal\Entity::GATEWAY_SECURE_SECRET,
+            Terminal\Entity::GATEWAY_SECURE_SECRET2,
+        ];
 
-        if (isset($input['secret']))
+        $output = [];
+
+        foreach ($secretFields as $secretField)
         {
-            $flag = $terminal->matchEncryptedAttribute(
-                        Terminal\Entity::GATEWAY_SECURE_SECRET, $input['secret']);
-        }
-        else if (isset($input['password']))
-        {
-            $flag = $terminal->matchEncryptedAttribute(
-                        Terminal\Entity::GATEWAY_TERMINAL_PASSWORD, $input['password']);
-        }
-        else if (isset($input['access_code']))
-        {
-            $flag = $terminal->matchEncryptedAttribute(
-                        Terminal\Entity::GATEWAY_ACCESS_CODE, $input['access_code']);
-        }
-        else if (isset($input['password2']))
-        {
-            $flag = $terminal->matchEncryptedAttribute(
-                Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2, $input['password2']);
-        }
-        else if (isset($input['secret2']))
-        {
-            $flag = $terminal->matchEncryptedAttribute(
-                Terminal\Entity::GATEWAY_SECURE_SECRET2, $input['secret2']);
+            if (isset($input[$secretField]) === true)
+            {
+                $output[$secretField] = $terminal->matchEncryptedAttribute(
+                    $secretField, $input[$secretField]);
+            }
         }
 
-        return ['match' => $flag];
+        return $output;
     }
 
     public function getBanks(string $id): array
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $terminal = $this->repo->terminal->getById($id);
 
         $banks = $this->core()->getBanksForTerminal($terminal);
@@ -203,6 +221,8 @@ class Service extends Base\Service
 
     public function setBanks(string $id, array $input): array
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $terminal = $this->repo->terminal->getById($id);
 
         $banksToEnable = $input[Entity::ENABLED_BANKS] ?? [];

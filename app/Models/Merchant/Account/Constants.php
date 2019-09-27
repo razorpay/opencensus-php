@@ -24,6 +24,7 @@ class Constants
     const LINE1              = 'line1';
     const LINE2              = 'line2';
     const CITY               = 'city';
+    const DISTRICT_NAME      = 'district_name';
     const STATE              = 'state';
     const PIN                = 'pin';
     const COUNTRY            = 'country';
@@ -81,4 +82,15 @@ class Constants
 
     // defaults
     const DEFAULT_ACCOUNT_COUNT = 20;
+
+    // business model values
+    const B2B  = 'B2B';
+    const B2C  = 'B2C';
+    const B2BC = 'B2B+B2C';
+
+    public static $validBusinessModels = [
+        self::B2B,
+        self::B2C,
+        self::B2BC,
+    ];
 }

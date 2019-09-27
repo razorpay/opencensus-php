@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
+use RZP\Models\Card\SubType;
 use RZP\Models\Feature;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Methods;
@@ -340,6 +341,24 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
     }
 
+    public function enableCardSubType($id = '10000000000000', $subtype)
+    {
+        $subTypes = SubType::getEnabledCardSubTypes(1);
+
+        $subTypes[$subtype] = 1;
+
+        return $this->fixtures->edit('methods', $id, ['card_subtype' => $subTypes]);
+    }
+
+    public function disableCardSubType($id = '10000000000000', $subtype)
+    {
+        $subTypes = SubType::getEnabledCardSubTypes(1);
+
+        $subTypes[$subtype] = 0;
+
+        return $this->fixtures->edit('methods', $id, ['card_subtype' => $subTypes]);
+    }
+
     public function enableCardNetworks($id = '10000000000000', $networks)
     {
         $cardNetworks = Network::getEnabledCardNetworks(Network::DEFAULT_CARD_NETWORKS);
@@ -353,7 +372,6 @@ class Merchant extends Base
 
         return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
     }
-
 
     public function disableCardNetworks($id = '10000000000000', $networks)
     {
@@ -497,6 +515,16 @@ class Merchant extends Base
     public function disablePayLater($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['paylater' => false]);
+    }
+
+    public function enablePaypal($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paypal' => true]);
+    }
+
+    public function disablePaypal($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paypal' => false]);
     }
 
     public function setDisabledBanks($id = '10000000000000', array $disabledBanks)
@@ -654,6 +682,11 @@ class Merchant extends Base
     public function editPricingPlanId($planId, $id = '10000000000000')
     {
         return $this->edit($id, ['pricing_plan_id' => $planId]);
+    }
+
+    public function editCreatedAt($createdAt, $id = '10000000000000')
+    {
+        return $this->edit($id, ['created_at' => $createdAt]);
     }
 
     public function enableMagic($id = '10000000000000')
@@ -851,87 +884,93 @@ class Merchant extends Base
         $merchants = [];
 
         $merchants[11] = $this->createMerchantWithDetails(
-                                    Org::RZP_ORG,
-                                    '10000000000011',
-                                    [
-                                        'name'          => 'jitendra ojha',
-                                        'activated'     => 1,
-                                        'live'          => 1,
-                                        'activated_at'  => $now,
-                                        'email'         => 'email.ojha@test.com',
-                                        'website'       => 'www.ojha.test',
-                                        'billing_label' => 'Ojha Label',
-                                    ],
-                                    [
-                                        'activation_status' => 'activated',
-                                    ]);
+            Org::RZP_ORG,
+            '10000000000011',
+            [
+                'name'          => 'jitendra ojha',
+                'activated'     => 1,
+                'live'          => 1,
+                'activated_at'  => $now,
+                'email'         => 'email.ojha@test.com',
+                'website'       => 'www.ojha.test',
+                'billing_label' => 'Ojha Label',
+            ],
+            [
+                'activation_status' => 'activated',
+                'business_type'     => '2'
+            ]);
 
         $merchants[11]->groups()->sync(['10000000000027']);
 
         $merchants[12] = $this->createMerchantWithDetails(
-                                    Org::RZP_ORG,
-                                    '10000000000012',
-                                    [
-                                        'name'          => 'jitendra selva',
-                                        'activated'     => 1,
-                                        'live'          => 1,
-                                        'activated_at'  => $now,
-                                        'email'         => 'email.selva@test.com',
-                                        'website'       => 'www.selva.test',
-                                        'billing_label' => 'Selva Label',
-                                    ],
-                                    [
-                                        'activation_status' => 'activated',
-                                    ]);
+            Org::RZP_ORG,
+            '10000000000012',
+            [
+                'name'          => 'jitendra selva',
+                'activated'     => 1,
+                'live'          => 1,
+                'activated_at'  => $now,
+                'email'         => 'email.selva@test.com',
+                'website'       => 'www.selva.test',
+                'billing_label' => 'Selva Label',
+            ],
+            [
+                'activation_status' => 'activated',
+                'business_type'     => '11'
+            ]);
 
         $merchants[12]->groups()->sync(['10000000000021']);
         $merchants[12]->admins()->sync(['10000000000012']);
 
         $merchants[13] = $this->createMerchantWithDetails(
-                                    Org::RZP_ORG,
-                                    '10000000000013',
-                                    [
-                                        'name'        => 'jitendra amit',
-                                        'archived_at' => $now,
-                                    ],
-                                    [
-                                        'archived_at' => $now,
-                                    ]);
+            Org::RZP_ORG,
+            '10000000000013',
+            [
+                'name'        => 'jitendra amit',
+                'archived_at' => $now,
+            ],
+            [
+                'archived_at'   => $now,
+                'business_type' => '1'
+            ]);
 
         $merchants[13]->groups()->sync(['10000000000024']);
 
         $merchants[14] = $this->createMerchantWithDetails(
-                                    Org::RZP_ORG,
-                                    '10000000000014',
-                                    [
-                                        'name'         => 'prashanth yv',
-                                        'parent_id'    => '10000000000012',
-                                        'activated'    => 1,
-                                        'live'         => 1,
-                                        'activated_at' => $now,
-                                    ]);
+            Org::RZP_ORG,
+            '10000000000014',
+            [
+                'name'         => 'prashanth yv',
+                'parent_id'    => '10000000000012',
+                'activated'    => 1,
+                'live'         => 1,
+                'activated_at' => $now,
+            ],
+            [
+                'business_type' => '1'
+            ]);
 
         $merchants[14]->groups()->sync(['10000000000021']);
 
         $merchants[15] = $this->createMerchantWithDetails(
-                                    Org::RZP_ORG,
-                                    '10000000000015',
-                                    [
-                                        'name'         => 'shashank kumar',
-                                        'parent_id'    => '10000000000013',
-                                        'activated'    => 1,
-                                        'live'         => 1,
-                                        'activated_at' => $now,
-                                    ]);
+            Org::RZP_ORG,
+            '10000000000015',
+            [
+                'name'         => 'shashank kumar',
+                'parent_id'    => '10000000000013',
+                'activated'    => 1,
+                'live'         => 1,
+                'activated_at' => $now,
+            ]);
 
         $merchants[15]->groups()->sync(['10000000000024']);
 
         $merchants[16] = $this->createMerchantWithDetails(
-                                    Org::RZP_ORG,
-                                    '10000000000016',
-                                    [
-                                        'pricing_plan_id' => '1hDYlICobzOCYt',
-                                    ]);
+            Org::RZP_ORG,
+            '10000000000016',
+            [
+                'pricing_plan_id' => '1hDYlICobzOCYt',
+            ]);
 
         $merchants[16]->retag(['First', 'Second']);
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use Mail;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Pricing;
@@ -88,6 +89,8 @@ trait Refund
 
         $this->pushMetrics();
 
+        $this->eventRefundCreated($this->refund);
+
         if ($this->refund->isRefundSpeedInstant() === false)
         {
             $this->eventRefundProcessed($this->refund);
@@ -99,7 +102,8 @@ trait Refund
     public function isInstantRefundSupported(Payment\Entity $payment)
     {
         // This will keep changing as we add more coverage
-        return (($payment->isCard() === true) and
+        return ((($payment->isUpi() === true) or
+                 ($payment->isCard() === true)) and
                 ($this->isCapturedPaymentAndFeatureEnabled($payment) === true));
     }
 
@@ -409,6 +413,69 @@ trait Refund
         $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_VERIFY_RESPONSE,
                                     $refund,
                                     $gatewayVerifyRefundResponse);
+
+        return $gatewayVerifyRefundResponse;
+    }
+
+    // This route always calls the gateway - to be used in manual verify refund actions
+    public function scroogeVerifyRefund(RefundEntity $refund, array $input)
+    {
+        $payment = $refund->payment;
+
+        //
+        // Refunds are typically retried in groups using long-running
+        // loops. This ensures that if a refund has been updated by a
+        // different process, it is processed accordingly here.
+        //
+        $this->repo->reload($refund);
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $input[RefundConstants::IS_FTA] = (isset($input[RefundConstants::IS_FTA]) === true) ?
+            (bool) $input[RefundConstants::IS_FTA] : null;
+
+        $refundValidator = $refund->getValidator();
+
+        //
+        // Scrooge gateways return back an object in the `success` key
+        // non-scrooge gateways return back a boolean
+        // Scrooge gateways return back lot of data like `status_code`,
+        // `gateway_refund_id`, `success` etc in the object.
+        //
+        try
+        {
+            $refundValidator->validateInput('scrooge_gateway_refund', $input);
+
+            //
+            // Doing +1 here, because at gateway side, we decrement attempts with -1,
+            // doing this to keep backward compatibility of older refunds as well as scrooge refunds.
+            // For scrooge refunds, attempts will be the exact attempt on which verify should be called,
+            // and for old refunds, it will be the refund attempt, so we need to verify on previous refund
+            //
+            $refund->setAttempts(($input['attempts'] ?? -1) + 1) ;
+
+            $data = $input['fta_data'] ?? [];
+
+            $data[RefundConstants::IS_FTA] = $input[RefundConstants::IS_FTA] ?? null;
+
+            $gatewayVerifyRefundResponse = $this->verifyRefund($refund, $data);
+        }
+        catch (\Exception $ex)
+        {
+            $gatewayResponse = [];
+
+            // Only BaseException would have `getData` function
+            if ($ex instanceof Exception\BaseException)
+            {
+                $gatewayResponse = $ex->getData();
+            }
+
+            $gatewayVerifyRefundResponse = $this->prepareScroogeRefundResponse($gatewayResponse, false, $ex, Payment\Action::VERIFY);
+        }
+
+        $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_VERIFY_RESPONSE,
+            $refund,
+            $gatewayVerifyRefundResponse);
 
         return $gatewayVerifyRefundResponse;
     }
@@ -783,7 +850,7 @@ trait Refund
         }
         catch (\Exception $e)
         {
-            (new TransferMetric)->pushReversalFailedMetrics(e);
+            (new TransferMetric)->pushReversalFailedMetrics($e);
 
             throw $e;
         }
@@ -1888,14 +1955,20 @@ trait Refund
         {
             $scroogeData['fta_data']['vpa'] = $input['vpa'];
         }
-        else if (($refund->isRefundSpeedInstant() === true) and
-                 ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true))
+        else if ($refund->isRefundSpeedInstant() === true)
         {
-            $cardInput = $this->getCardIdInput($payment, $input);
-
-            if (empty($cardInput) === false)
+            if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true)
             {
-                $scroogeData['fta_data']['card_transfer'] = $cardInput;
+                $cardInput = $this->getCardIdInput($payment, $input);
+
+                if (empty($cardInput) === false)
+                {
+                    $scroogeData['fta_data']['card_transfer'] = $cardInput;
+                }
+            }
+            else if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
             }
         }
         else
@@ -2119,6 +2192,15 @@ trait Refund
         $this->app['events']->fire('api.refund.processed', $eventPayload);
     }
 
+    public function eventRefundCreated(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.created', $eventPayload);
+    }
+
     public function eventRefundFailed(RefundEntity $refund)
     {
         $eventPayload = [
@@ -2215,7 +2297,8 @@ trait Refund
 
             $fta = (new FundTransferAttempt\Core)->createWithVpa($this->refund,
                                                                  $this->refund->vpa,
-                                                                 $fundTransferAttemptInput);
+                                                                 $fundTransferAttemptInput,
+                                                                 true);
 
             return $fta;
         });
@@ -2263,7 +2346,8 @@ trait Refund
         {
             $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
                                                                   $payment->card,
-                                                                  $fundTransferAttemptInput);
+                                                                  $fundTransferAttemptInput,
+                                                                  true);
 
             return $fta;
         });
@@ -2338,9 +2422,11 @@ trait Refund
     protected function isInstantRefundsSupportedRefund(Payment\Entity $payment, RefundEntity $refund): bool
     {
         return (($refund->isRefundRequestedSpeedInstant() === true) and
-                ($payment->getMethod() === Payment\Method::CARD) and
                 ($payment->hasBeenCaptured() === true) and
-                ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true));
+                (in_array($payment->getGateway(), Payment\Gateway::$scroogeGateways, true) === true) and
+                ((in_array($payment->getMethod(), [Payment\Method::CARD, Payment\Method::UPI], true) === true) and
+                 (($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true) or
+                  ($this->isPaymentUpiAndCardTransferRefund($refund, $payment) === true))));
     }
 
     /**
@@ -2397,6 +2483,50 @@ trait Refund
                     return true;
                 }
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checking if a upi payment is valid to be refunded by VPA instantly.
+     * If card_transfer_refund feature is present for the merchant,
+     * refund will be made on VPA.
+     * Payment should be gateway captured, if it isn't, it should not be refunded directly via FTA.
+     *
+     * @param RefundEntity $refund
+     * @param Payment\Entity $payment
+     * @param bool $ignoreFeatureFlag
+     * @return bool
+     * @throws \Exception
+     */
+    protected function isPaymentUpiAndCardTransferRefund(
+        RefundEntity $refund,
+        Payment\Entity $payment,
+        bool $ignoreFeatureFlag = false): bool
+    {
+        //
+        // Check if any upi FTA already exists, not allowing upi fta if any previous upi fta exists
+        //
+        foreach ($refund->fundTransferAttempts as $fundTransferAttempt)
+        {
+            if (empty($fundTransferAttempt->getVpaId()) === false)
+            {
+                return false;
+            }
+        }
+
+        if (($payment->getMethod() === Payment\Method::UPI) and
+            (empty($payment->getVpa()) === false) and
+            ($payment->isGatewayCaptured() === true))
+        {
+            if (($ignoreFeatureFlag === false) and
+                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         return false;
@@ -2514,7 +2644,7 @@ trait Refund
 
     protected function createAndAssociateVpa(array $vpaInput)
     {
-        $vpa = (new Core)->createVpa($vpaInput);
+        $vpa = (new Vpa\Core)->createForSource($vpaInput, $this->refund);
 
         $this->refund->vpa()->associate($vpa);
 

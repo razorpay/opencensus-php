@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
 
 class PayVerifyData extends Base\Mock\Server
 {
@@ -23,6 +24,37 @@ class PayVerifyData extends Base\Mock\Server
                 ],
             'error'             => null,
             'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        $this->content($response, 'callback');
+
+        return $response;
+    }
+
+    public function upi_citi($entities)
+    {
+        $data = $entities['gateway']['redirect']['PushNotificationToSSG'];
+
+        $errors = [
+            'ZA' => [
+                'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+                'gateway_error_code'        => 'ZA',
+                'gateway_error_description' => 'TRANSACTION DECLINED BY CUSTOMER',
+            ],
+        ];
+
+        $response = [
+            'data' =>
+                [
+                    'NPCITxnId' => $data['NPCITxnId'] ?? null,
+                    'paymentId' => $entities['payment']['id'],
+                    'amount'    => intval(floatval($data['SettlementAmount']) * 100),
+                    '_raw' => '',
+                ],
+            'error'             => $errors[$data['RespCode']] ?? null,
+            'success'           => $data['RespCode'] === '00',
             'mozart_id'         => '',
             'external_trace_id' => '',
         ];
@@ -63,7 +95,7 @@ class PayVerifyData extends Base\Mock\Server
             'data' => [
                 'paymentId' => $entities['payment']['id'],
                 'amount' => $entities['payment']['amount'] / 100,
-                'bank_payment_id' => 999999,
+                'bank_payment_id' => '999999',
                 'status' => 'callback_successful',
                 '_raw' => null
                 ],
@@ -83,7 +115,7 @@ class PayVerifyData extends Base\Mock\Server
             'data' => [
                 'paymentId' => $entities['payment']['id'],
                 'amount' => $entities['payment']['amount'] / 100,
-                'bank_payment_id' => 999999,
+                'bank_payment_id' => '999999',
                 'status' => 'callback_successful',
                 '_raw' => []
             ],
@@ -252,6 +284,49 @@ class PayVerifyData extends Base\Mock\Server
                 'success' => true
             ];
         }
+        catch (\Exception $e)
+        {
+            $response = [
+                'data' => [
+                    '_raw' => '',
+                    'status' => 'callback_failed'
+                ],
+                'error' => [
+                    'description' => 'INPUT_VALIDATION_FAILED',
+                    'gateway_error_code' => '',
+                    'gateway_error_description' => 'INPUT_VALIDATION_FAILED',
+                    'gateway_status_code' => 0,
+                    'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+                ],
+                'external_trace_id' => '',
+                'mozart_id' => '',
+                'next' => [],
+                'success' => false
+            ];
+        }
+
+        return $response;
+    }
+
+    public function wallet_paypal($entities)
+    {
+         try
+         {
+             $response = [
+                 'data' => [
+                     'amount'    => $entities['payment']['amount'],
+                     'paymentId' => $entities['payment']['id'],
+                     'PayId'     => $entities['gateway']['redirect']['PayId'],
+                     'status'    => $entities['gateway']['redirect']['status'],
+                     'token'     => $entities['gateway']['redirect']['token'],
+                 ],
+                 'error' => null,
+                 'external_trace_id' => '',
+                 'mozart_id' => '',
+                 'next' => [],
+                 'success' => true
+             ];
+         }
         catch (\Exception $e)
         {
             $response = [

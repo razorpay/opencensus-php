@@ -19,8 +19,15 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const REFUND_TRANS_TIME    = 'refund_transaction_time';
     const REFUND_RRN           = 'refund_rrn';
     const STATUS               = 'status';
+    const CUSTOMER_VPA         = 'customer_vpa';
+
+    const BLACKLISTED_COLUMNS = [
+        self::CUSTOMER_VPA,
+    ];
 
     const SUCCESS = 'SUCCESS';
+
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
     protected function getRefundId(array $row)
     {

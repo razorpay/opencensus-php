@@ -5,6 +5,7 @@ namespace RZP\Models\FileStore\Storage\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore\Type;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Trace\TraceCode;
 
 class Bucket
 {
@@ -28,7 +29,6 @@ class Bucket
             if (in_array($type, $types))
             {
                 $bucketConfigName = $bucketConfig;
-
                 break;
             }
         }

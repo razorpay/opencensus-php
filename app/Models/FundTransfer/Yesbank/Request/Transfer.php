@@ -5,14 +5,17 @@ namespace RZP\Models\FundTransfer\Yesbank\Request;
 use Config;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\Card\Entity as CardVault;
+use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
@@ -24,7 +27,21 @@ class Transfer extends Base
 {
     const VERSION = '1';
 
-    const IFSC_CODE = 'YESB0000022';
+    const IFSC_CODE  = 'YESB0000022';
+
+    const DEFAULT_NETWORK = 'default_network';
+
+    // VPA format based on card issuer
+    const VPA_FORMAT = [
+        Issuer::SCBL => [
+             Network::AMEX => 'AEBC%s@sc',
+            self::DEFAULT_NETWORK => 'AEBC%s@sc',
+        ],
+        Issuer::ICIC => [
+            Network::AMEX         => 'ccpay.0%s@icici',
+            self::DEFAULT_NETWORK => 'CCPAY.%s@icici',
+        ]
+    ];
 
     protected $requestType;
 
@@ -105,7 +122,8 @@ class Transfer extends Base
 
         $this->requestTrace = $requestData;
 
-        if ($this->isLogEnabled() === false)
+        if ($this->isLogEnabled() === false and
+            ($this->entity->isRefund() === true))
         {
             $this->requestTrace[$this->requestIdentifier]
             [Constants::BENEFICIARY]
@@ -214,7 +232,7 @@ class Transfer extends Base
 
             $cardNum = $this->app['card.cardVault']->detokenize($vaultToken);
 
-            $vpa = 'CCPAY.' . $cardNum . '@icici';
+            $vpa = $this->getVpaHandleFromCardDetails($cardObj, $cardNum);
         }
         else
         {
@@ -343,6 +361,14 @@ class Transfer extends Base
         // If not refund then beneficiary has to be registered
         // For Settlement and Payout will need beneficiary id for transfer
         //
+        if (($attempt->hasCard() === true) and
+            ($attempt->isSettlement() === true))
+        {
+            return [
+                Constants::BENEFICIARY_CODE => 'card' . $this->entity->card->getId(),
+            ];
+        }
+
         return [
             Constants::BENEFICIARY_CODE => $this->entity->bankAccount->getId(),
         ];
@@ -378,6 +404,31 @@ class Transfer extends Base
         $formattedNarration = $formattedNarration . ' FUND TRANSFER';
 
         return $formattedNarration;
+    }
+
+    /**
+     * @param $cardObj
+     * @param $cardNum
+     * @return string
+     */
+    public function getVpaHandleFromCardDetails($cardObj, $cardNum)
+    {
+        $issuer = $cardObj->getIssuer();
+
+        $network = $cardObj->getNetworkCode();
+
+        $networkList = self::VPA_FORMAT[$issuer]?: [];
+
+        $vpaFormat = $networkList[self::DEFAULT_NETWORK];
+
+        if (array_key_exists($network, $networkList) === true)
+        {
+            $vpaFormat = $networkList[$network];
+        }
+
+        $vpaHandle = sprintf($vpaFormat, $cardNum);
+
+        return $vpaHandle;
     }
 
     /**
@@ -497,6 +548,30 @@ class Transfer extends Base
             $mode,
             $statusCode,
             $bankSubStatus);
+
+        if (($statusCode === GatewayStatus::STATUS_CODE_FAILURE) and ($bankSubStatus === GatewayStatus::DT))
+        {
+            try
+            {
+                $this->trace->critical(TraceCode::FTA_DUPLICATE_TRANSFER, $response);
+
+                (new SlackNotification)->send(
+                    'Duplicate Fund transfer',
+                    [ 'response' => $rzpReferenceNo ],
+                    null,
+                    1,
+                    'fts_alerts');
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::INFO,
+                    TraceCode::FTA_RECON_ALERT_FAILED,
+                    $response
+                );
+            }
+        }
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
@@ -723,17 +798,28 @@ class Transfer extends Base
 
     protected function mockGenerateFailedResponseForGateway(): array
     {
-        // TODO: Return stuff
-        return [];
+        return [
+            Constants::UPI_REQUEST_REFERENCE_NUMBER => $this->entity->getId(),
+            Constants::UPI_UNIQUE_RESPONSE_NUMBER   => PublicEntity::generateUniqueId(),
+            Constants::UPI_RESPONSE_CODE            => GatewayStatus::E99,
+            Constants::UPI_STATUS_CODE              => GatewayStatus::STATUS_CODE_FAILURE,
+        ];
     }
 
     protected function fetchCardInfoAndPurposeData()
     {
         $cardObj = $this->entity->card;
 
+        $networkCode = $cardObj->getNetworkCode();
+
         $vaultToken = $this->getCardVaultToken($cardObj);
 
         $response = $this->app['card.cardVault']->detokenize($vaultToken);
+
+        if ($networkCode === Network::DICL)
+        {
+            $response = '00'.$response;
+        }
 
         $beneName = $this->normalizeBeneficiaryName($cardObj->getName());
 
@@ -747,58 +833,5 @@ class Transfer extends Base
                 Constants::BENEFICIARY_IFSC       => $this->getIfscCodeUsingCardInfo($cardObj),
             ],
         ];
-    }
-
-    protected function getIfscCodeUsingCardInfo(CardVault $cardObj)
-    {
-        $cardIssuer = trim($cardObj->getIssuer());
-
-        if (in_array($cardIssuer, array_keys(Constants::BANK_IFSC), true) === true )
-        {
-            return Constants::BANK_IFSC[$cardIssuer];
-        }
-        else
-        {
-            (new SlackNotification)->send('Card payout not supported for issuer',
-                [
-                    'id'     => $this->entity->getId(),
-                    'issuer' => $cardIssuer,
-                ], null, 1);
-
-            new LogicException('Ifsc code does not exist for this card issuer');
-        }
-    }
-
-    /**
-     * If card is used for the 1st time on a RZP gateway then a vault token is generated in card entity.
-     * If vault has been already encountered then vault token is null and a global card id is present.
-     * This contains the vault token generated.
-     * If no vault token is present then null is returned to mark fta as failed.
-     *
-     * @param CardVault $card
-     * @return mixed
-     * @throws \Exception
-     */
-    protected function getCardVaultToken(CardVault $card)
-    {
-        $token = $card->getCardVaultToken();
-
-        if ($token === null)
-        {
-            $this->trace->error(
-                TraceCode::CARD_TOKEN_IS_NOT_AVAILABLE,
-                [
-                    'card_id' => $card->getId()
-                ]);
-
-            (new SlackNotification())->send(
-                'Vault token missing',
-                [
-                    'card_id' => $card->getId()
-                ],
-                null, 1);
-        }
-
-        return $token;
     }
 }

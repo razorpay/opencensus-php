@@ -52,6 +52,13 @@ class NodalAccount extends NodalBase\FileProcessor
 
         foreach ($entities as $entity)
         {
+            //if BA is not present for attempt
+            // marking FTA as failed, if source is settlement
+            if($this->markFailedIfBANotExists($entity) === true)
+            {
+                continue;
+            }
+
             $record = $this->getSettlementRow($entity);
 
             array_push($textData, $record);

@@ -120,7 +120,7 @@ class Core extends Base\Core
             unset($input[Entity::SUBSCRIPTION_ID]);
         }
 
-        $batchIdOrBatch = $batchId === null ? $batch:$batchId;
+        $batchIdOrBatch = $batchId === null ? $batch : $batchId;
 
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
@@ -527,8 +527,6 @@ class Core extends Base\Core
             });
 
         $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
-
-        InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
 
         // Sends expiration mails to customer asynchronously
         $this->eventService->fire('api.invoice.expired', [$invoice]);

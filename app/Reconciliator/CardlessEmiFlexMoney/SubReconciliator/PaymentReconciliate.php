@@ -55,7 +55,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->cardless_emi->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }

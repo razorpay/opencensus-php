@@ -56,6 +56,8 @@ class Shared
     const NETBANKING_CBI_TERMINAL            = '1000NbCbiTrmnl';
     const NETBANKING_SIB_TPV_TERMINAL        = '1000NbSibTpvTl';
     const NETBANKING_SBI_TERMINAL            = '100NbSbinTrmnl';
+    const NETBANKING_SBI_TPV_TERMINAL        = '100NbSbinTpvTl';
+    const NETBANKING_SBI_REC_TERMINAL        = '100NbSbinRecTl';
     const NETBANKING_YESB_TERMINAL           = '100NbYesbTrmnl';
     const NETBANKING_YESB_TPV_TERMINAL       = '100NbYesbTpvTl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
@@ -109,6 +111,7 @@ class Shared
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
     const UPI_AIRTEL_RAZORPAY_TERMINAL       = '100UPIArtlTmnl';
+    const UPI_CITI_RAZORPAY_TERMINAL         = '100UPICitiTmnl';
     const WORLDLINE_TERMINAL                 = '1000WldlineTml';
 
     protected static $shared = array(

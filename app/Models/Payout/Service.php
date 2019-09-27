@@ -26,6 +26,8 @@ use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
+    use Base\Traits\ProcessAccountNumber;
+
     protected $contactService;
 
     public function __construct()
@@ -45,6 +47,7 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
 
+        // Only allowed for Rx payouts, mandates account number
         $this->processAccountNumber($input);
 
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
@@ -183,6 +186,7 @@ class Service extends Base\Service
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
+        // Only allowed for Rx payouts, mandates account number
         $this->processAccountNumber($payoutInput);
 
         $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
@@ -220,6 +224,11 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
+    public function calculateEsOnDemandFees(array $input)
+    {
+        return (new Payout\Core)->calculateEsOnDemandFees($input, $this->merchant);
+    }
+
     public function fetch(string $id, array $input): array
     {
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
@@ -229,6 +238,7 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+        // Only allowed for Rx payouts, mandates account number
         $this->processAccountNumber($input);
 
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
@@ -468,7 +478,9 @@ class Service extends Base\Service
                                                                          $batchId
                     );
 
-                    $payoutBatch->push($payout->toArrayPublic());
+                    $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+                    $payoutBatch->push($payoutArr);
                 });
 
             }
@@ -512,21 +524,6 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST, $payoutBatch->toArrayWithItems());
 
         return $payoutBatch->toArrayWithItems();
-    }
-
-    /**
-     * We are allowing Fund Account payouts only on RX.
-     * In RX, we always mandate account number.
-     *
-     * @param array $input
-     *
-     */
-    protected function processAccountNumber(array & $input)
-    {
-        /** @var Merchant\Validator $merchantValidator */
-        $merchantValidator = $this->merchant->getValidator();
-
-        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
     }
 
     protected function processEntryForPayoutForFundAccount(array $entry,

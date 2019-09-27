@@ -10,7 +10,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'min_amount'    => 0,
@@ -26,7 +26,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'min_amount'    => 0,
@@ -42,7 +42,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'sorter',
                     'load'          => 100,
                     'group'         => 'authentication',
@@ -57,7 +57,7 @@ return [
                 'content' => [
                    'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'sorter',
                     'load'          => 100,
                     'group'         => 'authentication',
@@ -72,7 +72,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'min_amount'    => 0,
@@ -89,7 +89,7 @@ return [
                 'content' => [
                    'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'min_amount'    => 0,
@@ -107,7 +107,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'sorter',
                     'load'          => 50,
                     'group'         => 'authentication',
@@ -122,7 +122,7 @@ return [
                 'content' => [
                     'method'        => 'card',
                     'merchant_id'   => '100000Razorpay',
-                    'gateway'       => 'hitachi',
+                    'gateway'       => 'cybersource',
                     'type'          => 'sorter',
                     'load'          => 50,
                     'group'         => 'authentication',

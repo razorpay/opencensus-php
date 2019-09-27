@@ -3,17 +3,18 @@
 namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Reconciliator\Core;
+use RZP\Constants\Timezone;
 use RZP\Reconciliator\Messenger;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\InfoCode;
-use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -29,9 +30,31 @@ class SubReconciliate extends Base\Core
     const SUCCESSES_SUMMARY = 'successes_summary';
 
     // used in recon processing output file
-    const RECON_TYPE        = 'recon_type';
-    const RECON_STATUS      = 'recon_status';
-    const RECON_ERROR_MSG   = 'recon_error_msg';
+    const RECON_TYPE            = 'recon_type';
+    const RECON_STATUS          = 'recon_status';
+    const ALREADY_RECONCILED_AT = 'already_reconciled_at';
+    const RECON_ERROR_MSG       = 'recon_error_msg';
+    const MERCHANT_ID           = 'merchant_id';
+    const PROCESSED_AT          = 'processed_at';
+    const BATCH_ID              = 'batch_id';
+    const ATTEMPT_NUMBER        = 'attempt_number';
+    const RECON_ENTITY_ID       = 'recon_entity_id';
+
+    /**
+     * The list of columns which shouldn't be exposed to specific data sources like qubole.
+     */
+    const BLACKLISTED_COLUMNS = [];
+
+    /**
+     * For few gateways, we do not get the RZP  payment/refund ID
+     * in the MIS row. We want to add extra column recon_entity_id
+     * in the output file only for such gateways.
+     * This variable need to be overridden and set to 'true' in
+     * such gateways.
+     *
+     * @var bool
+     */
+    const SHOULD_ADD_ENTITY_ID_COLUMN = false;
 
     /**
      * The list of payments/refunds attempted to reconcile.
@@ -90,6 +113,8 @@ class SubReconciliate extends Base\Core
     protected $core;
 
     protected $messenger;
+
+    protected $batch;
 
     /**
      * @var array This array will contain MIS row and
@@ -208,6 +233,12 @@ class SubReconciliate extends Base\Core
         }
         finally
         {
+            //
+            // setting the variable null here to free up the memory associated with this variable.
+            // not calling unset as that only removes the reference and the GC will free up the memory.
+            //
+            $fileContents = null;
+
             $this->setReconOutputData($batchProcessor);
 
             if (count(static::$scroogeReconciliate) > 0)
@@ -242,9 +273,15 @@ class SubReconciliate extends Base\Core
      */
     protected function insertRowInOutputFile(array $row = [], string $reconType = 'unknown')
     {
-        $row[self::RECON_TYPE]      = $reconType;
-        $row[self::RECON_STATUS]    = '';
-        $row[self::RECON_ERROR_MSG] = '';
+        $row[self::RECON_TYPE]              = $reconType;
+        $row[self::RECON_STATUS]            = '';
+        $row[self::ALREADY_RECONCILED_AT]   = '';
+        $row[self::RECON_ERROR_MSG]         = '';
+        $row[self::MERCHANT_ID]             = '';
+        $row[self::PROCESSED_AT]            = '';
+        $row[self::BATCH_ID]                = '';
+        $row[self::ATTEMPT_NUMBER]          = '';
+        $row[self::RECON_ENTITY_ID]         = '';
 
         static::$reconOutputData[] = $row;
 
@@ -263,7 +300,7 @@ class SubReconciliate extends Base\Core
         static::$currentRowNumber = -1;
     }
 
-    protected function persistReconciledAt($entity)
+    protected function persistReconciledAt($entity, string $reconciledType = ReconciledType::MIS)
     {
         if (($entity->getEntityName() !== Entity::REFUND) or
             ($entity->isScrooge() === false))
@@ -272,7 +309,7 @@ class SubReconciliate extends Base\Core
 
             $time = time();
             $transaction->setReconciledAt($time);
-            $transaction->setReconciledType(ReconciledType::MIS);
+            $transaction->setReconciledType($reconciledType);
 
             $transaction->saveOrFail();
 
@@ -469,11 +506,12 @@ class SubReconciliate extends Base\Core
      * Rows for which the corresponding entities, have already been marked as reconciled,
      * we add it to the list of successfully processed rows.
      *
-     * @param  string $entityId
+     * @param string $entityId
+     * @param int $reconciledAt
      */
-    protected function handleAlreadyReconciled(string $entityId)
+    protected function handleAlreadyReconciled(string $entityId, int $reconciledAt = null)
     {
-        $this->setRowReconStatusAndError(InfoCode::ALREADY_RECONCILED);
+        $this->setRowReconStatusAndError(InfoCode::ALREADY_RECONCILED, null, $reconciledAt);
 
         $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entityId);
     }
@@ -496,22 +534,61 @@ class SubReconciliate extends Base\Core
     }
 
     /**
-     * Set the status and error msg for the current row in progress
+     * Sets the status, error msg, already reconciled_at time
+     * for the current row in progress
+     *
      * @param string $status
      * @param string|null $errorCode
+     * @param int|null $reconciledAt
      */
-    protected function setRowReconStatusAndError(string $status, string $errorCode = null)
+    protected function setRowReconStatusAndError(string $status, string $errorCode = null, int $reconciledAt = null)
     {
-        $statusDescription = Constants::RECON_PUBLIC_DESCRIPTIONS[$status] ?? $status;
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS] = $status;
 
-        static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS] = $statusDescription;
+        if ($status === InfoCode::ALREADY_RECONCILED)
+        {
+            // Add the already reconciled_at time
+            $reconciledTime = Carbon::createFromTimestamp($reconciledAt, Timezone::IST)->format('Y-m-d H:i:s');
+
+            static::$reconOutputData[static::$currentRowNumber][self::ALREADY_RECONCILED_AT] = $reconciledTime;
+        }
 
         if (empty($errorCode) === false)
         {
-            $errorMsg = Constants::RECON_PUBLIC_DESCRIPTIONS[$errorCode] ?? $errorCode;
-
-            static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorMsg;
+            static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorCode;
         }
+    }
+
+    /**
+     * sets Recon Entity ID (payment ID / Refund ID) for the
+     * current row in progress
+     *
+     * @param string $reconEntityId
+     */
+    protected function setReconEntityIdInOutput(string $reconEntityId)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_ENTITY_ID] = $reconEntityId;
+    }
+
+    protected function setMerchantIdInOutput(string $merchantId)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::MERCHANT_ID] = $merchantId;
+    }
+
+    protected function setProcessedAtInOutput()
+    {
+        $processed_at = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+        static::$reconOutputData[static::$currentRowNumber][self::PROCESSED_AT] = $processed_at;
+    }
+
+    protected function setBatchIdInOutput($batchId)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::BATCH_ID] = $batchId;
+    }
+
+    protected function setAttemptsInOutput($attemptNumber)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::ATTEMPT_NUMBER] = $attemptNumber;
     }
 
     /**
@@ -653,5 +730,15 @@ class SubReconciliate extends Base\Core
                 'row'               => $row,
                 'gateway'           => $this->gateway
             ]);
+    }
+
+    /**
+     * @return array
+     * 1. Gateway should override this function to return list of black listed columns which should not
+     * be included in the output file.
+     */
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return static::BLACKLISTED_COLUMNS;
     }
 }

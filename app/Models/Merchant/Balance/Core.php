@@ -112,13 +112,18 @@ class Core extends Base\Core
     /**
      * Check that a merchant's balance is greater than amount argument passed
      *
-     * @param  Merchant\Entity $merchant
-     * @param  int             $amount
+     * @param Merchant\Entity $merchant
+     * @param int             $amount
+     * @param string          $balanceType
+     *
      * @return bool
      */
-    public function checkMerchantBalance(Merchant\Entity $merchant, int $amount) : bool
+    public function checkMerchantBalance(
+        Merchant\Entity $merchant,
+        int $amount,
+        string $balanceType = Type::PRIMARY) : bool
     {
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        $balance = $merchant->getBalanceByProductTypeOrFail($balanceType);
 
         if ($balance->getBalance() < $amount)
         {

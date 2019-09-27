@@ -38,6 +38,14 @@ final class FactoryData
             'activated_at'             => time(),
         ]);
 
+        $factory(\RZP\Models\Merchant\Document\Entity::class, [
+            'id'            => $faker->uniqueid,
+            'merchant_id'   => '10000000000000',
+            'file_store_id' => 'abcdef12345678',
+            'document_type' => 'address_proof_url',
+            'entity_type'   => 'merchant',
+        ]);
+
         /**
          * Entity data type of merchant_email
          */
@@ -327,7 +335,7 @@ final class FactoryData
             'network' => 'Visa',
             'type' => 'credit',
             'country' => 'IN',
-            'issuer' => 'SBI',
+            'issuer' => 'SBIN',
             'trivia' => $faker->sentence,
         ]);
 
@@ -1105,6 +1113,10 @@ final class FactoryData
             'channel'           => 'rbl',
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Mpan\Entity::class, [
+
         ]);
     }
 }

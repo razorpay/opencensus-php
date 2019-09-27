@@ -6,17 +6,21 @@ use Carbon\Carbon;
 use Monolog\Logger;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Metric;
+use RZP\Models\FundTransfer\Attempt\Alerts;
 
 abstract class RowProcessor extends Base\Core
 {
     use DispatchesEvents;
 
     protected $row;
+
+    protected $reconcileFile;
 
     protected $version;
 
@@ -38,11 +42,13 @@ abstract class RowProcessor extends Base\Core
      */
     abstract protected function getUtrToUpdate();
 
-    public function __construct($row)
+    public function __construct($row, $reconcileFile = null)
     {
         parent::__construct();
 
         $this->row = $row;
+
+        $this->reconcileFile = $reconcileFile;
     }
 
     /**
@@ -95,10 +101,41 @@ abstract class RowProcessor extends Base\Core
                                   ->findWithRelations($this->reconEntityId, ['source']);
     }
 
+    protected function raiseUtrUpdateEvent($utr)
+    {
+        $batchFta = $this->reconEntity->batchFundTransfer;
+
+        $batchFtaId = null;
+
+        //BatchFTA can be null in test mode
+        if (empty($batchFta) === false)
+        {
+            $batchFtaId = $batchFta->getId();
+        }
+
+        $customProperties = [
+            'channel'                           => $this->reconEntity->getChannel(),
+            'purpose'                           => $this->reconEntity->getPurpose(),
+            'fund_transfer_attempt_id'          => $this->reconEntity->getId(),
+            'utr'                               => $utr,
+            'batch_fund_transfer_attempt_id'    => $batchFtaId,
+            'source_type'                       => $this->reconEntity->getSourceType(),
+            'fund_transfer_attempt_mode'        => $this->reconEntity->getMode(),
+            'fund_transfer_attempt_status'      => $this->reconEntity->getStatus(),
+            'source_id'                         => $this->reconEntity->getSourceId(),
+            'reconcile_file'                    => $this->reconcileFile,
+        ];
+
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::FTA_UTR_UPDATED,
+            null,
+            null,
+            $customProperties);
+    }
+
     protected function updateEntities()
     {
         $this->updateReconEntity();
-
         $sourceBatchId = $this->reconEntity->source->getBatchFundTransferId();
 
         $reconEntityBatchId = $this->reconEntity->getBatchFundTransferId();
@@ -133,6 +170,8 @@ abstract class RowProcessor extends Base\Core
         if ((empty($currentUtr) === true) and (empty($utr) === false))
         {
             $this->updateUtrMetric();
+
+            $this->raiseUtrUpdateEvent($utr);
         }
 
         $this->reconEntity->setUtr($utr);
@@ -174,7 +213,7 @@ abstract class RowProcessor extends Base\Core
 
         $requestFailure = $this->parsedData[Constants::REQUEST_FAILURE] ?? false;
 
-        $isInternalError = $requestFailure || $statusClass::isCriticalError($this->reconEntity);
+        $isInternalError = $requestFailure or $statusClass::isCriticalError($this->reconEntity);
 
         $bankStatusCode = $this->reconEntity->getBankStatusCode();
 
@@ -195,6 +234,36 @@ abstract class RowProcessor extends Base\Core
             'internal_error'    => $isInternalError,
             'failure_reason'    => $publicErrorMessage,
         ];
+
+        $batchFta = $this->reconEntity->batchFundTransfer;
+
+        $batchFtaId = null;
+
+        //BatchFTA can be null in test mode
+        if (empty($batchFta) === false)
+        {
+            $batchFtaId = $batchFta->getId();
+        }
+
+        $customProperties = [
+            'channel'                           => $this->reconEntity->getChannel(),
+            'purpose'                           => $this->reconEntity->getPurpose(),
+            'fund_transfer_attempt_id'          => $this->reconEntity->getId(),
+            'batch_fund_transfer_attempt_id'    => $batchFtaId,
+            'utr'                               => $this->reconEntity->getUtr(),
+            'source_type'                       => $this->reconEntity->getSourceType(),
+            'fund_transfer_attempt_mode'        => $this->reconEntity->getMode(),
+            'fund_transfer_attempt_status'      => $this->reconEntity->getStatus(),
+            'source_id'                         => $this->reconEntity->getSourceId(),
+            'error_message'                     => $publicErrorMessage,
+            'reconcileFile'                     => $this->reconcileFile
+        ];
+
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::FTA_DATA_UPDATED_FROM_REVERSE_FEED,
+            null,
+            null,
+            $customProperties);
 
         $this->postFtaStatusProcess($source, $ftaData);
     }
@@ -224,6 +293,15 @@ abstract class RowProcessor extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+            $alerts = new Alerts();
+
+            $slackData = $ftaData + [
+                'headLine' => 'fta source processing failed',
+                'error'    => $e->getMessage(),
+            ];
+
+            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 

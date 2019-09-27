@@ -20,7 +20,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->mozart->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }
@@ -42,7 +42,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $data = json_decode($gatewayPayment['raw'], true);
 
-        $dbReferenceNumber = $data['bank_payment_id'];
+        $dbReferenceNumber = $data['bank_payment_id'] ?? null;
 
         //
         // Sometimes we have db reference number saved as string 'null'.

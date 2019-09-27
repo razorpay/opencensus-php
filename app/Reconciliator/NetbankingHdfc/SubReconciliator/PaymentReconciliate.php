@@ -6,11 +6,13 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
-use RZP\Gateway\Netbanking\Base\Entity;
+use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Reconciliator\NetbankingHdfc\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getPaymentId(array $row)
     {
         $reconStatus = $this->getReconPaymentStatus($row);
@@ -22,10 +24,21 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        // TODO: fix this to use Ref1 column of recon row.
-        /** @var Entity $gatewayPayment */
-        $this->gatewayPayment = $this->repo->netbanking->findByVerificationIdAndAction($row[Constants::COLUMN_PAYMENT_ID],
-                                                                                    Action::AUTHORIZE);
+        try
+        {
+            $this->gatewayPayment = $this->repo->netbanking->findByGatewayPaymentIdAndAction(
+                                                                            $row[Constants::BANK_PAYMENT_ID],
+                                                                            Action::AUTHORIZE);
+        }
+        catch (DBQueryException $ex)
+        {
+            // Just trace the exception and Do nothing.
+            // This try-catch is needed, just to suppress the exception,
+            // Else recon process gets terminated here and rows after this
+            // current row do not get processed.
+            //
+            $this->trace->traceException($ex);
+        }
 
         if ($this->gatewayPayment === null)
         {
@@ -40,7 +53,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
          return $row[Constants::BANK_PAYMENT_ID] ?? null;
      }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
                                                                Action::AUTHORIZE);

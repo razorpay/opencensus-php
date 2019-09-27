@@ -2,6 +2,7 @@
 
 namespace RZP\Tests;
 
+use App;
 use Mockery;
 use Request;
 use ReflectionObject;
@@ -58,6 +59,8 @@ class TestCase extends IlluminateTestCase
         config(['app.query_cache.mock' => true]);
 
         $this->config = $this->app['config'];
+
+        $this->mockCardVault();
     }
 
     public function tearDown()
@@ -121,5 +124,54 @@ class TestCase extends IlluminateTestCase
     protected function isTestRunningOnWercker()
     {
         return (getenv('WERCKER') === 'true');
+    }
+
+
+    protected function mockCardVault($callable = null)
+    {
+        $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $callable = $callable ?: function ($route, $method, $input)
+        {
+            $response = [
+                'error' => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token'] = base64_encode($input['secret']);
+                    $response['fingerprint'] = strrev(base64_encode($input['secret']));
+                    $response['scheme'] = '0';
+                    break;
+
+                case 'detokenize':
+                    $response['value'] = base64_decode($input['token']);
+                    break;
+
+                case 'validate':
+                    if ($input['token'] === 'fail')
+                    {
+                        $response['success'] = false;
+                    }
+                    break;
+
+                case 'delete':
+                    break;
+            }
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
     }
 }

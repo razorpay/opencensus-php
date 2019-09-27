@@ -13,7 +13,9 @@ use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Reconciliate extends Base\Core
@@ -28,6 +30,7 @@ class Reconciliate extends Base\Core
     const PAYMENT        = 'payment';
     const REFUND         = 'refund';
     const COMBINED       = 'combined';
+    const MANUAL         = 'manual';
     const EMANDATE_DEBIT = 'emandate_debit';
 
     /**
@@ -38,7 +41,14 @@ class Reconciliate extends Base\Core
      */
     const INVALID_RECON_TYPE = 'invalid_recon_type';
 
-    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::EMANDATE_DEBIT];
+    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::MANUAL, self::EMANDATE_DEBIT];
+
+    /**
+     * Except combined recon type, we want to keep the analytics file
+     * in a subfolder named as gateway_reconType. For combined recon type
+     * we keep the files under gateway/ folder itself.
+     */
+    const DEFAULT_S3_PATH_RECON_TYPE = [self::COMBINED];
 
     //
     // Used to define start_row for the MIS files.
@@ -92,6 +102,46 @@ class Reconciliate extends Base\Core
     const DEBIT         = 'debit';
     const DOMESTIC      = 'domestic';
     const INTERNATIONAL = 'international';
+
+
+    const ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS = [
+        RequestProcessor\Base::EBS,
+        RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::AXIS,
+        RequestProcessor\Base::MPESA,
+        RequestProcessor\Base::KOTAK,
+        RequestProcessor\Base::AIRTEL,
+        RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::PHONEPE,
+        RequestProcessor\Base::PAYZAPP,
+        RequestProcessor\Base::OLAMONEY,
+        RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::JIOMONEY,
+        RequestProcessor\Base::BILLDESK,
+        RequestProcessor\Base::MOBIKWIK,
+        RequestProcessor\Base::AMAZONPAY,
+        RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::CARD_FSS_HDFC,
+        RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::NETBANKING_CUB,
+        RequestProcessor\Base::NETBANKING_CSB,
+        RequestProcessor\Base::NETBANKING_OBC,
+        RequestProcessor\Base::NETBANKING_RBL,
+        RequestProcessor\Base::NETBANKING_BOB,
+        RequestProcessor\Base::NETBANKING_IDFC,
+        RequestProcessor\Base::NETBANKING_YESB,
+        RequestProcessor\Base::NETBANKING_HDFC,
+        RequestProcessor\Base::NETBANKING_AXIS,
+        RequestProcessor\Base::NETBANKING_ICICI,
+        RequestProcessor\Base::NETBANKING_VIJAYA,
+        RequestProcessor\Base::NETBANKING_CANARA,
+        RequestProcessor\Base::NETBANKING_FEDERAL,
+        RequestProcessor\Base::NETBANKING_EQUITAS,
+        RequestProcessor\Base::NETBANKING_INDUSIND,
+        RequestProcessor\Base::NETBANKING_ALLAHABAD,
+        RequestProcessor\Base::NETBANKING_CORPORATION,
+    ];
 
     /*********************
      * Instance objects
@@ -212,8 +262,12 @@ class Reconciliate extends Base\Core
             }
             finally
             {
+                $data = $batchProcessor->getReconBatchOutputData();
+
+                $this->setBatchFailureSummary($batch, $data);
+
                 // Create the output file
-                $this->generateReconOutputFile($batchProcessor, $extraDetails);
+                $this->generateReconOutputFile($batch, $data, $extraDetails);
 
                 self::$isReconRunning = false;
             }
@@ -234,16 +288,17 @@ class Reconciliate extends Base\Core
      * This output file contains all valid rows of input MIS file and 3 additional
      * columns i.e. recon_type, recon_status, error_msg
      *
-     * @param Batch\Processor\Reconciliation $batchProcessor
+     * @param Batch\Entity $batch
+     * @param array $data
      * @param array $extraDetails
      */
-    protected function generateReconOutputFile(Batch\Processor\Reconciliation $batchProcessor, array $extraDetails)
+    protected function generateReconOutputFile(Batch\Entity $batch, array $data, array $extraDetails)
     {
-        $data = $batchProcessor->getReconBatchOutputData();
-
-        $batch = $batchProcessor->batch;
-
         $batchId = $batch->getId();
+
+        $attempt = $batch->getAttempts();
+
+        $this->getOutputWithRemovedBlackListedColumns($data, $batchId, $attempt);
 
         $sheetName = null;
 
@@ -260,6 +315,15 @@ class Reconciliate extends Base\Core
         }
 
         $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
+
+        if ($attempt > 1)
+        {
+            //
+            // After each retry, the output file is generated again. Need to append
+            // attempt count, so as to avoid file overwrite in s3 bucket.
+            //
+            $fileName .= '_' . $attempt;
+        }
 
         $this->trace->info(
             TraceCode::RECON_INFO,
@@ -298,6 +362,127 @@ class Reconciliate extends Base\Core
         ];
 
         $this->messenger->raiseReconInfo($traceData);
+
+        $reconciliationType = $this->getReconciliationType($extraDetails);
+
+        $this->generateReconAnalyticsData($data, $batch, $sheetName, $reconciliationType);
+    }
+
+    /**
+     * @param $data
+     * @param $batch
+     * @param $sheetName
+     * @param $reconciliationType
+     */
+    protected function generateReconAnalyticsData($data, $batch, $sheetName, $reconciliationType)
+    {
+        if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
+        {
+            $creator = new FileStore\Creator;
+
+            $extension = FileStore\Format::CSV;
+
+            $batchId = $batch->getId();
+
+            $analyticsOutputFileName = $batchId . $sheetName . '_analytics' . self::OUTPUT_FILE_SUFFIX;
+
+            $dirPath = 'reconciliation_output/' . $this->gateway;
+
+            if ((in_array($reconciliationType, self::DEFAULT_S3_PATH_RECON_TYPE, true) === false))
+            {
+                // Append _ReconType
+                $dirPath .= '_' . $reconciliationType;
+            }
+
+            $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
+
+            $creator->localFilePath($analyticsOutputFilePath)
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                    ->name($dirPath . '/' . $analyticsOutputFileName)
+                    ->extension($extension)
+                    ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
+                    ->entity($batch)
+                    ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
+                    ->save();
+
+            $fileStoreEntity = $creator->get();
+
+            $traceData = [
+                'file_id'   => $fileStoreEntity['id'],
+                'file_name' => $fileStoreEntity['name'],
+                'batch_id'  => $batchId,
+                'gateway'   => $this->gateway,
+            ];
+
+            $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
+        }
+    }
+
+    /**
+     * @param $reconOutputData
+     * @param $batchId
+     * @param $attemptNumber
+     * removes blacklisted columns if present. otherwise adds processed_at column for each row.
+     */
+
+    protected function getOutputWithRemovedBlackListedColumns(&$reconOutputData, $batchId, $attemptNumber)
+    {
+        $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
+
+        foreach ($reconOutputData as &$row)
+        {
+            foreach ($blackListedColumns as $column)
+            {
+                unset($row[$column]);
+            }
+
+            $row['batch_id'] = $batchId;
+
+            $row['attempt_number'] = $attemptNumber;
+        }
+    }
+
+    /**
+     * Sets failure count summary (if any recon failure)
+     * in failure_reason column of batch entity.
+     * Also modifies corresponding recon status
+     * description and error code description
+     *
+     * @param Batch\Entity $batch
+     * @param $data
+     */
+    protected function setBatchFailureSummary(Batch\Entity $batch, &$data)
+    {
+        $failureSummary = [];
+
+        foreach ($data as &$row)
+        {
+            $reconStatus = $row[SubReconciliate::RECON_STATUS];
+
+            if ($reconStatus === InfoCode::RECON_FAILED)
+            {
+                $errorCode = $row[SubReconciliate::RECON_ERROR_MSG];
+
+                $prevCount = $failureSummary[$errorCode] ?? 0;
+
+                $failureSummary[$errorCode] = $prevCount + 1;
+
+                // Set error description
+                $errorMsg = Constants::RECON_PUBLIC_DESCRIPTIONS[$errorCode] ?? $errorCode;
+
+                $row[SubReconciliate::RECON_ERROR_MSG] = $errorMsg;
+            }
+
+            // Set recon status description
+            $statusDescription = Constants::RECON_PUBLIC_DESCRIPTIONS[$reconStatus] ?? $reconStatus;
+
+            $row[SubReconciliate::RECON_STATUS] = $statusDescription;
+        }
+
+        if (empty($failureSummary)  === false)
+        {
+            $batch->setFailureReason(json_encode($failureSummary));
+        }
     }
 
     /**
@@ -556,9 +741,13 @@ class Reconciliate extends Base\Core
             }
         }
 
+        $fileName = basename($batch->latestFileByType(FileStore\Type::RECONCILIATION_BATCH_INPUT)->location);
+
+        $originalFileName = str_replace('_' . $batch->getId(), '', $fileName);
+
         $summary = [
             'info'              => 'Processed Batch Summary',
-            'file'              => basename($batch->latestFileByType(FileStore\Type::RECONCILIATION_BATCH_INPUT)->location),
+            'file'              => $originalFileName,
             'output_file_id'    => $outputFileIds,
             'total_count'       => $batch->getTotalCount(),
             'success_count'     => $batch->getSuccessCount(),

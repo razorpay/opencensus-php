@@ -21,7 +21,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[self::PAYMENT_ID];
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         return $this->repo
                     ->netbanking

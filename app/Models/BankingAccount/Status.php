@@ -74,6 +74,7 @@ class Status
       self::PROCESSING,
       self::UNSERVICEABLE,
       self::REJECTED,
+      self::CANCELLED,
     ];
 
     public static $notify_statuses = [

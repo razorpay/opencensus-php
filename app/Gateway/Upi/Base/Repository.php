@@ -44,6 +44,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchByNpciReferenceIdAndActions(string $npciReferenceId, array $actions = [])
+    {
+        return $this->newQuery()
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->whereIn('action', $actions)
+                    ->first();
+    }
+
     public function fetchByPaymentId($paymentId)
     {
         return $this->newQuery()
@@ -90,7 +98,6 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where('merchant_reference', '=', $merchantReference)
-                    ->where('received', '=', true)
                     ->first();
     }
 

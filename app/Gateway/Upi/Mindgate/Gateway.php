@@ -199,9 +199,11 @@ class Gateway extends Base\Gateway
         return $this->returnValidateVpaResponse($response);
     }
 
-    private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
+    private function checkResponseStatus(string $status, $successStatus = Status::SUCCESS)
     {
-        if ($status !== $successStatus)
+        $successStatus = (array) $successStatus;
+
+        if (in_array($status, $successStatus, true) === false)
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
@@ -1036,7 +1038,7 @@ class Gateway extends Base\Gateway
         }
 
         // 'MPIN Captured and Pay Request Initiated' in 'status_description' is a pending state, should be verified again
-        if (($content[ResponseFields::STATUS] === Status::REFUND_FAILED) and
+        if ((in_array($content[ResponseFields::STATUS], [Status::REFUND_FAILED, Status::PENDING], true) === true) and
             ($content[ResponseFields::STATUS_DESCRIPTION] === StatusDescription::MPIN_CAPTURED_AND_PAY_REQUEST_INITIATED))
         {
             return $scroogeResponse->setSuccess(false)
@@ -1098,7 +1100,7 @@ class Gateway extends Base\Gateway
             Verifies if the payload specified in the server callback is valid.
         */
 
-        $paymentId = $callbackData[ResponseFields::PAYMENT_ID];
+        $paymentId = $this->getPaymentIdFromServerCallback($callbackData);
 
         $input = [
             'gateway' => [
@@ -1110,16 +1112,16 @@ class Gateway extends Base\Gateway
 
         $request = $this->getPaymentVerifyRequestArray($input);
 
-        $this->action = Action::VALIDATE_PUSH;
-
         $response = $this->sendGatewayRequest($request);
+
+        $this->action = Action::VALIDATE_PUSH;
 
         $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
 
-        $this->checkResponseStatus($content[ResponseFields::STATUS]);
+        $this->checkResponseStatus($content[ResponseFields::STATUS], [Status::SUCCESS, Status::PENDING]);
     }
 
-    public function getParsedDataFromUnexptectedCallback($callbackData)
+    public function getParsedDataFromUnexpectedCallback($callbackData)
     {
         $payment = [
             'method'   => 'upi',
@@ -1180,6 +1182,8 @@ class Gateway extends Base\Gateway
         $attributes = array_merge($attributes, $callbackData);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
+
+        $this->checkCallbackResponseStatus($callbackData);
 
         return [
             'acquirer' => [

@@ -8,11 +8,13 @@ use RZP\Models\Payment\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 
 class NetbankingYesbGatewayTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use PartnerTrait;
 
     public function setUp()
     {
@@ -35,7 +37,7 @@ class NetbankingYesbGatewayTest extends TestCase
     {
         $this->doNetbankingYesbAuthAndCapturePayment();
 
-        $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
+        $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($paymentEntity);
 
@@ -43,6 +45,21 @@ class NetbankingYesbGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentMozartEntity'], $netbankingEntity);
+    }
+
+    public function testPartnerPayment()
+    {
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = $this->bank;
+
+        $this->doPartnerAuthPayment($payment, $clientId, $submerchantId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame('authorized', $payment['status']);
     }
 
     public function testTpvPayment()

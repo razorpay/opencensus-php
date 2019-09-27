@@ -454,4 +454,16 @@ class Repository extends Base\Repository
                     ->enabled()
                     ->get();
     }
+
+    public function findByMerchantIdGatewayAndCurrency(string $merchantId, string $gateway, string $currency)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::GATEWAY, '=', $gateway)
+                      ->where(Entity::CURRENCY, 'LIKE', '%'.$currency.'%')
+                      ->enabled();
+
+        $this->addMerchantWhereCondition($query, [$merchantId, Account::SHARED_ACCOUNT]);
+
+        return $query->first();
+    }
 }

@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mozart;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -12,7 +13,6 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
-
 
 class Gateway extends Base\Gateway
 {
@@ -146,7 +146,7 @@ class Gateway extends Base\Gateway
             $this->verifyCallback($input);
         }
 
-        return $this->getResponseData($input, $response);
+        return $this->getResponseData($input, $response, $gatewayPayment);
     }
 
     public function omniPay(array $input)
@@ -154,6 +154,22 @@ class Gateway extends Base\Gateway
         parent::omniPay($input);
 
         $this->authorize($input);
+    }
+
+    public function createTerminal(array $input)
+    {
+        parent::createTerminal($input);
+
+        $request = $this->getTerminalOnboardingMozartRequestArray($input);
+
+        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_CREATE_TERMINAL_RESPONSE);
+        // TODO check error codes and throw exception
+
+        return $response;
     }
 
     public function immediateVerifyApplicable($input)
@@ -171,10 +187,14 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input, $gateway = null): array
     {
+        $this->validateClientOnServerCallback($gateway);
+
         switch ($gateway)
         {
             case Payment\Gateway::UPI_AIRTEL:
                 return json_decode($input[0], true);
+            case Payment\Gateway::UPI_CITI:
+                return $input;
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
             case Payment\Gateway::WALLET_PHONEPE:
@@ -191,6 +211,8 @@ class Gateway extends Base\Gateway
         {
             case 'upi_airtel':
                 return $response[UpiAirtelResponseFields::PAYMENT_ID];
+            case 'upi_citi':
+                return $response[UpiCiti\Fields::PUSH_NOTIFICATION_TO_SSG][UpiCiti\Fields::ORDER_NO];
             case Payment\Gateway::NETBANKING_YESB:
                 return $response['data']['paymentId'];
             case Payment\Gateway::WALLET_PHONEPE:
@@ -208,6 +230,13 @@ class Gateway extends Base\Gateway
         if ($this->isFileBasedRefund($input['payment']['gateway']) === true)
         {
             return;
+        }
+
+        if ($this->isRefundDisableOnMozart($input['payment']['gateway']) === true)
+        {
+            throw new Exception\LogicException(
+                'Refund not available on mozart',
+                ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION);
         }
 
         $request = $this->getMozartRequestArray($input);
@@ -238,7 +267,22 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_CAPTURE_REQUEST);
+
         $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_CAPTURE_RESPONSE);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->createGatewayPaymentEntity($attributes, $input, Action::CAPTURE);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
@@ -397,17 +441,45 @@ class Gateway extends Base\Gateway
 
         $this->checkTpvAndModifyOrder($content, $input);
 
+        $url = $this->getUrlForMozartRequest($input, 'payments');
+
+        return $this->getAuthenticatedMozartRequestArray($url, $content);
+    }
+
+    protected function getTerminalOnboardingMozartRequestArray($input)
+    {
+        if (($input['terminal'] instanceof TerminalEntity) === true)
+        {
+            $input['terminal'] = $input['terminal']->toArrayWithPassword();
+        }
+
+        $content['entities'] = $input;
+
+        $url = $this->getUrlForMozartRequest($input, 'terminals');
+
+        return $this->getAuthenticatedMozartRequestArray($url, $content);
+    }
+
+    protected function getUrlForMozartRequest($input, $prefix)
+    {
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
-        $url =  $baseUrl . 'payments/' . $input['payment']['gateway'] . '/v1/' . $this->action;
+        $gateway = $this->getGateway($input);
+
+        $url =  $baseUrl . $prefix . '/' .  $gateway . '/v1/' . $this->action;
 
         $isGooglePay = $this->isGooglePayGateway($input);
 
         if ($isGooglePay === true)
         {
-            $url =  $baseUrl . 'payments/' . $input['gateway'] . '/v1/' . $this->action;
+            $url =  $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
         }
 
+        return $url;
+    }
+
+    protected function getAuthenticatedMozartRequestArray($url, $content)
+    {
         $authentication = [
             'api',
             $this->app['config']->get('applications.mozart.password')
@@ -454,6 +526,14 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+            Payment\Gateway::WALLET_PAYPAL => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::CAPTURE => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_INIT,
+                Action::REFUND => Action::CAPTURE,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
             Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -465,9 +545,9 @@ class Gateway extends Base\Gateway
                 Action::VERIFY     => Action::PAY_VERIFY,
             ],
             Payment\Gateway::NETBANKING_IDBI => [
-                Action::PAY_INIT    =>  null,
-                Action::PAY_VERIFY  =>  Action::PAY_INIT,
-                Action::VERIFY      =>  Action::PAY_VERIFY,
+                Action::PAY_INIT    => null,
+                Action::PAY_VERIFY  => Action::PAY_INIT,
+                Action::VERIFY      => Action::PAY_VERIFY,
             ],
             Payment\Gateway::NETBANKING_YESB => [
                 Action::PAY_INIT   => null,
@@ -487,6 +567,13 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => Action::PAY_VERIFY,
                 Action::REFUND        => Action::PAY_VERIFY,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
+            Payment\Gateway::UPI_CITI => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => Action::PAY_VERIFY,
+                Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
             Payment\Gateway::NETBANKING_SIB => [
@@ -533,6 +620,15 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => null,
             ],
 
+            Payment\Gateway::WALLET_PAYPAL => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::CAPTURE => Action::AUTHORIZE,
+                Action::REFUND => Action::CAPTURE,
+                Action::VERIFY_REFUND => Action::REFUND,
+                Action::VERIFY => Action::AUTHORIZE,
+            ],
+
             Payment\Gateway::UPI_AIRTEL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -573,6 +669,14 @@ class Gateway extends Base\Gateway
 
             Payment\Gateway::GOOGLE_PAY => [
                 Action::PAY_INIT => null,
+            ],
+
+            Payment\Gateway::UPI_CITI => [
+                Action::PAY_INIT        => null,
+                Action::PAY_VERIFY      => null,
+                Action::VERIFY          => Action::AUTHORIZE,
+                Action::REFUND          => Action::AUTHORIZE,
+                Action::VERIFY_REFUND   => Action::REFUND,
             ],
         ];
 
@@ -644,6 +748,7 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayRefundEntity($attributes, $input, $action)
     {
+
         $redactedRaw = $this->getRedactedData($attributes['raw']);
         $attributes['raw'] = json_encode($redactedRaw);
 
@@ -703,7 +808,7 @@ class Gateway extends Base\Gateway
 
     public function syncGatewayTransaction(array $gatewayTransaction, array $input)
     {
-        $paymentId = $gatewayTransaction[Entity::PAYMENT_ID];
+        $paymentId = $input[E::PAYMENT][Entity::ID];
 
         $action = $input[Entity::ACTION];
 
@@ -801,7 +906,9 @@ class Gateway extends Base\Gateway
     {
         $validationGateways = [
             Payment\Gateway::UPI_AIRTEL,
+            Payment\Gateway::UPI_CITI,
             Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
@@ -837,7 +944,7 @@ class Gateway extends Base\Gateway
         return in_array($gateway, $formattedAmountGateways, true);
     }
 
-    protected function getResponseData($input, $mozartResponse)
+    protected function getResponseData($input, $mozartResponse, $gatewayPayment)
     {
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
@@ -850,7 +957,9 @@ class Gateway extends Base\Gateway
         }
         elseif ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
-            $response = $this->getCallbackResponseData($input);
+            $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+            $response = $this->getCallbackResponseData($input, $acquirerData);
         }
         else
         {
@@ -899,7 +1008,8 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
-        if ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
+        if (($this->action === Action::CREATE_TERMINAL) or
+            ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY)))
         {
             return $input['gateway'];
         }
@@ -926,7 +1036,7 @@ class Gateway extends Base\Gateway
         {
             $key = array_keys($gatewayInput)[0];
 
-            if($gatewayInput[$key] === "")
+            if($gatewayInput[$key] === '')
             {
                 $gatewayInput['encdata'] = $key;
 
@@ -935,5 +1045,58 @@ class Gateway extends Base\Gateway
         }
 
         return $gatewayInput;
+    }
+
+    protected function isRefundDisableOnMozart($gateway)
+    {
+        return in_array($gateway, [
+            Payment\Gateway::UPI_CITI,
+        ], true);
+    }
+
+    protected function validateClientOnServerCallback($gateway)
+    {
+        if (in_array($gateway, Payment\Gateway::$verifyClientOnS2s, true))
+        {
+            $allowedIps = explode(',', $this->config[$gateway]['allowed_s2p_client_ips']);
+            $clientIps  = $this->request->getClientIps();
+
+            foreach ($allowedIps as $allowedIp)
+            {
+                if (in_array(trim($allowedIp), $clientIps, true) === true)
+                {
+                    return;
+                }
+            }
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_BLOCKED_IP,
+                null,
+                'S2S request received from wrong blocked IP',
+                [
+                    'gateway'       => $gateway,
+                    'client_ips'    => $clientIps,
+                    'allowed_ips'   => $allowedIps,
+                ]
+            );
+
+        }
+    }
+
+    /**
+     * For Netbanking gateways we store the bank's reference number in the payment entity.
+     * @param $input
+     * @param $gatewayPayment
+     * @return array
+     */
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $data = $gatewayPayment->getDataAttribute();
+
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $data['bank_payment_id'] ?? null
+            ]
+        ];
     }
 }

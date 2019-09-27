@@ -12,6 +12,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_BANK_PAYMENT_ID    = 'BID';
     const COLUMN_BANK_CUSTOMER_ID   = 'User Id';
     const COLUMN_BANK_CUSTOMER_NAME = 'User Name';
+    const COLUMN_PAYMENT_AMOUNT     = 'Amount';
 
     protected function getPaymentId(array $row)
     {
@@ -61,7 +62,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
-    protected function getGatewayPayment($paymentId)
+    public function getGatewayPayment($paymentId)
     {
         //
         // Successfully authorized payments are indicated by Y - Status::YES

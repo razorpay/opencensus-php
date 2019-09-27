@@ -23,7 +23,11 @@ class CreateNodalBeneficiaries extends Migration
 
             $table->char(NodalBeneficiaries::MERCHANT_ID, NodalBeneficiaries::ID_LENGTH);
 
-            $table->char(NodalBeneficiaries::BANK_ACCOUNT_ID, NodalBeneficiaries::ID_LENGTH);
+            $table->char(NodalBeneficiaries::BANK_ACCOUNT_ID, NodalBeneficiaries::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(NodalBeneficiaries::CARD_ID, NodalBeneficiaries::ID_LENGTH)
+                  ->nullable();
 
             $table->string(NodalBeneficiaries::CHANNEL, 8);
 
@@ -50,11 +54,13 @@ class CreateNodalBeneficiaries extends Migration
 
             $table->index(NodalBeneficiaries::MERCHANT_ID);
 
+            $table->index(NodalBeneficiaries::CARD_ID);
+
             $table->index(NodalBeneficiaries::BANK_ACCOUNT_ID);
 
             $table->index(NodalBeneficiaries::REGISTRATION_STATUS);
 
-            $table->unique([NodalBeneficiaries::BANK_ACCOUNT_ID, NodalBeneficiaries::CHANNEL]);
+            $table->index([NodalBeneficiaries::BANK_ACCOUNT_ID, NodalBeneficiaries::CHANNEL]);
 
             $table->unique([NodalBeneficiaries::BENEFICIARY_CODE, NodalBeneficiaries::CHANNEL]);
         });

@@ -33,6 +33,45 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddIinWithSubType()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIinWithInValidSubType()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIinWithCategory()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIinWithInvalidCategory()
+    {
+        $this->startTest();
+    }
+
+    public function testEditIinWithCategoryWithoutNetwork()
+    {
+        $this->testAddIin();
+
+        $this->startTest();
+    }
+
+    public function testEditIinWithoutCategory()
+    {
+        $this->testAddIin();
+
+        $this->startTest();
+    }
+
+    public function testAddIinWithCategoryAndRuPay()
+    {
+        $this->startTest();
+    }
+
     public function testAddIinWithRecurring()
     {
         $this->startTest();
@@ -66,6 +105,13 @@ class IinTest extends TestCase
     public function testGetIin()
     {
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBatchServiceIinUpdate()
+    {
+        $this->ba->appAuth();
 
         $this->startTest();
     }
@@ -408,7 +454,7 @@ class IinTest extends TestCase
                     'type'           => 'credit',
                     'country'        => 'IN',
                     'issuer'         => 'HDFC',
-                    'issuer_name'    => 'HDFC',
+                    'issuer_name'    => 'HDFC Bank',
                     'emi'            => true,
                     'message_type'   => 'SMS',
                     'recurring'      => false,

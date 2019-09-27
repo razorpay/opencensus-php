@@ -54,6 +54,7 @@ class Reporting implements ExternalService
     const REPORT_TYPE_HEADER    = 'X-Report-Type';
     const ADMIN_TOKEN_HEADER    = 'X-Admin-Token';
     const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
+    const USER_ID_HEADER        = 'X-Dashboard-User-Id';
 
     /**
      * @var array
@@ -97,6 +98,11 @@ class Reporting implements ExternalService
          * https://github.com/razorpay/api/wiki/Reporting-Service
          */
         $headers = [];
+        //user id
+        if(Request::header(self::USER_ID_HEADER) !== NULL)
+        {
+            $headers[self::USER_ID_HEADER] = Request::header(self::USER_ID_HEADER);
+        }
 
         // Proxy Auth
         $merchantId = $this->ba->getMerchantId();

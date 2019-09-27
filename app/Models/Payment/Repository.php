@@ -670,7 +670,7 @@ class Repository extends Base\Repository
 
         $tTablename = $terminalRepo->getTableName();
 
-        $pGateway = $terminalRepo->dbColumn(Terminal\Entity::GATEWAY);
+        $pGateway = $this->dbColumn(Entity::GATEWAY);
 
         $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
 
@@ -1648,6 +1648,8 @@ class Repository extends Base\Repository
 
     public function findPaymentsWithCardVault(string $vault, int $limit)
     {
+        $window = 1200;
+
         $cardRepo = $this->repo->card;
 
         $cardTableName = $cardRepo->getTableName();
@@ -1658,7 +1660,7 @@ class Repository extends Base\Repository
 
         $paymentData = $this->dbColumn('*');
 
-        $timestamp = time() - Entity::PAYMENT_WINDOW;
+        $timestamp = time() - $window;
 
         $createdAt  = $this->dbColumn(Entity::CREATED_AT);
 

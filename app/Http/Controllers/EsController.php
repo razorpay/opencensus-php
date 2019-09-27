@@ -3,7 +3,10 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use Requests;
 use ApiResponse;
+use Illuminate\Http\Response;
+use Response as ResponseFactory;
 use Illuminate\Support\Facades\Artisan;
 
 use RZP\Trace\TraceCode;
@@ -146,6 +149,31 @@ class EsController extends Controller
         Artisan::call('rzp:index', Request::all());
 
         return [];
+    }
+
+    public function proxy($path)
+    {
+        // Preparing request to be sent to elasticsearch.
+        // Url itself should contain the query string as well.
+        $endpoint = 'http://' . env('ES_AUDIT_HOST') . ':9200/' . $path . '?' . Request::getQueryString();
+        // Symfony returns each header key as an array.
+        $headers  = array_map(function($v) { return current($v); }, Request::header());
+        $headers  = array_only($headers, ['content-type']);
+        $method   = Request::method();
+        // For Requests::request call expects raw body.
+        $body     = Request::getContent();
+
+        $this->trace->info(TraceCode::ES_PROXY_REQUEST, compact('endpoint', 'method', 'body'));
+
+        $resp        = Requests::request($endpoint, $headers, $body, $method);
+        $respCode    = $resp->status_code;
+        $respBody    = $resp->body;
+        $respHeaders = $resp->headers->getAll();
+
+        $this->trace->info(TraceCode::ES_PROXY_RESPONSE, compact('respCode', 'respBody', 'respHeaders'));
+
+        // We cannot send all/other headers for various reasons.
+        return ResponseFactory::make($respBody, $respCode, array_only($respHeaders, 'content-type'));
     }
 
     // -------------------- Write endpoint ends -------------------------------

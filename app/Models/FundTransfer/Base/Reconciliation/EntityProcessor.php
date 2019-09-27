@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -122,6 +123,35 @@ abstract class EntityProcessor extends Base\Core
         }
 
         $this->fta->setFailureReason($failureReason);
+
+        $batchFta = $this->fta->batchFundTransfer;
+
+        $batchFtaId = null;
+
+        //BatchFTA can be null in test mode
+        if (empty($batchFta) === false)
+        {
+            $batchFtaId = $batchFta->getId();
+        }
+
+        $customProperties = [
+            'channel'                           => $this->fta->getChannel(),
+            'purpose'                           => $this->fta->getPurpose(),
+            'fund_transfer_attempt_id'          => $this->fta->getId(),
+            'batch_fund_transfer_attempt_id'    => $batchFtaId,
+            'utr'                               => $this->fta->getUtr(),
+            'source_type'                       => $this->fta->getSourceType(),
+            'fund_transfer_attempt_mode'        => $this->fta->getMode(),
+            'fund_transfer_attempt_status'      => $this->fta->getStatus(),
+            'source_id'                         => $this->fta->getSourceId(),
+            'error_message'                     => $failureReason,
+        ];
+
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::FTA_STATUS_UPDATED,
+            null,
+            null,
+            $customProperties);
 
         $this->fta->setStatus($status);
 

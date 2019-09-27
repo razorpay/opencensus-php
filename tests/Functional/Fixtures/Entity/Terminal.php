@@ -534,6 +534,32 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSbiTpvTerminal(array $attributes = [])
+    {
+        $id = Shared::NETBANKING_SBI_TPV_TERMINAL;
+
+        $merchantId = Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => $id,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_SBI,
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+            'gateway_merchant_id'   => 'netbanking_sbi_merchant_id',
+            'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
+            'type'                  => [
+                'non_recurring'     => '1',
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedEnachNpciNetbankingTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::ENACH_NPCI_NETBANKING_TERMINAL;
@@ -1750,6 +1776,28 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createDirectSettlementRefundIciciTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10iciciDrtseTl',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_icici',
+            'gateway_merchant_id'       => 'test',
+            'gateway_merchant_id2'      => 'test2',
+            'gateway_secure_secret'     => 'razorpay_password',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::NON_RECURRING                 => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingIciciTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -2725,6 +2773,26 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiCitiTerminal(array $attributes)
+    {
+        $defaultValues = [
+            TerminalEntity::ID                          => Shared::UPI_AIRTEL_RAZORPAY_TERMINAL,
+            TerminalEntity::MERCHANT_ID                 => '100000Razorpay',
+            TerminalEntity::GATEWAY                     => 'upi_citi',
+            TerminalEntity::GATEWAY_MERCHANT_ID         => 'citi-client-id',
+            TerminalEntity::GATEWAY_MERCHANT_ID2        => 'razorpay@citi',
+            TerminalEntity::GATEWAY_TERMINAL_PASSWORD   => 'citi-secret-key',
+            TerminalEntity::UPI                         => 1,
+            TerminalEntity::VPA                         => 'razorpay@citi',
+            TerminalEntity::ACCOUNT_NUMBER              => '9876543210',
+
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiMindgateIntentTerminal(array $override)
     {
         $attributes = [
@@ -2750,6 +2818,41 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiAxisTerminal(array_merge($attributes, $override));
+    }
+
+    public function createDirectSettlementUpiAxisTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DiSeUpAxTmnl',
+            'merchant_id'               => '10000000000000',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+                Type::PAY                              => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiAxisTerminal($attributes);
+    }
+
+    public function createDirectSettlementUpiMindgateTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DiSeUpMnTmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway_merchant_id'       => 'direct settlement mindgate',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+                Type::PAY                              => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
     }
 
     public function createSharedUpiMindgateSignedIntentTerminal(array $override)
@@ -3017,6 +3120,47 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'RazorpayPhonepe',
             'gateway_secure_secret'     => 'secure_secret',
             'gateway_access_code'       => 'access_code',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedPaypalTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => '1ShrdPaypalTml',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'wallet_paypal',
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'RazorpayPaypal',
+            'gateway_terminal_password' => 'terminal_password',
+            'gateway_terminal_password2'=> 'terminal_password2',
+            'mode'                      => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createPaypalUsdTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                         => '1PaypalUSDTmnl',
+            'merchant_id'                => $sharedMerchantAccount,
+            'gateway'                    => 'wallet_paypal',
+            'shared'                     => 1,
+            'gateway_merchant_id'        => 'RazorpayPaypal2',
+            'gateway_terminal_password'  => 'terminal_password',
+            'gateway_terminal_password2' => 'terminal_password2',
+            'mode'                       => '1',
+            'currency'                   => 'USD'
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

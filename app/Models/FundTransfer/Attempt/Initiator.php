@@ -7,28 +7,41 @@ use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
+use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
+use RZP\Services\FTS\Base as FtsService;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
+use RZP\Constants\SettlementChannelMedium as Medium;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
-    const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s';
-    const DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT   = 500;
+    const FTA_PURPOSE                       = 'settlement';
+
+    const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s_%s';
+
     const REQUEST_TIMEOUT                   = 30;
 
-    const FTA_PURPOSE                       = 'settlement';
+    const MUTEX_FTS_RESOURCE                = 'MUTEX_FTS_RESOURCE_%s_%s_%s';
+
+    const FTS_REQUEST_TIMEOUT               = 300;
+
+    const DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT   = 500;
 
     protected $mutex;
 
@@ -61,23 +74,7 @@ class Initiator extends Base\Core
             ];
         }
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, self::FTA_PURPOSE);
-
-        if ($channel === Channel::YESBANK)
-        {
-            if ((isset($input[Entity::PURPOSE]) === true) and (Purpose::isValid($input[Entity::PURPOSE])))
-            {
-                $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE]);
-            }
-            else
-            {
-                return [
-                    'channel'   => $channel,
-                    'count'     => 0,
-                    'message'   => 'Invalid purpose for fund transfer'
-                ];
-            }
-        }
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE], $input[Entity::SOURCE_TYPE]);
 
         $limit = $this->getLimitForChannel($channel) ?? self::DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT;
 
@@ -110,11 +107,13 @@ class Initiator extends Base\Core
 
             $purpose = $input[Entity::PURPOSE];
 
-            $sourceType = $input[Entity::SOURCE_TYPE] ?? null;
+            $sourceType = $input[Entity::SOURCE_TYPE];
 
             $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             $limit = $this->getLimitForChannel($channel);
+
+            $unsupportedModeList = $this->getUnsupportedModesForTime($timestamp);
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_FETCHING_ENTITIES);
 
@@ -125,6 +124,7 @@ class Initiator extends Base\Core
                                 $purpose,
                                 $sourceType,
                                 $channel,
+                                $unsupportedModeList,
                                 $limit,
                                 ['source']);
 
@@ -176,36 +176,117 @@ class Initiator extends Base\Core
 
         $purpose = $attempts->first()->getPurpose();
 
-        list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
-            $attempts,
-            function(PublicCollection $collection) use ($purpose, $channel)
+        $medium = (in_array($channel, Channel::getApiBasedChannels(), true) === true) ?
+            Medium::API : Medium::FILE;
+
+        try
+        {
+            $customProperties = [
+                'channel'                       => $channel,
+                'fund_transfer_attempt_count'   => $count,
+                'purpose'                       => $purpose,
+                'fund_transfer_attempt_medium'  => $medium,
+            ];
+
+            $this->raiseSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
+                null,
+                null,
+                $customProperties);
+
+            list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
+                $attempts,
+                function(PublicCollection $collection) use ($purpose, $channel)
+                {
+                    $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+
+                    return [
+                        (new $class($purpose))->initiateTransfer($collection),
+                        $collection
+                    ];
+                });
+
+            $allowedChannels = Channel::getApiBasedChannels();
+
+            if (in_array($channel, $allowedChannels, true) === true)
             {
-                $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+                $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+            }
 
-                return [
-                    (new $class($purpose))->initiateTransfer($collection),
-                    $collection
-                ];
-            });
+            $data += $response;
 
-        $allowedChannels = Channel::getApiBasedChannels();
+            $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        if (in_array($channel, $allowedChannels, true) === true)
-        {
-            $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+            //reducing slack alerts for API based channels
+            if (in_array($channel, $allowedChannels, true) === false)
+            {
+                (new SlackNotification)->send('setl_initiate', $slackData);
+            }
+
+            if(empty($attemptedFTAs) === false)
+            {
+                $this->raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium);
+            }
         }
-
-        $data += $response;
-
-        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
-
-        //reducing slack alerts for API based channels
-        if (in_array($channel, $allowedChannels, true) === false)
+        catch (\Exception $exception)
         {
-            (new SlackNotification)->send('setl_initiate', $slackData);
+            $customProperties = [
+                'channel'                       => $channel,
+                'fund_transfer_attempt_count'   => $count,
+                'purpose'                       => $purpose,
+                'medium'                        => $medium,
+            ];
+
+            $this->raiseSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_FAILED,
+                null,
+                $exception,
+                $customProperties);
+
         }
 
         return $data;
+    }
+
+    protected function raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium)
+    {
+        $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
+
+        $batchFTaId = null;
+
+        $batchAmount = null;
+
+        $transactionCount = null;
+
+        $ftaCountInBatch = null;
+
+        if(empty($batchFundTransfer) === false)
+        {
+            $batchFTaId = $batchFundTransfer->getId();
+
+            $batchAmount = $batchFundTransfer->getAmount();
+
+            $transactionCount = $batchFundTransfer->getTransactionCount();
+
+            $ftaCountInBatch = $batchFundTransfer->getTotalCount();
+        }
+
+        $customProperties = [
+            'channel'                               => $channel,
+            'fund_transfer_attempt_count'           => $ftaCountInBatch,
+            'purpose'                               => $purpose,
+            'fund_transfer_attempt_medium'          => $medium,
+            'batch_fund_transfer_id'                => $batchFTaId,
+            'batch_fund_transfer_attempt_amount'    => $batchAmount,
+            'transaction_count'                     => $transactionCount,
+        ];
+
+        $this->raiseSettlementEvent(
+            EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
+            null,
+            null,
+            $customProperties
+        );
     }
 
     protected function dispatchFtaForStatusCheckProcess(Entity $attempt)
@@ -250,7 +331,7 @@ class Initiator extends Base\Core
     protected function dispatchFtaForReconProcess(Entity $attempt)
     {
         // TODO: Allow for all, after testing payouts.
-        if ($attempt->getSourceType() !== Type::PAYOUT)
+        if (in_array($attempt->getSourceType(), [Type::PAYOUT, Type::REFUND], true) === false)
         {
             return;
         }
@@ -305,7 +386,7 @@ class Initiator extends Base\Core
      * @param string $channel
      * @return int|null
      */
-    protected function getLimitForChannel(string $channel)
+    public function getLimitForChannel(string $channel): int
     {
         switch ($channel)
         {
@@ -316,10 +397,10 @@ class Initiator extends Base\Core
                 return 100;
 
             case Channel::ICICI:
-                return null;
+                return 400;
 
             case Channel::KOTAK:
-                return null;
+                return 0;
 
             case Channel::AXIS2:
                 return 400;
@@ -465,6 +546,15 @@ class Initiator extends Base\Core
         {
             return [false, 'Invalid mode to initiate transfer'];
         }
+        //
+        // If the force flag is set,
+        // let the fund transfer go
+        //
+        if ((isset($input['ignore_time_limit']) === true) and
+            ($input['ignore_time_limit'] === '1'))
+        {
+            return [true, null];
+        }
 
         if ($this->isValidTime($channel) === false)
         {
@@ -531,5 +621,307 @@ class Initiator extends Base\Core
         ];
 
         return $info;
+    }
+
+    public function processFundTransfersUsingFts(array $input, string $channel)
+    {
+        $this->trace->info(
+            TraceCode::FTS_TRANSFER_ACTION_INIT,
+            [
+                'input'   => $input,
+                'channel' => $channel
+            ]);
+
+        (new Validator)->validateInput('fts_fund_transfer', $input);
+
+        if (in_array($channel, Channel::getFtsSupportedChannels(), true) === false)
+        {
+            throw new LogicException($channel . ' channel is not supported for transfers via fts');
+        }
+
+        $action = $input['action'];
+
+        $mutexResource = sprintf(self::MUTEX_FTS_RESOURCE, $this->mode, $channel, $action);
+
+        $response = $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function() use ($input, $channel)
+            {
+                return $this->processBankTransfersThroughFts($input, $channel);
+            },
+            self::FTS_REQUEST_TIMEOUT,
+            ErrorCode::BAD_REQUEST_FUND_TRANSFER_FTS_ANOTHER_OPERATION_IN_PROGRESS);
+
+
+        $this->trace->info(
+            TraceCode::FTS_TRANSFER_ACTION_COMPLETE,
+            [
+                'response' => $response
+            ]);
+
+        return $response;
+    }
+
+    /**
+     * @param array $input
+     * @param string $channel
+     * @return array
+     * @throws LogicException
+     */
+    protected function processBankTransfersThroughFts(array $input, string $channel)
+    {
+        $action = $input['action'];
+
+        $status = $this->getAttemptStatusByAction($action);
+
+        $attempts = $this->fetchAttemptsForProcessing($input, $channel, $status);
+
+        $response = $this->processAttemptsByAction($attempts, $action);
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $fta
+     * @param bool $isRegistered
+     * @return bool
+     */
+    public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false): bool
+    {
+        try
+        {
+            if ($fta->shouldUseGateway() === true)
+            {
+                return false;
+            }
+
+            $redis = $this->app['redis']->connection();
+
+            $ftsChannelMode = $redis->HGET(ConfigKey::FTS_CHANNELS, $fta->getChannel());
+
+            if (empty($ftsChannelMode) === true)
+            {
+                $this->trace->info(
+                    TraceCode::FTS_INVALID_CHANNEL,
+                    [
+                        'channel' => $fta->getChannel(),
+                    ]);
+
+                return false;
+            }
+
+            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered);
+
+            $this->trace->info(
+                TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
+                [
+                    'fta_id'      => $fta->getId(),
+                    'source_type' => $fta->getSourceType(),
+                ]);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_FUND_TRANSFER_DISPATCH_FAILED,
+                [
+                    'fta_id'      => $fta->getId(),
+                    'source_type' => $fta->getSourceType(),
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array $input
+     * @param string $channel
+     * @param string $status
+     * @return mixed|null
+     * @throws LogicException
+     */
+    protected function fetchAttemptsForProcessing(array $input, string $channel, string $status)
+    {
+        if (isset($input['size']) === true)
+        {
+            return $this->repo
+                        ->fund_transfer_attempt
+                        ->getFtsAttempts($channel, $status, $input['size']);
+        }
+
+        if (isset($input[Entity::ID]) === true)
+        {
+            $input[Entity::ID] = Entity::verifyIdAndStripSign($input[Entity::ID]);
+
+            return $this->repo
+                        ->fund_transfer_attempt
+                        ->getFtsAttempts($channel, $status, null, $input[Entity::ID]);
+        }
+
+        if ((isset($input['from']) === true)||(isset($input['to']) === true)||(isset($input['limit']) === true))
+        {
+            if ($input['from'] > $input['to'])
+            {
+                throw new LogicException('Invalid timestamp specified');
+
+            }
+
+            return $this->repo
+                        ->fund_transfer_attempt
+                        ->getFtsAttempts(
+                            $channel,
+                            $status,
+                            null,
+                            null,
+                            $input['from'],
+                            $input['to'],
+                            $input['limit']);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param $attempts
+     * @param string $action
+     * @return array
+     */
+    protected function processAttemptsByAction($attempts, string $action): array
+    {
+        $count = $attempts->count();
+
+        $response = [ 'success' => 0, 'failure' => 0, 'total' => $count ];
+
+        if ($action === FtsService::TRANSFER_RETRY)
+        {
+            return $this->retryFtsTransfers($attempts, $response);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Decides the status in which an
+     * attempt shall be taken for processing.
+     *
+     * @param string $action
+     * @return string
+     * @throws LogicException
+     */
+    protected function getAttemptStatusByAction(string $action)
+    {
+        if ($action === FtsService::TRANSFER_RETRY)
+        {
+            return Status::CREATED;
+        }
+
+        throw new LogicException('Invalid action to derive attempt status');
+    }
+
+    /**
+     * @param PublicCollection $attempts
+     * @param array $response
+     * @return array
+     */
+    protected function retryFtsTransfers(PublicCollection $attempts, array $response)
+    {
+        $this->trace->info(
+            TraceCode::FTS_TRANSFER_RETRY_ACTION_INIT,
+            [
+                'attempts' => $attempts->count(),
+            ]);
+
+        foreach ($attempts as $attempt)
+        {
+            $result = $this->sendFTSFundTransferRequest($attempt);
+
+            if ($result === true)
+            {
+                $response['success']++;
+            }
+            else
+            {
+                $response['failure']++;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::FTS_TRANSFER_RETRY_ACTION_COMPLETE,
+            [
+                'response' => $response,
+            ]);
+
+        return $response;
+    }
+  
+    protected function raiseSettlementEvent(array $eventDetails,
+                                            Settlement\Entity $settlement = null,
+                                            \Throwable $exception = null,
+                                            array $customProperties = [])
+    {
+
+        $this->app['diag']->trackSettlementEvent(
+            $eventDetails,
+            $settlement,
+            $exception,
+            $customProperties);
+    }
+    
+    // This will return the mode which are unsupported due to being outside of timing window.
+    // The time uses minimum Start Timing of all banks supported for razorpayX payouts and
+    // maximum ending timing. Since Nodal account class for each channel has its own timing
+    // so transfer initiation will get blocked there if the timings are different for that channel.
+    public function getUnsupportedModesForTime(int $currentTime)
+    {
+        $modeList = [];
+
+        if ($this->isOutsideNeftTimings($currentTime) === true)
+        {
+            $modeList[] = TransferMode::NEFT;
+        }
+
+        if ($this->isOutsideRtgsTimings($currentTime) === true)
+        {
+            $modeList[] = TransferMode::RTGS;
+        }
+
+        return $modeList;
+    }
+
+    public function isOutsideNeftTimings(int $currentTime)
+    {
+        $bankingStartTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_START_HOUR)->getTimestamp();
+
+        $bankingEndTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_END_HOUR)
+                                                          ->minute(Constants::NEFT_END_MINUTE)
+                                                          ->getTimestamp();
+
+        if (($currentTime < $bankingStartTime) or
+            ($currentTime > $bankingEndTime))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isOutsideRtgsTimings(int $currentTime)
+    {
+        $bankingStartTimeRtgs = Carbon::today(Timezone::IST)->hour(Constants::RTGS_REVISED_START_HOUR)->getTimestamp();
+
+        $bankingEndTimeRtgs = Carbon::today(Timezone::IST)->hour(Constants::RTGS_REVISED_END_HOUR)
+                                                              ->minute(Constants::RTGS_REVISED_END_MINUTE)
+                                                              ->getTimestamp();
+
+        if (($currentTime < $bankingStartTimeRtgs) or
+            ($currentTime > $bankingEndTimeRtgs))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

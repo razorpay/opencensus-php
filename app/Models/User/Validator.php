@@ -7,6 +7,7 @@ use Hash;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
@@ -138,6 +139,7 @@ class Validator extends Base\Validator
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
                                  . 'approve_payout_bulk,',
+        Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
         'amount'              => 'required_if:action,create_payout,approve_payout|integer|min:100',
@@ -262,6 +264,8 @@ class Validator extends Base\Validator
 
         $app = App::getFacadeRoot();
 
+        $emailData['email'] = $input[Entity::EMAIL];
+
         if($app->environment('production') === true)
         {
             $captchaResponse = $input[Entity::CAPTCHA] ?? null;
@@ -286,9 +290,13 @@ class Validator extends Base\Validator
 
             if($output->success !== true)
             {
+                $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCH_VERIFICATION_FAILED, null, null, $emailData);
+
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTCHA_FAILED);
             }
         }
+
+        $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCHA_VERIFICATION_SUCCESS, null, null, $emailData);
     }
 
     protected function validateAction(string $attribute, string $action)

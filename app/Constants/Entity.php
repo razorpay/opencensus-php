@@ -19,6 +19,7 @@ class Entity
     // Core entities
     //
     const IIN                       = 'iin';
+    const MPAN                      = 'mpan';
     const KEY                       = 'key';
     const P2P                       = 'p2p';
     const VPA                       = 'vpa';
@@ -74,6 +75,7 @@ class Entity
     const FEE_BREAKUP               = 'fee_breakup';
     const CREDITNOTE                = 'creditnote';
     const PAYMENT_LINK              = 'payment_link';
+    const PAYMENT_PAGE_ITEM         = 'payment_page_item';
     const GATEWAY_RULE              = 'gateway_rule';
     const GATEWAY_FILE              = 'gateway_file';
     const BANK_ACCOUNT              = 'bank_account';
@@ -85,43 +87,46 @@ class Entity
     const SUBSCRIPTION_CYCLE            = 'subscription_cycle';
     const SUBSCRIPTION_UPDATE_REQUEST   = 'subscription_update_request';
 
-    const EXTERNAL                  = 'external';
-    const ENTITY_OFFER              = 'entity_offer';
-    const FUND_ACCOUNT              = 'fund_account';
-    const ENTITY_ORIGIN             = 'entity_origin';
-    const GATEWAY_TOKEN             = 'gateway_token';
-    const BANK_TRANSFER             = 'bank_transfer';
-    const SCHEDULE_TASK             = 'schedule_task';
-    const LINE_ITEM_TAX             = 'line_item_tax';
-    const MERCHANT_USER             = 'merchant_user';
-    const MERCHANT_EMAIL            = 'merchant_email';
-    const PARTNER_CONFIG            = 'partner_config';
-    const DISPUTE_REASON            = 'dispute_reason';
-    const NODAL_STATEMENT           = 'nodal_statement';
-    const VIRTUAL_ACCOUNT           = 'virtual_account';
-    const MERCHANT_DETAIL           = 'merchant_detail';
-    const TERMINAL_ACTION           = 'terminal_action';
-    const BANKING_ACCOUNT           = 'banking_account';
-    const PAYMENT_DOWNTIME          = 'payment.downtime';
-    const MERCHANT_REQUEST          = 'merchant_request';
-    const CUSTOMER_BALANCE          = 'customer_balance';
-    const GATEWAY_DOWNTIME          = 'gateway_downtime';
-    const MERCHANT_INVOICE          = 'merchant_invoice';
-    const CREDITNOTE_INVOICE        = 'creditnote_invoice';
-    const NODAL_BENEFICIARY         = 'nodal_beneficiary';
-    const PAYMENT_ANALYTICS         = 'payment_analytics';
-    const SETTLEMENT_DETAILS        = 'settlement_details';
-    const MERCHANT_PROMOTION        = 'merchant_promotion';
-    const CREDIT_TRANSACTION        = 'credit_transaction';
-    const MERCHANT_EMI_PLANS        = 'merchant_emi_plans';
-    const TERMINAL_ANALYTICS        = 'terminal_analytics';
-    const MERCHANT_ACCESS_MAP       = 'merchant_access_map';
-    const BATCH_FUND_TRANSFER       = 'batch_fund_transfer';
-    const CUSTOMER_TRANSACTION      = 'customer_transaction';
-    const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
-    const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
-    const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
-    const BANKING_ACCOUNT_STATEMENT = 'banking_account_statement';
+    const EXTERNAL                   = 'external';
+    const ENTITY_OFFER               = 'entity_offer';
+    const FUND_ACCOUNT               = 'fund_account';
+    const ENTITY_ORIGIN              = 'entity_origin';
+    const GATEWAY_TOKEN              = 'gateway_token';
+    const BANK_TRANSFER              = 'bank_transfer';
+    const SCHEDULE_TASK              = 'schedule_task';
+    const LINE_ITEM_TAX              = 'line_item_tax';
+    const MERCHANT_USER              = 'merchant_user';
+    const MERCHANT_EMAIL             = 'merchant_email';
+    const PARTNER_CONFIG             = 'partner_config';
+    const DISPUTE_REASON             = 'dispute_reason';
+    const NODAL_STATEMENT            = 'nodal_statement';
+    const VIRTUAL_ACCOUNT            = 'virtual_account';
+    const MERCHANT_DETAIL            = 'merchant_detail';
+    const TERMINAL_ACTION            = 'terminal_action';
+    const BANKING_ACCOUNT            = 'banking_account';
+    const PAYMENT_DOWNTIME           = 'payment.downtime';
+    const MERCHANT_REQUEST           = 'merchant_request';
+    const CUSTOMER_BALANCE           = 'customer_balance';
+    const GATEWAY_DOWNTIME           = 'gateway_downtime';
+    const MERCHANT_INVOICE           = 'merchant_invoice';
+    const CREDITNOTE_INVOICE         = 'creditnote_invoice';
+    const NODAL_BENEFICIARY          = 'nodal_beneficiary';
+    const PAYMENT_ANALYTICS          = 'payment_analytics';
+    const SETTLEMENT_BUCKET         = 'settlement_bucket';
+    const SETTLEMENT_DETAILS         = 'settlement_details';
+    const MERCHANT_PROMOTION         = 'merchant_promotion';
+    const CREDIT_TRANSACTION         = 'credit_transaction';
+    const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
+    const TERMINAL_ANALYTICS         = 'terminal_analytics';
+    const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
+    const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
+    const CUSTOMER_TRANSACTION       = 'customer_transaction';
+    const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
+    const FUND_ACCOUNT_VALIDATION    = 'fund_account_validation';
+    const SUBSCRIPTION_REGISTRATION  = 'subscription_registration';
+    const BANKING_ACCOUNT_STATEMENT  = 'banking_account_statement';
+    const MERCHANT_DOCUMENT          = 'merchant_document';
+    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
 
     // heimdall
     const ORG                   = 'org';
@@ -186,6 +191,7 @@ class Entity
     const UPI_RBL                = 'upi_rbl';
     const UPI_HULK               = 'upi_hulk';
     const UPI_YESBANK            = 'upi_yesbank';
+    const UPI_CITI               = 'upi_citi';
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
@@ -227,6 +233,7 @@ class Entity
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_AMAZONPAY       = 'wallet_amazonpay';
     const WALLET_PHONEPE         = 'wallet_phonepe';
+    const WALLET_PAYPAL          = 'wallet_paypal';
     const CARDLESS_EMI           = 'cardless_emi';
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
@@ -336,6 +343,7 @@ class Entity
         Entity::BANK_TRANSFER,
         Entity::REFUND,
         Entity::FUND_ACCOUNT_VALIDATION,
+        Entity::ADJUSTMENT,
     ];
 
     public static $namespace = [
@@ -379,6 +387,7 @@ class Entity
         self::BANK_ACCOUNT              => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
+        self::PAYMENT_PAGE_ITEM         => \RZP\Models\PaymentLink\PaymentPageItem::class,
         self::GATEWAY_TOKEN             => \RZP\Models\Customer\GatewayToken::class,
         self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
         self::SCHEDULE_TASK             => \RZP\Models\Schedule\Task::class,
@@ -401,6 +410,7 @@ class Entity
         self::MERCHANT_EMI_PLANS        => \RZP\Models\Merchant\EmiPlans::class,
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
+        self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,
@@ -412,6 +422,7 @@ class Entity
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
+        self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -490,7 +501,10 @@ class Entity
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
         self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
+        self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
+        self::ATOS                   => \RZP\Gateway\Mozart::class,
+        self::UPI_CITI               => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
 

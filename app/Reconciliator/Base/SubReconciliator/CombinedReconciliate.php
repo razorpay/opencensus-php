@@ -7,7 +7,6 @@ use App;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
@@ -146,6 +145,17 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
                         $this->skippedRows[] = $row;
 
+                        //
+                        // Just keep it in the output file, so that
+                        // batch output file have all the txn rows.
+                        //
+                        $this->insertRowInOutputFile($row);
+
+                        $this->setRowReconStatusAndError(
+                            Base\InfoCode::RECON_UNPROCESSED_SUCCESS,
+                            Base\InfoCode::RECON_UNABLE_TO_IDENTIFY_RECON_TYPE
+                        );
+
                         continue;
                     }
 
@@ -229,6 +239,12 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                     ]
                 );
             }
+
+            //
+            // setting the variable null here to free up the memory associated with this variable.
+            // not calling unset as that only removes the reference and the GC will free up the memory.
+            //
+            $fileContents = null;
 
             $this->setReconOutputData($batchProcessor);
 

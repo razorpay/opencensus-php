@@ -89,6 +89,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function checkUserAccess()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->checkUserAccess($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function setup2faMobileOnLogin()
     {
         $input = Request::all();

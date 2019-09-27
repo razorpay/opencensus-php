@@ -10,6 +10,7 @@ use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
@@ -132,6 +133,8 @@ class GatewayController extends Controller
         }
         catch (\Exception $exception)
         {
+            $this->trace->traceException($exception, Logger::CRITICAL, TraceCode::PAYMENT_CALLBACK_FAILURE);
+
             $response = $gateway->postProcessServerCallback($postInput, $exception);
         }
 
@@ -192,6 +195,7 @@ class GatewayController extends Controller
             case Gateway::NETBANKING_AXIS:
             case Gateway::UPI_AIRTEL:
             case Gateway::WALLET_PHONEPE:
+            case Gateway::UPI_CITI:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
@@ -440,9 +444,7 @@ class GatewayController extends Controller
 
         $payment = $this->app['repo']->payment->findOrFail($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $publicPaymentId = $payment->getPublicId();
 
@@ -461,7 +463,7 @@ class GatewayController extends Controller
             TraceCode::NETBANKING_PAYMENT_CALLBACK,
             [
                 'input'   => $input ,
-                'gateway' => 'enach_npci_netbanking',
+                'gateway' => Gateway::ENACH_NPCI_NETBANKING,
             ]
         );
 
@@ -473,12 +475,17 @@ class GatewayController extends Controller
 
         if($input[EnachNb\ResponseFields::RESPONSE_TYPE] === EnachNb\ResponseType::SUCCESS)
         {
-            $paymentId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
+            $paymentId = $responseArray[EnachNb\ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                       [EnachNb\ResponseXmlTags::ACCEPT_DETAILS]
+                                       [EnachNb\ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                       [EnachNb\ResponseXmlTags::MANDATE_REQUEST_ID];
         }
         else
         {
             //TODO : what if payment id is not present : possible
-            $paymentId = $responseArray['MndtRejResp']['OrigReqInfo']['MndtReqId'];
+            $paymentId = $responseArray[EnachNb\ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+                                       [EnachNb\ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+                                       [EnachNb\ResponseXmlTags::MANDATE_REQUEST_ID];
         }
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
@@ -491,9 +498,7 @@ class GatewayController extends Controller
 
         $publicPaymentId = $payment->getPublicId();
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -969,6 +974,15 @@ class GatewayController extends Controller
 
         return ApiResponse::json([
             'success' => true
+        ]);
+    }
+
+    protected function statsGatewayDowntimeDetection(Downtime\Service $service)
+    {
+        $data = $service->stats();
+
+        return ApiResponse::json([
+            'stats' => $data
         ]);
     }
 }

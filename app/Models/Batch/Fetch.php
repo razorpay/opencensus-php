@@ -15,7 +15,8 @@ class Fetch extends BaseFetch
             Entity::GATEWAY     => 'sometimes|string|required_with:sub_type',
             Entity::TYPES       => 'sometimes|sequential_array|custom',
             Entity::MERCHANT_ID => 'sometimes|alpha_num',
-            Entity::STATUS      => 'sometimes|in:created,processing,processed',
+            Entity::PROCESSING  => 'sometimes|in:0,1',
+            Entity::STATUS      => 'sometimes|in:created,processing,processed,partially_processed,failed',
         ],
     ];
 
@@ -28,6 +29,7 @@ class Fetch extends BaseFetch
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
             Entity::STATUS,
+            Entity::PROCESSING,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::SUB_TYPE,

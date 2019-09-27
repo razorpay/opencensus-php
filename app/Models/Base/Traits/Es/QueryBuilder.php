@@ -109,20 +109,12 @@ trait QueryBuilder
 
     public function buildQueryForNotes(array & $query, string $value)
     {
-        //
-        // - Notes search is again on an specific object (unlike 'q') and so
-        //   we give boost of 2.
-        // - The query construct is same as above (for 'q') but the fields here
-        //   are all keys of notes object (denoted as notes.*).
-        //
-
+        // Refer- config/es_mappings.php on how notes is indexed.
         $clause = [
-            Es::MULTI_MATCH => [
-                Es::QUERY                => $value,
-                Es::TYPE                 => Es::BEST_FIELDS,
-                Es::FIELDS               => 'notes.*',
-                Es::BOOST                => 2,
-                Es::MINIMUM_SHOULD_MATCH => '75%',
+            Es::MATCH => [
+                'notes.value' => [
+                    Es::QUERY => $value,
+                ],
             ],
         ];
 
@@ -259,6 +251,20 @@ trait QueryBuilder
     public function addNegativeTermFilter(array & $query, string $field, $value)
     {
         $filter = [Es::TERM => [$field => [Es::VALUE => $value]]];
+
+        $this->addNegativeFilter($query, $filter);
+    }
+
+    public function addTermsFilter(array & $query, string $field, array $value)
+    {
+        $filter = [Es::TERMS => [$field => $value]];
+
+        $this->addFilter($query, $filter);
+    }
+
+    public function addNegativeTermsFilter(array & $query, string $field, array $value)
+    {
+        $filter = [Es::TERMS => [$field => $value]];
 
         $this->addNegativeFilter($query, $filter);
     }

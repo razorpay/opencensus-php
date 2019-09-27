@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants\Procurer;
+use RZP\Mail\Payment\Failed;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use Razorpay\Spine\DataTypes\Dictionary;
@@ -30,11 +32,14 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Refund\TransactionTrackerMessages;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
 /**
@@ -105,6 +110,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
+    const GATEWAY_PROVIDER      = 'gateway_provider';
     const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -279,6 +285,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
+        self::GATEWAY_PROVIDER,
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
@@ -351,6 +358,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
+        self::GATEWAY_PROVIDER,
         // self::SUBSCRIPTION_ID,
         self::EMI,
         self::EMI_PLAN,
@@ -407,10 +415,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::TOKEN_ID,
         self::SUBSCRIPTION_ID,
         self::AMOUNT_TRANSFERRED,
+        self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
     ];
 
-    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA];
+    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
 
     protected static $modifiers = [
         self::EMAIL,
@@ -938,14 +947,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setCaptureTimestamp()
     {
-        $this->setAttribute(self::CAPTURED_AT, time());
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->setAttribute(self::CAPTURED_AT, $timestamp);
     }
 
     public function setAuthorizeTimestamp($authTimestamp = null)
     {
         if (is_null($authTimestamp))
         {
-            $this->setAttribute(self::AUTHORIZED_AT, time());
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $this->setAttribute(self::AUTHORIZED_AT, $timestamp);
         }
         else
         {
@@ -1070,6 +1083,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setSettledBy($settledBy)
     {
         $this->setAttribute(self::SETTLED_BY, $settledBy);
+    }
+
+    public function setGatewayProvider($gatewayProvider)
+    {
+        $this->setAttribute(self::GATEWAY_PROVIDER, $gatewayProvider);
     }
 
     public function setErrorNull()
@@ -1396,12 +1414,27 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 if (isset($upiTransactionId) === true)
                 {
-                    $acquirerData["upi_transaction_id"] = $upiTransactionId;
+                    $acquirerData['upi_transaction_id'] = $upiTransactionId;
                 }
                 break;
         }
 
         return (new Dictionary($acquirerData));
+    }
+
+    protected function getGatewayProviderAttribute()
+    {
+        $gatewayProvider = 'Razorpay';
+
+        if ($this->terminal !== null)
+        {
+            if ($this->terminal->getProcurer() !== Procurer::RAZORPAY)
+            {
+                $gatewayProvider = $this->getGateway();
+            }
+        }
+
+        return $gatewayProvider;
     }
 
     protected function getOtpAttemptsAttribute()
@@ -1745,6 +1778,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $email = $this->getEmail();
 
         return ((empty($email) === true) or ($email === self::DUMMY_EMAIL));
+    }
+
+    // mcc is supported only for card and wallet paypal payments.
+    public function isMccSupported()
+    {
+        return (($this->getAttribute(self::METHOD) === Method::CARD) or
+               (($this->getAttribute(self::METHOD) === Method::WALLET) and
+                   ($this->getWallet() === Wallet::PAYPAL)));
     }
 
     /**
@@ -2523,6 +2564,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function setPublicGatewayProviderAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        if (($auth->getMerchant() === null) or
+            ($auth->getMerchant()->isFeatureEnabled(Feature\Constants::EXPOSE_GATEWAY_PROVIDER) === false))
+        {
+            unset($array[self::GATEWAY_PROVIDER]);
+        }
+    }
+
     public function associateTerminal($terminal)
     {
         if ($terminal === null)
@@ -2534,14 +2588,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->terminal()->associate($terminal);
 
-        $this->setGateway($terminal->getGateway());
+        $gateway = $terminal->getGateway();
+
+        $this->setGateway($gateway);
 
         $this->setSettledBy('Razorpay');
 
         if ($terminal->isDirectSettlement() === true)
         {
-            $gateway = $this->getGateway();
-
             $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
 
             $this->setSettledBy($settledBy);
@@ -3266,5 +3320,90 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return false;
+    }
+
+    public function toArrayPublicCustomer(bool $populateMessages = false): array
+    {
+        $data = parent::toArrayPublicCustomer();
+
+        if ($populateMessages === true)
+        {
+            $transactionTrackerMessages = new Payment\Refund\TransactionTrackerMessages();
+
+            $autoRefundDelayDate = Carbon::createFromTimestamp($this->getAuthorizeTimestamp() + $this->merchant->getAutoRefundDelay(), Timezone::IST);
+
+            $data[Refund\Constants::MERCHANT_ID] = $this->merchant->getPublicId();
+
+            $data[Refund\Constants::MERCHANT_NAME] = $this->merchant->getBillingLabel();
+
+            $data[Refund\Constants::PRIMARY_MESSAGE] =
+                $this->getMessageForTransactionTracker(
+                    $transactionTrackerMessages,
+                    $autoRefundDelayDate,
+                    TransactionTrackerMessages::PRIMARY
+                );
+
+            $data[Refund\Constants::SECONDARY_MESSAGE] =
+                $this->getMessageForTransactionTracker(
+                    $transactionTrackerMessages,
+                    $autoRefundDelayDate,
+                    TransactionTrackerMessages::SECONDARY
+                );
+
+            $data[Refund\Constants::TERTIARY_MESSAGE] =
+                $this->getMessageForTransactionTracker(
+                    $transactionTrackerMessages,
+                    $autoRefundDelayDate,
+                    TransactionTrackerMessages::TERTIARY
+                );
+
+            $data[Refund\Constants::LATE_AUTH] = $this->isLateAuthorized();
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param TransactionTrackerMessages $transactionTrackerMessages
+     * @param Carbon $expectedDate
+     * @param $messageType
+     * @return string
+     */
+    private function getMessageForTransactionTracker(TransactionTrackerMessages $transactionTrackerMessages, Carbon $expectedDate, $messageType): string
+    {
+        $messageSlaDone = null;
+        $messageEntity = Refund\Constants::PAYMENT;
+        $messageStatus = $this->getStatus();
+        $messageLateAuth = ($this->isLateAuthorized() === true);
+
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+
+        return $this->populateTransactionTrackerMessages($message, $expectedDate);
+    }
+
+    /**
+     * @param $message
+     * @param Carbon $expectedDate
+     * @return mixed
+     */
+    private function populateTransactionTrackerMessages ($message, Carbon $expectedDate)
+    {
+        $populatedMessage = $message;
+
+        $messageAutoRefundDelayDays = (int) (ceil($this->merchant->getAutoRefundDelay() / 86400));
+
+        $replacer = [
+            TransactionTrackerMessages::MESSAGE_AMOUNT                 => $this->getFormattedAmount(),
+            TransactionTrackerMessages::MESSAGE_MERCHANT_NAME          => $this->merchant->getBillingLabel(),
+            TransactionTrackerMessages::MESSAGE_AUTO_REFUND_DELAY_DATE => $expectedDate->toFormattedDateString(),
+            TransactionTrackerMessages::MESSAGE_AUTO_REFUND_DELAY_DAYS => $messageAutoRefundDelayDays,
+        ];
+
+        foreach ($replacer as $key => $value)
+        {
+            $populatedMessage = str_replace($key, $value, $populatedMessage);
+        }
+
+        return $populatedMessage;
     }
 }

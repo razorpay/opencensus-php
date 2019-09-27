@@ -583,17 +583,6 @@ class Service extends Base\Service
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::DIWALI_PROMOTIONAL_PLAN) === true)
-        {
-            // removing diwali_promotional_plan
-            (new Feature\Service)->deleteEntityFeature(
-                'accounts',
-                $merchant->getId(),
-                Feature\Constants::DIWALI_PROMOTIONAL_PLAN,
-                [Feature\Entity::SHOULD_SYNC => true]
-            );
-        }
-
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);
@@ -920,7 +909,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function action($id, array $input)
+    public function action($id, array $input, bool $useWorkflows = true)
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT_ACTION,
@@ -931,7 +920,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant = $this->core()->action($merchant, $input);
+        $merchant = $this->core()->action($merchant, $input, $useWorkflows);
 
         return $merchant->toArrayPublic();
     }
@@ -1150,7 +1139,7 @@ class Service extends Base\Service
             TraceCode::WEBHOOK_EDIT,
             [
                 'webhook_id' => $webhookId,
-                'input'      => $input,
+                'input'      => array_except($input, [Webhook\Entity::SECRET]),
             ]);
 
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
@@ -1169,12 +1158,22 @@ class Service extends Base\Service
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
 
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return $webhook->toArrayHosted();
+        }
+
         return $webhook->toArrayPublic();
     }
 
     public function getWebhooks(array $params)
     {
         $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
+
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return $webhooks->toArrayHosted();
+        }
 
         return $webhooks->toArrayPublic();
     }
@@ -1392,7 +1391,7 @@ class Service extends Base\Service
                 }
                 else
                 {
-                    $this->action($merchantId, $input);
+                    $this->action($merchantId, $input,false);
                 }
 
                 $successCount++;
@@ -2463,6 +2462,8 @@ class Service extends Base\Service
 
     protected function mapSubMerchantPartnerAppIfApplicable(Entity $merchant, Entity $subMerchant)
     {
+        $this->trace->info(TraceCode::MAP_PARTNER_SUBMERCHANT_ENTITY);
+
         if ($merchant->isPartner() === false)
         {
             return;
@@ -2514,7 +2515,7 @@ class Service extends Base\Service
     /**
      * This used to map submerchants to the partner in merchant_access_map entity
      * If the given partnerId is not a partner then it will mark him as a partner then proceed
-     * 
+     *
      * @param array $input
      *
      * @return array
@@ -2522,7 +2523,7 @@ class Service extends Base\Service
     public function createPartnerSubmerchantMap(array $input)
     {
         (new Validator)->validateInput('partner_submerchant_map', $input);
-        
+
         $partnerType   = $input[ENTITY::PARTNER_TYPE];
         $submerchantId = $input['submerchant_id'];
         $partnerId     = $input['partner_merchant_id'];
@@ -2882,6 +2883,26 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getRazorxTreatmentInBulk(array $input)
+    {
+        $response = [];
+
+        $featureFlags = $input['features'] ?? "";
+
+        if (empty($featureFlags) === false)
+        {
+            $featureFlagArray = explode(',', $featureFlags);
+
+            foreach ($featureFlagArray as $featureFlag)
+            {
+                $featureFlag = trim($featureFlag);
+                $response[$featureFlag] = $this->getRazorxTreatment($featureFlag);
+            }
+        }
+
+        return $response;
+    }
+
     public function submitSupportCallRequest(array $input): array
     {
         $validator = new Validator;
@@ -3156,5 +3177,18 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         return $this->core()->applyRestrictedSettings($merchant, $action);
+    }
+
+    public function removeSuspendedMerchantsFromMailingList(array $input)
+    {
+        (new Validator)->validateInput('suspended_merchant_remove', $input);
+
+        $merchants = $this->repo->merchant
+                                ->fetchAllSuspendedMerchants($input);
+
+        foreach ($merchants as $merchant)
+        {
+            $this->core()->removeMerchantEmailToMailingList($merchant);
+        }
     }
 }

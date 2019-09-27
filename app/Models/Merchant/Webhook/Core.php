@@ -8,6 +8,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 
@@ -74,11 +75,14 @@ class Core extends Base\Core
         array $input,
         Webhook\Entity $webhook)
     {
-        $payload = $input['payload'];
+        $payloads = $input['payloads'] ?? [$input['payload']];
 
-        $data = $this->prepareData($payload, $merchant, $event, $webhook);
+        foreach ($payloads as $payload)
+        {
+            $data = $this->prepareData($payload, $merchant, $event, $webhook);
 
-        $this->dispatchWebhook($data,$event);
+            $this->dispatchWebhook($data,$event);
+        }
     }
 
     protected function prepareData(
@@ -166,6 +170,13 @@ class Core extends Base\Core
             }
         }
 
-        return compact('successfulIds', 'failedIds');
+        $summary = [
+            'last_successful_id' => end($successfulIds),
+            'failed_ids'         => $failedIds,
+        ];
+
+        $this->trace->info(TraceCode::STORK_WEBHOOK_MIGRATE_SUMMARY, $summary);
+
+        return $summary;
     }
 }

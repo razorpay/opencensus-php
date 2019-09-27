@@ -7,8 +7,10 @@ use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
@@ -64,7 +66,7 @@ class PaymentCreateTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' =>  true]);
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -82,7 +84,7 @@ class PaymentCreateTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__]['requestData'];
 
-        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' =>  true]);
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -92,7 +94,7 @@ class PaymentCreateTest extends TestCase
 
             $payment['amount'] = $failedPayment['amount'];
 
-            $responseData = $this->testData[__FUNCTION__]['responseData'];;
+            $responseData = $this->testData[__FUNCTION__]['responseData'];
 
             $responseData['response']['content']['error']['description'] = 'The amount must be atleast ' .
                 $payment['currency'] . ' '. amount_format_IN(Currency::getMinAmount($payment['currency']));
@@ -575,7 +577,10 @@ class PaymentCreateTest extends TestCase
         // this is being asserted differently.
 
         $expectedNotes = [
-            'merchant_order_id' => 'random order id',
+            [
+                'key'   => 'merchant_order_id',
+                'value' => 'random order id',
+            ],
         ];
 
         $esMock->expects($this->once())
@@ -839,6 +844,23 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('bank_transaction_id', $payment['acquirer_data']);
     }
 
+    public function testPaymentWithGatewayProcurer()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_gateway_provider']);
+
+        $this->sharedTerminal->forceDelete();
+        $sharpTerminal = $this->fixtures->create('terminal:shared_sharp_terminal', ['procurer' => 'sharp']);
+
+        $paymentData = $this->getDefaultNetbankingPaymentArray();
+
+        $this->doAuthPayment($paymentData);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertArrayHasKey('gateway_provider', $payment);
+        $this->assertEquals('sharp', $payment['gateway_provider']);
+    }
+
     public function testPreferredRecurringPaymentInputValidation()
     {
         $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
@@ -950,7 +972,7 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -964,7 +986,7 @@ class PaymentCreateTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -1473,6 +1495,130 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
     }
 
+    public function testCreatePaymentSubTypeWithDefaultRule()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('rule_filter');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->create('terminal:axis_genius_terminal');
+
+        $ruleAttributes = [
+            'method'      => 'card',
+            'merchant_id' => '10000000000000',
+            'step'        => 'authorization',
+            'gateway'     => 'hdfc',
+            'type'        => 'filter',
+            'filter_type' => 'select',
+            'group'       => 'A',
+        ];
+
+        $this->fixtures->create('gateway_rule', $ruleAttributes);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'sub_type'=> 'business',
+        ]);
+        $this->doAuthPayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('hdfc', $paymentObj['gateway']);
+    }
+
+    public function testCreatePaymentWithSubTypeRule()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('rule_filter');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->create('terminal:axis_genius_terminal');
+
+        $ruleAttributes = [
+            'method'            => 'card',
+            'merchant_id'       => '10000000000000',
+            'step'              => 'authorization',
+            'method_subtype'    => 'business',
+            'gateway'           => 'axis_genius',
+            'type'              => 'filter',
+            'filter_type'       => 'select',
+            'group'             => 'A',
+        ];
+
+        $this->fixtures->create('gateway_rule', $ruleAttributes);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'sub_type'=> 'business',
+        ]);
+        $this->doAuthPayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('axis_genius', $paymentObj['gateway']);
+    }
+
+    public function testCreatePaymentWithCategoryRule()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('rule_filter');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->create('terminal:axis_genius_terminal');
+
+        $ruleAttributes = [
+            'method' => 'card',
+            'merchant_id' => '10000000000000',
+            'step' => 'authorization',
+            'method_subtype' => 'business',
+            'card_category' => 'Commercial Standard',
+            'gateway' => 'axis_genius',
+            'type' => 'filter',
+            'filter_type' => 'select',
+            'group' => 'A',
+        ];
+
+        $this->fixtures->create('gateway_rule', $ruleAttributes);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type' => 'credit',
+            'sub_type' => 'business',
+            'category' => 'Commercial Standard'
+        ]);
+        $this->doAuthPayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('axis_genius', $paymentObj['gateway']);
+    }
+
 
     public function testRupayPaymentFallbackTo3ds()
     {
@@ -1643,7 +1789,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1693,7 +1839,7 @@ class PaymentCreateTest extends TestCase
 
         $payment['method'] = 'netbanking';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1748,7 +1894,7 @@ class PaymentCreateTest extends TestCase
         $payment['save'] = true;
         $payment['recurring'] = 'preferred';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $request = [
             'method'  => 'POST',
@@ -1804,7 +1950,7 @@ class PaymentCreateTest extends TestCase
             'ifsc'              => 'UTIB0002766'
         ];
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
 
         $request = [
@@ -1836,5 +1982,66 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    // tests for merchant that have/do not have block_debit_2k feature enabled
+
+    public function testBlockDebit2kEnabledMerchant()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BLOCK_DEBIT_2K]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'debit'
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        //test  payment with amount less than 2k
+        $payment['amount'] = 100000;
+
+        $content = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        //test  payment with amount more than 2k
+        $payment['amount'] = 300000;
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Amount exceeds maximum amount allowed');
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testBlockDebit2kDisabledMerchant()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->iin->create([
+            'iin'     => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'debit'
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        foreach ([100000, 300000] as $amount)
+        {
+            $payment['amount'] = $amount;
+
+            $content = $this->doAuthPayment($payment);
+
+            $this->assertArrayHasKey('razorpay_payment_id', $content);
+        }
     }
 }

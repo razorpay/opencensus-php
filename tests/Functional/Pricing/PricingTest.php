@@ -1260,6 +1260,103 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testCreatePaymentCardSubTypePricing()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'sub_type'=> 'business',
+        ]);
+
+        $defaultPricingPlan = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'payment_method_subtype'    => 'business',
+            'percent_rate'              => 1000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            => 'SBIN',
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('5000', $paymentObj['fee']);
+    }
+
+    public function testCreatePaymentCardWithoutSubTypePricing()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+        ]);
+
+        $defaultPricingPlan = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'payment_method_subtype'    => 'business',
+            'percent_rate'              => 1000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            =>  null,
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+        ];
+
+        $defaultPricingPlan2 = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'percent_rate'              => 2000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            =>  null,
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $plan = $this->createPricingPlan($defaultPricingPlan2);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('10000', $paymentObj['fee']);
+    }
+
     public function testAddPricingPlanRuleForBankingPayoutWithoutAccountType()
     {
         $this->ba->adminAuth();
@@ -1326,7 +1423,7 @@ class PricingTest extends TestCase
             'percent_rate'        => 1000,
             'fixed_rate'          => 0,
             'payment_network'     => 'VISA',
-            'payment_issuer'      => 'SBI',
+            'payment_issuer'      => 'SBIN',
             'org_id'              => '10000000000000',
             'type'                => 'pricing',
         ];
@@ -1367,7 +1464,7 @@ class PricingTest extends TestCase
             'percent_rate'        => 2000,
             'fixed_rate'          => 0,
             'payment_network'     => 'VISA',
-            'payment_issuer'      => 'SBI',
+            'payment_issuer'      => 'SBIN',
             'org_id'              => '10000000000000',
             'type'                => 'pricing',
         ];

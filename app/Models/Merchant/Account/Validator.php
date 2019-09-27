@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Base\Fetch;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity as CE;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Merchant\Validator
 {
@@ -31,11 +33,11 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $createAccountRules = [
-        Constants::ENTITY          => 'required|string',
+        Constants::ENTITY          => 'required|string|in:'.CE::ACCOUNT,
         Constants::BUSINESS_ENTITY => 'sometimes|string',
         Constants::MANAGED         => 'sometimes|boolean',
         Constants::EMAIL           => 'required|email',
-        Constants::PHONE           => 'required|numeric|digits_between:8,11',
+        Constants::PHONE           => 'required|numeric|digits:10',
         Constants::NOTES           => 'sometimes|notes',
         Constants::PROFILE         => 'required|array',
         Constants::SETTLEMENT      => 'sometimes|array',
@@ -43,7 +45,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $editAccountRules = [
-        Constants::PHONE           => 'filled|numeric|digits_between:8,11',
+        Constants::PHONE           => 'filled|numeric|digits:10',
         Constants::NOTES           => 'sometimes|notes',
         Constants::PROFILE         => 'sometimes|array',
         Constants::TNC             => 'sometimes|array',
@@ -53,7 +55,7 @@ class Validator extends Merchant\Validator
         Constants::ADDRESSES         => 'required|array|max:2',
         Constants::NAME              => 'required|string',
         Constants::DESCRIPTION       => 'sometimes|string',
-        Constants::BUSINESS_MODEL    => 'sometimes|string',
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
         Constants::MCC               => 'required|numeric',
         Constants::BRAND             => 'sometimes|array',
         Constants::DASHBOARD_DISPLAY => 'sometimes|string',
@@ -63,7 +65,7 @@ class Validator extends Merchant\Validator
         Constants::CHARGEBACK        => 'sometimes|array',
         Constants::REFUND            => 'sometimes|array',
         Constants::DISPUTE           => 'sometimes|array',
-        Constants::BILLING_LABEL     => 'sometimes|string',
+        Constants::BILLING_LABEL     => 'required|string|max:25',
         Constants::IDENTIFICATION    => 'sometimes|array',
     ];
 
@@ -71,7 +73,7 @@ class Validator extends Merchant\Validator
         Constants::ADDRESSES         => 'sometimes|array|max:2',
         Constants::NAME              => 'filled|string',
         Constants::DESCRIPTION       => 'sometimes|string',
-        Constants::BUSINESS_MODEL    => 'sometimes|string',
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
         Constants::MCC               => 'filled|numeric',
         Constants::BRAND             => 'sometimes|array',
         Constants::DASHBOARD_DISPLAY => 'sometimes|string|nullable',
@@ -81,27 +83,29 @@ class Validator extends Merchant\Validator
         Constants::CHARGEBACK        => 'sometimes|array',
         Constants::REFUND            => 'sometimes|array',
         Constants::DISPUTE           => 'sometimes|array',
-        Constants::BILLING_LABEL     => 'sometimes|string',
+        Constants::BILLING_LABEL     => 'sometimes|string|max:25',
     ];
 
     protected static $accountAddressRules = [
-        Constants::TYPE    => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
-        Constants::LINE1   => 'required|string',
-        Constants::LINE2   => 'required|string',
-        Constants::CITY    => 'required|string',
-        Constants::STATE   => 'required|string',
-        Constants::PIN     => 'required|string',
-        Constants::COUNTRY => 'required|string',
+        Constants::TYPE          => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::LINE1         => 'required|string|max:100',
+        Constants::LINE2         => 'required|string',
+        Constants::CITY          => 'required|string',
+        Constants::DISTRICT_NAME => 'required|string',
+        Constants::STATE         => 'required|string',
+        Constants::PIN           => 'required|string',
+        Constants::COUNTRY       => 'required|string',
     ];
 
     protected static $editAccountAddressRules = [
-        Constants::TYPE    => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
-        Constants::LINE1   => 'filled|string',
-        Constants::LINE2   => 'filled|string',
-        Constants::CITY    => 'filled|string',
-        Constants::STATE   => 'filled|string',
-        Constants::PIN     => 'filled|string',
-        Constants::COUNTRY => 'filled|string',
+        Constants::TYPE          => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::LINE1         => 'filled|string|max:100',
+        Constants::LINE2         => 'filled|string',
+        Constants::CITY          => 'filled|string',
+        Constants::DISTRICT_NAME => 'filled|string',
+        Constants::STATE         => 'filled|string',
+        Constants::PIN           => 'filled|string',
+        Constants::COUNTRY       => 'filled|string',
     ];
 
     protected static $brandRules = [
@@ -112,14 +116,14 @@ class Validator extends Merchant\Validator
 
     protected static $merchantEmailRules = [
         Constants::EMAIL  => 'required|string',
-        Constants::PHONE  => 'required|numeric|digits_between:8,11',
+        Constants::PHONE  => 'required|numeric|digits:10',
         Constants::POLICY => 'sometimes|string|nullable',
         Constants::URL    => 'sometimes|string|nullable',
     ];
 
     protected static $editMerchantEmailRules = [
         Constants::EMAIL  => 'filled|string',
-        Constants::PHONE  => 'filled|numeric|digits_between:8,11',
+        Constants::PHONE  => 'filled|numeric|digits:10',
         Constants::POLICY => 'sometimes|string|nullable',
         Constants::URL    => 'sometimes|string|nullable',
     ];
@@ -136,9 +140,9 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $bankAccountRules = [
-        Constants::IFSC           => 'required|string',
-        Constants::NAME           => 'required|string',
-        Constants::ACCOUNT_NUMBER => 'required|string',
+        Constants::IFSC           => 'required|string|size:11',
+        Constants::NAME           => 'required|string|max:50',
+        Constants::ACCOUNT_NUMBER => 'required|string|max:16',
     ];
 
     protected static $listAccountsRules = [
@@ -172,7 +176,7 @@ class Validator extends Merchant\Validator
 
         $this->validateInput('edit_profile', $profileInput);
 
-        if (isset($profileInput[Constants::ADDRESSES]) === false)
+        if (isset($profileInput[Constants::ADDRESSES]) === true)
         {
             $this->validateAddresses($profileInput, 'edit');
         }
@@ -268,5 +272,13 @@ class Validator extends Merchant\Validator
     protected function validateDocumentType($attribute, $value)
     {
         DocumentType::validate($value);
+    }
+
+    protected function validateBusinessModel($attribute, $value)
+    {
+        if (in_array($value, Constants::$validBusinessModels, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid business model: ' . $value);
+        }
     }
 }

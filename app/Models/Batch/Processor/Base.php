@@ -118,6 +118,15 @@ class Base extends BaseModel\Core
      */
     protected $reconBatchOutputData;
 
+    /**
+     * Holds delimiter for output text file
+     *
+     * @var string
+     */
+    protected $delimiter = '|';
+
+    protected $ignoreHeaders = false;
+
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
@@ -147,11 +156,11 @@ class Base extends BaseModel\Core
         return $this;
     }
 
-    public function getBatchContext(): array
+    public function getBatchContext(array $config): array
     {
         $batchContext                        = [];
         $batchContext[Batch\Entity::TYPE]    = $this->batch->getType();
-        $batchContext[Batch\Constants::DATA] = $this->params;
+        $batchContext[Batch\Constants::DATA] = $config;
 
         return $batchContext;
     }
@@ -534,8 +543,14 @@ class Base extends BaseModel\Core
             finally
             {
                 $this->batch->incrementProcessedCount();
+                $this->processFinally($entry);
             }
         }
+    }
+
+    protected function processFinally(& $entry)
+    {
+        return;
     }
 
     /**
@@ -798,7 +813,18 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::TXT:
-                $txt = $this->generateTextWithHeadings($entries, '|', false, array_keys(current($entries)));
+            case FileStore\Format::DAT:
+                if ($this->ignoreHeaders === true)
+                {
+                    $txt = $this->generateText($entries, $this->delimiter,
+                               false);
+
+                }
+                else
+                {
+                    $txt = $this->generateTextWithHeadings($entries, $this->delimiter,
+                                           false, array_keys(current($entries)));
+                }
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 
@@ -825,13 +851,16 @@ class Base extends BaseModel\Core
 
         $mailerClass = "\\RZP\\Mail\\Batch\\$type";
 
-        $mail = new $mailerClass(
-                        $this->batch->toArray(),
-                        $this->merchant->toArray(),
-                        $this->outputFileLocalPath,
-                        $this->settingsAccessor->all()->toArray());
+        if (class_exists($mailerClass))
+        {
+            $mail = new $mailerClass(
+                            $this->batch->toArray(),
+                            $this->merchant->toArray(),
+                            $this->outputFileLocalPath,
+                            $this->settingsAccessor->all()->toArray());
 
-        Mail::send($mail);
+            Mail::send($mail);
+        }
     }
 
     protected function deleteLocalFiles()
@@ -920,6 +949,7 @@ class Base extends BaseModel\Core
                 return $this->parseExcelSheets($filePath);
 
             case FileStore\Format::TXT:
+            case FileStore\Format::DAT:
                 //
                 // We use standard separator | for txt, if needs this
                 // can be made configurable. But for now it's ok.

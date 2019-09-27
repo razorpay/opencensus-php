@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
 
 /**
@@ -51,6 +52,7 @@ class Validator extends Base\Validator
         Entity::BILLING_LABEL                         => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL              => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED                 => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_TRIGGER_EVENT           => 'sometimes|nullable|string|in:authorized,captured',
         Entity::LINKED_ACCOUNT_KYC                    => 'sometimes|boolean',
         Entity::CHANNEL                               => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                           => 'sometimes|min:0|max:5',
@@ -77,7 +79,8 @@ class Validator extends Base\Validator
         Entity::DASHBOARD_WHITELISTED_IPS_TEST        => 'sometimes|array|max:20',
         Entity::DASHBOARD_WHITELISTED_IPS_TEST . '.*' => 'distinct|required_with:' .
                                                          Entity::DASHBOARD_WHITELISTED_IPS_TEST . '|ipv4',
-        Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable'
+        Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable',
+        Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000'
     ];
 
     protected static $uniqueEmailRules = [
@@ -189,8 +192,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $irctcRules = [
-        'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
-        'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
+        'refund'       => 'sometimes|filled|file|mimes:txt|max:1024',
+        'delta_refund' => 'sometimes|filled|file|mimes:txt|max:1024',
+        'settlement'   => 'sometimes|filled|file|mimes:txt|max:1024',
     ];
 
     protected static $createSubMerchantUserRules = [
@@ -266,6 +270,11 @@ class Validator extends Base\Validator
     protected static $restrictSettingsMerchantRules = [
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
         Entity::ACTION      => 'required|in:add,remove',
+    ];
+
+    protected static $suspendedMerchantRemoveRules = [
+        'skip'  => 'sometimes|integer',
+        'limit' => 'sometimes|integer',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -819,6 +828,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
+        }
+    }
+
+    protected function validateSetReceiptEmailEventAuthorized()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->getReceiptEmailTriggerEvent() === Event::AUTHORIZED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_AUTHORISED);
+        }
+    }
+
+    protected function validateSetReceiptEmailEventCaptured()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->getReceiptEmailTriggerEvent() === Event::CAPTURED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_CAPTURED);
         }
     }
 

@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Repository extends Base\Repository
@@ -68,6 +69,7 @@ class Repository extends Base\Repository
      * @param int      $initiateAtTimestamp Upper limit limit on initiate_at
      * @param string   $purpose
      * @param null     $type
+     * @param $unsupportedModeList
      * @param string   $channel
      * @param int|null $limit
      * @param array    $relations Relations required in the process
@@ -80,6 +82,7 @@ class Repository extends Base\Repository
         string $purpose,
         $type = null,
         string $channel,
+        $unsupportedModeList = [],
         int $limit = null,
         array $relations = [],
         int $isFTS = 0)
@@ -94,6 +97,17 @@ class Repository extends Base\Repository
                       ->where(Entity::CHANNEL, '=', $channel)
                       ->where(Entity::IS_FTS, '=', $isFTS)
                       ->orderBy(Entity::ID);
+
+        // Cron should not pick NEFT, RTGS Mode attempts for razorpayX Payout outside timing window
+        // Since it affects the Other Mode Payout to get processed e.g. IMPS. UPI etc
+        if ((in_array($channel, Channel::getFTASupportedPayoutChannels(), true) === true) and
+            (empty($unsupportedModeList) === false))
+        {
+            $query->where(function($query) use ($unsupportedModeList)
+            {
+                $query->whereNotIn(Entity::MODE, $unsupportedModeList)->orWhereNull(Entity::MODE);
+            });
+        }
 
         if ($type !== null)
         {
@@ -337,4 +351,52 @@ class Repository extends Base\Repository
                     ->where(Entity::IS_FTS, $isFTS)
                     ->get();
     }
+
+
+    /**
+     * @param string $channel
+     * @param string $status
+     * @param null $size
+     * @param null $id
+     * @param null $from
+     * @param null $to
+     * @param null $limit
+     * @return mixed
+     */
+    public function getFtsAttempts(
+        string $channel,
+        string $status,
+        $size = null,
+        $id = null,
+        $from = null,
+        $to = null,
+        $limit=null)
+    {
+
+        $query = $this->newQuery()
+                      ->where(Entity::CHANNEL, $channel)
+                      ->where(Entity::STATUS, '=', $status)
+                      ->where(Entity::IS_FTS, '=', 1);
+
+        if ($size !== null)
+        {
+            $query->take($size);
+        }
+
+        if ($id !== null)
+        {
+            $query->where(Entity::ID, '=', $id);
+        }
+
+        if (($from != null) and ($to != null))
+        {
+            $query->whereBetween(Entity::CREATED_AT, [$from, $to])
+                  ->limit($limit);
+        }
+
+
+        return $query->get();
+    }
+
+
 }

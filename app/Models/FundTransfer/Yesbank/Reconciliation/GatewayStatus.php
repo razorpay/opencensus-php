@@ -624,7 +624,6 @@ class GatewayStatus extends BaseStatus
                self::U11,
                self::U12,
                self::XK,
-               self::DT,
                self::E99,
            ],
            self::STATUS_CODE_TIMEOUT => [
