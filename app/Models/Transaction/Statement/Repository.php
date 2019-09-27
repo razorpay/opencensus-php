@@ -13,6 +13,7 @@ use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
 
+
 /**
  * Class Repository
  *
@@ -76,6 +77,14 @@ class Repository extends Transaction\Repository
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
 
         return $statements;
+    }
+
+    public function getStatementsWithInRange($merchantId, $fromDate, $toDate)
+    {
+        return $this->getQueryForFindWithParams([])->merchantId($merchantId)
+                    ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->get();
     }
 
     protected function addQueryParamId($query, $params)
