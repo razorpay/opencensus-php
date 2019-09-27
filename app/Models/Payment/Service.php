@@ -858,6 +858,13 @@ class Service extends Base\Service
 
         $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
+            'data'          => $data,
+            'gateway'       => $gateway,
+            'reference_id'  => $referenceId,
+            'unexpected'    => 1,
+        ]);
+
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $data['terminal']);
 
         if ($terminal->isDirectSettlement() === true)
