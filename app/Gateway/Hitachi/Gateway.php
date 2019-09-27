@@ -39,6 +39,7 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CARD_CACHE_TTL = 20;
+    const PROXY_ENABLED_FILE = '/tmp/hitachi';
 
     const TIME_FORMAT               = 'His';
     const DATE_FORMAT               = 'md';
@@ -55,6 +56,13 @@ class Gateway extends Base\Gateway
         ResponseFields::MERCHANT_REFERENCE  => Entity::MERCHANT_REFERENCE,
         ResponseFields::AUTH_ID             => Entity::AUTH_ID,
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->proxy = $this->app['config']->get('gateway.razorpay_proxy_address');
+    }
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -1452,11 +1460,28 @@ class Gateway extends Base\Gateway
 
     protected function sendGatewayRequest($request)
     {
+        $this->proxyRequestIfApplicable($request);
+
         $response = parent::sendGatewayRequest($request);
 
         $body = $response->body;
 
         return $this->parseResponseBody($body);
+    }
+
+    protected function proxyRequestIfApplicable(&$request)
+    {
+        // If proxy enable file exists then proxy this request via tinyproxy
+        if (file_exists(self::PROXY_ENABLED_FILE) === true)
+        {
+            $request['options']['proxy'] = $this->proxy;
+
+            $this->trace->info(TraceCode::HITACHI_CALL_WITH_PROXY);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::HITACHI_CALL_WITHOUT_PROXY);
+        }
     }
 
     protected function parseResponseBody(string $body)
