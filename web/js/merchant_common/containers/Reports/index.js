@@ -345,6 +345,11 @@ export default function Reports(store, opts) {
     };
 
     generateReport() {
+      if (typeof window.hj === 'function') {
+        window.hj('trigger', 'download_report');
+        window.hj('tagRecording', ['download_report']);
+      }
+
       let selectedConfig = { ...this.state.selectedConfig };
       const { selectedAccount, currentReportList } = this.state,
         { date, type, invoiceDate, reportType, dateRangeData } = this.props,
