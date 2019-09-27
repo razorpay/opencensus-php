@@ -12,23 +12,36 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
+use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
+use RZP\Services\FTS\Base as FtsService;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Constants\SettlementChannelMedium as Medium;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
+    const FTA_PURPOSE                       = 'settlement';
+
     const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s_%s';
-    const DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT   = 500;
+
     const REQUEST_TIMEOUT                   = 30;
+
+    const MUTEX_FTS_RESOURCE                = 'MUTEX_FTS_RESOURCE_%s_%s_%s';
+
+    const FTS_REQUEST_TIMEOUT               = 300;
+
+    const DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT   = 500;
 
     protected $mutex;
 
@@ -533,6 +546,15 @@ class Initiator extends Base\Core
         {
             return [false, 'Invalid mode to initiate transfer'];
         }
+        //
+        // If the force flag is set,
+        // let the fund transfer go
+        //
+        if ((isset($input['ignore_time_limit']) === true) and
+            ($input['ignore_time_limit'] === '1'))
+        {
+            return [true, null];
+        }
 
         if ($this->isValidTime($channel) === false)
         {
@@ -601,6 +623,240 @@ class Initiator extends Base\Core
         return $info;
     }
 
+    public function processFundTransfersUsingFts(array $input, string $channel)
+    {
+        $this->trace->info(
+            TraceCode::FTS_TRANSFER_ACTION_INIT,
+            [
+                'input'   => $input,
+                'channel' => $channel
+            ]);
+
+        (new Validator)->validateInput('fts_fund_transfer', $input);
+
+        if (in_array($channel, Channel::getFtsSupportedChannels(), true) === false)
+        {
+            throw new LogicException($channel . ' channel is not supported for transfers via fts');
+        }
+
+        $action = $input['action'];
+
+        $mutexResource = sprintf(self::MUTEX_FTS_RESOURCE, $this->mode, $channel, $action);
+
+        $response = $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function() use ($input, $channel)
+            {
+                return $this->processBankTransfersThroughFts($input, $channel);
+            },
+            self::FTS_REQUEST_TIMEOUT,
+            ErrorCode::BAD_REQUEST_FUND_TRANSFER_FTS_ANOTHER_OPERATION_IN_PROGRESS);
+
+
+        $this->trace->info(
+            TraceCode::FTS_TRANSFER_ACTION_COMPLETE,
+            [
+                'response' => $response
+            ]);
+
+        return $response;
+    }
+
+    /**
+     * @param array $input
+     * @param string $channel
+     * @return array
+     * @throws LogicException
+     */
+    protected function processBankTransfersThroughFts(array $input, string $channel)
+    {
+        $action = $input['action'];
+
+        $status = $this->getAttemptStatusByAction($action);
+
+        $attempts = $this->fetchAttemptsForProcessing($input, $channel, $status);
+
+        $response = $this->processAttemptsByAction($attempts, $action);
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $fta
+     * @param bool $isRegistered
+     * @return bool
+     */
+    public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false): bool
+    {
+        try
+        {
+            if ($fta->shouldUseGateway() === true)
+            {
+                return false;
+            }
+
+            $redis = $this->app['redis']->connection();
+
+            $ftsChannelMode = $redis->HGET(ConfigKey::FTS_CHANNELS, $fta->getChannel());
+
+            if (empty($ftsChannelMode) === true)
+            {
+                $this->trace->info(
+                    TraceCode::FTS_INVALID_CHANNEL,
+                    [
+                        'channel' => $fta->getChannel(),
+                    ]);
+
+                return false;
+            }
+
+            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered);
+
+            $this->trace->info(
+                TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
+                [
+                    'fta_id'      => $fta->getId(),
+                    'source_type' => $fta->getSourceType(),
+                ]);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_FUND_TRANSFER_DISPATCH_FAILED,
+                [
+                    'fta_id'      => $fta->getId(),
+                    'source_type' => $fta->getSourceType(),
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array $input
+     * @param string $channel
+     * @param string $status
+     * @return mixed|null
+     * @throws LogicException
+     */
+    protected function fetchAttemptsForProcessing(array $input, string $channel, string $status)
+    {
+        if (isset($input['size']) === true)
+        {
+            return $this->repo
+                        ->fund_transfer_attempt
+                        ->getFtsAttempts($channel, $status, $input['size']);
+        }
+
+        if (isset($input[Entity::ID]) === true)
+        {
+            $input[Entity::ID] = Entity::verifyIdAndStripSign($input[Entity::ID]);
+
+            return $this->repo
+                        ->fund_transfer_attempt
+                        ->getFtsAttempts($channel, $status, null, $input[Entity::ID]);
+        }
+
+        if ((isset($input['from']) === true)||(isset($input['to']) === true)||(isset($input['limit']) === true))
+        {
+            if ($input['from'] > $input['to'])
+            {
+                throw new LogicException('Invalid timestamp specified');
+
+            }
+
+            return $this->repo
+                        ->fund_transfer_attempt
+                        ->getFtsAttempts(
+                            $channel,
+                            $status,
+                            null,
+                            null,
+                            $input['from'],
+                            $input['to'],
+                            $input['limit']);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param $attempts
+     * @param string $action
+     * @return array
+     */
+    protected function processAttemptsByAction($attempts, string $action): array
+    {
+        $count = $attempts->count();
+
+        $response = [ 'success' => 0, 'failure' => 0, 'total' => $count ];
+
+        if ($action === FtsService::TRANSFER_RETRY)
+        {
+            return $this->retryFtsTransfers($attempts, $response);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Decides the status in which an
+     * attempt shall be taken for processing.
+     *
+     * @param string $action
+     * @return string
+     * @throws LogicException
+     */
+    protected function getAttemptStatusByAction(string $action)
+    {
+        if ($action === FtsService::TRANSFER_RETRY)
+        {
+            return Status::CREATED;
+        }
+
+        throw new LogicException('Invalid action to derive attempt status');
+    }
+
+    /**
+     * @param PublicCollection $attempts
+     * @param array $response
+     * @return array
+     */
+    protected function retryFtsTransfers(PublicCollection $attempts, array $response)
+    {
+        $this->trace->info(
+            TraceCode::FTS_TRANSFER_RETRY_ACTION_INIT,
+            [
+                'attempts' => $attempts->count(),
+            ]);
+
+        foreach ($attempts as $attempt)
+        {
+            $result = $this->sendFTSFundTransferRequest($attempt);
+
+            if ($result === true)
+            {
+                $response['success']++;
+            }
+            else
+            {
+                $response['failure']++;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::FTS_TRANSFER_RETRY_ACTION_COMPLETE,
+            [
+                'response' => $response,
+            ]);
+
+        return $response;
+    }
+  
     protected function raiseSettlementEvent(array $eventDetails,
                                             Settlement\Entity $settlement = null,
                                             \Throwable $exception = null,

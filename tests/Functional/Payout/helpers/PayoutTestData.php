@@ -447,6 +447,36 @@ return [
         ],
     ],
 
+    'testCreatePayoutToFundAccountWithoutContact' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000004ff',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payouts cannot be created for fund account without contact.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutToInactiveContactFundAccount' => [
         'request'   => [
             'method'  => 'POST',
@@ -812,6 +842,26 @@ return [
             ],
         ],
     ],
+    'testCreateMerchantPayoutOnDemandWithAmountLessThan2L' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 10000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 9292,
+                'currency'    => 'INR',
+                'tax'         => 108,
+                'fees'        => 708,
+                'notes'       => []
+            ],
+        ],
+    ],
     'testCreateMerchantPayoutOnDemandOnLowBalance' => [
         'request' => [
             'method'  => 'POST',
@@ -879,6 +929,38 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT,
+        ],
+    ],
+    'testOnDemandPayoutFetchFees' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/merchant/payout/demand/fees',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'entity'=> 'collection',
+                    'count'=> 2,
+                    'items'=> [
+                         [
+                            'name'=> 'payout',
+                            'amount'=> 510,
+                            'percentage'=> null,
+                            'pricing_rule'=> [
+                                'percent_rate'=> 100,
+                                'fixed_rate'=> 500,
+                            ]
+                        ],
+                        [
+                            'name'=> 'tax',
+                            'amount'=> 92,
+                            'percentage'=> 1800,
+                        ]
+                    ]
+            ],
         ],
     ],
 

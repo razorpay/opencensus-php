@@ -2,8 +2,6 @@
 
 namespace RZP\Reconciliator\Base;
 
-use RZP\Error\ErrorCode;
-
 class Constants
 {
     const RECON_PUBLIC_DESCRIPTIONS = [

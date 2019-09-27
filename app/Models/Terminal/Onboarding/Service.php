@@ -6,8 +6,12 @@ use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Core as TerminalCore;
-use RZP\Models\Terminal\Onboarding\Processor\FreechargeTerminalOnboardingProcessor;
+use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Terminal\Onboarding\Processor\AtosTerminalOnboardingProcessor;
+use RZP\Models\Gateway\Terminal\Service as GatewayOnboardingService;
+use RZP\Models\Terminal\Status;
 
 class Service extends Base\Service
 {
@@ -24,24 +28,32 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $submerchantId = $this->merchant->getId();
+        $submerchant = $this->merchant;
 
         $this->trace->info(
             TraceCode::TERMINAL_ONBOARDING_REQUEST,
             [
                 'merchant_id'    => $this->merchant->getId(),
                 'partner_id'     => $this->app['basicauth']->getPartnerMerchantId(),
-                'submerchant_id' => $submerchantId,
+                'submerchant_id' => $submerchant->getId(),
                 'input'          => $input,
             ]);
-    
+
         $this->verifyPartnerTerminalOnboardingAccess();
-                      
-        return (new FreechargeTerminalOnboardingProcessor)->process($input, $submerchantId);
+
+        $onboardInput['gateway'] = Gateway::ATOS;
+
+        $onboardInput['gateway_input'] = $input;
+
+        $onboardedTerminal = (new GatewayOnboardingService)->onboardMerchantAsync($submerchant, $onboardInput);
+
+        return $onboardedTerminal->toArrayPublic();
     }
 
     public function enableTerminal(string $id)
     {
+        TerminalEntity::verifyIdAndStripSign($id);
+
         $merchantId = $this->merchant->getId();
 
         $this->trace->info(
@@ -56,6 +68,12 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
+        if ($terminal->getStatus() !== Status::ACTIVATED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED);
+        }
+
         $terminal = (new TerminalCore)->toggle($terminal, true);
 
         return $terminal->toArrayPublic();
@@ -63,6 +81,8 @@ class Service extends Base\Service
 
     public function disableTerminal(string $id)
     {
+        TerminalEntity::verifyIdAndStripSign($id);
+
         $merchantId = $this->merchant->getId();
 
         $this->trace->info(
@@ -113,6 +133,7 @@ class Service extends Base\Service
             return $partnerMerchant->isTerminalOnboardingEnabled();
         }
 
-        return false;
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
     }
 }

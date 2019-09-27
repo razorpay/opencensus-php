@@ -146,6 +146,8 @@ class TestCase extends IlluminateTestCase
             {
                 case 'tokenize':
                     $response['token'] = base64_encode($input['secret']);
+                    $response['fingerprint'] = strrev(base64_encode($input['secret']));
+                    $response['scheme'] = '0';
                     break;
 
                 case 'detokenize':

@@ -15,12 +15,13 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Bank;
+use RZP\Models\Terminal\Status;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
-        Entity::STATUS                      => 'sometimes',
+        Entity::STATUS                      => 'sometimes|string|custom',
         Entity::GATEWAY                     => 'required',
         Entity::PROCURER                    => 'sometimes|in:razorpay,merchant',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
@@ -56,7 +57,7 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'required_if:netbanking,1|string|max:30',
-        Entity::CURRENCY                    => 'sometimes|alpha|size:3',
+        Entity::CURRENCY                    => 'sometimes',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
@@ -177,7 +178,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::CURRENCY                   => 'sometimes|array|max:1',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
@@ -187,7 +188,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::CURRENCY                   => 'sometimes',
         Entity::MC_MPAN                    => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
@@ -253,7 +254,7 @@ class Validator extends Base\Validator
         Entity::EMI                        => 'sometimes|boolean',
         Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
-        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::CURRENCY                   => 'sometimes|array|max:1',
     ];
 
     protected static $amexTerminalRules = [
@@ -499,7 +500,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2              => 'required|string',
         Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD               => 'required|string',
-        Entity::CURRENCY                                => 'sometimes|alpha|size:3',
+        Entity::CURRENCY                                => 'sometimes|array',
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::MODE                                    => 'sometimes',
         Entity::TYPE                                    => 'required|array',
@@ -511,7 +512,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
-        Entity::CURRENCY                                => 'sometimes|alpha|size:3',
+        Entity::CURRENCY                                => 'sometimes|array',
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::MODE                                    => 'sometimes',
         Entity::TYPE                                    => 'sometimes|array',
@@ -1046,6 +1047,9 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL,
         Entity::VPA,
         Entity::PROCURER,
+        Entity::MC_MPAN,
+        Entity::VISA_MPAN,
+        Entity::RUPAY_MPAN
     ];
 
     public function validateType()
@@ -1081,6 +1085,15 @@ class Validator extends Base\Validator
         throw new Exception\BadRequestValidationFailureException(
             'Bank Transfer Terminal should be either Numeric or Alpha Numeric.',
             Entity::TYPE);
+    }
+
+    protected function validateStatus(string $attribute, string $value)
+    {
+        if (Status::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid terminal status: ' . $value);
+        }
     }
 
     protected function validateGateway($input)
@@ -1238,11 +1251,15 @@ class Validator extends Base\Validator
 
     protected function validateCurrency($input)
     {
-        if ((isset($input['currency']) === true) and
-            (in_array($input['currency'], Currency::SUPPORTED_CURRENCIES, true) === false))
+        if (isset($input['currency']) === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+            $currency = array_unique((array) $input['currency']);
+
+            if (count(array_intersect($currency, Currency::SUPPORTED_CURRENCIES)) !== count($currency))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+            }
         }
     }
 

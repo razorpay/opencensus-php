@@ -854,10 +854,21 @@ class Service extends Base\Service
         // use demo accounts for unexpected payments
         $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
+        $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $data['terminal']);
+
+        if ($terminal->isDirectSettlement() === true)
+        {
+            $merchantId = $terminal->getMerchantId();
+        }
+
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         return $this->getNewProcessor($merchant)
-                    ->authorizePush($input, $referenceId, $gateway);
+                    ->authorizePush($input, $referenceId, $data, $terminal);
     }
 
     public function fetchMultiple(array $input)

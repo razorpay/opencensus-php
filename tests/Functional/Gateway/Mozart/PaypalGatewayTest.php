@@ -20,7 +20,7 @@ class PaypalGatewayTest extends TestCase
 
         $this->gateway = 'mozart';
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal', ['currency' => ['USD','INR']]);
 
         $this->fixtures->merchant->enableInternational();
 
@@ -31,7 +31,7 @@ class PaypalGatewayTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 0]);
 
         $this->payment = $this->getDefaultWalletPaymentArray('paypal');
-        $this->payment['currency'] = "USD";
+        $this->payment['currency'] = 'USD';
 
     }
 
@@ -44,6 +44,26 @@ class PaypalGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment, 'testPayment');
+        $this->assertEquals('1ShrdPaypalTml', $payment['terminal_id']);
+
+        $mozartEntity = $this->getLastEntity('mozart', true);
+
+        $this->assertTestResponse($mozartEntity, 'testPaymentMozartEntity');
+
+        return $payment;
+    }
+
+    public function testInternationalPayment()
+    {
+        $payment = $this->payment;
+
+        $payment['contact'] = '491761552902';
+
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testInternationalPayment');
         $this->assertEquals('1ShrdPaypalTml', $payment['terminal_id']);
 
         $mozartEntity = $this->getLastEntity('mozart', true);

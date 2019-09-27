@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'fund_transfer_attempt';
 
+    protected static $sign = 'fta';
+
     protected $fillable = [
         self::PURPOSE,
         self::CHANNEL,

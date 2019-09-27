@@ -19,7 +19,7 @@ final class Metric
      * Dimensions: Channel
      *             Total Merchant count
      */
-    const SETTLEMENTS_INITIATE_RUNTIME                       = 'settlements_initiate_runtime';
+    const SETTLEMENTS_INITIATE_EXECUTION_TIME               = 'settlements_initiate_execution_time';
 
     /**
      * Method: Count

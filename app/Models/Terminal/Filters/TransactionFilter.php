@@ -7,6 +7,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\BankAccount\Generator;
 use RZP\Models\Card;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
@@ -163,20 +164,20 @@ class TransactionFilter extends Terminal\Filter
         $authTypeGateways = ($authType !== null) ? Gateway::getEmandateGatewaysForAuthType($authType) : [];
 
         // @todo: Can be more cleaner
-        foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $gatewaySupportedBanks)
+        foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $authTypes)
         {
-            if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
+            foreach ($authTypes as $gatewaysupportedAuthType => $gatewaySupportedBanks)
             {
-                if (($authType !== null) and
-                    (in_array($gateway, $authTypeGateways, true) === false))
-                {
-                    continue;
-                }
+                    if (in_array($paymentBank, $gatewaySupportedBanks, true) === true) {
+                        if (($authType !== null) and
+                            (in_array($gateway, $authTypeGateways, true) === false)) {
+                            continue;
+                        }
 
-                $gateways[] = $gateway;
+                        $gateways[] = $gateway;
+                    }
             }
         }
-
         return in_array($terminalGateway, $gateways);
     }
 
@@ -464,7 +465,7 @@ class TransactionFilter extends Terminal\Filter
         {
             return (($terminal->isCardEnabled()) and
                     ($terminal->isEmiEnabled() === false) and
-                    ($terminal->isCurrencyInr() === true));
+                    ($terminal->supportsCurrency(Currency::INR) === true));
         }
 
         // validate terminal using the gateway and emi duration

@@ -16,10 +16,10 @@ use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Constants;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
@@ -70,6 +70,8 @@ class Service extends Base\Service
         $response = $this->saveMerchantDetails($input);
 
         $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null);
 
         return $response;
     }
@@ -240,26 +242,54 @@ class Service extends Base\Service
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
 
-        $merchantDetails->edit($input);
+        $response = $this->repo->transaction(function() use ( $merchant, $merchantDetails, $input, $core)
+        {
+            $previousFileStoreId = [];
 
-        $params = $this->storeActivationFile($merchantDetails, $input);
+            //find the previous document uploaded with same document type and delete them from Merchant_documents table
+            foreach ($input as $key => $value)
+            {
+                $fileStoreId = $merchantDetails->getAttribute($key);
 
-        $merchantDetails->fill($params);
+                if(isset($fileStoreId) === true)
+                {
+                    $previousFileStoreId[] = $fileStoreId;
+                }
+            }
 
-        $response = $core->createResponse($merchantDetails);
+            (new DocumentCore)->deleteDocuments($previousFileStoreId);
 
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+            $merchantDetails->edit($input);
 
-        $this->repo->saveOrFail($merchantDetails);
+            $documentMapping = $this->storeActivationFile($merchantDetails, $input);
 
-        // Previous $response would become stale while simulataneous uploads. So prepare fresh response.
-        $response = $core->createResponse($merchantDetails);
+            $merchantDetails->fill($documentMapping);
+
+            $response = $core->createResponse($merchantDetails);
+
+            $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+            //
+            // for backward compatibility we are storing file in both merchant detail and merchant_document table
+            //
+            (new DocumentCore)->storeInMerchantDocument($merchant, $documentMapping);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            // Previous $response would become stale while simulataneous uploads. So prepare fresh response.
+            $response = $core->createResponse($merchantDetails);
+
+            return $response;
+        }
+        );
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, array_keys($input));
 
         return $response;
     }
 
     public function storeActivationFile(
-        Entity $merchantDetails,
+        Base\PublicEntity $merchantDetails,
         array $input)
     {
         $params = [];
@@ -268,7 +298,7 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
-            $merchantDetails->getValidator()->validateFileType($value);
+            (new Validator)->validateFileType($value);
 
             // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
             $partial = substr(bin2hex(random_bytes(6)), 0, 5);
@@ -326,7 +356,7 @@ class Service extends Base\Service
         return $merchantDetailCore->createResponse($merchantDetails);
     }
 
-    protected function createFile(Entity $merchantDetail,
+    protected function createFile(Base\PublicEntity $merchantDetail,
                                     string $extension,
                                     $file,
                                     string $fileName,

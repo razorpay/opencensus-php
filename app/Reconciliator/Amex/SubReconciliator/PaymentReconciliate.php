@@ -17,6 +17,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_SETTLED_AT_DATE            = 'settlement_date';
     const COLUMN_MERCHANT_ACCOUNT_NUMBER    = 'merchant_account_number';
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getPaymentId(array $row)
     {
         $paymentId = null;

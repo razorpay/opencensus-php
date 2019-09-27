@@ -43,6 +43,7 @@ class Scrooge
         'get_refunds'                   => 'refunds',
         'get_dashboard_init_data'       => 'init',
         'status_update'                 => 'status-update',
+        'verify'                        => 'verify',
         'download_refunds'              => 'refunds/download',
         'enqueue'                       => 'enqueue',
         'download_refunds_gateway_file' => 'refunds/download-gateway-file',
@@ -156,6 +157,17 @@ class Scrooge
     {
         return $this->sendRequest(self::RefundBaseURL . '/' . $id . '/' . self::URLS['status_update'],
             Requests::POST, $input);
+    }
+
+    /**
+     * @param string $id
+     * @param array $input
+     * @return array
+     */
+    public function verifyRefund(string $id): array
+    {
+        return $this->sendRequest(self::RefundBaseURL . '/' . $id . '/' . self::URLS['verify'],
+            Requests::POST);
     }
 
     /**

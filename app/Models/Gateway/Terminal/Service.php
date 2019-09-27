@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Gateway\Base\Terminal;
 use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Terminal\Service as TerminalService;
 use RZP\Models\Merchant\Entity as Merchant;
 
 class Service extends Base\Service
@@ -56,7 +57,22 @@ class Service extends Base\Service
         return $this->performOnboarding($merchant, $gatewayProcessor, $gatewayInput);
     }
 
-    public function performOnboarding($merchant, $gatewayProcessor, $gatewayInput)
+    public function onboardMerchantAsync(Merchant $merchant, $input)
+    {
+        (new Validator)->validateInput(self::MERCHANT_ONBOARD, $input);
+
+        $gateway = $input['gateway'];
+
+        $gatewayInput = $input['gateway_input'];
+
+        $gatewayProcessor = GatewayFactory::build($gateway);
+
+        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchant);
+
+        return $this->performOnboardingAsync($merchant, $gatewayProcessor, $gatewayInput);
+    }
+
+    protected function performOnboarding($merchant, $gatewayProcessor, $gatewayInput)
     {
         $gateway = $gatewayProcessor->getGatewayName();
 
@@ -146,7 +162,7 @@ class Service extends Base\Service
         foreach ($terminals as $terminal)
         {
             if (($terminal->getGateway() === $gateway) and
-                ($terminal->getCurrency() === $currency) and
+                ($terminal->supportsCurrency($currency) === true) and
                 ($terminal->isDirectForMerchant() === true) and
                 ($terminal->getCategory() === $category))
             {
@@ -155,5 +171,14 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    protected function performOnboardingAsync($merchant, $gatewayProcessor, $gatewayInput)
+    {
+        $gatewayProcessor->checkDbConstraints($gatewayInput, $merchant);
+
+        $terminalData = $gatewayProcessor->getInputValue($gatewayInput, $merchant);
+
+        return $gatewayProcessor->processTerminalData($terminalData, $merchant);
     }
 }

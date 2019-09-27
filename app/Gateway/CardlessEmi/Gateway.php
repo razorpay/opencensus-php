@@ -1182,7 +1182,7 @@ class Gateway extends Base\Gateway
         return [
             Entity::RECEIVED                => true,
             Entity::STATUS                  => $response[ResponseFields::STATUS],
-            Entity::GATEWAY_REFERENCE_ID    => $response[ResponseFields::PROVIDER_PAYMENT_ID],
+            Entity::GATEWAY_REFERENCE_ID    => $response[ResponseFields::PROVIDER_PAYMENT_ID] ?? '',
         ];
     }
 
