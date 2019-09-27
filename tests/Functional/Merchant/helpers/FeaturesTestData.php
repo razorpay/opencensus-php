@@ -743,6 +743,7 @@ return [
                     'es_on_demand',
                     'es_automatic',
                     'headless',
+                    'headless_disable',
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
                     'offer_private_auth',
