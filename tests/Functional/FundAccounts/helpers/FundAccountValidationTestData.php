@@ -484,7 +484,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The Fund Account Validation is supported for only Shared Account Type Balance',
+                    'description' => 'Penny Testing is not supported for a given account number.',
                 ],
             ],
             'status_code' => 400,
