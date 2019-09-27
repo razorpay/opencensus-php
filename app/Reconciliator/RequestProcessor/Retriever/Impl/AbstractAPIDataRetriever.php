@@ -30,10 +30,10 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
      */
     protected $repo;
 
-    const GATEWAY = 'gateway';
+    const GATEWAY    = 'gateway';
     const IDENTIFIER = 'identifier';
     const START_DATE = 'start_date';
-    const END_DATE = 'end_date';
+    const END_DATE   = 'end_date';
 
     public function __construct()
     {
@@ -69,6 +69,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
             $fileName = $key.'_'.$input[self::GATEWAY].'_reconcile_'.date('Y-m-d_h:i:s');
             array_push($files, $this->prepareFile($fileName, $value));
         }
+
         return $files;
     }
 
@@ -83,10 +84,15 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
     protected function processRequest(array $input, $request, $terminal)
     {
         $gatewayData = [];
+
         $gatewayData['terminal'] = $terminal;
+
         $gatewayData[self::GATEWAY] = $request[self::GATEWAY];
-        $gatewayData['payment'] = [self::GATEWAY => $request[self::GATEWAY], ];
+
+        $gatewayData['payment'] = [self::GATEWAY => $request[self::GATEWAY]];
+
         $gatewayData['reconRequest'] = $request;
+
         return [$request[self::IDENTIFIER], $this->gatewayManager->call($request[self::GATEWAY], 'reconcile', $gatewayData, $this->mode, $terminal)];
     }
 
@@ -96,6 +102,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
     {
         $f = null;
         $filePath = storage_path('files/filestore') . '/'  . $filename . '.csv';
+
         try
         {
             $f = fopen($filePath, 'w');
@@ -118,6 +125,7 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
                 fclose($f);
             }
         }
+
         return new File($filePath);
     }
 }

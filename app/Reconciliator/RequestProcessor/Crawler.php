@@ -8,7 +8,6 @@ use RZP\Trace\TraceCode;
 use Config;
 use RZP\Exception;
 use RZP\Reconciliator\FileProcessor;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Crawler extends Base
 {
@@ -64,7 +63,7 @@ class Crawler extends Base
         if (isset(self::GATEWAY_CRAWLERS[$this->gateway]) === false)
         {
             throw new Exception\ReconciliationException(
-                'Invalid gateway param. Not in the allowed list of gateway params.',
+                'Invalid gateway param. Not in the allowed list of crawler gateway params.',
                 [
                     'gateway' => $this->gateway
                 ]);

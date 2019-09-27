@@ -3,11 +3,6 @@
 namespace RZP\Reconciliator\RequestProcessor\Retriever\Impl;
 
 use App;
-use PhpParser\Node\Scalar\String_;
-use RZP\Models\Terminal;
-use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Base\RepositoryManager;
 
 class PaginatedDataRetriever extends AbstractAPIDataRetriever
 {
@@ -15,7 +10,7 @@ class PaginatedDataRetriever extends AbstractAPIDataRetriever
     protected $currentPage = 1;
     protected $totalPages = 1;
 
-    const PAGE = 'page';
+    const PAGE        = 'page';
     const TOTAL_PAGES = 'total_pages';
 
     protected function getNextRequest(array $input, $prevRequest, $prevResponse): array
@@ -31,8 +26,10 @@ class PaginatedDataRetriever extends AbstractAPIDataRetriever
         }
 
         $request = [];
+
         $request[self::GATEWAY] = $input[self::GATEWAY];
         $request[self::IDENTIFIER] = (string) $this->currentPage;
+
         $request[self::START_DATE] = date('Y-m-d', strtotime('-1 days'));
         $request[self::END_DATE] = date('Y-m-d');
 
@@ -42,10 +39,12 @@ class PaginatedDataRetriever extends AbstractAPIDataRetriever
         {
             $request[self::START_DATE] = $input[self::START_DATE];
         }
+
         if (isset($input[self::END_DATE]) === true)
         {
             $request[self::END_DATE] = $input[self::END_DATE];
         }
+
         if (isset($input['meta_data']) === true)
         {
             $request['meta_data'] = $input['meta_data'];
@@ -59,10 +58,12 @@ class PaginatedDataRetriever extends AbstractAPIDataRetriever
     protected function refactorResponse(array $responseList): array
     {
         $output = [];
+
         foreach ($responseList as $key => $value)
         {
             $output[$key] =  $value['data']['records'];
         }
+
         return $output;
     }
 }
