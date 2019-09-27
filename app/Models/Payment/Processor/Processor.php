@@ -132,6 +132,11 @@ class Processor
      */
     const REDIRECT_CACHE_TTL = 20;
 
+    /**
+     * Timeout to store redirect authorize response cache
+     */
+    const REDIRECT_CACHE_RESPONSE_TTL = 2;
+
     const CACHE_KEY = 'fallback_%s_card_details';
 
     /**

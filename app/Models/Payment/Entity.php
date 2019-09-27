@@ -3278,6 +3278,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return 'payment:redirect.authorize.' . $trackId . '.encrypt';
     }
 
+    public function getPaymentResponseCacheKey(): string
+    {
+        return 'payment:response' . $this->getId() . '.cache';
+    }
+
     public function getTransactionType()
     {
         if ($this->isRecurring() === true)
