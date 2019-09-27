@@ -2664,6 +2664,16 @@ class Processor
     {
         $order = $payment->order;
 
+        if ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === true)
+        {
+            if ($payment->isLateAuthorized() === true)
+            {
+                return $this->shouldAutoCaptureLateAuthorized($payment);
+            }
+
+            return $order->getPaymentCapture();
+        }
+
         //
         // Assume a case where the first payment failed.
         // The second payment is getting authorized.

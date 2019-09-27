@@ -85,6 +85,7 @@ class Constants
     const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
+    const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
     const SUBSCRIPTION_AUTH_V2            = 'subscription_auth_v2';
     const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
@@ -334,6 +335,7 @@ class Constants
         self::CARD_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
+        self::DISABLE_AMOUNT_CHECK            => true,
         self::SUBSCRIPTION_V2                 => true,
         self::SUBSCRIPTION_AUTH_V2            => true,
         self::EXPOSE_ARN_PAYMENT              => true,

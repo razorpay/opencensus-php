@@ -731,6 +731,7 @@ return [
                     'card_transfer_refund',
                     'log_response',
                     'excess_order_amount',
+                    'disable_amount_check',
                     'subscription_v2',
                     'subscription_auth_v2',
                     'expose_arn_payment',
