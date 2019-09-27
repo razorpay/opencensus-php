@@ -159,7 +159,13 @@ class Gateway extends Base\Gateway
         {
             $storeCvv = ($this->isRupayTransaction($input) === false);
 
-            $this->persistCardDetailsTemporarily($input, $storeCvv);
+            // 1. For all transactions other than Rupay, we need to store it in cache
+            // 2. For Rupay transactions, store it ONLY if we're not storing card in vault
+            if (($this->isRupayTransaction($input) === false) or
+                (empty($input['card']['vault_token']) === true))
+            {
+                $this->persistCardDetailsTemporarily($input, $storeCvv);
+            }
 
             return $authResponse;
         }
@@ -1096,7 +1102,14 @@ class Gateway extends Base\Gateway
 
         if ($this->isRupayTransaction($input) === true)
         {
-            $this->setCardNumberAndCvv($input);
+            if (empty($card['vault_token']) === false)
+            {
+                $input['card']['number'] = (new Card\CardVault)->getCardNumber($card['vault_token']);
+            }
+            else
+            {
+                $this->setCardNumberAndCvv($input);
+            }
 
             $data = [
                 RequestFields::CARD_NUMBER         => $input['card']['number'],
