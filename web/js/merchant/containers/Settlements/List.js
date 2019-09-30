@@ -16,6 +16,7 @@ import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
+import { showNotification } from 'rzp/modules/notifications';
 import {
   trackEarlySettlementRequests,
   trackHowSettlementsWorkClicks,
@@ -38,6 +39,7 @@ import { trackInstantSettlementsBanner } from '../../components/Announcements/ga
   }),
   {
     fetchAll,
+    showNotification,
     ...ModalActions,
     fetchCurrentBalance,
   }
@@ -62,6 +64,16 @@ export default class SettlementsListContainer extends ListContainer {
 
   popupIfSettle() {
     if (this.props.location.hash === '#settlenow') {
+      this.resetHash();
+      let balance = this.props.current_balance.data.balance || 0;
+      if (balance < 100) {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Current balance is not sufficient for instant settlement',
+          hidePrevious: true,
+        });
+        return;
+      }
       this.showOndemandSettlementForm();
     }
   }
@@ -96,6 +108,13 @@ export default class SettlementsListContainer extends ListContainer {
         eventLabel: label,
       });
     }
+  };
+
+  resetHash = () => {
+    this.props.history.push({
+      pathname: this.props.history.location.pathname,
+      hash: '',
+    });
   };
 
   onClearAnalytics = () => {
