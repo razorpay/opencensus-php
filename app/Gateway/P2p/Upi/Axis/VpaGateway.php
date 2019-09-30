@@ -163,7 +163,7 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         $request->merge([
             Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
             Fields::CUSTOMER_VPA            => $vpa[Entity::ADDRESS],
-            Fields::CUSTOMER_PRIMARY_VPA    => $defaultVpa[Entity::ADDRESS],
+            Fields::CUSTOMER_PRIMARY_VPA    => $this->getCustomerPrimaryVpa(),
         ]);
 
         $s2s = $this->sendS2sRequest($request);
@@ -207,15 +207,15 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         $vpa = new VpaTransformer($s2s[Fields::PAYLOAD]);
 
         $response->setData([
-            Beneficiary::TYPE           => 'vpa',
+            Beneficiary::TYPE           => Entity::VPA,
             Beneficiary::VALIDATED      => true,
-            Entity::HANDLE              => $handle,
-            Entity::USERNAME            => $username,
+            Entity::HANDLE              => $vpa->transformHandle(),
+            Entity::USERNAME            => $vpa->transformUsername(),
             Entity::BENEFICIARY_NAME    => $vpa->transformBeneficiaryName(),
             Entity::GATEWAY_DATA        => $vpa->transformGatewayData(),
         ]);
 
-        return $response;
+        return;
     }
 
     public function handleBeneficiary(Response $response)
@@ -344,12 +344,29 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
     {
         $hand =  $handle ?? $this->context->handleCode();
 
-        return $username . '@' . $hand;
+        // Since Axis bank is not able to handle uppercase letters
+        return strtolower($username) . '@' . $hand;
     }
 
     protected function isVpaAvailable($content) :bool
     {
         return $content[Fields::AVAILABLE] === 'true';
+    }
+
+    protected function getCustomerPrimaryVpa()
+    {
+        $vpa = $this->input->get(Entity::VPA);
+        $default = $this->input->get(Entity::DEFAULT);
+
+        $customerContact = $this->getContextDevice()->get('contact');
+
+        // If VPA is customer phone number
+        if (substr($customerContact, -10) === $vpa[Entity::USERNAME])
+        {
+            return $vpa[Entity::ADDRESS];
+        }
+
+        return $default[Entity::ADDRESS];
     }
 }
 

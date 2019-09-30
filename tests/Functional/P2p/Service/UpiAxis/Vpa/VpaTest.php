@@ -59,6 +59,29 @@ class VpaTest extends TestCase
         $helper->createVpa($request['callback'], $content);
     }
 
+    public function testCreateVpaWithUppercaseUsername()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->intiateCreateVpa([
+            'username' => 'RandomCaps'
+        ]);
+
+        $this->assertSame('randomcaps@razoraxis', $request['request']['content']['customerVpa']);
+
+        $content = $this->handleSdkRequest($request);
+
+        $request = $helper->createVpa($request['callback'], $content);
+
+        $this->assertSame('randomcaps@razoraxis', $request['request']['content']['customerVpa']);
+
+        $content = $this->handleSdkRequest($request);
+
+        $vpa = $helper->createVpa($request['callback'], $content);
+
+        $this->assertSame('randomcaps@razoraxis', $vpa['address']);
+    }
+
     public function testFetchVpa()
     {
         $vpaId = $this->fixtures->vpa->getPublicId();

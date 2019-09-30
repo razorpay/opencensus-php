@@ -85,6 +85,7 @@ class Constants
     const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
+    const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
     const SUBSCRIPTION_AUTH_V2            = 'subscription_auth_v2';
     const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
@@ -96,6 +97,7 @@ class Constants
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS                        = 'headless';
+    const HEADLESS_DISABLE                = 'headless_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
     const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
@@ -333,6 +335,7 @@ class Constants
         self::CARD_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
+        self::DISABLE_AMOUNT_CHECK            => true,
         self::SUBSCRIPTION_V2                 => true,
         self::SUBSCRIPTION_AUTH_V2            => true,
         self::EXPOSE_ARN_PAYMENT              => true,
@@ -345,6 +348,7 @@ class Constants
         self::ES_ON_DEMAND                    => true,
         self::ES_AUTOMATIC                    => true,
         self::HEADLESS                        => true,
+        self::HEADLESS_DISABLE                => true,
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,

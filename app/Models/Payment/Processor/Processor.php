@@ -132,6 +132,11 @@ class Processor
      */
     const REDIRECT_CACHE_TTL = 20;
 
+    /**
+     * Timeout to store redirect authorize response cache
+     */
+    const REDIRECT_CACHE_RESPONSE_TTL = 2;
+
     const CACHE_KEY = 'fallback_%s_card_details';
 
     /**
@@ -2663,6 +2668,16 @@ class Processor
     protected function shouldAutoCaptureOrder(Payment\Entity $payment)
     {
         $order = $payment->order;
+
+        if ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === true)
+        {
+            if ($payment->isLateAuthorized() === true)
+            {
+                return $this->shouldAutoCaptureLateAuthorized($payment);
+            }
+
+            return $order->getPaymentCapture();
+        }
 
         //
         // Assume a case where the first payment failed.

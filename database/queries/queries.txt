@@ -5343,6 +5343,20 @@ ALTER table merchant_details
     ADD COLUMN `business_registered_district` VARCHAR(255) NULL AFTER `business_registered_city`,
     ADD COLUMN `business_operation_district` VARCHAR(255) NULL AFTER  `business_operation_city`;
 
+ALTER TABLE entity_origins
+    MODIFY COLUMN `origin_type` varchar(20) NOT NULL,
+    MODIFY COLUMN `entity_type` varchar(20) NOT NULL,
+    DROP INDEX `entity_origins_entity_type_entity_id_unique`,
+    ADD UNIQUE KEY `entity_origins_entity_id_entity_type_unique` (`entity_id`,`entity_type`),
+    DROP INDEX `entity_id`,
+    DROP INDEX `origin_type`,
+    DROP INDEX `origin_id`,
+    DROP INDEX `entity_type`,
+    DROP INDEX `entity_origins_entity_id_index`,
+    DROP INDEX `entity_origins_origin_id_index`,
+    ADD INDEX  `entity_origins_origin_id_origin_type_index` (`origin_id`, `origin_type`),
+    ADD INDEX `entity_origins_created_at_index` (`created_at`);
+
 ALTER TABLE terminals
     MODIFY COLUMN currency VARCHAR(1024) NOT NULL DEFAULT 'INR';
 
@@ -5351,3 +5365,4 @@ ALTER TABLE merchant_details
     ADD COLUMN `poi_verification_status` varchar(30) DEFAULT NULL AFTER `activation_status`,
     ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
     ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;
+
