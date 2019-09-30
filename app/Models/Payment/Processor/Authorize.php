@@ -70,6 +70,14 @@ trait Authorize
 
     protected $isS2SJsonRoute = false;
 
+    protected static $dopplerEventErrorCodes = [
+        ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
+        ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
+        ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,
+        ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
+    ];
+
     /**
      * @param Payment\Entity $payment
      * @param array          $input
@@ -336,7 +344,7 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
-                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_ATTEMPT_FAILURE);
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_FAILURE_EVENT);
 
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
@@ -449,7 +457,14 @@ trait Authorize
 
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
-        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+        $sendEventToDoppler = false;
+
+        if (in_array($e->getCode(), self::$dopplerEventErrorCodes) === true )
+        {
+            $sendEventToDoppler = true;
+        }
+
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE, $sendEventToDoppler);
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
 
@@ -4920,7 +4935,7 @@ trait Authorize
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE, true);
 
             throw $e;
         }

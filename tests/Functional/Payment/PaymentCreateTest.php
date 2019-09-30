@@ -1285,7 +1285,7 @@ class PaymentCreateTest extends TestCase
                 Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
             (function ($gateway,$action,$input,$mode)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
             });
 
         $this->app->instance('gateway', $gateway);

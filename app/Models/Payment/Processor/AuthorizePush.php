@@ -117,7 +117,7 @@ trait AuthorizePush
 
             $ex = new Exception\BadRequestException($errorCode);
 
-            $this->updatePaymentFailed($ex, TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($ex, TraceCode::PAYMENT_AUTH_FAILURE, true);
         }
 
         return $success;

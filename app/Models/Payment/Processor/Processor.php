@@ -1599,7 +1599,7 @@ class Processor
         $this->updatePaymentFailed($exception, $traceCode);
     }
 
-    protected function updatePaymentFailed($exception, $traceCode)
+    protected function updatePaymentFailed($exception, $traceCode, $sendEventToDoppler = false)
     {
         $error = $exception->getError();
 
@@ -1621,7 +1621,10 @@ class Processor
             'status'                => $status
         ];
 
-        $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_FAILURE_EVENT);
+        if ($sendEventToDoppler === true)
+        {
+            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_FAILURE_EVENT);
+        }
 
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
