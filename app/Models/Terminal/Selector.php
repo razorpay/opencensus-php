@@ -87,6 +87,19 @@ class Selector extends Base\Core
      * @var array
      */
     protected static $smartRoutingSorters = [
+
+        // Boost a gateway terminals based on load distribution of probabilities
+        Sorters\TerminalLoadSorter::class,
+
+        // Sorting based on merchant category
+        Sorters\MerchantSorter::class,
+
+        // Boosts direct terminals over shared terminals
+        Sorters\ExclusivitySorter::class,
+
+        // Boosts specific auth type terminals over 3ds terminals
+        Sorters\AuthTypeSorter::class,
+
         // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
 
