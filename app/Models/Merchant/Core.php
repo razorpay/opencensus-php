@@ -1345,6 +1345,8 @@ class Core extends Base\Core
         $merchant->tag($tagName);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_APPEND_COMPLETED);
     }
 
     /**

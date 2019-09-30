@@ -574,6 +574,17 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_BOB:
+                $sender = 'BOBFIN';
+                $template = 'sms.custom_invoice.bob';
+                $params = [
+                    'receipt'       => $receipt,
+                    'invoice_link'  => $invoiceLink,
+                    'expiry_date'   => $expireBy ?? '',
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set

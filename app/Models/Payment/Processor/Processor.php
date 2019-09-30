@@ -132,6 +132,11 @@ class Processor
      */
     const REDIRECT_CACHE_TTL = 20;
 
+    /**
+     * Timeout to store redirect authorize response cache
+     */
+    const REDIRECT_CACHE_RESPONSE_TTL = 2;
+
     const CACHE_KEY = 'fallback_%s_card_details';
 
     /**
@@ -302,6 +307,8 @@ class Processor
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PAYMENT_PROCESSING_ERROR);
+
             $payment = $payment ?? null;
 
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
@@ -2680,7 +2687,8 @@ class Processor
             return true;
         }
 
-        if (($order->isPaid() === true) or
+        if ((($order->isPaid() === true) and
+            ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === false)) or
             ($order->getPaymentCapture() === false))
         {
             return false;

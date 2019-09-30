@@ -13,6 +13,7 @@ use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
 
+
 /**
  * Class Repository
  *
@@ -41,6 +42,15 @@ class Repository extends Transaction\Repository
         'source.fundAccount.contact',
         'source.fundAccount.account',
         'source.reversal',
+    ];
+
+    /**
+     * In GET and LIST for only source of type fund account validation laze loads following nested relations.
+     * @var array
+     */
+    protected $expandsForTypeFAV = [
+        'source.fundAccount.contact',
+        'source.fundAccount.account',
     ];
 
     /**
@@ -75,7 +85,18 @@ class Repository extends Transaction\Repository
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
 
+        // After fetching settlement collection, we lazy load source relations for Fund account validation.
+        $statements->where(Entity::TYPE, E::FUND_ACCOUNT_VALIDATION)->load($this->expandsForTypeFAV);
+
         return $statements;
+    }
+
+    public function getStatementsWithInRange($merchantId, $fromDate, $toDate)
+    {
+        return $this->getQueryForFindWithParams([])->merchantId($merchantId)
+                    ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->get();
     }
 
     protected function addQueryParamId($query, $params)

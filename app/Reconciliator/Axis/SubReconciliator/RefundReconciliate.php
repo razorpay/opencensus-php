@@ -39,6 +39,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      */
     const MIN_ROW_FILLED_DATA_RATIO = 0.29;
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getRefundId(array $row)
     {
         if ($this->isCybersource($row) === true)

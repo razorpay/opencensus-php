@@ -75,6 +75,7 @@ class Fetch extends BaseFetch
 
     const ES_FIELDS = [
         EsRepository::QUERY,
+        EsRepository::SEARCH_HITS,
         Entity::NOTES,
         Entity::TERMS,
         Entity::RECEIPT,

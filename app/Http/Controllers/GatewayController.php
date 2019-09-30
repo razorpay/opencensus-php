@@ -10,6 +10,7 @@ use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
@@ -132,6 +133,8 @@ class GatewayController extends Controller
         }
         catch (\Exception $exception)
         {
+            $this->trace->traceException($exception, Logger::CRITICAL, TraceCode::PAYMENT_CALLBACK_FAILURE);
+
             $response = $gateway->postProcessServerCallback($postInput, $exception);
         }
 
