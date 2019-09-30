@@ -196,6 +196,14 @@ class ViewDataSerializer extends Base\Core
 
                 break;
 
+            case Preferences::MID_BOB:
+                $customLabels = [
+                    'amount'         => 'TOTAL AMOUNT DUE',
+                    'expire_by'      => 'PAYMENT LINK EXPIRES ON',
+                    'receipt_number' => 'CREDIT CARD NUMBER',
+                ];
+                break;
+
         }
 
         return $customLabels;

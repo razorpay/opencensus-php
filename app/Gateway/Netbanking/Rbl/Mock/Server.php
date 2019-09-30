@@ -13,6 +13,8 @@ class Server extends Base\Mock\Server
 {
     protected $bank = IFSC::RATN;
 
+    const BANK_REF_NO = 99999999;
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -56,7 +58,7 @@ class Server extends Base\Mock\Server
     {
         $data = [
             ResponseFields::STATUS             => Status::SUCCESS,
-            ResponseFields::BANK_REFERENCE     => 99999999,
+            ResponseFields::BANK_REFERENCE     => self::BANK_REF_NO,
             ResponseFields::MERCHANT_REFERENCE => $input[RequestFields::MERCHANT_REFERENCE],
         ];
 
@@ -69,7 +71,7 @@ class Server extends Base\Mock\Server
         [
             ResponseFields::CURRENCY     => Currency::INR,
             ResponseFields::ENTRY_STATUS => Status::SUCCESS,
-            ResponseFields::REFERENCE_ID => 99999999,
+            ResponseFields::REFERENCE_ID => self::BANK_REF_NO,
             ResponseFields::AMOUNT       => 'INR|1,00,000.12',
         ];
 

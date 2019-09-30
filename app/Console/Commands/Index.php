@@ -131,6 +131,8 @@ class Index extends Command
                                     $this->startAt,
                                     $this->endAt);
 
+            $documents = array_values(array_filter($documents));
+
             if (count($documents) === 0)
             {
                 break;

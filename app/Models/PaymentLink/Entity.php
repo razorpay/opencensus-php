@@ -40,6 +40,8 @@ class Entity extends Base\PublicEntity
     const TERMS              = 'terms';
     const TYPE               = 'type';
 
+    const PAYMENT_PAGE_ITEMS = 'payment_page_items';
+
     /**
      * Optional attribute: allows a custom view template ID to be defined
      */
@@ -82,6 +84,9 @@ class Entity extends Base\PublicEntity
     const ALLOW_SOCIAL_SHARE           = 'allow_social_share';
     const PAYMENT_SUCCESS_REDIRECT_URL = 'payment_success_redirect_url';
     const PAYMENT_SUCCESS_MESSAGE      = 'payment_success_message';
+    const CHECKOUT_OPTIONS             = 'checkout_options';
+    const PAYMENT_BUTTON_LABEL         = 'payment_button_label';
+    const VERSION                      = 'version';
 
     const DEFAULT_THEME                = 'light';
 
@@ -92,6 +97,9 @@ class Entity extends Base\PublicEntity
         self::ALLOW_SOCIAL_SHARE,
         self::PAYMENT_SUCCESS_REDIRECT_URL,
         self::PAYMENT_SUCCESS_MESSAGE,
+        self::CHECKOUT_OPTIONS,
+        self::PAYMENT_BUTTON_LABEL,
+        self::VERSION,
     ];
 
     /**
@@ -142,6 +150,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_EMAIL,
         self::TERMS,
         self::TYPE,
+        self::PAYMENT_PAGE_ITEMS,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -173,6 +182,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_EMAIL,
         self::TERMS,
         self::TYPE,
+        self::PAYMENT_PAGE_ITEMS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -227,13 +237,17 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_CONTACT    => null,
         self::SUPPORT_EMAIL      => null,
         self::TERMS              => null,
-        self::TYPE               => 'payment',
+        self::TYPE               => Type::PAYMENT,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::DESCRIPTION,
+    ];
+
+    protected $embeddedRelations   = [
+        self::PAYMENT_PAGE_ITEMS,
     ];
 
     /**
@@ -284,6 +298,11 @@ class Entity extends Base\PublicEntity
     public function payments()
     {
         return $this->hasMany(Payment\Entity::class);
+    }
+
+    public function paymentPageItems()
+    {
+        return $this->hasMany(PaymentPageItem\Entity::class);
     }
 
     // -------------------------------------- End Relations ---------------------------

@@ -28,6 +28,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Transfer\Metric as TransferMetric;
@@ -281,12 +282,21 @@ class Service extends Base\Service
         {
             list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
 
+            $response = $this->getResponseDataFromCache($payment);
+
+            if ($response !== null)
+            {
+                return $response;
+            }
+
             // cant do this before as mode is set in above, and mode is required to ensure data goes to write place
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, $traceData);
 
             $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
+
+            $this->cacheResponseData($payment, $response);
 
             return $response;
         }
@@ -303,6 +313,48 @@ class Service extends Base\Service
 
             throw $e;
         }
+    }
+
+    protected function getResponseDataFromCache($payment)
+    {
+        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        {
+            return;
+        }
+
+        $key = $payment->getPaymentResponseCacheKey();
+
+        $payload = $this->app['cache']->get($key);
+
+        if (empty($payload) === true)
+        {
+            return;
+        }
+
+        $data = Crypt::decrypt($payload);
+
+        return  $data;
+    }
+
+    protected function cacheResponseData($payment, $data)
+    {
+        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        {
+            return;
+        }
+
+        $response = $this->app->razorx->getTreatment($payment->getMerchantId(), 'redirect_cache_response', Mode::LIVE);
+
+        if (strtolower($response) !== 'on')
+        {
+            return;
+        }
+
+        $key = $payment->getPaymentResponseCacheKey();
+
+        $payload = Crypt::encrypt($data);
+
+        $this->app['cache']->put($key, $payload, Processor\Processor::REDIRECT_CACHE_RESPONSE_TTL);
     }
 
     //
@@ -854,10 +906,28 @@ class Service extends Base\Service
         // use demo accounts for unexpected payments
         $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
+        $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
+            'data'          => $data,
+            'gateway'       => $gateway,
+            'reference_id'  => $referenceId,
+            'unexpected'    => 1,
+        ]);
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $data['terminal']);
+
+        if ($terminal->isDirectSettlement() === true)
+        {
+            $merchantId = $terminal->getMerchantId();
+        }
+
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         return $this->getNewProcessor($merchant)
-                    ->authorizePush($input, $referenceId, $gateway);
+                    ->authorizePush($input, $referenceId, $data, $terminal);
     }
 
     public function fetchMultiple(array $input)

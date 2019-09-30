@@ -135,6 +135,7 @@ class TransactionEventTest extends TestCase
                 'receiver' => '+919988771111',
                 'source'    => 'api.test.p2p',
                 'template'  => 'sms.p2p.collect',
+                'sender'    => 'RZRPAY',
                 'params'    => [
                     'app_name'          => 'Razorpay Mobile Application',
                     'payee_name'        => 'ALOCAL CUSTOMER',

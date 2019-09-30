@@ -2258,7 +2258,7 @@ class Gateway extends Base\Gateway
 
     protected function authorizeNotEnrolled(array $input, $authorizeRequest)
     {
-        $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+        $this->traceGatewayRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
         $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 

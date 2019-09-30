@@ -104,7 +104,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createFailedPayment($this->gateway, ['amount' => 10000012]);
 
-        $this->createNetbanking($payment['id'], 'RATN', 'FAL');
+        $this->createNetbanking($payment['id'], 'RATN', null, null);
 
         $fileContents = $this->generateFile('rbl', []);
 
@@ -1552,13 +1552,13 @@ class NetbankingReconciliationTest extends TestCase
         return $payment;
     }
 
-    protected function createNetbanking($paymentId, $bank, $status = 'SUC')
+    protected function createNetbanking($paymentId, $bank, $status = 'SUC', $bankPaymentId = 99999)
     {
         $netbankingAttributes = [
             'payment_id'      => $paymentId,
             'bank'            => $bank,
             'caps_payment_id' => strtoupper($paymentId),
-            'bank_payment_id' => 99999,
+            'bank_payment_id' => $bankPaymentId,
             'status'          => $status,
         ];
 

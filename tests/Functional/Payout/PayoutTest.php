@@ -9,6 +9,7 @@ use Config;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -35,10 +36,14 @@ class PayoutTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
         $this->fixtures->create(
             'fund_account',
             [
                 'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
                 'account_type' => 'bank_account',
                 'account_id'   => '1000000lcustba'
             ]);
@@ -50,10 +55,14 @@ class PayoutTest extends TestCase
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
 
+        $this->fixtures->on('live')->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
         $this->fixtures->on('live')->create(
             'fund_account',
             [
                 'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
                 'account_type' => 'bank_account',
                 'account_id'   => '1000000lcustba'
             ]);
@@ -377,6 +386,23 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreateMerchantPayoutOnDemandWithAmountLessThan2L()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $merchant = $this->getEntityById('merchant', '10000000000000', true);
+
+        $this->assertNotEquals(\RZP\Models\Settlement\Channel::YESBANK, $merchant[Merchant\Entity::CHANNEL]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
+    }
+
     public function testCreatePayoutForAmountLessThanMinFee()
     {
         // Minimum fee is INR 5, attempts and asserts success when creating payout for INR 1.
@@ -450,12 +476,12 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreatePayoutToCardFundAccount()
+    public function testCreatePayoutToFundAccountWithoutContact()
     {
         $this->fixtures->create(
             'fund_account',
             [
-                'id'           => '100000000002fa',
+                'id'           => '100000000004ff',
                 'account_type' => 'card',
                 'account_id'   => '100000000lcard',
                 'active'       => 1,
@@ -471,7 +497,25 @@ class PayoutTest extends TestCase
             [
                 'id'           => '100000000002fa',
                 'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
                 'account_id'   => '10000000ICcard',
+                'active'       => 1,
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutToCardFundAccount()
+    {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '100000000lcard',
                 'active'       => 1,
             ]);
 
@@ -1141,6 +1185,12 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByContactId()
     {
+        $this->fixtures->create('contact', [
+            'id' => '1000010contact', 'email' => 'test@test5.com',
+            'contact' => '8888888888', 'name' => 'test user',
+            'type' => 'customer'
+        ]);
+
         $this->fixtures->edit(
             'fund_account',
             '100000000000fa',

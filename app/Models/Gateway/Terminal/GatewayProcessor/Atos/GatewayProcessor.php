@@ -56,7 +56,7 @@ class GatewayProcessor extends BaseGatewayProcessor
             Terminal\Entity::ACCOUNT_NUMBER      => $accountNumber,
             Terminal\Entity::IFSC_CODE           => $ifscCode,
             Terminal\Entity::GATEWAY             => Gateway::ATOS,
-            Terminal\Entity::GATEWAY_MERCHANT_ID => $this->generateMid(),
+            Terminal\Entity::GATEWAY_MERCHANT_ID => $this->generateMid($subMerchant),
             Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
         ];
 
@@ -138,8 +138,19 @@ class GatewayProcessor extends BaseGatewayProcessor
         return $type;
     }
 
-    protected function generateMid()
+    protected function generateMid($subMerchant)
     {
+        $params = [ Terminal\Entity::MERCHANT_ID => $subMerchant->getId(), 
+                    Terminal\Entity::GATEWAY     =>  Gateway::ATOS ];
+
+        // Existing terminals of this submerchant of this gateway
+        $existingTerminals = $this->repo->terminal->getByParams($params);
+
+        if (count($existingTerminals) > 0)
+        {  
+            return $existingTerminals->first()->getGatewayMerchantId();
+        }
+
         $newMid = self::ATOS_MID_OFFSET + $this->redis->incr($this->redisMidKey);
 
         return $newMid;

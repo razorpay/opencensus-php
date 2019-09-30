@@ -139,6 +139,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::PROMOTER_PAN_NAME)
                   ->nullable();
 
+            $table->string(MerchantDetail::DATE_OF_BIRTH, 30)
+                  ->nullable();
+
             $table->string(MerchantDetail::BANK_NAME)
                   ->nullable();
 
@@ -246,6 +249,15 @@ class CreateMerchantDetailsTable extends Migration
                   ->default(0);
 
             $table->string(MerchantDetail::ACTIVATION_STATUS, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::POI_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::POA_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BANK_DETAILS_VERIFICATION_STATUS, 30)
                   ->nullable();
 
             $table->string(MerchantDetail::CLARIFICATION_MODE, 15)
