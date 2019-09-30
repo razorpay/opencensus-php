@@ -15,7 +15,10 @@ export default class BaseForm extends React.PureComponent {
       disableSubmit: !fieldSchema.title, // Any required field is valid to do init, like 'name', 'title', 'type'
       hasDescription: !!fieldSchema.description,
       mirrorDisplayTitle: fieldSchema.title,
-      isRequired: !!fieldSchema.required || true, // NOTE: By default all fields are required
+      isRequired:
+        typeof fieldSchema.required !== 'undefined'
+          ? !!fieldSchema.required
+          : true, // NOTE: By default all fields are to be set as required
       isFieldEnum: !!fieldSchema.enum,
       enum: fieldSchema.hasOwnProperty('enum') ? fieldSchema.enum : undefined,
     };
@@ -98,6 +101,7 @@ export default class BaseForm extends React.PureComponent {
       validateSameTitleExists,
       onCloseForm,
       onDeleteField,
+      isFieldForcedRequired,
     } = this.props;
 
     const {
@@ -222,8 +226,8 @@ export default class BaseForm extends React.PureComponent {
             </Button.Transparent>
           }
         >
-          {!this.props.isFieldForcedRequired && (
-            <OptionsItem isSelected={!this.state.isRequired}>
+          {!isFieldForcedRequired && (
+            <OptionsItem isSelected={!isRequired}>
               <div onClick={this.toggleOptional}>
                 <i class="i i-optional_mark" />
                 Optional Field
