@@ -3,7 +3,6 @@
 namespace RZP\Mail\BankingAccount;
 
 use App;
-
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;

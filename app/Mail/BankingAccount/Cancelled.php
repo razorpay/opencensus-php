@@ -70,7 +70,7 @@ class Cancelled extends Mailable
     protected function addMailData()
     {
         $data = [
-            'view_dashboard_url' => App::getFacadeRoot()['config']['applications.razorx.url']
+            'view_dashboard_url' => $this->config['applications.razorx.url']
         ];
 
         $this->with($data);

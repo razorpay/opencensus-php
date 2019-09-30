@@ -100,7 +100,7 @@ class Core extends Base\Core
         return $previousStatus !== $newStatus;
     }
 
-    public function updateMerchantAboutUpdatedStatus(Entity $bankingAccount)
+    public function notifyMerchantAboutUpdatedStatus(Entity $bankingAccount)
     {
         try
         {

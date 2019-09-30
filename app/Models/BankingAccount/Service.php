@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -29,7 +28,7 @@ class Service extends Base\Service
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
 
-        $this->core->updateMerchantAboutUpdatedStatus($account);
+        $this->core->notifyMerchantAboutUpdatedStatus($account);
 
         return $account->toArrayPublic();
     }
@@ -64,7 +63,7 @@ class Service extends Base\Service
 
         if($this->core->statusHasChanged($previousStatus, $bankingAccount->getStatus()) == true)
         {
-            $this->core->updateMerchantAboutUpdatedStatus($bankingAccount);
+            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
         }
 
         return $account->toArrayPublic();
@@ -134,8 +133,6 @@ class Service extends Base\Service
             );
         }
     }
-
-
 
     public function bulkCreateBankingAccountsForYesbank(array $input)
     {
