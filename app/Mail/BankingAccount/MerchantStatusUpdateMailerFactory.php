@@ -4,6 +4,7 @@ namespace RZP\Mail\BankingAccount;
 
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class MerchantStatusUpdateMailerFactory
 {
@@ -24,6 +25,9 @@ class MerchantStatusUpdateMailerFactory
 
             case Status::PROCESSING:
                 return new Processing($bankingAccount);
+
+            default:
+                throw new BadRequestValidationFailureException("Invalid Status, cannot send email, status: $status");
         }
     }
 }

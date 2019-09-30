@@ -102,9 +102,22 @@ class Core extends Base\Core
 
     public function updateMerchantAboutUpdatedStatus(Entity $bankingAccount)
     {
-        $mailer = MerchantStatusUpdateMailerFactory::getMailer($bankingAccount);
+        try
+        {
+            $mailer = MerchantStatusUpdateMailerFactory::getMailer($bankingAccount);
 
-        Mail::queue($mailer);
+            Mail::queue($mailer);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
+                [
+                    'Banking Account ID' => $bankingAccount->getId(),
+                    'Status' => $bankingAccount->getStatus(),
+                    'Error' => $e->getError()->toPublicArray(),
+                ]);
+        }
     }
 
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
