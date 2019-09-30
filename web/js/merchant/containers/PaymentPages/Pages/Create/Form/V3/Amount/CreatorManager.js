@@ -288,7 +288,7 @@ class BaseFormModal extends React.PureComponent {
     } = this.props;
 
     return (
-      <CreatorModal class="CreatorModal-BaseForm" overElement>
+      <CreatorModal class="CreatorModal-BaseForm" overElement allowScroll>
         <BaseForm
           field={field}
           fieldType={fieldType}

@@ -125,7 +125,7 @@ export default class ActivateAgainModal extends React.Component {
         <div class="modal-body">
           <p>
             Once you activate the page, you will be able to accept payments.{' '}
-            {!!msg.length && 'Kindly '} {msg}.
+            {!!msg.length && `Kindly ${msg}.`}
           </p>
 
           <div class="ModalForm ModalForm--ActivationAgain">
