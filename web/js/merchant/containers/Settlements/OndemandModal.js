@@ -14,6 +14,7 @@ import Amount from 'rzp/ui/Amount';
 import debounce from 'rzp/utils/debounce';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { CLOSEOPTIONS } from './CloseReasons';
+import PropTypes from 'prop-types';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
@@ -43,23 +44,14 @@ export default class OndemandModal extends Component {
     if (props.currentBalance) {
       this.state.amount = parseInt(props.currentBalance / 100);
     }
-    this.validateAmount = this.validateAmount.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
-    this.updateFee = this.updateFee.bind(this);
-    this.handleChange = this.handleChange.bind(this);
     this.updateFeeDebounced = debounce(this.updateFee, 300);
-    this.handleCloseModal = this.handleCloseModal.bind(this);
-    this.openSupport = this.openSupport.bind(this);
-    this.renderClose = this.renderClose.bind(this);
-    this.handleReasonChange = this.handleReasonChange.bind(this);
-    this.submitCloseReason = this.submitCloseReason.bind(this);
   }
 
-  handleReasonChange(e) {
+  handleReasonChange = e => {
     this.setState({ closeReason: e.target.value });
-  }
+  };
 
-  submitCloseReason() {
+  submitCloseReason = () => {
     const analyticsPayload = {
       eventCategory: 'Dashboard - Instant Settlement Modal',
       eventAction: `Close - Instant Settlement Modal`,
@@ -68,9 +60,148 @@ export default class OndemandModal extends Component {
 
     window.rzpAnalytics(analyticsPayload);
     this.props.closeModal();
-  }
+  };
 
-  renderClose() {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
+  renderConfirmation = () => {
+    return (
+      <div>
+        The settlement amount is:{` `}
+        <Amount
+          value={this.state.amount * 100}
+          currency={'INR'}
+          parentQuerySelector={'.modal-body'}
+        />
+        <div className={'warning-settlement-confirmation'}>
+          Settlements will be affected due to bank holidays
+        </div>
+      </div>
+    );
+  };
+
+  openConfirmSettlement = () => {
+    this.context.confirm({
+      header: 'Are you sure you want to do this settlement?',
+      message: this.renderConfirmation,
+      affirmativeLabel: 'Yes, Settle',
+      abortLabel: "No, Don't ",
+      action: () => {
+        this.onSubmit();
+      },
+      onMount: () => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Instant Settlement Modal',
+          eventAction: 'Open Form - Confirm Settlement',
+        });
+      },
+      abort: () => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Instant Settlement Modal',
+          eventAction: 'Close Form - Close Confirm Settlement',
+        });
+      },
+    });
+  };
+
+  breakup = () => {
+    return (
+      <div class="breakup">
+        <div className={this.state.isSaved ? 'dropdown-1' : 'dropdown'}>
+          {this.state.isSaved ? (
+            <div class="currency-big-1">
+              <Amount
+                value={this.state.amount * 100}
+                currency={'INR'}
+                parentQuerySelector={'.breakup'}
+              />
+            </div>
+          ) : (
+            <span>
+              <p class="percent">{this.state.instantFeePercent / 100}</p>
+              <p class="fixed">% Additional Fee </p>
+            </span>
+          )}
+          <AsyncBtn.Primary
+            className={`drop-button ${
+              this.state.isSaved ? 'success-breakup' : ''
+            }`}
+            disabled={this.state.isLoadingBreakup || !this.state.validAmount}
+            pendingState=""
+            onClick={this.fetchBreakup}
+          >
+            {this.state.breakupShow ? (
+              <span>
+                Close Breakup <i class="i i-chevron-up" />
+              </span>
+            ) : (
+              <span>
+                Show Breakup <i class="i i-chevron-down" />
+              </span>
+            )}
+          </AsyncBtn.Primary>
+        </div>
+        <div
+          className={
+            this.state.breakupShow ? 'dropdown-active' : 'dropdown-closed'
+          }
+        >
+          <p>Total Amount</p>
+          <span class="float-right currency">
+            <Amount value={this.state.amount * 100} currency={'INR'} />
+          </span>
+          <br />
+          <span>
+            <p>Instant Fees ({this.state.instantFeePercent / 100}%) </p>
+            <i class="i i-help" />
+            <Popover
+              align="right"
+              theme="dark"
+              parentQuerySelector=".onmdemand-modal"
+            >
+              <PopoverBody>
+                <div style={{ textAlign: 'left' }}>
+                  The maximum amount is calculated after the deduction of
+                  instant settlement fee and taxes.
+                </div>
+              </PopoverBody>
+            </Popover>
+          </span>
+          <span class="float-right currency">
+            {' '}
+            <p>-</p>
+            <Amount value={this.state.instantFee} currency={'INR'} />
+          </span>
+          <br />
+          <p>Taxes</p>
+          <span class="float-right currency">
+            {' '}
+            <p>-</p>
+            <Amount value={this.state.tax} currency={'INR'} />
+          </span>
+        </div>
+        <div
+          className={
+            this.state.breakupShow ? 'dropdown-active' : 'dropdown-closed'
+          }
+        >
+          <p>Amount to be settled</p>
+          <span class="float-right currency-big">
+            <Amount
+              value={
+                this.state.amount * 100 - this.state.instantFee - this.state.tax
+              }
+              currency={'INR'}
+            />
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  renderClose = () => {
     return (
       <div className="onmdemand-close-modal">
         <ModalHeader
@@ -110,9 +241,9 @@ export default class OndemandModal extends Component {
         </Button.Primary>
       </div>
     );
-  }
+  };
 
-  updateFee() {
+  updateFee = () => {
     if (this.state.hasChangedAmount) {
       const analyticsPayload = {
         eventCategory: 'Dashboard - Instant Settlement Modal',
@@ -154,13 +285,13 @@ export default class OndemandModal extends Component {
           errors: response.errors,
         });
       });
-  }
+  };
 
   componentDidMount() {
     this.updateFee();
   }
 
-  openSupport() {
+  openSupport = () => {
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
       rzpTicketSystem.setPrefill('#request', [
@@ -172,7 +303,7 @@ export default class OndemandModal extends Component {
         rzpTicketSystem.modal.next();
       }, 0);
     }
-  }
+  };
 
   fetchBreakup = () => {
     const analyticsPayload = {
@@ -220,7 +351,7 @@ export default class OndemandModal extends Component {
     }
   };
 
-  onSubmit() {
+  onSubmit = () => {
     const analyticsPayload = {
       eventCategory: 'Dashboard - Instant Settlement Modal',
       eventAction: `Confirm - Click`,
@@ -261,10 +392,9 @@ export default class OndemandModal extends Component {
           errors: response.errors,
         });
       });
-  }
+  };
 
-  handleChange(e) {
-    //this.resetInterval();
+  handleChange = e => {
     this.setState({
       amount: e.target.value,
       needFetch: true,
@@ -273,9 +403,9 @@ export default class OndemandModal extends Component {
       hasChangedAmount: true,
     });
     this.updateFeeDebounced();
-  }
+  };
 
-  validateAmount(val) {
+  validateAmount = val => {
     if (isInteger(val) && val > 0) {
       if (val * 100 > this.props.currentBalance) {
         trackOndemand.trackAmounTooHigh(this.props.fromWhere);
@@ -289,9 +419,9 @@ export default class OndemandModal extends Component {
     } else {
       return 'Invalid Amount';
     }
-  }
+  };
 
-  handleCloseModal(eventType) {
+  handleCloseModal = eventType => {
     switch (eventType) {
       case 'Close Modal Screen 1':
         trackOndemand.trackCloseModal(this.props.fromWhere);
@@ -325,7 +455,16 @@ export default class OndemandModal extends Component {
         closeClicked: true,
       });
     }
-  }
+  };
+
+  successModalHeader = () => {
+    return (
+      <div>
+        <i className="i i-done-all text-success modal-header-success" />
+        Hurray
+      </div>
+    );
+  };
 
   render() {
     return (
@@ -335,26 +474,29 @@ export default class OndemandModal extends Component {
             this.state.isSaved ? (
               <div class="onmdemand-modal">
                 <ModalHeader
-                  title="Early Settlement Requested"
+                  title={this.successModalHeader()}
                   onCloseClick={() =>
                     this.handleCloseModal('Close Modal Screen 2')
                   }
                 />
-                <div class="modal-body">
-                  <div class="help-block">
-                    The requested balance will be settled in the next 3 working
-                    hours
-                    <i className="i i-info-circle" />
-                    <Popover
-                      align="right"
-                      theme="dark"
-                      parentQuerySelector=".onmdemand-modal"
-                    >
-                      <PopoverBody>
-                        Working hours are 9am - 6pm everyday except on Bank
-                        Holidays
-                      </PopoverBody>
-                    </Popover>
+                <div className="modal-body">
+                  <div className="overflow-box">
+                    {this.breakup()}
+                    <div className="help-block">
+                      Worth of settlement has been initiated ,will be settled to
+                      your bank account on the next business day{` `}
+                      <i className="i i-info-circle" />
+                      <Popover
+                        align="right"
+                        theme="dark"
+                        parentQuerySelector=".onmdemand-modal"
+                      >
+                        <PopoverBody>
+                          Working hours are 9am - 6pm everyday except on Bank
+                          Holidays
+                        </PopoverBody>
+                      </Popover>
+                    </div>
                   </div>
                   <Button.Primary
                     class="close-btn"
@@ -444,106 +586,10 @@ export default class OndemandModal extends Component {
                       </span>
                     </div>
                   </div>
-                  <div class="breakup">
-                    <div class="dropdown">
-                      <span>
-                        <p class="percent">
-                          {this.state.instantFeePercent / 100}
-                        </p>
-                        <p class="fixed">% Additional Fee </p>
-                      </span>
-                      <AsyncBtn.Primary
-                        class="drop-button"
-                        disabled={
-                          this.state.isLoadingBreakup || !this.state.validAmount
-                        }
-                        pendingState=""
-                        onClick={this.fetchBreakup}
-                      >
-                        {this.state.breakupShow ? (
-                          <span>
-                            Close Breakup <i class="i i-chevron-up" />
-                          </span>
-                        ) : (
-                          <span>
-                            Show Breakup <i class="i i-chevron-down" />
-                          </span>
-                        )}
-                      </AsyncBtn.Primary>
-                    </div>
-                    <div
-                      className={
-                        this.state.breakupShow
-                          ? 'dropdown-active'
-                          : 'dropdown-closed'
-                      }
-                    >
-                      <p>Totoal Amount</p>
-                      <span class="float-right currency">
-                        <Amount
-                          value={this.state.amount * 100}
-                          currency={'INR'}
-                        />
-                      </span>
-                      <br />
-                      <span>
-                        <p>
-                          Instant Fees ({this.state.instantFeePercent / 100}%){' '}
-                        </p>
-                        <i class="i i-help" />
-                        <Popover
-                          align="right"
-                          theme="dark"
-                          parentQuerySelector=".onmdemand-modal"
-                        >
-                          <PopoverBody>
-                            <div style={{ textAlign: 'left' }}>
-                              The maximum amount is calculated after the
-                              deduction of instant settlement fee and taxes.
-                            </div>
-                          </PopoverBody>
-                        </Popover>
-                      </span>
-                      <span class="float-right currency">
-                        {' '}
-                        <p>-</p>
-                        <Amount
-                          value={this.state.instantFee}
-                          currency={'INR'}
-                        />
-                      </span>
-                      <br />
-                      <p>Taxes</p>
-                      <span class="float-right currency">
-                        {' '}
-                        <p>-</p>
-                        <Amount value={this.state.tax} currency={'INR'} />
-                      </span>
-                    </div>
-                    <div
-                      className={
-                        this.state.breakupShow
-                          ? 'dropdown-active'
-                          : 'dropdown-closed'
-                      }
-                    >
-                      <p>Amount to be settled</p>
-                      <span class="float-right currency-big">
-                        <Amount
-                          value={
-                            this.state.amount * 100 -
-                            this.state.instantFee -
-                            this.state.tax
-                          }
-                          currency={'INR'}
-                          parentQuerySelector=".Modal"
-                        />
-                      </span>
-                    </div>
-                  </div>
+                  {this.breakup()}
                   <div class="border">
                     <p>
-                      Early settlement applies to domestic setelments only. For
+                      Early settlement applies to domestic settlements only. For
                       International, please{' '}
                     </p>
                     <a class="btn-link" onClick={this.openSupport}>
@@ -558,7 +604,7 @@ export default class OndemandModal extends Component {
                       this.state.isLoadingBreakup
                     }
                     pendingState="Requesting"
-                    onClick={this.onSubmit}
+                    onClick={this.openConfirmSettlement}
                   >
                     Confirm
                   </AsyncBtn.Primary>
