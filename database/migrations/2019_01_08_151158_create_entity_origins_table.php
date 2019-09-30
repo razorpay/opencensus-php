@@ -35,19 +35,12 @@ class CreateEntityOriginsTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
-            $table->unique([Entity::ENTITY_TYPE, Entity::ENTITY_ID]);
+            $table->unique([Entity::ENTITY_ID, Entity::ENTITY_TYPE]);
 
-            $table->index(Entity::ENTITY_ID);
+            $table->index([Entity::ORIGIN_ID, Entity::ORIGIN_TYPE]);
 
-            $table->index(Entity::ORIGIN_ID);
+            $table->index(Entity::CREATED_AT);
 
-            $table->index(Entity::ENTITY_TYPE, Entity::ENTITY_ID);
-
-            $table->index(Entity::ORIGIN_TYPE, Entity::ORIGIN_ID);
-
-            $table->index(Entity::CREATED_AT, Entity::ENTITY_TYPE);
-
-            $table->index(Entity::CREATED_AT, Entity::ORIGIN_TYPE);
         });
     }
 

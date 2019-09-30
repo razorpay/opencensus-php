@@ -123,6 +123,8 @@ class Entity extends Base\PublicEntity
 
     const CATEGORY_LENGTH               = 4;
 
+    protected static $sign              = 'term';
+
     protected $fillable = [
         self::GATEWAY,
         self::PROCURER,
@@ -295,6 +297,9 @@ class Entity extends Base\PublicEntity
         self::NOTES                      => null,
         self::OMNICHANNEL                => 0,
         self::VPA                        => null,
+        self::MC_MPAN                    => null,
+        self::VISA_MPAN                  => null,
+        self::RUPAY_MPAN                 => null,        
     ];
 
     protected $casts = [
@@ -441,14 +446,49 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
+    /**
+     * Currency Accessor
+     * @param $value
+     */
+    protected function getCurrencyAttribute($currency)
+    {
+        if (empty($currency) === true)
+        {
+            return [];
+        }
+
+        if (is_array($currencies = json_decode($currency)) === true)
+        {
+            $currency = $currencies;
+        }
+
+        return ((array) $currency);
+    }
+
+    /**
+     * Currency Mutator
+     * @param $value
+     */
+    protected function setCurrencyAttribute($currency)
+    {
+        if (empty($currency) === false)
+        {
+            $currency = (array) $currency;
+
+            $currency = json_encode($currency);
+
+            $this->attributes[self::CURRENCY] = $currency;
+        }
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
     }
 
-    public function isCurrencyInr()
+    public function supportsCurrency($currency): bool
     {
-        return ($this->getCurrency() === Currency::INR);
+        return in_array($currency, $this->getCurrency(), true);
     }
 
     public function getNetworkCategory()

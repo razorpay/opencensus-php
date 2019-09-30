@@ -180,6 +180,8 @@ class Type
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
 
+    const ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT = 'icici_netbanking_refund_direct_settlement';
+
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
     const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . '.' . FeatureConstants::VENDOR_AGREEMENT;
@@ -200,6 +202,7 @@ class Type
             self::ENACH_NPCI_NB_DEBIT,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
+            self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
@@ -350,6 +353,7 @@ class Type
         self::CORPORATION_NETBANKING_REFUND,
         self::ALLAHABAD_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
+        self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
         self::AXIS_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Redis;
 use Cache;
+use Crypt;
 
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
@@ -1848,7 +1849,7 @@ class OtpPaymentTest extends TestCase
 
         $payment = $this->fixtures->create('payment:status_created', [
             'card_id'           => substr($this->getLastEntity('card', true)['id'], 5),
-            'terminal_id'       => $this->getLastEntity('terminal',true)['id'],
+            'terminal_id'       => ltrim($this->getLastEntity('terminal', true)['id'], 'term_'),
             'gateway'           => 'hitachi',
         ]);
 
@@ -3503,6 +3504,80 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
 
         self::assertEquals('failed', $payment['status']);
+    }
+
+    public function testRedirectCacheOnRupayCards()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '607384',
+            'country' => 'IN',
+            'issuer'  => 'PUNB',
+            'network' => 'RuPay',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'headless', 'otp_auth_default', 's2s_otp_json']);
+
+        $this->mockCardVault();
+
+        $this->mockOtpElfForRupay();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $targetUrl =$this->getMetaRefreshUrl($response);
+
+        $trackId = getTextBetweenStrings($targetUrl, '/payments/', '/authorize');
+
+        $url = $this->getPaymentRedirectToAuthorizrUrl($trackId);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $key = $payment->getPaymentResponseCacheKey();
+
+        $data = Cache::get($key);
+
+        $this->assertNotNull($data);
+
+        $data =  Crypt::encrypt(['test_data']);;
+
+        Cache::put($key, $data, 2);
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertEquals('test_data', $content[0]);
     }
 
     // @codingStandardsIgnoreLine

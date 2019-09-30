@@ -3,7 +3,7 @@
 namespace RZP\Services\Mock;
 
 use RZP\Services\CardVault as BaseCardVault;
-use RZP\Services\Card\Vault;
+use RZP\Models\Card\Vault;
 
 class CardVault extends BaseCardVault
 {

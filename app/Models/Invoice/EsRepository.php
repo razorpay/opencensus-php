@@ -34,7 +34,7 @@ class EsRepository extends Base\EsRepository
         Entity::CUSTOMER_EMAIL,
         Entity::DESCRIPTION,
         Entity::TERMS,
-        Entity::NOTES . '.*',
+        Entity::NOTES . '.value',
     ];
 
     protected $esFetchParams = [

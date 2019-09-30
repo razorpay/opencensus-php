@@ -18,6 +18,7 @@ use RZP\Models\Payout\Metric;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -231,9 +232,16 @@ class Base extends BaseCore
 
         $this->fireEventForPayoutStatus($payout);
 
-        if ($payout->isStatusCreated() === true)
+        $accountType = $payout->balance->getAccountType();
+
+        // Since RBL transactions are created at a later stage, we skip this flow fo RBL
+
+        if ($accountType === AccountType::SHARED)
         {
-            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            if ($payout->isStatusCreated() === true)
+            {
+                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            }
         }
 
         return $payout;
@@ -386,9 +394,16 @@ class Base extends BaseCore
                 Payout\Entity::FUND_ACCOUNT_ID);
         }
 
+        $this->validateFundAccountContact($fundAccount);
+
         $payout->fundAccount()->associate($fundAccount);
 
         $this->fundTransferDestination = $fundAccount->account;
+    }
+
+    public function validateFundAccountContact(FundAccount\Entity $fundAccount)
+    {
+        return;
     }
 
     /**

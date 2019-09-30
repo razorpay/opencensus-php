@@ -37,12 +37,16 @@ class Service extends Base\Service
     {
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
+        $data = $entity->toArrayPublic();
+
+        $this->fetchSettingForPPI($data);
+
         $extra[Entity::SLUG] = $entity->getSlugFromShortUrl();
         $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $entity->getCapturedPaymentsCount();
 
         $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
 
-        return $entity->toArrayPublic() + $extra;
+        return $data + $extra;
     }
 
     public function create(array $input): array
@@ -125,6 +129,32 @@ class Service extends Base\Service
             {
                 $payload[Entity::REQUEST_PARAMS][Entity::AMOUNT] = $payment->getAmount();
             }
+        }
+    }
+
+    public function migratePaymentPageItems(array $input)
+    {
+        return $this->core->migratePaymentPageItems($input);
+    }
+
+    protected function fetchSettingForPPI(array & $paymentLink)
+    {
+        if (isset($paymentLink[Entity::PAYMENT_PAGE_ITEMS]) === false)
+        {
+            return;
+        }
+
+        $PPICore = new PaymentPageItem\Core;
+
+        for ($i = 0; $i < count($paymentLink[Entity::PAYMENT_PAGE_ITEMS]); $i++)
+        {
+            $paymentPageItem = $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i];
+
+            $paymentPageItem = $PPICore->fetch($paymentPageItem[PaymentPageItem\Entity::ID]);
+
+            $paymentPageItem->settings = $paymentPageItem->getSettings();
+
+            $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i] = $paymentPageItem->toArrayPublic();
         }
     }
 }

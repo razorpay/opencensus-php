@@ -6,13 +6,20 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PaymentLink\PaymentPageItem;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'payment_link';
+
+    protected $expands = [
+        Entity::PAYMENT_PAGE_ITEMS,
+        Entity::PAYMENT_PAGE_ITEMS . '.' . PaymentPageItem\Entity::ITEM,
+    ];
 
     /**
      * Gets all ACTIVE status payment links which are past EXPIRE_BY.
@@ -71,5 +78,21 @@ class Repository extends Base\Repository
         }
 
         return $entity;
+    }
+
+    public function getAllPaymentPagesForMigration($limit = 1000)
+    {
+        $id            = $this->repo->payment_link->dbColumn(Entity::ID);
+
+        $paymentPageId = $this->repo->payment_page_item->dbColumn(PaymentPageItem\Entity::PAYMENT_LINK_ID);
+
+        $attributes = $this->repo->payment_link->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($attributes)
+                    ->leftJoin(Table::PAYMENT_PAGE_ITEM, $paymentPageId, '=', $id)
+                    ->whereNull($paymentPageId)
+                    ->limit($limit)
+                    ->get();
     }
 }
