@@ -26,6 +26,9 @@ class MerchantStatusUpdateMailerFactory
             case Status::PROCESSING:
                 return new Processing($bankingAccount);
 
+            case Status::UNSERVICEABLE:
+                return new Unservicable($bankingAccount);
+
             default:
                 throw new BadRequestValidationFailureException("Invalid Status, cannot send email, status: $status");
         }
