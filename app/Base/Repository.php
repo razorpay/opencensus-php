@@ -624,13 +624,17 @@ class Repository extends \Razorpay\Spine\Repository
 
         $serialized = $entity->setVisible($fields)->toArray();
 
-        // There is issue around Notes and NotesTrait which needs to be handled
-        // there. For now following is the quickest solution to handle it.
-        // Ref: https://github.com/razorpay/api/issues/1678
-
+        // Refer- config/es_mappings.php on how notes is indexed.
         if (array_key_exists(Common::NOTES, $serialized) === true)
         {
-            $serialized[Common::NOTES] = (object) $serialized[Common::NOTES];
+            $serialized[Common::NOTES] = array_map(
+                function ($key, $value)
+                {
+                    return compact('key', 'value');
+                },
+                array_keys($serialized[Common::NOTES]),
+                $serialized[Common::NOTES]
+            );
         }
 
         return $serialized;

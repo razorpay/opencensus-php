@@ -3195,8 +3195,19 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::AUTH_TYPE] = $payment->getAuthType();
 
+            $order = $payment->order;
+
+            $tokenRegistration = $order->getTokenRegistration();
+
+            $tokenMaxAmount = null;
+
+            if ($tokenRegistration !== null)
+            {
+                $tokenMaxAmount = $tokenRegistration->getMaxAmount();
+            }
+
             $saveMethodInput[Token\Entity::MAX_AMOUNT] =
-                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null;
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? $tokenMaxAmount;
 
             $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null;

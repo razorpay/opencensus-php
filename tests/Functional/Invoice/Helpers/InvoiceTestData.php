@@ -4738,12 +4738,10 @@ return [
                             ],
                         ],
                         [
-                            'multi_match' => [
-                                'query'                => 'info',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '75%',
+                            'match' => [
+                                'notes.value' => [
+                                    'query' => 'info',
+                                ],
                             ],
                         ]
                     ],
@@ -4814,7 +4812,7 @@ return [
                                     'customer_email',
                                     'description',
                                     'terms',
-                                    'notes.*',
+                                    'notes.value',
                                 ],
                                 'boost'                => 1,
                                 'minimum_should_match' => '75%',

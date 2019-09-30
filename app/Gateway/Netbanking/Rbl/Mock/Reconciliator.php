@@ -82,7 +82,7 @@ class Reconciliator extends Base\RefundFile
                 ClaimFields::DEBIT_ACCOUNT      => '',
                 ClaimFields::CREDIT_ACCOUNT     => '',
                 ClaimFields::TRANSACTION_AMOUNT => $row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT] / 100,
-                ClaimFields::PGI_REFERENCE      => $row[self::GATEWAY_ENTITY][Entity::BANK_PAYMENT_ID],
+                ClaimFields::PGI_REFERENCE      => $row[self::GATEWAY_ENTITY][Entity::BANK_PAYMENT_ID] ?? Server::BANK_REF_NO,
                 ClaimFields::BANK_REFERENCE     => $row[self::PAYMENT_ENTITY][Payment\Entity::ID],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
                 //As recon payments will always be success in gateway

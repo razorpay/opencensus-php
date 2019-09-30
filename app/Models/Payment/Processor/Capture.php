@@ -904,6 +904,11 @@ trait Capture
     {
         if ($payment->hasOrder())
         {
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AMOUNT_CHECK) === true)
+            {
+                return;
+            }
+
             $order = $this->repo->order->fetchForPayment($payment);
 
             if ($order->getStatus() === Order\Status::PAID)

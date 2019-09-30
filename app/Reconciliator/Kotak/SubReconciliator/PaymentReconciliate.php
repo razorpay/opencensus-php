@@ -19,6 +19,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         'customer_name',
     ];
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getPaymentId(array $row)
     {
         $intPaymentId = $row[self::COLUMN_INT_PAYMENT_ID] ?? null;

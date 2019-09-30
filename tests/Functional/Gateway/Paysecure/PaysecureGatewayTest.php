@@ -135,6 +135,18 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertSuccess($authResponse, 'redirect');
 
+        // Assert card vault exist in card entity
+        $card = $this->getDbLastEntityToArray('card');
+        $this->assertNotEmpty($card['vault_token']);
+
+        // Assert card vault token does not added in cache
+        $paymentId = substr($authResponse['razorpay_payment_id'], 4);
+        $cacheKey = sprintf(Gateway::CACHE_KEY, $paymentId);
+
+        $cacheDriver = $this->app['config']->get('cache.secure_default');
+        $redisValue = $this->app['cache']->store($cacheDriver)->get($cacheKey);
+        $this->assertEmpty($redisValue);
+
         return $authResponse;
     }
 

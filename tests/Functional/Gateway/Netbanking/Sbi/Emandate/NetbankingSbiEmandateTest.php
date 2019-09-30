@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Batch\Status;
 use RZP\Models\Gateway\File;
 use RZP\Models\FileStore\Type;
 use RZP\Gateway\Netbanking\Sbi;
@@ -252,10 +253,16 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
 
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+        $this->assertEquals('processed', $batch['status']);
+
         $registerFailureFile = $this->getRegisterFailureCsv($registerPayments);
         $batch = $this->uploadBatchFile($registerFailureFile, 'register');
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
+
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+        $this->assertEquals('processed', $batch['status']);
 
         $this->assertRegistrationDetails($registerPayments);
     }

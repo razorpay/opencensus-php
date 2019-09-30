@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use Razorpay\Trace\Logger as Trace;
 
@@ -335,7 +336,7 @@ class Verify extends Base\Core
 
         $totalAuthTimeDiff = $avgAuthTime = 0;
 
-        $verifyStart = time();
+        $verifyStart = Carbon::now(Timezone::IST)->timestamp;
 
         foreach ($payments as $payment)
         {
