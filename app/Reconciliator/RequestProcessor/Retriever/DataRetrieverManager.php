@@ -11,7 +11,7 @@ class DataRetrieverManager
 
         $retriever = camel_case($gateway);
 
-        $gatewayRetrieverClassName = 'RZP\\Reconciliator\\RequestProcessor\\Retriever\\Impl\\' . $retriever . 'DataRetriever';
+        $gatewayRetrieverClassName = 'RZP\\Reconciliator\\RequestProcessor\\Retriever\\Impl\\' . $retriever . '\\DataRetriever';
 
         if (class_exists($gatewayRetrieverClassName) === true)
         {

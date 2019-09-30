@@ -88,6 +88,13 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_RECONCILE_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+            ]);
+
         return $response;
     }
 

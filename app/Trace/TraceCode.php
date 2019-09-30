@@ -687,6 +687,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_VALIDATE_AUTH_ERROR                           = 'GATEWAY_VALIDATE_AUTH_ERROR';
     const GATEWAY_VALIDATE_RESPONSE                             = 'GATEWAY_VALIDATE_RESPONSE';
     const GATEWAY_VALIDATE_REQUEST                              = 'GATEWAY_VALIDATE_REQUEST';
+    const GATEWAY_RECONCILE_RESPONSE                             = 'GATEWAY_VALIDATE_RESPONSE';
+    const GATEWAY_RECONCILE_REQUEST                              = 'GATEWAY_VALIDATE_REQUEST';
     const GATEWAY_VALIDATE_ERROR                                = 'GATEWAY_VALIDATE_ERROR';
     const GATEWAY_VALIDATE_REFUND_SUMMARY                       = 'GATEWAY_VALIDATE_REFUND_SUMMARY';
     const GATEWAY_AUTHORIZE_RESPONSE                            = 'GATEWAY_AUTHORIZE_RESPONSE';
