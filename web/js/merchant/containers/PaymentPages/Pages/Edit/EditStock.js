@@ -87,7 +87,7 @@ export default class EditStock extends React.Component {
               if (this.state.hasNoStockLimit === '0') {
                 if (!this.state.totalStock && this.state.totalStock != 0) {
                   return 'Please fill out this field';
-                } else if (!isInteger(val)) {
+                } else if (val < 1) {
                   return 'Stock must be atleast 1';
                 }
               }
@@ -95,9 +95,12 @@ export default class EditStock extends React.Component {
             onChange={e => {
               const val = e.target.value;
 
-              this.setState({
-                totalStock: val ? Number(e.target.value) | 1 : '',
-              });
+              // Allow only numbers and empty value
+              if (!val || !isNaN(val)) {
+                this.setState({
+                  totalStock: val ? Number(val) : '',
+                });
+              }
             }}
           />
           <div
