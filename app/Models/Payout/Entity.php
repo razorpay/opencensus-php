@@ -814,9 +814,9 @@ class Entity extends Base\PublicEntity
             $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
-
-            Metric::pushStatusChangeMetrics($this, $previousStatus);
         }
+
+        Metric::pushStatusChangeMetrics($this, $previousStatus);
     }
 
     public function setInitiatedAt()

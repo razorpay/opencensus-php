@@ -38,6 +38,12 @@ final class Metric
     const DASHBOARD  = 'dashboard';
     const IS_BANKING = 'is_banking';
 
+    protected static $internalStatusChangeFunctionName = [
+        Status::CREATED => [
+            Status::QUEUED  => 'pushQueuedMetrics'
+        ]
+    ];
+
     public static function pushStatusChangeMetrics(Entity $payout, $previousStatus)
     {
         $currentStatus = $payout->getStatus();
@@ -46,14 +52,12 @@ final class Metric
         {
             $isInternalChange = Status::isInternalStatusUpdate($currentStatus, $previousStatus);
 
-            if ($isInternalChange === true)
+            if ($isInternalChange === false)
             {
-                return;
+                Status::validateStatusUpdate($currentStatus, $previousStatus);
             }
 
-            Status::validateStatusUpdate($currentStatus, $previousStatus);
-
-            $functionName = self::getFunctionNameToCall($previousStatus, $currentStatus);
+            $functionName = self::getFunctionNameToCall($previousStatus, $currentStatus, $isInternalChange);
 
             self::$functionName($payout);
         }
@@ -70,8 +74,13 @@ final class Metric
         }
     }
 
-    protected static function getFunctionNameToCall($previousStatus, $currentStatus)
+    protected static function getFunctionNameToCall($previousStatus, string $currentStatus, bool $isInternalChange)
     {
+        if ($isInternalChange === true)
+        {
+            return self::$internalStatusChangeFunctionName[$previousStatus][$currentStatus];
+        }
+
         $functionName = 'push';
 
         if ($previousStatus !== null)
