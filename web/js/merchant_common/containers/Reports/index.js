@@ -447,10 +447,17 @@ export default function Reports(store, opts) {
             isPartnerReport
           ).then(data => {
             if (data.error) {
+              if (typeof window.hj === 'function') {
+                window.hj('tagRecording', ['download_report_failed']);
+              }
               return this.props.showNotification({
                 type: 'error',
                 message: data.error,
               });
+            }
+
+            if (typeof window.hj === 'function') {
+              window.hj('tagRecording', ['download_report_success']);
             }
             window.location = data.url;
           });
@@ -503,9 +510,17 @@ export default function Reports(store, opts) {
               return saveAs(blob, 'broking_report.xlsx');
             }
 
+            if (typeof window.hj === 'function') {
+              window.hj('tagRecording', ['download_report_success']);
+            }
+
             location.href = data.data.url;
           })
           .catch(e => {
+            if (typeof window.hj === 'function') {
+              window.hj('tagRecording', ['download_report_failed']);
+            }
+
             this.props.showNotification({
               type: 'error',
               message: 'No data found for given time range',
