@@ -246,10 +246,16 @@ return [
             'arn'                  => '75105177297000905183277',
         ],
 
-        'billdesk' => [
+        'billdesk_refund' => [
             'refund_id'                 => 'uibpgthqndxmwcf',
             'ref_1'                     => '9LRjiRNokiZ3Ww',
             'refund_amount_rs_ps'       => 500
+        ],
+
+        'billdesk_payment' => [
+            'ref_1'                     => 1,
+            'gross_amountrsps'          => 500,
+            'charges_rsps'              => 3,
         ],
 
         'atom' => [

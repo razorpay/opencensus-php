@@ -2106,23 +2106,9 @@ class AdminFetch
                     Fetch::LABEL => 'Origin Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
-                'origin_type' => [
-                    Fetch::LABEL  => 'Origin Type',
-                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => ['merchant', 'application'],
-                ],
                 'entity_id'   => [
                     Fetch::LABEL => 'Entity Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
-                ],
-                'entity_type' => [
-                    Fetch::LABEL  => 'Entity Type',
-                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => [
-                        'payment',
-                        'subscription',
-                        'virtual_account',
-                    ],
                 ],
             ],
 

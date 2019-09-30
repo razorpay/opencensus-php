@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Core as TerminalCore;
+use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Terminal\Onboarding\Processor\AtosTerminalOnboardingProcessor;
 use RZP\Models\Gateway\Terminal\Service as GatewayOnboardingService;
 use RZP\Models\Terminal\Status;
@@ -37,20 +38,22 @@ class Service extends Base\Service
                 'submerchant_id' => $submerchant->getId(),
                 'input'          => $input,
             ]);
-    
+
         $this->verifyPartnerTerminalOnboardingAccess();
-        
+
         $onboardInput['gateway'] = Gateway::ATOS;
 
         $onboardInput['gateway_input'] = $input;
-        
+
         $onboardedTerminal = (new GatewayOnboardingService)->onboardMerchantAsync($submerchant, $onboardInput);
 
-        return $onboardedTerminal->toArrayPublic();    
+        return $onboardedTerminal->toArrayPublic();
     }
 
     public function enableTerminal(string $id)
     {
+        TerminalEntity::verifyIdAndStripSign($id);
+
         $merchantId = $this->merchant->getId();
 
         $this->trace->info(
@@ -78,6 +81,8 @@ class Service extends Base\Service
 
     public function disableTerminal(string $id)
     {
+        TerminalEntity::verifyIdAndStripSign($id);
+
         $merchantId = $this->merchant->getId();
 
         $this->trace->info(

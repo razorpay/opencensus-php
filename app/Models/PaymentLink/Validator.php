@@ -43,6 +43,8 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS             => 'array',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:16',
     ];
 
     protected static $editRules = [
@@ -65,6 +67,8 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS             => 'array',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:16',
     ];
 
     protected static $sendNotificationRules = [
@@ -182,11 +186,11 @@ class Validator extends Base\Validator
         if ($amount > $maxAmountAllowed)
         {
             throw new BadRequestValidationFailureException(
-                'Amount exceeds maximum payment amount allowed',
-                Entity::AMOUNT,
+                $attribute . ' exceeds maximum payment amount allowed',
+                $attribute,
                 [
                     Entity::ID                          => $paymentLink->getId(),
-                    Entity::AMOUNT                      => $amount,
+                    $attribute                          => $amount,
                     Merchant\Entity::MAX_PAYMENT_AMOUNT => $maxAmountAllowed,
                 ]);
         }

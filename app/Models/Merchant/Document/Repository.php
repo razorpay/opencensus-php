@@ -21,4 +21,17 @@ class Repository extends Base\Repository
                     ->where(Entity::FILE_STORE_ID, '=', $fileStoreId)
                     ->first();
     }
+
+    /**
+     * Returns all non deleted documents for given merchantId
+     * @param string $merchantID
+     *
+     * @return mixed
+     */
+    public function findAllDocumentsByMerchantID(string $merchantID)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantID)
+                    ->get();
+    }
 }

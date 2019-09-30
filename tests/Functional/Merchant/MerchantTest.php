@@ -1709,7 +1709,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(36, $banks);
+        $this->assertCount(37, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -4943,5 +4943,29 @@ class MerchantTest extends TestCase
         $userDB = $this->getDbEntityById('user', $user['id']);
 
         $this->assertEquals($userDB['account_locked'], $response['account_locked']);
+    }
+
+    public function testMerchantRazorxBulkExperimentFetch()
+    {
+        $merchantId = 10000000000000;
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $razorxMock->method('getTreatment')
+                   ->will($this->onConsecutiveCalls('on', 'off'));
+
+        $this->app->instance('razorx', $razorxMock);
     }
 }

@@ -48,7 +48,7 @@ return [
                 // does not tokenized for a set of punctuation(set 1). So we use custom
                 // standard_analyzer where it's same as standard but also replaces
                 // those set 1 punctuation to '-' which will get used as word break
-                // char in normal standard anaylzer.
+                // char in normal standard analyzer.
                 //
                 //  This way, both index and search time analysis is consistent.
                 //
@@ -63,6 +63,16 @@ return [
                         'standard',
                         'lowercase',
                         'en_stopwords',
+                    ],
+                ],
+
+                // This is used as workaround until we use v5.1.
+                // Instead of type=keyword,normalizer=lowercase we will use type=text,analyzer=lowercase_keyword.
+                'lowercase_keyword' => [
+                    'type'      => 'custom',
+                    'tokenizer' => 'keyword',
+                    'filter'    => [
+                        'lowercase',
                     ],
                 ],
             ],
@@ -129,19 +139,19 @@ return [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
+            // Reference: https://www.elastic.co/guide/en/elasticsearch/reference/current/object.html
             'notes' => [
-                'type' => 'object',
-            ],
-        ],
-        'dynamic_templates' => [
-            [
-                'notes' => [
-                    'path_match' => 'notes.*',
-                    'mapping'    => [
-                        'type'            => 'text',
-                        'analyzer'        => 'edge_ngram_analyzer',
-                        'search_analyzer' => 'standard_custom',
-                        'index_options'   => 'offsets',
+                'type'       => 'object',
+                'dynamic'    => false,
+                'enabled'    => true,
+                'properties' => [
+                    'key' => [
+                        'type'     => 'text',
+                        'analyzer' => 'lowercase_keyword',
+                    ],
+                    'value' => [
+                        'type'     => 'text',
+                        'analyzer' => 'lowercase_keyword',
                     ],
                 ],
             ],
@@ -363,7 +373,6 @@ return [
                     'submitted_at'        => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
-                        'index'  => false,
                     ],
                     'updated_at'          => [
                         'type'   => 'date',

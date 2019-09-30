@@ -933,11 +933,163 @@ class UpiMindgateGatewayTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['status']     = 'FAILURE';
+            }
+        });
+
         $response = $this->createUnexpectedPayment($data);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertNull($paymentEntity);
+    }
+
+    public function testUnexpectedPaymentPending()
+    {
+        $data = $this->testData['testUnexpectedPaymentFail'];
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['status']     = 'PENDING';
+            }
+        });
+
+        $response = $this->createUnexpectedPayment($data);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            // Payment is created for the merchant itself
+            'merchant_id'       => '100DemoAccount',
+            'method'            => 'upi',
+            'amount'            => 37800,
+            'status'            => 'failed',
+            'amount_authorized' => 0,
+            'vpa'               => '7013562166@yesbank',
+            'gateway'           => 'upi_mindgate',
+            'gateway_captured'  => false,
+        ], $payment->toArray());
+    }
+
+    public function testUnexpectedPaymentSuccessOnDirectSettlementMerchant()
+    {
+        // Same GMID is set for both terminal, changing in callback requires significant refactor
+        $this->sharedTerminal->fill([
+            'gateway_merchant_id' => 'shared_merchant',
+        ])->saveOrFail();
+
+        $terminal = $this->fixtures->create('terminal:direct_settlement_upi_mindgate_terminal');
+
+        $data = $this->testData['testUnexpectedPaymentSuccess'];
+
+        $response = $this->createUnexpectedPayment($data);
+
+        $this->assertTrue($response['success']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+
+        $this->assertNull($paymentEntity['verified']);
+
+        $this->verifyPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['verified'], 1);
+
+        $this->getFailureInVerifyRefund();
+
+        $this->refundAuthorizedPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $refundUpiEntity = $this->getLastEntity('upi', true);
+
+        $refundTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'refunded'                            => $paymentEntity['status'],
+            $paymentEntity['id']                  => 'pay_' . $refundUpiEntity['payment_id'],
+            'refund'                              => $refundUpiEntity['action'],
+            'collect'                             => $refundUpiEntity['type'],
+            $paymentEntity['amount']              => $refundUpiEntity['amount'],
+            $refundEntity['id']                   => 'rfnd_' . $refundUpiEntity['refund_id'],
+            $paymentEntity['amount']              => $refundEntity['amount'],
+            'processed'                           => $refundEntity['status'],
+            $refundTransactionEntity['id']        => 'txn_' . $refundEntity['transaction_id'],
+            $refundTransactionEntity['entity_id'] => $refundEntity['id'],
+            $refundTransactionEntity['type']      => 'refund',
+            $refundTransactionEntity['amount']    => $refundEntity['amount'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+    }
+
+    public function testUnexpectedPaymentPendingOnDirectSettlementMerchant()
+    {
+        // Same GMID is set for both terminal, changing in callback requires significant refactor
+        $this->sharedTerminal->fill([
+            'gateway_merchant_id' => 'shared_merchant',
+        ])->saveOrFail();
+
+        $terminal = $this->fixtures->create('terminal:direct_settlement_upi_mindgate_terminal');
+
+        $data = $this->testData['testDirectSettlementUnexpectedPaymentFail'];
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['status']  = 'PENDING';
+            }
+        });
+
+        $response = $this->createUnexpectedPayment($data);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            // Payment is created for the merchant itself
+            'merchant_id'       => '10000000000000',
+            'method'            => 'upi',
+            'amount'            => 37800,
+            'status'            => 'failed',
+            'amount_authorized' => 0,
+            'vpa'               => '7013562166@yesbank',
+            'gateway'           => 'upi_mindgate',
+            'terminal_id'       => $terminal->getId(),
+            'gateway_captured'  => false,
+        ], $payment->toArray());
     }
 
     public function testDuplicateUnexpectedPayment()

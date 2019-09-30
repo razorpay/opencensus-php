@@ -30,6 +30,7 @@ use RZP\Reconciliator\FirstData\SubReconciliator\PaymentReconciliate as FDPaymen
 use RZP\Reconciliator\Hitachi\SubReconciliator\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\BillDesk\SubReconciliator\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\SubReconciliator\PaymentReconciliate as HitachiPaymentRecon;
+use RZP\Reconciliator\BillDesk\SubReconciliator\PaymentReconciliate as BilldeskPaymentRecon;
 use RZP\Reconciliator\Freecharge\SubReconciliator\PaymentReconciliate as FreechargePaymentRecon;
 use RZP\Reconciliator\VirtualAccYesBank\SubReconciliator\PaymentReconciliate as VirtualAccYesBank;
 
@@ -1131,6 +1132,42 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testBillDeskReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $gatewayPayment = $this->getLastEntity('billdesk', true);
+
+        $paymentEntity = $this->getEntityById('payment', $gatewayPayment['payment_id'], true);
+
+        $transaction = $this->getEntityById('transaction', $paymentEntity['transaction_id'], true);
+
+        //Reconciled at should be null
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
+
+        $entries[] = $this->overrideBillDeskPayment($gatewayPayment);
+
+        $file = $this->writeToCsvFile($entries, 'billdesk_success');
+
+        $this->runForFiles([$file], 'BillDesk');
+
+        $updatedTransaction = $this->getEntityById('transaction', $paymentEntity['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
+        $this->assertNotNull($updatedTransaction['gateway_fee']);
+        $this->assertNotNull($updatedTransaction['gateway_service_tax']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     /**
      * Test for success and failure count of a processed batch
      */
@@ -1492,10 +1529,20 @@ class ReconciliationFileTest extends TestCase
 
     private function overrideBilldeskRefund(array $refund)
     {
-        $facade = $this->testData['facades']['billdesk'];
+        $facade = $this->testData['facades']['billdesk_refund'];
 
         $facade[BilldeskRefundRecon::COLUMN_REFUND_ID]  = $refund['RefundId'];
         $facade[BilldeskRefundRecon::COLUMN_PAYMENT_ID] = $refund['payment_id'];
+
+        return $facade;
+    }
+
+    private function overrideBillDeskPayment(array $gatewayPayment)
+    {
+        $facade = $this->testData['facades']['billdesk_payment'];
+
+        $facade[BilldeskPaymentRecon::COLUMN_PAYMENT_ID]     = $gatewayPayment['payment_id'];
+        $facade[BilldeskPaymentRecon::COLUMN_PAYMENT_AMOUNT] = $gatewayPayment['TxnAmount'];
 
         return $facade;
     }

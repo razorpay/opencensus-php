@@ -45,7 +45,7 @@ trait Hydrator
      */
     protected function preProcessForHydration(array & $item)
     {
-        $this->jsonEncodeNotesForHydration($item);
+        $this->preProcessNotesForHydration($item);
     }
 
     /**
@@ -64,17 +64,23 @@ trait Hydrator
     /**
      * Common to most of the models and so kept here.
      *
-     * Json encodes the notes attribute from es search result.
-     *
      * @param array $item
      *
      * @return void
      */
-    protected function jsonEncodeNotesForHydration(array & $item)
+    protected function preProcessNotesForHydration(array & $item)
     {
         if (array_key_exists('notes', $item) === true)
         {
-            $item['notes'] = json_encode($item['notes'], JSON_FORCE_OBJECT);
+            // Refer- config/es_mappings.php on how notes is indexed.
+            $formatted = [];
+            foreach ($item['notes'] as $v)
+            {
+                $formatted[$v['key']] = $v['value'];
+            }
+
+            // Json encodes the notes attribute from es search result.
+            $item['notes'] = json_encode($formatted, JSON_FORCE_OBJECT);
         }
     }
 }
