@@ -4,7 +4,7 @@ namespace RZP\Mail\Dispute;
 
 use RZP\Constants\MailTags;
 
-class Creation extends Base
+class BulkCreation extends Base
 {
 
     protected function addSubject()
@@ -24,7 +24,7 @@ class Creation extends Base
 
     protected function addHtmlView()
     {
-        $this->view('emails.dispute.creation');
+        $this->view('emails.dispute.bulk_creation');
 
         return $this;
     }

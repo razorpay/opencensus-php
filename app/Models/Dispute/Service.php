@@ -3,20 +3,23 @@
 namespace RZP\Models\Dispute;
 
 use Request;
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Dispute\File;
+use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
     use FileHandlerTrait;
 
-    // Need different names for create/edit
-    static private $fileToReadName = 'dispute_bulk_file';
+    const bulkDisputeCreateFileName = 'bulk_disputes_create_status';
+    const bulkDisputeEditFileName   = 'bulk_disputes_edit_status';
 
     const bulkCreateDisputesColumns = [
         'payment_id',
@@ -69,6 +72,46 @@ class Service extends Base\Service
         }
     }
 
+    public function getDisputeDataForMail(array $dispute) : array
+    {
+        $endDate = Carbon::createFromTimestamp($dispute[Entity::EXPIRES_ON], Timezone::IST);
+
+        $daysLeft = $endDate->diffInDays(Carbon::now(Timezone::IST));
+
+        // define array and loop to fetch
+        $disputeData[Entity::ID] = $dispute[Entity::ID];
+        $disputeData[Entity::PAYMENT_ID] = $dispute[Entity::PAYMENT_ID];
+        $disputeData[Entity::MERCHANT_ID] = $dispute[Entity::MERCHANT_ID];
+        $disputeData[Entity::GATEWAY_DISPUTE_ID] = $dispute[Entity::GATEWAY_DISPUTE_ID];
+        $disputeData[Entity::PHASE] = $dispute[Entity::PHASE];
+//        fetch reason_description, not available in admin array
+//        $disputeData[Entity::REASON_DESCRIPTION] = $dispute[Entity::REASON_DESCRIPTION];
+        $disputeData[Entity::RESPOND_BY] = $dispute[Entity::RESPOND_BY];
+        $disputeData['remainingDays'] = $daysLeft;
+
+        return $disputeData;
+    }
+
+    public function sendAggregatedEmails(array $mailData, array $merchantData, array $disputeData)
+    {
+        foreach ($mailData as $merchantId=>$data)
+        {
+            foreach ($data as $mailId=>$disputeIds)
+            {
+                $bulkMailData['merchant']['name'] = $merchantData[$merchantId];
+                $bulkMailData['merchant']['email'] = $mailId;
+                $bulkMailData['disputes'] = [];
+
+                foreach ($disputeIds as $id)
+                {
+                    $bulkMailData['disputes'][] = $disputeData[$id];
+                }
+//               Move this to core?
+//                Mail::queue(new DisputeMailer\BulkCreation($mailData));
+            }
+        }
+    }
+
     public function bulkCreate(array $input)
     {
         (new Validator)->validateBulkDisputeRequest($input);
@@ -86,7 +129,7 @@ class Service extends Base\Service
             );
         }
 
-        $outputFileData = [];
+        $outputFileData = $mailData = $merchantData = $disputeData = [];
 
         $outputKeys = self::bulkCreateDisputesColumns;
         $outputKeys[] = 'rzp_dispute_id';
@@ -102,11 +145,35 @@ class Service extends Base\Service
             {
                 $input = $this->convertFileRowToMap($row, $orderKeys);
 
+                $skipMails = $input[Entity::SKIP_EMAIL];
+
+                // skipping email for each creation
+                $input[Entity::SKIP_EMAIL] = true;
+
                 $paymentId = $input['payment_id'];
 
                 unset($input['payment_id']);
 
                 $disputeEntity = $this->create($input, $paymentId);
+
+                if ($skipMails === false)
+                {
+                    $emails = $input[Entity::MERCHANT_EMAILS] ?? $this->core()->getMerchantEmailsForDispute();
+
+                    if (array_key_exists(Entity::MERCHANT_ID, $merchantData) === false)
+                    {
+                        $merchant = $this->repo->merchant->find($disputeEntity[Entity::MERCHANT_ID]);
+
+                        $merchantData[$disputeEntity[Entity::MERCHANT_ID]] = $merchant->getName();
+                    }
+
+                    $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity);
+
+                    foreach ($emails as $mail)
+                    {
+                        $mailData[$disputeEntity[Entity::MERCHANT_ID]][$mail][] = $disputeEntity[Entity::ID];
+                    }
+                }
 
                 $row[] = $disputeEntity[Entity::ID];
                 $row[] = '';
@@ -120,9 +187,9 @@ class Service extends Base\Service
             $outputFileData[] = $row;
         }
 
-        $file_name = 'bulk_disputes_create_output';
+        $this->sendAggregatedEmails($mailData, $merchantData, $disputeData);
 
-        $url = $disputeFileService->generateFile($outputFileData, $file_name);
+        $url = $disputeFileService->generateFile($outputFileData, self::bulkDisputeCreateFileName);
 
         return $url;
     }
@@ -182,9 +249,7 @@ class Service extends Base\Service
             $outputFileData[] = $row;
         }
 
-        $file_name = 'bulk_disputes_edit_output';
-
-        $url = $disputeFileService->generateFile($outputFileData, $file_name);
+        $url = $disputeFileService->generateFile($outputFileData, self::bulkDisputeEditFileName);
 
         return $url;
     }

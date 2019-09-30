@@ -506,6 +506,15 @@ class Core extends Base\Core
         }
     }
 
+    public function getMerchantEmailsForDispute(Merchant\Entity $merchant) : array
+    {
+        $emails = (new MerchantEmail\Service())->fetchAllEmailsForMerchantAndType($merchant->getId(), 'dispute');
+
+        $emails[] = $merchant->getEmail();
+
+        return $emails;
+    }
+
     protected function sendDisputeMailToMerchant(
         Entity $dispute,
         Merchant\Entity $merchant,
@@ -533,9 +542,7 @@ class Core extends Base\Core
             // ToDo : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
             // Adding merchant Email, merchant dispute PoC in to field
             // ToDo : Handle duplicate mails
-            $emails = (new MerchantEmail\Service())->fetchAllEmailsForMerchantAndType($merchant->getId(), 'dispute');
-
-            $emails[] = $merchant->getEmail();
+            $emails = $this->getMerchantEmailsForDispute($merchant);
         }
 
         $data = [
