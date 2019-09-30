@@ -16,7 +16,6 @@ class CrawlerReconTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/NetbankingReconciliationTestData.php';
 
         parent::setUp();
 
