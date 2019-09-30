@@ -54,4 +54,19 @@ class Repository extends Base\Repository
                     ->Where(Entity::TYPE, '<>', Type::PARTNER_DUMMY)
                     ->get();
     }
+
+    /**
+     * @param string $merchantId
+     * @param string $type
+     *
+     * @return mixed
+     */
+    public function getAllEmailsForMerchantAndType(string $merchantId, string $type) : array
+    {
+        return $this->newQuery()
+                    ->select(Entity::EMAIL)
+                    ->merchantId($merchantId)
+                    ->where(Entity::TYPE, $type)
+                    ->pluck(Entity::EMAIL)->toArray();
+    }
 }

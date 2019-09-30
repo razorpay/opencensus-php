@@ -17,6 +17,7 @@ use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Models\{Base, Payment, Merchant, Adjustment};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+use RZP\Models\Merchant\Email as MerchantEmail;
 
 class Core extends Base\Core
 {
@@ -101,7 +102,6 @@ class Core extends Base\Core
                 $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
                 return $dispute;
-
             });
     }
 
@@ -511,7 +511,8 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         array $input)
     {
-        if (empty($input[Entity::SKIP_EMAIL]) === false)
+        if ((empty($input[Entity::SKIP_EMAIL]) === false) or
+            ($input[Entity::SKIP_EMAIL] === true))
         {
             return;
         }
@@ -523,17 +524,24 @@ class Core extends Base\Core
             return;
         }
 
-        $email = $merchant->getEmail();
-
         if (empty($input[Entity::MERCHANT_EMAILS]) === false)
         {
-            $email = $input[Entity::MERCHANT_EMAILS];
+            $emails = $input[Entity::MERCHANT_EMAILS];
+        }
+        else
+        {
+            // ToDo : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
+            // Adding merchant Email, merchant dispute PoC in to field
+            // ToDo : Handle duplicate mails
+            $emails = (new MerchantEmail\Service())->fetchAllEmailsForMerchantAndType($merchant->getId(), 'dispute');
+
+            $emails[] = $merchant->getEmail();
         }
 
         $data = [
             'merchant'      => [
                 'name'          => $merchant->getName(),
-                'email'         => $email,
+                'email'         => $emails,
             ],
             'dispute'       => $dispute->toArrayPublic(),
             'remainingDays' => $this->getRemainingDays($dispute),

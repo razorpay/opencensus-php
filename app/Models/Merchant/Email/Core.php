@@ -152,4 +152,21 @@ class Core extends Base\Core
         return $newEmail;
     }
 
+    /**
+     * This function does not check for verification status of emails
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $type
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function fetchAllEmailsForMerchantAndType(Merchant\Entity $merchant, string $type) : array
+    {
+        (new Validator)->validateType(Entity::TYPE, $type);
+
+        $emails = $this->repo->merchant_email->getAllEmailsForMerchantAndType($merchant->getId(), $type);
+
+        return $emails;
+    }
 }
