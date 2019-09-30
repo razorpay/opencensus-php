@@ -107,6 +107,14 @@ class Core extends Base\Core
             $mailer = MerchantStatusUpdateMailerFactory::getMailer($bankingAccount);
 
             Mail::queue($mailer);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
+                [
+                    'Banking Account ID' => $bankingAccount->getId(),
+                    'Status'             => $bankingAccount->getStatus(),
+                    'message'            => 'Mail Sent'
+                ]);
         }
         catch(\Exception $e)
         {
@@ -114,8 +122,8 @@ class Core extends Base\Core
                 TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
                 [
                     'Banking Account ID' => $bankingAccount->getId(),
-                    'Status' => $bankingAccount->getStatus(),
-                    'Error' => $e->getError()->toPublicArray(),
+                    'Status'             => $bankingAccount->getStatus(),
+                    'Error'              => $e->getMessage(),
                 ]);
         }
     }

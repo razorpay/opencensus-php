@@ -2,6 +2,7 @@
 
 namespace RZP\Mail\BankingAccount;
 
+use App;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
@@ -13,6 +14,8 @@ class Created extends Mailable
 
     protected $bankAccount;
 
+    protected $config;
+
     /**
      * Cancelled constructor.
      * @param Entity $bankAccount
@@ -22,6 +25,8 @@ class Created extends Mailable
         parent::__construct();
 
         $this->bankAccount = $bankAccount;
+
+        $this->config = App::getFacadeRoot()['config'];
     }
 
     protected function addRecipients()
@@ -65,8 +70,7 @@ class Created extends Mailable
     protected function addMailData()
     {
         $data = [
-            'contact_name'   => $this->bankAccount->merchant->getName(),
-            'contact_email'  => $this->bankAccount->merchant->getEmail(),
+            'view_dashboard_url' => App::getFacadeRoot()['config']['applications.razorx.url']
         ];
 
         $this->with($data);
