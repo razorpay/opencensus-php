@@ -200,7 +200,7 @@ export class GenericCreator extends React.PureComponent {
               }
 
               if (!isNaN(val)) {
-                return 'Field title must have atleast 1 character';
+                return 'Field title must have at least 1 character';
               }
 
               const sameTitleFieldIndex = allFieldsLabelList.indexOf(val);

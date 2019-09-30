@@ -110,7 +110,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             ); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
 
             if (Number(newField.min_amount) < Number(minAmountAllowed)) {
-              newField.min_amount = minAmountAllowed; // Must be atleast min payable value as per currency
+              newField.min_amount = minAmountAllowed; // Must be at least min payable value as per currency
             }
 
             break;
@@ -118,7 +118,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 
           case FIELD_TYPES.multiple_purchase.key: {
             if (Number(newField.min_purchase) === 0 && isMandatory) {
-              newField.min_purchase = 1; // Must be atleast 1 if mandatory field
+              newField.min_purchase = 1; // Must be at least 1 if mandatory field
             }
 
             break;

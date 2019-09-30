@@ -150,7 +150,7 @@ export default class BaseForm extends React.PureComponent {
         validator={val => {
           if (val) {
             if (Number(val) < Number(minAmountAllowed)) {
-              return `Amount must be atleast ${minAmountAllowed}`;
+              return `Amount must be at least ${minAmountAllowed}`;
             }
           }
         }}
@@ -341,7 +341,7 @@ export default class BaseForm extends React.PureComponent {
             }
 
             if (!isNaN(val)) {
-              return 'Field title must have atleast 1 character';
+              return 'Field title must have at least 1 character';
             }
 
             if (validateSameTitleExists(val, selfIndex)) {

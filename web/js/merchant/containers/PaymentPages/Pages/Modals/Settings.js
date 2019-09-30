@@ -158,7 +158,7 @@ export default class extends React.Component {
                       }
 
                       if (val.length < 4) {
-                        return 'Url must be atleast 4 characters long';
+                        return 'Url must be at least 4 characters long';
                       } else if (val.length > 30) {
                         return 'Url must be maximum 30 characters long';
                       }

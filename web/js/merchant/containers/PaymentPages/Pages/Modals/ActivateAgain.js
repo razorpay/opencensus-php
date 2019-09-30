@@ -70,7 +70,7 @@ export default class ActivateAgainModal extends React.Component {
   flushExpireByError() {
     /*
     * New time must be greater than current time.
-    * Ideally it must be atleast 15 min past current time. But in that case error won't be shown on FE,
+    * Ideally it must be at least 15 min past current time. But in that case error won't be shown on FE,
     * but only calendar+time will be shown to be filled again.
     *
     * */

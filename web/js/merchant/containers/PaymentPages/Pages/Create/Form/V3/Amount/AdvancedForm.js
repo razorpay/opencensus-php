@@ -111,7 +111,7 @@ export default class AdvancedForm extends React.PureComponent {
     }
 
     if (Number(minVal) < Number(this.minAmountAllowed)) {
-      return `Min amount must be atleast ${this.minAmountAllowed}`;
+      return `Min amount must be at least ${this.minAmountAllowed}`;
     }
 
     if (maxVal && Number(minVal) > Number(maxVal)) {
@@ -129,7 +129,7 @@ export default class AdvancedForm extends React.PureComponent {
     }
 
     if (Number(maxVal) < Number(this.minAmountAllowed)) {
-      return `Max amount must be atleast ${this.minAmountAllowed}`;
+      return `Max amount must be at least ${this.minAmountAllowed}`;
     }
 
     if (minVal && Number(maxVal) < Number(minVal)) {
@@ -139,7 +139,7 @@ export default class AdvancedForm extends React.PureComponent {
 
   validateStockLimit = stockVal => {
     if (stockVal === '' || Number(stockVal) <= 0) {
-      return 'Stock must be atleast 1';
+      return 'Stock must be at least 1';
     }
 
     if (this.fieldType === FIELD_TYPES.multiple_purchase.key) {
@@ -224,7 +224,7 @@ export default class AdvancedForm extends React.PureComponent {
     }
 
     if (minVal < this.minPurchaseAllowed) {
-      return `Min purchase must be atleast ${this.minPurchaseAllowed}`;
+      return `Min purchase must be at least ${this.minPurchaseAllowed}`;
     }
 
     if (maxVal && Number(minVal) > Number(maxVal)) {

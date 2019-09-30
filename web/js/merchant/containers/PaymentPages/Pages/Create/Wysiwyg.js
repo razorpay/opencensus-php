@@ -415,7 +415,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       if (!paymentPageItems.length) {
         this.props.showNotification({
           type: 'error',
-          message: 'Add atleast 1 Price field',
+          message: 'Add at least 1 Price field',
         });
 
         return;

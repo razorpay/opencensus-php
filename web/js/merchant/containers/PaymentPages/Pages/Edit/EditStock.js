@@ -88,7 +88,7 @@ export default class EditStock extends React.Component {
                 if (!this.state.totalStock && this.state.totalStock != 0) {
                   return 'Please fill out this field';
                 } else if (val < 1) {
-                  return 'Stock must be atleast 1';
+                  return 'Stock must be at least 1';
                 }
               }
             }}

@@ -71,7 +71,7 @@ export default class extends React.Component {
       return false;
     } else {
       if (!this.state.variants.length || !this.state.variants[0]) {
-        return 'Atleast 1 variant must be added';
+        return 'At least 1 variant must be added';
       }
 
       const trimmedVariants = this.state.variants.filter(

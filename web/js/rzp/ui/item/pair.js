@@ -42,6 +42,7 @@ export const customer = {
   value: item => (
     <div>
       <span class="contact">{item.contact}</span>
+      <br />
       <span class="email">{item.email}</span>
     </div>
   ),
