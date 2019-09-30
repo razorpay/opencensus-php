@@ -494,6 +494,9 @@ return [
             'balance_id' => [
                 'type'  => 'keyword',
             ],
+            'contact_type' => [
+                'type'  => 'keyword',
+            ],
             'contact_name' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
@@ -509,8 +512,15 @@ return [
             'type' => [
                 'type'  => 'keyword',
             ],
+            'product' => [
+                'type'  => 'keyword',
+            ],
             'method' => [
                 'type'  => 'keyword',
+            ],
+            'mode' => [
+                'type'     => 'text',
+                'analyzer' => 'lowercase_keyword'
             ],
             'status' => [
                 'type'  => 'keyword',
@@ -519,6 +529,10 @@ return [
                 'type'  => 'keyword',
             ],
             'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'reversed_at' => [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],

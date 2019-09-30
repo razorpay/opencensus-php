@@ -1206,6 +1206,18 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateAndTranslateToAccountNumberForBankingIfApplicable(array & $input)
+    {
+        $product       = array_get($input, Entity::PRODUCT);
+        $accountNumber = array_get($input, Balance\Entity::ACCOUNT_NUMBER);
+
+        if ((empty($product) === true) or
+            (empty($accountNumber) === false))
+        {
+            $this->validateAndTranslateAccountNumberForBanking($input);
+        }
+    }
+
     /**
      * There are service methods (list & fetch) for few models which expect
      * mandatory ACCOUNT_NUMBER in query parameter. Such models include

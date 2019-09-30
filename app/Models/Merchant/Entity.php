@@ -536,7 +536,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
-      
+
     public function setRestricted(bool $restricted)
     {
         $this->setAttribute(self::RESTRICTED, $restricted);
