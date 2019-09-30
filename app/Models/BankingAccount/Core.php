@@ -2,11 +2,11 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Razorpay\IFSC\Bank;
-
+use Mail;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Services\FTS;
+use Razorpay\IFSC\Bank;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -21,6 +21,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Mail\BankingAccount\MerchantStatusUpdateMailerFactory;
 
 class Core extends Base\Core
 {
@@ -33,7 +34,7 @@ class Core extends Base\Core
         $this->config = $this->app['config']->get('banking_account');
     }
 
-    public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
+    public function createOrFetchSharedBankingAccountFromVa(VirtualAccount\Entity $virtualAccount): Entity
     {
         // Virtual account has to be with receiver_type bank account
         if ($virtualAccount->hasBankAccount() === false)
@@ -92,6 +93,18 @@ class Core extends Base\Core
             $bankingAccountInput,
             $virtualAccount->merchant,
             $virtualAccount->balance);
+    }
+
+    public function statusHasChanged(string $previousStatus, string $newStatus): bool
+    {
+        return $previousStatus !== $newStatus;
+    }
+
+    public function updateMerchantAboutUpdatedStatus(Entity $bankingAccount)
+    {
+        $mailer = MerchantStatusUpdateMailerFactory::getMailer($bankingAccount);
+
+        Mail::queue($mailer);
     }
 
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity

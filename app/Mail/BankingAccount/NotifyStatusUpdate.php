@@ -37,7 +37,7 @@ class NotifyStatusUpdate extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::X_SUPPORT];
 
         $fromName = Constants::HEADERS[Constants::RAZORPAY_X];
 

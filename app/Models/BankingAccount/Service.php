@@ -7,7 +7,6 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
-use RZP\Mail\BankingAccount\NotifyStatusUpdate;
 
 class Service extends Base\Service
 {
@@ -30,7 +29,7 @@ class Service extends Base\Service
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
 
-        $this->notifyUpdate('', [Entity::STATUS => Status::CREATED], $account);
+        $this->core->updateMerchantAboutUpdatedStatus($account);
 
         return $account->toArrayPublic();
     }
@@ -63,15 +62,19 @@ class Service extends Base\Service
 
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
-        $this->notifyUpdate($previousStatus, $input, $bankingAccount);
+        if($this->core->statusHasChanged($previousStatus, $bankingAccount->getStatus()) == true)
+        {
+            $this->core->updateMerchantAboutUpdatedStatus($bankingAccount);
+        }
 
         return $account->toArrayPublic();
     }
 
+
     public function storeCredentialsAndActivateAccount(string $id, array $input)
     {
         $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
-            ['id'=> $id]);
+                           ['id' => $id]);
 
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
@@ -132,21 +135,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function notifyUpdate(string $previousStatus, array $input, Entity $bankingAccount)
-    {
-        if (($this->isStatusChanged($previousStatus, $input[Entity::STATUS]) === true) and
-            (in_array($input[Entity::STATUS], Status::$notify_statuses, true) === true))
-        {
-            $mail = new NotifyStatusUpdate($input, $bankingAccount->merchant);
 
-            Mail::queue($mail);
-        }
-    }
-
-    protected function isStatusChanged(string $previousStatus, string $newStatus): bool
-    {
-        return $previousStatus !== $newStatus;
-    }
 
     public function bulkCreateBankingAccountsForYesbank(array $input)
     {
