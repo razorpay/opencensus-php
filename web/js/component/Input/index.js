@@ -208,7 +208,7 @@ export default class Field extends React.Component {
 
     let isDifferent = false;
 
-    // Skip comparison of function and children which might be changing on re-render
+    // Skip comparison of function and children which changes on re-render if inline-fns are provided
     if (curPropsKey.length === nextPropsKey.length) {
       for (let i = 0; i < curPropsKey.length; i++) {
         const key = curPropsKey[i];
@@ -217,6 +217,7 @@ export default class Field extends React.Component {
           ['function', 'object'].indexOf(typeof this.props[key]) === -1 &&
           this.props[key] !== nextProps[key]
         ) {
+          isDifferent = true;
           break;
         }
       }

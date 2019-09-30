@@ -328,6 +328,7 @@ export default class BaseForm extends React.PureComponent {
           maxLength="60"
           placeholder="Enter field label"
           onInput={this.onInputName}
+          autoRender
           validator={function(val) {
             if (!val) {
               return 'Field title is required';

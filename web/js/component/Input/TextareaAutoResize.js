@@ -27,6 +27,19 @@ export default class TextareaAutoResize extends React.PureComponent {
     this.props.onInput && this.props.onInput(e);
   };
 
+  get extraChildren() {
+    return (
+      <React.Fragment key="textareaAutoResize">
+        <textarea
+          className="Input-el Input-el--resizer"
+          ref={this.setResizerElRef}
+          readOnly
+        />
+        {this.props.children}
+      </React.Fragment>
+    );
+  }
+
   setResizerElRef = el => (this.resizerEl = el);
   setElRef = el => (this.inputEl = el);
 
@@ -45,16 +58,7 @@ export default class TextareaAutoResize extends React.PureComponent {
             return;
           }
         }}
-        extraChildren={
-          <React.Fragment>
-            <textarea
-              className="Input-el Input-el--resizer"
-              ref={this.setResizerElRef}
-              readOnly
-            />
-            {children}
-          </React.Fragment>
-        }
+        extraChildren={this.extraChildren}
       />
     );
   }
