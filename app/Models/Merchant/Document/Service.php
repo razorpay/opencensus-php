@@ -38,4 +38,11 @@ class Service extends Base\Service
     {
         return $this->core->uploadActivationFile($this->merchant, $input);
     }
+
+    public function fetchActivationFilesFromDocument(string $mid = null)
+    {
+        $mid = $mid ?? $this->merchant->getId();
+
+        return $this->core->fetchActivationFilesFromDocument($mid);
+    }
 }
