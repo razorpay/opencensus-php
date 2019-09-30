@@ -163,11 +163,20 @@ class Merchant
         });
     }
 
-    public function createSettlementAttempt($merchantSettleToPartner) : FundTransferAttempt\Entity
+    public function createSettlementAttempt($merchantSettleToPartner, $params = []) : FundTransferAttempt\Entity
     {
         assert($this->setl->hasTransaction(), true);
 
-        $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
+        $initiateAt = null;
+
+        if(isset($params['initiate_at']) === true)
+        {
+            $initiateAt = $params['initiate_at'];
+        }
+        else
+        {
+            $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
+        }
 
         $this->createSettlementAttemptEntity($initiateAt, $merchantSettleToPartner);
 

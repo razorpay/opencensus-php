@@ -45,6 +45,15 @@ class Repository extends Transaction\Repository
     ];
 
     /**
+     * In GET and LIST for only source of type fund account validation laze loads following nested relations.
+     * @var array
+     */
+    protected $expandsForTypeFAV = [
+        'source.fundAccount.contact',
+        'source.fundAccount.account',
+    ];
+
+    /**
      * {@inheritDoc}
      */
     public function findByPublicIdAndMerchantForBankingBalance(
@@ -75,6 +84,9 @@ class Repository extends Transaction\Repository
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
+
+        // After fetching settlement collection, we lazy load source relations for Fund account validation.
+        $statements->where(Entity::TYPE, E::FUND_ACCOUNT_VALIDATION)->load($this->expandsForTypeFAV);
 
         return $statements;
     }

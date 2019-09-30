@@ -27,7 +27,7 @@ class Service extends Base\Service
                 'channel'   => $channel
             ]);
 
-        if($input['purpose'] === Purpose::SETTLEMENT)
+        if(($input[Entity::PURPOSE] === Purpose::SETTLEMENT) and ($input[Entity::SOURCE_TYPE] === Type::SETTLEMENT))
         {
             $channelState = $this->getChannelState();
 

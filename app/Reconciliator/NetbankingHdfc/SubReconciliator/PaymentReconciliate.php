@@ -11,6 +11,8 @@ use RZP\Reconciliator\NetbankingHdfc\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getPaymentId(array $row)
     {
         $reconStatus = $this->getReconPaymentStatus($row);
