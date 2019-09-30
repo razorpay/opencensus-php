@@ -19,6 +19,15 @@ class Type
     // Fee on Instant Refunds
     const INSTANT_REFUNDS       = 'instant_refunds';
 
+    // Fee on Instant Refund <= INR 1,000 - This is kept to support older invoice
+    const REFUND_LTE_1K         = 'refund_lte_1k';
+
+    // Fee on Instant Refund > INR 1,000 & <= INR 10,000 - This is kept to support older invoice
+    const REFUND_GT_1K_LTE_10K  = 'refund_gt_1k_lte_10k';
+
+    // Fee on Instant Refund > INR 10,000 - This is kept to support older invoice
+    const REFUND_GT_10K         = 'refund_gt_10k';
+
     // This is kept to support older invoice
     const NON_CARD              = 'non_card';
 
@@ -33,9 +42,15 @@ class Type
         self::OTHERS        => 997158,
         self::ADJUSTMENT    => 997158,
         self::VALIDATION    => 997158,
+        self::INSTANT_REFUNDS      => 997158,
         // This is kept to support older invoice
-        self::NON_CARD        => 997158,
-        self::INSTANT_REFUNDS => 997158,
+        self::NON_CARD             => 997158,
+        // This is kept to support older invoice
+        self::REFUND_LTE_1K        => 997158,
+        // This is kept to support older invoice
+        self::REFUND_GT_1K_LTE_10K => 997158,
+        // This is kept to support older invoice
+        self::REFUND_GT_10K        => 997158,
     ];
 
     const DEFAULT_DESCRIPTION = 'Commission';
@@ -45,15 +60,24 @@ class Type
     const OTHERS_DESCRIPTION                = 'Commission on All Methods Except Cards';
     const VALIDATION_DESCRIPTION            = 'Commission on All Validations';
     const INSTANT_REFUNDS_DESCRIPTION       = 'Fee on Instant Refunds';
+    const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';
+    const REFUND_GT_1K_LTE_10K_DESCRIPTION  = 'Fee on Instant Refund > INR 1,000 & <= INR 10,000';
+    const REFUND_GT_10K_DESCRIPTION         = 'Fee on Instant Refund > INR 10,000';
 
     protected static $typeToDescriptionMap = [
-        self::CARD_LTE_2K   => self::CARD_LTE_2K_DESCRIPTION,
-        self::CARD_GT_2K    => self::CARD_GT_2K_DESCRIPTION,
-        self::OTHERS        => self::OTHERS_DESCRIPTION,
-        self::VALIDATION    => self::VALIDATION_DESCRIPTION,
+        self::CARD_LTE_2K            => self::CARD_LTE_2K_DESCRIPTION,
+        self::CARD_GT_2K             => self::CARD_GT_2K_DESCRIPTION,
+        self::OTHERS                 => self::OTHERS_DESCRIPTION,
+        self::VALIDATION             => self::VALIDATION_DESCRIPTION,
+        self::INSTANT_REFUNDS        => self::INSTANT_REFUNDS_DESCRIPTION,
         // This is kept to support older invoice
-        self::NON_CARD        => self::OTHERS_DESCRIPTION,
-        self::INSTANT_REFUNDS => self::INSTANT_REFUNDS_DESCRIPTION,
+        self::NON_CARD               => self::OTHERS_DESCRIPTION,
+        // This is kept to support older invoice
+        self::REFUND_LTE_1K          => self::REFUND_LTE_1K_DESCRIPTION,
+        // This is kept to support older invoice
+        self::REFUND_GT_1K_LTE_10K   => self::REFUND_GT_1K_LTE_10K_DESCRIPTION,
+        // This is kept to support older invoice
+        self::REFUND_GT_10K          => self::REFUND_GT_10K_DESCRIPTION,
     ];
 
     public static function getAllTypes(): array
