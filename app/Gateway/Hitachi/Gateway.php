@@ -1491,9 +1491,9 @@ class Gateway extends Base\Gateway
     {
         if ($this->isLiveMode() === true)
         {
-            if(($this->isBharatQrPayment() === true) && ($this->action === Base\Action::VERIFY))
+            if (($this->isBharatQrPayment() === true) and ($this->action === Base\Action::VERIFY))
             {
-                return 'https://172.16.18.40/RZPTSAPI/PaymentGateway.aspx';
+                return 'https://172.16.18.40:10010/RZPTSAPI/PaymentGateway.aspx';
             }
 
             else
