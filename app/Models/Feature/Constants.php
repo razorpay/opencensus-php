@@ -483,6 +483,11 @@ class Constants
             'display_name'  => 'On demand Payout',
             'documentation' => '',
         ],
+        self::ES_AUTOMATIC              => [
+            'feature'       => self::ES_AUTOMATIC,
+            'display_name'  => 'Es Automatic',
+            'documentation' => '',
+        ],
         self::PL_FIRST_MIN_AMOUNT       => [
             'feature'       => self::PL_FIRST_MIN_AMOUNT,
             'display_name'  => 'Partial payments: minimum first amount',
@@ -543,6 +548,8 @@ class Constants
         self::MARKETPLACE,
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS,
+        self::ES_AUTOMATIC,
+        self::ES_ON_DEMAND,
     ];
 
     /*

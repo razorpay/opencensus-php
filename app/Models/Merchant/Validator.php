@@ -153,6 +153,7 @@ class Validator extends Base\Validator
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',
         Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
+        'es_enabled'                => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [
@@ -702,6 +703,16 @@ class Validator extends Base\Validator
             // Feature must be a "visible feature" and editable by the merchant
             if ((in_array($feature, $visibleFeatures, true) === false) or
                 (in_array($feature, $editableFeature, true) === false))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                    'feature',
+                    [$feature]);
+            }
+            // Only Merchant who have feature ES_ON_DEMAND enabled can change ES features
+            else if (($input['es_enabled'] === false) and
+                     (($feature === Feature\Constants::ES_AUTOMATIC) or
+                     ($feature === Feature\Constants::ES_ON_DEMAND)))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
