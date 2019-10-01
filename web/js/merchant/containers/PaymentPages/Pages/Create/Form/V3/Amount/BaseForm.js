@@ -176,7 +176,7 @@ export default class BaseForm extends React.PureComponent {
           <Popover
             align="top"
             theme="dark"
-            parentQuerySelector=".Modal-container"
+            parentQuerySelector=".Modal-content .paymentlinks-creator"
           >
             <PopoverBody>
               Customers can fill custom amount
@@ -203,7 +203,7 @@ export default class BaseForm extends React.PureComponent {
           <Input.CurrencySelect
             name="currency"
             defaultValue={currency}
-            parentQuerySelector=".Modal-container"
+            parentQuerySelector=".Modal-content .paymentlinks-creator"
             onChange={this.onChangeCurrency}
             disabled={isEditDisabledForCurrency}
           />
@@ -232,7 +232,7 @@ export default class BaseForm extends React.PureComponent {
                 <Popover
                   align="top"
                   theme="dark"
-                  parentQuerySelector=".Modal-container"
+                  parentQuerySelector=".Modal-content .paymentlinks-creator"
                 >
                   <PopoverBody>
                     Customers can select or unselect this Item
@@ -278,7 +278,7 @@ export default class BaseForm extends React.PureComponent {
               <Popover
                 align="top"
                 theme="dark"
-                parentQuerySelector=".Modal-container"
+                parentQuerySelector=".Modal-content .paymentlinks-creator"
               >
                 <PopoverBody>
                   Customers can change Item quantity
