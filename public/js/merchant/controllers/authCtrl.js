@@ -90,6 +90,7 @@ app
 
       // signup state container
       var email = $location.search().email;
+      var role = $location.search().r;
       try {
         email = atob(decodeURIComponent(email));
       } catch (e) {
@@ -102,6 +103,9 @@ app
           email: email,
           password: '',
           captcha: null,
+          settings: {
+            partner_intent: role === 'partner',
+          },
         },
         merchantData: {
           business_type: null,
@@ -196,7 +200,15 @@ app
       $scope.goToSignupStep = function(step, subStep) {
         $scope.signup.currentStep = step;
         if (subStep !== undefined) {
-          $scope.signup.currentSubStep = subStep;
+          // for individual upon press take him to step 4
+          if (
+            $scope.signup.merchantData.business_type == 11 ||
+            $scope.signup.data.settings.isPatner == true
+          ) {
+            $scope.signup.currentSubStep = 0;
+          } else {
+            $scope.signup.currentSubStep = subStep;
+          }
         }
       };
 
@@ -371,6 +383,12 @@ app
                 }
               } else {
                 hideSpinner();
+                window.rzpQ.push(
+                  window.rzpQ
+                    .now()
+                    .onbr()
+                    .success('signup.display_signup_page')
+                );
                 $state.transitionTo(
                   'access.pre_signup',
                   {},
@@ -395,6 +413,12 @@ app
               data.errors[0].indexOf('email has already been taken') !== -1
             ) {
               trackDrip('error_email_taken');
+              window.rzpQ.push(
+                window.rzpQ
+                  .now()
+                  .onbr()
+                  .failed('signup.submit_email')
+              );
             }
 
             window.ga &&
@@ -553,9 +577,17 @@ app
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
-
         $timeout(function() {
-          $scope.goToSignupStep(1, $scope.signup.currentSubStep + 1);
+          // if individuval in business type take him directly to last screen
+          if (
+            $scope.signup.currentSubStep == 0 &&
+            (reqPayload['business_type'] == 11 ||
+              $scope.signup.data.settings.isPatner)
+          ) {
+            $scope.signup.currentSubStep = $scope.signup.currentSubStep + 3;
+          } else {
+            $scope.signup.currentSubStep = $scope.signup.currentSubStep + 1;
+          }
         }, 200);
         request.success(function(data) {
           if (!data.success) {
@@ -720,7 +752,65 @@ app
 
       // creates Drip lead if email present in params
       pushToDrip('email_only');
+      $scope.onPrivacyClick = function() {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('signup.click_other_links', {
+              source: 'privacy',
+            })
+        );
+      };
+      $scope.onTermsClick = function() {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('signup.click_other_links', {
+              source: 'terms',
+            })
+        );
+      };
+      $scope.slectTrack = function(type) {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('signup.select_option', {
+              source: type,
+            })
+        );
+      };
+      $scope.onInputFocus = function(type) {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('signup.fill_pre_signup_form', {
+              source: type,
+            })
+        );
+      };
+      $scope.onFinishClick = function(type) {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('signup.finish_signup', {
+              source: type,
+            })
+        );
+      };
 
+      $scope.onCreateClick = function() {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('signup.create_account')
+        );
+      };
       $scope.goToSigninLayout = function() {
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
@@ -728,6 +818,14 @@ app
         $scope.login.data.email = $scope.signup.data.email;
         $scope.alerts.resetAlerts();
         var toRoute = 'access.signin';
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .success('signup.click_other_links', {
+              source: 'sign_in',
+            })
+        );
         $state.transitionTo(
           toRoute,
           {},
@@ -868,6 +966,11 @@ app
         $scope.noTransition = true;
         if (!merchantData.business_type) {
           $scope.signup.currentSubStep = 0;
+        } else if (
+          $scope.signup.data.settings.isPatner ||
+          merchantData.business_type == 11
+        ) {
+          $scope.signup.currentSubStep = 3;
         } else if (!merchantData.transaction_volume) {
           $scope.signup.currentSubStep = 1;
         } else if (!merchantData.department) {
@@ -1010,6 +1113,15 @@ app
       };
 
       $scope.resendVerificationEmail = function() {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .success('signup.email_verification', {
+              source: 'sign_in',
+            })
+        );
+
         var payload = {
           method: 'post',
           url: '/user/resend',
@@ -1114,6 +1226,14 @@ app
       $scope.trackContactUsClick = function(e) {
         window.ga &&
           window.ga('send', 'event', 'Signup - Steps', 'Click - Contact Us');
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .success('signup.click_other_links', {
+              source: 'contact_us',
+            })
+        );
       };
 
       /*
@@ -1151,6 +1271,15 @@ app
             'Click - Back',
             toStepName
           );
+
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .success('signup.back_action', {
+              source: toStepName,
+            })
+        );
       };
 
       if (isHostedInBB) {

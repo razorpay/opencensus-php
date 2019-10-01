@@ -19,7 +19,7 @@
         <div class="select-one">
           <div class="signup-business-type-sub-header">Unregistered business</div>
           <div class="select-one-option">
-                <input override-tab ng-click="quickSendDetails('business_type', signup.details.business_type[1].value);trackStepClicksOnMore('Step - Select Business Type', signup.details.business_type[1].name);" type="radio" name="business_type_1" value="{{signup.details.business_type[1].value}}" id="{{'business_type_'+signup.details.business_type[1].value}}" ng-model="signup.merchantData.business_type"/>
+                <input override-tab ng-click="slectTrack('business_type');quickSendDetails('business_type', signup.details.business_type[1].value);trackStepClicksOnMore('Step - Select Business Type', signup.details.business_type[1].name);" type="radio" name="business_type_1" value="{{signup.details.business_type[1].value}}" id="{{'business_type_'+signup.details.business_type[1].value}}" ng-model="signup.merchantData.business_type"/>
                 <label for="{{'business_type_'+signup.details.business_type[1].value}}">
                   {{signup.details.business_type[1].name}}
                   <i class="pull-right fa fa-check"></i>
@@ -27,7 +27,7 @@
           </div>
           <div class="signup-business-type-sub-header">Registered business</div>
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.business_type)" ng-show='$index != 0 && ($index < 5 || signup.showMore === true)'>
-              <input override-tab ng-click="quickSendDetails('business_type', signup.details.business_type[key].value);trackStepClicksOnMore('Step - Select Business Type', signup.details.business_type[key].name);" type="radio" name="business_type" value="{{signup.details.business_type[key].value}}" id="{{'business_type_'+signup.details.business_type[key].value}}" ng-model="signup.merchantData.business_type"/>
+              <input override-tab ng-click="slectTrack('business_type');quickSendDetails('business_type', signup.details.business_type[key].value);trackStepClicksOnMore('Step - Select Business Type', signup.details.business_type[key].name);" type="radio" name="business_type" value="{{signup.details.business_type[key].value}}" id="{{'business_type_'+signup.details.business_type[key].value}}" ng-model="signup.merchantData.business_type"/>
               <label for="{{'business_type_'+signup.details.business_type[key].value}}">
                 {{signup.details.business_type[key].name}}
                 <i class="pull-right fa fa-check"></i>
@@ -55,7 +55,7 @@
 
         <div class="select-one">
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.transaction_volume)" >
-            <input override-tab ng-click="quickSendDetails('transaction_volume', key); trackStepClicksOnMore('Step - Monthly Revenue', signup.details.transaction_volume[key]);" type="radio" name="transaction_volume" value="{{key}}" id="{{'transaction_volume_'+key}}" ng-model="signup.merchantData.transaction_volume"/>
+            <input override-tab ng-click="slectTrack('transaction_volume');quickSendDetails('transaction_volume', key); trackStepClicksOnMore('Step - Monthly Revenue', signup.details.transaction_volume[key]);" type="radio" name="transaction_volume" value="{{key}}" id="{{'transaction_volume_'+key}}" ng-model="signup.merchantData.transaction_volume"/>
             <label for="{{'transaction_volume_'+key}}">
               {{signup.details.transaction_volume[key]}}
               <i class="pull-right fa fa-check"></i>
@@ -80,7 +80,7 @@
 
         <div class="select-one">
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.department)" >
-            <input override-tab ng-click="quickSendDetails('department', signup.details.department[key].value); trackStepClicksOnMore('Step - Your Department', signup.details.department[key].name)" type="radio" name="department" value="{{signup.details.department[key].value}}" id="{{'department_'+ signup.details.department[key].value}}" ng-model="signup.merchantData.department"/>
+            <input override-tab ng-click="slectTrack('department');quickSendDetails('department', signup.details.department[key].value); trackStepClicksOnMore('Step - Your Department', signup.details.department[key].name)" type="radio" name="department" value="{{signup.details.department[key].value}}" id="{{'department_'+ signup.details.department[key].value}}" ng-model="signup.merchantData.department"/>
             <label for="{{'department_'+ signup.details.department[key].value}}">
               {{signup.details.department[key].name}}
               <i class="pull-right fa fa-check"></i>
@@ -103,12 +103,12 @@
           <label class="form-label details-label" for="business_name">Company:</label>
           <div class="details-form-input-group">
             <i class="fa fa-building"></i>
-            <input type="text" name="business_name" id="business_name" ng-model="signup.merchantData.business_name"
-              class="form-control auth-form-input" placeholder="Company Name" required ng-minlength="4" >
+            <input  ng-focus="onInputFocus('comapny_name')" type="text" name="business_name" id="business_name" ng-model="signup.merchantData.business_name"
+              class="form-control auth-form-input" placeholder="Company Name">
           </div>
           <div class="details-form-input-group">
               <i class="fa fa-globe"></i>
-            <input type="text" name="business_website" id="business_website" ng-model="signup.merchantData.business_website"
+            <input type="text" ng-focus="onInputFocus('business_website')" name="business_website" id="business_website" ng-model="signup.merchantData.business_website"
               class="form-control auth-form-input" ng-pattern="websiteRegex" placeholder="Website" >
               <span class="input-helper">Leave blank if unavailable</span>
           </div>
@@ -116,13 +116,13 @@
           <label class="form-label details-label" for="contact_name">Contact Details:</label>
           <div class="details-form-input-group">
             <i class="fa fa-user"></i>
-            <input type="text" name="contact_name" id="contact_name" ng-model="signup.merchantData.contact_name"
+            <input ng-focus="onInputFocus('contact_name')" type="text" name="contact_name" id="contact_name" ng-model="signup.merchantData.contact_name"
               class="form-control auth-form-input" placeholder="Your Name" required ng-minlength="4" >
           </div>
 
           <div class="details-form-input-group">
               <i class="fa fa-phone"></i>
-            <input type="tel" ng-pattern="/^[0-9]{8,11}$/" name="contact_mobile" id="contact_mobile" ng-model="signup.merchantData.contact_mobile"
+            <input type="tel" ng-focus="onInputFocus('contact_mobile')" ng-pattern="/^[0-9]{8,11}$/" name="contact_mobile" id="contact_mobile" ng-model="signup.merchantData.contact_mobile"
               class="form-control auth-form-input" placeholder="10 digit mobile number" required ng-minlength="10" ng-maxlength="13" >
           </div>
           
@@ -148,7 +148,7 @@
             <div class="back-btn btn" ng-click="goToSignupStep(1, 2);trackBackClick('Department');">
               Back
             </div>
-            <button type="submit" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails()">
+            <button type="submit" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails();onFinishClick()">
               Finish
             </button>
           </div>
