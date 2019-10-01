@@ -1624,7 +1624,7 @@ class VerifyTest extends TestCase
 
         $this->getErrorInCallback();
 
-        $order = $this->fixtures->create('order', ['id' => '100000000order', 'amount' => 50000]);
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'amount' => 50000, 'payment_capture' => true]);
 
         $this->assertEquals('created', $order['status']);
 

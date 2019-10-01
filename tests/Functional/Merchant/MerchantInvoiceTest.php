@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
@@ -16,6 +17,7 @@ class MerchantInvoiceTest extends TestCase
 {
     use AttemptTrait;
     use HeimdallTrait;
+    use DbEntityFetchTrait;
     use AttemptReconcileTrait;
     use FundAccountValidationTrait;
 
@@ -169,7 +171,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(5, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -189,6 +191,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
+        $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
 
         $dateString = Carbon::createFromDate(
             $entities[0]['year'],
@@ -225,7 +228,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because other merchants are inactive during this $oldDateTime
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(5, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -245,6 +248,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
+        $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
 
         Carbon::setTestNow();
     }
@@ -280,7 +284,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(5, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -300,6 +304,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
+        $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
 
         $dateString = Carbon::createFromDate(
             $entities[0]['year'],
@@ -443,7 +448,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because invoice are generated only for one merchant
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(5, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -463,6 +468,92 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
+        $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testInstantRefundsInvoiceEntityCreateForGivenMerchant()
+    {
+        $oldDateTime = Carbon::create(2017, 7, 27, 12, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createData();
+
+        // Card payment greater than 2k
+        // Created in last month captured in next month
+        $p4 = $this->getDefaultPaymentArray();
+
+        $p4['amount'] = 234000;
+
+        $p4 = $this->doAuthAndCapturePayment($p4);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($p4['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->fixtures->edit('payment', $p4['id'], [
+            'captured_at' => Carbon::create(2017, 8, 1, 2, 0, 0, 0, Timezone::IST)->timestamp
+        ]);
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $this->refundPayment($p4['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+
+        // This is a failed instant refund in which case the fee is reversed -
+        // added two refunds to check that invoice has only one refund's fee calculated
+        $this->refundPayment($p4['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+
+        Carbon::setTestNow();
+
+        $this->ba->appAuth();
+
+        $currentTime = $oldDateTime = Carbon::create(2017, 8, 1, 12, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['merchant_ids' => ['10000000000000']],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        // checking for 3 because invoice are generated only for one merchant
+        $this->assertEquals(5, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
+        $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
 
         Carbon::setTestNow();
     }

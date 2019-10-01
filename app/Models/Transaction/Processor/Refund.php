@@ -7,7 +7,6 @@ use RZP\Models\Pricing;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\RefundSource;
-use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 
 class Refund extends Base
 {
@@ -20,6 +19,11 @@ class Refund extends Base
 
     public function fillDetails()
     {
+        if ($this->source->isRefundSpeedInstant() === true)
+        {
+            $this->txn->setFeeModel($this->txn->merchant->getFeeModel());
+        }
+
         $amount = $this->source->getBaseAmount();
 
         $this->txn->setAmount($amount);
@@ -76,7 +80,13 @@ class Refund extends Base
     {
         $refund = $this->source;
 
-        $netAmount = $refund->getBaseAmount() + $this->fees;
+        $netAmount = $refund->getBaseAmount();
+
+        if (($refund->isRefundSpeedInstant() === true) and
+            ($this->txn->isPostpaid() !== true))
+        {
+            $netAmount += $this->fees;
+        }
 
         //
         // Net amount is 0, only in a single case when payment's settledby is not razorpay and
