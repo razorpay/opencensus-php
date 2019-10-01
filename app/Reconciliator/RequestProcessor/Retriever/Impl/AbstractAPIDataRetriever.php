@@ -3,6 +3,10 @@
 namespace RZP\Reconciliator\RequestProcessor\Retriever\Impl;
 
 use App;
+use RZP\Models\FileStore\Creator;
+use RZP\Models\FileStore\Format;
+use RZP\Models\FileStore\Store;
+use RZP\Models\FileStore\Type;
 use RZP\Models\Terminal;
 use RZP\Reconciliator\RequestProcessor\Retriever\DataRetriever;
 use RZP\Trace\TraceCode;
@@ -100,32 +104,27 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
     protected function prepareFile($filename, array $data)
     {
-        $f = null;
-        $filePath = storage_path('files/filestore') . '/'  . $filename . '.csv';
 
-        try
-        {
-            $f = fopen($filePath, 'w');
-            fputcsv($f, array_keys($data[0]), ',');
-            //fputs($f,PHP_EOL);
-            foreach ($data as $record)
-            {
-                fputcsv($f, array_values($record), ',');
-            }
-        }
-        catch (\Exception $e)
-        {
-            unlink($filePath);
-            throw $e;
-        }
-        finally
-        {
-            if (empty($f) === false)
-            {
-                fclose($f);
-            }
-        }
+        $creator = $this->createFile($data, $filename);
+
+        $file = $creator->get();
+
+        $filePath = $file['local_file_path'];
 
         return new File($filePath);
+    }
+
+    protected function createFile($content, string $fileName)
+    {
+        $creator = new Creator();
+
+        $creator->extension(Format::CSV)
+                ->content($content)
+                ->name($fileName)
+                ->store(Store::LOCAL)
+                ->type(Type::RECONCILIATION_BATCH_INPUT)
+                ->save();
+
+        return $creator;
     }
 }
