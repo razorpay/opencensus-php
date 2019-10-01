@@ -215,7 +215,7 @@ class Status
      * @param string      $currentStatus
      * @param string|null $previousStatus
      */
-    public static function validateStatusUpdate(string $currentStatus, $previousStatus)
+    public static function validateStatusUpdate(string $currentStatus, string $previousStatus = null)
     {
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 
@@ -238,7 +238,7 @@ class Status
      * @param string|null $previousStatus
      * @return bool
      */
-    public static function isInternalStatusUpdate(string $currentStatus, $previousStatus)
+    public static function isInternalStatusUpdate(string $currentStatus, string $previousStatus = null)
     {
         $nextStatusList = self::$internalFromToStatusMap[$previousStatus] ?? [];
 

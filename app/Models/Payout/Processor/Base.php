@@ -425,6 +425,8 @@ class Base extends BaseCore
 
         $payout->balance()->associate($this->balance);
 
+        $payout->setStatus(Payout\Status::CREATED);
+
         //
         // Doing this after all the associations since
         // the modifiers and validators require payout

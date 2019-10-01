@@ -749,6 +749,7 @@ final class FactoryData
             'amount'             => 100,
             'currency'           => 'INR',
             'merchant_id'        => '10000000000000',
+            'balance_id'         => '10000000000000',
             'status'             => 'created',
             'channel'            => Channel::AXIS,
             'created_at'         => $faker->timestamp,
