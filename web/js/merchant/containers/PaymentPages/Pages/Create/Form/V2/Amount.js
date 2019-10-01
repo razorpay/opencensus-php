@@ -4,18 +4,19 @@ import Button from 'component/Button';
 import { classList, getFormattedAmount } from 'common/util';
 import Amount, { AmountTooltip } from 'rzp/ui/Amount';
 import EditLayer from '../../EditLayer';
+import { getCurrency } from 'rzp/ui/Amount';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
   // console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
-  let cls = 'Field Field--disabled Field--required';
+  const currencySymbol = getCurrency(paymentPageEntity.currency).symbol;
+  let cls = `Field Field--disabled Field--required Field--currency-${
+    currencySymbol.length
+  }`;
 
   const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
 
-  if (isAmountEntitySet) {
-    if (!paymentPageEntity.amount) {
-      cls += ' Field--small';
-    }
-  }
+  const amountDisplay =
+    paymentPageEntity.amount && Number(paymentPageEntity.amount).toFixed(2);
 
   const content = (
     <React.Fragment>
@@ -29,17 +30,26 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
             if (isAmountEntitySet) {
               if (paymentPageEntity.amount) {
                 <React.Fragment>
-                  <span>
-                    <Amount
-                      currency={paymentPageEntity.currency}
-                      value={Number(paymentPageEntity.amount || 0) * 100}
-                    />
+                  <span className="Field-addon Field-addon--before">
+                    <span>
+                      <b className="currency-symbol">
+                        <AmountTooltip currency={paymentPageEntity.currency} />
+                      </b>
+                    </span>
                   </span>
+
+                  <div className="Field-el">
+                    <label>
+                      <b>{amountDisplay.split('.')[0]}</b>.{
+                        amountDisplay.split('.')[1]
+                      }
+                    </label>
+                  </div>
+
                   {paymentPageEntity.settings &&
                     paymentPageEntity.settings.allow_multiple_units && (
-                      <React.Fragment>
-                        <span style={{ margin: '0 12px' }}>×</span>
-                        <div class="Field Field--counter Field--small">
+                      <span class="Field-addon Field-addon--after">
+                        <div class="Field Field--counter">
                           <div class="Field-content">
                             <div
                               class="Field-wrapper Field-wrapper--counter"
@@ -62,14 +72,19 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                             </div>
                           </div>
                         </div>
-                      </React.Fragment>
+                      </span>
                     )}
                 </React.Fragment>;
               } else {
                 <React.Fragment>
-                  <span class="Field-addon--before">
-                    <AmountTooltip currency={paymentPageEntity.currency} />
+                  <span class="Field-addon Field-addon--before">
+                    <span>
+                      <b class="currency-symbol">
+                        <AmountTooltip currency={paymentPageEntity.currency} />
+                      </b>
+                    </span>
                   </span>
+
                   <input class="Field-el" placeholder="Enter Amount" disabled />
                 </React.Fragment>;
               }
