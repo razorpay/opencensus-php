@@ -764,6 +764,7 @@ class Core extends Base\Core
 
                 $payout->setFailureReason($reverseReason);
 
+                // To be set after failure_reason for metrics purpose
                 $payout->setStatus(Status::REVERSED);
 
                 $this->repo->saveOrFail($payout);

@@ -1524,7 +1524,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * Since we are pushing metrics on setStatusAttribute
-     * Therefore, it's important that while building the entity
+     * it's important that while building the entity
      * the status is set in the end.
      * If we don't do so, there's a chance that some payout parameters
      * might not be available at the time of setStatusAttribute
