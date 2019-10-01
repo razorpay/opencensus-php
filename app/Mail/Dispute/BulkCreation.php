@@ -11,11 +11,9 @@ class BulkCreation extends Base
     {
         $merchantName = $this->data['merchant']['name'];
 
-        $amount = (float) ($this->data['dispute']['amount'] / 100);
+        $amount = (float) ($this->data['totalAmount'] / 100);
 
-        $subject = 'Dispute raised for Rs. ' . $amount . ' on '
-            . $this->data['dispute']['payment_id']
-            . ' against ' . $merchantName;
+        $subject = 'Disputes raised for a total amount of Rs. ' . $amount . ' against ' . $merchantName;
 
         $this->subject($subject);
 
@@ -33,13 +31,9 @@ class BulkCreation extends Base
     {
         $this->withSwiftMessage(function ($message)
         {
-            $disputeId = $this->data['dispute']['id'];
-
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::DISPUTE_CREATED);
-
-            $headers->addTextHeader(MailTags::HEADER, $disputeId);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::DISPUTES_CREATED_IN_BULK);
         });
 
         return $this;

@@ -54,7 +54,7 @@ class Service extends Base\Service
                 break;
 
             case FileStore\Format::CSV:
-                $data = $this->parseTextFile($filePath, ',');
+                $data = $this->parseCsvFile($filePath, ',');
                 break;
 
             default:

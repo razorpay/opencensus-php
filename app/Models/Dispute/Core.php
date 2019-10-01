@@ -520,8 +520,7 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         array $input)
     {
-        if ((empty($input[Entity::SKIP_EMAIL]) === false) or
-            ($input[Entity::SKIP_EMAIL] === true))
+        if ((isset($input[Entity::SKIP_EMAIL]) === true) and ($input[Entity::SKIP_EMAIL] === true))
         {
             return;
         }

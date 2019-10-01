@@ -743,6 +743,23 @@ trait FileHandlerTrait
         return $data;
     }
 
+    protected function parseCsvFile(string $file, string $delimiter = ',')
+    {
+        $rows = $this->getFileLines($file);
+
+        $data = [];
+
+        foreach ($rows as $ix => $row)
+        {
+            if (blank($row) === false)
+            {
+                $data[] = str_getcsv($row, $delimiter);
+            }
+        }
+
+        return $data;
+    }
+
     /**
      * Reads first row and if it's the header row, pulls it from rows and usage this as heading for doing array_combine
      * in further flows (e.g. parseTextRow).

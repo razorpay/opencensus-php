@@ -83,6 +83,7 @@ class Service extends Base\Service
         $disputeData[Entity::PAYMENT_ID] = $dispute[Entity::PAYMENT_ID];
         $disputeData[Entity::MERCHANT_ID] = $dispute[Entity::MERCHANT_ID];
         $disputeData[Entity::GATEWAY_DISPUTE_ID] = $dispute[Entity::GATEWAY_DISPUTE_ID];
+        $disputeData[Entity::AMOUNT] = $dispute[Entity::AMOUNT];
         $disputeData[Entity::PHASE] = $dispute[Entity::PHASE];
 //        fetch reason_description, not available in admin array
 //        $disputeData[Entity::REASON_DESCRIPTION] = $dispute[Entity::REASON_DESCRIPTION];
@@ -101,13 +102,19 @@ class Service extends Base\Service
                 $bulkMailData['merchant']['name'] = $merchantData[$merchantId];
                 $bulkMailData['merchant']['email'] = $mailId;
                 $bulkMailData['disputes'] = [];
+                $totalAmount = 0;
 
                 foreach ($disputeIds as $id)
                 {
                     $bulkMailData['disputes'][] = $disputeData[$id];
+
+                    $totalAmount += $disputeData[$id][Entity::AMOUNT];
                 }
+
+                $bulkMailData['totalAmount'] = $totalAmount;
+
 //               Move this to core?
-//                Mail::queue(new DisputeMailer\BulkCreation($mailData));
+                Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
             }
         }
     }
