@@ -607,7 +607,7 @@ class Processor extends Base\Core
     {
         $skipMids = $this->getMerchantsToSkipForUsualSettlement();
 
-        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids, false, $params);
+        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, $merchantIds, $skipMids, false, $params);
 
         $merchantIds = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
