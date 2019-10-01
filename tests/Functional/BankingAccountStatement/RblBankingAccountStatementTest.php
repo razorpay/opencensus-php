@@ -37,6 +37,7 @@ class RblBankingAccountStatementTest extends TestCase
             'channel'               => 'rbl',
             'pincode'               => '1',
             'bank_reference_number' => '',
+            'account_ifsc'          => 'YESB0CMSNOC',
         ]);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
@@ -44,6 +45,23 @@ class RblBankingAccountStatementTest extends TestCase
         $this->fixtures->balance->edit($this->balance->getId(),
             ['balance' => 10000, 'account_type' => 'direct', 'channel' => 'rbl']);
     }
+
+    public function testRblXlsxStatementGeneration()
+    {
+//        $this->insertTestTransactions();
+
+        $response = $this->startTest();
+
+        $file_path = $response['file_path'];
+
+        $this->assertEquals(true, $this->verifyBankAccountStatementFileUrl($file_path));
+
+        # storage_path('files/filestore'), go to this location and get the file and convert to a processable XLSX
+
+        # verify all the things that you need
+
+    }
+
 
     /**
      * Case where the response from RBL is success
@@ -210,6 +228,18 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    /**
+     * Will check if the URL is correct.
+     * It should be : <beta-dashboard>/ufh/file/<file_id>
+     * @param $filePath
+     * @return True/False
+     */
+    protected function verifyBankAccountStatementFileUrl($filePath)
+    {
+        echo $filePath;
+        return preg_match('/.*\/ufh\/file\/(.*)/',$filePath);
     }
 
     protected function getRblDataResponse()
