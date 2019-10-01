@@ -20,10 +20,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
   const content = (
     <React.Fragment>
-      <div class="Field-label">
-        Amount
-        <span class="symbol--red">*</span>
-      </div>
+      <div class="Field-label">Amount</div>
       <div class="Field-content">
         <div class="Field-wrapper">
           {do {

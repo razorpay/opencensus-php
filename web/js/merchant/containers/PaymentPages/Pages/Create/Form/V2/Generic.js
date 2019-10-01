@@ -30,7 +30,7 @@ export const GenericField = ({ field, onEditField, infoTxt }) => {
     >
       <div class="Field-label">
         {field.title}
-        {field.required && <span class="symbol--red">*</span>}
+        {!field.required && <div class="text-optional">(Optional)</div>}
       </div>
       <div class="Field-content">
         <div
