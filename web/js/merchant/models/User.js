@@ -388,7 +388,6 @@ export default class User {
   }
 
   get isPPV3Enabled() {
-    return true;
     return this.getExpStatus('paymentpages_v3');
   }
 
