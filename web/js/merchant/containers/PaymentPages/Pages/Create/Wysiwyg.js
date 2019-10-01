@@ -468,15 +468,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           item: {
             name: 'Amount',
             description: '',
-            amount: amount || null,
+            amount: amount ? rupeesToPaise(amount) : null,
             currency: currency,
           },
           settings: {
             position: '0', // Always 0 for V2. Also, for udf fields in V2, position is already starting from 1 (via ix + 1 on top)
           },
-          mandatory: !!amount,
+          mandatory: true, // Item is always mandatory
           stock: quantity,
-          min_purchase: settings.allow_multiple_units ? 0 : null, // 0 => Treating this amount item as Counter
+          min_purchase: settings.allow_multiple_units ? 1 : null, // 0 => Treating this amount item as Counter
         },
       ];
     }
