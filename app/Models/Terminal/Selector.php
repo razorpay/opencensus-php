@@ -328,14 +328,14 @@ class Selector extends Base\Core
 
                 }
 
-                if (count($sortedTerminals) === count($newSortedTerminals))
+                if (count($newSortedTerminals) > 0)
                 {
                     $sortedTerminals = $newSortedTerminals;
                 }
                 else
                 {
                     $this->trace->error(
-                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR,
+                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
                         [
                             'input_terminals'    => $sortedTerminals,
                             'sorted_terminals_from_smart_routing' => $newSortedTerminals,
