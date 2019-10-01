@@ -42,28 +42,6 @@ final class Metric
     const DASHBOARD  = 'dashboard';
     const IS_BANKING = 'is_banking';
 
-    /**
-     * List of status which have a count metric associated with them
-     * @var array
-     */
-    protected static $statusListForCountMetrics = [
-        Status::QUEUED,
-        Status::PENDING,
-        Status::REJECTED,
-        Status::CANCELLED,
-        Status::CREATED,
-        Status::INITIATED,
-        Status::FAILED,
-        Status::REVERSED,
-        Status::PROCESSED,
-    ];
-
-    protected static $internalStatusChangeFunctionName = [
-        Status::CREATED => [
-            Status::QUEUED  => 'pushQueuedMetrics'
-        ]
-    ];
-
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)
     {
         $currentStatus = $payout->getStatus();
@@ -77,9 +55,14 @@ final class Metric
                 Status::validateStatusUpdate($currentStatus, $previousStatus);
             }
 
-            $functionName = self::getFunctionNameToCall($currentStatus, $previousStatus, $isInternalChange);
+            $functionName = self::getFunctionNameToCall($currentStatus, $previousStatus);
 
-            self::$functionName($payout);
+            if ($functionName !== null)
+            {
+                self::$functionName($payout);
+            }
+
+            self::pushCountMetrics($payout);
         }
         catch (\Throwable $ex)
         {
@@ -95,24 +78,14 @@ final class Metric
         }
     }
 
-    protected static function getFunctionNameToCall(
-        string $currentStatus,
-        string $previousStatus = null,
-        bool $isInternalChange = false)
+    protected static function getFunctionNameToCall(string $currentStatus, string $previousStatus = null)
     {
-        if ($isInternalChange === true)
+        if ($previousStatus === null)
         {
-            return self::$internalStatusChangeFunctionName[$previousStatus][$currentStatus];
+            return null;
         }
 
-        $functionName = 'push';
-
-        if ($previousStatus !== null)
-        {
-            $functionName .= ucfirst($previousStatus) . 'To';
-        }
-
-        $functionName .= ucfirst($currentStatus) . 'Metrics';
+        $functionName = 'push' . ucfirst($previousStatus) . 'To' . ucfirst($currentStatus) . 'Metrics';
 
         return $functionName;
     }
@@ -121,85 +94,22 @@ final class Metric
     {
         $currentStatus = $payout->getStatus();
 
-        if (in_array($currentStatus, self::$statusListForCountMetrics, true) === false)
+        $metricConstantKey = 'PAYOUT_' . strtoupper($currentStatus) . '_TOTAL';
+
+        $metricConstantValue = constant("self::{$metricConstantKey}");
+
+        $extraDimensions = [];
+
+        if (in_array($currentStatus, [Status::REVERSED, Status::FAILED], true) === true)
         {
-            return;
+            $extraDimensions = [
+                Entity::FAILURE_REASON => $payout->getFailureReason(),
+            ];
         }
 
-        $functionName = 'push' . ucfirst($currentStatus) . 'Metrics';
-
-        self::$functionName($payout);
-    }
-
-    protected static function pushCreatedMetrics(Entity $payout)
-    {
-        $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_CREATED_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushInitiatedMetrics(Entity $payout)
-    {
-        $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_INITIATED_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushRejectedMetrics(Entity $payout)
-    {
-        $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_REJECTED_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushCancelledMetrics(Entity $payout)
-    {
-        $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_CANCELLED_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushPendingMetrics(Entity $payout)
-    {
-        $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_PENDING_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushProcessedMetrics(Entity $payout)
-    {
-        $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_PROCESSED_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushQueuedMetrics(Entity $payout)
-    {
-        $metricDimensions = self::getMetricDimensions($payout);
-
-        app('trace')->count(self::PAYOUT_QUEUED_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushFailedMetrics(Entity $payout)
-    {
-        $extraDimensions = [
-            Entity::FAILURE_REASON => $payout->getFailureReason(),
-        ];
-
         $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
 
-        app('trace')->count(self::PAYOUT_FAILED_TOTAL, $metricDimensions);
-    }
-
-    protected static function pushReversedMetrics(Entity $payout)
-    {
-        $extraDimensions = [
-            Entity::FAILURE_REASON => $payout->getFailureReason(),
-        ];
-
-        $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
-
-        app('trace')->count(self::PAYOUT_REVERSED_TOTAL, $metricDimensions);
+        app('trace')->count($metricConstantValue, $metricDimensions);
     }
 
     protected static function pushQueuedToCreatedMetrics(Entity $payout)
@@ -211,8 +121,6 @@ final class Metric
             self::PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushQueuedToCancelledMetrics(Entity $payout)
@@ -224,8 +132,6 @@ final class Metric
             self::PAYOUT_QUEUED_TO_CANCELLED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushPendingToRejectedMetrics(Entity $payout)
@@ -237,8 +143,6 @@ final class Metric
             self::PAYOUT_PENDING_TO_REJECTED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushPendingToQueuedMetrics(Entity $payout)
@@ -250,8 +154,6 @@ final class Metric
             self::PAYOUT_PENDING_TO_QUEUED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushPendingToCreatedMetrics(Entity $payout)
@@ -263,8 +165,6 @@ final class Metric
             self::PAYOUT_PENDING_TO_CREATED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     /**
@@ -285,8 +185,6 @@ final class Metric
             self::PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushCreatedToFailedMetrics(Entity $payout)
@@ -302,8 +200,6 @@ final class Metric
             self::PAYOUT_CREATED_TO_FAILED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushInitiatedToReversedMetrics(Entity $payout)
@@ -319,8 +215,6 @@ final class Metric
             self::PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushInitiatedToFailedMetrics(Entity $payout)
@@ -336,8 +230,6 @@ final class Metric
             self::PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS,
             $initiatedToFailedTime,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushInitiatedToProcessedMetrics(Entity $payout)
@@ -349,8 +241,6 @@ final class Metric
             self::PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function pushProcessedToReversedMetrics(Entity $payout)
@@ -366,8 +256,6 @@ final class Metric
             self::PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
-
-        self::pushCountMetrics($payout);
     }
 
     protected static function getMetricDimensions(Entity $payout, array $extra = []): array

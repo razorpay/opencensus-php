@@ -81,20 +81,6 @@ class Status
     ];
 
     /**
-     * This contains a status map that keeps mapping of an internal status change.
-     * This ideally should never get committed to the db, it's just an intermittent state change
-     *
-     * TODO: This is a temporary fix, need to fix this later properly
-     *
-     * @var array
-     */
-    protected static $internalFromToStatusMap = [
-        self::CREATED => [
-            self::QUEUED,
-        ],
-    ];
-
-    /**
      * These statuses have corresponding timestamps column in payout
      *
      * @var array
@@ -230,19 +216,4 @@ class Status
                 ]);
         }
     }
-
-    /**
-     * Returns true if status change is internal
-     *
-     * @param string $currentStatus
-     * @param string|null $previousStatus
-     * @return bool
-     */
-    public static function isInternalStatusUpdate(string $currentStatus, string $previousStatus = null)
-    {
-        $nextStatusList = self::$internalFromToStatusMap[$previousStatus] ?? [];
-
-        return in_array($currentStatus, $nextStatusList, true);
-    }
-
 }

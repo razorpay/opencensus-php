@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
 
 class Base extends DSBase

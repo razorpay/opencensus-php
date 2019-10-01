@@ -18,6 +18,8 @@ class Base extends FundAccountPayout\Base
 
         if ($queued === false)
         {
+            $payout->setStatus(Status::CREATED);
+
             $this->createFundTransferAttempt($payout, $ftaAccount);
         }
     }
