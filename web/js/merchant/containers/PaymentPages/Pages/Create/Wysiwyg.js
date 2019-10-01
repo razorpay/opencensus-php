@@ -463,20 +463,22 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     } else {
       // Preparing the V2 request payload in V3 format
-      reqPayload.payment_page_items = {
-        item: {
-          name: 'Amount',
-          description: '',
-          amount: amount || null,
-          currency: currency,
+      reqPayload.payment_page_items = [
+        {
+          item: {
+            name: 'Amount',
+            description: '',
+            amount: amount || null,
+            currency: currency,
+          },
+          settings: {
+            position: '0', // Always 0 for V2. Also, for udf fields in V2, position is already starting from 1 (via ix + 1 on top)
+          },
+          mandatory: !!amount,
+          stock: quantity,
+          min_purchase: settings.allow_multiple_units ? 0 : null, // 0 => Treating this amount item as Counter
         },
-        settings: {
-          position: '0', // Always 0 for V2. Also, for udf fields in V2, position is already starting from 1 (via ix + 1 on top)
-        },
-        mandatory: !!amount,
-        stock: quantity,
-        min_purchase: settings.allow_multiple_units ? 0 : null, // 0 => Treating this amount item as Counter
-      };
+      ];
     }
 
     // console.log('REQ PAYLOAD...', reqPayload);
