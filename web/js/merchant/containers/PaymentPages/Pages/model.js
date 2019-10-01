@@ -1,4 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
+import { snakeToTitleCase } from 'common/util';
 
 function pruneReqPayload(reqPayload) {
   if (reqPayload.amount) {
@@ -127,4 +128,45 @@ export function sendLink(id, data) {
     method: 'post',
     data: reqPayload,
   });
+}
+
+export function exportReportCSV(user, paymentPageEntity) {
+  const reqPayload = {
+    generated_by: user.current,
+    start_time: 1569938247, // Any random time before deployment of this feature
+    end_time: new Date().getTime() / 1000, // Current time
+    templateoverride: prepareTemplate(paymentPageEntity),
+  };
+
+  return merchantFetch({
+    url: 'reporting/logs',
+    method: 'post',
+    data: reqPayload,
+  });
+}
+
+export function prepareTemplate(paymentPageEntity) {
+  const UDF_SCHEMA = JSON.parse(paymentPageEntity.settings.udf_schema);
+  const udfKeys = {};
+
+  UDF_SCHEMA.forEach(udf => {
+    udfKeys[udf.name] = [snakeToTitleCase(udf.name)];
+  });
+
+  const templateoverride = {
+    filters: {
+      payment_links: {
+        id: {
+          op: 'IN',
+          values: [paymentPageEntity.id],
+        },
+      },
+    },
+    //name of column should be notes key
+    //order of these column doesnt matter right now
+    output_fields: Object.keys(udfKeys),
+    fields_map: udfKeys,
+  };
+
+  return templateoverride;
 }
