@@ -46,7 +46,10 @@ class DefaultDataRetriever extends AbstractAPIDataRetriever
 
         foreach ($responseList as $key => $value)
         {
-            $output[$key] =  $value['data']['records'];
+            if (isset($value['data']['records']))
+            {
+                $output[$key] =  $value['data']['records'];
+            }
         }
 
         return $output;

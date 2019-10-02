@@ -63,7 +63,8 @@ class Service extends Base\Service
         catch (\Throwable $e)
         {
             if (($this->isManualRequest($input) === true) or
-                ($this->isLambdaRequest() === true))
+                ($this->isLambdaRequest() === true) or
+                ($this->isCrawlerRequest($input) === true))
             {
                 $this->trace->traceException(
                     $e, Trace::ERROR, TraceCode::RECON_ALERT);

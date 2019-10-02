@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\RequestProcessor\Retriever\Impl;
 
 use App;
+use RZP\Exception\ReconciliationException;
 use RZP\Models\FileStore\Creator;
 use RZP\Models\FileStore\Format;
 use RZP\Models\FileStore\Store;
@@ -68,10 +69,32 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
         $responseList = $this->refactorResponse($responseList);
 
-        foreach ($responseList as $key => $value)
+        if (empty($responseList) === true)
         {
-            $fileName = $key.'_'.$input[self::GATEWAY].'_reconcile_'.date('Y-m-d_h:i:s');
-            array_push($files, $this->prepareFile($fileName, $value));
+            $this->trace->info(TraceCode::GATEWAY_RECONCILE_RESPONSE, ['entered']);
+            throw new ReconciliationException(
+                'Response records missing for gateway.',
+                [
+                    'gateway' => $input[self::GATEWAY]
+                ]);
+        }
+
+        try
+        {
+            foreach ($responseList as $key => $value)
+            {
+                $fileName = $key.'_'.$input[self::GATEWAY].'_reconcile_'.date('Y-m-d_h:i:s');
+                array_push($files, $this->prepareFile($fileName, $value));
+            }
+        }
+        catch (\Exception $e)
+        {
+            throw new ReconciliationException(
+                'Exception in file generation for gateway.',
+                [
+                    'gateway' => $input[self::GATEWAY],
+                    'message' => $e->getMessage(),
+                ]);
         }
 
         return $files;

@@ -4,7 +4,7 @@ namespace RZP\Reconciliator\RequestProcessor\Retriever\Impl;
 
 use App;
 
-class PaginatedDataRetriever extends AbstractAPIDataRetriever
+class PaginatedDataRetriever extends DefaultDataRetriever
 {
 
     protected $currentPage = 1;
@@ -53,17 +53,5 @@ class PaginatedDataRetriever extends AbstractAPIDataRetriever
         $this->currentPage = $this->currentPage + 1;
 
         return $request;
-    }
-
-    protected function refactorResponse(array $responseList): array
-    {
-        $output = [];
-
-        foreach ($responseList as $key => $value)
-        {
-            $output[$key] =  $value['data']['records'];
-        }
-
-        return $output;
     }
 }

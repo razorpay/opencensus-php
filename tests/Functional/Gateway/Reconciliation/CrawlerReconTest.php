@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Lambda;
 
 use Excel;
 use Config;
+use RZP\Exception\ReconciliationException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Batch\Status;
 use RZP\Reconciliator\RequestProcessor\Base;
@@ -30,7 +31,7 @@ class CrawlerReconTest extends TestCase
 
         $this->createNetbanking($payment['id'], 'CUB', 'S');
 
-        $this->reconcile('NetbankingCub');
+        $response = $this->reconcile('NetbankingCub');
 
         $gatewayEntity = $this->getDbLastEntity('netbanking');
 
@@ -41,6 +42,24 @@ class CrawlerReconTest extends TestCase
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
 
         //$this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testCubCrawlerReconciliationNoRecords()
+    {
+        $this->gateway = 'netbanking_cub';
+
+        $reconException  = false;
+        
+        try
+        {
+            $this->reconcile('NetbankingCub', ['return_no_records' => true]);
+        }
+        catch (ReconciliationException $e)
+        {
+            $reconException = true;
+        }
+
+        $this->assertTrue($reconException);
     }
 
     protected function createPayment($gateway, $attributes = [])
@@ -73,12 +92,13 @@ class CrawlerReconTest extends TestCase
 
 
 
-    protected function reconcile($gateway)
+    protected function reconcile($gateway, $metaInfo = null)
     {
         $this->ba->cronAuth();
 
         $input = [
             'gateway'          => $gateway,
+            'meta_data'         => $metaInfo,
         ];
 
         $request = [
