@@ -40,6 +40,7 @@ class Validator extends Base\Validator
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
         Entity::COUPON_CODE                 => 'sometimes|string',
+        Constants::PARTNER_INTENT           => 'sometimes|boolean',
     ];
 
     protected static $editRules = [

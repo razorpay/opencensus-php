@@ -102,6 +102,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        $this->savePartnerIntentInSettings($input, $merchant);
+
         $this->addMerchantSupportingEntities($merchant);
 
         $this->syncHeimdallRelatedEntities($merchant, $input, true);
@@ -226,6 +228,27 @@ class Core extends Base\Core
         (new Detail\Core)->createMerchantDetails($merchant);
 
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
+    }
+
+    /**
+     * Saves partner_intent if present in settings table
+     *
+     * @param array $input
+     * @param array $merchant
+     *
+     */
+    protected function savePartnerIntentInSettings(array $input, Entity $merchant)
+    {
+        if (isset($input[Constants::PARTNER_INTENT]) and $input[Constants::PARTNER_INTENT] === true)
+        {
+            $data = [
+                Constants::PARTNER_INTENT       => true,
+            ];
+
+            Accessor::for($merchant, Constants::PARTNER)
+                ->upsert($data)
+                ->save();
+        }
     }
 
     /**

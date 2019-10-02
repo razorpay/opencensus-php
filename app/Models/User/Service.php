@@ -123,8 +123,15 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 Merchant\Entity::EMAIL => $user[Entity::EMAIL],
-                Merchant\Entity::NAME  => $businessName
+                Merchant\Entity::NAME  => $businessName,
             ];
+
+            if (isset($input[Merchant\Constants::PARTNER_INTENT]))
+            {
+                $merchantInputData[
+                    Merchant\Constants::PARTNER_INTENT
+                ] = $input[Merchant\Constants::PARTNER_INTENT];
+            }
 
             if (empty($tokenData) === false)
             {

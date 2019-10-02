@@ -36,6 +36,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA               => 'required_without:captcha_disable',
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
         Entity::SETTINGS              => 'nullable|associative_array',
+        Merchant\Constants::PARTNER_INTENT     => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
