@@ -60,37 +60,43 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
         $responseList = [];
 
-        while (empty($request = $this->getNextRequest($input, $request, $response)) === false)
-        {
-            $terminal = $this->fetchTerminal($input, $request);
-            list($key, $response) = $this->processRequest($input, $request, $terminal);
-            $responseList[$key] = $response;
-        }
-
-        $responseList = $this->refactorResponse($responseList);
-
-        if (empty($responseList) === true)
-        {
-            $this->trace->info(TraceCode::GATEWAY_RECONCILE_RESPONSE, ['entered']);
-            throw new ReconciliationException(
-                'Response records missing for gateway.',
-                [
-                    'gateway' => $input[self::GATEWAY]
-                ]);
-        }
-
         try
         {
+
+            while (empty($request = $this->getNextRequest($input, $request, $response)) === false)
+            {
+                $terminal = $this->fetchTerminal($input, $request);
+                list($key, $response) = $this->processRequest($input, $request, $terminal);
+                $responseList[$key] = $response;
+            }
+
+            $responseList = $this->refactorResponse($responseList);
+
+            if (empty($responseList) === true)
+            {
+                $this->trace->info(TraceCode::GATEWAY_RECONCILE_RESPONSE, ['entered']);
+                throw new ReconciliationException(
+                    'Response records missing for gateway.',
+                    [
+                        'gateway' => $input[self::GATEWAY]
+                    ]);
+            }
+
             foreach ($responseList as $key => $value)
             {
                 $fileName = $key.'_'.$input[self::GATEWAY].'_reconcile_'.date('Y-m-d_h:i:s');
                 array_push($files, $this->prepareFile($fileName, $value));
             }
+
+        }
+        catch (ReconciliationException $re)
+        {
+            throw $re;
         }
         catch (\Exception $e)
         {
             throw new ReconciliationException(
-                'Exception in file generation for gateway.',
+                'Exception in DataRetriever for gateway.',
                 [
                     'gateway' => $input[self::GATEWAY],
                     'message' => $e->getMessage(),
