@@ -203,7 +203,7 @@ app
           // for individual upon press take him to step 4
           if (
             $scope.signup.merchantData.business_type == 11 ||
-            $scope.signup.data.seettings.partner_intent == true
+            $scope.signup.data.settings.partner_intent == true
           ) {
             $scope.signup.currentSubStep = 0;
           } else {
@@ -584,7 +584,7 @@ app
           if (
             $scope.signup.currentSubStep == 0 &&
             (reqPayload['business_type'] == 11 ||
-              $scope.signup.data.seettings.partner_intent)
+              $scope.signup.data.settings.partner_intent)
           ) {
             $scope.signup.currentSubStep = $scope.signup.currentSubStep + 3;
           } else {
@@ -969,7 +969,7 @@ app
         if (!merchantData.business_type) {
           $scope.signup.currentSubStep = 0;
         } else if (
-          $scope.signup.data.seettings.partner_intent ||
+          $scope.signup.data.settings.partner_intent ||
           merchantData.business_type == 11
         ) {
           $scope.signup.currentSubStep = 3;
