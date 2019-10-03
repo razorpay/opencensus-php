@@ -19,6 +19,8 @@ class Core extends Base\Core
 {
     const STORE_TYPE = 'transactions';
 
+    const FILE_ID    = 'file_id';
+
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -115,7 +117,7 @@ class Core extends Base\Core
 
         $ufhResponse = $this->uploadTemporaryFileToStore($temporaryFilePath, $bankingAccount);
 
-        $fileAccessUrl = $this->getDashboardFileAccessUrl($ufhResponse['file_id']);
+        $fileAccessUrl = $this->getDashboardFileAccessUrl($ufhResponse);
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
@@ -134,9 +136,13 @@ class Core extends Base\Core
         }
     }
 
-    protected function getDashboardFileAccessUrl($fileId)
+    protected function getDashboardFileAccessUrl($ufhResponse)
     {
-        return $this->config['applications.dashboard.url'] . 'ufh/file/' . $fileId;
+        if(empty($ufhResponse))
+        {
+            return '';
+        }
+        return $this->config['applications.dashboard.url'] . 'ufh/file/' . $ufhResponse[self::FILE_ID];
     }
 
     protected function uploadTemporaryFileToStore($pathToTemporaryFile, BankingAccount\Entity $entity)
@@ -145,10 +151,31 @@ class Core extends Base\Core
 
         $uploadedFileInstance = $this->getUploadedFileInstance($pathToTemporaryFile);
 
-        $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
-                                                     $name = File::name($pathToTemporaryFile),
-                                                     self::STORE_TYPE,
-                                                     $entity);
+        $response = '';
+
+        try
+        {
+            $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
+                                                         $name = File::name($pathToTemporaryFile),
+                                                         self::STORE_TYPE,
+                                                         $entity);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+                [
+                    'message' => 'UFH File Upload Failed',
+                    'error'   => $e->getMessage()
+                ]);
+        }
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+            [
+                'message' => 'UFH Response',
+                'error'   => $response
+            ]);
+
         return $response;
     }
 
