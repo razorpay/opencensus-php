@@ -45,7 +45,7 @@ class AuthFilter extends Terminal\Auth\Base
                 break;
 
             case Payment\AuthType::PIN:
-                return ($payment->terminal->isPin() === true);
+                return $this->canRunPinFlow($payment);
                 break;
 
             case Payment\AuthType::SKIP:
@@ -105,6 +105,19 @@ class AuthFilter extends Terminal\Auth\Base
            ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true) and
            (Payment\Gateway::supportsHeadlessBrowser($payment->getGateway(), $payment->card->iinRelation->getNetworkCode()) === true))
 
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunPinFlow(Payment\Entity $payment): bool
+    {
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true) and
+            ($payment->card->iinRelation !== null) and
+            ($payment->card->iinRelation->supports(IIN\Flow::PIN) === true) and
+            ($payment->terminal->isPin() === true))
         {
             return true;
         }
