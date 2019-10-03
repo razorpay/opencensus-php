@@ -48,16 +48,11 @@ final class Metric
 
         try
         {
-            $isInternalChange = Status::isInternalStatusUpdate($currentStatus, $previousStatus);
-
-            if ($isInternalChange === false)
-            {
-                Status::validateStatusUpdate($currentStatus, $previousStatus);
-            }
+            Status::validateStatusUpdate($currentStatus, $previousStatus);
 
             if (empty($previousStatus) === false)
             {
-                $functionName = self::getFunctionNameToCall($currentStatus, $previousStatus);
+                $functionName = self::getFunctionNameToCallForStatusChange($currentStatus, $previousStatus);
 
                 self::$functionName($payout);
             }
@@ -78,7 +73,7 @@ final class Metric
         }
     }
 
-    protected static function getFunctionNameToCall(string $currentStatus, string $previousStatus)
+    protected static function getFunctionNameToCallForStatusChange(string $currentStatus, string $previousStatus)
     {
         $functionName = 'push' . ucfirst($previousStatus) . 'To' . ucfirst($currentStatus) . 'Metrics';
 
@@ -93,14 +88,7 @@ final class Metric
 
         $metricConstantValue = constant("self::{$metricConstantKey}");
 
-        $extraDimensions = [];
-
-        if (in_array($currentStatus, [Status::REVERSED, Status::FAILED], true) === true)
-        {
-            $extraDimensions = [
-                Entity::FAILURE_REASON => $payout->getFailureReason(),
-            ];
-        }
+        $extraDimensions = self::getMetricExtraDimensions($payout);
 
         $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
 
@@ -268,6 +256,22 @@ final class Metric
             ];
 
         return $dimensions;
+    }
+
+    protected static function getMetricExtraDimensions(Entity $payout)
+    {
+        $currentStatus = $payout->getStatus();
+
+        switch ($currentStatus)
+        {
+            case Status::REVERSED:
+            case Status::FAILED:
+                return [
+                    Entity::FAILURE_REASON => $payout->getFailureReason(),
+                ];
+            default:
+                return [];
+        }
     }
 
     protected static function getSource(Entity $payout)
