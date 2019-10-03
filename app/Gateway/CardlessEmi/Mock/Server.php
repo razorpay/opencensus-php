@@ -176,6 +176,25 @@ class Server extends Base\Mock\Server
         return $this->makeJsonResponse($content);
     }
 
+    public function verifyRefund($input)
+    {
+        $array = json_decode($this->input, true);
+
+        $content = [
+            'entity'              => ResponseFields::REFUND,
+            'rzp_refund_id'       => $array['rzp_refund_id'],
+            'provider_payment_id' => 9876543,
+            'provider_refund_id'  => 1234567,
+            'status'              => 'success'
+        ];
+
+        $this->content($content, 'verify_refund');
+
+        $content = json_encode($content);
+
+        return $this->makeJsonResponse($content);
+    }
+
     public function makeJsonResponse($json)
     {
         $response = $this->makeResponse($json);

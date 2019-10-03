@@ -118,6 +118,8 @@ class Entity extends Base\PublicEntity
 
     const PAYER_NAME        = 'payer_name';
 
+    const VIRTUAL_ACCOUNT   = 'virtual_account';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -170,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
+        self::VIRTUAL_ACCOUNT,
         self::CREATED_AT,
         self::TOKEN
     ];
@@ -244,6 +247,11 @@ class Entity extends Base\PublicEntity
                         'entity',
                         Table::ENTITY_OFFER)
                     ->withTimestamps();
+    }
+
+    public function virtualAccount()
+    {
+        return $this->morphOne('RZP\Models\VirtualAccount\Entity', 'entity');
     }
 
     public function associateOffer(Offer\Entity $offer)

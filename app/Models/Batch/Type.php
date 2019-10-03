@@ -229,7 +229,8 @@ class Type
     public static $batchTypeMigrationCompleted = [
         self::PAYMENT_LINK,
         self::PAYOUT,
-        self::FUND_ACCOUNT
+        self::FUND_ACCOUNT,
+        self::IIN_NPCI_RUPAY
     ];
 
     public static function exists(string $type)

@@ -9,17 +9,25 @@ use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 return [
 
     'testGetMerchantDetails' => [
-        'request' => [
-            'url' => '/merchant/activation',
+        'request'  => [
+            'url'    => '/merchant/activation',
             'method' => 'GET'
         ],
         'response' => [
             'content' => [
                 'verification' => [
-                    'status' => 'disabled',
+                    'status'          => 'disabled',
                     'disabled_reason' => 'required_fields',
                 ],
-                'can_submit' => false,
+                "documents"    => [
+                    'Address_proof_url' => [
+                        [
+                            "id"            => "DM6dWd1tzUfbnM",
+                            "file_store_id" => "DM6dXJfU4WzeAF",
+                        ],
+                    ],
+                ],
+                'can_submit'   => false,
             ],
         ],
     ],

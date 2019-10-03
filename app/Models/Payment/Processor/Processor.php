@@ -1824,7 +1824,20 @@ class Processor
                     $this->persistCardDetails($gateway, $action, $gatewayData);
                 }
 
-                $gatewayData['cps_route'] = true;
+                //Temp changes for yesb as we need to route only authorize and verify to cps not callback.
+                if (($action === Action::CALLBACK) and ($gateway === Payment\Gateway::NETBANKING_YESB))
+                {
+                    $gatewayData['cps_route'] = false;
+
+                    $this->trace->info(TraceCode::GATEWAY_CPS_SWITCH_ROUTE_CALLBACK, [
+                        'payment_id'             => $this->payment->getId(),
+                        'gateway_cps_route'      => false,
+                    ]);
+                }
+                else
+                {
+                    $gatewayData['cps_route'] = true;
+                }
             }
             // Else if this payment was earlier authorized by CPS then disable the cps_route flag
             else if ($action !== Action::AUTHORIZE)

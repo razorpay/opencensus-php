@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicCollection;
 
 
@@ -103,9 +104,11 @@ class Repository extends Transaction\Repository
     {
         $id = $params[Entity::ID];
 
-        Entity::stripSignOrFail($id);
+        $idColumn = $this->dbColumn(Entity::ID);
 
-        $query->where(Entity::ID, $id);
+        Entity::verifyIdAndStripSign($id);
+
+        $query->where($idColumn, $id);
     }
 
     /**

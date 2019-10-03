@@ -23,6 +23,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Action as Action;
@@ -951,18 +952,19 @@ class Core extends Base\Core
 
         $totalFields = count($validationFields);
 
+        $documentsResponse = (new Document\Core())->documentResponse($merchant->getId());
+
+        $response['documents'] = $documentsResponse;
+
         foreach ($validationFields as $key)
         {
             //
             // Add the key to the list of the required fields if:
-            // - The key that needs to be validated is not present in the merchant details array
-            // - Or, if the value for the key is null
-            // - Or, if the value is not a boolean and is empty (empty(false) => true)
+            //- key is not present in  merchant detail
+            //- and if the key that needs to be validated is not present in the merchant Document array
             //
-            if ((array_key_exists($key, $merchantDetailsArr) === false) or
-                (is_null($merchantDetailsArr[$key]) === true) or
-                ((is_bool($merchantDetailsArr[$key]) !== true) and
-                 (empty($merchantDetailsArr[$key]) === true)))
+            if (($this->isKeyNotInMerchantDetail($key, $merchantDetailsArr) === true) and
+                (array_key_exists($key, $documentsResponse) === false))
             {
                 $requiredFields[] = $key;
             }
@@ -998,6 +1000,25 @@ class Core extends Base\Core
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
         return $response;
+    }
+
+    /**
+     * Checks that
+     * The key that needs to be validated is not present in the merchant details array
+     * Or, if the value for the key is null
+     * Or, if the value is not a boolean and is empty (empty(false) => true)
+     *
+     * @param string $key
+     * @param array  $merchantDetailsArr
+     *
+     * @return bool
+     */
+    private function isKeyNotInMerchantDetail(string $key, array $merchantDetailsArr): bool
+    {
+        return ((array_key_exists($key, $merchantDetailsArr) === false) or
+                (is_null($merchantDetailsArr[$key]) === true) or
+                ((is_bool($merchantDetailsArr[$key]) !== true) and
+                 (empty($merchantDetailsArr[$key]) === true)));
     }
 
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array

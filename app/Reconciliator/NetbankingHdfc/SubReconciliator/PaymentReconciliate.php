@@ -21,6 +21,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             $this->setFailUnprocessedRow(false);
 
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'payment_id' => $row[Constants::BANK_PAYMENT_ID] ?? $row[Constants::COLUMN_PAYMENT_ID] ?? null,
+                    'gateway'    => $this->gateway
+                ]);
+
             return null;
         }
 

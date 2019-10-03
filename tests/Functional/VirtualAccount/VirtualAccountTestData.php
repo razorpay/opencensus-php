@@ -84,13 +84,86 @@ return [
         'status'          => 'active',
         'amount_expected' => 1000000,
         'amount_paid'     => 0,
-        'customer_id'     => NULL,
+        'customer_id'     => null,
         'receivers'       => [
             [
                 'entity'         => 'bank_account',
                 'ifsc'           => 'RAZR0000001',
-                'bank_name'      => NULL,
+                'bank_name'      => null,
                 'name'           => 'Test Merchant',
+            ],
+        ],
+    ],
+
+    'testFetchOrderWithVirtualAccountExpand' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [
+                'expand' => [
+                    'virtual_account',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'order',
+                'amount'          => 1000000,
+                'amount_paid'     => 0,
+                'amount_due'      => 1000000,
+                'currency'        => 'INR',
+                'offer_id'        => null,
+                'status'          => 'created',
+                'attempts'        => 0,
+                'notes'           => [],
+                'virtual_account' => [
+                    'name'            => 'Test Merchant',
+                    'entity'          => 'virtual_account',
+                    'status'          => 'active',
+                    'description'     => null,
+                    'amount_expected' => 1000000,
+                    'notes'           => [],
+                    'amount_paid'     => 0,
+                    'customer_id'     => null,
+                    'receivers'       => [
+                        [
+                            'entity'    => 'bank_account',
+                            'ifsc'      => 'RAZR0000001',
+                            'bank_name' => null,
+                            'name'      => 'Test Merchant',
+                        ],
+                    ],
+                    'close_by'        => null,
+                    'closed_at'       => null,
+                ],
+            ],
+        ]
+    ],
+
+    'testFetchOrderWithoutVirtualAccountExpand' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [
+                'expand' => [
+                    'virtual_account',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'order',
+                'virtual_account' => null,
+            ],
+        ],
+    ],
+
+    'testFetchOrderWithVirtualAccountNoExpand' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'order',
             ],
         ],
     ],
@@ -102,12 +175,12 @@ return [
         'amount_expected' => 1005900,
         'notes'           => [],
         'amount_paid'     => 0,
-        'customer_id'     => NULL,
+        'customer_id'     => null,
         'receivers'       => [
             [
                 'entity'         => 'bank_account',
                 'ifsc'           => 'RAZR0000001',
-                'bank_name'      => NULL,
+                'bank_name'      => null,
                 'name'           => 'Test Merchant',
             ],
         ],

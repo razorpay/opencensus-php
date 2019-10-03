@@ -177,7 +177,7 @@ final class Route
         'iin_edit'                                 => ['put',      'iins/{id}',                                      'IinController@editIin'                                             ],
         'iin_edit_bulk'                            => ['patch',    'iins/bulk',                                      'IinController@editIinBulk'                                         ],
         'iin_generate_post'                        => ['post',     'iins/import/generate',                           'IinController@postIinGenerate'                                     ],
-        'iin_batch_process_record'                 => ['post',     'iins/{type}/process',                            'IinController@processRecord'                                       ],
+        'iin_batch_process_record'                 => ['post',     'iins/{type}/process',                            'IinController@processRecords'                                       ],
         'merchant_public_get_banks'                => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                          => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                       => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
@@ -1207,6 +1207,8 @@ final class Route
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
         'merchant_document_upload'                => ['post',     'merchant/documents/upload',                                 'DocumentController@uploadMerchantDocuments'                ],
+        'merchant_document_fetch'                 => ['get',      'merchant/documents',                                        'DocumentController@getMerchantDocuments'                   ],
+        'merchant_document_admin_fetch'           => ['get',      'merchant/documents/{mid}',                                  'DocumentController@getMerchantDocumentsByAdmin'            ],
 
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -1714,6 +1716,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'merchant_document_fetch',
         'merchant_document_upload',
         'merchant_document_delete',
         'get_es_pricing_merchant',
@@ -1924,6 +1927,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_document_admin_fetch',
         'org_get',
         'org_get_multiple',
         'admin_fetch_merchant_ids_new',
@@ -2353,6 +2357,7 @@ final class Route
     ];
 
     public static $routePermission = [
+        'merchant_document_admin_fetch'            => '*',
         'group_create'                             => Permission::CREATE_GROUP,
         'admin_create'                             => Permission::CREATE_ADMIN,
         'group_get'                                => Permission::VIEW_GROUP,

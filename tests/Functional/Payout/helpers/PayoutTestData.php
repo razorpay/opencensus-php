@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -1330,6 +1331,61 @@ return [
                 'fees'            => 590,
                 'notes'           => [],
             ],
+        ],
+    ],
+
+    'testFetchMultiplePayoutsWithBankingProductParameter' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processed',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultiplePayoutsWithPrimaryProductParameter' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'primary',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The selected product is invalid.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'                 => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
 

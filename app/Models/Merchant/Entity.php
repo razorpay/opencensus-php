@@ -502,6 +502,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_MODEL) === FeeModel::PREPAID;
     }
 
+    public function isPostpaid()
+    {
+        return $this->getAttribute(self::FEE_MODEL) === FeeModel::POSTPAID;
+    }
+
     public function isLive()
     {
         return $this->getAttribute(self::LIVE);
@@ -536,7 +541,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
-      
+
     public function setRestricted(bool $restricted)
     {
         $this->setAttribute(self::RESTRICTED, $restricted);
