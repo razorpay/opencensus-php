@@ -55,10 +55,10 @@ final class Metric
                 Status::validateStatusUpdate($currentStatus, $previousStatus);
             }
 
-            $functionName = self::getFunctionNameToCall($currentStatus, $previousStatus);
-
-            if ($functionName !== null)
+            if (empty($previousStatus) === false)
             {
+                $functionName = self::getFunctionNameToCall($currentStatus, $previousStatus);
+
                 self::$functionName($payout);
             }
 
@@ -78,13 +78,8 @@ final class Metric
         }
     }
 
-    protected static function getFunctionNameToCall(string $currentStatus, string $previousStatus = null)
+    protected static function getFunctionNameToCall(string $currentStatus, string $previousStatus)
     {
-        if ($previousStatus === null)
-        {
-            return null;
-        }
-
         $functionName = 'push' . ucfirst($previousStatus) . 'To' . ucfirst($currentStatus) . 'Metrics';
 
         return $functionName;
@@ -174,12 +169,15 @@ final class Metric
     protected static function pushCreatedToInitiatedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
+
+        //
         // Since we are not storing the timestamp when the fta was initiated,
         // therefore we use the current timestamp
         // payout.created_at is the time of payout entity creation
         // payout.initiated_at is the time when the payout is is move to created state
         // This is useful for queued payouts, where status moves from queued -> created
-        $timeDuration     = Carbon::now()->getTimestamp() - $payout->getInitiatedAt();
+        //
+        $timeDuration = Carbon::now()->getTimestamp() - $payout->getInitiatedAt();
 
         app('trace')->histogram(
             self::PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS,
