@@ -83,7 +83,7 @@ class Gateway extends Base\Gateway
 
         $traceReq = [
             'method' => $request['method'],
-            'url' => $request['url'],
+            'url'    => $request['url'],
         ];
 
         $response = $this->sendGatewayRequest($request);

@@ -61,7 +61,6 @@ class ReconcileData extends Base\Mock\Server
 
     public function netbanking_cub($entities)
     {
-        $this->trace->info(TraceCode::GATEWAY_RECONCILE_REQUEST, [$entities]);
         if (isset($entities['reconRequest']['meta_data']['return_no_records'])){
             return [
                 'data'              => [
