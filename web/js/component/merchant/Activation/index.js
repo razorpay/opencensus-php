@@ -35,6 +35,16 @@ import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
 
+import FormFields from 'merchant/containers/Activation/L1FormMap';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { updateSession } from 'merchant/modules/session';
+import {
+  showInstantActivationSuccessModal,
+  showKYCDetailsModal,
+} from 'merchant/modules/home';
+import User from 'merchant/models/User';
+import { withRouter } from 'react-router-dom';
+
 /*
 *             Main-form        LA-form
 * Submited      E F ~S        ~E ~F ~S
@@ -170,6 +180,13 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_NAMES = mainFormFieldNamesMeta;
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
+
+      if (!props.user.instantActivation.isL1Submitted) {
+        FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
+        FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
+        FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
+        DOCUMENT_UPLOAD_STEP = null;
+      }
 
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
       FORM_TABS_CONTENT[1][3][0].options = ['--Select--'].concat(
@@ -955,6 +972,8 @@ export default class ActivationWizard extends React.Component {
 
     let isLastTab = activeTab == FORM_TABS.length - 1;
 
+    console.log({ isLastTab });
+
     let content;
     let documentContent; // Document content will always be shown so that upload progress is maintained in DOM
 
@@ -987,7 +1006,7 @@ export default class ActivationWizard extends React.Component {
       });
 
     let moreTabs = [];
-    if (!isFormSubmitted) {
+    if (this.props.user.instantActivation.isL1Submitted && !isFormSubmitted) {
       moreTabs.push(
         <li
           key="submit-tab"
@@ -1204,7 +1223,8 @@ export default class ActivationWizard extends React.Component {
 
                 {/* Action Button 2 */}
                 {isLastTab ||
-                  ((this.isLinkedAccountForm || !this.isIndividualTypeLock) && (
+                  (((this.isLinkedAccountForm || !this.isIndividualTypeLock) &&
+                    console.log('save-next')) || (
                     <Button.Primary
                       iconAfter="chevron-right"
                       onClick={this.next}
@@ -1216,14 +1236,22 @@ export default class ActivationWizard extends React.Component {
 
                 {/* Action Button 3 */}
                 {isLastTab &&
-                  !isFormSubmitted && (
+                  !this.props.user.instantActivation.isL1Submitted && (
+                    <Button.Primary onClick={this.saveCurrentTab}>
+                      Submit and Verify
+                    </Button.Primary>
+                  )}
+
+                {/* Action Button 4 */}
+                {/* {isLastTab &&
+                  !isFormSubmitted && this.props.user.instantActivation.isL1Submitted && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
                     >
                       Submit Form
                     </Button.Primary>
-                  )}
+                  )} */}
               </React.Fragment>
             )}
           </footer>
