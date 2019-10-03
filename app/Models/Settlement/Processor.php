@@ -57,7 +57,7 @@ class Processor extends Base\Core
 
         $this->mutex = $this->app['api.mutex'];
 
-        $this->debug = true;
+        $this->debug = false;
     }
 
     /**
@@ -131,6 +131,12 @@ class Processor extends Base\Core
 
         $merchantIds = $input['merchant_ids'] ?? [];
 
+        $params =[
+          'created_at'   => $input['created_at'] ?? null,
+          'settled_at'   => $input['settled_at'] ?? null,
+          'initiate_at'  => $input['initiated_at'] ?? null
+        ];
+
         list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
 
         $startTime = microtime(true);
@@ -146,9 +152,9 @@ class Processor extends Base\Core
 
         $data = $this->mutex->acquireAndRelease(
             $mutexResource,
-            function () use ($channel, $useQueue, $merchantIds)
+            function () use ($channel, $useQueue, $merchantIds, $params)
             {
-                return $this->processSettlements($channel, $useQueue, $merchantIds);
+                return $this->processSettlements($channel, $useQueue, $merchantIds, $params);
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -171,7 +177,7 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function processSettlements($channel, bool $useQueue, array $merchantIds)
+    protected function processSettlements($channel, bool $useQueue, array $merchantIds, array $params = [])
     {
         $this->trace->info(
             TraceCode::SETTLEMENT_INITIATING,
@@ -179,6 +185,7 @@ class Processor extends Base\Core
                 'timestamp'   => $this->setlTime,
                 'time'        => time(),
                 'using_queue' => $useQueue,
+                'params'      => $params,
             ]);
 
         $response = [];
@@ -187,7 +194,7 @@ class Processor extends Base\Core
         {
             if ($useQueue === true)
             {
-                $response = $this->createSettlementsAsync($merchantIds);
+                $response = $this->createSettlementsAsync($merchantIds, $params);
             }
             else
             {
@@ -199,7 +206,7 @@ class Processor extends Base\Core
                 }
                 else
                 {
-                    $setlResponse = $this->createSettlements($channel, $useQueue, $merchantIds);
+                    $setlResponse = $this->createSettlements($channel, $useQueue, $merchantIds, $params);
                 }
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
@@ -398,15 +405,16 @@ class Processor extends Base\Core
      * @param array $inMids
      * @param array $notInMids
      * @param boolean $useLimit
+     * @param array $params
      * @return mixed
      */
-    protected function fetchRequiredEntities(
-        int $settledAtCutOff, string $channel, array $inMids = [], array $notInMids = [], $useLimit = false)
+    protected function fetchRequiredEntities(int $settledAtCutOff, string $channel, array $inMids = [],
+        array $notInMids = [], $useLimit = false, array $params = [])
     {
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
 
         $txns = $this->repo->transaction->fetchUnsettledTransactions(
-                    $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit);
+                    $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit, $params);
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
@@ -446,12 +454,14 @@ class Processor extends Base\Core
      *
      * @param string $channel
      * @param array $merchantSettleToPartner
+     * @param array $params
      * merchants settling to partner bank account, key will be merchantId and value will be partner bank account id
      *
      * @return array
      * Returns array with keys settlement_count, attempt_count, txn_count
      */
-    protected function createSettlementEntities($groupedTxns, string $channel, array $merchantSettleToPartner): array
+    protected function createSettlementEntities(
+        $groupedTxns, string $channel, array $merchantSettleToPartner, array $params = []): array
     {
         $settlements        = new Base\PublicCollection;
         $setlAttempts       = new Base\PublicCollection;
@@ -474,7 +484,7 @@ class Processor extends Base\Core
                 null,
                 $customProperties);
 
-            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner);
+            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner, $params);
 
             if ($setl !== null)
             {
@@ -579,7 +589,7 @@ class Processor extends Base\Core
         return $mids;
     }
 
-    protected function createSettlementsAsync(array $merchantIds = []): array
+    protected function createSettlementsAsync(array $merchantIds = [], array $params = []): array
     {
         $bucketTimestamp = null;
 
@@ -589,14 +599,15 @@ class Processor extends Base\Core
             list($bucketTimestamp, $merchantIds) = (new Bucket\Core)->getMerchantIdsFromBucket();
         }
 
-        return $this->pushMerchantsToSettlementQueue($merchantIds, $bucketTimestamp);
+        return $this->pushMerchantsToSettlementQueue($merchantIds, $bucketTimestamp, $params);
     }
 
-    protected function createSettlements($channel, bool $useQueue, array $merchantIds = []): array
+    protected function createSettlements(
+        $channel, bool $useQueue, array $merchantIds = [], array $params = []): array
     {
         $skipMids = $this->getMerchantsToSkipForUsualSettlement();
 
-        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);
+        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, $merchantIds, $skipMids, false, $params);
 
         $merchantIds = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
@@ -604,7 +615,7 @@ class Processor extends Base\Core
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns, $merchantSettleToPartner);
 
-        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
+        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner, $params);
     }
 
     protected function createSettlementsForTestMode($channel): array
@@ -726,10 +737,12 @@ class Processor extends Base\Core
 
     /**
      * @param array  $merchantIds
-     * @param string $channel
+     * @param string $bucketTimestamp
+     * @param array $params
      * @return array
      */
-    protected function pushMerchantsToSettlementQueue(array $merchantIds, $bucketTimestamp = null): array
+    protected function pushMerchantsToSettlementQueue(
+        array $merchantIds, $bucketTimestamp = null, array $params = []): array
     {
         $result = [
             'total_merchants' => count($merchantIds),
@@ -762,7 +775,7 @@ class Processor extends Base\Core
                 // for now passing this, just to track the performance
                 // if timestamp exist then its a automated process else its manual
                 //
-                Create::dispatch($this->mode, $merchantId, $bucketTimestamp);
+                Create::dispatch($this->mode, $merchantId, $bucketTimestamp, $params);
 
                 $this->trace->info(
                     TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT,
@@ -805,7 +818,7 @@ class Processor extends Base\Core
         return $result;
     }
 
-    public function fetchAndProcessTransactionsForSettlement(MerchantModel\Entity $merchant)
+    public function fetchAndProcessTransactionsForSettlement(MerchantModel\Entity $merchant, array $params = [])
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -823,9 +836,9 @@ class Processor extends Base\Core
 
         $result = $this->mutex->acquireAndRelease(
             $resource,
-            function () use ($merchant)
+            function () use ($merchant, $params)
             {
-                return $this->createSettlementForMerchant($merchant);
+                return $this->createSettlementForMerchant($merchant, $params);
             },
             self::MUTEX_SETTLEMENT_CREATE_TIMEOUT,
             ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -850,14 +863,15 @@ class Processor extends Base\Core
         return $result;
     }
 
-    protected function createSettlementForMerchant(MerchantModel\Entity $merchant): array
+    protected function createSettlementForMerchant(
+        MerchantModel\Entity $merchant, array $params = []): array
     {
         $channel = $merchant->getChannel();
 
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
-                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel);
+                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $params);
 
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)
@@ -896,7 +910,7 @@ class Processor extends Base\Core
             $merchant->getId()
         ]);
 
-        return $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner);
+        return $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner, $params);
     }
 
     protected function shouldUseQueue(array $input)

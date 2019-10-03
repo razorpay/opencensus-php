@@ -625,7 +625,8 @@ trait SettlementTrait
         return false;
     }
 
-    protected function createSettlementsFromTxns($txns, string $channel, $merchantSettleToPartner): array
+    protected function createSettlementsFromTxns(
+        $txns, string $channel, $merchantSettleToPartner, array $params): array
     {
         $merchantId = $txns->first()->getMerchantId();
 
@@ -665,7 +666,8 @@ trait SettlementTrait
         try
         {
             list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner);
+                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner,
+                $params);
 
             if(($setl !== null) and ($bankTransferAtpt !== null))
             {
@@ -838,10 +840,12 @@ trait SettlementTrait
      * @param $setlApiFee
      * @param $tax
      * @param $merchantSettleToPartner
+     * @param array $params
      * @return array
      */
     protected function settleForMerchant(
-        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner): array
+        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner,
+        $params): array
     {
         $settlement = null;
 
@@ -852,7 +856,7 @@ trait SettlementTrait
         return $this->mutex->acquireAndRelease(
             $mutexResource,
             function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt,
-                 $merchantSettleToPartner) {
+                 $merchantSettleToPartner, $params) {
                 try
                 {
                     // create settlement and attempt
@@ -879,7 +883,7 @@ trait SettlementTrait
 
                     $merchantSettler->createTransaction($settlement);
 
-                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner);
+                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
                 }
                 catch (\Exception $ex)
                 {

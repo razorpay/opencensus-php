@@ -37,7 +37,7 @@ class VpaFailureTest extends TestCase
         });
 
         $request = $helper->intiateCreateVpa([
-            'username' => strtolower($this->fixtures->vpa->getUsername()), // ALC01custVpa03
+            'username' => strtolower($this->fixtures->vpa(self::DEVICE_2)->getUsername()), // alc02custvpa03
         ]);
     }
 

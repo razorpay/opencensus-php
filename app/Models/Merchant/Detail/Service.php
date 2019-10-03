@@ -60,7 +60,7 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null);
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
 
         return $response;
     }
@@ -384,7 +384,7 @@ class Service extends Base\Service
         return ($merchant->isLinkedAccount() === true) ? Constants::UPLOAD_KEYS_ACCOUNT : Constants::UPLOAD_KEYS;
     }
 
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    public function getSignedUrl(string $fileStoreId, string $merchantId)
     {
         $core = new FileStore\Core;
 

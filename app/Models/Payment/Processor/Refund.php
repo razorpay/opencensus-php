@@ -946,7 +946,6 @@ trait Refund
         //
         // To ensure that refund forward transaction has this amount / fees debited, if debit is 0, it
         // could be a Direct Settlement just an authorized transaction refund - for which we have handled before this,
-        // Todo: the third case is Refund Credits - which needs to be handled soon
         //
         if (($refund->payment->hasBeenCaptured() === false) or
             (($refund->transaction->getDebit() === 0) and

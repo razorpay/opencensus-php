@@ -2820,6 +2820,41 @@ class Terminal extends Base
         return $this->createSharedUpiAxisTerminal(array_merge($attributes, $override));
     }
 
+    public function createDirectSettlementUpiAxisTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DiSeUpAxTmnl',
+            'merchant_id'               => '10000000000000',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+                Type::PAY                              => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiAxisTerminal($attributes);
+    }
+
+    public function createDirectSettlementUpiMindgateTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DiSeUpMnTmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway_merchant_id'       => 'direct settlement mindgate',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+                Type::PAY                              => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
     public function createSharedUpiMindgateSignedIntentTerminal(array $override)
     {
         $privateKey = 'MHQCAQEEIPk6R12xwmvV/JJDehGHSrQpNZxE3jmNXHcmgNUY2858oAcGBSuBBAAK' .
