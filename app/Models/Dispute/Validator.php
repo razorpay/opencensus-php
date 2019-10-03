@@ -12,6 +12,14 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     const OPERATION_MERCHANT_EDIT = 'merchant_edit';
+    // Max allowed file size - 30MB (30*1024*1024).
+    const MAX_FILE_SIZE = 31457280;
+
+    const ACCEPTED_EXTENSIONS = [
+        'csv',
+        'xlsx',
+        'xls'
+    ];
 
     protected static $createRules = [
         Entity::GATEWAY_DISPUTE_ID     => 'required|alpha_num',
@@ -211,6 +219,32 @@ class Validator extends Base\Validator
                 'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
                 Entity::DEDUCT_AT_ONSET,
                 $input);
+        }
+    }
+
+    /**
+     * Validates if the file size is within the limits and
+     * validates if extension is as expected.
+     *
+     * @param $file
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkDisputesFile($file)
+    {
+        if ($file->getSize() > self::MAX_FILE_SIZE)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'File Size exceeds max allowed size of 30MB'
+            );
+        }
+
+        $extension = $file->getClientOriginalExtension();
+
+        if (in_array($extension, self::ACCEPTED_EXTENSIONS, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid File extension. Only '. implode(", ", self::ACCEPTED_EXTENSIONS) . ' file formats are allowed'
+            );
         }
     }
 }

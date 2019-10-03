@@ -12,14 +12,16 @@ use RZP\Exception;
 use RZP\Models\Dispute\File;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
     use FileHandlerTrait;
 
-    const bulkDisputeCreateFileName = 'bulk_disputes_create_status';
-    const bulkDisputeEditFileName   = 'bulk_disputes_edit_status';
+    const bulkDisputeCreateFileName     = 'bulk_disputes_create_status';
+    const bulkDisputeEditFileName       = 'bulk_disputes_edit_status';
+    const bulkDisputeCreateDateFormat   = 'd/m/Y H:i:s';
+    const gatewayDisputeIdMaxLength     = 50;
+    const gatewayDisputeStatusMaxLength = 255;
 
     const bulkCreateDisputesColumns = [
         'payment_id',
@@ -40,6 +42,22 @@ class Service extends Base\Service
         Entity::STATUS,
         Entity::SKIP_DEDUCTION,
         Entity::COMMENTS,
+    ];
+
+    const disputePhases = [
+        'chargeback',
+        'pre_arbitration',
+        'arbitration',
+        'retrieval',
+        'fraud',
+    ];
+
+    const disputeStatus = [
+        'open',
+        'under_review',
+        'lost',
+        'won',
+        'closed',
     ];
 
     public function create(array $input, string $paymentId): array
@@ -72,27 +90,6 @@ class Service extends Base\Service
         }
     }
 
-    public function getDisputeDataForMail(array $dispute) : array
-    {
-        $endDate = Carbon::createFromTimestamp($dispute[Entity::EXPIRES_ON], Timezone::IST);
-
-        $daysLeft = $endDate->diffInDays(Carbon::now(Timezone::IST));
-
-        // define array and loop to fetch
-        $disputeData[Entity::ID] = $dispute[Entity::ID];
-        $disputeData[Entity::PAYMENT_ID] = $dispute[Entity::PAYMENT_ID];
-        $disputeData[Entity::MERCHANT_ID] = $dispute[Entity::MERCHANT_ID];
-        $disputeData[Entity::GATEWAY_DISPUTE_ID] = $dispute[Entity::GATEWAY_DISPUTE_ID];
-        $disputeData[Entity::AMOUNT] = $dispute[Entity::AMOUNT];
-        $disputeData[Entity::PHASE] = $dispute[Entity::PHASE];
-//        fetch reason_description, not available in admin array
-//        $disputeData[Entity::REASON_DESCRIPTION] = $dispute[Entity::REASON_DESCRIPTION];
-        $disputeData[Entity::RESPOND_BY] = $dispute[Entity::RESPOND_BY];
-        $disputeData['remainingDays'] = $daysLeft;
-
-        return $disputeData;
-    }
-
     public function sendAggregatedEmails(array $mailData, array $merchantData, array $disputeData)
     {
         foreach ($mailData as $merchantId=>$data)
@@ -121,11 +118,17 @@ class Service extends Base\Service
 
     public function bulkCreate(array $input)
     {
-        (new Validator)->validateBulkDisputeRequest($input);
+        $validator = new Validator;
+
+        $validator->validateBulkDisputeRequest($input);
+
+        $file = $input['file'];
+
+        $validator->validateBulkDisputesFile($file);
 
         $disputeFileService = new File\Service();
 
-        $data = $disputeFileService->getFileData($input['file']);
+        $data = $disputeFileService->getFileData($file);
 
         $orderKeys = $data[0];
 
@@ -153,6 +156,7 @@ class Service extends Base\Service
                 $input = $this->convertFileRowToMap($row, $orderKeys);
 
                 $skipMails = $input[Entity::SKIP_EMAIL];
+                $emails = $input[Entity::MERCHANT_EMAILS];
 
                 // skipping email for each creation
                 $input[Entity::SKIP_EMAIL] = true;
@@ -160,12 +164,18 @@ class Service extends Base\Service
                 $paymentId = $input['payment_id'];
 
                 unset($input['payment_id']);
+                unset($input[Entity::MERCHANT_EMAILS]);
 
                 $disputeEntity = $this->create($input, $paymentId);
 
                 if ($skipMails === false)
                 {
-                    $emails = $input[Entity::MERCHANT_EMAILS] ?? $this->core()->getMerchantEmailsForDispute();
+                    if (empty($emails[0]))
+                    {
+                        $merchant = $this->repo->merchant->find($disputeEntity[Entity::MERCHANT_ID]);
+
+                        $emails = $this->core()->getMerchantEmailsForDispute($merchant);
+                    }
 
                     if (array_key_exists(Entity::MERCHANT_ID, $merchantData) === false)
                     {
@@ -198,16 +208,24 @@ class Service extends Base\Service
 
         $url = $disputeFileService->generateFile($outputFileData, self::bulkDisputeCreateFileName);
 
-        return $url;
+        return [
+            'link' => $url,
+        ];
     }
 
     public function bulkUpdate(array $input)
     {
-        (new Validator)->validateBulkDisputeRequest($input);
+        $validator = new Validator;
+
+        $validator->validateBulkDisputeRequest($input);
+
+        $file = $input['file'];
+
+        $validator->validateBulkDisputesFile($file);
 
         $disputeFileService = new File\Service();
 
-        $data = $disputeFileService->getFileData($input['file']);
+        $data = $disputeFileService->getFileData($file);
 
         $orderKeys = $data[0];
 
@@ -258,7 +276,9 @@ class Service extends Base\Service
 
         $url = $disputeFileService->generateFile($outputFileData, self::bulkDisputeEditFileName);
 
-        return $url;
+        return [
+            'link' => $url,
+        ];
     }
 
     public function fetchMultiple(array $input): array
@@ -326,24 +346,156 @@ class Service extends Base\Service
             switch ($value)
             {
                 case Entity::AMOUNT:
-                case Entity::GATEWAY_DISPUTE_ID:
                     $res = intval($res);
+
+                    if ($res <= 0)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'amount should be > 0'
+                        );
+                    }
+
+                    break;
+
+                case Entity::GATEWAY_DISPUTE_ID:
+                    $res = stringify($res);
+
+                    if (strlen($res) > self::gatewayDisputeIdMaxLength)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'gateway_dispute_id length exceeds allowed '. self::gatewayDisputeIdMaxLength . ' characters'
+                        );
+                    }
+
+                    break;
+
+                case Entity::GATEWAY_DISPUTE_STATUS:
+                    $res = stringify($res);
+
+                    if (strlen($res) > self::gatewayDisputeStatusMaxLength)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'gateway_dispute_status length exceeds allowed '. self::gatewayDisputeStatusMaxLength . ' characters'
+                        );
+                    }
+
+                    break;
+
+                case Entity::PHASE:
+                    $res = stringify($res);
+
+                    if (in_array($res, self::disputePhases, true) === false)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Invalid phase. Phase should be one of '. implode(", ", self::disputePhases)
+                        );
+                    }
+
+                    break;
+
+                case Entity::STATUS:
+                    $res = stringify($res);
+
+                    if (in_array($res, self::disputeStatus, true) === false)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Invalid status. status should be one of '. implode(", ", self::disputeStatus)
+                        );
+                    }
+
                     break;
 
                 case Entity::RAISED_ON:
+                    if (empty($res))
+                    {
+                        $res = Carbon::now(Timezone::IST)->format('d/m/Y');
+                    }
+
+                    // Creation at beginning of the day IST
+                    $res .= ' 00:00:00';
+
+                    try
+                    {
+                        $res = Carbon::createFromFormat(self::bulkDisputeCreateDateFormat, $res, Timezone::IST)->getTimestamp();
+                    }
+                    catch (\Exception $ex)
+                    {
+                        // Because default message thrown is incomprehensible
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Invalid raised_on date argument. Please provide in d/m/Y format'
+                        );
+                    }
+
+                    $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                    if ($currentTime < $res)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'raised_on day cannot be greater than current day'
+                        );
+                    }
+
+                    break;
+
                 case Entity::EXPIRES_ON:
-                    //Todo : Asserting timestamp is end of day in expires_on and beginning in raised_on
-                    $res = Carbon::createFromFormat('d/m/Y', $res)->setTimezone(Timezone::IST)->getTimestamp();
+                    if (empty($res))
+                    {
+                        $res = Carbon::now(Timezone::IST)->addDays(9)->format('d/m/Y');
+                    }
+
+                    // Expires at the end of the day IST
+                    $res .= ' 23:59:59';
+
+                    try
+                    {
+                        $res = Carbon::createFromFormat(self::bulkDisputeCreateDateFormat, $res, Timezone::IST)->getTimestamp();
+                    }
+                    catch (\Exception $ex)
+                    {
+                        // Because default message thrown is incomprehensible
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Invalid expires_on date argument. Please provide in d/m/Y format'
+                        );
+                    }
+
+                    $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                    if ($currentTime >= $res)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'expires_on time cannot be less than or equal to current time'
+                        );
+                    }
+
                     break;
 
                 case Entity::MERCHANT_EMAILS:
-                    $mails = array_values(explode (",", $res));
+                    $mails = array_map('trim', explode(',', $res));
+
                     $res = $mails;
+
                     break;
 
                 case Entity::SKIP_EMAIL:
                 case Entity::SKIP_DEDUCTION:
-                    $res = ($row[$key] === 'Y')? true : false;
+                    switch ($res)
+                    {
+                        case 'Y':
+                        case 'y':
+                            $res = true;
+                            break;
+
+                        case 'N':
+                        case 'n':
+                            $res = false;
+                            break;
+
+                        default:
+                            throw new Exception\BadRequestValidationFailureException(
+                                $value . ' field should be Y/N'
+                            );
+                    }
+
                     break;
             }
 
@@ -351,5 +503,26 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    public function getDisputeDataForMail(array $dispute) : array
+    {
+        $endDate = Carbon::createFromTimestamp($dispute[Entity::EXPIRES_ON], Timezone::IST);
+
+        $daysLeft = $endDate->diffInDays(Carbon::now(Timezone::IST));
+
+        // define array and loop to fetch
+        $disputeData[Entity::ID] = $dispute[Entity::ID];
+        $disputeData[Entity::PAYMENT_ID] = $dispute[Entity::PAYMENT_ID];
+        $disputeData[Entity::MERCHANT_ID] = $dispute[Entity::MERCHANT_ID];
+        $disputeData[Entity::GATEWAY_DISPUTE_ID] = $dispute[Entity::GATEWAY_DISPUTE_ID];
+        $disputeData[Entity::AMOUNT] = $dispute[Entity::AMOUNT];
+        $disputeData[Entity::PHASE] = $dispute[Entity::PHASE];
+//        fetch reason_description, not available in admin array
+//        $disputeData[Entity::REASON_DESCRIPTION] = $dispute[Entity::REASON_DESCRIPTION];
+        $disputeData[Entity::RESPOND_BY] = $dispute[Entity::RESPOND_BY];
+        $disputeData['remainingDays'] = $daysLeft;
+
+        return $disputeData;
     }
 }

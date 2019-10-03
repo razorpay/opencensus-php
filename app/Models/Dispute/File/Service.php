@@ -33,11 +33,11 @@ class Service extends Base\Service
         $fileName = $this->getDynamicFileName($file_name);
 
         $creator->extension($extension)
-            ->content($file_data)
-            ->name($fileName)
-            ->store(FileStore\Store::S3)
-            ->type(FileStore\Type::BULK_DISPUTES_FILE)
-            ->save();
+                ->content($file_data)
+                ->name($fileName)
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::BULK_DISPUTES_FILE)
+                ->save();
 
         $signedFileUrl = $creator->getSignedUrl();
 
