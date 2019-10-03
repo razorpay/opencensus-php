@@ -39,6 +39,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Constants\{Mode, Entity as CE};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
@@ -1553,6 +1554,21 @@ class Service extends Base\Service
             $key1 => Cache::get('espricing:' . $key1) ?? 0.3,
             $key2 => Cache::get('espricing:' . $key2) ?? 0.2
         ];
+    }
+
+    public function getScheduledEarlySettlementPricingForMerchant(): array
+    {
+        $pricingPlanId = $this->merchant->getPricingPlanId();
+
+        $scheduledPricing = $this->repo->pricing->getFirstPricingPlanByIdAndFeatureWithoutOrgId($pricingPlanId, PricingFeature::ESAUTOMATIC);
+
+        if ($scheduledPricing === null)
+        {
+            throw new Exception\LogicException(
+                ErrorCode::ES_SCHEDULED_PRICING_NOT_FOUND);
+        }
+
+        return $scheduledPricing->toArray();
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
