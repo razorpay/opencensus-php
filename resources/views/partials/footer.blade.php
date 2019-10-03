@@ -27,7 +27,7 @@
     }
     var disableEventEmitters = '{{$env}}'==='dev' ? true : false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname=="dashboard.razorpay.com" ? 'prod' : 'stage';
-    if(analytics){
+    if(window.analytics){
         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','taboola'], {
            ga: 'UA-53341507-2',
            fb: '697927486977350',
