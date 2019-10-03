@@ -14,7 +14,7 @@ export default function NewSubscriptionLinkReview({
   const planQuantity = fields.quantity;
 
   const addOnAmount = fields.addons
-    .filter(addon => !!addon.amount) // Filter out empty addon
+    .filter(addon => addon.item && !!addon.item.amount) // Filter out empty addon
     .reduce(
       (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
       0
