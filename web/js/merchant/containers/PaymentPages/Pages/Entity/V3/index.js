@@ -15,6 +15,7 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
+import { saveReportConfigs } from 'merchant/modules/reports';
 import { showNotification } from 'rzp/modules/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../../ga';
 import { exportReportCSV } from '../../model';
@@ -38,13 +39,27 @@ const inActiveStatusReasonMap = {
   deactivated: 'You manually deactivated the link',
 };
 
-@connect(state => ({ user: state.session.user, mode: state.session.mode }), {
-  showNotification,
-  openModal,
-  closeModal,
-})
+@connect(
+  state => ({
+    user: state.session.user,
+    mode: state.session.mode,
+    reportConfigs: state.reports.reportConfigs,
+  }),
+  {
+    showNotification,
+    openModal,
+    closeModal,
+    saveReportConfigs,
+  }
+)
 export default class PaymentPagesV3Entity extends React.Component {
   state = { detailsCollapse: true };
+
+  componentDidMount() {
+    if (!this.props.reportConfigs) {
+      this.props.saveReportConfigs();
+    }
+  }
 
   getStatsTable(paymentPageEntity) {
     return [
@@ -63,6 +78,39 @@ export default class PaymentPagesV3Entity extends React.Component {
       },
     ];
   }
+
+  downloadReport = () => {
+    const { user, paymentPageEntity, reportConfigs } = this.props;
+    let configId;
+
+    if (!reportConfigs.length) {
+      return;
+    }
+
+    for (let i = 0; i < reportConfigs.length; i++) {
+      const config = reportConfigs[i];
+      if (config.type === 'payment_link') {
+        configId = config.id;
+        break;
+      }
+    }
+
+    this.props.showNotification({
+      type: 'success',
+      message: 'Your report will download shortly',
+    });
+
+    return exportReportCSV(user, paymentPageEntity, configId).then(data => {
+      if (data.error) {
+        return this.props.showNotification({
+          type: 'error',
+          message: data.error,
+        });
+      }
+
+      window.location = data.url;
+    });
+  };
 
   openEmbedButtonView = () => {
     this.props.openModal({
@@ -106,6 +154,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       editPaymentPage,
       toggleManualActivation,
       reActivateLink,
+      reportConfigs,
     } = this.props;
 
     // paymentPageEntity = dummyEntityData;
@@ -329,9 +378,7 @@ export default class PaymentPagesV3Entity extends React.Component {
               <button
                 type="button"
                 class="btn Button--primary--invert btn-sm"
-                onClick={_ =>
-                  exportReportCSV(this.props.user, paymentPageEntity)
-                }
+                onClick={this.downloadReport}
               >
                 <i class="i i-download m-r" />
                 Export All (CSV)

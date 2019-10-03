@@ -9,6 +9,7 @@ const ADD_REPORT = 'ADD_REPORT';
 const UPDATE_REPORT = 'UPDATE_REPORT';
 const REMOVE_REPORT = 'REMOVE_REPORT';
 const ADD_POLL_INSTANCE = 'ADD_POLL_INSTANCE';
+const SAVE_REPORT_CONFIGS = 'SAVE_REPORT_CONFIGS';
 
 const downloadReportErrorMsg = {
   error: 'Oops!, Unable to generate report',
@@ -63,6 +64,13 @@ export const getConfigs = shouldFetchPartnerConfigs => {
     url: 'reporting/configs',
     headers: appendReportTypeHeader(shouldFetchPartnerConfigs),
   });
+};
+
+export const saveReportConfigs = _ => {
+  return {
+    type: SAVE_REPORT_CONFIGS,
+    payload: getConfigs(),
+  };
 };
 
 export const generateReport = ajaxParams => {
@@ -249,6 +257,7 @@ export const areReportsStillDownloading = reports => {
 let initialState = {
   currentReportList: {},
   pollInstances: {},
+  reportConfigs: null,
 };
 
 export function reportsReducer(state = initialState, action) {
@@ -269,6 +278,10 @@ export function reportsReducer(state = initialState, action) {
       }
 
       return set(state, 'currentReportList', currentReportList);
+
+    case `${SAVE_REPORT_CONFIGS}::SUCCESS`:
+      console.log('ACTION.......', action.payload);
+      return set(state, 'reportConfigs', action.payload.items);
 
     case `${REMOVE_REPORT}`:
       if (currentReportList[action.reportId]) {

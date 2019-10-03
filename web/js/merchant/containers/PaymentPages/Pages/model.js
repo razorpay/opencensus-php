@@ -130,8 +130,13 @@ export function sendLink(id, data) {
   });
 }
 
-export function exportReportCSV(user, paymentPageEntity) {
+export function exportReportCSV(user, paymentPageEntity, configId) {
+  if (!configId) {
+    return;
+  }
+
   const reqPayload = {
+    config_id: configId,
     generated_by: user.current,
     start_time: 1569938247, // Any random time before deployment of this feature
     end_time: new Date().getTime() / 1000, // Current time
