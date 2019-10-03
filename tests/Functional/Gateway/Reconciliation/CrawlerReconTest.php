@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Lambda;
+namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
 use Excel;
 use Config;
@@ -116,7 +116,8 @@ class CrawlerReconTest extends TestCase
 
         $input = [
             'gateway'          => $gateway,
-            'meta_data'         => $metaInfo,
+            'crawler'          => '1',
+            'meta_data'        => $metaInfo,
         ];
 
         $request = [
