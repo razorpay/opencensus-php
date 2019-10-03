@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     const SEND_EMAIL            = 'send_email';
     const FROM_DATE             = 'from_date';
     const TO_DATE               = 'to_date';
+    const TO_EMAIL_LIST         = 'to_emails';
 
     // Relation names/attributes
     const SOURCE                = 'source';

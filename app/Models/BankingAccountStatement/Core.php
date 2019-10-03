@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use Mail;
 use File;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -11,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
+use RZP\Mail\BankingAccount\StatementMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -90,10 +92,6 @@ class Core extends Base\Core
 
         $format = $input[Entity::FORMAT];
 
-        $sendEmail = $input[Entity::SEND_EMAIL];
-
-        $sendEmail = filter_var($sendEmail, FILTER_VALIDATE_BOOLEAN);
-
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
             [
@@ -102,7 +100,7 @@ class Core extends Base\Core
                 'fromDate'       => $fromDate,
                 'toDate'         => $toDate,
                 'format'         => $format,
-                'sendEmail'      => $sendEmail,
+                'sendEmail'      => $input[Entity::SEND_EMAIL],
             ]);
 
         SupportedFormats::validate($channel, $format);
@@ -125,15 +123,37 @@ class Core extends Base\Core
                 'fileURL' => $fileAccessUrl
             ]);
 
-        if ($sendEmail)
-        {
-            // code for sending this file via an email
-            return ['message' => 'Email Sent'];
-        }
-        else
-        {
-            return ['message' => 'File Generated', 'file_path' => $fileAccessUrl];
-        }
+        return $fileAccessUrl;
+    }
+
+    public function sendBankAccountStatementEmail(array $input, string $fileAccessUrl)
+    {
+        $merchant = $this->merchant;
+
+        $toEmails = $input[Entity::TO_EMAIL_LIST];
+
+        $toEmails = explode(',', $toEmails);
+
+        $fromDate = $input[Entity::FROM_DATE];
+
+        $toDate = $input[Entity::TO_DATE];
+
+        $email = new StatementMail($merchant,
+                                   $toEmails,
+                                   $fromDate,
+                                   $toDate,
+                                   $fileAccessUrl);
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_EMAIL,
+            [
+                'merchantId' => $this->merchant->getId(),
+                'to_emails'  => $toEmails,
+                'from_date'  => $fromDate,
+                'to_date'    => $toDate,
+            ]);
+
+        Mail::queue($email);
     }
 
     protected function getDashboardFileAccessUrl($ufhResponse)
