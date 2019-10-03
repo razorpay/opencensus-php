@@ -1565,10 +1565,11 @@ class Service extends Base\Service
         if ($scheduledPricing === null)
         {
             throw new Exception\LogicException(
-                ErrorCode::ES_SCHEDULED_PRICING_NOT_FOUND);
+                'ES scheduled Pricing has not been assigned to the merchant.',
+                ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND);
         }
 
-        return $scheduledPricing->toArray();
+        return $scheduledPricing->toArrayPublic();
     }
 
     public function addOrRemoveMerchantFeatures(array $input)

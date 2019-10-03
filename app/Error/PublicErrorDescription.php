@@ -650,7 +650,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                = 'Gateway not valid for payment method';
 
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                 = 'Es debug method is not valid';
-    CONST ES_SCHEDULED_PRICING_NOT_FOUND                                        = 'ES scheduled pricing is not assigned to this Merchant';
+    CONST SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND                           = 'ES scheduled pricing is not assigned to this Merchant';
 
     const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                 = 'Incomplete data for force authorization';
 

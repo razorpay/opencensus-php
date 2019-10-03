@@ -3263,19 +3263,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' =>  '1zE31zbyeGCTd6',
-                'plan_id' =>  '1A0Fkd38fGZPVC',
-                'plan_name' =>  'testDefaultPlan',
-                'product' => 'primary',
-                'feature' =>  'esautomatic',
-                'type' => 'pricing',
-                'payment_method' => 'transfer',
-                'international' => FALSE,
-                'amount_range_active' => FALSE,
                 'percent_rate' => 20,
                 'fixed_rate' => 0,
-                'min_fee' => 0,
-                'org_id' =>  '100000razorpay',
             ]
         ]
     ],
