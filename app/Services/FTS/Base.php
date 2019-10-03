@@ -31,6 +31,8 @@ class Base
 
     protected $mode;
 
+    protected $redis;
+
     // Account related URIs
     const FUND_ACCOUNT_CREATE_URI  = '/account';
     const FUND_ACCOUNT_REGISTER_URI  = '/account/register';
@@ -62,21 +64,23 @@ class Base
      */
     public function __construct($app)
     {
-        $this->trace = $app['trace'];
-
-        $this->auth = $app['basicauth'];
+        $this->trace   = $app['trace'];
 
         $this->request = $app['request'];
 
-        $this->config = $app['config']->get('applications.fts');
+        $this->mode    = $app['rzp.mode'];
 
-        $this->mode = $app['rzp.mode'];
+        $this->auth    = $app['basicauth'];
 
         $this->baseUrl = $this->config[$this->mode]['url'];
 
-        $this->key = $this->config[$this->mode]['fts_key'];
+        $this->key     = $this->config[$this->mode]['fts_key'];
 
-        $this->secret = $this->config[$this->mode]['fts_secret'];
+        $this->config  = $app['config']->get('applications.fts');
+
+        $this->secret  = $this->config[$this->mode]['fts_secret'];
+
+        $this->redis   = $app['redis']->connection();
 
         $this->setHeaders();
     }

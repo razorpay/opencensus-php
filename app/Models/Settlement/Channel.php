@@ -16,6 +16,7 @@ class Channel
     const RBL       = 'rbl';
     const AXIS2     = 'axis2';
     const ICICI2    = 'icici2';
+    const CITI      = 'citi';
 
     public static $gateways = [
         self::KOTAK => [
@@ -221,6 +222,8 @@ class Channel
     }
 
     /**
+     * TODO: To yesbank for QA testing. Will remove when ramping and use razorx
+     *
      * Supported FTS channels for payouts
      * @return array
      */
@@ -228,6 +231,7 @@ class Channel
     {
         return [
             self::RBL,
+            self::CITI,
         ];
     }
 
