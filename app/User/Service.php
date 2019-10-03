@@ -446,6 +446,11 @@ class Service extends Base\Service
                         $data['experiments']['support_call'] = ['result' => 'off'];
                     }
 
+                    if ($currentMerchant->role === 'owner')
+                    {
+                        $data['partner_intent'] = $merchantService->getPartnerIntent();
+                    }
+
                     $data = $this->updateExperiments($data);
 
                     $data['current'] = $currentMerchantId;
