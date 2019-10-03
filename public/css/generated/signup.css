@@ -68,3 +68,6 @@
 .app-header-fixed {
     padding-top: unset;
 }
+
+
+@media (max-width:890px){.auth-inner{overflow:auto;width:auto;max-width:480px;margin:0px auto; padding: 30px}.auth-messaging{display:none}}

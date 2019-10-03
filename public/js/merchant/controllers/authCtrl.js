@@ -203,7 +203,7 @@ app
           // for individual upon press take him to step 4
           if (
             $scope.signup.merchantData.business_type == 11 ||
-            $scope.signup.data.settings.isPatner == true
+            $scope.signup.data.seettings.partner_intent == true
           ) {
             $scope.signup.currentSubStep = 0;
           } else {
@@ -326,11 +326,13 @@ app
           $scope.signup.data.captcha = 'Faked';
         }
 
+        var data = $scope.signup.data;
+        delete data.settings;
         var payload = {
           method: 'post',
           url: '/user/register',
           transformRequest: transformRequestAsFormPost,
-          data: $scope.signup.data,
+          data: data,
         };
 
         payload.data.password_confirmation = payload.data.password;
@@ -582,7 +584,7 @@ app
           if (
             $scope.signup.currentSubStep == 0 &&
             (reqPayload['business_type'] == 11 ||
-              $scope.signup.data.settings.isPatner)
+              $scope.signup.data.seettings.partner_intent)
           ) {
             $scope.signup.currentSubStep = $scope.signup.currentSubStep + 3;
           } else {
@@ -967,7 +969,7 @@ app
         if (!merchantData.business_type) {
           $scope.signup.currentSubStep = 0;
         } else if (
-          $scope.signup.data.settings.isPatner ||
+          $scope.signup.data.seettings.partner_intent ||
           merchantData.business_type == 11
         ) {
           $scope.signup.currentSubStep = 3;
