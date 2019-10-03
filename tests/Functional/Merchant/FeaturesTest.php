@@ -556,6 +556,16 @@ class FeaturesTest extends TestCase
     }
 
     /**
+     * This function tests updating of a visible merchant feature: es_automatic
+     */
+    public function testEnableEsAutomaticFeaturesFailure()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
      * This function tests updating of a merchant feature with should_sync parameter
      */
     public function testAddMerchantFeaturesWithSyncOnLive()

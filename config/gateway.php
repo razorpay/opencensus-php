@@ -893,4 +893,6 @@ return [
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
+
+    'razorpay_proxy_address' => env('RAZORPAY_PROXY_ADDRESS'),
 ];

@@ -14,7 +14,8 @@ class NpciRupay extends Base
     protected $row;
 
     protected $rules = [
-        self::ROW   => 'required|string|max:62'
+        self::ROW           => 'required|string|max:62',
+        self::IDEMPOTENT_ID => 'sometimes|string|max:20'
     ];
 
     const IIN_TYPE_MAPPING = [

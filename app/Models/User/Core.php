@@ -74,7 +74,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($user);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS, $this->merchant, null);
+        $this->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS);
 
         return $user;
     }
@@ -1307,5 +1307,18 @@ class Core extends Base\Core
             'access'   => true,
             'merchant' => $merchants[0],
         ];
+    }
+
+    /**
+     * Tracking Onboarding event along with User Email.
+     *
+     * @param string $userEmail
+     * @param array  $eventCode
+     */
+    public function trackOnboardingEvent(string $userEmail, array $eventCode)
+    {
+        $customProperties = ['email' => $userEmail];
+
+        $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
     }
 }

@@ -542,11 +542,6 @@ final class RequestContext
             {
                 $this->internalAppName = $name;
 
-                if ($name === 'dashboard_v2')
-                {
-                    $this->internalAppName = 'dashboard';
-                }
-
                 return;
             }
         }

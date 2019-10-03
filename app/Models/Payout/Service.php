@@ -238,8 +238,10 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
-        // Only allowed for Rx payouts, mandates account number
-        $this->processAccountNumber($input);
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
+
+        $merchantValidator->validateAndTranslateToAccountNumberForBankingIfApplicable($input);
 
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
 

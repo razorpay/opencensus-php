@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const DOCUMENT_TYPE                     = 'document_type';
     const ENTITY_TYPE                       = 'entity_type';
     const FILE                              = 'file';
+    const SIGNED_URL                        = 'signed_url';
 
     protected static $sign = 'doc';
 

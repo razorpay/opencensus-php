@@ -830,6 +830,18 @@ return [
         ]
     ],
 
+    'testFetchOrder' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'order',
+            ],
+        ],
+    ],
+
     'testStatusAfterPayment' => [
         'response' => [
             'content' => [

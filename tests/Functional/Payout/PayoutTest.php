@@ -1345,6 +1345,20 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
+    public function testFetchMultiplePayoutsWithBankingProductParameter()
+    {
+        $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultiplePayoutsWithPrimaryProductParameter()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
     public function testBulkPayout()
     {
         $this->ba->batchAuth();
@@ -1355,7 +1369,7 @@ class PayoutTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
 
@@ -1369,10 +1383,10 @@ class PayoutTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
-    
+
     public function createEsIndex()
     {
         $esMock = Config::get('database.es_mock');

@@ -84,10 +84,12 @@ class Repository extends Base\Repository
      * @param array $notInMerchantIds
      * @param boolean $fetchAll
      * @param boolean $useLimit
+     * @param array $params
      * @return mixed
      */
     public function fetchUnsettledTransactions(
-        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [], bool $fetchAll = true, bool $useLimit = false)
+        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [], bool $fetchAll = true,
+        bool $useLimit = false, array $params = [])
     {
         // SELECT `transactions`.`id`.`merchant_id`
         // FROM transactions
@@ -113,7 +115,6 @@ class Repository extends Base\Repository
         $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
-        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
 
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
@@ -135,7 +136,6 @@ class Repository extends Base\Repository
                                   $query->whereNull($transactionBalanceId)
                                         ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
                               })
-                      ->where($transactionSettledAt, '<', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
@@ -151,11 +151,18 @@ class Repository extends Base\Repository
             }
         }
 
+        $query = $this->addSettlementFilters($query, $timestamp, $params);
+
         $results = $query->get();
 
         $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
 
-        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
+            [
+                'time_taken' => $txnFetchTimeTaken,
+                'params'     => $params,
+            ]);
 
         return $results;
     }
@@ -177,19 +184,15 @@ class Repository extends Base\Repository
     public function fetchFeesAndTaxForRefundByType(
         string $merchantId,
         int $start,
-        int $end,
-        string $filterType)
+        int $end)
     {
         /*
             SELECT Sum(transactions.tax) AS tax,
                    Sum(transactions.fee) AS fee
             FROM   `transactions`
-                   INNER JOIN `refunds`
-                           ON `transactions`.`entity_id` = `refunds`.`id`
             WHERE  `transactions`.`type` = ?
                    AND `transactions`.`created_at` BETWEEN ? AND ?
                    AND `transactions`.`merchant_id` = ?
-                   AND `refunds`.`base_amount` <= ?
             LIMIT  1
          */
         $query = $this->newQuery()
@@ -197,41 +200,7 @@ class Repository extends Base\Repository
             ->where($this->dbColumn(Entity::TYPE), '=', 'refund')
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
 
-        $query->join(
-            $this->repo->refund->getTableName(),
-            function(JoinClause $join)
-            {
-                $refundIdAttr = $this->repo->refund->dbColumn(Entity::ID);
-                $entityIdAttr = $this->dbColumn(Entity::ENTITY_ID);
-
-                $join->on($entityIdAttr, $refundIdAttr);
-            });
-
         $query->merchantId($merchantId);
-
-        $refundBaseAmountColumn = $this->repo->refund->dbColumn(Refund\Entity::BASE_AMOUNT);
-
-        switch ($filterType)
-        {
-            case InvoiceType::REFUND_LTE_1K:
-                $query = $query->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF);
-
-                break;
-
-            case InvoiceType::REFUND_GT_1K_LTE_10K:
-                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF)
-                    ->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
-
-                break;
-
-            case InvoiceType::REFUND_GT_10K:
-                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
-
-                break;
-
-            default:
-                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
-        }
 
         return $query->first();
     }
@@ -1555,9 +1524,11 @@ class Repository extends Base\Repository
     /**
      * @param string $mid
      * @param string $channel
+     * @param array $params
      * @return Base\PublicCollection
      */
-    public function fetchUnsettledTransactionsForProcessing(string $mid, string $channel): Base\PublicCollection
+    public function fetchUnsettledTransactionsForProcessing(
+        string $mid, string $channel, array $params = []): Base\PublicCollection
     {
         $txnFetchStartTime = microtime(true);
 
@@ -1568,7 +1539,6 @@ class Repository extends Base\Repository
         $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
-        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
 
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
@@ -1585,11 +1555,12 @@ class Repository extends Base\Repository
                                         ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
                               })
                       ->where($transactionMerchantId, $mid)
-                      ->where($transactionSettledAt, '<=', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
                       ->where($transactionType, '!=', Type::SETTLEMENT);
+
+        $query = $this->addSettlementFilters($query, $timestamp, $params);
 
         $results = $query->get();
 
@@ -1599,6 +1570,7 @@ class Repository extends Base\Repository
                 'merchant_id' => $mid,
                 'settled_at'  => $timestamp,
                 'time_taken'  => get_diff_in_millisecond($txnFetchStartTime),
+                'params'      => $params,
             ]);
 
         return $results;
@@ -1786,6 +1758,29 @@ class Repository extends Base\Repository
         return $results;
     }
 
+    public function addSettlementFilters($query, $timestamp, $params)
+    {
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
+
+        if(isset($params[Entity::CREATED_AT]) === false and isset($params[Entity::SETTLED_AT]) === false)
+        {
+            $query->where($transactionSettledAt, '<=', $timestamp);
+        }
+        else
+        {
+            if(isset($params[Entity::SETTLED_AT]) === true)
+            {
+                $query->where($transactionSettledAt, '<=', $params[Entity::SETTLED_AT]);
+            }
+            if(isset($params[Entity::CREATED_AT]) === true)
+            {
+                $query->where($transactionCreatedAt, '<=', $params[Entity::CREATED_AT]);
+            }
+        }
+        return $query;
+    }
+
     public function getMerchantSettledAtTime(array $mids, string $start, $end)
     {
         $transactionType        = $this->dbColumn(Entity::TYPE);
@@ -1820,7 +1815,6 @@ class Repository extends Base\Repository
         {
             $query->where($transactionSettledAt, '<=', $end);
         }
-
         return $query->get();
     }
 }
