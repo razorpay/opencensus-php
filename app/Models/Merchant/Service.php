@@ -2533,6 +2533,13 @@ class Service extends Base\Service
         return $this->mapSubmerchant($partner, $submerchantId);
     }
 
+    public function fetchPartnerIntent(): array
+    {
+        $merchant = $this->merchant;
+
+        return $this->core()->getPartnerIntentFromSettings($merchant);
+    }
+
     /**
      * @param string $merchantId
      *

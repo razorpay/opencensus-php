@@ -8,6 +8,7 @@ use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\OAuth\Application as OAuthApp;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Exception;
 use RZP\Models\Emi;
@@ -249,6 +250,31 @@ class Core extends Base\Core
                 ->upsert($data)
                 ->save();
         }
+    }
+
+    /**
+     * Get the partner_intent saved in settings table for a merchant
+     * @param Entity $merchant
+     *
+     * @return Array
+     */
+    public function getPartnerIntentFromSettings(Entity $merchant): array
+    {
+        $partnerIntent = Accessor::for($merchant, Constants::PARTNER)
+            ->get(Constants::PARTNER_INTENT);
+
+        if ($partnerIntent instanceof Dictionary)
+        {
+            $partnerIntent = null;
+        }
+        else
+        {
+            $partnerIntent = boolval($partnerIntent);
+        }
+
+        return [
+            Constants::PARTNER_INTENT        => $partnerIntent,
+        ];
     }
 
     /**
