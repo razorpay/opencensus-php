@@ -19,8 +19,6 @@ class Base extends FundAccountPayout\Base
 
             $this->createTransaction($payout);
 
-            $payout->setStatus(Status::CREATED);
-
             //
             // Create a fund transfer entity where the fund transfers will be processed.
             // NOTE: Ensure that this is created after transaction creation, so that if

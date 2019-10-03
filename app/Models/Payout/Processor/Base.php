@@ -14,7 +14,7 @@ use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Payout\Metric;
+use RZP\Models\Payout\Status;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
@@ -106,6 +106,11 @@ class Base extends BaseCore
                                                            $this->fundTransferDestination);
 
             $downstreamProcessor->process();
+
+            if ($payout->getStatus() === null)
+            {
+                $payout->setStatus(Status::CREATED);
+            }
 
             $this->repo->saveOrFail($payout);
 

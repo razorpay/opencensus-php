@@ -17,8 +17,6 @@ class Base extends BaseCore
     {
         $this->setChannel($payout);
 
-        $payout->setStatus(Status::CREATED);
-
         $this->createTransaction($payout);
 
         $this->createFundTransferAttempt($payout, $ftaAccount);
