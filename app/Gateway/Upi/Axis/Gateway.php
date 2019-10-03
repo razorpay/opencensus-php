@@ -227,8 +227,18 @@ class Gateway extends Base\Gateway
             'email'    => 'void@razorpay.com',
         ];
 
+        $callbackMerchantId = $callbackData[Fields::CALLBACK_MERCHANT_ID];
+
+        // TODO:: This needs to be fixed once we get confirmation on why the aggregator ids for one particular terminal
+        // are different. For now adding this hack as a fix.
+
+        if ($callbackMerchantId === 'RAZORPPROD0093689')
+        {
+            $callbackMerchantId = 'ADITYAPROD0093708';
+        }
+
         $terminal = [
-            'gateway_merchant_id' => $callbackData[Fields::CALLBACK_MERCHANT_ID]
+            'gateway_merchant_id' => $callbackMerchantId
         ];
 
         return [

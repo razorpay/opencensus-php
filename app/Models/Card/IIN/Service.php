@@ -190,14 +190,21 @@ class Service extends Base\Service
         }
     }
 
-    public function processRecord(string $type, array $input)
+    public function processRecords(string $type, array $input)
     {
+        $response = [];
+
         // hardcoding for now
         $this->processor = new Batch\NpciRupay;
 
-        $this->processor->preprocess($input);
+        foreach ($input as $data)
+        {
+            $this->processor->preprocess($data);
 
-        return $this->processor->process();
+            $response[] = $this->processor->process();
+        }
+
+        return $response;
     }
 
     protected function formatEditInput(Entity $iin, array & $input)

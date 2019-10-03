@@ -107,7 +107,14 @@ class KubernetesClient
 
     }
 
-    public function createJob(string $mode, string $batchId, array $params, string $batchType = null)
+    /**
+     * @param string $mode
+     * @param string $batchId
+     * @param array $params
+     * @param string|null $batchType
+     * @return bool
+     */
+    public function createJob(string $mode, string $batchId, array $params, string $batchType = null) : bool
     {
         try
         {
@@ -118,7 +125,7 @@ class KubernetesClient
                 $batchService = new BatchService();
                 $batchService->process($batchId, $mode, $params);
 
-                return;
+                return true;
             }
 
             // Selecting node selector
@@ -152,13 +159,11 @@ class KubernetesClient
 
             if ($this->client->jobs()->exists($job->getMetadata('name')))
             {
-
                 $this->trace->error(
                     TraceCode::KUBERNETES_BATCH_JOB_EXISTS,
                     [
                         BatchModel\Entity::ID   => $batchId,
                     ]);
-
             }
             else
             {
@@ -170,6 +175,8 @@ class KubernetesClient
                         BatchModel\Entity::ID   => $batchId,
                         'kubernetes_response'   => $response,
                     ]);
+
+                return true;
             }
 
         }
@@ -184,6 +191,7 @@ class KubernetesClient
                 ]);
         }
 
+        return false;
     }
 
     private function generateJobSpec(string $mode, string $batchId, array $params, string $batchType = null)

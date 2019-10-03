@@ -1565,6 +1565,13 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
+        $EsOnDemandFeature = (new Feature\Repository)->findByEntityTypeEntityIdAndName(
+            $merchant->getEntity(),
+            $merchant->getId(),
+            Feature\Constants::ES_ON_DEMAND);
+
+        $input['es_enabled'] = ($EsOnDemandFeature === null) ? false : true;
+
         $merchant->validateInput('feature', $input);
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);

@@ -2104,6 +2104,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
+    const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

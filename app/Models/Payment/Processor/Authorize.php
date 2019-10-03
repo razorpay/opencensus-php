@@ -5259,7 +5259,7 @@ trait Authorize
         if ($merchant->isRecurringEnabled() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+                ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED);
         }
     }
 

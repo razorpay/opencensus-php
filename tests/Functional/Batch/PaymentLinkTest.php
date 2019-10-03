@@ -152,7 +152,7 @@ class PaymentLinkTest extends TestCase
         // of payment link type.
         $k8s_client->shouldReceive('createJob')
                    ->once()
-                   ->andReturn(null);
+                   ->andReturn(true);
 
         $this->startTest();
 

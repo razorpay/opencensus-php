@@ -18,7 +18,11 @@ class Payout
         // Call to validateAndTranslateAccountNumberForBanking() expect the key in snake case.
         $entry['account_number'] = $entry[Header::RAZORPAYX_ACCOUNT_NUMBER];
         // Optimization: Have a map of account number to balance id to avoid multiple read calls.
-        $merchant->getValidator()->validateAndTranslateAccountNumberForBanking($entry);
+
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $merchant->getValidator();
+
+        $merchantValidator->validateAndTranslateAccountNumberForBanking($entry);
 
         $input = [
             PayoutModel\Entity::PURPOSE         => $entry[Header::PAYOUT_PURPOSE],
