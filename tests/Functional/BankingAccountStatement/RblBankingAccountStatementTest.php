@@ -48,20 +48,28 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRblXlsxStatementGeneration()
     {
-//        $this->insertTestTransactions();
+        $mockedResponse = $this->getRblDataResponse();
 
-        $response = $this->startTest();
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->appAuth();
+
+        $request = $this->testData['testRblAccountStatementCase1']['request'];
+
+        $this->sendRequest($request);
+
+        $transactions = $this->getDbEntities(EntityConstants::TRANSACTION);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => time()]]]);
 
         $file_path = $response['file_path'];
 
         $this->assertEquals(true, $this->verifyBankAccountStatementFileUrl($file_path));
 
         # storage_path('files/filestore'), go to this location and get the file and convert to a processable XLSX
-
-        # verify all the things that you need
-
     }
-
 
     /**
      * Case where the response from RBL is success
@@ -75,6 +83,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $transactions = $this->getDbEntities(EntityConstants::TRANSACTION);
 
         $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
 
@@ -238,7 +248,6 @@ class RblBankingAccountStatementTest extends TestCase
      */
     protected function verifyBankAccountStatementFileUrl($filePath)
     {
-        echo $filePath;
         return preg_match('/.*\/ufh\/file\/(.*)/',$filePath);
     }
 

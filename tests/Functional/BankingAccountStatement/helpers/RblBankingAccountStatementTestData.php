@@ -8,7 +8,7 @@ return [
         'request' => [
             'method' => 'POST',
             'url' => '/banking_account_statement/generate',
-            'content' => ['account_number' => '2224440041626905', 'send_email' => 0, 'to_emails' => '', 'format' => 'xlsx', 'from_date' => '946684800', 'to_date' => '1568967530', 'channel' => 'rbl']
+            'content' => ['account_number' => '2224440041626905', 'send_email' => 0, 'to_emails' => '', 'format' => 'xlsx', 'from_date' => '946684800', 'to_date' => '', 'channel' => 'rbl']
         ],
         'response' => [
             'content' => []
