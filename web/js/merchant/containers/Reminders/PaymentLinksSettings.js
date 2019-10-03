@@ -1,11 +1,48 @@
 import { connect } from 'react-redux';
+
+import { findBy, filterBy } from 'rzp/utils/rzp-utils';
+import * as NotificationActions from 'rzp/modules/notifications';
+
+import { editReminders, disableReminders } from 'merchant/modules/reminders';
 import Setting from 'merchant/components/Reminders/Settings';
 
-import { fetchReminders } from 'merchant/modules/reminders';
+@connect(
+  state => {
+    const configs = filterBy(
+      state.reminders.configs.items,
+      'namespace',
+      'payment_link'
+    );
 
-@connect(state => state.reminders, {
-  fetchReminders,
-})
+    const withExpireByConfigs = [],
+      withOutExpireByConfigs = [];
+
+    configs.forEach(ele => {
+      if (ele.config_template.attr_key === 'expire_by') {
+        withExpireByConfigs.push(serializeConfig(ele));
+
+        return;
+      }
+
+      withOutExpireByConfigs.push(serializeConfig(ele));
+    });
+
+    return {
+      paymentLinkReminder: findBy(
+        state.reminders.reminders.items,
+        'namespace',
+        'payment_link'
+      ),
+      withExpireByConfigs,
+      withOutExpireByConfigs,
+    };
+  },
+  {
+    editReminders,
+    disableReminders,
+    ...NotificationActions,
+  }
+)
 export default class PaymentLinksSettings extends React.Component {
   constructor(props) {
     super(props);
@@ -15,9 +52,49 @@ export default class PaymentLinksSettings extends React.Component {
     };
   }
 
-  saveSettings = () => {};
+  saveSettings = props => {
+    const channels = [];
+    if (props.advancedSettings.channels.email) {
+      channels.push('email');
+    }
 
-  saveToggleChange = () => {};
+    if (props.advancedSettings.channels.sms) {
+      channels.push('sms');
+    }
+
+    const data = {
+      enabled_configs: [...props.withExpiry, ...props.withOutExpiry].map(
+        config => {
+          return {
+            channels,
+            config_id: config.value,
+            status: 'enabled',
+          };
+        }
+      ),
+    };
+
+    return this.props
+      .editReminders(this.props.paymentLinkReminder.id, data)
+      .then(resp => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Reminders are updated successfully',
+        });
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
+  disableReminderSetting = () => {
+    return this.props.disableReminders(this.props.paymentLinkReminder.id, {
+      active: false,
+    });
+  };
 
   render() {
     return (
@@ -26,8 +103,10 @@ export default class PaymentLinksSettings extends React.Component {
           type="Payment Links"
           emailDetails={emailDetails}
           onSaveClick={this.saveSettings}
-          saveToggleChange={this.saveToggleChange}
+          disableReminderSetting={this.disableReminderSetting}
           totalUnpaidLinks={this.state.totalUnpaidLinks}
+          withExpireByConfigs={this.props.withExpireByConfigs}
+          withOutExpireByConfigs={this.props.withOutExpireByConfigs}
         />
       </div>
     );
@@ -49,3 +128,11 @@ const emailDetails = {
     "Use our products like Payment Links or Invoices without any integration effort. Using these products you can collect payments using SMS, EMail, What'sapp, Chatbots, Messenger etc.",
   ],
 };
+
+function serializeConfig(item) {
+  return {
+    label: item.title,
+    value: item.id,
+    disabled: false,
+  };
+}

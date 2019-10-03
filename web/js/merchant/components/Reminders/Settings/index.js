@@ -4,12 +4,26 @@ import { withRouter, Prompt } from 'react-router-dom';
 import { findBy, objectDiff, isBlank } from 'rzp/utils/rzp-utils';
 
 import * as ModalActions from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
 
 import AdvancedSettings from './AdvancedSettings';
 import EmailPreviewModal from './EmailPreviewModal';
 import Footer from './Footer';
 import Header from './Header';
 import ReminderOptionSetting from './ReminderOptionSetting';
+
+const initState = {
+  maxNoReminders: 5,
+  withExpiry: [],
+  withOutExpiry: [],
+  advancedSettings: {
+    scheduledTime: '10AM - 12PM',
+    channels: {
+      sms: false,
+      email: true,
+    },
+  },
+};
 
 @withRouter
 @connect(
@@ -20,6 +34,7 @@ import ReminderOptionSetting from './ReminderOptionSetting';
   },
   {
     ...ModalActions,
+    showNotification,
   }
 )
 export default class ReminderSetting extends React.Component {
@@ -42,21 +57,14 @@ export default class ReminderSetting extends React.Component {
       settings: {
         ...initState,
       },
-      remindersList: [
-        {
-          value: '0',
-          label: 'Remind on due date',
-          disabled: false,
-        },
-        ...REMINDERS_LIST_WITHOUT_EXPIRY,
-      ],
-      withoutExprityRemindersList: [...REMINDERS_LIST_WITHOUT_EXPIRY],
+      withExpireByConfigs: props.withExpireByConfigs,
+      withOutExpireByConfigs: props.withOutExpireByConfigs,
     };
   }
 
-  saveToggleChange = () => {
+  disableReminderSetting = () => {
     return this.props
-      .saveToggleChange(``)
+      .disableReminderSetting()
       .then(() => {
         this.setState({
           checked: !this.state.checked,
@@ -81,7 +89,7 @@ export default class ReminderSetting extends React.Component {
 
   handleToggle = () => {
     if (!this.state.checked) {
-      return this.saveToggleChange();
+      return this.disableReminderSetting();
     }
 
     this.context.confirm({
@@ -92,7 +100,7 @@ export default class ReminderSetting extends React.Component {
       affirmativeLabel: 'Yes, disable',
       affirmativePendingLabel: 'Disabling...',
       abortLabel: 'No, don’t!',
-      action: this.saveToggleChange,
+      action: this.disableReminderSetting,
     });
   };
 
@@ -104,7 +112,7 @@ export default class ReminderSetting extends React.Component {
 
   onChange = type => (list, name) => {
     const listType =
-      name === 'with_expiry' ? 'remindersList' : 'withoutExprityRemindersList';
+      name === 'with_expiry' ? 'withExpireByConfigs' : 'withOutExpireByConfigs';
 
     this.setState({
       settings: {
@@ -129,7 +137,7 @@ export default class ReminderSetting extends React.Component {
           ...settings.advancedSettings,
           channels: {
             ...settings.advancedSettings.channels,
-            [type]: e.target.value ? '1' : '0',
+            [type]: e.target.checked,
           },
         },
       },
@@ -139,7 +147,7 @@ export default class ReminderSetting extends React.Component {
   showReminderEMailPreview = () => {
     this.props.openModal({
       size: 'large',
-      className: 'reminders-email-preivew-modal',
+      className: 'reminders-email-preview-modal',
       component: (
         <EmailPreviewModal
           onClose={this.props.closeModal}
@@ -178,8 +186,8 @@ export default class ReminderSetting extends React.Component {
     const {
         settings,
         checked,
-        remindersList,
-        withoutExprityRemindersList,
+        withExpireByConfigs,
+        withOutExpireByConfigs,
       } = this.state,
       { type } = this.props;
 
@@ -205,7 +213,7 @@ export default class ReminderSetting extends React.Component {
                 <ReminderOptionSetting
                   isExpiry
                   name="with_expiry"
-                  remindersList={remindersList}
+                  remindersList={withExpireByConfigs}
                   onChange={this.onChange('withExpiry')}
                   maxSelections={settings.maxNoReminders}
                   selectedReminders={settings.withExpiry}
@@ -216,7 +224,7 @@ export default class ReminderSetting extends React.Component {
                   maxSelections={settings.maxNoReminders}
                   onChange={this.onChange('withOutExpiry')}
                   selectedReminders={settings.withOutExpiry}
-                  remindersList={withoutExprityRemindersList}
+                  remindersList={withOutExpireByConfigs}
                 />
 
                 <AdvancedSettings
@@ -225,6 +233,7 @@ export default class ReminderSetting extends React.Component {
                 />
 
                 <Footer
+                  isSaveBtnDisable={!this.isChanged()}
                   onSaveClick={this.onSaveClick}
                   onPreviewClick={this.showReminderEMailPreview}
                   scheduledTime={settings.advancedSettings.scheduledTime}
@@ -237,30 +246,3 @@ export default class ReminderSetting extends React.Component {
     );
   }
 }
-
-const REMINDERS_LIST_WITHOUT_EXPIRY = [
-  // TODO: Remove when API is ready
-  { value: '1', label: 'Remind 1 day after issue date', disabled: false },
-  { value: '2', label: 'Remind 2 day after issue date', disabled: false },
-  { value: '3', label: 'Remind 3 day after issue date', disabled: false },
-  { value: '4', label: 'Remind 4 day after issue date', disabled: false },
-  { value: '5', label: 'Remind 5 day after issue date', disabled: false },
-  { value: '6', label: 'Remind 6 day after issue date', disabled: false },
-];
-
-const initState = {
-  // TODO: Remove when API is ready
-  maxNoReminders: 5,
-  withExpiry: [],
-  withOutExpiry: [
-    { value: '1', label: 'Remind 1 day after issue date' },
-    { value: '2', label: 'Remind 2 day after issue date' },
-  ],
-  advancedSettings: {
-    scheduledTime: '10AM - 12PM',
-    channels: {
-      sms: 0,
-      email: 1,
-    },
-  },
-};

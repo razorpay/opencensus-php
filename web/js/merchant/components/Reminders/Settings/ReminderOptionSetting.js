@@ -1,4 +1,4 @@
-import { findBy } from 'rzp/utils/rzp-utils';
+import { findBy, filterBy } from 'rzp/utils/rzp-utils';
 
 import Button from 'component/Button';
 
@@ -15,9 +15,7 @@ export default class ReminderOptionSetting extends React.Component {
   };
 
   handleRemove = value => () => {
-    const newList = this.props.selectedReminders.filter(
-      selectedReminder => selectedReminder.value !== value
-    );
+    const newList = filterBy(this.props.selectedReminders, 'value', value);
 
     this.props.onChange(newList);
   };

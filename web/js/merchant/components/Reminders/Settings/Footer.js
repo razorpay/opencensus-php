@@ -1,6 +1,11 @@
-import Button from 'component/Button';
+import Button, { AsyncBtn } from 'component/Button';
 
-export default ({ onSaveClick, scheduledTime, onPreviewClick }) => (
+export default ({
+  isSaveBtnDisable,
+  onSaveClick,
+  scheduledTime,
+  onPreviewClick,
+}) => (
   <div class="Reminders-settings__footer">
     <div class="content">
       Reminders will be sent to customers between {scheduledTime}. You can turn
@@ -10,6 +15,8 @@ export default ({ onSaveClick, scheduledTime, onPreviewClick }) => (
       </Button.Transparent>
     </div>
 
-    <Button.Primary onClick={onSaveClick}>Save Changes</Button.Primary>
+    <AsyncBtn.Primary disabled={isSaveBtnDisable} onClick={onSaveClick}>
+      Save Changes
+    </AsyncBtn.Primary>
   </div>
 );
