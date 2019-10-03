@@ -15,13 +15,15 @@ class Pdf extends Generator
 
     protected const PDF_MIME_TYPE      = 'application/pdf';
 
+    protected const PDF                = 'pdf';
+
     public function getStatement()
     {
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $this->data);
 
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
 
-        $tmpFileName = $this->generateFileName('pdf');
+        $tmpFileName = $this->generateFileName(self::PDF);
 
         $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
 
