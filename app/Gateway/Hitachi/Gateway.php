@@ -1228,7 +1228,7 @@ class Gateway extends Base\Gateway
         ];
 
 
-            if (($entity === 'payment') and ($this->isBharatQrPayment() === true))
+        if (($entity === 'payment') and ($this->isBharatQrPayment() === true))
         {
             $content[RequestFields::MERCHANT_REF_NUMBER] = $gatewayPayment->getRrn();
         }
