@@ -61,19 +61,6 @@ const contactFields = [
   },
 ];
 
-const businessDetails = [
-  {
-    label: 'Business Name',
-    name: 'contact_name',
-  },
-  {
-    label: 'Business Number',
-    name: 'contact_mobile',
-    type: 'tel',
-    info: 'We will reach out to this phone for any account related issues.',
-  },
-];
-
 const businessModel = [
   {
     label: 'Full Business Name',
@@ -313,7 +300,8 @@ const registrationDetails = [
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
-    _when: excludeFor_CompanyPan,
+    _when: activation =>
+      isL1Submitted(activation) && excludeFor_CompanyPan(activation),
   },
   [
     {
@@ -347,7 +335,8 @@ const registrationDetails = [
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
-      _when: excludeFor_Indiv,
+      _when: activation =>
+        excludeFor_Indiv(activation) && isL1Submitted(activation),
       description: activation => {
         if (activation.state.has_gstin == '1') {
           return 'You can add your GST details later once you are registered';
@@ -364,7 +353,9 @@ const registrationDetails = [
       name: 'gstin',
       _when: activation => {
         return (
-          excludeFor_Indiv(activation) && activation.state.has_gstin === '0'
+          excludeFor_Indiv(activation) &&
+          activation.state.has_gstin === '0' &&
+          isL1Submitted(activation)
         );
       },
       _autoRenderImpure: true, // Re-render to show the error
@@ -589,6 +580,10 @@ function excludeFor_Indiv(activation) {
     activation.state.dirty.business_type || activation.props.data.business_type;
 
   return [INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1;
+}
+
+function isL1Submitted(activation) {
+  return activation.props.user.isL1Submitted;
 }
 
 function excludeFor_CompanyPan(activation) {
