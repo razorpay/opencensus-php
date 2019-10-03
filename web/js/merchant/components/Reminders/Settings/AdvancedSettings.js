@@ -15,15 +15,14 @@ export default ({ channels, onChannelChange }) => (
               <Input.Check
                 name="sms"
                 fieldLabel="SMS"
-                defaultValue={channels.sms}
+                checked={channels.sms}
                 onChange={onChannelChange('sms')}
               />
 
               <Input.Check
                 name="email"
-                defaultValue="0"
                 fieldLabel="Email"
-                defaultValue={channels.email}
+                checked={channels.email}
                 onChange={onChannelChange('email')}
               />
             </div>

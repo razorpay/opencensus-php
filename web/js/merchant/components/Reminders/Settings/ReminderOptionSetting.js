@@ -1,4 +1,4 @@
-import { findBy } from 'rzp/utils/rzp-utils';
+import { findBy, filterBy } from 'rzp/utils/rzp-utils';
 
 import Button from 'component/Button';
 
@@ -14,9 +14,11 @@ export default class ReminderOptionSetting extends React.Component {
     this.props.onChange(newList, this.props.name);
   };
 
-  handleRemove = value => () => {
-    const newList = this.props.selectedReminders.filter(
-      selectedReminder => selectedReminder.value !== value
+  handleRemove = option => () => {
+    const newList = filterBy(
+      this.props.selectedReminders,
+      'value',
+      option.value
     );
 
     this.props.onChange(newList);
@@ -59,16 +61,18 @@ export default class ReminderOptionSetting extends React.Component {
           <div class="add-to-list">
             {selectedReminders.map((selectedOption, idx) => {
               return (
-                <RemovableSelect
-                  required
-                  key={idx}
-                  options={remindersList}
-                  selected={selectedOption}
-                  onChange={this.handleChange(idx)}
-                  highlightedOption={selectedOption}
-                  name={`${name}_${selectedOption.value}`}
-                  onRemove={this.handleRemove(selectedOption)}
-                />
+                selectedOption && (
+                  <RemovableSelect
+                    required
+                    key={idx}
+                    options={remindersList}
+                    selected={selectedOption}
+                    onChange={this.handleChange(idx)}
+                    highlightedOption={selectedOption}
+                    name={`${name}_${selectedOption.value}`}
+                    onRemove={this.handleRemove(selectedOption)}
+                  />
+                )
               );
             })}
 
