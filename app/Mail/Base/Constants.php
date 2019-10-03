@@ -34,6 +34,7 @@ class Constants
     const APPROVALS_OAUTH           = 'approvals_oauth';
     const BANK_DISPUTE_FILE         = 'dispute_file_upload';
     const LINKED_ACCOUNT_REVERSAL   = 'linked_account_reversal';
+    const CAPITAL_SUPPORT           = 'capital_support';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT                   => 'support@razorpay.com',
@@ -65,6 +66,7 @@ class Constants
         self::MERCHANT_ONBOARDING       => 'support@razorpay.com',
         self::LINKED_ACCOUNT_REVERSAL   => 'refunds@razorpay.com',
         self::GATEWAY_POD               => 'pod.gateway@razorpay.com',
+        self::CAPITAL_SUPPORT           => 'capital.support@razorpay.com',
     ];
 
     const HEADERS = [
@@ -89,5 +91,6 @@ class Constants
         self::BANK_DISPUTE_FILE         => 'Bank Dispute File',
         self::MERCHANT_ONBOARDING       => 'support@razorpay.com',
         self::LINKED_ACCOUNT_REVERSAL   => 'Linked Account Refunds File',
+        self::CAPITAL_SUPPORT           => 'Razorpay Capital Team'
     ];
 }
