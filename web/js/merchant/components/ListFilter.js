@@ -71,7 +71,7 @@ export default class ListFilter extends Component {
       <form
         name={form}
         onSubmit={handleSubmit(this.handleOnSubmit)}
-        class="list-filter-container"
+        class={`list-filter-container ${this.props.additionalClass}`}
       >
         {this.props.children}
         <div class="form-group list-filter-item btn-toolbar">

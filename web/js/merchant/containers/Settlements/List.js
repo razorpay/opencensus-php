@@ -27,6 +27,7 @@ import OndemandModal from './OndemandModal';
 import Amount from 'rzp/ui/Amount';
 import Button from 'component/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
+import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 import { trackInstantSettlementsBanner } from '../../components/Announcements/ga';
 
 @withRouter
@@ -232,7 +233,7 @@ export default class SettlementsListContainer extends ListContainer {
                     }
                   >
                     <a
-                      class="btn btn-link settlement-doc-btn"
+                      class="btn btn-link settlement-doc-btn pull-left"
                       href="http://razorpay.com/settlement"
                       target="_blank"
                       onClick={trackHowSettlementsWorkClicks}
@@ -241,16 +242,33 @@ export default class SettlementsListContainer extends ListContainer {
                       <span class="icon i-external-link" />
                     </a>
                   </ShowWhen>
-                  {this.props.user.isOrgAllowedFunctionality(
-                    'current_balance'
-                  ) && (
-                    <span class="settlement-balance-amount">
-                      Current Balance:{' '}
-                      <Amount value={balance} currency={'INR'} />
-                    </span>
-                  )}
-
                   {this.props.user.isOndemandSettlementEnabled && (
+                    <div className="box-left-pad10-inline">
+                      <ScheduledBanner fromWhere="Settlements" />
+                    </div>
+                  )}
+                </React.Fragment>
+              </HeaderAction>
+              <SettlementsListFilter
+                form="settlementsListFilter"
+                additionalClass="settle-list-filter"
+                count={this.state.count}
+                onSubmit={this.search}
+                onSearchAnalytics={this.onSearchAnalytics}
+                onClearAnalytics={this.onClearAnalytics}
+              />
+
+              <div className="pull-right">
+                {this.props.user.isOrgAllowedFunctionality(
+                  'current_balance'
+                ) && (
+                  <span class="settlement-balance-amount">
+                    Current Balance: <Amount value={balance} currency={'INR'} />
+                  </span>
+                )}
+
+                {this.props.user.isOndemandSettlementEnabled && (
+                  <div className="box-left-pad10-inline">
                     <Button.Primary
                       class="settle-btn"
                       onClick={this.showOndemandSettlementForm}
@@ -259,16 +277,9 @@ export default class SettlementsListContainer extends ListContainer {
                       <i className="i i-early-settlement settle-now-early" />
                       Settle Now
                     </Button.Primary>
-                  )}
-                </React.Fragment>
-              </HeaderAction>
-              <SettlementsListFilter
-                form="settlementsListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-                onSearchAnalytics={this.onSearchAnalytics}
-                onClearAnalytics={this.onClearAnalytics}
-              />
+                  </div>
+                )}
+              </div>
 
               {error && <Alert type="error" message={error} />}
 

@@ -1,0 +1,41 @@
+import React, { Component } from 'react';
+import Button from 'component/Button';
+import ScheduledModal from './ScheduledModal';
+import { connect } from 'react-redux';
+import * as ModalActions from 'rzp/modules/modals';
+
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  {
+    ...ModalActions,
+  }
+)
+export default class ScheduledBanner extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  openAutomatic = () => {
+    this.props.openModal({
+      component: <ScheduledModal fromWhere={this.props.fromWhere} />,
+      size: 'small',
+    });
+  };
+
+  render() {
+    return (
+      <div className="pull-right schedule-enable-container">
+        <i className="i i-early-settlement scheduled-enable" />
+        Get your settlements on the same day, automatically
+        <Button.Secondary
+          class="scheduled-btn-act"
+          onClick={this.openAutomatic}
+        >
+          Enable Now
+        </Button.Secondary>
+      </div>
+    );
+  }
+}
