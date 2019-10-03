@@ -91,7 +91,7 @@ pipeline:
   deploy-s3-beta:
     image: node:9-alpine
     environment:
-        - AWS_CDN_BUCKET=betacdn
+        - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard
         - CDN_BASE_URL=https://betacdn.razorpay.com/
