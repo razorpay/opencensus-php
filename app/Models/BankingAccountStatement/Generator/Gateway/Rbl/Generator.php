@@ -13,6 +13,8 @@ use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
 
 abstract class Generator extends Base
 {
+    const TEMP_STORAGE_DIR = '/tmp/';
+
     abstract function getStatement();
 
     # This will be set during class initialization, and will be available to all the Child Classes
@@ -25,6 +27,11 @@ abstract class Generator extends Base
         parent::__construct($accountNumber, $channel, $fromDate, $toDate);
 
         $this->data = $this->accountStatementData();
+    }
+
+    protected function generateFileName(string $format)
+    {
+        return $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.' . $format;
     }
 
     protected function accountStatementData()

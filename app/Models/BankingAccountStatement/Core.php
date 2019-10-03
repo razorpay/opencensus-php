@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use Mail;
+use File;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -11,13 +12,17 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
-use RZP\Models\FileStore\Accessor;
 use RZP\Mail\BankingAccount\StatementMail;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
 {
+    const STORE_TYPE = 'transactions';
+
+    const FILE_ID    = 'file_id';
+
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -102,9 +107,15 @@ class Core extends Base\Core
 
         $statementGenerator = $this->getGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
 
-        $statementFile = $statementGenerator->getStatement();
+        $bankingAccount = $this->repo
+                               ->banking_account
+                               ->findByAccountNumberAndChannel($accountNumber, $channel);
 
-        $fileAccessUrl = (new Accessor())->getSignedUrlOfFile($statementFile);
+        $temporaryFilePath = $statementGenerator->getStatement();
+
+        $ufhResponse = $this->uploadTemporaryFileToStore($temporaryFilePath, $bankingAccount);
+
+        $fileAccessUrl = $this->getDashboardFileAccessUrl($ufhResponse);
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
@@ -143,6 +154,73 @@ class Core extends Base\Core
             ]);
 
         Mail::queue($email);
+    }
+
+    protected function getDashboardFileAccessUrl($ufhResponse)
+    {
+        if(empty($ufhResponse))
+        {
+            return '';
+        }
+        return $this->config['applications.dashboard.url'] . 'ufh/file/' . $ufhResponse[self::FILE_ID];
+    }
+
+    protected function uploadTemporaryFileToStore($pathToTemporaryFile, BankingAccount\Entity $entity)
+    {
+        $ufhService = $this->app['ufh.service'];
+
+        $uploadedFileInstance = $this->getUploadedFileInstance($pathToTemporaryFile);
+
+        $response = '';
+
+        try
+        {
+            $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
+                                                         $name = File::name($pathToTemporaryFile),
+                                                         self::STORE_TYPE,
+                                                         $entity);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+                [
+                    'message' => 'UFH File Upload Failed',
+                    'error'   => $e->getMessage()
+                ]);
+        }
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+            [
+                'message' => 'UFH Response',
+                'error'   => $response
+            ]);
+
+        return $response;
+    }
+
+    protected function getUploadedFileInstance($path)
+    {
+        $name = File::name($path);
+
+        $extension = File::extension($path);
+
+        $originalName = $name . '.' . $extension;
+
+        $mimeType = File::mimeType($path);
+
+        $size = File::size($path);
+
+        $error = null;
+
+        // Setting as Test, because UploadedFile expects the file instance to be a temporary uploaded file, and
+        // reads from Local Path only in test mode. As our requirement is to always read from local path, so
+        // creating the UploadedFile instance in test mode.
+        $test = true;
+
+        $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);
+
+        return $object;
     }
 
     protected function getGenerator($accountNumber, $channel, $format, $fromDate, $toDate)

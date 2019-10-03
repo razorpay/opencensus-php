@@ -15,25 +15,25 @@ class Pdf extends Generator
 
     protected const PDF_MIME_TYPE      = 'application/pdf';
 
+    protected const PDF                = 'pdf';
+
     public function getStatement()
     {
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $this->data);
 
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
 
-        $fileName = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate;
+        $tmpFileName = $this->generateFileName(self::PDF);
 
-        $fileStoreHandle = (new FileStore\Creator())
-                                        ->name($fileName)
-                                        ->content($pdfAccountStatement)
-                                        ->extension(FileStore\Format::PDF)
-                                        ->mime(self::PDF_MIME_TYPE)
-                                        ->store(FileStore\Store::S3)
-                                        ->type(FileStore\Type::RBL_STATEMENT)
-                                        ->save()
-                                        ->getFileInstance();
+        $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
 
-        return $fileStoreHandle;
+        $fileHandle = fopen($tmpFileFullPath, 'w');
+
+        fwrite($fileHandle, $pdfAccountStatement);
+
+        fclose($fileHandle);
+
+        return $tmpFileFullPath;
     }
 
     protected function getPdfContent(string $html): string
@@ -48,7 +48,6 @@ class Pdf extends Generator
             'zoom'             => 1,
             'ignoreWarnings'   => false,
             'encoding'         => 'UTF-8',
-            'binary'           => '/usr/local/bin/wkhtmltopdf',
         ];
 
         $pdf = (new PdfLibrary($options))->addPage($html);
