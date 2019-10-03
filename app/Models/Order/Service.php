@@ -262,9 +262,9 @@ class Service extends Base\Service
                (isset($input[Entity::ACCOUNT_NUMBER]) === true));
     }
 
-    public function fetch($id)
+    public function fetch($id, array $input = [])
     {
-        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant);
+        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $order->toArrayPublic();
     }

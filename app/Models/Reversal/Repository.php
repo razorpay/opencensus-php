@@ -75,19 +75,15 @@ class Repository extends Base\Repository
     public function fetchFeesAndTaxForRefundByType(
         string $merchantId,
         int $start,
-        int $end,
-        string $filterType)
+        int $end)
     {
         /*
             SELECT Sum(reversals.tax) AS tax,
                    Sum(reversals.fee) AS fee
             FROM   `reversals`
-                   INNER JOIN `refunds`
-                           ON `reversals`.`entity_id` = `refunds`.`id`
             WHERE  `reversals`.`entity_type` = ?
                    AND `reversals`.`created_at` BETWEEN ? AND ?
                    AND `reversals`.`merchant_id` = ?
-                   AND `refunds`.`base_amount` <= ?
             LIMIT  1
          */
         $query = $this->newQuery()
@@ -95,41 +91,7 @@ class Repository extends Base\Repository
             ->where($this->dbColumn(Entity::ENTITY_TYPE), '=', E::REFUND)
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
 
-        $query->join(
-            $this->repo->refund->getTableName(),
-            function(JoinClause $join)
-            {
-                $refundIdAttr = $this->repo->refund->dbColumn(Entity::ID);
-                $entityIdAttr = $this->dbColumn(Entity::ENTITY_ID);
-
-                $join->on($entityIdAttr, $refundIdAttr);
-            });
-
         $query->merchantId($merchantId);
-
-        $refundBaseAmountColumn = $this->repo->refund->dbColumn(Refund\Entity::BASE_AMOUNT);
-
-        switch ($filterType)
-        {
-            case InvoiceType::REFUND_LTE_1K:
-                $query = $query->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF);
-
-                break;
-
-            case InvoiceType::REFUND_GT_1K_LTE_10K:
-                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF)
-                    ->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
-
-                break;
-
-            case InvoiceType::REFUND_GT_10K:
-                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
-
-                break;
-
-            default:
-                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
-        }
 
         return $query->first();
     }

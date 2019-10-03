@@ -109,6 +109,9 @@ class Entity extends Base\PublicEntity
     const CONTACT_ID    = 'contact_id';
     const CONTACT_EMAIL = 'contact_email';
     const CONTACT_TYPE  = 'contact_type';
+    const REVERSED_FROM = 'reversed_from';
+    const REVERSED_TO   = 'reversed_to';
+    const PRODUCT       = 'product';
 
     const PENDING_ON_ME    = 'pending_on_me';
     const PENDING_ON_ROLES = 'pending_on_roles';
