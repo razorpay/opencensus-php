@@ -20,6 +20,12 @@ class RblBankingAccountStatementTest extends TestCase
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
 
+    const UFH_FILE_PATH_REGEX    = '/.*\/ufh\/file\/(.*)/';
+
+    const MOCK_UFH_BASE_LOCATION = 'files/filestore';
+
+    const FILE_PATH              = 'file_path';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/RblBankingAccountStatementTestData.php';
@@ -58,15 +64,13 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->sendRequest($request);
 
-        $transactions = $this->getDbEntities(EntityConstants::TRANSACTION);
-
         $this->ba->privateAuth();
 
         $currentTime = time();
 
         $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
 
-        $file_path = $response['file_path'];
+        $file_path = $response[self::FILE_PATH];
 
         $this->assertEquals(true, $this->verifyBankAccountStatementFileUrl($file_path));
 
@@ -85,8 +89,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
-
-        $transactions = $this->getDbEntities(EntityConstants::TRANSACTION);
 
         $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
 
@@ -250,28 +252,41 @@ class RblBankingAccountStatementTest extends TestCase
      */
     protected function verifyBankAccountStatementFileUrl($filePath)
     {
-        return preg_match('/.*\/ufh\/file\/(.*)/',$filePath);
+        return preg_match(self::UFH_FILE_PATH_REGEX,$filePath);
     }
 
     protected function verifyGeneratedXlsxFile($currentTime)
     {
-        $fileName = storage_path('files/filestore') . '/2224440041626905_946684800_' . $currentTime . '.xlsx';
+        $openingBalanceCell = 'B34';
+
+        $closingBalanceCell = 'B35';
+
+        $effectiveBalanceCell = 'B36';
+
+        $expectedOpeningBalance = 113.55;
+
+        $expectedClosingBalance = 214.5;
+
+        $expectedEffectiveBalance = 214.5;
+
+        $fileName = storage_path(self::MOCK_UFH_BASE_LOCATION) .
+                                     '/2224440041626905_946684800_' . $currentTime . '.xlsx';
 
         $spreadsheet = IOFactory::load($fileName);
 
         $activeSheet = $spreadsheet->getActiveSheet();
 
-        $openingBalance = $activeSheet->getCell('B34')->getValue();
+        $openingBalance = $activeSheet->getCell($openingBalanceCell)->getValue();
 
-        $closingBalance = $activeSheet->getCell('B35')->getValue();
+        $closingBalance = $activeSheet->getCell($closingBalanceCell)->getValue();
 
-        $effectiveBalance = $activeSheet->getCell('B36')->getValue();
+        $effectiveBalance = $activeSheet->getCell($effectiveBalanceCell)->getValue();
 
-        $this->assertEquals(113.55 , $openingBalance);
+        $this->assertEquals($expectedOpeningBalance , $openingBalance);
 
-        $this->assertEquals(214.5 , $closingBalance);
+        $this->assertEquals($expectedClosingBalance , $closingBalance);
 
-        $this->assertEquals(214.5 , $effectiveBalance);
+        $this->assertEquals($expectedEffectiveBalance , $effectiveBalance);
     }
 
     protected function getRblDataResponse()
