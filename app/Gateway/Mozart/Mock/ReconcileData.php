@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
 
@@ -61,6 +63,15 @@ class ReconcileData extends Base\Mock\Server
 
     public function netbanking_cub($entities)
     {
+        if (isset($entities['reconRequest']['meta_data']['gateway_failure'])){
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
+                '',
+                '',
+                ['message' => 'Request to gateway failed']
+            );
+        }
+
         if (isset($entities['reconRequest']['meta_data']['return_no_records'])){
             return [
                 'data'              => [
@@ -72,6 +83,7 @@ class ReconcileData extends Base\Mock\Server
                 'external_trace_id' => '',
             ];
         }
+
         $response = [
             'data' =>
                 [

@@ -49,10 +49,28 @@ class CrawlerReconTest extends TestCase
         $this->gateway = 'netbanking_cub';
 
         $reconException  = false;
-        
+
         try
         {
             $this->reconcile('NetbankingCub', ['return_no_records' => true]);
+        }
+        catch (ReconciliationException $e)
+        {
+            $reconException = true;
+        }
+
+        $this->assertTrue($reconException);
+    }
+
+    public function testCubCrawlerReconciliationGatewayFailure()
+    {
+        $this->gateway = 'netbanking_cub';
+
+        $reconException  = false;
+
+        try
+        {
+            $this->reconcile('NetbankingCub', ['gateway_failure' => true]);
         }
         catch (ReconciliationException $e)
         {
