@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
-use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;

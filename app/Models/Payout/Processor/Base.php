@@ -107,7 +107,7 @@ class Base extends BaseCore
 
             $downstreamProcessor->process();
 
-            if ($payout->getStatus() === null)
+            if (empty($payout->getStatus()) === true)
             {
                 $payout->setStatus(Status::CREATED);
             }
