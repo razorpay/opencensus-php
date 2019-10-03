@@ -3,9 +3,9 @@
 namespace RZP\Tests\Functional\BankingAccountStatement;
 
 use Mockery;
-
 use RZP\Services\Mozart;
 use RZP\Tests\Functional\TestCase;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -62,13 +62,15 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $response = $this->startTest(['request' => ['content' => ['to_date' => time()]]]);
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
 
         $file_path = $response['file_path'];
 
         $this->assertEquals(true, $this->verifyBankAccountStatementFileUrl($file_path));
 
-        # storage_path('files/filestore'), go to this location and get the file and convert to a processable XLSX
+        $this->verifyGeneratedXlsxFile($currentTime);
     }
 
     /**
@@ -249,6 +251,27 @@ class RblBankingAccountStatementTest extends TestCase
     protected function verifyBankAccountStatementFileUrl($filePath)
     {
         return preg_match('/.*\/ufh\/file\/(.*)/',$filePath);
+    }
+
+    protected function verifyGeneratedXlsxFile($currentTime)
+    {
+        $fileName = storage_path('files/filestore') . '/2224440041626905_946684800_' . $currentTime . '.xlsx';
+
+        $spreadsheet = IOFactory::load($fileName);
+
+        $activeSheet = $spreadsheet->getActiveSheet();
+
+        $openingBalance = $activeSheet->getCell('B34')->getValue();
+
+        $closingBalance = $activeSheet->getCell('B35')->getValue();
+
+        $effectiveBalance = $activeSheet->getCell('B36')->getValue();
+
+        $this->assertEquals(113.55 , $openingBalance);
+
+        $this->assertEquals(214.5 , $closingBalance);
+
+        $this->assertEquals(214.5 , $effectiveBalance);
     }
 
     protected function getRblDataResponse()
