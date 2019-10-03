@@ -72,7 +72,7 @@ class Xlsx extends Generator
         ];
 
     # this will be determined after we know the transaction counts
-    protected $SUMMARY_KEY_MAP =
+    protected $SUMMARY_KEY_MAP  =
         [
             XLSXHeaders::STATEMENT_SUMMARY        => '',
             XLSXHeaders::OPENING_BALANCE          => '',
@@ -105,6 +105,8 @@ class Xlsx extends Generator
             TransactionLineItem::DEPOSIT_AMOUNT      => 'F',
             TransactionLineItem::BALANCE             => 'G',
         ];
+
+    const XLSX                          = 'xlsx';
 
     const LOGO_CELL_RANGE               = 'A1:E1';
 
@@ -187,7 +189,7 @@ class Xlsx extends Generator
     {
         $spreadsheet = $this->createTableView($this->data);
 
-        $tmpFileName = $this->generateFileName('xlsx');
+        $tmpFileName = $this->generateFileName(self::XLSX);
 
         $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
 
