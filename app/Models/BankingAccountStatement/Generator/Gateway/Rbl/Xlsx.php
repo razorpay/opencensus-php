@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 
-use RZP\Models\FileStore;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -73,7 +72,7 @@ class Xlsx extends Generator
         ];
 
     # this will be determined after we know the transaction counts
-    protected $SUMMARY_KEY_MAP =
+    protected $SUMMARY_KEY_MAP  =
         [
             XLSXHeaders::STATEMENT_SUMMARY        => '',
             XLSXHeaders::OPENING_BALANCE          => '',
@@ -106,6 +105,8 @@ class Xlsx extends Generator
             TransactionLineItem::DEPOSIT_AMOUNT      => 'F',
             TransactionLineItem::BALANCE             => 'G',
         ];
+
+    const XLSX                          = 'xlsx';
 
     const LOGO_CELL_RANGE               = 'A1:E1';
 
@@ -188,23 +189,15 @@ class Xlsx extends Generator
     {
         $spreadsheet = $this->createTableView($this->data);
 
-        $tmpFileName = $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate;
+        $tmpFileName = $this->generateFileName(self::XLSX);
 
-        $tmpFileFullPath = storage_path('tmp/' . $tmpFileName);
+        $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
 
         $writer = new XlsxWriter($spreadsheet);
 
         $writer->save($tmpFileFullPath);
 
-        $fileStoreHandle = (new FileStore\Creator())->localFilePath($tmpFileFullPath)
-                                                    ->name($tmpFileName)
-                                                    ->mime(self::DEFAULT_XLSX_FORMAT)
-                                                    ->extension(FileStore\Format::XLSX)
-                                                    ->type(FileStore\Type::RBL_STATEMENT)
-                                                    ->save()
-                                                    ->getFileInstance();
-
-        return $fileStoreHandle;
+        return $tmpFileFullPath;
     }
 
     protected function createTableView($statementDate): Spreadsheet
