@@ -280,7 +280,6 @@ export function reportsReducer(state = initialState, action) {
       return set(state, 'currentReportList', currentReportList);
 
     case `${SAVE_REPORT_CONFIGS}::SUCCESS`:
-      console.log('ACTION.......', action.payload);
       return set(state, 'reportConfigs', action.payload.items);
 
     case `${REMOVE_REPORT}`:

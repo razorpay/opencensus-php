@@ -28,6 +28,14 @@ export default class PaymentsList extends ListContainer {
     super(props);
   }
 
+  // Hook to modify fetchAll of ListContainer
+  fetchAll = params => {
+    return this.props.fetchAll({
+      ...params,
+      payment_link_id: this.props.paymentPageId,
+    });
+  };
+
   render() {
     const { children, ...restProps } = this.props;
 
@@ -39,6 +47,7 @@ export default class PaymentsList extends ListContainer {
           form="paymentListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          fetchAll={this.fetchAll}
         />
         <PaymentsTable
           count={this.state.count}

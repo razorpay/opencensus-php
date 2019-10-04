@@ -386,7 +386,7 @@ export default class PaymentPagesV3Entity extends React.Component {
             </div>
           </div>
 
-          <PaymentsList />
+          <PaymentsList paymentPageId={paymentPageEntity.id} />
         </div>
       </React.Fragment>
     );
