@@ -1872,6 +1872,11 @@ class Entity extends Base\PublicEntity
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
 
+    public function isHeadlessEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::HEADLESS_DISABLE) === false;
+    }
+
     /**
      * Used for Marketplace, dashboard:
      * Return report data for a linked account under a marketplace merchant
@@ -2070,7 +2075,7 @@ class Entity extends Base\PublicEntity
         $headless   = false;
         $expressPay = false;
 
-        if ($this->isFeatureEnabled(Feature\Constants::HEADLESS) === true)
+        if ($this->isHeadlessEnabled() === true)
         {
             $headless = $iin->isHeadLessOtp();
         }

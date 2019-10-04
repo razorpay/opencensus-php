@@ -96,7 +96,6 @@ class Constants
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_AUTOMATIC                    = 'es_automatic';
-    const HEADLESS                        = 'headless';
     const HEADLESS_DISABLE                = 'headless_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
@@ -363,7 +362,6 @@ class Constants
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
         self::ES_AUTOMATIC                    => true,
-        self::HEADLESS                        => true,
         self::HEADLESS_DISABLE                => true,
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,

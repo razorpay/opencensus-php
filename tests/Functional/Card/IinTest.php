@@ -131,7 +131,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless', 'charge_at_will']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'charge_at_will']);
 
         $this->startTest();
     }
@@ -156,8 +156,6 @@ class IinTest extends TestCase
         ];
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
-
-        $this->fixtures->merchant->addFeatures(['headless']);
 
         $response = $this->startTest();
 
@@ -257,7 +255,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay']);
 
         $this->ba->privateAuth();
 
@@ -276,7 +274,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay']);
 
         $this->ba->privateAuth();
 

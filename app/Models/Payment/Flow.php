@@ -21,22 +21,8 @@ class Flow
         ],
     ];
 
-    public static $featureToFlowMap = [
-        self::HEADLESS_OTP => Feature\Constants::HEADLESS,
-    ];
-
     public static function getFlowForMethod($method)
     {
         return self::$flows[$method];
-    }
-
-    public static function isFeatureBasedFlowEnabled($merchant, $flow)
-    {
-        if (isset(self::$featureToFlowMap[$flow]) === true)
-        {
-            return $merchant->isFeatureEnabled(self::$featureToFlowMap[$flow]);
-        }
-
-        return true;
     }
 }
