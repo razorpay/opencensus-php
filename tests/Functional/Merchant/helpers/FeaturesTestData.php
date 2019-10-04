@@ -463,6 +463,31 @@ return [
         ]
     ],
 
+    'testEnableEsAutomaticFeaturesFailure' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'es_automatic' => '1'
+                ]
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
     'testUpdateMerchantProductFeatures' => [
         'request' => [
             'content' => [
@@ -743,7 +768,6 @@ return [
                     'transaction_v2',
                     'es_on_demand',
                     'es_automatic',
-                    'headless',
                     'headless_disable',
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
@@ -923,7 +947,7 @@ return [
             'method'  => 'POST',
             'url'     => '/accounts/me/features',
             'content' => [
-                'names' => ['es_on_demand'],
+                'names' => ['zoho'],
             ],
         ],
         'response' => [

@@ -3256,6 +3256,19 @@ return [
         ]
     ],
 
+    'testFetchEsScheduledPricing' => [
+        'request' => [
+            'url' => '/es/scheduled_pricing',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'percent_rate' => 20,
+                'fixed_rate' => 0,
+            ]
+        ]
+    ],
+
     'testPutEmiMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',

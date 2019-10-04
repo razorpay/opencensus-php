@@ -49,6 +49,15 @@ class Service extends Base\Service
             $data[Constants::FEATURES][$feature] = "1";
         }
 
+        $merchant = $this->merchant;
+
+        $EsOnDemandFeature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+            $merchant->getEntity(),
+            $merchant->getId(),
+            Constants::ES_ON_DEMAND);
+
+        $data['es_enabled'] = ($EsOnDemandFeature === null) ? false : true;
+
         $merchantValidator = new Merchant\Validator;
 
         $merchantValidator->validateVisibleAndEditableFeatures($data);

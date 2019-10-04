@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         RequestFields::MERCHANT_ID              => 'required|string',
         RequestFields::TERMINAL_ID              => 'required_if:transaction_type,RU|string',
         RequestFields::RETRIEVAL_REF_NUM        => 'required_if:transaction_type,RU|string|size:12',
-        RequestFields::MERCHANT_REF_NUMBER      => 'required|alpha_num|size:14',
+        RequestFields::MERCHANT_REF_NUMBER      => 'required|alpha_num',
         RequestFields::AUTH_STATUS              => 'sometimes|string',
         RequestFields::ECI                      => 'sometimes|numeric',
         RequestFields::XID                      => 'sometimes|string',
@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         RequestFields::MERCHANT_ID              => 'required|string',
         RequestFields::TERMINAL_ID              => 'required|string',
         RequestFields::RETRIEVAL_REF_NUM        => 'required|string|size:12',
-        RequestFields::MERCHANT_REF_NUMBER      => 'required|alpha_num|size:14',
+        RequestFields::MERCHANT_REF_NUMBER      => 'required|alpha_num',
         RequestFields::ECI                      => 'required|numeric|in:07',
         RequestFields::CURRENCY_CODE            => 'required|string',
         RequestFields::AUTH_ID                  => 'required|numeric',
@@ -64,7 +64,7 @@ class Validator extends Base\Validator
         RequestFields::TRANSACTION_AMOUNT  => 'required|numeric',
         RequestFields::MERCHANT_ID         => 'required|string',
         RequestFields::TERMINAL_ID         => 'required|string',
-        RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num|size:14',
+        RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num',
     ];
 
     protected static $refundRules = [
@@ -76,7 +76,7 @@ class Validator extends Base\Validator
         RequestFields::RETRIEVAL_REF_NUM   => 'required|string|size:12',
         RequestFields::MERCHANT_ID         => 'required|string',
         RequestFields::TERMINAL_ID         => 'required|string',
-        RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num|size:14',
+        RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num',
     ];
 
     protected static $captureRules = [
@@ -87,7 +87,7 @@ class Validator extends Base\Validator
         RequestFields::TRANSACTION_DATE    => 'required|string|date_format:md',
         RequestFields::RETRIEVAL_REF_NUM   => 'required|string|size:12',
         RequestFields::MERCHANT_ID         => 'required|string',
-        RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num|size:14',
+        RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num',
     ];
 
     protected static $reverseRules = [
@@ -97,7 +97,7 @@ class Validator extends Base\Validator
         RequestFields::TRANSACTION_DATE    => 'required|string|date_format:md',
         RequestFields::RETRIEVAL_REF_NUM   => 'required|string|size:12',
         RequestFields::MERCHANT_ID         => 'required|string',
-        RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num|size:14',
+        RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num',
     ];
 
     protected static $merchantOnboardRules = [

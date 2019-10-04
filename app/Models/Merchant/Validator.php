@@ -153,6 +153,7 @@ class Validator extends Base\Validator
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',
         Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
+        'es_enabled'                => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [
@@ -708,6 +709,16 @@ class Validator extends Base\Validator
                     'feature',
                     [$feature]);
             }
+            // Only Merchant who have feature ES_ON_DEMAND enabled can change ES features
+            else if (($input['es_enabled'] === false) and
+                     (($feature === Feature\Constants::ES_AUTOMATIC) or
+                     ($feature === Feature\Constants::ES_ON_DEMAND)))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                    'feature',
+                    [$feature]);
+            }
         }
     }
 
@@ -1203,6 +1214,18 @@ class Validator extends Base\Validator
                     'merchant_name'    => $merchant->getName(),
                     'business_banking' => $merchant->isBusinessBankingEnabled()
                 ]);
+        }
+    }
+
+    public function validateAndTranslateToAccountNumberForBankingIfApplicable(array & $input)
+    {
+        $product       = array_get($input, Entity::PRODUCT);
+        $accountNumber = array_get($input, Balance\Entity::ACCOUNT_NUMBER);
+
+        if ((empty($product) === true) or
+            (empty($accountNumber) === false))
+        {
+            $this->validateAndTranslateAccountNumberForBanking($input);
         }
     }
 

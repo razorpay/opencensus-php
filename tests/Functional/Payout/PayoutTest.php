@@ -1345,6 +1345,20 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
+    public function testFetchMultiplePayoutsWithBankingProductParameter()
+    {
+        $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultiplePayoutsWithPrimaryProductParameter()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
     public function testBulkPayout()
     {
         $this->ba->batchAuth();

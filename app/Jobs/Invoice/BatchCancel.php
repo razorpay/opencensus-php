@@ -15,7 +15,7 @@ class BatchCancel extends Job
     /**
      * {@inheritDoc}
      */
-    protected $queueConfigKey = 'batch';
+    protected $queueConfigKey = 'merchant_invoice';
 
     /**
      * Batch entity id.

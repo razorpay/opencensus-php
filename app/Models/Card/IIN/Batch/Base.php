@@ -9,6 +9,8 @@ use RZP\Models\Base\Core as BaseCore;
 
 abstract class Base extends BaseCore
 {
+    const IDEMPOTENT_ID                   = 'idempotent_id';
+
     protected $input;
 
     protected $iin;
@@ -37,7 +39,7 @@ abstract class Base extends BaseCore
     {
         if ($this->shouldSkip() === true)
         {
-            return;
+            return ['skipped' => true];
         }
 
         $this->parseEntry();

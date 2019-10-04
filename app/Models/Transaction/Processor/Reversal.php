@@ -3,9 +3,11 @@
 namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
+use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant;
 use RZP\Models\Pricing\Feature;
 use RZP\Models\Reversal as ReversalModel;
 use RZP\Models\Transaction\ReconciledType;
@@ -71,12 +73,23 @@ class Reversal extends Base
      */
     public function calculateFees()
     {
-        $this->credit = $this->source->getAmount() + $this->source->getFee();
+        $creditAmount = $this->source->getAmount() + $this->source->getFee();
+        $debitAmount = $this->source->entity->getAmount() + $this->source->entity->getFee();
 
-        if ($this->source->getEntityType() === 'refund')
+        if ($this->source->entity->transaction->isPostpaid() === true)
         {
-            $debitAmount = $this->source->entity->getAmount() + $this->source->entity->getFee();
+            $creditAmount -= $this->source->getFee();
+            $debitAmount -= $this->source->entity->getFee();
 
+            $this->txn->setFeeModel(Merchant\FeeModel::POSTPAID);
+        }
+
+        $this->credit = $creditAmount;
+
+        // These checks are specifically used for Instant refunds
+        if ($this->source->getEntityType() === Entity::REFUND)
+        {
+            // Checking if refund source is credits
             if (($this->source->entity->transaction->getDebit() === 0) and
                 ($this->source->entity->transaction->getCredits() === $debitAmount))
             {

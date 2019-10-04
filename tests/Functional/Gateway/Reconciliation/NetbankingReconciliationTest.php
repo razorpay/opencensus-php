@@ -1061,7 +1061,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->assertNull($transactionEntity['reconciled_at']);
 
-        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
 

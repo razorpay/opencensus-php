@@ -438,4 +438,9 @@ class EventCode
         'group' => 'onboarding',
         'name'  => 'kyc.save_registration_details.failed',
     ];
+
+    const PAYMENT_PAGE_CREATED = [
+        'group' => 'payment_page',
+        'name'  => 'payment_page.created',
+    ];
 }
