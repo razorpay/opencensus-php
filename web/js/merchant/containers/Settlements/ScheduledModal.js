@@ -81,6 +81,7 @@ export default class ScheduledModal extends Component {
   onEnable = () => {
     let payload = {
       features: {
+        es_on_demand: '0',
         es_automatic: '1',
       },
       should_sync: 1,

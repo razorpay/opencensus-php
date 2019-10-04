@@ -16,6 +16,7 @@ import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { showNotification } from 'rzp/modules/notifications';
 import {
   trackEarlySettlementRequests,
@@ -265,6 +266,19 @@ export default class SettlementsListContainer extends ListContainer {
                   <span class="settlement-balance-amount">
                     Current Balance: <Amount value={balance} currency={'INR'} />
                   </span>
+                )}
+                {this.props.user.isAutomaticSettlementEnabled && (
+                  <>
+                    <i className="i i-early-settlement settle-current-icon">
+                      <Popover align="left" theme="dark">
+                        <PopoverBody>
+                          <span>
+                            Early Settlment has been enabled with your account.
+                          </span>
+                        </PopoverBody>
+                      </Popover>
+                    </i>
+                  </>
                 )}
 
                 {this.props.user.isOndemandSettlementEnabled && (
