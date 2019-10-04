@@ -73,10 +73,36 @@ class Gateway extends Base\Gateway
 
         $this->checkActionStatus($content);
 
+        $this->verifyCallback($gatewayPayment, $input);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
+
+    protected function verifyCallback($gatewayPayment, array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $response = $verify->verifyResponseContent;
+
+        $authContent = $this->getAuthContentFromVerifyResponse($verify, $response);
+
+        $this->checkGatewaySuccess($verify, $authContent);
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+    }
+
 
     public function refund(array $input)
     {

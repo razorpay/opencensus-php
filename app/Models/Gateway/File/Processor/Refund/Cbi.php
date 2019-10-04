@@ -88,36 +88,6 @@ class Cbi extends Base
         return static::FILE_NAME . $dateTime;
     }
 
-    protected function formatDataForMail(array $data)
-    {
-
-        $file = $this->gatewayFile
-                     ->files()
-                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                     ->first();
-
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
-
-        $totalAmount = array_reduce($data, function ($carry, $item)
-        {
-            $carry += ($item['refund']['amount'] / 100);
-
-            return $carry;
-        });
-
-        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
-
-        $mailData = [
-            'file_name'  => $file->getLocation(),
-            'signed_url' => $signedUrl,
-            'count'      => count($data),
-            'amount'     => number_format($totalAmount, 2, '.', ''),
-            'date'       => $today
-        ];
-
-        return $mailData;
-    }
-
     public function generateData(PublicCollection $refunds)
     {
         $data = [];

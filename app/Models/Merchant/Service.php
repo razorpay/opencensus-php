@@ -39,6 +39,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Constants\{Mode, Entity as CE};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
@@ -1555,6 +1556,22 @@ class Service extends Base\Service
         ];
     }
 
+    public function getScheduledEarlySettlementPricingForMerchant(): array
+    {
+        $pricingPlanId = $this->merchant->getPricingPlanId();
+
+        $scheduledPricing = $this->repo->pricing->getFirstPricingPlanByIdAndFeatureWithoutOrgId($pricingPlanId, PricingFeature::ESAUTOMATIC);
+
+        if ($scheduledPricing === null)
+        {
+            throw new Exception\LogicException(
+                'ES scheduled Pricing has not been assigned to the merchant.',
+                ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND);
+        }
+
+        return $scheduledPricing->toArrayPublic();
+    }
+
     public function addOrRemoveMerchantFeatures(array $input)
     {
         $this->trace->info(
@@ -2415,7 +2432,8 @@ class Service extends Base\Service
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
-        else if ((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false)
+        else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
+                 ($merchant->canCommunicateWithSubmerchant() === true))
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }

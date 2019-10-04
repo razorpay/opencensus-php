@@ -501,6 +501,7 @@ final class Route
         'set_gateway_downtime_conf'                => ['put',      'gateway/downtime/conf',                          'AdminController@setGatewayDowntimeConf'                            ],
         'get_gateway_downtime_conf'                => ['get',      'gateway/downtime/conf',                          'AdminController@getGatewayDowntimeConf'                            ],
         'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
+        'get_scheduled_es_pricing_merchant'        => ['get',      'es/scheduled_pricing',                           'MerchantController@getScheduledEarlySettlementPricingForMerchant'  ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'                => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
@@ -1720,6 +1721,7 @@ final class Route
         'merchant_document_upload',
         'merchant_document_delete',
         'get_es_pricing_merchant',
+        'get_scheduled_es_pricing_merchant',
         'merchant_edit_config_la',
         'merchant_fetch_users',
         'setl_fetch_transactions',
@@ -3074,6 +3076,7 @@ final class Route
             'refund_speed_processed_backfill',
             'get_setl_amount',
             'cps_sync_gateway_entities_cron',
+            'reconciliate',
             'mailing_list_remove_suspended_merchant',
         ],
 
@@ -3294,6 +3297,11 @@ final class Route
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
         'mpans_issue'                          => [Feature::ISSUE_MPANS],
         'mpans_fetch'                          => [Feature::ISSUE_MPANS],
+        'account_create'                       => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_list'                         => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
     ];
 
     /*
