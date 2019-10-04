@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\BankingAccountStatement;
 
+use Mail;
 use Mockery;
-
 use RZP\Services\Mozart;
 use RZP\Tests\Functional\TestCase;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -19,6 +21,12 @@ class RblBankingAccountStatementTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
+
+    const UFH_FILE_PATH_REGEX    = '/.*\/ufh\/file\/(.*)/';
+
+    const MOCK_UFH_BASE_LOCATION = 'files/filestore';
+
+    const FILE_PATH              = 'file_path';
 
     public function setUp()
     {
@@ -37,12 +45,42 @@ class RblBankingAccountStatementTest extends TestCase
             'channel'               => 'rbl',
             'pincode'               => '1',
             'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
         ]);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
         $this->fixtures->balance->edit($this->balance->getId(),
             ['balance' => 10000, 'account_type' => 'direct', 'channel' => 'rbl']);
+    }
+
+    public function testRblXlsxStatementGeneration()
+    {
+        $this->addTestTransactions();
+
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+
+        $file_path = $response[self::FILE_PATH];
+
+        $this->assertEquals(true, $this->verifyBankAccountStatementFileUrl($file_path));
+
+        $this->verifyGeneratedXlsxFile($currentTime);
+
+    }
+
+    public function testRblXlsxStatementEmailSent()
+    {
+        Mail::fake();
+
+        $this->addTestTransactions();
+
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+
+        Mail::assertQueued(StatementMail::class);
     }
 
     /**
@@ -210,6 +248,51 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    /**
+     * Will check if the URL is correct.
+     * It should be : <beta-dashboard>/ufh/file/<file_id>
+     * @param $filePath
+     * @return True/False
+     */
+    protected function verifyBankAccountStatementFileUrl($filePath)
+    {
+        return preg_match(self::UFH_FILE_PATH_REGEX,$filePath);
+    }
+
+    protected function verifyGeneratedXlsxFile($currentTime)
+    {
+        $openingBalanceCell = 'B34';
+
+        $closingBalanceCell = 'B35';
+
+        $effectiveBalanceCell = 'B36';
+
+        $expectedOpeningBalance = 113.55;
+
+        $expectedClosingBalance = 214.5;
+
+        $expectedEffectiveBalance = 214.5;
+
+        $fileName = storage_path(self::MOCK_UFH_BASE_LOCATION) .
+                                     '/2224440041626905_946684800_' . $currentTime . '.xlsx';
+
+        $spreadsheet = IOFactory::load($fileName);
+
+        $activeSheet = $spreadsheet->getActiveSheet();
+
+        $openingBalance = $activeSheet->getCell($openingBalanceCell)->getValue();
+
+        $closingBalance = $activeSheet->getCell($closingBalanceCell)->getValue();
+
+        $effectiveBalance = $activeSheet->getCell($effectiveBalanceCell)->getValue();
+
+        $this->assertEquals($expectedOpeningBalance , $openingBalance);
+
+        $this->assertEquals($expectedClosingBalance , $closingBalance);
+
+        $this->assertEquals($expectedEffectiveBalance , $effectiveBalance);
     }
 
     protected function getRblDataResponse()
@@ -444,5 +527,20 @@ class RblBankingAccountStatementTest extends TestCase
         ]);
 
         $this->app->instance('mozart', $mock);
+    }
+
+    protected function addTestTransactions(): void
+    {
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->appAuth();
+
+        $request = $this->testData['testRblAccountStatementCase1']['request'];
+
+        $this->sendRequest($request);
+
+        $this->ba->privateAuth();
     }
 }

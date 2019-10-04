@@ -4,6 +4,27 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
+    'testRblXlsxStatementGeneration' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/banking_account_statement/generate',
+            'content' => ['account_number' => '2224440041626905', 'send_email' => 0, 'format' => 'xlsx', 'from_date' => '946684800', 'to_date' => '', 'channel' => 'rbl']
+        ],
+        'response' => [
+            'content' => ['message'   => 'File Generated',
+                        ]
+        ]
+    ],
+    'testRblXlsxStatementEmailSent' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/banking_account_statement/generate',
+            'content' => ['account_number' => '2224440041626905', 'send_email' => 1, 'to_emails' => 'test@razorpay.com', 'format' => 'xlsx', 'from_date' => '946684800', 'to_date' => '', 'channel' => 'rbl']
+        ],
+        'response' => [
+            'content' => ['message' => 'Email Sent']
+        ]
+    ],
     'testRblAccountStatementCase1' => [
         'request'  => [
             'method'  => 'POST',
