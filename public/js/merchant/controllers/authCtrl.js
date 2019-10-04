@@ -99,13 +99,13 @@ app
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
         currentSubStep: 0, // 0, 1, 2, 3, 4
+        settings: {
+          partner_intent: role === 'partner',
+        },
         data: {
           email: email,
           password: '',
           captcha: null,
-          settings: {
-            partner_intent: role === 'partner',
-          },
         },
         merchantData: {
           business_type: null,
@@ -201,7 +201,10 @@ app
         $scope.signup.currentStep = step;
         if (subStep !== undefined) {
           // for individual upon press take him to step 4
-          if ($scope.signup.merchantData.business_type == 11 || false == true) {
+          if (
+            $scope.signup.merchantData.business_type == 11 ||
+            $scope.signup.settings.partner_intent == true
+          ) {
             $scope.signup.currentSubStep = 0;
           } else {
             $scope.signup.currentSubStep = subStep;
@@ -324,7 +327,7 @@ app
         }
 
         var data = $scope.signup.data;
-        delete data.settings;
+
         var payload = {
           method: 'post',
           url: '/user/register',
@@ -580,7 +583,8 @@ app
           // if individuval in business type take him directly to last screen
           if (
             $scope.signup.currentSubStep == 0 &&
-            (reqPayload['business_type'] == 11 || false)
+            (reqPayload['business_type'] == 11 ||
+              $scope.signup.settings.partner_intent)
           ) {
             $scope.signup.currentSubStep = $scope.signup.currentSubStep + 3;
           } else {
@@ -964,7 +968,10 @@ app
         $scope.noTransition = true;
         if (!merchantData.business_type) {
           $scope.signup.currentSubStep = 0;
-        } else if (false || merchantData.business_type == 11) {
+        } else if (
+          $scope.signup.settings.partner_intent ||
+          merchantData.business_type == 11
+        ) {
           $scope.signup.currentSubStep = 3;
         } else if (!merchantData.transaction_volume) {
           $scope.signup.currentSubStep = 1;
