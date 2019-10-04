@@ -41,6 +41,7 @@ import { updateSession } from 'merchant/modules/session';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
+  showPANStatusModal,
 } from 'merchant/modules/home';
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
@@ -108,12 +109,23 @@ let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
-@RTracking((state, props, args) => {
-  return window.rzpQ.component('ActivationCard');
-})
-@connect(state => ({
-  user: state.session.user,
-}))
+// @RTracking((state, props, args) => {
+//   return window.rzpQ.component('ActivationCard');
+// })
+@withRouter
+@connect(
+  state => ({
+    session: state.session,
+    user: state.session.user,
+  }),
+  {
+    // showNotification,
+    updateSession,
+    showInstantActivationSuccessModal,
+    showKYCDetailsModal,
+    showPANStatusModal,
+  }
+)
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
 export default class ActivationWizard extends React.Component {
   state = {
@@ -660,6 +672,185 @@ export default class ActivationWizard extends React.Component {
 
       this.removeLoader();
     }, 500); // Let loader be seen for 0.5 sec
+  }
+
+  updateSession(data) {
+    const { session, accountId } = this.props;
+
+    // Update data
+    // this.setState({ data });
+
+    // Session need not be updated if it's linked account form
+    if (accountId) {
+      return;
+    }
+
+    if (data.can_submit) {
+      this.preloadSuccessAsset();
+    }
+
+    const {
+      activation_progress,
+      activated,
+      activation_status,
+      activation_flow,
+      submitted,
+      international,
+    } = data;
+
+    // Updating % activation_progress (side bar) and other important activation fields
+    const user = (this.user = new User({
+      ...session.user,
+      activation_progress,
+      activated,
+      activation_status,
+      activation_flow,
+      international,
+      submitted: +submitted,
+    }));
+
+    this.props.updateSession({
+      user,
+      mode: session.mode,
+    });
+  }
+
+  submitL1 = () => {
+    console.log('submitting l1');
+    const data = this.formData;
+    // const { tracking } = this.props;
+    return merchantFetch({
+      url: 'merchant/instant_activation',
+      method: 'POST',
+      mode: 'live',
+      data: data,
+      accountId: this.props.accountId, // TODO: confirm account id behaviour with  LA
+    })
+      .then(response => {
+        console.log('got response', response);
+        if (this.onActivationSuccess) {
+          return this.onActivationSuccess(response);
+        }
+
+        this.updateSession(response.data); // Updating % activation_progress (side bar)
+
+        // trackL1FormSuccess(this.user.activation_flow);
+        // tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
+
+        // // updating contact propteries of hubspot contact
+        // updateHubSpotContactsProperties({
+        //   ...data,
+        //   activation_flow: this.user.activation_flow,
+        //   completed: true,
+        // });
+
+        // trackTaboola('l1_activation');
+        console.log('this.props -------------->>>>', this.props);
+        console.log('response ------------->>>>', response.data);
+        // Individual Flow
+        if (response.data.business_type == 2) {
+          if (true || response.data.pan_verfication == 'under_review') {
+            this.props.showPANStatusModal();
+          } else {
+            console.log('PAN verficcation succeeded');
+          }
+        } else {
+          const {
+            isWhitelistFlow,
+            isBlacklistFlow,
+            isGraylistFlow,
+          } = this.user.instantActivation;
+          if (isWhitelistFlow) {
+            console.log('entered white list flow');
+            this.props.showInstantActivationSuccessModal();
+            // fireAnalyticsEvents({ fbData: 'activation_complete_success' });
+          } else if (isGraylistFlow) {
+            console.log('entered gray list flow');
+            this.props.showKYCDetailsModal();
+          }
+        }
+
+        // let data = new BingDataObj('activationform', 'complete', 'success', 1);
+        // fireAnalyticsEvents({
+        //   bingData: data,
+        //   liData: 987404,
+        //   twiData: 'o1ua0',
+        // }); //fb = false, bing, linkedin, twitter
+
+        return this.props.history.replace(`/`);
+      })
+      .catch(err => {
+        console.log('catched err', err);
+        if (err.errors.length && err.errors[0]) {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+        }
+
+        // trackL1FormError();
+
+        // let dataError = new BingDataObj(
+        //   'activationform',
+        //   'complete',
+        //   'error',
+        //   1
+        // );
+        // fireAnalyticsEvents({
+        //   fbData: 'activation_complete_error',
+        //   bingData: dataError,
+        //   liData: 987412,
+        //   twiData: 'o1ua2',
+        // });
+
+        // if (this.onActivationSuccess) {
+        //   this.onActivationSuccess({ success: false });
+        // }
+
+        return err;
+      });
+  };
+
+  get formData() {
+    const currentDirty = this.state.dirty;
+    const reqData = {};
+    console.log('FormFields', FormFields);
+    FormFields.forEach(field => {
+      if (Array.isArray(field)) {
+        return field.forEach(field =>
+          this.populateReqData(field, reqData, currentDirty)
+        );
+      }
+
+      return this.populateReqData(field, reqData, currentDirty);
+    });
+
+    console.log('reqData', reqData);
+
+    if (!Object.keys(reqData).length) {
+      return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
+    }
+
+    return reqData;
+  }
+
+  populateReqData(field, reqData, currentDirty) {
+    const name = field.name;
+
+    if (!name) {
+      return;
+    }
+
+    const fieldVal =
+      name in currentDirty ? currentDirty[name] : this.props.data[name];
+
+    reqData[name] = fieldVal;
+
+    // For business website empty string => user don't have website. null => user didn't attempt the field.
+    const allowEmptyString = ['business_website', 'gstin'];
+    if (allowEmptyString.indexOf(name) === -1) {
+      reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+    }
   }
 
   submitForm = () => {

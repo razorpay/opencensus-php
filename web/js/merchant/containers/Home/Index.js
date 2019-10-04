@@ -27,6 +27,7 @@ import {
 } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
+import PANVerficationStatusModal from 'merchant/components/PANVerficationStatusModal';
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
@@ -113,6 +114,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       showKYCActivationSuccess:
         state.home.instantActivations.showKYCActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
+      showPANStatusModal: state.home.instantActivations.showPANStatusModal,
     };
   },
   {
@@ -639,6 +641,7 @@ export default class HomeContainer extends Component {
       showKYCDetails,
       hideKYCDetailsModal,
       tracking,
+      showPANStatusModal,
     } = this.props;
 
     const { activation_flow } = user;
@@ -820,6 +823,7 @@ export default class HomeContainer extends Component {
             user={user}
           />
         )}
+        {showPANStatusModal && <PANVerficationStatusModal user={user} />}
         {showKYCDetails && (
           <KycDetailsModal
             onClose={() => {

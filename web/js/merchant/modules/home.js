@@ -22,6 +22,8 @@ const SHOW_ACCEPT_PAYMENTS = 'SHOW_ACCEPT_PAYMENTS';
 const HIDE_ACCEPT_PAYMENTS = 'HIDE_ACCEPT_PAYMENTS';
 const SHOW_PRODUCTS = 'SHOW_PRODUCTS';
 const HIDE_PRODUCTS = 'HIDE_PRODUCTS';
+const SHOW_PAN_STATUS_MODAL = 'SHOW_PAN_STATUS_MODAL';
+const HIDE_PAN_STATUS_MODAL = 'HIDE_PAN_STATUS_MODAL';
 
 let initialState = {
   analytics: {
@@ -51,6 +53,7 @@ let initialState = {
     showKYCDetails: false,
     showAcceptPayments: false,
     showProductsModal: false,
+    showPANStatusModal: false,
   },
 };
 
@@ -169,6 +172,18 @@ export const showProductsModal = () => {
 export const hideProductsModal = () => {
   return {
     type: HIDE_PRODUCTS,
+  };
+};
+
+export const showPANStatusModal = () => {
+  return {
+    type: SHOW_PAN_STATUS_MODAL,
+  };
+};
+
+export const hidePANStatusModal = () => {
+  return {
+    type: HIDE_PAN_STATUS_MODAL,
   };
 };
 
@@ -299,6 +314,16 @@ export default function(state = initialState, action) {
 
     case 'CLOSE_ONBOARDING_STEP':
       return set(state, 'closeOnboardingStep', true);
+
+    case SHOW_PAN_STATUS_MODAL:
+      return set(state, 'instantActivations', {
+        showPANStatusModal: true,
+      });
+
+    case HIDE_PAN_STATUS_MODAL:
+      return set(state, 'instantActivations', {
+        showPANStatusModal: false,
+      });
 
     default:
       return state;
