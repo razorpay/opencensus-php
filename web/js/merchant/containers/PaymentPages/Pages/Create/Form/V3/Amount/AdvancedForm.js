@@ -6,7 +6,6 @@ import Input from 'component/Input';
 
 import { paiseToRupees } from 'rzp/utils/rzp-utils';
 
-import { mapFieldToAmountFieldType } from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 
 @connect(state => ({
@@ -22,8 +21,6 @@ export default class AdvancedForm extends React.PureComponent {
       disableSubmit: false,
       isStockSet: field.stock != null,
     };
-
-    this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
   }
 
   onChange = ({ target }) => {
@@ -39,7 +36,7 @@ export default class AdvancedForm extends React.PureComponent {
 
   onSaveForm = formData => {
     // console.log('formData...', formData);
-    this.props.onSaveForm(formData, this.fieldType);
+    this.props.onSaveForm(formData, this.props.fieldType);
   };
 
   toggleAddStock = data => {
@@ -142,7 +139,7 @@ export default class AdvancedForm extends React.PureComponent {
       return 'Stock must be at least 1';
     }
 
-    if (this.fieldType === FIELD_TYPES.multiple_purchase.key) {
+    if (this.props.fieldType === FIELD_TYPES.multiple_purchase.key) {
       const minVal = this.minAmountLimit && this.minAmountLimit.value;
       const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
 
@@ -300,7 +297,7 @@ export default class AdvancedForm extends React.PureComponent {
   }
 
   get fieldsForFieldType() {
-    const fieldType = this.fieldType;
+    const fieldType = this.props.fieldType;
 
     switch (fieldType) {
       // Same Advanced Form for both fixed_price

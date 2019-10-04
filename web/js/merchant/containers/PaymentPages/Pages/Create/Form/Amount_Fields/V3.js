@@ -15,16 +15,18 @@ export function getAmountFieldTypes() {
 export function mapFieldToAmountFieldType(amountField) {
   let amountFieldType = null;
 
-  if (!amountField.item.amount) {
-    amountFieldType = getAmountFieldTypes()[1]; // FIELD_TYPES.dynamic_price
-  } else {
-    if (
-      amountField.hasOwnProperty('min_purchase') &&
-      amountField.min_purchase !== null // Counter type field will have min_purchase defined as 0 or 0+ integer
-    ) {
-      amountFieldType = getAmountFieldTypes()[2]; // FIELD_TYPES.multiple_purchase
+  if (amountField && amountField.item) {
+    if (!amountField.item.amount) {
+      amountFieldType = getAmountFieldTypes()[1]; // FIELD_TYPES.dynamic_price
     } else {
-      amountFieldType = getAmountFieldTypes()[0]; // FIELD_TYPES.fixed_price,
+      if (
+        amountField.hasOwnProperty('min_purchase') &&
+        amountField.min_purchase !== null // Counter type field will have min_purchase defined as 0 or 0+ integer
+      ) {
+        amountFieldType = getAmountFieldTypes()[2]; // FIELD_TYPES.multiple_purchase
+      } else {
+        amountFieldType = getAmountFieldTypes()[0]; // FIELD_TYPES.fixed_price,
+      }
     }
   }
 

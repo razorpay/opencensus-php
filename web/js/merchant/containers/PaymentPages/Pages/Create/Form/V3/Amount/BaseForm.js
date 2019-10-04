@@ -36,8 +36,6 @@ export default class BaseForm extends React.PureComponent {
       mirrorDisplayName: name || '',
       isMandatory: isMandatoryToBool(field.mandatory),
     };
-
-    this.fieldType = props.fieldType || mapFieldToAmountFieldType(field);
   }
 
   componentDidMount() {
@@ -216,7 +214,7 @@ export default class BaseForm extends React.PureComponent {
 
   get amountRepresentationForFieldType() {
     const { field } = this.props;
-    const fieldType = this.fieldType;
+    const fieldType = this.props.fieldType;
 
     switch (fieldType) {
       case FIELD_TYPES.fixed_price.key:

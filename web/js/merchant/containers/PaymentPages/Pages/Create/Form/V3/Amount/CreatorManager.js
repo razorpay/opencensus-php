@@ -3,7 +3,10 @@ import BaseForm from './BaseForm';
 import AdvancedForm from './AdvancedForm';
 import { ImageCropperModal } from './ImageCropper';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
-import { isMandatoryToBool } from '../../Amount_Fields/V3';
+import {
+  isMandatoryToBool,
+  mapFieldToAmountFieldType,
+} from '../../Amount_Fields/V3';
 import { getCurrency } from 'rzp/ui/Amount';
 import { paiseToRupees } from 'rzp/utils/rzp-utils';
 
@@ -16,7 +19,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         isBaseFormOpened: false,
         isAdvancedFormOpened: false,
         isImageCropperOpened: false,
-        fieldType: null,
+        fieldType: mapFieldToAmountFieldType(this.props.field) || null,
         field: this.props.field,
         currency: this.props.currency,
       };
@@ -102,6 +105,8 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       const newField = { ...field };
       newField.mandatory = isMandatory;
 
+      console.log('isMandatory.......', fieldType, isMandatory);
+
       if (isMandatory) {
         switch (fieldType) {
           case FIELD_TYPES.dynamic_price.key: {
@@ -117,7 +122,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           }
 
           case FIELD_TYPES.multiple_purchase.key: {
-            if (Number(newField.min_purchase) === 0 && isMandatory) {
+            if (Number(newField.min_purchase) === 0) {
               newField.min_purchase = 1; // Must be at least 1 if mandatory field
             }
 
