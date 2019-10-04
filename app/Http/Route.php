@@ -3295,6 +3295,11 @@ final class Route
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
         'mpans_issue'                          => [Feature::ISSUE_MPANS],
         'mpans_fetch'                          => [Feature::ISSUE_MPANS],
+        'account_create'                       => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_list'                         => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
     ];
 
     /*

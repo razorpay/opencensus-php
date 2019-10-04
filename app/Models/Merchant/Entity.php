@@ -240,6 +240,7 @@ class Entity extends Base\PublicEntity
         self::FEE_MODEL,
         self::REFUND_SOURCE,
         self::LOGO_URL,
+        self::ICON_URL,
         self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
@@ -1540,6 +1541,16 @@ class Entity extends Base\PublicEntity
     public function hasOptionalSubmerchantEmailFeature(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
+    }
+
+    public function isKycHandledByPartner(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::KYC_HANDLED_BY_PARTNER));
+    }
+
+    public function canCommunicateWithSubmerchant(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::NO_COMM_WITH_SUBMERCHANTS) === false);
     }
 
     public function createCustomerOnContactEmailNull(): bool

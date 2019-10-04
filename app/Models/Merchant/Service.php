@@ -2432,7 +2432,8 @@ class Service extends Base\Service
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
-        else if ((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false)
+        else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
+                 ($merchant->canCommunicateWithSubmerchant() === true))
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }
