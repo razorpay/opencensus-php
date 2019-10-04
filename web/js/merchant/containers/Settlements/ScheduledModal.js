@@ -192,7 +192,7 @@ export default class ScheduledModal extends Component {
                   for each settlement
                 </li>
               </ul>
-            </div>ssss
+            </div>
             <div className="schedule-img-container">
               <img src={'/dist/css/assets/settlements-blue-box.png'} />
             </div>
