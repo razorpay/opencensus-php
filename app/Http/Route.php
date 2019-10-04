@@ -3074,6 +3074,7 @@ final class Route
             'refund_speed_processed_backfill',
             'get_setl_amount',
             'cps_sync_gateway_entities_cron',
+            'reconciliate',
             'mailing_list_remove_suspended_merchant',
         ],
 
