@@ -36,6 +36,12 @@ export default class ScheduledModal extends Component {
     this.fetchPercentageFees();
   }
 
+  componentWillUnmount() {
+    if (this.props.onExit) {
+      this.props.onExit();
+    }
+  }
+
   openSupport = () => {
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;

@@ -49,6 +49,7 @@ import { trackInstantSettlementsBanner } from '../../components/Announcements/ga
 export default class SettlementsListContainer extends ListContainer {
   state = {
     showRequestESButton: this.props.user.showEarlySettlementAnnouncement,
+    openAutoModal: false,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -77,6 +78,9 @@ export default class SettlementsListContainer extends ListContainer {
         return;
       }
       this.showOndemandSettlementForm();
+    } else if (this.props.location.hash === '#automaticsettle') {
+      this.resetHash();
+      this.setState({ openAutoModal: true });
     }
   }
 
@@ -245,7 +249,13 @@ export default class SettlementsListContainer extends ListContainer {
                   </ShowWhen>
                   {this.props.user.isOndemandSettlementEnabled && (
                     <div className="box-left-pad10-inline">
-                      <ScheduledBanner fromWhere="Settlements" />
+                      <ScheduledBanner
+                        onExit={() => {
+                          this.setState({ openAutoModal: false });
+                        }}
+                        openAutoModal={this.state.openAutoModal}
+                        fromWhere="Settlements"
+                      />
                     </div>
                   )}
                 </React.Fragment>
