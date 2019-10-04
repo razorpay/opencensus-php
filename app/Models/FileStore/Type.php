@@ -120,13 +120,15 @@ class Type
 
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
-    const BATCH_INPUT                       = 'batch_input';
-    const BATCH_OUTPUT                      = 'batch_output';
-    const BATCH_VALIDATED                   = 'batch_validated';
-    const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
-    const BATCH_SERVICE                     = 'batch_service';
-    const RECONCILIATION_BATCH_OUTPUT       = 'reconciliation_batch_output';
-    const RECONCILIATION_BATCH_ANALYTICS_OUTPUT       = 'reconciliation_batch_analytics_output';
+    const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
+
+    const BATCH_INPUT                           = 'batch_input';
+    const BATCH_OUTPUT                          = 'batch_output';
+    const BATCH_VALIDATED                       = 'batch_validated';
+    const RECONCILIATION_BATCH_INPUT            = 'reconciliation_batch_input';
+    const BATCH_SERVICE                         = 'batch_service';
+    const RECONCILIATION_BATCH_OUTPUT           = 'reconciliation_batch_output';
+    const RECONCILIATION_BATCH_ANALYTICS_OUTPUT = 'reconciliation_batch_analytics_output';
 
     const BLANK                             = 'blank';
 
@@ -177,7 +179,6 @@ class Type
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
-    const BULK_DISPUTES_FILE                    = 'bulk_disputes_file';
 
     const ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT = 'icici_netbanking_refund_direct_settlement';
 

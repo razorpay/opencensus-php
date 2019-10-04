@@ -24,17 +24,17 @@ class Service extends Base\Service
         return $file_name . '_' . $this->mode . '_' . $time;
     }
 
-    public function generateFile(array $file_data, string $file_name)
+    public function generateFile(array $fileData, string $fileName)
     {
         $extension = FileStore\Format::XLSX;
 
         $creator = new FileStore\Creator;
 
-        $fileName = $this->getDynamicFileName($file_name);
+        $newFileName = $this->getDynamicFileName($fileName);
 
         $creator->extension($extension)
-                ->content($file_data)
-                ->name($fileName)
+                ->content($fileData)
+                ->name($newFileName)
                 ->store(FileStore\Store::S3)
                 ->type(FileStore\Type::BULK_DISPUTES_FILE)
                 ->save();

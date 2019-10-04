@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Dispute;
 
+use Lib\PhoneBook;
 use Request;
 use Mail;
 use Carbon\Carbon;
@@ -20,11 +21,12 @@ class Service extends Base\Service
     const bulkDisputeCreateFileName     = 'bulk_disputes_create_status';
     const bulkDisputeEditFileName       = 'bulk_disputes_edit_status';
     const bulkDisputeCreateDateFormat   = 'd/m/Y H:i:s';
+    // DB column limits
     const gatewayDisputeIdMaxLength     = 50;
     const gatewayDisputeStatusMaxLength = 255;
 
     const bulkCreateDisputesColumns = [
-        'payment_id',
+        Entity::PAYMENT_ID,
         Entity::GATEWAY_DISPUTE_ID,
         Entity::GATEWAY_DISPUTE_STATUS,
         Entity::PHASE,
@@ -34,10 +36,11 @@ class Service extends Base\Service
         Entity::AMOUNT,
         Entity::MERCHANT_EMAILS,
         Entity::SKIP_EMAIL,
+        Entity::CONTACT,
     ];
 
     const bulkEditDisputesColumns = [
-        'dispute_id',
+        Entity::ID,
         Entity::GATEWAY_DISPUTE_STATUS,
         Entity::STATUS,
         Entity::SKIP_DEDUCTION,
@@ -141,7 +144,7 @@ class Service extends Base\Service
 
         $outputFileData = $mailData = $merchantData = $disputeData = [];
 
-        $outputKeys = self::bulkCreateDisputesColumns;
+        $outputKeys = $orderKeys;
         $outputKeys[] = 'rzp_dispute_id';
         $outputKeys[] = 'errors';
 
@@ -156,21 +159,23 @@ class Service extends Base\Service
                 $input = $this->convertFileRowToMap($row, $orderKeys);
 
                 $skipMails = $input[Entity::SKIP_EMAIL];
-                $emails = $input[Entity::MERCHANT_EMAILS];
+                $contact   = $input[Entity::CONTACT];
+                $emails    = $input[Entity::MERCHANT_EMAILS];
 
                 // skipping email for each creation
                 $input[Entity::SKIP_EMAIL] = true;
 
-                $paymentId = $input['payment_id'];
+                $paymentId = $input[Entity::PAYMENT_ID];
 
-                unset($input['payment_id']);
+                unset($input[Entity::CONTACT]);
+                unset($input[Entity::PAYMENT_ID]);
                 unset($input[Entity::MERCHANT_EMAILS]);
 
                 $disputeEntity = $this->create($input, $paymentId);
 
                 if ($skipMails === false)
                 {
-                    if (empty($emails[0]))
+                    if (empty($emails))
                     {
                         $merchant = $this->repo->merchant->find($disputeEntity[Entity::MERCHANT_ID]);
 
@@ -185,6 +190,7 @@ class Service extends Base\Service
                     }
 
                     $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity);
+                    $disputeData[$disputeEntity[Entity::ID]][Entity::CONTACT] = $contact;
 
                     foreach ($emails as $mail)
                     {
@@ -237,7 +243,7 @@ class Service extends Base\Service
         }
 
         $outputFileData = [];
-        $outputKeys = self::bulkEditDisputesColumns;
+        $outputKeys = $orderKeys;
         $outputKeys[] = 'errors';
 
         $outputFileData[] = $outputKeys;
@@ -250,9 +256,9 @@ class Service extends Base\Service
             {
                 $input = $this->convertFileRowToMap($row, $orderKeys);
 
-                $disputeId = $input['dispute_id'];
+                $disputeId = $input[Entity::ID];
 
-                unset($input['dispute_id']);
+                unset($input[Entity::ID]);
 
                 if ($input[Entity::STATUS] !== Status::LOST)
                 {
@@ -470,9 +476,14 @@ class Service extends Base\Service
                     break;
 
                 case Entity::MERCHANT_EMAILS:
-                    $mails = array_map('trim', explode(',', $res));
+                    if (empty($res) === false)
+                    {
+                        $mails = array_map('trim', explode(',', $res));
 
-                    $res = $mails;
+                        (new Validator)->validateEmails($mails);
+
+                        $res = $mails;
+                    }
 
                     break;
 
@@ -494,6 +505,25 @@ class Service extends Base\Service
                             throw new Exception\BadRequestValidationFailureException(
                                 $value . ' field should be Y/N'
                             );
+                    }
+
+                    break;
+
+                case Entity::CONTACT:
+                    if (empty($res) === false)
+                    {
+                        $number = new PhoneBook($res, true);
+
+                        if ($number->isValidNumber() === true)
+                        {
+                            $res = $number->format();
+                        }
+                        else
+                        {
+                            throw new Exception\BadRequestValidationFailureException(
+                                'Invalid Contact number'
+                            );
+                        }
                     }
 
                     break;

@@ -12,6 +12,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     const OPERATION_MERCHANT_EDIT = 'merchant_edit';
+
     // Max allowed file size - 30MB (30*1024*1024).
     const MAX_FILE_SIZE = 31457280;
 
@@ -61,6 +62,10 @@ class Validator extends Base\Validator
     protected static $merchantEditRules = [
         Entity::ACCEPT_DISPUTE         => 'sometimes|boolean',
         Entity::SUBMIT                 => 'sometimes|boolean',
+    ];
+
+    protected static $emailRules = [
+        Entity::EMAIL => 'required|email',
     ];
 
     protected function validatePhase(string $attribute, string $value)
@@ -245,6 +250,21 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid File extension. Only '. implode(", ", self::ACCEPTED_EXTENSIONS) . ' file formats are allowed'
             );
+        }
+    }
+
+    /**
+     * Validates if the file size is within the limits and
+     * validates if extension is as expected.
+     *
+     * @param $emails
+     * @return void   throws exception for error
+     */
+    public function validateEmails(array $emails)
+    {
+        foreach ($emails as $email)
+        {
+            $this->validateInput('email', [Entity::EMAIL => $email]);
         }
     }
 }

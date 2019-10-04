@@ -27,6 +27,7 @@
                     <td>'. $dispute['id'] . '</td>
                     <td>'. $dispute['payment_id'] . '</td>
                     <td>Rs. '. $amount . '</td>
+                    <td>'. date("d F Y", $dispute['respond_by']) . '</td>
                   </tr>';
         }
 
@@ -38,7 +39,7 @@
     <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: center; background-color: {{ $brand_color }}; color: {{ $brand_text_color }}; padding: 30px 0 135px !important;">
 
         <h2 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; word-break: normal; margin: 0; font-size: 20px; line-height: 24px; text-align: center; color: {{ $brand_text_color }};">
-            Dispute raised for Rs. {{ $disputedAmount }}
+            Disputes raised for a total amount of Rs. {{ $disputedAmount }}
         </h2>
 
         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; margin-top: 12px; color: {{ $brand_text_color }};">
@@ -53,6 +54,7 @@
             <th>Dispute ID</th>
             <th>Payment ID</th>
             <th>Disputed Amount</th>
+            <th>Respond By</th>
         </tr>
         @php
         echo $disputesTable;
@@ -65,7 +67,7 @@
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                     Hi,
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                    We have received disputes for a total amount of Rs. {{ $disputedAmount }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                    We have received disputes for a total amount of Rs. {{ $disputedAmount }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each transaction in a consolidated ZIP archive named as the Payment ID.
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                     Note: Kindly <b style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
