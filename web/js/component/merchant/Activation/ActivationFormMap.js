@@ -66,6 +66,7 @@ const businessModel = [
     label: 'Full Business Name',
     name: 'business_name',
     info: 'Example: Acme Infotech Private Limited',
+    _when: excludeFor_Indiv,
   },
   {
     label: 'Billing Label',
@@ -325,6 +326,9 @@ const registrationDetails = [
         return condition ? 'PAN Holder’s Name' : 'PAN Owner Name';
       },
       name: 'promoter_pan_name',
+      description: () => {
+        return 'We verify the details with the central PAN database. Please ensure you enter the correct details';
+      },
     },
   ],
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
