@@ -440,7 +440,7 @@ class FundTransfer extends Base
             return $this->getPaymentModeForCard();
         }
 
-        if ($this->accountType === Constants::CARD)
+        if ($this->accountType === Constants::BANK_ACCOUNT)
         {
             return $this->getPaymentModeForBankAccount();
         }
