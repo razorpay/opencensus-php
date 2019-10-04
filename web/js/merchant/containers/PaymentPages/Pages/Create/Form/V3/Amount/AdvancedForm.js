@@ -140,16 +140,16 @@ export default class AdvancedForm extends React.PureComponent {
     }
 
     if (this.props.fieldType === FIELD_TYPES.multiple_purchase.key) {
-      const minVal = this.minAmountLimit && this.minAmountLimit.value;
-      const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
+      const minVal = this.minPurchaseLimit && this.minPurchaseLimit.value;
+      const maxVal = this.maxPurchaseLimit && this.maxPurchaseLimit.value;
 
       // Written before minVal comparison
       if (maxVal && Number(stockVal) < Number(maxVal)) {
-        return 'Stock must be more than Max amount';
+        return 'Stock must be more than Max Limit';
       }
 
       if (minVal && Number(stockVal) < Number(minVal)) {
-        return 'Stock must be more than Min amount';
+        return 'Stock must be more than Min Limit';
       }
     }
   };
