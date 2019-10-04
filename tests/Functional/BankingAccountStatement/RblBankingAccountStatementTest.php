@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\BankingAccountStatement;
 
+use Mail;
 use Mockery;
 use RZP\Services\Mozart;
 use RZP\Tests\Functional\TestCase;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -43,7 +45,7 @@ class RblBankingAccountStatementTest extends TestCase
             'channel'               => 'rbl',
             'pincode'               => '1',
             'bank_reference_number' => '',
-            'account_ifsc'          => 'YESB0CMSNOC',
+            'account_ifsc'          => 'RATN0000156',
         ]);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
@@ -54,17 +56,7 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRblXlsxStatementGeneration()
     {
-        $mockedResponse = $this->getRblDataResponse();
-
-        $this->setMozartMockResponse($mockedResponse);
-
-        $this->ba->appAuth();
-
-        $request = $this->testData['testRblAccountStatementCase1']['request'];
-
-        $this->sendRequest($request);
-
-        $this->ba->privateAuth();
+        $this->addTestTransactions();
 
         $currentTime = time();
 
@@ -75,6 +67,20 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(true, $this->verifyBankAccountStatementFileUrl($file_path));
 
         $this->verifyGeneratedXlsxFile($currentTime);
+
+    }
+
+    public function testRblXlsxStatementEmailSent()
+    {
+        Mail::fake();
+
+        $this->addTestTransactions();
+
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+
+        Mail::assertQueued(StatementMail::class);
     }
 
     /**
@@ -521,5 +527,20 @@ class RblBankingAccountStatementTest extends TestCase
         ]);
 
         $this->app->instance('mozart', $mock);
+    }
+
+    protected function addTestTransactions(): void
+    {
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->appAuth();
+
+        $request = $this->testData['testRblAccountStatementCase1']['request'];
+
+        $this->sendRequest($request);
+
+        $this->ba->privateAuth();
     }
 }
