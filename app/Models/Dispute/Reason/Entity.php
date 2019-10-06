@@ -16,6 +16,10 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'dispute_reason';
 
+    // Bulk Crete Disputes related constants
+    const NETWORK_CODE = 'network_code';
+    const REASON_CODE  = 'reason_code';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [

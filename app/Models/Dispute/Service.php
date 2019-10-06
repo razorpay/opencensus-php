@@ -2,15 +2,16 @@
 
 namespace RZP\Models\Dispute;
 
-use Lib\PhoneBook;
-use Request;
 use Mail;
+use Request;
 use Carbon\Carbon;
+use Lib\PhoneBook;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Dispute\File;
+use RZP\Models\Dispute\Reason;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
@@ -29,10 +30,11 @@ class Service extends Base\Service
         Entity::PAYMENT_ID,
         Entity::GATEWAY_DISPUTE_ID,
         Entity::GATEWAY_DISPUTE_STATUS,
+        Reason\Entity::NETWORK_CODE,
+        Reason\Entity::REASON_CODE,
         Entity::PHASE,
         Entity::RAISED_ON,
         Entity::EXPIRES_ON,
-        Entity::REASON_ID,
         Entity::AMOUNT,
         Entity::MERCHANT_EMAILS,
         Entity::SKIP_EMAIL,
@@ -167,9 +169,24 @@ class Service extends Base\Service
 
                 $paymentId = $input[Entity::PAYMENT_ID];
 
+                $reasonId = (new Reason\Service())->getReasonIdFromAttributes(
+                    $input[Reason\Entity::NETWORK], $input[Reason\Entity::NETWORK_CODE], $input[Reason\Entity::REASON_CODE]);
+
+                if (count($reasonId) !== 1)
+                {
+                    throw new Exception\RecoverableException(
+                        'There are no entries/more than 1 entries in DB for the given combination of network_code and reason_code'
+                    );
+                }
+
+                $input[Entity::REASON_ID] = $reasonId[0];
+
                 unset($input[Entity::CONTACT]);
                 unset($input[Entity::PAYMENT_ID]);
                 unset($input[Entity::MERCHANT_EMAILS]);
+                unset($input[Reason\Entity::NETWORK]);
+                unset($input[Reason\Entity::NETWORK_CODE]);
+                unset($input[Reason\Entity::REASON_CODE]);
 
                 $disputeEntity = $this->create($input, $paymentId);
 
@@ -382,6 +399,56 @@ class Service extends Base\Service
                     {
                         throw new Exception\BadRequestValidationFailureException(
                             'gateway_dispute_status length exceeds allowed '. self::gatewayDisputeStatusMaxLength . ' characters'
+                        );
+                    }
+
+                    break;
+
+                case Reason\Entity::NETWORK_CODE:
+                    $res = stringify($res);
+
+                    if (empty($res))
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'network_code cant be empty'
+                        );
+                    }
+
+                    $networkCode = array_map('trim', explode('-', $res));
+
+                    if (count($networkCode) !== 2)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Invalid network_code format. Ex. Visa-85'
+                        );
+                    }
+
+                    $network = (new Reason\Validator())->validateNetworkWithoutCaseSensitivity($networkCode[0]);
+
+                    $input[Reason\Entity::NETWORK] = $network;
+
+                    $res = $networkCode[1];
+
+                    break;
+
+                case Reason\Entity::REASON_CODE:
+                    $res = stringify($res);
+                    $res = trim($res);
+
+                    if (empty($res))
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'reason_code cant be empty'
+                        );
+                    }
+
+                    $validCode = strtolower($res);
+                    $validCode = snake_case($validCode);
+
+                    if ($res !== $validCode)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Invalid reason_code. Should be snake case with all smalls'
                         );
                     }
 

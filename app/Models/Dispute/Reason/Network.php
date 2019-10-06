@@ -31,6 +31,13 @@ class Network
         return defined(get_class() . '::' . strtoupper($network));
     }
 
+    // Returns DB defined Network value
+    public static function getNetwork(string $network): string
+    {
+        return constant(get_class() . '::' . strtoupper($network));
+    }
+
+
     public static function isValid(string $network): bool
     {
         return (in_array($network, self::$networksList, true) === true);
