@@ -8,6 +8,7 @@ import { updateFeatures } from 'merchant/modules/config';
 import User, { setFeatures } from 'merchant/models/User';
 import * as SessionActions from 'merchant/modules/session';
 import { showNotification } from 'rzp/modules/notifications';
+import ModalCloseReasons from './ModalCloseReasons';
 
 @connect(
   state => ({
@@ -29,10 +30,16 @@ export default class ScheduledModal extends Component {
       fees: '',
       autoEnabled: false,
       isLoading: false,
+      modalClosed: false,
     };
   }
 
   componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: `Dashboard - Early Settlement`,
+      eventAction: `Click Enable ES`,
+      eventLabel: `Enable Scheduled ES - ${this.props.fromWhere}`,
+    });
     this.fetchPercentageFees();
   }
 
@@ -43,6 +50,11 @@ export default class ScheduledModal extends Component {
   }
 
   openSupport = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Early Settlement',
+      eventAction: 'Support',
+      eventLabel: 'Clicks | Support',
+    });
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
       rzpTicketSystem.setPrefill('#request', [
@@ -85,6 +97,11 @@ export default class ScheduledModal extends Component {
   };
 
   onEnable = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Early Settlement',
+      eventAction: 'ES Modal',
+      eventLabel: 'On-Demand Success | Enable Scheduled ES',
+    });
     let payload = {
       features: {
         es_on_demand: '0',
@@ -149,6 +166,13 @@ export default class ScheduledModal extends Component {
             target="_blank"
             href="https://razorpay.freshdesk.com/support/solutions/folders/11000011340"
             className="highlight-support"
+            onClick={() => {
+              window.rzpAnalytics({
+                eventCategory: 'Dashboard - Early Settlement',
+                eventAction: 'ES Modal',
+                eventLabel: 'FAQs | ES Modal',
+              });
+            }}
           >
             Show FAQs
           </a>
@@ -170,7 +194,9 @@ export default class ScheduledModal extends Component {
       <>
         <ModalHeader
           title={'Enable Early Settlement'}
-          onCloseClick={() => this.props.closeModal()}
+          onCloseClick={() => {
+            this.setState({ modalClosed: true });
+          }}
         />
         <div className="modal-body">
           <div>
@@ -231,9 +257,13 @@ export default class ScheduledModal extends Component {
   render() {
     return (
       <div className="container-scheduled-modal">
-        {this.state.autoEnabled
-          ? this.renderPostEnablement()
-          : this.renderPreEnablement()}
+        {this.state.modalClosed ? (
+          <ModalCloseReasons closeOrigin="Scheduled" />
+        ) : this.state.autoEnabled ? (
+          this.renderPostEnablement()
+        ) : (
+          this.renderPreEnablement()
+        )}
       </div>
     );
   }
