@@ -37,7 +37,6 @@ class Network
         return constant(get_class() . '::' . strtoupper($network));
     }
 
-
     public static function isValid(string $network): bool
     {
         return (in_array($network, self::$networksList, true) === true);

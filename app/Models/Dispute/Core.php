@@ -12,12 +12,12 @@ use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
+use RZP\Models\Merchant\Email as MerchantEmail;
 use RZP\Constants\{Entity as E, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Models\{Base, Payment, Merchant, Adjustment};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
-use RZP\Models\Merchant\Email as MerchantEmail;
 
 class Core extends Base\Core
 {
@@ -538,11 +538,12 @@ class Core extends Base\Core
         }
         else
         {
-            // ToDo : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
+            // ToDo : Phase 2 : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
             // Adding merchant Email, merchant dispute PoC in to field
-            // ToDo : Handle duplicate mails
             $emails = $this->getMerchantEmailsForDispute($merchant);
         }
+
+        $emails = array_unique($emails);
 
         $data = [
             'merchant'      => [

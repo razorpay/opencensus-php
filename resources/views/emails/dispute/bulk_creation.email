@@ -7,28 +7,40 @@
   <body>
   <p>
       @php
-              $brand_color = '#6A75ED';
-              $brand_text_color = '#FFFFFF';
+          $brand_color = '#6A75ED';
+          $brand_text_color = '#FFFFFF';
 
-              $disputedAmount = sprintf('%0.2f', ($totalAmount / 100));
-              $disputedAmount = floatval($disputedAmount);
+          $disputedAmount = sprintf('%0.2f', ($totalAmount / 100));
+          $disputedAmount = floatval($disputedAmount);
 
-              $noteResult = 'failing which the corresponding amount might be debited from the current balance. ';
+          $noteResult = 'failing which the corresponding amount might be debited from the current balance. ';
 
-              $disputesTable = '';
+          $disputesTable = '';
 
-              foreach ($disputes as $key=>$dispute)
-              {
-                  $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
-                  $amount = floatval($amount);
+          foreach ($disputes as $key=>$dispute)
+          {
+              $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
+              $amount = floatval($amount);
 
-                  $disputesTable .= '
-                        <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
-                          <td>'. $dispute['id'] . '</td>
-                          <td>'. $dispute['payment_id'] . '</td>
-                          <td>Rs. '. $amount . '</td>
-                        </tr>';
-              }
+              $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/' . $dispute['payment_id'];
+              $disputeLink = 'https://dashboard.razorpay.com/#/app/disputes/' . $dispute['id'];
+
+              $disputesTable .= '
+                    <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
+                      <td>
+                      <a href='. $disputeLink . 'target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; color: #39ACE5;">
+                      '. $dispute['id'] . ' </a>
+                      </td>
+                      <td>
+                      <a href='. $paymentLink . 'target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; color: #39ACE5;">
+                      '. $dispute['payment_id'] . ' </a>
+                      </td>
+                      <td>Rs. '. $amount . '</td>
+                      <td>'. $dispute['gateway_dispute_id'] . '</td>
+                      <td>'. $dispute['contact'] . '</td>
+                      <td>'. date("d F Y", $dispute['respond_by']) . '</td>
+                    </tr>';
+          }
 
       @endphp
   </p>
@@ -42,7 +54,7 @@
             ">
 
             <h2 style="color: {{ $brand_text_color }}">
-                  Dispute raised for Rs. {{ $disputedAmount }}
+                  Dispute(s) raised for a total amount of Rs. {{ $disputedAmount }}
             </h2>
 
         </div>
@@ -51,9 +63,12 @@
           <tbody>
 
             <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
-                <th>Dispute ID</th>
-                <th>Payment ID</th>
-                <th>Disputed Amount</th>
+                <th>DISPUTE ID</th>
+                <th>PAYMENT ID</th>
+                <th>AMOUNT</th>
+                <th>GATEWAY CASE ID</th>
+                <th>CONTACT</th>
+                <th>RESPOND BY</th>
             </tr>
 
             @php
@@ -71,7 +86,7 @@
                         <br>
                         Hi,
                         <br><br>
-                        We have received disputes for a total amount of Rs. {{ $disputedAmount }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                        We have received dispute(s) for a total amount of Rs. {{ $disputedAmount }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br><br>
                         Note: Kindly <b> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
                         <br><br>

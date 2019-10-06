@@ -4,12 +4,9 @@ namespace RZP\Models\Dispute;
 
 use Mail;
 use Request;
-use Carbon\Carbon;
-use Lib\PhoneBook;
-use RZP\Constants\Timezone;
 
-use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\{Base, Payment};
 use RZP\Models\Dispute\File;
 use RZP\Models\Dispute\Reason;
 use RZP\Mail\Dispute as DisputeMailer;
@@ -21,10 +18,6 @@ class Service extends Base\Service
 
     const bulkDisputeCreateFileName     = 'bulk_disputes_create_status';
     const bulkDisputeEditFileName       = 'bulk_disputes_edit_status';
-    const bulkDisputeCreateDateFormat   = 'd/m/Y H:i:s';
-    // DB column limits
-    const gatewayDisputeIdMaxLength     = 50;
-    const gatewayDisputeStatusMaxLength = 255;
 
     const bulkCreateDisputesColumns = [
         Entity::PAYMENT_ID,
@@ -49,25 +42,22 @@ class Service extends Base\Service
         Entity::COMMENTS,
     ];
 
-    const disputePhases = [
-        'chargeback',
-        'pre_arbitration',
-        'arbitration',
-        'retrieval',
-        'fraud',
+    const bulkCreateDisputesMailData = [
+        Entity::ID,
+        Entity::PAYMENT_ID,
+        Entity::AMOUNT,
+        Entity::GATEWAY_DISPUTE_ID,
+        Entity::PHASE,
+        Entity::RESPOND_BY,
+        Entity::CONTACT,
     ];
 
-    const disputeStatus = [
-        'open',
-        'under_review',
-        'lost',
-        'won',
-        'closed',
-    ];
-
-    public function create(array $input, string $paymentId): array
+    public function create(array $input, string $paymentId, Payment\Entity $payment = null): array
     {
-        $payment = $this->repo->payment->findByPublicId($paymentId);
+        if ($payment === null)
+        {
+            $payment = $this->repo->payment->findByPublicId($paymentId);
+        }
 
         (new Validator)->validateInputBeforeBuild($input);
 
@@ -115,7 +105,6 @@ class Service extends Base\Service
 
                 $bulkMailData['totalAmount'] = $totalAmount;
 
-//               Move this to core?
                 Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
             }
         }
@@ -137,7 +126,7 @@ class Service extends Base\Service
 
         $orderKeys = $data[0];
 
-        if ($this->arrayEqual($orderKeys, self::bulkCreateDisputesColumns) === false)
+        if ($validator->arrayEqual($orderKeys, self::bulkCreateDisputesColumns) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Column names do not match expected values'
@@ -146,7 +135,7 @@ class Service extends Base\Service
 
         $outputFileData = $mailData = $merchantData = $disputeData = [];
 
-        $outputKeys = $orderKeys;
+        $outputKeys   = $orderKeys;
         $outputKeys[] = 'rzp_dispute_id';
         $outputKeys[] = 'errors';
 
@@ -188,26 +177,39 @@ class Service extends Base\Service
                 unset($input[Reason\Entity::NETWORK_CODE]);
                 unset($input[Reason\Entity::REASON_CODE]);
 
-                $disputeEntity = $this->create($input, $paymentId);
+                $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                $merchant = $payment->merchant;
+
+                $disputeEntity = $this->create($input, $paymentId, $payment);
 
                 if ($skipMails === false)
                 {
                     if (empty($emails))
                     {
-                        $merchant = $this->repo->merchant->find($disputeEntity[Entity::MERCHANT_ID]);
-
                         $emails = $this->core()->getMerchantEmailsForDispute($merchant);
                     }
 
+                    $emails = array_unique($emails);
+
                     if (array_key_exists(Entity::MERCHANT_ID, $merchantData) === false)
                     {
-                        $merchant = $this->repo->merchant->find($disputeEntity[Entity::MERCHANT_ID]);
-
                         $merchantData[$disputeEntity[Entity::MERCHANT_ID]] = $merchant->getName();
                     }
 
+                    if (empty($contact))
+                    {
+                        $contact = $payment[Payment\Entity::CONTACT];
+
+                        if (empty($contact))
+                        {
+                            $contact = 'N/A';
+                        }
+                    }
+
+                    $disputeEntity[Entity::CONTACT] = $contact;
+
                     $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity);
-                    $disputeData[$disputeEntity[Entity::ID]][Entity::CONTACT] = $contact;
 
                     foreach ($emails as $mail)
                     {
@@ -252,17 +254,17 @@ class Service extends Base\Service
 
         $orderKeys = $data[0];
 
-        if ($this->arrayEqual($orderKeys, self::bulkEditDisputesColumns) === false)
+        if ($validator->arrayEqual($orderKeys, self::bulkEditDisputesColumns) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Column names do not match expected values'
             );
         }
 
-        $outputFileData = [];
-        $outputKeys = $orderKeys;
+        $outputKeys   = $orderKeys;
         $outputKeys[] = 'errors';
 
+        $outputFileData   = [];
         $outputFileData[] = $outputKeys;
 
         for ($i = 1; $i < count($data); $i++)
@@ -277,10 +279,26 @@ class Service extends Base\Service
 
                 unset($input[Entity::ID]);
 
+                if (empty($input[Entity::GATEWAY_DISPUTE_STATUS]))
+                {
+                    unset($input[Entity::GATEWAY_DISPUTE_STATUS]);
+                }
+
                 if ($input[Entity::STATUS] !== Status::LOST)
                 {
                     unset($input[Entity::SKIP_DEDUCTION]);
                     unset($input[Entity::COMMENTS]);
+                }
+                else if ($input[Entity::SKIP_DEDUCTION] === true)
+                {
+                    $comment = $input[Entity::COMMENTS];
+
+                    if (strlen($comment) < 5 or strlen($comment) > 255)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'comment should be a min. of 5 characters and max. of 255 characters'
+                        );
+                    }
                 }
 
                 $dispute = $this->repo->dispute->findOrFail($disputeId);
@@ -346,254 +364,30 @@ class Service extends Base\Service
         return (new File\Core)->getFilesForEntity($dispute);
     }
 
-    // Checking if values are same in both arrays irrespective of order
-    public function arrayEqual($a, $b)
-    {
-        return (
-            is_array($a) and
-            is_array($b) and
-            count($a) == count($b) and
-            array_diff($a, $b) === array_diff($b, $a)
-        );
-    }
-
-    // Need to add field based validations
+    // Validates each column of the file and converts it to necessary format
     private function convertFileRowToMap(array $row, array $keys)
     {
         $input = [];
 
         foreach ($keys as $key=>$value)
         {
-            $res = $row[$key];
+            $res = stringify($row[$key]);
+            $res = trim($res);
 
-            switch ($value)
+            $validator = (new Validator);
+
+            $func = 'validateFileColumn' . studly_case($value);
+
+            if (method_exists($validator, $func))
             {
-                case Entity::AMOUNT:
-                    $res = intval($res);
-
-                    if ($res <= 0)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'amount should be > 0'
-                        );
-                    }
-
-                    break;
-
-                case Entity::GATEWAY_DISPUTE_ID:
-                    $res = stringify($res);
-
-                    if (strlen($res) > self::gatewayDisputeIdMaxLength)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'gateway_dispute_id length exceeds allowed '. self::gatewayDisputeIdMaxLength . ' characters'
-                        );
-                    }
-
-                    break;
-
-                case Entity::GATEWAY_DISPUTE_STATUS:
-                    $res = stringify($res);
-
-                    if (strlen($res) > self::gatewayDisputeStatusMaxLength)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'gateway_dispute_status length exceeds allowed '. self::gatewayDisputeStatusMaxLength . ' characters'
-                        );
-                    }
-
-                    break;
-
-                case Reason\Entity::NETWORK_CODE:
-                    $res = stringify($res);
-
-                    if (empty($res))
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'network_code cant be empty'
-                        );
-                    }
-
-                    $networkCode = array_map('trim', explode('-', $res));
-
-                    if (count($networkCode) !== 2)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'Invalid network_code format. Ex. Visa-85'
-                        );
-                    }
-
-                    $network = (new Reason\Validator())->validateNetworkWithoutCaseSensitivity($networkCode[0]);
-
-                    $input[Reason\Entity::NETWORK] = $network;
-
-                    $res = $networkCode[1];
-
-                    break;
-
-                case Reason\Entity::REASON_CODE:
-                    $res = stringify($res);
-                    $res = trim($res);
-
-                    if (empty($res))
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'reason_code cant be empty'
-                        );
-                    }
-
-                    $validCode = strtolower($res);
-                    $validCode = snake_case($validCode);
-
-                    if ($res !== $validCode)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'Invalid reason_code. Should be snake case with all smalls'
-                        );
-                    }
-
-                    break;
-
-                case Entity::PHASE:
-                    $res = stringify($res);
-
-                    if (in_array($res, self::disputePhases, true) === false)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'Invalid phase. Phase should be one of '. implode(", ", self::disputePhases)
-                        );
-                    }
-
-                    break;
-
-                case Entity::STATUS:
-                    $res = stringify($res);
-
-                    if (in_array($res, self::disputeStatus, true) === false)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'Invalid status. status should be one of '. implode(", ", self::disputeStatus)
-                        );
-                    }
-
-                    break;
-
-                case Entity::RAISED_ON:
-                    if (empty($res))
-                    {
-                        $res = Carbon::now(Timezone::IST)->format('d/m/Y');
-                    }
-
-                    // Creation at beginning of the day IST
-                    $res .= ' 00:00:00';
-
-                    try
-                    {
-                        $res = Carbon::createFromFormat(self::bulkDisputeCreateDateFormat, $res, Timezone::IST)->getTimestamp();
-                    }
-                    catch (\Exception $ex)
-                    {
-                        // Because default message thrown is incomprehensible
-                        throw new Exception\BadRequestValidationFailureException(
-                            'Invalid raised_on date argument. Please provide in d/m/Y format'
-                        );
-                    }
-
-                    $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-                    if ($currentTime < $res)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'raised_on day cannot be greater than current day'
-                        );
-                    }
-
-                    break;
-
-                case Entity::EXPIRES_ON:
-                    if (empty($res))
-                    {
-                        $res = Carbon::now(Timezone::IST)->addDays(9)->format('d/m/Y');
-                    }
-
-                    // Expires at the end of the day IST
-                    $res .= ' 23:59:59';
-
-                    try
-                    {
-                        $res = Carbon::createFromFormat(self::bulkDisputeCreateDateFormat, $res, Timezone::IST)->getTimestamp();
-                    }
-                    catch (\Exception $ex)
-                    {
-                        // Because default message thrown is incomprehensible
-                        throw new Exception\BadRequestValidationFailureException(
-                            'Invalid expires_on date argument. Please provide in d/m/Y format'
-                        );
-                    }
-
-                    $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-                    if ($currentTime >= $res)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'expires_on time cannot be less than or equal to current time'
-                        );
-                    }
-
-                    break;
-
-                case Entity::MERCHANT_EMAILS:
-                    if (empty($res) === false)
-                    {
-                        $mails = array_map('trim', explode(',', $res));
-
-                        (new Validator)->validateEmails($mails);
-
-                        $res = $mails;
-                    }
-
-                    break;
-
-                case Entity::SKIP_EMAIL:
-                case Entity::SKIP_DEDUCTION:
-                    switch ($res)
-                    {
-                        case 'Y':
-                        case 'y':
-                            $res = true;
-                            break;
-
-                        case 'N':
-                        case 'n':
-                            $res = false;
-                            break;
-
-                        default:
-                            throw new Exception\BadRequestValidationFailureException(
-                                $value . ' field should be Y/N'
-                            );
-                    }
-
-                    break;
-
-                case Entity::CONTACT:
-                    if (empty($res) === false)
-                    {
-                        $number = new PhoneBook($res, true);
-
-                        if ($number->isValidNumber() === true)
-                        {
-                            $res = $number->format();
-                        }
-                        else
-                        {
-                            throw new Exception\BadRequestValidationFailureException(
-                                'Invalid Contact number'
-                            );
-                        }
-                    }
-
-                    break;
+                if ($value === Reason\Entity::NETWORK_CODE)
+                {
+                    $validator->$func($res, $input);
+                }
+                else
+                {
+                    $validator->$func($res);
+                }
             }
 
             $input[$value] = $res;
@@ -604,21 +398,12 @@ class Service extends Base\Service
 
     public function getDisputeDataForMail(array $dispute) : array
     {
-        $endDate = Carbon::createFromTimestamp($dispute[Entity::EXPIRES_ON], Timezone::IST);
+        $disputeData = [];
 
-        $daysLeft = $endDate->diffInDays(Carbon::now(Timezone::IST));
-
-        // define array and loop to fetch
-        $disputeData[Entity::ID] = $dispute[Entity::ID];
-        $disputeData[Entity::PAYMENT_ID] = $dispute[Entity::PAYMENT_ID];
-        $disputeData[Entity::MERCHANT_ID] = $dispute[Entity::MERCHANT_ID];
-        $disputeData[Entity::GATEWAY_DISPUTE_ID] = $dispute[Entity::GATEWAY_DISPUTE_ID];
-        $disputeData[Entity::AMOUNT] = $dispute[Entity::AMOUNT];
-        $disputeData[Entity::PHASE] = $dispute[Entity::PHASE];
-//        fetch reason_description, not available in admin array
-//        $disputeData[Entity::REASON_DESCRIPTION] = $dispute[Entity::REASON_DESCRIPTION];
-        $disputeData[Entity::RESPOND_BY] = $dispute[Entity::RESPOND_BY];
-        $disputeData['remainingDays'] = $daysLeft;
+        foreach (self::bulkCreateDisputesMailData as $key)
+        {
+            $disputeData[$key] = $dispute[$key];
+        }
 
         return $disputeData;
     }

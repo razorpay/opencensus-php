@@ -10,6 +10,14 @@ class Phase
     const RETRIEVAL       = 'retrieval';
     const FRAUD           = 'fraud';
 
+    protected static $phases = [
+        self::CHARGEBACK,
+        self::PRE_ARBITRATION,
+        self::ARBITRATION,
+        self::RETRIEVAL,
+        self::FRAUD,
+    ];
+
     /**
      * $nonTransactionalPhases are phases where no transactions
      * take place through the dispute's lifecycle
@@ -21,6 +29,11 @@ class Phase
     public static function exists(string $phase): bool
     {
         return defined(get_class() . '::' . strtoupper($phase));
+    }
+
+    public static function list(): array
+    {
+        return self::$phases;
     }
 
     public static function getNonTransactionalPhases(): array

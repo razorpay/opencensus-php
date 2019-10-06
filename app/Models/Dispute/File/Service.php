@@ -14,9 +14,6 @@ class Service extends Base\Service
 {
     use FileHandlerTrait;
 
-    // Need different names for create/edit
-    static private $fileToReadName = 'dispute_bulk_file';
-
     public function getDynamicFileName(string $file_name)
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y_H:i:s');
