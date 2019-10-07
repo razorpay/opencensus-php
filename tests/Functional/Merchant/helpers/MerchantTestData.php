@@ -5098,4 +5098,91 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFetchPartnerIntent'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => true,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentForMerchantWithoutPartnerIntent' => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => null,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentWithPartnerIntentFalse'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => false,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentTrue'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 0 //sends false,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => false,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentFalse' => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => true,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentNull'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => true,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
 ];
