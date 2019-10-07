@@ -31,7 +31,12 @@ class Network
         return defined(get_class() . '::' . strtoupper($network));
     }
 
-    // Returns DB defined Network value
+    /**
+     * Returns Network in the format stored in DB
+     *
+     * @param string $network
+     * @return string
+     */
     public static function getNetwork(string $network): string
     {
         return constant(get_class() . '::' . strtoupper($network));

@@ -56,6 +56,11 @@ class Status
         return defined(get_class() . '::' . strtoupper($status));
     }
 
+    /**
+     * Return all dispute status defined as an array
+     *
+     * @return array
+     */
     public static function list(): array
     {
         return self::$statuses;

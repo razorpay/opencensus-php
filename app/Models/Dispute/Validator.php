@@ -58,10 +58,6 @@ class Validator extends Base\Validator
         Entity::COMMENTS               => 'sometimes|string|min:5|max:255|utf8',
     ];
 
-    protected static $bulkCreateRules = [
-        File\Core::FILE => 'required|file',
-    ];
-
     protected static $createValidators = [
         'deduct_onset_for_non_transactional_phases',
     ];
@@ -299,7 +295,7 @@ class Validator extends Base\Validator
 
     public function validateFileColumnGatewayDisputeId(string &$res)
     {
-        if (empty($res))
+        if (empty($res) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'gateway_dispute_id cant be empty'
@@ -326,7 +322,7 @@ class Validator extends Base\Validator
 
     public function validateFileColumnReasonCode(string &$res)
     {
-        if (empty($res))
+        if (empty($res) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'reason_code cant be empty'
@@ -366,7 +362,7 @@ class Validator extends Base\Validator
 
     public function validateFileColumnNetworkCode(string &$res, array &$input)
     {
-        if (empty($res))
+        if (empty($res) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'network_code cant be empty'
@@ -382,7 +378,7 @@ class Validator extends Base\Validator
             );
         }
 
-        $network = (new Reason\Validator())->validateNetworkWithoutCaseSensitivity($networkCode[0]);
+        $network = (new Reason\Validator())->validateAndFetchFormattedNetwork($networkCode[0]);
 
         $input[Reason\Entity::NETWORK] = $network;
 
@@ -391,7 +387,7 @@ class Validator extends Base\Validator
 
     public function validateFileColumnRaisedOn(string &$res)
     {
-        if (empty($res))
+        if (empty($res) === true)
         {
             $res = Carbon::now(Timezone::IST)->format('d/m/Y');
         }
@@ -423,7 +419,7 @@ class Validator extends Base\Validator
 
     public function validateFileColumnExpiresOn(string &$res)
     {
-        if (empty($res))
+        if (empty($res) === true)
         {
             $res = Carbon::now(Timezone::IST)->addDays(9)->format('d/m/Y');
         }

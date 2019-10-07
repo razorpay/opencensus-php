@@ -22,14 +22,19 @@ class Repository extends Base\Repository
         (new Validator)->validateNetwork($attribute, $value);
     }
 
-    // Get reason ID from network, gateway_code, code
-    public function getReasonIdFromAttributes(string $network, string $gatewayCode, string $code) : array
+    /**
+     * @param string $network
+     * @param string $gatewayCode
+     * @param string $code
+     * @return mixed
+     */
+    public function getReasonIdFromAttributes(string $network, string $gatewayCode, string $code)
     {
         return $this->newQuery()
                     ->select(Entity::ID)
                     ->where(Entity::NETWORK, $network)
                     ->where(Entity::GATEWAY_CODE, $gatewayCode)
                     ->where(Entity::CODE, $code)
-                    ->pluck(Entity::ID)->toArray();
+                    ->pluck(Entity::ID);
     }
 }

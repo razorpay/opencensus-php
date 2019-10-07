@@ -21,6 +21,14 @@ class Service extends Base\Service
         return $file_name . '_' . $this->mode . '_' . $time;
     }
 
+    /**
+     * Generates XLSX file base on file data and stores in file store as type bulk_disputes_file
+     *
+     * @param array $fileData
+     * @param string $fileName
+     * @return mixed
+     * @throws Exception\LogicException
+     */
     public function generateFile(array $fileData, string $fileName)
     {
         $extension = FileStore\Format::XLSX;
@@ -41,8 +49,16 @@ class Service extends Base\Service
         return $signedFileUrl['url'];
     }
 
+    /**
+     * @param string $filePath
+     * @param string $extension
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
     protected function parseFile(string $filePath, string $extension) : array
     {
+        $data = [];
+
         switch ($extension)
         {
             case FileStore\Format::XLSX:
@@ -62,7 +78,7 @@ class Service extends Base\Service
                     ]);
         }
 
-        if (empty($data))
+        if (empty($data) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'File is Empty'

@@ -506,11 +506,21 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     *  Get all the default mails for disputes. Dispute PoCs and merchant email
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+
     public function getMerchantEmailsForDispute(Merchant\Entity $merchant) : array
     {
-        $emails = (new MerchantEmail\Service())->fetchAllEmailsForMerchantAndType($merchant->getId(), 'dispute');
+        $emails = (new MerchantEmail\Service)->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::DISPUTE);
 
         $emails[] = $merchant->getEmail();
+
+        $emails = array_unique($emails);
 
         return $emails;
     }
@@ -535,6 +545,8 @@ class Core extends Base\Core
         if (empty($input[Entity::MERCHANT_EMAILS]) === false)
         {
             $emails = $input[Entity::MERCHANT_EMAILS];
+
+            $emails = array_unique($emails);
         }
         else
         {
@@ -542,8 +554,6 @@ class Core extends Base\Core
             // Adding merchant Email, merchant dispute PoC in to field
             $emails = $this->getMerchantEmailsForDispute($merchant);
         }
-
-        $emails = array_unique($emails);
 
         $data = [
             'merchant'      => [

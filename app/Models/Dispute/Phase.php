@@ -31,6 +31,11 @@ class Phase
         return defined(get_class() . '::' . strtoupper($phase));
     }
 
+    /**
+     * Returns list of phases defined
+     *
+     * @return array
+     */
     public static function list(): array
     {
         return self::$phases;

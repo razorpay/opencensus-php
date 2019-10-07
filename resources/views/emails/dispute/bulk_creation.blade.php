@@ -17,7 +17,34 @@
 
         $disputesTable = '';
 
-        foreach ($disputes as $key=>$dispute)
+        $headerColumnStyle = '<th class="content" style="word-break: break-word; -webkit-hyphens: auto;
+        -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top;
+        font-family: -apple-system, ' .
+        "'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande' " .
+        ',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; padding: 1%;
+         background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; color: #000000;
+         padding-bottom: 24px; padding-top: 0px;">
+         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; font-weight: bold;
+         line-height: 20px; color: #212121;"> <br style="font-family: -apple-system, BlinkMacSystemFont, Arial,
+         sans-serif; line-height: 20px; color: #212121;">';
+
+        $rowColumnStyle = '<td class="content" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto;
+        hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,' .
+        "'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande' " .
+        ',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 12px; line-height: 19px; padding: 1%;
+        background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; color: #000000;
+        padding-bottom: 24px; padding-top: 0px;">
+        <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">';
+
+        $headerRow = '
+            ' . $headerColumnStyle . 'DISPUTE ID</th>
+            ' . $headerColumnStyle . 'PAYMENT ID</th>
+            ' . $headerColumnStyle . 'AMOUNT</th>
+            ' . $headerColumnStyle . 'CASE ID</th>
+            ' . $headerColumnStyle . 'CONTACT</th>
+            ' . $headerColumnStyle . 'RESPOND BY</th>';
+
+        foreach ($disputes as $key => $dispute)
         {
             $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
             $amount = floatval($amount);
@@ -27,18 +54,18 @@
 
             $disputesTable .= '
                   <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
-                    <td>
+                    ' . $rowColumnStyle . '
                     <a href='. $disputeLink . ' target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; color: #39ACE5;">
                     '. $dispute['id'] . ' </a>
                     </td>
-                    <td>
+                    ' . $rowColumnStyle . '
                     <a href='. $paymentLink . ' target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; color: #39ACE5;">
                     '. $dispute['payment_id'] . ' </a>
                     </td>
-                    <td>Rs. '. $amount . '</td>
-                    <td>'. $dispute['gateway_dispute_id'] . '</td>
-                    <td>'. $dispute['contact'] . '</td>
-                    <td>'. date("d F Y", $dispute['respond_by']) . '</td>
+                    ' . $rowColumnStyle . 'Rs. '. $amount . '</td>
+                    ' . $rowColumnStyle . $dispute['gateway_dispute_id'] . '</td>
+                    ' . $rowColumnStyle . $dispute['contact'] . '</td>
+                    ' . $rowColumnStyle . date("d F Y", $dispute["respond_by"]) . '</td>
                   </tr>';
         }
 
@@ -59,27 +86,24 @@
         </div>
     </div>
 
-    <table class="table" border="0" cellpadding="0" cellspacing="0" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; width: 100%; background-color: #fafafa; margin-top: -100px !important; height: 100%; max-width: 750px; margin: 0 auto; font-size: 12px;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+    <table class="table" border="0" cellpadding="0" cellspacing="0" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; width: 100%; background-color: #fafafa; margin-top: -100px !important; height: 100%; max-width: 800px; margin: 0 auto; font-size: 12px;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
         <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
-            <th>DISPUTE ID</th>
-            <th>PAYMENT ID</th>
-            <th>AMOUNT</th>
-            <th>GATEWAY CASE ID</th>
-            <th>CONTACT</th>
-            <th>RESPOND BY</th>
+            @php
+                echo $headerRow;
+            @endphp
         </tr>
         @php
         echo $disputesTable;
         @endphp
         </tbody></table>
-        <table class="table" border="0" cellpadding="0" cellspacing="0" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; width: 100%; background-color: #fafafa; height: 100%; max-width: 750px; margin: 0 auto; font-size: 12px;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+        <table class="table" border="0" cellpadding="0" cellspacing="0" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; width: 100%; background-color: #fafafa; height: 100%; max-width: 800px; margin: 0 auto; font-size: 12px;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
             <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
             <td class="content" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; color: #000000; border-top: dashed 1px rgba(0,0,0,0.1); border-bottom: solid 1px rgba(0,0,0,0.05); padding-top: 0px;">
                 <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #000000;">
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                     Hi,
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                    We have received dispute(s) for a total amount of Rs. {{ $disputedAmount }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each transaction in a consolidated ZIP archive named as the Payment ID.
+                    We have received dispute(s) for a total amount of Rs. {{ $disputedAmount }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive named as the Payment ID.
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                     Note: Kindly <b style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">

@@ -165,7 +165,10 @@ class Core extends Base\Core
     {
         (new Validator)->validateType(Entity::TYPE, $type);
 
-        $emails = $this->repo->merchant_email->getAllEmailsForMerchantAndType($merchant->getId(), $type);
+        $emails = $this->repo
+                       ->merchant_email
+                       ->getAllEmailsForMerchantAndType($merchant->getId(), $type)
+                       ->toArray();
 
         return $emails;
     }

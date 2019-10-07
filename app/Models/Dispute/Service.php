@@ -6,18 +6,23 @@ use Mail;
 use Request;
 
 use RZP\Exception;
+use RZP\Mail\Base\Constants;
 use RZP\Models\{Base, Payment};
 use RZP\Models\Dispute\File;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Dispute\Reason;
 use RZP\Mail\Dispute as DisputeMailer;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Service extends Base\Service
 {
     use FileHandlerTrait;
 
-    const bulkDisputeCreateFileName     = 'bulk_disputes_create_status';
-    const bulkDisputeEditFileName       = 'bulk_disputes_edit_status';
+    // Bulk disputes file related constants
+    const RZPDisputeID              = 'rzp_dispute_id';
+    const bulkDisputeCreateFileName = 'bulk_disputes_create_status';
+    const bulkDisputeEditFileName   = 'bulk_disputes_edit_status';
 
     const bulkCreateDisputesColumns = [
         Entity::PAYMENT_ID,
@@ -85,20 +90,28 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * Sends Aggregated Emails on merchant level
+     *
+     * @param array $mailData
+     * @param array $merchantData
+     * @param array $disputeData
+     */
     public function sendAggregatedEmails(array $mailData, array $merchantData, array $disputeData)
     {
-        foreach ($mailData as $merchantId=>$data)
+        foreach ($mailData as $merchantId => $data)
         {
-            foreach ($data as $mailId=>$disputeIds)
+            foreach ($data as $mailId => $disputeIds)
             {
-                $bulkMailData['merchant']['name'] = $merchantData[$merchantId];
-                $bulkMailData['merchant']['email'] = $mailId;
-                $bulkMailData['disputes'] = [];
+                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME] = $merchantData[$merchantId];
+                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $mailId;
+                $bulkMailData[Constants::DISPUTES] = [];
+
                 $totalAmount = 0;
 
                 foreach ($disputeIds as $id)
                 {
-                    $bulkMailData['disputes'][] = $disputeData[$id];
+                    $bulkMailData[Constants::DISPUTES][] = $disputeData[$id];
 
                     $totalAmount += $disputeData[$id][Entity::AMOUNT];
                 }
@@ -116,7 +129,7 @@ class Service extends Base\Service
 
         $validator->validateBulkDisputeRequest($input);
 
-        $file = $input['file'];
+        $file = $input[File\Core::FILE];
 
         $validator->validateBulkDisputesFile($file);
 
@@ -136,8 +149,8 @@ class Service extends Base\Service
         $outputFileData = $mailData = $merchantData = $disputeData = [];
 
         $outputKeys   = $orderKeys;
-        $outputKeys[] = 'rzp_dispute_id';
-        $outputKeys[] = 'errors';
+        $outputKeys[] = self::RZPDisputeID;
+        $outputKeys[] = Constants::ERRORS;
 
         $outputFileData[] = $outputKeys;
 
@@ -185,7 +198,7 @@ class Service extends Base\Service
 
                 if ($skipMails === false)
                 {
-                    if (empty($emails))
+                    if (empty($emails) === true)
                     {
                         $emails = $this->core()->getMerchantEmailsForDispute($merchant);
                     }
@@ -197,15 +210,7 @@ class Service extends Base\Service
                         $merchantData[$disputeEntity[Entity::MERCHANT_ID]] = $merchant->getName();
                     }
 
-                    if (empty($contact))
-                    {
-                        $contact = $payment[Payment\Entity::CONTACT];
-
-                        if (empty($contact))
-                        {
-                            $contact = 'N/A';
-                        }
-                    }
+                    $contact = empty($contact) ? $payment[Payment\Entity::CONTACT] ?? 'N/A' : $contact;
 
                     $disputeEntity[Entity::CONTACT] = $contact;
 
@@ -244,7 +249,7 @@ class Service extends Base\Service
 
         $validator->validateBulkDisputeRequest($input);
 
-        $file = $input['file'];
+        $file = $input[File\Core::FILE];
 
         $validator->validateBulkDisputesFile($file);
 
@@ -262,7 +267,7 @@ class Service extends Base\Service
         }
 
         $outputKeys   = $orderKeys;
-        $outputKeys[] = 'errors';
+        $outputKeys[] = Constants::ERRORS;
 
         $outputFileData   = [];
         $outputFileData[] = $outputKeys;
@@ -279,7 +284,7 @@ class Service extends Base\Service
 
                 unset($input[Entity::ID]);
 
-                if (empty($input[Entity::GATEWAY_DISPUTE_STATUS]))
+                if (empty($input[Entity::GATEWAY_DISPUTE_STATUS]) === true)
                 {
                     unset($input[Entity::GATEWAY_DISPUTE_STATUS]);
                 }
@@ -369,9 +374,9 @@ class Service extends Base\Service
     {
         $input = [];
 
-        foreach ($keys as $key=>$value)
+        foreach ($keys as $key => $value)
         {
-            $res = stringify($row[$key]);
+            $res = ($row[$key] !== null) ? stringify($row[$key]) : '';
             $res = trim($res);
 
             $validator = (new Validator);

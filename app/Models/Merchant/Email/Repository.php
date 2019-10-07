@@ -61,12 +61,12 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function getAllEmailsForMerchantAndType(string $merchantId, string $type) : array
+    public function getAllEmailsForMerchantAndType(string $merchantId, string $type)
     {
         return $this->newQuery()
                     ->select(Entity::EMAIL)
                     ->merchantId($merchantId)
                     ->where(Entity::TYPE, $type)
-                    ->pluck(Entity::EMAIL)->toArray();
+                    ->pluck(Entity::EMAIL);
     }
 }
