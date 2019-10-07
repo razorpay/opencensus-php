@@ -60,6 +60,16 @@ export default class ReminderSetting extends React.Component {
       withExpireByConfigs: props.withExpireByConfigs,
       withOutExpireByConfigs: props.withOutExpireByConfigs,
     };
+
+    if (props.withExpiry) {
+      this.state.__stashed_settings__.withExpiry = props.withExpiry;
+      this.state.settings.withExpiry = props.withExpiry;
+    }
+
+    if (props.withOutExpiry) {
+      this.state.__stashed_settings__.withOutExpiry = props.withOutExpiry;
+      this.state.settings.withOutExpiry = props.withOutExpiry;
+    }
   }
 
   disableReminderSetting = () => {
@@ -105,9 +115,17 @@ export default class ReminderSetting extends React.Component {
   };
 
   onSaveClick = () => {
-    return this.props.onSaveClick({
-      ...this.state.settings,
-    });
+    return this.props
+      .onSaveClick({
+        ...this.state.settings,
+      })
+      .then(resp => {
+        this.setState({
+          __stashed_settings__: {
+            ...this.state.settings,
+          },
+        });
+      });
   };
 
   onChange = type => (list, name) => {

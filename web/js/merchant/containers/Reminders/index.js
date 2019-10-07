@@ -4,6 +4,7 @@ import {
   fetchReminders,
   createReminders,
   fetchRemindersConfigs,
+  fetchRemindersMerchantConfigs,
 } from 'merchant/modules/reminders';
 
 import HeaderAction from 'rzp/ui/HeaderAction';
@@ -15,6 +16,7 @@ import PaymentLinksSettings from './PaymentLinksSettings';
   fetchReminders,
   createReminders,
   fetchRemindersConfigs,
+  fetchRemindersMerchantConfigs,
 })
 export default class extends React.Component {
   componentDidMount() {
@@ -25,6 +27,7 @@ export default class extends React.Component {
     return Promise.all([
       this.fetchReminders(),
       this.props.fetchRemindersConfigs(),
+      this.props.fetchRemindersMerchantConfigs(),
     ]);
   };
 
@@ -44,7 +47,10 @@ export default class extends React.Component {
 
   render() {
     const { items } = this.props.reminders,
-      loading = this.props.reminders.loading || this.props.configs.loading;
+      loading =
+        this.props.reminders.loading ||
+        this.props.configs.loading ||
+        this.props.merchant_config.loading;
 
     if (loading) {
       return (

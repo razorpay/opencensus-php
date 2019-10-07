@@ -3,7 +3,11 @@ import { connect } from 'react-redux';
 import { findBy, filterBy } from 'rzp/utils/rzp-utils';
 import * as NotificationActions from 'rzp/modules/notifications';
 
-import { editReminders, disableReminders } from 'merchant/modules/reminders';
+import {
+  editRemindersMerchantConfigs,
+  disableReminders,
+  fetchRemindersMerchantConfigs,
+} from 'merchant/modules/reminders';
 import Setting from 'merchant/components/Reminders/Settings';
 
 @connect(
@@ -14,8 +18,14 @@ import Setting from 'merchant/components/Reminders/Settings';
       'payment_link'
     );
 
+    const merchantConfig = state.reminders.merchant_config.items.filter(
+      config => config.reminder_config.namespace === 'payment_link'
+    );
+
     const withExpireByConfigs = [],
-      withOutExpireByConfigs = [];
+      withOutExpireByConfigs = [],
+      withExpireByMerchantConfigs = [],
+      withOutExpireByMerchantConfigs = [];
 
     configs.forEach(ele => {
       if (ele.config_template.attr_key === 'expire_by') {
@@ -27,6 +37,16 @@ import Setting from 'merchant/components/Reminders/Settings';
       withOutExpireByConfigs.push(serializeConfig(ele));
     });
 
+    merchantConfig.forEach(ele => {
+      if (ele.reminder_config.config_template.attr_key === 'expire_by') {
+        withExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
+
+        return;
+      }
+
+      withOutExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
+    });
+
     return {
       paymentLinkReminder: findBy(
         state.reminders.reminders.items,
@@ -35,10 +55,13 @@ import Setting from 'merchant/components/Reminders/Settings';
       ),
       withExpireByConfigs,
       withOutExpireByConfigs,
+      withExpireByMerchantConfigs,
+      withOutExpireByMerchantConfigs,
+      user: state.session.user,
     };
   },
   {
-    editReminders,
+    editRemindersMerchantConfigs,
     disableReminders,
     ...NotificationActions,
   }
@@ -69,13 +92,14 @@ export default class PaymentLinksSettings extends React.Component {
             channels,
             config_id: config.value,
             status: 'enabled',
+            merchant_id: this.props.user.current,
           };
         }
       ),
     };
 
     return this.props
-      .editReminders(this.props.paymentLinkReminder.id, data)
+      .editRemindersMerchantConfigs(this.props.paymentLinkReminder.id, data)
       .then(resp => {
         this.props.showNotification({
           type: 'success',
@@ -105,6 +129,8 @@ export default class PaymentLinksSettings extends React.Component {
           onSaveClick={this.saveSettings}
           disableReminderSetting={this.disableReminderSetting}
           totalUnpaidLinks={this.state.totalUnpaidLinks}
+          withExpiry={this.props.withExpireByMerchantConfigs}
+          withOutExpiry={this.props.withOutExpireByMerchantConfigs}
           withExpireByConfigs={this.props.withExpireByConfigs}
           withOutExpireByConfigs={this.props.withOutExpireByConfigs}
         />
@@ -135,4 +161,8 @@ function serializeConfig(item) {
     value: item.id,
     disabled: false,
   };
+}
+
+function serializeMerchantConfig(item) {
+  return serializeConfig(item.reminder_config);
 }

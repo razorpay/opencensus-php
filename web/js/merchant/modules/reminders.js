@@ -6,6 +6,9 @@ import Reminders from 'merchant/models/Reminders';
 export const REMINDERS_FETCH = 'REMINDERS_FETCH';
 export const REMINDERS_UPDATE = 'REMINDERS_UPDATE';
 export const REMINDER_CONFIG_FETCH = 'REMINDER_CONFIG_FETCH';
+export const REMINDER_MERCHANT_CONFIG_FETCH = 'REMINDER__MERCHANT_CONFIG_FETCH';
+export const REMINDER_MERCHANT_CONFIG_UPDATE =
+  'REMINDER__MERCHANT_CONFIG_UPDATE';
 
 export const fetchReminders = () => {
   const reminders = new Reminders();
@@ -13,17 +16,6 @@ export const fetchReminders = () => {
   return {
     type: REMINDERS_FETCH,
     payload: reminders.fetchAll(),
-  };
-};
-
-export const editReminders = (id, data) => {
-  return {
-    type: REMINDERS_UPDATE,
-    payload: merchantFetch({
-      url: `reminders/service/merchant_settings/${id}`,
-      method: 'post',
-      data,
-    }),
   };
 };
 
@@ -58,8 +50,31 @@ export const fetchRemindersConfigs = () => {
   };
 };
 
+export const fetchRemindersMerchantConfigs = () => {
+  return {
+    type: REMINDER_MERCHANT_CONFIG_FETCH,
+    payload: merchantFetch(`reminders/service/merchant_config/`),
+  };
+};
+
+export const editRemindersMerchantConfigs = (id, data) => {
+  return {
+    type: REMINDER_MERCHANT_CONFIG_UPDATE,
+    payload: merchantFetch({
+      url: `reminders/service/merchant_config/`,
+      method: 'put',
+      data,
+    }),
+  };
+};
+
 let initialState = {
   reminders: {
+    loading: true,
+    items: [],
+    count: 0,
+  },
+  merchant_config: {
     loading: true,
     items: [],
     count: 0,
@@ -94,13 +109,36 @@ export default function(state = initialState, action) {
         'reminders',
         merge(state.reminders, {
           loading: false,
-          items: state.reminders.items.map(item => {
-            if (action.payload.data.id) {
-              return action.payload.data;
-            }
+          ...action.payload.data,
+        })
+      );
+    }
 
-            item;
-          }),
+    case `${REMINDER_MERCHANT_CONFIG_FETCH}::PENDING`:
+      return set(
+        state,
+        'merchant_config',
+        set(state.merchant_config, 'loading', true)
+      );
+
+    case `${REMINDER_MERCHANT_CONFIG_FETCH}::SUCCESS`: {
+      return set(
+        state,
+        'merchant_config',
+        merge(state.merchant_config, {
+          loading: false,
+          ...action.payload.data,
+        })
+      );
+    }
+
+    case `${REMINDER_MERCHANT_CONFIG_UPDATE}::SUCCESS`: {
+      return set(
+        state,
+        'merchant_config',
+        merge(state.merchant_config, {
+          loading: false,
+          ...action.payload.data,
         })
       );
     }
@@ -114,8 +152,7 @@ export default function(state = initialState, action) {
         'configs',
         merge(state.configs, {
           loading: false,
-          items: action.payload.data.items,
-          count: action.payload.data.count,
+          ...action.payload.data,
         })
       );
     }
