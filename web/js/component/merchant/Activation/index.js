@@ -66,6 +66,14 @@ const LOADING = {
   DEFAULT: 2, // Some custom message when form opens
 };
 
+function sliceTabsForRegisteredBusniess(businessType, isL1Submitted) {
+  return !isL1Submitted && businessType != 11;
+}
+
+function sliceTabsForUnRegisteredBusniess(businessType, verficationStatus) {
+  return businessType == 11 && verficationStatus !== 'verified';
+}
+
 function defaultFieldProps(f) {
   const self = this;
 
@@ -282,7 +290,7 @@ export default class ActivationWizard extends React.Component {
         // For non-LA account
         firstInValid = 1; // Business Overview tab
       } else {
-        !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+        !isFormSubmitted && (this.state.showSubmitLayer = false); // Directly show submit form if it's NOT activated/locked/submitted
       }
     }
 
