@@ -427,6 +427,12 @@ class Gateway
             'Verify Refund is not implemented');
     }
 
+    public function reconcile(array $input)
+    {
+        throw new Exception\LogicException(
+            'Reconcile is not implemented');
+    }
+
     public function canTopup()
     {
         return $this->topup;

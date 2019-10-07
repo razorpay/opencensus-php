@@ -115,12 +115,15 @@ class Server extends Base\Mock\Server
     {
         $merchantId = $this->getGatewayInstance()->getMerchantId2();
 
+        $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndAction(
+            $input[VerifyFields::TRANSACTION_REFERENCE_NO], Action::AUTHORIZE);
+
         $date = Carbon::createFromFormat(self::TIME_FORMAT,
             $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
         $verifyArray = [
             VerifyFields::STATUS                => Status::SUCCESS,
-            VerifyFields::TRANSACTION_ID        => mt_rand(111111111, 999999999),
+            VerifyFields::TRANSACTION_ID        => $gatewayPayment['bank_payment_id'],
             VerifyFields::TRANSACTION_DATE      => $date,
             VerifyFields::TRANSACTION_AMOUNT    => $input[VerifyFields::AMOUNT],
         ];

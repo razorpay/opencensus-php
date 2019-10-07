@@ -70,6 +70,73 @@ class SubmerchantBulkAssignTest extends TestCase
         $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
     }
 
+    public function testBulkSubmerchantAssignViaBatchService()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        for ($index = 0; $index < 2; $index++)
+        {
+            $terminal = $this->fixtures->create('terminal');
+            $merchant = $this->fixtures->create('merchant');
+
+            $this->testData[__FUNCTION__]['request']['content'][$index]['terminal_id']    = $terminal['id'];
+            $this->testData[__FUNCTION__]['request']['content'][$index]['submerchant_id'] = $merchant['id'];
+        }
+
+        $terminal = $this->fixtures->create('terminal');
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->testData[__FUNCTION__]['request']['content'][2]['terminal_id']    = $terminal['id'];
+        $this->testData[__FUNCTION__]['request']['content'][2]['submerchant_id'] = $merchant['id'];
+
+        $this->testData[__FUNCTION__]['request']['content'][3]['terminal_id']    = $terminal['id'];
+        $this->testData[__FUNCTION__]['request']['content'][3]['submerchant_id'] = $merchant['id'];
+
+        $this->startTest();
+    }
+
+    public function testBulkSubmerchantAssignViaBatchServiceWithoutBatchId()
+    {
+        $this->ba->batchAuth();
+
+        for ($index = 0; $index < 2; $index++)
+        {
+            $terminal = $this->fixtures->create('terminal');
+            $merchant = $this->fixtures->create('merchant');
+
+            $this->testData[__FUNCTION__]['request']['content'][$index]['terminal_id']    = $terminal['id'];
+            $this->testData[__FUNCTION__]['request']['content'][$index]['submerchant_id'] = $merchant['id'];
+        }
+
+        $this->startTest();
+    }
+
+    public function testBulkSubmerchantAssignViaBatchServiceForExcessCount()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        for ($index = 0; $index < 16; $index++)
+        {
+            $terminal = $this->fixtures->create('terminal');
+            $merchant = $this->fixtures->create('merchant');
+
+            $this->testData[__FUNCTION__]['request']['content'][$index]['terminal_id']    = $terminal['id'];
+            $this->testData[__FUNCTION__]['request']['content'][$index]['submerchant_id'] = $merchant['id'];
+        }
+
+        $this->startTest();
+    }
+
     protected function getDefaultFileEntries()
     {
         $terminal1 = $this->fixtures->create('terminal:bharat_qr_terminal');

@@ -15,7 +15,7 @@ class FundTransfer extends BaseFundTransfer
      */
     protected $fta;
 
-    public function requestFundTransfer(string $ftaId, bool $isRegistered):array
+    public function requestFundTransfer(string $ftaId):array
     {
         $mockResponse = [
             Constants::STATUS           => Constants::STATUS_CREATED,

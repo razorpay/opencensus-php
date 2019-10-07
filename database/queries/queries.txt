@@ -5366,3 +5366,5 @@ ALTER TABLE merchant_details
     ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
     ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;
 
+ALTER TABLE pricing
+    ADD COLUMN fee_bearer INT UNSIGNED DEFAULT 0 AFTER international; # 0 is platform fee bearer

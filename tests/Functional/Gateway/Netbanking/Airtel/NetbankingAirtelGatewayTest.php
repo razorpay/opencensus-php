@@ -68,8 +68,6 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $this->mockSetVerifyTransactionId();
-
         $content = $this->verifyPayment($payment['id']);
 
         assert($content['payment']['verified'] === 1);
@@ -197,6 +195,8 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
+        $this->mockSetVerifyFakeTransactionId();
+
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->verifyPayment($payment['id']);
@@ -226,8 +226,6 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->testFailedAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
-
-        $this->mockSetVerifyTransactionId();
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -291,13 +289,11 @@ class NetbankingAirtelGatewayTest extends TestCase
 	    $this->assertEquals($expectedErrorMessage, $gatewayEntity[Entity::ERROR_MESSAGE]);
     }
 
-    protected function mockSetVerifyTransactionId()
+    protected function mockSetVerifyFakeTransactionId()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-            $content['txns'][0]['txnid'] = $gatewayPayment['bank_payment_id'];
+            $content['txns'][0]['txnid'] = '12345';
         });
     }
 

@@ -823,8 +823,6 @@ class HitachiGatewayTest extends TestCase
 
     public function testAuthenticationGatewayExpressPayDisabled()
     {
-        $this->fixtures->merchant->addFeatures('headless');
-
         $this->fixtures->iin->create([
             'iin'     => '556763',
             'country' => 'IN',

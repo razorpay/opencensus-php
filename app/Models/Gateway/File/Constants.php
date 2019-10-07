@@ -56,7 +56,6 @@ class Constants
             self::ICICI,
             self::IBK,
             self::CSB,
-            self::CBI,
             self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
@@ -94,6 +93,7 @@ class Constants
             self::CUB,
             self::IDBI,
             self::SBIN,
+            self::CBI,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -162,6 +162,7 @@ class Constants
             self::CUB         => ['cub.netbanking.refunds@razorpay.com'],
             self::IDBI        => ['idbi.netbanking.refunds@razorpay.com'],
             self::SBIN        => ['sbi.netbanking.refunds@razorpay.com'],
+            self::CBI         => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

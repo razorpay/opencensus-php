@@ -85,7 +85,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getReconCurrency($row)
     {
-        return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE] ?? null;
+        return trim($row[ReconciliationFields::TRANSACTION_CURRENCY_CODE] ?? null);
     }
 
     public function getReferenceNumber($row)
@@ -202,9 +202,9 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'info_code'  => InfoCode::UNEXPECTED_CARD_LOCALE,
-                    'payment_id' => $paymentId,
+                    'payment_id' => $this->payment->getId(),
                     'gateway'    => $this->gateway,
-                    'message'    => 'unable to figure out card locale'
+                    'message'    => 'unable to figure out card locale',
                 ]);
 
             return null;

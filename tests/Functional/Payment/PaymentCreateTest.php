@@ -1622,7 +1622,7 @@ class PaymentCreateTest extends TestCase
 
     public function testRupayPaymentFallbackTo3ds()
     {
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $this->mockCardVault();
 
@@ -1682,7 +1682,7 @@ class PaymentCreateTest extends TestCase
 
     public function testRupayPaymentFallbackTo3dsForCardBlockError()
     {
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $this->mockCardVault();
 
@@ -1720,7 +1720,7 @@ class PaymentCreateTest extends TestCase
 
     public function testOtpPaymentCardBlockError()
     {
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $this->mockCardVault();
 
