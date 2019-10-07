@@ -1,4 +1,5 @@
 export default {
+  key: 'event',
   label: 'Events and Tickets',
   card: {
     title: 'Events and Tickets',

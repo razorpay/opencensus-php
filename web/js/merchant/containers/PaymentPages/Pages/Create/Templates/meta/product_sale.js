@@ -1,4 +1,5 @@
 export default {
+  key: 'product',
   label: 'Product Sale',
   card: {
     title: 'Product Sale',

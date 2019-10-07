@@ -1,4 +1,5 @@
 export default {
+  key: 'fees',
   label: 'Fees Collection',
   card: {
     title: 'Fees Collection',

@@ -24,12 +24,13 @@ const FETCH_ENTITY = 'FETCH_ENTITY';
 export const isFormItemOfTypeAmount = formItem =>
   formItem.hasOwnProperty('item');
 
-export const updateTemplateType = data => {
+export const updateTemplateType = (data, templateKey) => {
   const isPageDirty = false;
 
   return updateData(
     {
       description: data ? JSON.stringify({ value: data, metaText: '' }) : null, // No meta text if nothing updated by user
+      template_type: templateKey,
     },
     isPageDirty
   );

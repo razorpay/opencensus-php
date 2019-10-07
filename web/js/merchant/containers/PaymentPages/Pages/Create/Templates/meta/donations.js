@@ -1,4 +1,5 @@
 export default {
+  key: 'donation',
   label: 'Donation',
   card: {
     title: 'Accepting Donations',

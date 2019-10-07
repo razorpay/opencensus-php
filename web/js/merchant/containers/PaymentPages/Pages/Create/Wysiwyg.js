@@ -338,6 +338,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       amount,
       title,
       description,
+      template_type,
       quantity,
       terms,
       support_email,
@@ -449,6 +450,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         udf_schema: JSON.stringify(udf_schema),
       },
     };
+
+    // Send template type in while creation
+    if (!isEditExistingId) {
+      reqPayload.template_type = template_type;
+    }
 
     if (isPPV3Enabled) {
       reqPayload.settings.checkout_options = {

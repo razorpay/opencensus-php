@@ -21,9 +21,9 @@ const createYourOwn = {
 export default class extends React.PureComponent {
   state = { isTemplateSelectionOpened: true };
 
-  selectTemplate = (label, quillPrefill, title) => {
+  selectTemplate = (templateKey, label, quillPrefill, title) => {
     return () => {
-      this.props.selectTemplate(quillPrefill);
+      this.props.selectTemplate(quillPrefill, templateKey);
 
       this.setState({
         templateLabel: label,
@@ -69,7 +69,7 @@ export default class extends React.PureComponent {
                   title={createYourOwn.card.title}
                   description={createYourOwn.card.description}
                   img={createYourOwn.card.img}
-                  selectTemplate={this.selectTemplate(null)}
+                  selectTemplate={this.selectTemplate('custom', null)}
                 />
                 {Object.keys(META).map((m, k) => {
                   if (META.hasOwnProperty(m)) {
@@ -80,6 +80,7 @@ export default class extends React.PureComponent {
                         description={META[m].card.description}
                         img={META[m].card.img}
                         selectTemplate={this.selectTemplate(
+                          META[m].key,
                           META[m].label,
                           META[m].quillPrefill,
                           META[m].card.title
