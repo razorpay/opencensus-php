@@ -3,8 +3,8 @@ import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { fetchPlans } from 'merchant/modules/plans';
-import { fetchItems } from 'merchant/modules/items';
 import {
+  fetchSubscriptionItems,
   fetchSubscription,
   saveSubscription,
 } from 'merchant/modules/subscriptions';
@@ -40,7 +40,7 @@ import { trackSaveDuplicateSubscription } from '../../ga';
     fetchSubscription,
     fetchCustomer,
     fetchPlans,
-    fetchItems,
+    fetchSubscriptionItems,
     saveSubscription,
     showNotification,
   }
@@ -59,7 +59,7 @@ export default class NewSubscriptionLink extends Component {
   componentWillMount() {
     this.props.fetchPlans({ count: 100 }).then(_ => this.initializePlan());
 
-    this.props.fetchItems({ count: 100, type: 'addon' });
+    this.props.fetchSubscriptionItems({ count: 100, type: 'addon' });
 
     this.fetchIfIntentDuplicate();
   }
