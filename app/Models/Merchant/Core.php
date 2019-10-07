@@ -263,6 +263,20 @@ class Core extends Base\Core
         $partnerIntent = Accessor::for($merchant, Constants::PARTNER)
             ->get(Constants::PARTNER_INTENT);
 
+        return $this->getResponseForPartnerIntent($partnerIntent);
+    }
+
+    public function updatePartnerIntentInSettings(Entity $merchant, $partnerIntent): array
+    {
+        Accessor::for($merchant, Constants::PARTNER)
+            ->upsert(Constants::PARTNER_INTENT, $partnerIntent)
+            ->save();
+
+        return $this->getResponseForPartnerIntent($partnerIntent);
+    }
+
+    protected function getResponseForPartnerIntent($partnerIntent): array
+    {
         if ($partnerIntent instanceof Dictionary)
         {
             $partnerIntent = null;

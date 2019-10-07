@@ -278,6 +278,10 @@ class Validator extends Base\Validator
         'limit' => 'sometimes|integer',
     ];
 
+    protected static $updatePartnerIntentRules = [
+        Constants::PARTNER_INTENT       => 'required|boolean',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;

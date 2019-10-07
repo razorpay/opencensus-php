@@ -1080,6 +1080,7 @@ final class Route
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
         'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
+        'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
 
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
@@ -1714,6 +1715,7 @@ final class Route
 
     public static $proxy = [
         'fetch_partner_intent',
+        'update_partner_intent',
         'merchant_document_upload',
         'merchant_document_delete',
         'get_es_pricing_merchant',

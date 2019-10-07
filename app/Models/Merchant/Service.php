@@ -2541,6 +2541,23 @@ class Service extends Base\Service
     }
 
     /**
+     * Updates partner_intent key in settings table
+     * @param Array $input
+     *
+     * @return Array
+     */
+    public function updatePartnerIntent(array $input): array
+    {
+        (new Validator)->validateInput('update_partner_intent', $input);
+
+        $merchant = $this->merchant;
+
+        $partnerIntent = $input[Constants::PARTNER_INTENT];
+
+        return $this->core()->updatePartnerIntentInSettings($merchant,$partnerIntent);
+    }
+
+    /**
      * @param string $merchantId
      *
      * @return array
