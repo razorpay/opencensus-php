@@ -218,7 +218,8 @@ class Type
     public static $batchTypeMigrating = [
         self::PAYMENT_LINK,
         self::PAYOUT,
-        self::FUND_ACCOUNT
+        self::FUND_ACCOUNT,
+        self::SUBMERCHANT_ASSIGN,
     ];
 
     /**
@@ -230,7 +231,7 @@ class Type
         self::PAYMENT_LINK,
         self::PAYOUT,
         self::FUND_ACCOUNT,
-        self::IIN_NPCI_RUPAY
+        self::IIN_NPCI_RUPAY,
     ];
 
     public static function exists(string $type)

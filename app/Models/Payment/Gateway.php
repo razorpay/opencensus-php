@@ -817,6 +817,7 @@ class Gateway
         self::NETBANKING_HDFC,
         self::NETBANKING_AXIS,
         self::ENACH_NPCI_NETBANKING,
+        self::NETBANKING_SBI,
     ];
 
     /**
