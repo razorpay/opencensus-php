@@ -19,6 +19,7 @@ use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Models\User\BankingRole;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
 
@@ -293,6 +294,18 @@ class Repository extends Base\Repository
         $query->where($contactPhoneColumn, $contactPhone);
     }
 
+    protected function addQueryParamProduct(BuilderEx $query, array $params)
+    {
+        $product = $params[Merchant\Entity::PRODUCT];
+
+        $productColumn = $this->repo->balance->dbColumn(Payout\Entity::TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryBalance($query);
+
+        $query->where($productColumn, $product);
+    }
+
     /**
      * Refer: addQueryParamContactId()
      *
@@ -467,6 +480,26 @@ class Repository extends Base\Repository
         $this->repo->workflow_action->joinQueryWorkflowStep($query);
     }
 
+    protected function joinQueryBalance(BuilderEx $query)
+    {
+        $balanceTable = $this->repo->balance->getTableName();
+
+        if ($query->hasJoin($balanceTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $balanceTable,
+            function(JoinClause $join)
+            {
+                $balanceIdColumn       = $this->repo->balance->dbColumn(Balance\Entity::ID);
+                $payoutBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+
+                $join->on($balanceIdColumn, $payoutBalanceIdColumn);
+            });
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -487,14 +520,18 @@ class Repository extends Base\Repository
 
         if (($fa === null) or ($fa->getSourceType() !== E::CONTACT))
         {
-            // I.e. this documentn will not be indexed.
+            // I.e. this document will not be indexed.
             return [];
         }
 
+        /** @var $contact Contact\Entity */
         $contact = $fa->source;
+        $balance = $entity->balance;
 
+        $serialized[Entity::PRODUCT]       = $balance->getType();
         $serialized[Entity::CONTACT_NAME]  = $contact->getName();
         $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
+        $serialized[Entity::CONTACT_TYPE]  = $contact->getType();
 
         return $serialized;
     }
@@ -522,5 +559,21 @@ class Repository extends Base\Repository
                     ->where(Entity::BATCH_ID, $batchId)
                     ->merchantId($merchantId)
                     ->first();
+    }
+
+    protected function addQueryParamReversedFrom($query, $params)
+    {
+        $reversedFrom  = $params[Entity::REVERSED_FROM];
+        $reversedAtCol = $this->dbColumn(Entity::REVERSED_AT);
+
+        $query->where($reversedAtCol, '>=', $reversedFrom);
+    }
+
+    protected function addQueryParamReversedTo($query, $params)
+    {
+        $reversedTo    = $params[Entity::REVERSED_TO];
+        $reversedAtCol = $this->dbColumn(Entity::REVERSED_AT);
+
+        $query->where($reversedAtCol, '<=', $reversedTo);
     }
 }

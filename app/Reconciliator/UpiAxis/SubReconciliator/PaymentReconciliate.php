@@ -39,17 +39,26 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // check if the recon status is failed. Return refund
         // Id as null so that such rows don't get processed.
         //
-        if ($this->getReconPaymentStatus($row) === Payment\Status::FAILED)
-        {
-            $this->setFailUnprocessedRow(false);
-
-            return null;
-        }
 
         $paymentId = array_first(self::COLUMN_PAYMENT_ID, function ($pid) use ($row)
         {
             return (isset($row[$pid]) === true);
         });
+
+        if ($this->getReconPaymentStatus($row) === Payment\Status::FAILED)
+        {
+            $this->setFailUnprocessedRow(false);
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'payment_id' => $paymentId,
+                    'gateway'    => $this->gateway
+                ]);
+
+            return null;
+        }
 
         if (UniqueIdEntity::verifyUniqueId($row[$paymentId], false) === false)
         {

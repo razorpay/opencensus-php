@@ -2,8 +2,8 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'updateFeatureAsMerchant' => [
@@ -225,6 +225,27 @@ return [
         ]
     ],
 
+    'testMultiRemoveFeatureFailure' => [
+        'request'  => [
+            'content' => [
+                'name'       => 'dummy',
+                'entity_ids' => ['10000000000001', '10000000000002', '10000000000003']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'failed_count'  => 1,
+                'success_count' => 2,
+                'failed'        => [
+                    '10000000000002',
+                ],
+                'failed_reason' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST
+            ]
+        ]
+    ],
+
     'testDummyFeatureRouteWithAccess' => [
         'request'  => [
             'content' => [
@@ -440,6 +461,31 @@ return [
             'content' => [ ],
             'status_code' => 200
         ]
+    ],
+
+    'testEnableEsAutomaticFeaturesFailure' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'es_automatic' => '1'
+                ]
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
     ],
 
     'testUpdateMerchantProductFeatures' => [
@@ -710,6 +756,7 @@ return [
                     'card_transfer_refund',
                     'log_response',
                     'excess_order_amount',
+                    'disable_amount_check',
                     'subscription_v2',
                     'subscription_auth_v2',
                     'expose_arn_payment',
@@ -721,7 +768,7 @@ return [
                     'transaction_v2',
                     'es_on_demand',
                     'es_automatic',
-                    'headless',
+                    'headless_disable',
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
                     'offer_private_auth',
@@ -900,7 +947,7 @@ return [
             'method'  => 'POST',
             'url'     => '/accounts/me/features',
             'content' => [
-                'names' => ['es_on_demand'],
+                'names' => ['zoho'],
             ],
         ],
         'response' => [

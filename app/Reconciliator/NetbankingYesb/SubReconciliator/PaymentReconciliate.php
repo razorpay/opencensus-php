@@ -14,6 +14,23 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     protected function getPaymentId(array $row)
     {
+        $reconStatus = $this->getReconPaymentStatus($row);
+
+        if ($reconStatus === Status::FAILED)
+        {
+            $this->setFailUnprocessedRow(false);
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'payment_id' => $row[ReconFields::PAYMENT_ID] ?? null,
+                    'gateway'    => $this->gateway
+                ]);
+
+            return null;
+        }
+
         return $row[ReconFields::PAYMENT_ID] ?? null;
     }
 
@@ -60,7 +77,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $data = json_decode($gatewayPayment['raw'], true);
 
-        $dbReferenceNumber = $data['bank_payment_id'];
+        $dbReferenceNumber = $data['bank_payment_id'] ?? null;
 
         //
         // Sometimes we have db reference number saved as string 'null'.

@@ -23,6 +23,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Action as Action;
@@ -182,6 +183,31 @@ class Core extends Base\Core
             ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
         {
             (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $businessCategory, $businessSubcategory);
+        }
+    }
+
+    /**
+     * This function is used for Not Registered Onboarding flow where there is need to set Default Volume/Department
+     * in MerchantDetails table. The reason for doing so is if Business type is changed from Non registered
+     * to some other business type, then need to skip pre signup form from Dashboard login.
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function updateToDefaultDepartmentVolumeIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if ($merchantDetails->isDirty((Entity::BUSINESS_TYPE)) === true)
+        {
+            $merchantBusinessType = BusinessType::getKeyFromIndex($merchant->merchantDetail[Entity::BUSINESS_TYPE]);
+
+            if (BusinessType::isUnregisteredBusiness($merchantBusinessType))
+            {
+                $merchantDetails->setAttribute(Entity::TRANSACTION_VOLUME, Department::getDefaultDepartment());
+
+                $merchantDetails->setAttribute(Entity::DEPARTMENT, TransactionVolume::getDefaultVolume());
+            }
         }
     }
 
@@ -447,6 +473,8 @@ class Core extends Base\Core
         $zapierData = $this->activationZapierData($customer, $merchant);
 
         $this->postFormSubmissionToZapier($zapierData, 'submissions', $merchant);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_FORM_SUBMIT_SUCCESS, $merchant, null);
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)
@@ -924,18 +952,19 @@ class Core extends Base\Core
 
         $totalFields = count($validationFields);
 
+        $documentsResponse = (new Document\Core())->documentResponse($merchant->getId());
+
+        $response['documents'] = $documentsResponse;
+
         foreach ($validationFields as $key)
         {
             //
             // Add the key to the list of the required fields if:
-            // - The key that needs to be validated is not present in the merchant details array
-            // - Or, if the value for the key is null
-            // - Or, if the value is not a boolean and is empty (empty(false) => true)
+            //- key is not present in  merchant detail
+            //- and if the key that needs to be validated is not present in the merchant Document array
             //
-            if ((array_key_exists($key, $merchantDetailsArr) === false) or
-                (is_null($merchantDetailsArr[$key]) === true) or
-                ((is_bool($merchantDetailsArr[$key]) !== true) and
-                 (empty($merchantDetailsArr[$key]) === true)))
+            if (($this->isKeyNotInMerchantDetail($key, $merchantDetailsArr) === true) and
+                (array_key_exists($key, $documentsResponse) === false))
             {
                 $requiredFields[] = $key;
             }
@@ -971,6 +1000,25 @@ class Core extends Base\Core
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
         return $response;
+    }
+
+    /**
+     * Checks that
+     * The key that needs to be validated is not present in the merchant details array
+     * Or, if the value for the key is null
+     * Or, if the value is not a boolean and is empty (empty(false) => true)
+     *
+     * @param string $key
+     * @param array  $merchantDetailsArr
+     *
+     * @return bool
+     */
+    private function isKeyNotInMerchantDetail(string $key, array $merchantDetailsArr): bool
+    {
+        return ((array_key_exists($key, $merchantDetailsArr) === false) or
+                (is_null($merchantDetailsArr[$key]) === true) or
+                ((is_bool($merchantDetailsArr[$key]) !== true) and
+                 (empty($merchantDetailsArr[$key]) === true)));
     }
 
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array

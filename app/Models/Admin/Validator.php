@@ -64,14 +64,18 @@ class Validator extends Base\Validator
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',
         ConfigKey::RX_SLA_FOR_IMPS_PAYOUT             => 'filled|integer',
+        ConfigKey::FTS_PAYOUT_VPA                     => 'filled|string',
+        ConfigKey::FTS_PAYOUT_CARD                    => 'filled|string',
+        ConfigKey::FTS_PAYOUT_BANK_ACCOUNT            => 'filled|string',
 
 
-        ConfigKey::TEST_MODE_ATOS_TID_RANGE_LIST      => 'filled|array',
-        ConfigKey::LIVE_MODE_ATOS_TID_RANGE_LIST      => 'filled|array',
+        ConfigKey::ATOS_TID_RANGE_LIST                => 'filled|array',
+        ConfigKey::ATOS_TID_RANGE_LIST.'.*'           => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [
         ConfigKey::FTS_CHANNELS                     => 'filled|array',
+        ConfigKey::FTS_TRANSFER_SLA                 => 'filled|array',
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',

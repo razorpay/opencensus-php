@@ -75,6 +75,63 @@ class Gateway extends Base\Gateway
         return $response['next']['redirect'] ?? null;
     }
 
+    public function reconcile(array $input)
+    {
+        parent::action($input, Action::RECONCILE);
+
+        $request = $this->getMozartReconcileRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_RECONCILE_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+            ]);
+
+        return $response;
+    }
+
+    protected function getMozartReconcileRequestArray($input)
+    {
+        if (($input['terminal'] instanceof TerminalEntity) === true)
+        {
+            $input['terminal'] = $input['terminal']->toArrayWithPassword();
+        }
+
+        $gateway = $input['gateway'];
+
+        $content['entities'] = $input;
+
+        $baseUrl = $this->app['config']->get('applications.mozart.url');
+
+        $url =  $baseUrl . 'payments/' . $gateway . '/v1/' . $this->action;
+
+        $authentication = [
+            'api',
+            $this->app['config']->get('applications.mozart.password')
+        ];
+
+        return [
+            'url' => $url,
+            'method' => 'POST',
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'X-Task-ID'    => $this->app['request']->getTaskId(),
+            ],
+            'content' => json_encode($content),
+            'options' => [
+                'auth' => $authentication
+            ]
+        ];
+    }
+
     public function otpGenerate(array $input)
     {
         return $this->authorize($input);
@@ -146,7 +203,7 @@ class Gateway extends Base\Gateway
             $this->verifyCallback($input);
         }
 
-        return $this->getResponseData($input, $response);
+        return $this->getResponseData($input, $response, $gatewayPayment);
     }
 
     public function omniPay(array $input)
@@ -165,10 +222,10 @@ class Gateway extends Base\Gateway
         $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
-       
+
         $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_CREATE_TERMINAL_RESPONSE);
         // TODO check error codes and throw exception
-        
+
         return $response;
     }
 
@@ -545,9 +602,9 @@ class Gateway extends Base\Gateway
                 Action::VERIFY     => Action::PAY_VERIFY,
             ],
             Payment\Gateway::NETBANKING_IDBI => [
-                Action::PAY_INIT    =>  null,
-                Action::PAY_VERIFY  =>  Action::PAY_INIT,
-                Action::VERIFY      =>  Action::PAY_VERIFY,
+                Action::PAY_INIT    => null,
+                Action::PAY_VERIFY  => Action::PAY_INIT,
+                Action::VERIFY      => Action::PAY_VERIFY,
             ],
             Payment\Gateway::NETBANKING_YESB => [
                 Action::PAY_INIT   => null,
@@ -944,7 +1001,7 @@ class Gateway extends Base\Gateway
         return in_array($gateway, $formattedAmountGateways, true);
     }
 
-    protected function getResponseData($input, $mozartResponse)
+    protected function getResponseData($input, $mozartResponse, $gatewayPayment)
     {
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
@@ -957,7 +1014,9 @@ class Gateway extends Base\Gateway
         }
         elseif ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
-            $response = $this->getCallbackResponseData($input);
+            $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+            $response = $this->getCallbackResponseData($input, $acquirerData);
         }
         else
         {
@@ -1006,7 +1065,7 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
-        if (($this->action === Action::CREATE_TERMINAL) or 
+        if (($this->action === Action::CREATE_TERMINAL) or
             ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY)))
         {
             return $input['gateway'];
@@ -1034,7 +1093,7 @@ class Gateway extends Base\Gateway
         {
             $key = array_keys($gatewayInput)[0];
 
-            if($gatewayInput[$key] === "")
+            if($gatewayInput[$key] === '')
             {
                 $gatewayInput['encdata'] = $key;
 
@@ -1079,5 +1138,22 @@ class Gateway extends Base\Gateway
             );
 
         }
+    }
+
+    /**
+     * For Netbanking gateways we store the bank's reference number in the payment entity.
+     * @param $input
+     * @param $gatewayPayment
+     * @return array
+     */
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $data = $gatewayPayment->getDataAttribute();
+
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $data['bank_payment_id'] ?? null
+            ]
+        ];
     }
 }

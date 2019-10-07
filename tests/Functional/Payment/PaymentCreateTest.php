@@ -66,7 +66,7 @@ class PaymentCreateTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' =>  true]);
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -84,7 +84,7 @@ class PaymentCreateTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__]['requestData'];
 
-        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' =>  true]);
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -94,7 +94,7 @@ class PaymentCreateTest extends TestCase
 
             $payment['amount'] = $failedPayment['amount'];
 
-            $responseData = $this->testData[__FUNCTION__]['responseData'];;
+            $responseData = $this->testData[__FUNCTION__]['responseData'];
 
             $responseData['response']['content']['error']['description'] = 'The amount must be atleast ' .
                 $payment['currency'] . ' '. amount_format_IN(Currency::getMinAmount($payment['currency']));
@@ -577,7 +577,10 @@ class PaymentCreateTest extends TestCase
         // this is being asserted differently.
 
         $expectedNotes = [
-            'merchant_order_id' => 'random order id',
+            [
+                'key'   => 'merchant_order_id',
+                'value' => 'random order id',
+            ],
         ];
 
         $esMock->expects($this->once())
@@ -841,6 +844,23 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('bank_transaction_id', $payment['acquirer_data']);
     }
 
+    public function testPaymentWithGatewayProcurer()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_gateway_provider']);
+
+        $this->sharedTerminal->forceDelete();
+        $sharpTerminal = $this->fixtures->create('terminal:shared_sharp_terminal', ['procurer' => 'sharp']);
+
+        $paymentData = $this->getDefaultNetbankingPaymentArray();
+
+        $this->doAuthPayment($paymentData);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertArrayHasKey('gateway_provider', $payment);
+        $this->assertEquals('sharp', $payment['gateway_provider']);
+    }
+
     public function testPreferredRecurringPaymentInputValidation()
     {
         $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
@@ -952,7 +972,7 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -966,7 +986,7 @@ class PaymentCreateTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -1602,7 +1622,7 @@ class PaymentCreateTest extends TestCase
 
     public function testRupayPaymentFallbackTo3ds()
     {
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $this->mockCardVault();
 
@@ -1662,7 +1682,7 @@ class PaymentCreateTest extends TestCase
 
     public function testRupayPaymentFallbackTo3dsForCardBlockError()
     {
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $this->mockCardVault();
 
@@ -1700,7 +1720,7 @@ class PaymentCreateTest extends TestCase
 
     public function testOtpPaymentCardBlockError()
     {
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $this->mockCardVault();
 

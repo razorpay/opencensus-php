@@ -87,6 +87,16 @@ class Selector extends Base\Core
      * @var array
      */
     protected static $smartRoutingSorters = [
+
+        // Sorting based on merchant category
+        Sorters\MerchantSorter::class,
+
+        // Boosts direct terminals over shared terminals
+        Sorters\ExclusivitySorter::class,
+
+        // Boosts specific auth type terminals over 3ds terminals
+        Sorters\AuthTypeSorter::class,
+
         // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
 
@@ -315,14 +325,14 @@ class Selector extends Base\Core
 
                 }
 
-                if (count($sortedTerminals) === count($newSortedTerminals))
+                if (count($newSortedTerminals) > 0)
                 {
                     $sortedTerminals = $newSortedTerminals;
                 }
                 else
                 {
                     $this->trace->error(
-                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR,
+                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
                         [
                             'input_terminals'    => $sortedTerminals,
                             'sorted_terminals_from_smart_routing' => $newSortedTerminals,

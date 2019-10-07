@@ -12,6 +12,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_PAYMENT_ID    = 'orderid';
     const COLUMN_REFUND_AMOUNT = 'refundamount';
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     /**
      * Gets refund Id from row data
      *

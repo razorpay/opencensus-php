@@ -89,6 +89,7 @@ final class Route
         'batch_retry_output_file'                  => ['post',     'batches/{id}/retry_output_file',                 'BatchController@retryBatchOutputFile'                              ],
         'batch_download_file'                      => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'batch_stats'                              => ['get',      'batches/{id}/stats',                             'BatchController@getStats'                                          ],
+        'bulk_submerchant_assign'                  => ['post',     'submerchant/assign/bulk',                        'MerchantController@bulkSubmerchantAssign'                          ],
         'file_upload_admin'                        => ['post',     'admin/files/{type}',                             'AdminController@uploadFileAdmin'                                   ],
         'payment_capture'                          => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                     => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
@@ -177,7 +178,7 @@ final class Route
         'iin_edit'                                 => ['put',      'iins/{id}',                                      'IinController@editIin'                                             ],
         'iin_edit_bulk'                            => ['patch',    'iins/bulk',                                      'IinController@editIinBulk'                                         ],
         'iin_generate_post'                        => ['post',     'iins/import/generate',                           'IinController@postIinGenerate'                                     ],
-        'iin_batch_process_record'                 => ['post',     'iins/{type}/process',                            'IinController@processRecord'                                       ],
+        'iin_batch_process_record'                 => ['post',     'iins/{type}/process',                            'IinController@processRecords'                                       ],
         'merchant_public_get_banks'                => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                          => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                       => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
@@ -501,6 +502,7 @@ final class Route
         'set_gateway_downtime_conf'                => ['put',      'gateway/downtime/conf',                          'AdminController@setGatewayDowntimeConf'                            ],
         'get_gateway_downtime_conf'                => ['get',      'gateway/downtime/conf',                          'AdminController@getGatewayDowntimeConf'                            ],
         'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
+        'get_scheduled_es_pricing_merchant'        => ['get',      'es/scheduled_pricing',                           'MerchantController@getScheduledEarlySettlementPricingForMerchant'  ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'                => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
@@ -595,6 +597,7 @@ final class Route
         'payment_link_deactivate'                  => ['patch',    'payment_links/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
         'payment_link_activate'                    => ['patch',    'payment_links/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'payment_link_slug_exists'                 => ['get',      'payment_links/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
+        'payment_page_items_migrate'               => ['post',     'payment_pages/migrate_payment_page_items',       'PaymentLinkController@migratePaymentPageItems'                     ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -608,6 +611,7 @@ final class Route
         'es_aliases_post'                          => ['post',     'es/aliases',                                     'EsController@postAliases'                                          ],
         'es_index_create'                          => ['post',     'es/index_create',                                'EsController@postIndexCreate'                                      ],
         'es_index'                                 => ['post',     'es/index',                                       'EsController@postIndex'                                            ],
+        'es_proxy'                                 => ['any',      'es/proxy/{path?}',                               'EsController@proxy'                                                ],
         'gateway_add_priorities'                   => ['post',     'gateway/priorities/{method}',                    'GatewayController@createGatewayPriority'                           ],
         'gateway_fetch_priorities'                 => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'                => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
@@ -1029,8 +1033,8 @@ final class Route
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+        'merchant_razorx_bulk_evaluate'            => ['get',      'razorx/bulkevaluate',                            'MerchantController@getRazorxTreatmentInBulk'                       ],
         'razorx_guest'                             => ['get',      'razorx/evaluate/{id}/{featureFlag}',             'RazorxController@getTreatment'                                     ],
-
         // batch service
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
@@ -1205,6 +1209,8 @@ final class Route
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
         'merchant_document_upload'                => ['post',     'merchant/documents/upload',                                 'DocumentController@uploadMerchantDocuments'                ],
+        'merchant_document_fetch'                 => ['get',      'merchant/documents',                                        'DocumentController@getMerchantDocuments'                   ],
+        'merchant_document_admin_fetch'           => ['get',      'merchant/documents/{mid}',                                  'DocumentController@getMerchantDocumentsByAdmin'            ],
 
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -1644,6 +1650,7 @@ final class Route
         'refunds_reconcile_bulk',
         'setl_notify_h2h',
         'entity_balance_id_update',
+        'payment_page_items_migrate',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
         'cps_downtime_vajra_webhook',
@@ -1710,9 +1717,11 @@ final class Route
     ];
 
     public static $proxy = [
+        'merchant_document_fetch',
         'merchant_document_upload',
         'merchant_document_delete',
         'get_es_pricing_merchant',
+        'get_scheduled_es_pricing_merchant',
         'merchant_edit_config_la',
         'merchant_fetch_users',
         'setl_fetch_transactions',
@@ -1755,6 +1764,7 @@ final class Route
         'batch_fetch_by_id',
         'batch_download_file',
         'batch_stats',
+        'bulk_submerchant_assign',
         'invoice_issue_by_batch',
         'invoice_notify_by_batch',
         'invoice_get_stats_by_batch_ids',
@@ -1782,6 +1792,7 @@ final class Route
         'merchant_activation_business_categories',
         'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
+        'merchant_razorx_bulk_evaluate',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
         'file_get_signed_url',
@@ -1920,6 +1931,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_document_admin_fetch',
         'org_get',
         'org_get_multiple',
         'admin_fetch_merchant_ids_new',
@@ -2090,6 +2102,7 @@ final class Route
         'es_aliases_post',
         'es_index_create',
         'es_index',
+        'es_proxy',
         'feature_add',
         'feature_bulk_assign',
         'feature_bulk_remove',
@@ -2348,6 +2361,7 @@ final class Route
     ];
 
     public static $routePermission = [
+        'merchant_document_admin_fetch'            => '*',
         'group_create'                             => Permission::CREATE_GROUP,
         'admin_create'                             => Permission::CREATE_ADMIN,
         'group_get'                                => Permission::VIEW_GROUP,
@@ -2570,6 +2584,7 @@ final class Route
         'es_aliases_post'                          => Permission::ES_WRITE_OPERATION,
         'es_index_create'                          => Permission::ES_WRITE_OPERATION,
         'es_index'                                 => Permission::ES_WRITE_OPERATION,
+        'es_proxy'                                 => Permission::ES_WRITE_OPERATION,
         'feature_add'                              => '*',
         'feature_bulk_assign'                      => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'feature_bulk_remove'                      => Permission::MANAGE_BULK_FEATURE_MAPPING,
@@ -2743,6 +2758,7 @@ final class Route
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => '*',
+        'payment_page_items_migrate'               => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
         'set_redis_keys'                           => '*',
@@ -2913,6 +2929,10 @@ final class Route
      * Throttling middleware (and hence, rate limiting) is applied for all routes, except for the ones
      * defined here
      *
+     * Todo-
+     * In throttle middleware(first) request.ctx is initialized.
+     * Following skipping is bypassing it and should not have been done here.
+     *
      * @var array
      */
     public static $skipThrottling = [
@@ -3044,6 +3064,7 @@ final class Route
             'billdesk_reconcile_cancelled',
             'merchant_es_sync_cron',
             'entity_balance_id_update',
+            'payment_page_items_migrate',
             'scrooge_refund_verify_bulk',
             'payouts_process_queued',
             'scrooge_tagging_backfill',
@@ -3057,6 +3078,7 @@ final class Route
             'refund_speed_processed_backfill',
             'get_setl_amount',
             'cps_sync_gateway_entities_cron',
+            'reconciliate',
             'mailing_list_remove_suspended_merchant',
         ],
 
@@ -3174,6 +3196,7 @@ final class Route
             'batch_send_mail',
             'bulk_invoice_create',
             'bulk_contact_create',
+            'bulk_submerchant_assign',
             'payout_bulk_create',
             'partner_submerchant_map',
             'iin_batch_process_record',
@@ -3277,6 +3300,11 @@ final class Route
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
         'mpans_issue'                          => [Feature::ISSUE_MPANS],
         'mpans_fetch'                          => [Feature::ISSUE_MPANS],
+        'account_create'                       => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_list'                         => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
     ];
 
     /*
@@ -3415,11 +3443,18 @@ final class Route
         'excel_store_page_by_url',
     ];
 
+    /**
+     * Register all routes here whose
+     * exception/errors needs to be send to DataLake.
+     */
     const FAILURE_EVENTS_INTERCEPTOR_ROUTES = [
         'user_register',
         'merchant_edit_pre_signup_details',
         'user_confirm_by_data',
         'merchant_instant_activation_post',
+        'merchant_activation_upload_file',
+        'merchant_activation_save',
+        'merchant_document_upload',
     ];
 
     // These routes are redirected after a feature check

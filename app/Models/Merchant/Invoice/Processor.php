@@ -204,8 +204,7 @@ class Processor extends Base\Core
                                     ->fetchFeesAndTaxForRefundByType(
                                         $this->merchantId,
                                         $this->beginTimestamp,
-                                        $this->endTimestamp,
-                                        $type);
+                                        $this->endTimestamp);
         }
 
         $refundFeeAmounts = $this->formatFeesForInvoice($refundFeeAmount);
@@ -220,8 +219,7 @@ class Processor extends Base\Core
                                             ->fetchFeesAndTaxForRefundByType(
                                                 $this->merchantId,
                                                 $this->beginTimestamp,
-                                                $this->endTimestamp,
-                                                $type);
+                                                $this->endTimestamp);
         }
 
         $refundReversalFeeAmounts = $this->formatFeesForInvoice($refundReversalFeeAmount);
@@ -239,7 +237,7 @@ class Processor extends Base\Core
 
     protected function isInvoiceTypeOfRefund(string $type)
     {
-        return (in_array($type, [Type::REFUND_LTE_1K, Type::REFUND_GT_1K_LTE_10K, Type::REFUND_GT_10K]) === true);
+        return (in_array($type, [Type::INSTANT_REFUNDS]) === true);
     }
 
     /**
@@ -303,9 +301,7 @@ class Processor extends Base\Core
         // [
         //    'card_lte_2k'             => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'card_gt_2k'              => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
-        //    'refund_lte_1k'           => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
-        //    'refund_gt_1k_lte_10k'    => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
-        //    'refund_gt_10k'           => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'instant_refunds'         => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'others'                  => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'validation'              => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         // ]

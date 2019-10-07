@@ -63,9 +63,11 @@ class Core extends Base\Core
      */
     public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
     {
+        $merchantDetailCore = new Detail\Core();
+
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
 
-        $merchantDetails = (new Detail\Core())->getMerchantDetails($merchant);
+        $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
         if ($validateLock === true)
         {
@@ -91,7 +93,30 @@ class Core extends Base\Core
             $this->storeInMerchantDocument($merchant, $param, $document);
         });
 
-        return $document->toArrayPublic();
+        return $merchantDetailCore->createResponse($merchantDetails);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function fetchActivationFilesFromDocument(string $merchantId): array
+    {
+        $documentsResponse = $this->documentResponse($merchantId);
+
+        $detailService = new Detail\Service();
+
+        foreach ($documentsResponse as $documentType => &$documentMetaData)
+        {
+            foreach($documentMetaData as &$document)
+            {
+                $signedUrl = $detailService->getSignedUrl($document[Entity::FILE_STORE_ID], $merchantId);
+
+                $document[Entity::SIGNED_URL] = $signedUrl;
+            }
+        }
+        return $documentsResponse;
     }
 
     /**
@@ -110,5 +135,34 @@ class Core extends Base\Core
                 $this->delete($document);
             }
         }
+    }
+
+    /** R
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function documentResponse(string $merchantId): array
+    {
+        $documents = $this->repo->merchant_document->findAllDocumentsByMerchantID($merchantId);
+
+        $documentsResponse = [];
+
+        foreach ($documents as $document)
+        {
+            $documentMetaData = [
+                Entity::ID            => $document->getId(),
+                Entity::FILE_STORE_ID => $document->getFileStoreId()
+            ];
+
+            if (isset($documentsResponse[$document->getDocumentType()]) === false)
+            {
+                $documentsResponse[$document->getDocumentType()] = [];
+            }
+
+            array_push($documentsResponse[$document->getDocumentType()], $documentMetaData);
+        }
+
+        return $documentsResponse;
     }
 }

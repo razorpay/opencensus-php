@@ -3256,6 +3256,19 @@ return [
         ]
     ],
 
+    'testFetchEsScheduledPricing' => [
+        'request' => [
+            'url' => '/es/scheduled_pricing',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'percent_rate' => 20,
+                'fixed_rate' => 0,
+            ]
+        ]
+    ],
+
     'testPutEmiMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
@@ -5077,6 +5090,23 @@ return [
             'content'     => [
                 'account_locked' => false,
                 'user_id'        => '',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMerchantRazorxBulkExperimentFetch' => [
+        'request'  => [
+            'url'     => '/razorx/bulkevaluate',
+            'method'  => 'get',
+            'content' => [
+                'features' => 'feature1,feature2'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'feature1' => ['result' => 'on'],
+                'feature2' => ['result' => 'off'],
             ],
             'status_code' => 200,
         ],

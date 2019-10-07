@@ -60,7 +60,7 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null);
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
 
         return $response;
     }
@@ -70,6 +70,8 @@ class Service extends Base\Service
         $response = $this->saveMerchantDetails($input);
 
         $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null);
 
         return $response;
     }
@@ -281,6 +283,8 @@ class Service extends Base\Service
         }
         );
 
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, array_keys($input));
+
         return $response;
     }
 
@@ -380,7 +384,7 @@ class Service extends Base\Service
         return ($merchant->isLinkedAccount() === true) ? Constants::UPLOAD_KEYS_ACCOUNT : Constants::UPLOAD_KEYS;
     }
 
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    public function getSignedUrl(string $fileStoreId, string $merchantId)
     {
         $core = new FileStore\Core;
 

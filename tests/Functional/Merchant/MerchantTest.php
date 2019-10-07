@@ -1653,6 +1653,16 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutPublicRoute()
+    {
+        $this->ba->directAuth();
+
+        $response = $this->call('GET', '/v1/checkout/public');
+
+        $response->assertStatus(200);
+        $this->assertContains('<title>Razorpay Checkout</title>', $response->getContent());
+    }
+
     public function testGetCheckoutPreferencesWithNetbankingDisabled()
     {
         $this->ba->publicLiveAuth();
@@ -1699,7 +1709,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(36, $banks);
+        $this->assertCount(37, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -2774,6 +2784,17 @@ class MerchantTest extends TestCase
         $admin->merchants()->attach('10000000000000');
 
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchEsScheduledPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->proxyAuthTest();
 
         $this->startTest();
     }
@@ -4933,5 +4954,29 @@ class MerchantTest extends TestCase
         $userDB = $this->getDbEntityById('user', $user['id']);
 
         $this->assertEquals($userDB['account_locked'], $response['account_locked']);
+    }
+
+    public function testMerchantRazorxBulkExperimentFetch()
+    {
+        $merchantId = 10000000000000;
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $razorxMock->method('getTreatment')
+                   ->will($this->onConsecutiveCalls('on', 'off'));
+
+        $this->app->instance('razorx', $razorxMock);
     }
 }

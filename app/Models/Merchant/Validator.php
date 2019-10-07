@@ -13,6 +13,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Validator
@@ -25,6 +26,11 @@ class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
     const MAXIMAGESIZE = 1024 * 1024;
+
+    const BATCH_ID                          = 'Batch Id';
+    const BULK_SUBMERCHANT_ASSIGN           = 'Bulk Submerchant Assign';
+    // Rate limit on items sending for bulk submerchant assign.
+    const MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT = 15;
 
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
@@ -153,6 +159,7 @@ class Validator extends Base\Validator
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',
         Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
+        'es_enabled'                => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [
@@ -270,6 +277,12 @@ class Validator extends Base\Validator
     protected static $restrictSettingsMerchantRules = [
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
         Entity::ACTION      => 'required|in:add,remove',
+    ];
+
+    protected static $bulkSubmerchantAssignRules = [
+        'idempotency_key'   => 'required',
+        'submerchant_id'    => 'required|alpha_num|size:14',
+        'terminal_id'       => 'required|alpha_num|size:14',
     ];
 
     protected static $suspendedMerchantRemoveRules = [
@@ -706,6 +719,16 @@ class Validator extends Base\Validator
             // Feature must be a "visible feature" and editable by the merchant
             if ((in_array($feature, $visibleFeatures, true) === false) or
                 (in_array($feature, $editableFeature, true) === false))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                    'feature',
+                    [$feature]);
+            }
+            // Only Merchant who have feature ES_ON_DEMAND enabled can change ES features
+            else if (($input['es_enabled'] === false) and
+                     (($feature === Feature\Constants::ES_AUTOMATIC) or
+                     ($feature === Feature\Constants::ES_ON_DEMAND)))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
@@ -1210,6 +1233,18 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateAndTranslateToAccountNumberForBankingIfApplicable(array & $input)
+    {
+        $product       = array_get($input, Entity::PRODUCT);
+        $accountNumber = array_get($input, Balance\Entity::ACCOUNT_NUMBER);
+
+        if ((empty($product) === true) or
+            (empty($accountNumber) === false))
+        {
+            $this->validateAndTranslateAccountNumberForBanking($input);
+        }
+    }
+
     /**
      * There are service methods (list & fetch) for few models which expect
      * mandatory ACCOUNT_NUMBER in query parameter. Such models include
@@ -1259,5 +1294,31 @@ class Validator extends Base\Validator
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+    }
+
+    public function validateBatchId($batchId)
+    {
+        if (empty($batchId) === true)
+        {
+            throw new BadRequestValidationFailureException('Batch Id not present');
+        }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of submerchant terminal assign in Bulk Route
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkSubmerchantAssignCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Current batch size ' . count($input) . ', max limit of ' . self::BULK_SUBMERCHANT_ASSIGN . ' is ' . self::MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT,
+                null,
+                null
+            );
+        }
     }
 }

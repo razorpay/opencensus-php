@@ -19,12 +19,14 @@ class Type
     const APPLICATIONS  = 'applications';
 
     // Application ids
-    const TEST_APP_ID   = '10000TestAppId';
-    const JUSPAY_APP_ID = 'A0m8HLZLyVIDQ9';
+    const TEST_APP_ID    = '10000TestAppId';
+    const JUSPAY_APP_ID  = 'A0m8HLZLyVIDQ9';
+    const JUSPAY_APP_ID1 = 'D0HP2c6t4I1bLX';
 
     const S2S_APPLICATION_IDS = [
         self::TEST_APP_ID,
         self::JUSPAY_APP_ID,
+        self::JUSPAY_APP_ID1,
     ];
 
     /**

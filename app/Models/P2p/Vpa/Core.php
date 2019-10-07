@@ -70,7 +70,20 @@ class Core extends Base\Core
     {
         $vpa = $this->repo->findByUsernameHandle($username, $this->context()->handleCode(), true);
 
-        return ($vpa instanceof Entity);
+        if ($vpa instanceof Entity)
+        {
+            // Deleted VPA can available for the same device
+            if (($vpa->trashed() === true) and
+                ($vpa->getDeviceId() === $this->context()->getDevice()->getId()))
+            {
+                return false;
+            }
+
+            // VPA is locally available
+            return true;
+        }
+
+        return false;
     }
 
     public function checkForMaxVpaLimit(): bool
@@ -96,6 +109,26 @@ class Core extends Base\Core
     public function findByUsernameHandle(array $input, bool $trashed = false)
     {
         return $this->repo->findByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE], $trashed);
+    }
+
+    public function createOrUpdate(array $input): Entity
+    {
+        $vpa = $this->repo->findByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE], true);
+
+        if ($vpa instanceof Entity)
+        {
+            // Deleted VPA can available for the same device
+            if ($vpa->getDeviceId() === $this->context()->getDevice()->getId())
+            {
+                $vpa->restore();
+
+                return $vpa;
+            }
+
+            throw $this->logicException('Vpa is already taken by another device');
+        }
+
+        return $this->create($input);
     }
 
     public function create(array $input): Entity

@@ -6,9 +6,10 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Type
 {
-    const ADDON     = 'addon';
-    const INVOICE   = 'invoice';
-    const PLAN      = 'plan';
+    const ADDON        = 'addon';
+    const INVOICE      = 'invoice';
+    const PLAN         = 'plan';
+    const PAYMENT_PAGE = 'payment_page';
 
     public static function isTypeValid($type)
     {

@@ -302,6 +302,14 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 
         $input = ['amount' => $payment['amount']];
 
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content['status']     = 'failed';
+            }
+        });
+
         $this->refundAuthorizedPayment($paymentId, $input);
 
         $gatewayEntity = $this->getLastEntity('cardless_emi', true);
@@ -319,7 +327,7 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 
         $this->mockServerContentFunction(function (& $content, $action)
         {
-            if ($action === 'refund')
+            if (in_array($action, ['refund','verify_refund'], true) === true)
             {
                 $content['status']     = 'failed';
                 $content['error_code'] = 'REFUND_FAILED';
@@ -342,7 +350,7 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $this->assertEquals('REFUND_FAILED', $gatewayEntity['error_code']);
         $this->assertEquals('Refund failed', $gatewayEntity['error_description']);
@@ -354,7 +362,7 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 
         $this->mockServerContentFunction(function (& $content, $action)
         {
-            if ($action === 'refund')
+            if (in_array($action, ['refund','verify_refund'], true) === true)
             {
                 $content['status']     = 'failed';
                 $content['error_code'] = 'REFUND_FAILED';
@@ -379,7 +387,7 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $this->assertEquals('REFUND_FAILED', $gatewayRefund['error_code']);
         $this->assertEquals('Refund failed', $gatewayRefund['error_description']);
