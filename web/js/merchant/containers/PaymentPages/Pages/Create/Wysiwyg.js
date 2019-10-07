@@ -166,8 +166,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
-    // script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
-    script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js'; // TODO: Only for Beta testing
+    script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
+    // script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js'; // TODO: Only for Beta testing
     document.head.appendChild(script);
 
     document
@@ -346,7 +346,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       expire_by,
     } = paymentPageEntity;
 
-    console.log('....paymentPageEntity...', paymentPageEntity);
+    // console.log('....paymentPageEntity...', paymentPageEntity);
 
     // Remove Email and Phone in all cases before sending to API.
     const formItems = [...FORM_ITEMS]; // Separate UDF and amount fields from FORM ITEMS.
@@ -426,7 +426,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       ? validateUISchemaV3(udf_schema)
       : validateUISchemaV2(udf_schema);
 
-    console.log('udf_schema......', udf_schema);
+    // console.log('udf_schema......', udf_schema);
 
     if (!isValidSchema) {
       throw 'UI Schema is not valid';

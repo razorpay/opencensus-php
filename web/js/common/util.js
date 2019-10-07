@@ -317,12 +317,13 @@ export const addPrefixToObjectKeys = (prefix, data) => {
   return newData;
 };
 
-export const arrayMoveMutate = (array, from, to) => {
+const _arrayMoveMutate = (array, from, to) => {
   array.splice(to < 0 ? array.length + to : to, 0, array.splice(from, 1)[0]);
 };
 
+/* For swapping positions of 2 indices in an array */
 export const arrayMove = (array, from, to) => {
   array = array.slice();
-  arrayMoveMutate(array, from, to);
+  _arrayMoveMutate(array, from, to);
   return array;
 };

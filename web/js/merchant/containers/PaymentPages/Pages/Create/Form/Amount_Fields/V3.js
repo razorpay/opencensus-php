@@ -92,7 +92,6 @@ export function constructAmountField(fieldData) {
     amountItem.mandatory = isMandatoryToBool(mandatory); // BOOL
   }
 
-  // TODO: Redundant cuz already handled some part in CreatorManager onSaveAdvancedForm, however safe call to reset to null if empty string
   if (restProps.min_amount === '') {
     restProps.min_amount = null;
   }

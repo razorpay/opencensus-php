@@ -383,7 +383,6 @@ export default class User {
   }
 
   get toShowExtraFieldsInPP() {
-    return true;
     return this.getExpStatus('show_extra_fields_in_pp');
   }
 
@@ -393,10 +392,6 @@ export default class User {
 
   get isPPV3Enabled() {
     return this.getExpStatus('paymentpages_v3');
-  }
-
-  get isPostActivationHotjarSurveyEnabled() {
-    return this.getExpStatus('post_activation_hotjar_survey');
   }
 
   get isMobileHotjarSurveyEnabled() {

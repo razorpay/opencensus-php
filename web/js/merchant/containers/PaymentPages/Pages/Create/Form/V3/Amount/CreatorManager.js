@@ -105,8 +105,6 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       const newField = { ...field };
       newField.mandatory = isMandatory;
 
-      console.log('isMandatory.......', fieldType, isMandatory);
-
       if (isMandatory) {
         switch (fieldType) {
           case FIELD_TYPES.dynamic_price.key: {
@@ -154,11 +152,12 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       });
     };
 
-    onSaveAdvancedForm = (formData, fieldType) => {
+    onSaveAdvancedForm = formData => {
       const { field } = this.state;
 
-      console.log(formData);
+      // console.log(formData);
 
+      // TODO: Can be merged with constructAmountField which handles extra cases as well, but not straightforward
       if (formData.hasOwnProperty('min_purchase') && !formData.min_purchase) {
         formData.min_purchase = 0; // Cannot be null (inorder to differentiate field definition from fixed price optional field)
       }
