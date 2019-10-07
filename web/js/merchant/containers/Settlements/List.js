@@ -254,7 +254,11 @@ export default class SettlementsListContainer extends ListContainer {
                           this.setState({ openAutoModal: false });
                         }}
                         openAutoModal={this.state.openAutoModal}
-                        fromWhere="Settlements"
+                        fromWhere={
+                          this.state.openAutoModal
+                            ? 'Announcement'
+                            : 'Settlements'
+                        }
                       />
                     </div>
                   )}
