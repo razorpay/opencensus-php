@@ -1060,6 +1060,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_PLAN_RULE_UPDATE_ATTEMPT                      = 'PRICING_PLAN_RULE_UPDATE_ATTEMPT';
     const PRICING_PLAN_RULE_ADD_SUCCESS                         = 'PRICING_PLAN_RULE_ADD_SUCCESS';
     const PRICING_PLAN_RULE_UPDATE_SUCCESS                      = 'PRICING_PLAN_RULE_UPDATE_SUCCESS';
+    const PRICING_PLAN_RULE_DELETE_ATTEMPT                      = 'PRICING_PLAN_RULE_DELETE_ATTEMPT';
 
     const WEBHOOK_DISPATCH                                      = 'WEBHOOK_DISPATCH';
     const WEBHOOK_FIRING                                        = 'WEBHOOK_FIRING';
