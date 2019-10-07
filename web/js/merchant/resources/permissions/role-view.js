@@ -48,6 +48,7 @@ export default {
     'sellerapp',
     'agent',
     'rbl_supervisor',
+    'sellerapp_plus',
   ],
   items: [
     'owner',
@@ -57,6 +58,7 @@ export default {
     'finance',
     'support',
     'sellerapp',
+    'sellerapp_plus',
     'agent',
   ],
   payment_links: [
@@ -68,6 +70,7 @@ export default {
     'sellerapp',
     'agent',
     'rbl_supervisor',
+    'sellerapp_plus',
     'rbl_agent',
   ],
   payment_links_batch_uploads: [
@@ -79,6 +82,7 @@ export default {
     'sellerapp',
     'agent',
     'rbl_supervisor',
+    'sellerapp_plus',
   ],
   payment_pages: [
     'owner',
@@ -110,6 +114,7 @@ export default {
     'rbl_supervisor',
     'agent',
     'support',
+    'sellerapp_plus',
   ],
   api_keys: ['owner', 'admin'],
   profile: [
@@ -137,7 +142,8 @@ export default {
   credits: ['owner', 'admin', 'manager', 'operations', 'finance'],
   activation: ['owner', 'admin', 'manager'],
   referrals: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
-  team: ['owner', 'rbl_supervisor'],
+  team: ['owner', 'admin', 'rbl_supervisor'],
+  invitations: ['owner', 'rbl_supervisor'],
   webhooks: ['owner', 'admin', 'manager'],
   configuration: ['owner', 'admin', 'manager'],
   applications: ['owner'],

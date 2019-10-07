@@ -17,6 +17,7 @@ use App\Trace\TraceCode;
 use App\MerchantDetails;
 use App\Providers\GenericUser;
 use App\Session as SessionTable;
+use App\Merchant\GenericMerchant;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
@@ -46,8 +47,6 @@ class Service extends Base\Service
     // Users who signed up before this date
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
-
-    const INSTANT_ACTIVATION_TIMESTAMP = 1540901700;
 
     /**
      * @var Application
@@ -106,14 +105,39 @@ class Service extends Base\Service
      *
      * @return array
      */
+    public function postSetup2faVerifyMobile(array $input)
+    {
+        $res = null;
+
+        list($error, $genericUser) = $this->loginOnApiBy2faSetupSuccessful($input);
+
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    /**
+     * @param  array  $input [description]
+     *
+     * @return array
+     */
     public function login(array $input)
     {
         $res = null;
 
         list($error, $genericUser) = $this->loginOnApi($input);
 
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    protected function handleLoginResponse($error, $genericUser)
+    {
         if (empty($error) === false)
         {
+            if ((array_key_exists('internal_error_code', $error) === true) and
+                (empty($error['internal_error_code']) === false))
+            {
+                return [[$error], null];
+            }
+
             return [['Email or password is invalid.'], null];
         }
 
@@ -121,18 +145,15 @@ class Service extends Base\Service
 
         $this->app['session']->put('dashboard_user_payload', $genericUser);
 
-        if (empty($error))
+        $res = [
+            'id' => $genericUser->id,
+        ];
+        $merchantIds = [];
+        foreach ($genericUser->merchants as $merchant)
         {
-            $res = [
-                'id' => $genericUser->id,
-            ];
-            $merchantIds = [];
-            foreach ($genericUser->merchants as $merchant)
-            {
-                $merchantIds[] = $merchant->id;
-            }
-            $res['merchantIds'] = $merchantIds;
+            $merchantIds[] = $merchant->id;
         }
+        $res['merchantIds'] = $merchantIds;
 
         $user = Auth::user();
 
@@ -175,28 +196,22 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $genericUser) = $this->getUserFromApi($user->id);
+        list($error) = $this->checkAccessOfUserOnMerchant($merchantId);
 
         if (empty($error) === true)
         {
-            $currentMerchant = $genericUser->merchants
-                                           ->where('id', $merchantId)
-                                           ->first();
 
-            if ($currentMerchant !== null)
-            {
-                Session::put('current_merchant_id', $currentMerchant->id);
+            Session::put('current_merchant_id', $merchantId);
 
-                $traceData = [
-                    'id'          => $genericUser->id,
-                    'email'       => $genericUser->email,
-                    'merchant_id' => $currentMerchant->id,
-                ];
+            $traceData = [
+                'id'          => $user->id,
+                'email'       => $user->email,
+                'merchant_id' => $merchantId,
+            ];
 
-                $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
+            $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
 
-                return [];
-            }
+            return [];
         }
 
         return ["Couldn't find the merchant you are looking for."];
@@ -298,6 +313,7 @@ class Service extends Base\Service
             'token'         => $token,
             'email'         => $user->email,
             'name'          => $user->name,
+            'merchant_id'   => $currentMerchant->id,
             'role'          => $currentMerchant->role,
             'merchant_name' => $currentMerchant->name,
             'logo'          => $currentMerchant->logo_url
@@ -430,14 +446,7 @@ class Service extends Base\Service
                         $data['experiments']['support_call'] = ['result' => 'off'];
                     }
 
-                    $data['experiments']['subscription_link'] = $merchantService->getTreatment('subscription_link');
-                    $data['experiments']['coupons'] = $merchantService->getTreatment('coupons');
-                    $data['experiments']['is_announcement'] = $merchantService->getTreatment('is_announcement');
-                    $data['experiments']['is_banner'] = $merchantService->getTreatment('is_banner');
-                    $data['experiments']['capital_announcement'] = $merchantService->getTreatment('capital_announcement');
-                    $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
-                    $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
-                    $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
+                    $data = $this->updateExperiments($data);
 
                     $data['current'] = $currentMerchantId;
 
@@ -470,8 +479,6 @@ class Service extends Base\Service
 
                         if (empty($configs) === false)
                         {
-                            $data['merchants'][$merchant['id']]['partner']['has_configs'] = true;
-
                             foreach ($configs as $config)
                             {
                                 if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
@@ -508,10 +515,32 @@ class Service extends Base\Service
                 $data['pre_signup_complete'] = true;
             }
 
+            // for non-registered check if pre_signup_complete done or not;
+
+            if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
+            {
+                // check business_type
+
+                $businessType = $data['pre_signup']['business_type'] ?? null;
+
+                if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
+                {
+                    if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
+                    {
+                        $data['pre_signup_complete'] = true;
+                    }
+                }
+            }
+
             // There are approx 3k merchants who have not
             // filled "role" or "department", but are
             // already activated.
             if ($activated)
+            {
+                $data['pre_signup_complete'] = true;
+            }
+
+            if ((isset($data['activation_status']) === true) and ($data['activation_status'] !== null))
             {
                 $data['pre_signup_complete'] = true;
             }
@@ -559,11 +588,11 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function loginOnApi(array $input)
+    public function loginOnApiOnRoute(array $input, string $route, string $httpVerb)
     {
         $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $request->processInput($input)->send('users/login', 'POST');
+        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
 
         $genericUser = null;
 
@@ -571,8 +600,29 @@ class Service extends Base\Service
         {
             $genericUser = (new Helper)->createdGenericUser($data);
         }
+        else
+        {
+            $email = $input['email'] ?? '';
+            $this->trace->info(
+                TraceCode::USER_LOGIN_FAILURE,
+                ['error' => $error, 'email' => $email]);
+        }
+
 
         return [$error, $genericUser];
+    }
+
+    public function loginOnApi(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/login', 'POST');
+    }
+
+    // Another route for a successful login. If a uses 2fa is not setup
+    // this will allow to set up 2fa while logging in. And if setup is success
+    // api returns user object. And dashboard needs to start the session.
+    public function loginOnApiBy2faSetupSuccessful(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/2fa_setup/verify-mobile', 'POST');
     }
 
     public function getUserFromApi($userId)
@@ -599,9 +649,49 @@ class Service extends Base\Service
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
+
+            $currentMerchantId = Session::get('current_merchant_id');
+
+            if ($currentMerchantId !== null and empty($adminUser) === true)
+            {
+                $currentMerchant = $genericUser
+                    ->merchants
+                    ->where('id', $currentMerchantId)
+                    ->first();
+
+                // if currentMerchant is not in merchants array
+                // then check user's access on it using checkAccessOfUserOnMerchant
+                // if no error push the returned merchant object in merchants array
+                if ($currentMerchant === null)
+                {
+                    list($error, $data) = $this->checkAccessOfUserOnMerchant($currentMerchantId);
+
+                    if (empty($error) === true)
+                    {
+                        $genericUser->merchants->push(new GenericMerchant($data['merchant']));
+                        Auth::login($genericUser, false);
+                        Session::put('dashboard_user_payload', $genericUser);
+                    }
+                }
+
+            }
+
         }
 
         return [$error, $genericUser];
+    }
+
+    protected function checkAccessOfUserOnMerchant($merchantId)
+    {
+        $request = new \App\Admin\ApiRequestAny();
+
+        $queryParams = [
+            'merchant_id'   => $merchantId,
+        ];
+
+        $path = 'users/access';
+
+        return $request->send($path.'?'.http_build_query($queryParams), 'GET');
     }
 
     /**
@@ -742,10 +832,51 @@ class Service extends Base\Service
 
         if (empty($user) === false)
         {
-            if ($user->id !== $token->getClaim('user_id'))
+            $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
+            if (($user->id !== $token->getClaim(self::USER_ID)) or
+                ($currentMerchantId !== $token->getClaim(self::MERCHANT_ID)))
             {
-                throw new AuthorizationException('Different user is loggedin to the dashboard');
+                throw new AuthorizationException('Different user/merchant is loggedin to the dashboard');
             }
         }
+    }
+
+    /**
+     * @param $data
+     *
+     * @return array
+     * @throws BadRequestError
+     */
+    protected function updateExperiments(array $data): array
+    {
+        $merchantService = new Merchant\Service;
+
+        $features = [
+            'coupons',
+            'is_announcement',
+            'is_banner',
+            'capital_announcement',
+            'capital_banner',
+            'non_registered_onboarding',
+            'international_currencies',
+            'announcements_early_settlements_1',
+            'show_extra_fields_in_pp',
+            'checkout_survey',
+            'sellerapp_plus',
+            'second_factor_auth',
+            'disable-view-reports',
+            'mobile_hotjar_survey'
+        ];
+
+        $experimentsResults = $merchantService->getBulkTreatment($features);
+
+        foreach ($experimentsResults as $result => $val)
+        {
+            $data['experiments'][$result] = $val;
+        }
+
+
+        return $data;
     }
 }

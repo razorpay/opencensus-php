@@ -47,7 +47,7 @@ export default class BaseModel {
   /*
     Returns JSON payload with only properties specified in `resourceFields`
   */
-  serialize() {
+  serialize(noPayloadDiffFromStash) {
     let fields =
       typeof this.resourceFields === 'function'
         ? this.resourceFields()
@@ -63,7 +63,9 @@ export default class BaseModel {
       return serializedModel;
     }
 
-    return objectDiff(this.__stashed__, serializedModel);
+    return noPayloadDiffFromStash
+      ? serializedModel
+      : objectDiff(this.__stashed__, serializedModel);
   }
 
   /*

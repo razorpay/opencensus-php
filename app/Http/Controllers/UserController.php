@@ -65,6 +65,9 @@ class UserController extends Controller
         }
 
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
+        $data['cdnBaseUrl'] = \Config::get('app.cdn_base_url');
+        $data['ljKey'] = \Config::get('app.lj_key');
+        $data['env'] = \Config::get('app.env');
 
         // $data is used to run diferent pieces of JS
         if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true)
@@ -128,6 +131,26 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function postSignin()
+    {
+        $input = Input::all();
+
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
+        list($error, $data) = (new User\Service)->login($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * Handle the authentication request from the user.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postSetup2faVerifyMobile()
     {
         $input = Input::all();
 
@@ -275,7 +298,7 @@ class UserController extends Controller
     {
         $user = Auth::guard('user');
 
-        if (empty($user) === false)
+        if (empty($user->user()) === false)
         {
             $userDetails = $user->user();
 
@@ -290,5 +313,10 @@ class UserController extends Controller
         }
 
         return AppResponse::jsonResponse([]);
+    }
+
+    public function validateJWT()
+    {
+        return ['success' => true];
     }
 }

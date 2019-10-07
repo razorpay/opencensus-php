@@ -2,14 +2,16 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
+
 import InputField from 'rzp/ui/Forms/InputField';
-import { required, email } from 'rzp/utils/validators';
+
+import { required, email, phone } from 'rzp/utils/validators';
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
-import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
-import * as NotificationsActions from 'rzp/modules/notifications';
 
-let ROLES = without(roles, 'owner');
+import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'rzp/modules/modals';
+
 const selector = formValueSelector('newInvitation');
 @connect(
   state => {
@@ -19,9 +21,8 @@ const selector = formValueSelector('newInvitation');
     };
   },
   {
-    sendInvitation,
-    fetchTeamDetails,
-    ...NotificationsActions,
+    showNotification,
+    closeModal,
   }
 )
 @reduxForm({
@@ -32,18 +33,30 @@ const selector = formValueSelector('newInvitation');
   },
 })
 export default class NewInvitation extends Component {
-  save = props => {
-    let user = this.props.user.user;
+  static defaultProps = {
+    ctaText: 'Submit',
+  };
 
+  // need to rename this component to something more appropriate
+  constructor(props) {
+    super(props);
+
+    this.props.initialize({
+      ...this.props.defaults,
+    });
+  }
+  save = body => {
+    let user = this.props.user.user;
+    const { successMsg } = this.props;
     return this.props
-      .sendInvitation({ ...props, sender_name: user.name })
+      .onFormSubmit(body)
       .then(() => {
-        this.props.fetchTeamDetails({ merchant_id: this.props.user.current });
-        this.props.initialize(this.props.initialValues);
         this.props.showNotification({
           type: 'success',
-          message: `Invitation has been successfully sent to ${props.email}`,
+          message:
+            typeof successMsg === 'function' ? successMsg(body) : successMsg,
         });
+        this.props.closeModal();
       })
       .catch(err => {
         this.props.showNotification({
@@ -53,8 +66,26 @@ export default class NewInvitation extends Component {
       });
   };
 
+  filterRoles = () => {
+    const rolesToRemove = ['owner'];
+
+    if (!this.props.user.isEnhancedEPOSEnabled) {
+      rolesToRemove.push('sellerapp_plus');
+    }
+
+    return without(roles, rolesToRemove);
+  };
+
   render() {
-    const { handleSubmit, selectedRole, user } = this.props;
+    const {
+      handleSubmit,
+      selectedRole,
+      user,
+      visibleFields,
+      ...props
+    } = this.props;
+
+    let ROLES = this.filterRoles();
 
     if (user.isAgentRole) {
       ROLES = { ...ROLES, ...agentRole };
@@ -67,59 +98,82 @@ export default class NewInvitation extends Component {
     }
 
     return (
-      <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
-        <div class="row">
-          <div class="col-md-5">
-            <div class="form-group">
-              <Field
-                name="email"
-                component={InputField}
-                class="form-control"
-                placeholder="Email address of the user"
-                autoFocus={true}
-                validate={[
-                  required(),
-                  email('Invalid Email'),
-                  value => {
-                    if (value === this.props.user.user.email) {
-                      return "You can't invite yourself";
-                    }
-                  },
-                ]}
-              />
-            </div>
+      <form>
+        <div>
+          <div class="form-group">
+            <label>Member Details</label>
+            {visibleFields.email && (
+              <div class="input-container">
+                <Field
+                  name="email"
+                  component={InputField}
+                  class="form-control"
+                  placeholder="Email"
+                  autoFocus={true}
+                  validate={[
+                    required(),
+                    email('Invalid Email'),
+                    value => {
+                      if (value === this.props.user.user.email) {
+                        return "You can't invite yourself";
+                      }
+                    },
+                  ]}
+                />
+              </div>
+            )}
+            {visibleFields.contactMobile && (
+              <div class="input-container">
+                <Field
+                  name="contact_mobile"
+                  component={InputField}
+                  class="form-control"
+                  placeholder="Phone Number"
+                  validate={[
+                    required(),
+                    phone('Invalid Mobile'),
+                    value => {
+                      if (value === this.props.user.user.contact_mobile) {
+                        return "You can't invite yourself";
+                      }
+                    },
+                  ]}
+                />
+              </div>
+            )}
           </div>
-
-          <div class="col-md-4">
-            <div class="form-group">
-              <Field name="role" component="select" class="form-control">
-                {Object.keys(ROLES).map(role => (
-                  <option key={role} value={role}>
-                    {ROLES[role].label}
-                  </option>
-                ))}
-              </Field>
-            </div>
+          {visibleFields.role && (
+            <>
+              <div class="form-group">
+                <label>Role</label>
+                <div class="input-container">
+                  <Field name="role" component="select" class="form-control">
+                    {Object.keys(ROLES).map(role => (
+                      <option key={role} value={role}>
+                        {ROLES[role].label}
+                      </option>
+                    ))}
+                  </Field>
+                </div>
+              </div>
+              <div class="form-group">
+                {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
+                  <div class="alert alert-info text-center">
+                    {ROLES[selectedRole].desc}
+                  </div>
+                ) : null}
+              </div>
+            </>
+          )}
+          <div class="form-group">
+            <AsyncButton
+              class="btn btn-primary btn-block"
+              text={props.ctaText}
+              type="submit"
+              pendingText="Processing..."
+              onClick={handleSubmit(this.save)}
+            />
           </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-              <AsyncButton
-                class="btn btn-primary"
-                text="Send Invitation"
-                pendingText="Sending Invitation..."
-                onClick={handleSubmit(this.save)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
-            <div class="alert alert-info text-center">
-              {ROLES[selectedRole].desc}
-            </div>
-          ) : null}
         </div>
       </form>
     );

@@ -131,4 +131,6 @@ curl -L https://github.com/ApiGen/ApiGen/releases/download/v4.1.0/apigen-4.1.0.p
 ./apigen generate -d ./docs -s ./app
 ```
 
+
 The documentation will be generated in the docs directory.
+

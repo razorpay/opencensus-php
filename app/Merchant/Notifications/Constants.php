@@ -132,6 +132,41 @@ class Constants
                 'experiments'  => ['announcements_early_settlements_1'],
             ],
         ],
+        [
+            'title'       => 'Help us Create a Better Checkout',
+            'description' => 'Help us in making the payment experience better for you by answering a few simple questions on Razorpay Flash Checkout. We value your opinion and this would definitely help us serve you better',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/survey.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Give Feedback',
+                    'url'   => 'https://razorpay.typeform.com/to/JKyCd0',
+                    'url_query_params' => ['mid', 'business_name']
+                ],
+            ],
+            'start_ts'    => 1561981341,
+            'end_ts'      => 1567338141,
+            'filters'     => [
+                'experiments'  => ['checkout_survey'],
+            ],
+        ],
+        [
+            'title'       => 'Instant Settlements!',
+            'description' => 'Get your payments settled on the same working day! Avoid cash-flow issues and prepare better for working capital needs.',
+            'start_ts'    => 1569329294,
+            'end_ts'      => 1577791088,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/early-settlement.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Settle Now',
+                    'url'   => '/settlements#settlenow',
+                ],
+            ],
+            'filters'     => [
+                'features'         => ['es_on_demand'],
+            ]
+        ],
     ];
 
     public static function getNotifications(): array
@@ -139,4 +174,3 @@ class Constants
         return self::NOTIFICATIONS;
     }
 }
-

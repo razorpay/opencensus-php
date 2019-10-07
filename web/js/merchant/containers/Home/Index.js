@@ -28,6 +28,7 @@ import {
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 
 import {
@@ -44,6 +45,7 @@ import Banner from 'rzp/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';
+import RTracking from 'react-tracking';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -120,6 +122,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     fetchPayments,
   }
 )
+@RTracking(() => window.rzpQ.component('HomeContainer'))
 export default class HomeContainer extends Component {
   constructor(props) {
     super(props);
@@ -496,6 +499,20 @@ export default class HomeContainer extends Component {
     this.setScrollAmountToStickHeader();
 
     window.addEventListener('resize', this.onResize);
+
+    const shouldShowMobileHotjarSurvey = showWhenUtil({
+      additionalCondition: user => user.isMobileHotjarSurveyEnabled,
+    });
+
+    if (shouldShowMobileHotjarSurvey) {
+      setTimeout(() => {
+        window.hj && window.hj('trigger', 'MOBILE_SURVEY');
+      }, 0);
+    }
+  }
+
+  closeOnboardingStep() {
+    this.props.closeOnboardingStep();
   }
 
   onFirstStepClose() {
@@ -580,11 +597,6 @@ export default class HomeContainer extends Component {
      * we use it to show the banner , if there are no trasaction
      */
     if (user.isActivated && mode === 'live') {
-      // show hotjar if number of payments is greater than 50
-      if (items.length > 50) {
-        document.body.className += ' show-hotjar-poll';
-      }
-
       if (
         this.hasAccessToOnboardingBanner &&
         !this.state.showOnboardingBanner &&
@@ -617,7 +629,6 @@ export default class HomeContainer extends Component {
       current_balance,
       tabsMeta,
       user,
-
       // following three props will be sent by admin analytics
       // - web/pokedex.js
       isAdmin,
@@ -627,6 +638,7 @@ export default class HomeContainer extends Component {
       showKYCActivationSuccess,
       showKYCDetails,
       hideKYCDetailsModal,
+      tracking,
     } = this.props;
 
     const { activation_flow } = user;
@@ -743,18 +755,30 @@ export default class HomeContainer extends Component {
                 className="welcome-modal"
                 onClose={() => {
                   trackIAClose();
+                  this.closeOnboardingStep();
                   onFirstStepClose();
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().success('login.first_login_modal', {
+                      action: 'Close_Popup',
+                    })
+                  );
                 }}
               >
                 <ModalContent>
                   <WelcomeModal
                     onClose={() => {
                       trackTryDashboard();
+                      this.closeOnboardingStep();
                       onFirstStepClose();
                     }}
                     onActivate={() => {
                       trackActivateAccount();
                       onFirstStepClose();
+                      tracking.trackEvent(
+                        window.rzpQ.onbr().initiated('act.form_fill', {
+                          clickSource: 'First_Login_Popup',
+                        })
+                      );
                     }}
                   />
                 </ModalContent>
@@ -765,10 +789,18 @@ export default class HomeContainer extends Component {
           <InstantActivationSuccess
             onClose={() => {
               iaActivations.trackClose(activation_flow);
+              tracking.trackEvent(
+                window.rzpQ.onbr().dropped('act.whitelist_popup_action')
+              );
+              this.closeOnboardingStep();
               this.onInstantActivationSuccess();
             }}
             onGoToDashboard={() => {
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('act.whitelist_popup_action')
+              );
               iaActivations.trackGoToDashboard();
+              this.closeOnboardingStep();
               this.onInstantActivationSuccess();
             }}
             user={user}
@@ -792,10 +824,21 @@ export default class HomeContainer extends Component {
           <KycDetailsModal
             onClose={() => {
               iaActivations.trackCloseKYCDetails();
+              tracking.trackEvent(
+                window.rzpQ.dropped('act.greylist_popup_action')
+              );
               hideKYCDetailsModal();
             }}
             onGiveDetails={() => {
               iaActivations.trackGiveKYCDetails();
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('act.greylist_popup_action')
+              );
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.form_fill', {
+                  clickSource: 'Greylist_Popup',
+                })
+              );
               hideKYCDetailsModal();
             }}
           />

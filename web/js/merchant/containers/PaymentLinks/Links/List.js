@@ -1,24 +1,28 @@
 import { connect } from 'react-redux';
-import { NavLink, Link } from 'react-router-dom';
-
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-
-import Alert from 'rzp/ui/Forms/Alert';
+import { withRouter, NavLink, Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
+import Alert from 'rzp/ui/Forms/Alert';
+import { RZPFeatures } from 'rzp/utils/constants';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
+import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
+@withRouter
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
 })
+@RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
 export default class PaymentLinksContainer extends ListContainer {
   fetchEntityList(params) {
     params.types = ['link', 'ecod'];
@@ -68,9 +72,13 @@ export default class PaymentLinksContainer extends ListContainer {
     });
   };
 
+  onDuplicate = invoiceId => {
+    this.props.history.push(`/paymentlinks/new?duplicate_id=${invoiceId}`);
+  };
+
   render() {
-    let { loading, invoices, user, mode } = this.props,
-      { status } = this.state;
+    let { loading, invoices, user, mode, tracking } = this.props;
+    let status = this.state.status;
 
     return (
       <div class="content-wrapper">
@@ -82,6 +90,8 @@ export default class PaymentLinksContainer extends ListContainer {
               <Link to="/reminders">Reminder Settings</Link>
             </span>
 
+            <TakeATourButton feature={RZPFeatures.PL} />
+
             <DocsLink url="https://razorpay.com/docs/payment-links/" />
 
             <ShowWhen
@@ -92,7 +102,17 @@ export default class PaymentLinksContainer extends ListContainer {
             >
               <NavLink class="btn btn-primary" to="/paymentlinks/new">
                 <i class="i i-plus" />
-                <span>Create Payment Link</span>
+                <span
+                  onClick={() =>
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().success('dash.pl_action', {
+                        action: 'Initiate_PL_Creation',
+                      })
+                    )
+                  }
+                >
+                  Create Payment Link
+                </span>
               </NavLink>
             </ShowWhen>
           </div>
@@ -115,6 +135,8 @@ export default class PaymentLinksContainer extends ListContainer {
           isLoading={loading}
           type="link"
           onCopy={this.onCopy}
+          onDuplicate={this.onDuplicate}
+          EmptyList={EmptyComponent}
         />
 
         <Pager
@@ -127,3 +149,16 @@ export default class PaymentLinksContainer extends ListContainer {
     );
   }
 }
+
+// TODO: Update colSpan if no of columns are changes
+const EmptyComponent = () => (
+  <EmptyListWithTableRow
+    colSpan={8}
+    description={
+      <React.Fragment>
+        <div>There are no payment links yet!!</div>
+        <div>Start creating new links now.</div>
+      </React.Fragment>
+    }
+  />
+);

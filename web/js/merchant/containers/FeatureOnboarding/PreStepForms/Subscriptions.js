@@ -12,7 +12,9 @@ import { showNotification } from 'rzp/modules/notifications';
 import InputField from 'rzp/ui/Forms/InputField';
 import AsyncButton from 'react-async-button';
 import User from 'merchant/models/User';
+import RTracking from 'react-tracking';
 
+@RTracking(() => window.rzpQ.component('SubscriptionsPreStep'))
 @connect(
   state => ({
     user: state.session.user,
@@ -30,9 +32,13 @@ import User from 'merchant/models/User';
   form: 'editWebsiteDetails_subscription',
 })
 export default class SubscriptionsPreStep extends Component {
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.add_website', {
+      clickSource: 'subscriptions',
+    })
+  )
   handleSave = form => {
     const { user, mode } = this.props;
-
     return merchantFetch({
       url: 'merchant/activation/update_website_details',
       mode: 'live',

@@ -1,0 +1,119 @@
+$primary = #538FF0
+
+.Reminders-settings
+  .setting-item
+    .checkbox-knob
+      margin-left: 25px 
+
+    .status-text 
+      margin-left: 10px
+      vertical-align: middle
+
+    &.enabled 
+      .status-text 
+        color: $primary
+        font-weight: bold
+
+    .setting 
+      display: flex 
+      margin-bottom: 30px
+
+      .pair-label 
+        color: black 
+        font-weight: bold
+
+      .pair-group-item 
+        padding-left: 0
+
+.Reminders-settings__footer
+    align-items: center 
+    display: flex 
+    justify-content: space-between 
+    border-top: 1px solid #EBEFF0 
+    margin: 20px -20px 
+    padding: 20px 20px 0 20px 
+
+    .content 
+      width: 70% 
+
+.removable-select
+  display: flex 
+  align-items: center 
+  max-width: 300px 
+
+  &:not(:last-child) 
+    margin-bottom: 15px 
+
+  .PowerSelect 
+    border: 1px solid #D8DBDC
+    border-radius: 0
+    height: 30px
+    width: 100%
+    margin: 0
+    z-index: 0
+    
+    &--focused 
+      border-color: $primary
+      
+      + .close-btn 
+        border-color: $primary
+    
+    .PowerSelect__Trigger 
+      height: 30px
+
+      .PowerSelect__TriggerLabel 
+        height: 30px
+        line-height: 1
+        margin: 0
+
+    .PowerSelect__TriggerStatus 
+      height: 30px
+      padding-top: 0
+
+  .close-btn 
+    border-radius: 75% 
+    background-color: #FFFFFF 
+    border: 1px solid #D8DBDC 
+    display: inline-block 
+    padding: 0px 2px 
+    margin-left: 10px 
+  
+    i.i-close 
+      color: #58666E 
+      display: block 
+      line-height: 1 
+      margin-top: 2px 
+
+.removable-power-select__Menu 
+  .PowerSelect__Option 
+    font-size: 14px 	
+    line-height: 17px 
+    margin: 8px 
+    padding: 0 
+    
+    &--disabled 
+      color: #B2B9BC 
+
+    &--highlighted, &:hover 
+      background: transparent 
+      font-weight: bold 
+      color: #657278 
+
+.reminders-email-preivew-modal 
+  background: white 
+  padding-bottom: 24px 
+
+  .preview 
+    border-radius: 2px 	
+    background-color: #F8F8F8 
+    padding: 24px 
+    margin: 24px 24px 0 24px 
+    font-size: 14px 	
+    line-height: 17px 
+
+    .title 
+      margin: 0 0 20px 0
+      font-weight: bold
+
+    .footer 
+      margin-top: 30px

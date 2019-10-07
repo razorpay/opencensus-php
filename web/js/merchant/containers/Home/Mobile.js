@@ -168,6 +168,9 @@ class AnalyticsMobile extends Component {
                 sectionTitle={recentActivityTitle}
                 onFetchPayments={onFetchPayments}
                 isTabletResolution={true}
+                user={this.props.user}
+                currentBalance={current_balance}
+                onSelect={this.showOndemandSettlementForm}
               />
             </div>
           )}

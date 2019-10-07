@@ -5,6 +5,14 @@ import { getExperiment, classList } from 'common/util';
 import { trackSupportOptions } from 'merchant/containers/Support/ga';
 
 export default class SupportBody extends Component {
+  openDashboardGuide = _ => {
+    trackSupportOptions('dashboard_guide');
+    window.open(
+      'https://razorpay.com/docs/payment-gateway/dashboard-guide/',
+      '_blank'
+    );
+  };
+
   handleClick = id => {
     const { onToggle, onChat, notifyCount } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
@@ -58,7 +66,7 @@ export default class SupportBody extends Component {
 
   render() {
     const { notifyCount, isOpened, onToggle } = this.props;
-    const { handleClick } = this;
+    const { handleClick, openDashboardGuide } = this;
     let shouldDisable = !isWorkingDay();
 
     return (
@@ -117,6 +125,15 @@ export default class SupportBody extends Component {
               </small>
             </li>
           ) : null}
+          <li
+            className="support-item p-all dashboard_guide"
+            onClick={openDashboardGuide}
+          >
+            Dashboard Guide{' '}
+            <small className="help-block">
+              Read more about how to use the dashboard
+            </small>
+          </li>
         </ul>
 
         <div class="support-feedback">

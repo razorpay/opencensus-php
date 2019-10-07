@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-
+import { NavLink, Link } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Definition from 'rzp/ui/Definition';
@@ -17,6 +16,7 @@ import Stepper from 'component/Stepper';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import Tooltip from 'rzp/ui/Tooltip';
 
 import {
   EditExpiry,
@@ -28,6 +28,7 @@ import {
 import {
   trackDetailViewEdits,
   trackTogglePartialPayment,
+  trackClickDuplicatePaymentLink,
 } from 'merchant/containers/PaymentLinks/Links/ga';
 
 export default props => {
@@ -66,14 +67,23 @@ export default props => {
             <i class="i i-link text-primary icon--formal" />{' '}
             <strong>{invoice.id}</strong>
             <div class="btn-toolbar pull-right">
+              <NavLink
+                onClick={trackClickDuplicatePaymentLink}
+                class="btn Button--primary--invert"
+                to={`/paymentlinks/new?duplicate_id=${invoice.id}`}
+              >
+                <i class="i i-copy" />
+                <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
+              </NavLink>
               {(isRoleAllowedEdit || user.role === 'rbl_agent') &&
                 invoice.customer_id &&
                 (isDraft || isIssued || isPartiallyPaid) && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={props.onIssue}
-                  >
-                    {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                  <button class="btn Button--primary" onClick={props.onIssue}>
+                    <Tooltip theme="dark">
+                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                    </Tooltip>
+
+                    <i className="i i-send" />
                   </button>
                 )}
             </div>

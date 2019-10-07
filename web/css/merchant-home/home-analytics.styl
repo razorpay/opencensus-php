@@ -22,16 +22,6 @@ traffic-responsive() {
   }
 }
 
-#_hj_poll_container {
-
-  display: none;
-}
-
-body.show-hotjar-poll #_hj_poll_container {
-
-  display: block;
-}
-
 .dashboard-home {
 
   .card {
@@ -43,6 +33,21 @@ body.show-hotjar-poll #_hj_poll_container {
   .rzp-sticky.sticky > .sticky-content {
 
     z-index: 2;
+  }
+
+  div.panel-footer {
+
+    span.early-stl-label{
+      padding: 0 10px 0 10px;
+    }
+
+    i.i-early-settlement{
+      color: #39C7EC;
+    }
+  }
+
+  .settle-btn-act{
+    padding: 5px 15px 5px 15px;
   }
 
   .v2-tour-banner {
@@ -326,7 +331,7 @@ body.show-hotjar-poll #_hj_poll_container {
 
       padding: 56px 50% 56px 56px;
       position: relative;
-    
+
       .welcome-title {
 
         margin: 0;
@@ -356,8 +361,8 @@ body.show-hotjar-poll #_hj_poll_container {
 
       @media(max-width: 812px) {
 
-        background-color: rgba(255, 255, 255, 0.8);    
-        padding-right: 30%;    
+        background-color: rgba(255, 255, 255, 0.8);
+        padding-right: 30%;
       }
 
       @media(max-width: 580px) {
@@ -365,10 +370,10 @@ body.show-hotjar-poll #_hj_poll_container {
         padding: 40px !important;
       }
 
-      @media(max-width: 425px) { 
+      @media(max-width: 425px) {
 
         padding: 20px !important;
-      } 
+      }
     }
 
     @media(max-width: 386px) {

@@ -1,0 +1,40 @@
+import { connect } from 'react-redux';
+import { handleProductQuickGuide } from 'merchant/modules/onboarding';
+
+@connect(null, { handleProductQuickGuide })
+export default class TakeATourButton extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
+  onClick = () => {
+    this.context.confirm({
+      header: 'Restart the Tour?',
+      message: 'This tour will give you a quick guide on this product.',
+      affirmativeLabel: 'Yes',
+      abortLabel: 'No',
+      action: () => {
+        this.props.handleProductQuickGuide({
+          feature: this.props.feature,
+          showOnboarding: true,
+          isQuickGuideOpen: true,
+          isTour: true,
+        });
+
+        window.rzpAnalytics({
+          eventCategory: `Restart Tutorial (${this.props.feature})`,
+          eventAction: `Need help? Take a Tour CTA `,
+        });
+      },
+    });
+  };
+
+  render() {
+    return (
+      <span class="btn btn-link" onClick={this.onClick}>
+        <i class="i i-lightbulb" />
+        Need help? Take a tour
+      </span>
+    );
+  }
+}

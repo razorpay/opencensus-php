@@ -2,7 +2,7 @@ import { Fragment, Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
 import Amount from 'rzp/ui/Amount';
@@ -21,6 +21,7 @@ import {
   isAddressValid,
   calculateTax,
   isBlank,
+  getURLQueryParams,
 } from 'rzp/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -51,7 +52,12 @@ import AddressDisplay from 'merchant/components/AddressDisplay';
 import * as constants from 'rzp/utils/constants';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/modules/app';
-import { track, trackLinkClick } from './ga';
+import {
+  track,
+  trackLinkClick,
+  trackClickDuplicateInvoice,
+  trackSaveDuplicateInvoice,
+} from './ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import PickCurrency from 'merchant/components/Invoices/PickCurrency';
 import { classList } from 'common/util';
@@ -162,6 +168,39 @@ export default class InvoicesNewContainer extends Component {
     };
   }
 
+  fetchIfIntentDuplicate(invoiceId) {
+    return this.props
+      .fetchInvoice(invoiceId)
+      .then(data => {
+        this.isIntentDuplicate = true;
+
+        let expire_by = data.expire_by && moment(data.expire_by * 1000);
+
+        // If null or is before current time
+        if (!expire_by || expire_by.diff(moment()) < 0) {
+          expire_by = '';
+        } else {
+          expire_by = data.expire_by;
+        }
+
+        // Resetting values to initial state
+        // data.draft = '0'; // Not sure where it's being consumed but re-initializing same as redux form
+        data.date = Math.ceil(new Date().getTime() / 1000); // Overriding invoice.date to initial date in redux form
+        data.expire_by = expire_by;
+        data.id = '';
+        data.receipt = '';
+        data.status = 'draft';
+
+        return data;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
+  }
+
   isPaymentLink(invoice) {
     if (invoice.type !== 'link') {
       return;
@@ -221,10 +260,26 @@ export default class InvoicesNewContainer extends Component {
     setTimeout(() => this.getMerchantInfo());
   }
 
-  componentWillMount() {
-    let promises = [];
+  componentWillUpdate(nextProps) {
+    const curSearchQuery = getURLQueryParams(this.props.location.search);
+    const nextSearchQuery = getURLQueryParams(nextProps.location.search);
 
-    let invoiceId = this.props.match.params.id;
+    if (curSearchQuery.duplicate_id !== nextSearchQuery.duplicate_id) {
+      this.initInvoicePage(nextProps);
+    }
+  }
+
+  componentWillMount() {
+    this.initInvoicePage();
+  }
+
+  initInvoicePage(props) {
+    let promises = [];
+    props = props || this.props;
+
+    let invoiceId = props.match.params.id;
+    const searchQuery = getURLQueryParams(props.location.search);
+    this.isIntentDuplicate = false;
 
     if (invoiceId) {
       promises.push(
@@ -239,10 +294,12 @@ export default class InvoicesNewContainer extends Component {
           return invoice;
         })
       );
+    } else if (searchQuery.duplicate_id) {
+      promises.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
     } else {
-      this.props.initializeInvoice();
+      props.initializeInvoice();
 
-      if (this.props.session.user.isInttCurrenciesEnabled) {
+      if (props.session.user.isInttCurrenciesEnabled) {
         this.openInvoiceCurrencyChangeModal({
           showCross: false,
           currency: 'INR',
@@ -251,13 +308,13 @@ export default class InvoicesNewContainer extends Component {
     }
 
     promises = [
-      this.props.fetchCustomersForAutocomplete(),
-      this.props.fetchItemsForAutocomplete({
+      props.fetchCustomersForAutocomplete(),
+      props.fetchItemsForAutocomplete({
         type: 'invoice',
         'expand[]': 'tax',
       }),
-      this.props.fetchStates(),
-      this.props.fetchGSTTaxes(),
+      props.fetchStates(),
+      props.fetchGSTTaxes(),
       ...promises,
     ];
 
@@ -305,41 +362,12 @@ export default class InvoicesNewContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const invoiceId = nextProps.match.params.id;
+    const invoiceId = this.props.match.params.id;
+    const nextInvoiceId = nextProps.match.params.id;
 
-    if (this.props.match.params.id !== invoiceId) {
+    if (invoiceId !== nextInvoiceId) {
       this.props.closeModal();
-
-      if (invoiceId) {
-        this.setState({
-          isLoading: true,
-        });
-
-        this.props
-          .fetchInvoice(nextProps.match.params.id)
-          .then(invoice => {
-            this.setState({
-              isLoading: false,
-              invoiceCurrency: invoice.currency || 'INR',
-            });
-
-            if (this.isPaymentLink(invoice)) {
-              return;
-            }
-          })
-          .catch(({ errors }) => {
-            this.props.showNotification({
-              type: 'error',
-              message: errors,
-            });
-          });
-      } else {
-        this.props.initializeInvoice();
-        this.props.initialize(this.props.initialValues);
-        if (this.props.session.user.isInttCurrenciesEnabled) {
-          this.openInvoiceCurrencyChangeModal({ showCross: false });
-        }
-      }
+      this.initInvoicePage(nextProps);
     }
   }
 
@@ -933,10 +961,15 @@ export default class InvoicesNewContainer extends Component {
     this.setState({
       isSaving: true,
     });
+
     return this.props
-      .saveInvoice(props, {
-        'Content-Type': 'application/json',
-      })
+      .saveInvoice(
+        props,
+        {
+          'Content-Type': 'application/json',
+        },
+        this.isIntentDuplicate
+      )
       .then(invoice => {
         this.setState({
           isSaving: false,
@@ -957,6 +990,10 @@ export default class InvoicesNewContainer extends Component {
   }
 
   save = props => {
+    if (this.isIntentDuplicate) {
+      trackSaveDuplicateInvoice();
+    }
+
     props = removeTaxForNonINRItems(props, this.state.invoiceCurrency);
 
     return this._save(props).then(invoice => {
@@ -1447,7 +1484,6 @@ export default class InvoicesNewContainer extends Component {
 
   render() {
     const { handleSubmit, customer, invoice, session: { user } } = this.props;
-    // console.log('INVOICE...', invoice);
 
     let isTestMode = this.props.session.mode === 'test';
     let isNew = !invoice.id;
@@ -1513,6 +1549,22 @@ export default class InvoicesNewContainer extends Component {
       !isDisabled;
 
     const showGstn = invoiceCurrency === 'INR';
+
+    const duplicateInvoiceButton = this.props.invoice.id &&
+      !this.props.invoice.subscription_id && (
+        <NavLink
+          class="btn btn-default btn-block btn-lg"
+          to={`/invoices/new?duplicate_id=${invoice.id}`}
+          onClick={trackClickDuplicateInvoice}
+        >
+          <div class="row inv__optiongroupbutton">
+            <div class="col-xs-4">
+              <i class="i i-copy" />
+            </div>
+            <div class="col-xs-8">Duplicate Invoice</div>
+          </div>
+        </NavLink>
+      );
 
     return (
       <div class="react-root">
@@ -2120,10 +2172,7 @@ export default class InvoicesNewContainer extends Component {
                 <ShowWhen
                   additionalCondition={user => user.isAllowedEdit('invoices')}
                 >
-                  <div
-                    class="col-md-4 col-sm-4 invoices--side"
-                    style={{ marginTop: '48px' }}
-                  >
+                  <div class="col-md-4 col-sm-4 invoices--side">
                     {!locked && (
                       <div class="inv__cta">
                         <div class="btn-group-vertical">
@@ -2191,6 +2240,7 @@ export default class InvoicesNewContainer extends Component {
                               </div>
                             </AsyncButton>
                           )}
+                          {duplicateInvoiceButton}
                           {(isNew || isDraft) && (
                             <button
                               type="button"
@@ -2341,6 +2391,18 @@ export default class InvoicesNewContainer extends Component {
                         </div>
                       </div>
                     )}
+
+                    <ShowWhen
+                      additionalCondition={user =>
+                        locked && user.isAllowedEdit('invoices')
+                      }
+                    >
+                      <div className="inv__cta">
+                        <div className="btn-group-vertical">
+                          {duplicateInvoiceButton}
+                        </div>
+                      </div>
+                    </ShowWhen>
 
                     <InvoiceInfo invoice={invoice} />
                     <InvoiceNotes
