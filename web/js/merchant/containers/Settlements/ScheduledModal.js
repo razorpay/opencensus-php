@@ -81,18 +81,18 @@ export default class ScheduledModal extends Component {
       '/merchant/api'
     )
       .then(response => {
-        console.log(response);
         this.setState({
           fees: response.data.percent_rate,
           isLoading: false,
         });
       })
       .catch(response => {
-        this.setState({
-          feesFetched: false,
-          fees: '',
-          isLoading: false,
+        this.props.showNotification({
+          type: 'error',
+          message: 'Error while retrieving Scheduled Pricing',
+          hidePrevious: true,
         });
+        this.props.closeModal();
       });
   };
 
