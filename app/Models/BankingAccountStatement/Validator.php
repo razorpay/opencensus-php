@@ -32,8 +32,8 @@ class Validator extends Base\Validator
     protected static $accountStatementGenerateRules = [
         Entity::CHANNEL        => 'required|string|custom',
         Entity::ACCOUNT_NUMBER => 'required|string|between:5,40',
-        Entity::FROM_DATE      => 'required|epoch',
-        Entity::TO_DATE        => 'required|epoch',
+        Entity::FROM_DATE      => 'required|int|epoch',
+        Entity::TO_DATE        => 'required|int|epoch',
         Entity::FORMAT         => 'required|string|custom',
         Entity::SEND_EMAIL     => 'required|boolean',
         Entity::TO_EMAIL_LIST  => 'required_if:send_email,1|string|custom'

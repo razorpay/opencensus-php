@@ -147,10 +147,10 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_EMAIL,
             [
-                'merchantId' => $this->merchant->getId(),
-                'to_emails'  => $toEmails,
-                'from_date'  => $fromDate,
-                'to_date'    => $toDate,
+                'merchant_id'   => $this->merchant->getId(),
+                'to_emails'     => $toEmails,
+                'from_date'     => $fromDate,
+                'to_date'       => $toDate,
             ]);
 
         Mail::queue($email);
@@ -158,10 +158,11 @@ class Core extends Base\Core
 
     protected function getDashboardFileAccessUrl($ufhResponse)
     {
-        if(empty($ufhResponse))
+        if (empty($ufhResponse) === true)
         {
-            return '';
+            return null;
         }
+
         return $this->config['applications.dashboard.url'] . 'ufh/file/' . $ufhResponse[self::FILE_ID];
     }
 
@@ -171,7 +172,7 @@ class Core extends Base\Core
 
         $uploadedFileInstance = $this->getUploadedFileInstance($pathToTemporaryFile);
 
-        $response = '';
+        $response = null;
 
         try
         {
@@ -189,6 +190,7 @@ class Core extends Base\Core
                     'error'   => $e->getMessage()
                 ]);
         }
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
             [

@@ -25,14 +25,17 @@ class Service extends Base\Service
 
     public function generateAccountStatement(array $input)
     {
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
-                           ['input' => $input]);
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+            [
+                'input' => $input
+            ]);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::ACCOUNT_STATEMENT_GENERATE, $input);
 
         $statementAccessUrl = $this->core()->generateBankAccountStatement($input);
 
-        $sendEmail = filter_var($input[Entity::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
+        $sendEmail = boolval($input[Entity::SEND_EMAIL] ?? false);
 
         if ($sendEmail === true)
         {
