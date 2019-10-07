@@ -13,7 +13,6 @@ import Header from './Header';
 import ReminderOptionSetting from './ReminderOptionSetting';
 
 const initState = {
-  maxNoReminders: 5,
   withExpiry: [],
   withOutExpiry: [],
   advancedSettings: {
@@ -233,7 +232,6 @@ export default class ReminderSetting extends React.Component {
                   name="with_expiry"
                   remindersList={withExpireByConfigs}
                   onChange={this.onChange('withExpiry')}
-                  maxSelections={settings.maxNoReminders}
                   selectedReminders={settings.withExpiry}
                 />
 
@@ -241,7 +239,6 @@ export default class ReminderSetting extends React.Component {
                   name="with_out_expiry"
                   maxSelections={settings.maxNoReminders}
                   onChange={this.onChange('withOutExpiry')}
-                  selectedReminders={settings.withOutExpiry}
                   remindersList={withOutExpireByConfigs}
                 />
 
