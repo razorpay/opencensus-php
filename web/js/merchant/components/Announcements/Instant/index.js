@@ -89,16 +89,10 @@ export default class InstantActivationAnnouncements extends Component {
       } else {
         return null;
       }
-
-      title = 'Enable Settlements';
-      content = (
-        <span>
-          Your settlements are on hold. You will need to fill the KYC Form to
-          receive your payments in your bank account.
-          <span className="big-dot-separator" />
-          <Link to="/activation">Fill KYC Form</Link>
-        </span>
-      );
+      // else return null;
+      // else if (mode !== 'live' || payments.loading || payments.items.length === 0) {
+      //   return null;
+      // }
     } else {
       if (user.isAccepted) {
         theme = 'success';
