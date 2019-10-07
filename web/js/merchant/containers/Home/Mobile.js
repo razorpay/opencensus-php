@@ -18,6 +18,7 @@ import { openModal } from 'rzp/modules/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import EarlyScheduledAnnouncement from 'merchant/components/Announcements/ScheduledSettlements';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 
@@ -99,6 +100,8 @@ class AnalyticsMobile extends Component {
             <Announcement mode={mode} user={user} payments={payments} />
           )}
 
+          {user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />}
+
           <div
             className={`v2-onboarding-card${
               expandOnboardingBanner ? ' expand' : ''
@@ -168,6 +171,9 @@ class AnalyticsMobile extends Component {
                 sectionTitle={recentActivityTitle}
                 onFetchPayments={onFetchPayments}
                 isTabletResolution={true}
+                user={this.props.user}
+                currentBalance={current_balance}
+                onSelect={this.showOndemandSettlementForm}
               />
             </div>
           )}

@@ -95,6 +95,13 @@ export default class extends React.Component {
     this.props.onChange && this.props.onChange(option);
   };
 
+  onOpen = () => {
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'international_currency_select');
+      window.hj('tagRecording', ['international_currency_select']);
+    }
+  };
+
   getSelectedCurrencyOption = ({ option }) => {
     const optionContent = this.props.fullDisplay
       ? CurrencyOption({ option }, false)
@@ -153,6 +160,7 @@ export default class extends React.Component {
                   selected={this.state.currency}
                   showClear={false}
                   searchEnabled
+                  onOpen={this.onOpen}
                 />
               </div>
             </div>

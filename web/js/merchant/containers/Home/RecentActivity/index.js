@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import Button from '../../../../component/Button';
 
 import {
   fetchPayments,
@@ -185,6 +186,26 @@ export default class RecentActivity extends Component {
         </PanelBody>
         <PanelFooter>
           <div className="clearfix">
+            {selectedTab.toLowerCase() === 'settlements' &&
+            this.props.user.isOndemandSettlementEnabled &&
+            this.props.currentBalance.data.balance >= 100 ? (
+              <React.Fragment>
+                <span>
+                  <i className="i i-early-settlement" />
+                  <span className="early-stl-label">
+                    You are eligible for instant settlements
+                  </span>
+                </span>
+                <Button.Secondary
+                  class="settle-btn-act"
+                  onClick={this.props.onSelect}
+                >
+                  Settle Now
+                </Button.Secondary>
+              </React.Fragment>
+            ) : (
+              <></>
+            )}
             <div className="pull-right">
               <Link
                 target="_blank"

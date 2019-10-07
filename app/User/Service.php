@@ -48,8 +48,6 @@ class Service extends Base\Service
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
-    const INSTANT_ACTIVATION_TIMESTAMP = 1540901700;
-
     /**
      * @var Application
      */
@@ -448,21 +446,7 @@ class Service extends Base\Service
                         $data['experiments']['support_call'] = ['result' => 'off'];
                     }
 
-                    $data['experiments']['coupons'] = $merchantService->getTreatment('coupons');
-                    $data['experiments']['is_announcement'] = $merchantService->getTreatment('is_announcement');
-                    $data['experiments']['is_banner'] = $merchantService->getTreatment('is_banner');
-                    $data['experiments']['capital_announcement'] = $merchantService->getTreatment('capital_announcement');
-                    $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
-                    $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
-                    $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
-                    $data['experiments']['show_extra_fields_in_pp'] = $merchantService->getTreatment('show_extra_fields_in_pp');
-
-                    $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
-                    $data['experiments']['sellerapp_plus'] = $merchantService->getTreatment('sellerapp_plus');
-                    $data['experiments']['second_factor_auth'] = $merchantService->getTreatment('second_factor_auth');
-                    $data['experiments']['disable-view-reports'] = $merchantService->getTreatment('disable-view-reports');
-                    $data['experiments']['mobile_hotjar_survey'] = $merchantService->getTreatment('mobile_hotjar_survey');
-                    $data['experiments']['paymentpages_v3'] = $merchantService->getTreatment('paymentpages_v3');
+                    $data = $this->updateExperiments($data);
 
                     $data['current'] = $currentMerchantId;
 
@@ -495,8 +479,6 @@ class Service extends Base\Service
 
                         if (empty($configs) === false)
                         {
-                            $data['merchants'][$merchant['id']]['partner']['has_configs'] = true;
-
                             foreach ($configs as $config)
                             {
                                 if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
@@ -531,6 +513,23 @@ class Service extends Base\Service
             if ($user->created_at < self::PRE_SIGNUP_TIMESTAMP)
             {
                 $data['pre_signup_complete'] = true;
+            }
+
+            // for non-registered check if pre_signup_complete done or not;
+
+            if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
+            {
+                // check business_type
+
+                $businessType = $data['pre_signup']['business_type'] ?? null;
+
+                if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
+                {
+                    if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
+                    {
+                        $data['pre_signup_complete'] = true;
+                    }
+                }
             }
 
             // There are approx 3k merchants who have not
@@ -841,5 +840,44 @@ class Service extends Base\Service
                 throw new AuthorizationException('Different user/merchant is loggedin to the dashboard');
             }
         }
+    }
+
+    /**
+     * @param $data
+     *
+     * @return array
+     * @throws BadRequestError
+     */
+    protected function updateExperiments(array $data): array
+    {
+        $merchantService = new Merchant\Service;
+
+        $features = [
+            'coupons',
+            'is_announcement',
+            'is_banner',
+            'capital_announcement',
+            'capital_banner',
+            'non_registered_onboarding',
+            'international_currencies',
+            'announcements_early_settlements_1',
+            'show_extra_fields_in_pp',
+            'checkout_survey',
+            'sellerapp_plus',
+            'second_factor_auth',
+            'disable-view-reports',
+            'mobile_hotjar_survey',
+            'paymentpages_v3'
+        ];
+
+        $experimentsResults = $merchantService->getBulkTreatment($features);
+
+        foreach ($experimentsResults as $result => $val)
+        {
+            $data['experiments'][$result] = $val;
+        }
+
+
+        return $data;
     }
 }

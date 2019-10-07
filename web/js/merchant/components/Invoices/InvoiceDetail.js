@@ -13,6 +13,7 @@ import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Button, { AsyncBtn } from 'component/Button';
 import Tooltip from 'rzp/ui/Tooltip';
+import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 
 import {
   EditExpiry,
@@ -352,6 +353,9 @@ export default props => {
                     />
                   )}
                 />
+                {user.isOndemandSettlementEnabled && (
+                  <ScheduledBanner fromWhere="Payment Pages" />
+                )}
               </div>
             </div>
           </div>
