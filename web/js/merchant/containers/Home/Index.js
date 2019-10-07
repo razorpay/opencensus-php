@@ -114,7 +114,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       showKYCActivationSuccess:
         state.home.instantActivations.showKYCActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
-      showPANStatusModal: state.home.instantActivations.showPANStatusModal,
+      showPANStatus: state.home.instantActivations.showPANStatus,
     };
   },
   {
@@ -641,7 +641,7 @@ export default class HomeContainer extends Component {
       showKYCDetails,
       hideKYCDetailsModal,
       tracking,
-      showPANStatusModal,
+      showPANStatus,
     } = this.props;
 
     const { activation_flow } = user;
@@ -823,7 +823,14 @@ export default class HomeContainer extends Component {
             user={user}
           />
         )}
-        {showPANStatusModal && <PANVerficationStatusModal user={user} />}
+        {showPANStatus && (
+          <PANVerficationStatusModal
+            onClose={() => {
+              this.props.hidePANStatusModal();
+            }}
+            user={user}
+          />
+        )}
         {showKYCDetails && (
           <KycDetailsModal
             onClose={() => {

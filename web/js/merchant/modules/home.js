@@ -53,7 +53,7 @@ let initialState = {
     showKYCDetails: false,
     showAcceptPayments: false,
     showProductsModal: false,
-    showPANStatusModal: false,
+    showPANStatus: false,
   },
 };
 
@@ -317,12 +317,12 @@ export default function(state = initialState, action) {
 
     case SHOW_PAN_STATUS_MODAL:
       return set(state, 'instantActivations', {
-        showPANStatusModal: true,
+        showPANStatus: true,
       });
 
     case HIDE_PAN_STATUS_MODAL:
       return set(state, 'instantActivations', {
-        showPANStatusModal: false,
+        showPANStatus: false,
       });
 
     default:
