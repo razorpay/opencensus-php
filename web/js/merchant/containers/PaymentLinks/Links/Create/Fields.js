@@ -261,7 +261,7 @@ export default [
   },
   {
     className: 'InputGroup--vTop',
-    name: 'reminders',
+    name: 'reminder_enable',
     fieldLabel: 'Send auto reminders',
     description: ({ props, state }) => {
       return getRemindersOptionDescription(

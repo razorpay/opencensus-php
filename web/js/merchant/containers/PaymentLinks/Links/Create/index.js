@@ -25,9 +25,10 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { updatePLInReduxList } from 'merchant/modules/invoices/list';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
+import { fetchReminders } from 'merchant/modules/reminders';
 import { luminateRow } from 'merchant/modules/app';
 
-import { getURLQueryParams, paiseToRupees } from 'rzp/utils/rzp-utils';
+import { getURLQueryParams, paiseToRupees, findBy } from 'rzp/utils/rzp-utils';
 import {
   trackOpenCreateForm,
   closePaymentLinkForm,
@@ -146,19 +147,27 @@ function WizardFields(field) {
 
 @withRouter
 @connect(
-  state => ({
-    ...state.session,
-    paymentLinksRemindersSettings: {
-      isEnabled: true,
-      remindersDaysList: [2, 3, 7],
-    },
-  }),
+  state => {
+    const paymentLinksRemindersSettings =
+      findBy(state.reminders.reminders.items, 'namespace', 'payment_link') ||
+      {};
+
+    return {
+      ...state.session,
+      paymentLinksRemindersSettings: {
+        isEnabled: paymentLinksRemindersSettings.active,
+        remindersDaysList: [2, 3, 7],
+      },
+      reminders: state.reminders,
+    };
+  },
   {
     updatePLInReduxList,
     showNotification,
     openModal,
     closeModal,
     luminateRow,
+    fetchReminders,
   }
 )
 @connect(state => state.session, {
@@ -258,6 +267,10 @@ export default class CreateNewContainer extends React.Component {
     }
 
     this.toggleDisableState();
+
+    if (!this.props.reminders.reminders.items.length) {
+      this.props.fetchReminders();
+    }
   }
 
   componentDidUpdate() {
@@ -422,6 +435,12 @@ export default class CreateNewContainer extends React.Component {
 
     if (!this.state.dirty.receipt) {
       delete reqPayload.receipt;
+    }
+
+    if (reqPayload.reminder_enable === '1') {
+      reqPayload.reminder_enable = true;
+    } else {
+      delete reqPayload.reminder_enable;
     }
 
     return FORM_FIELDS.onCreate(reqPayload)
