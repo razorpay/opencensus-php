@@ -66,12 +66,18 @@ const LOADING = {
   DEFAULT: 2, // Some custom message when form opens
 };
 
-function sliceTabsForRegisteredBusniess(businessType, isL1Submitted) {
-  return !isL1Submitted && businessType != 11;
+function isL1NotSubmittedForRegBiz(props) {
+  return (
+    !props.user.instantActivation.isL1Submitted &&
+    props.user.business_type != 11
+  );
 }
 
-function sliceTabsForUnRegisteredBusniess(businessType, verficationStatus) {
-  return businessType == 11 && verficationStatus !== 'verified';
+function isL1NotSubmittedForUnRegBiz(props) {
+  return (
+    props.user.business_type == 11 &&
+    props.user.poi_verification_status !== 'verified'
+  );
 }
 
 function defaultFieldProps(f) {
