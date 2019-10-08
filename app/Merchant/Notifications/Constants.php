@@ -167,23 +167,6 @@ class Constants
                 'features'         => ['es_on_demand'],
             ]
         ],
-        [
-            'title'       => 'Enable Daily Settlements',
-            'description' => 'Get your payments settled on the same working day automatically! Avoid cash-flow issues and prepare better for working capital needs.',
-            'start_ts'    => 1570088578,
-            'end_ts'      => 1577791088,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/early-settlement.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Enable Daily Settlements',
-                    'url'   => '/settlements#automaticsettle',
-                ],
-            ],
-            'filters'     => [
-                'features'         => ['es_on_demand'],
-            ]
-        ],
     ];
 
     public static function getNotifications(): array
