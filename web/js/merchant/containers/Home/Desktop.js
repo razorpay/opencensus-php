@@ -110,7 +110,7 @@ class AnalyticsDesktop extends Component {
             <Announcement mode={mode} user={user} payments={payments} />
           )}
 
-          {user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />}
+          {/*user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />*/}
 
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && (

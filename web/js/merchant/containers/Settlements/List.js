@@ -247,7 +247,7 @@ export default class SettlementsListContainer extends ListContainer {
                       <span class="icon i-external-link" />
                     </a>
                   </ShowWhen>
-                  {this.props.user.isOndemandSettlementEnabled && (
+                  {/*this.props.user.isOndemandSettlementEnabled && (
                     <div className="box-left-pad10-inline">
                       <ScheduledBanner
                         onExit={() => {
@@ -257,7 +257,7 @@ export default class SettlementsListContainer extends ListContainer {
                         fromWhere="Settlements"
                       />
                     </div>
-                  )}
+                  )*/}
                 </React.Fragment>
               </HeaderAction>
               <SettlementsListFilter
