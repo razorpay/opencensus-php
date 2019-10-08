@@ -581,11 +581,13 @@ function differentAddress(activation) {
 }
 
 /* Return true IF NOT 'Individual/Not registered' business type */
-function excludeFor_Indiv(activation) {
+export function excludeFor_Indiv(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  return [INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1;
+  return (
+    [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) === -1
+  );
 }
 
 function isL1Submitted(activation) {

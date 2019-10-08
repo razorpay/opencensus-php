@@ -1,7 +1,9 @@
 import Input from 'component/Input';
 import { states } from 'rzp/utils/constants';
+import { excludeFor_Indiv } from 'component/merchant/Activation/ActivationFormMap';
 
-const INDIVIDUAL = 2;
+// const INDIVIDUAL = 2;
+// const NOT_YET_REGISTERED = 11;
 
 var stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
@@ -12,12 +14,12 @@ var stateOptions = ['--Select--'].concat(
   })
 );
 
-function excludeFor_Indiv(activation) {
-  const currentBusinessType =
-    activation.state.dirty.business_type || activation.props.data.business_type;
+// function excludeFor_Indiv(activation) {
+//   const currentBusinessType =
+//     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  return [INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1;
-}
+//   return [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) === -1;
+// }
 
 export default [
   [
