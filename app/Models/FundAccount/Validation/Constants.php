@@ -7,6 +7,7 @@ use Config;
 class Constants
 {
     const DEFAULT_PENNY_TESTING_AMOUNT      = 100;
+    const DEFAULT_VPA_VALIDATION_AMOUNT     = 0;
     const DEFAULT_PENNY_TESTING_CURRENCY    = 'INR';
     protected $slackSettings;
 

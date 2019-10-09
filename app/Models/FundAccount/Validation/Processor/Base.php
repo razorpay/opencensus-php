@@ -43,8 +43,6 @@ abstract class Base extends Core
 
     public abstract function preProcessValidation();
 
-    public abstract function processValidation();
-
     public abstract function setDefaultValuesForValidation();
 
     /**
