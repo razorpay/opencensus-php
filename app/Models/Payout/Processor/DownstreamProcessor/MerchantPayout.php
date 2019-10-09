@@ -2,9 +2,7 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
-use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use RZP\Models\FundTransfer;
 use RZP\Models\Payout\Entity;
 
 class MerchantPayout extends Base
@@ -12,17 +10,6 @@ class MerchantPayout extends Base
     protected function setChannel(Entity $payout)
     {
         $channel = $payout->merchant->getChannel();
-
-        // For Early Settlments On demand, merchant can create payouts at any time of the day.
-        // But, since merchant's settlement channel is not yes bank by default, the payout will
-        // be processed according to bank working hours.
-        // So, for on demand payouts with amount less than 2L, we are forcing payout channel to
-        // be yesbank so that they are processed through IMPS which works 24*7.
-        if (($payout->getPayoutType() === Entity::ON_DEMAND) and
-            ($payout->getAmount() < FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT * 100))
-        {
-             $channel = Settlement\Channel::YESBANK;
-        }
 
         $payout->setChannel($channel);
     }

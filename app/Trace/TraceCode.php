@@ -1060,6 +1060,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_PLAN_RULE_UPDATE_ATTEMPT                      = 'PRICING_PLAN_RULE_UPDATE_ATTEMPT';
     const PRICING_PLAN_RULE_ADD_SUCCESS                         = 'PRICING_PLAN_RULE_ADD_SUCCESS';
     const PRICING_PLAN_RULE_UPDATE_SUCCESS                      = 'PRICING_PLAN_RULE_UPDATE_SUCCESS';
+    const PRICING_PLAN_RULE_DELETE_ATTEMPT                      = 'PRICING_PLAN_RULE_DELETE_ATTEMPT';
 
     const WEBHOOK_DISPATCH                                      = 'WEBHOOK_DISPATCH';
     const WEBHOOK_FIRING                                        = 'WEBHOOK_FIRING';
@@ -1988,6 +1989,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
     const BATCH_SERVICE_CONTACT_BULK_REQUEST                    = 'BATCH_SERVICE_CONTACT_BULK_REQUEST';
     const BATCH_SERVICE_PAYOUT_BULK_REQUEST                     = 'BATCH_SERVICE_PAYOUT_BULK_REQUEST';
+    const BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_REQUEST         = 'BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_REQUEST';
+    const BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_RESPONSE        = 'BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_RESPONSE';
     const BATCH_SERVICE_BULK_EXCEPTION                          = 'BATCH_SERVICE_BULK_EXCEPTION';
     const BATCH_SERVICE_BAD_REQUEST                             = 'BATCH_SERVICE_BAD_REQUEST';
     const BATCH_SERVICE_FAILED                                  = 'BATCH_SERVICE_FAILED';

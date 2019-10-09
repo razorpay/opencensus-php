@@ -72,11 +72,11 @@ class Base
 
         $this->auth    = $app['basicauth'];
 
+        $this->config  = $app['config']->get('applications.fts');
+
         $this->baseUrl = $this->config[$this->mode]['url'];
 
         $this->key     = $this->config[$this->mode]['fts_key'];
-
-        $this->config  = $app['config']->get('applications.fts');
 
         $this->secret  = $this->config[$this->mode]['fts_secret'];
 

@@ -700,6 +700,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkSubmerchantAssign()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkSubmerchantAssign($input);
+
+        return ApiResponse::json($response);
+    }
+  
     public function getScheduledEarlySettlementPricingForMerchant()
     {
         $data = $this->service()->getScheduledEarlySettlementPricingForMerchant();

@@ -100,7 +100,7 @@ class AuthFilter extends Terminal\Auth\Base
     protected function canRunHeadlessOtpFlow(Payment\Entity $payment): bool
     {
        if (($this->isAuthTypeOtp($payment) === true) and
-           ($this->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === true) and
+           ($this->merchant->isHeadlessEnabled() === true) and
            ($payment->card->iinRelation !== null) and
            ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true) and
            (Payment\Gateway::supportsHeadlessBrowser($payment->getGateway(), $payment->card->iinRelation->getNetworkCode()) === true))

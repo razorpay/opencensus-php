@@ -843,26 +843,6 @@ return [
             ],
         ],
     ],
-    'testCreateMerchantPayoutOnDemandWithAmountLessThan2L' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/merchant/payout/demand',
-            'content' => [
-                'amount'   => 10000,
-                'currency' => 'INR'
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'      => 'payout',
-                'amount'      => 9292,
-                'currency'    => 'INR',
-                'tax'         => 108,
-                'fees'        => 708,
-                'notes'       => []
-            ],
-        ],
-    ],
     'testCreateMerchantPayoutOnDemandOnLowBalance' => [
         'request' => [
             'method'  => 'POST',

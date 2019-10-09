@@ -89,7 +89,7 @@ class AuthType
 
     public static $featureToAuthMap = [
         self::PIN  => [Feature\Constants::ATM_PIN_AUTH],
-        self::OTP  => [Feature\Constants::IVR, Feature\Constants::AXIS_EXPRESS_PAY, Feature\Constants::HEADLESS],
+        self::OTP  => [Feature\Constants::IVR, Feature\Constants::AXIS_EXPRESS_PAY,],
         self::SKIP => [Feature\Constants::DIRECT_DEBIT],
     ];
 
@@ -150,6 +150,11 @@ class AuthType
                 $enabled = ($merchant->isFeatureEnabled($feature) or $enabled);
             }
 
+            if ($type === self::OTP)
+            {
+                $enabled = ($merchant->isHeadlessEnabled() or $enabled);
+            }
+
             if ($enabled === false)
             {
                 throw new BadRequestValidationFailureException(
@@ -171,6 +176,11 @@ class AuthType
             foreach (self::$featureToAuthMap[$type] as $feature)
             {
                 $enabled = ($merchant->isFeatureEnabled($feature) or $enabled);
+            }
+
+            if ($type === self::OTP)
+            {
+                $enabled = ($merchant->isHeadlessEnabled() or $enabled);
             }
 
             return $enabled;
