@@ -16,6 +16,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends TestCase
@@ -524,7 +525,16 @@ class FeaturesTest extends TestCase
 
         $this->addFeatures(Mode::LIVE, true);
 
-        Mail::assertNotSent(FeatureEnabledEmail::class);
+        Mail::assertNotQueued(FeatureEnabledEmail::class);
+    }
+
+    public function testEsEligibleEmailNotify()
+    {
+        Mail::fake();
+
+        $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);
+
+        Mail::assertQueued(EsEligibleMail::class);
     }
 
     /*

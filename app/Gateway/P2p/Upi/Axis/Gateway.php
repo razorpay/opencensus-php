@@ -5,6 +5,7 @@ namespace RZP\Gateway\P2p\Upi\Axis;
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 
+use RZP\Gateway\Cybersource\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\P2p\Upi;
 use RZP\Models\P2p\Device;
@@ -345,5 +346,19 @@ class Gateway extends Upi\Gateway
         $action = strtr(static::class, ['RZP\Gateway\P2p\Upi\Axis\\' => '', 'Gateway' => '']);
 
         return snake_case($action);
+    }
+
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
+        }
+
+        $gatewayEntity->setAction($input[Entity::ACTION]);
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
     }
 }

@@ -8,7 +8,6 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
@@ -614,6 +613,20 @@ class Validator extends Base\Validator
                 Entity::INTERNATIONAL_ACTIVATION_FLOW,
                 [
                     Entity::INTERNATIONAL_ACTIVATION_FLOW => $internationalActivationFlow
+                ]);
+        }
+    }
+
+    public function validateMerchantHasRegisteredAddress()
+    {
+        // check that registered address is present
+        if ($this->entity->hasBusinessRegisteredAddress() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED,
+                null,
+                [
+                    'account_id' => $this->entity->getKey(),
                 ]);
         }
     }

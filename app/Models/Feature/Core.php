@@ -16,6 +16,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\FeatureEnabled;
+use RZP\Mail\Merchant\EsEligible;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
@@ -163,6 +164,32 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
+                [
+                    PublicEntity::MERCHANT_ID => $entityId,
+                    Entity::SHOULD_SYNC       => $shouldSync,
+                    Mode::LIVE                => $isLiveMode,
+                    Entity::NEW_FEATURE       => $feature,
+                    Merchant\Entity::EMAIL    => $merchantEmail
+                ]);
+        }
+
+        else if(($feature->getName() === Constants::ES_ON_DEMAND) and
+                ($isLiveMode === true) and
+                ($shouldSync === true))
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
+
+            $merchantEmail   = $merchant->getEmail();
+
+            $data['contact_name']  = $merchant->getName();
+            $data['contact_email'] = $merchantEmail;
+
+            $esEligibleEmail = new EsEligible($data);
+
+            Mail::queue($esEligibleEmail);
+
+            $this->trace->info(
+                TraceCode::ES_ELIGIBLE_MERCHANT_NOTIFIED,
                 [
                     PublicEntity::MERCHANT_ID => $entityId,
                     Entity::SHOULD_SYNC       => $shouldSync,

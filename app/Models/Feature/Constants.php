@@ -96,7 +96,6 @@ class Constants
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_AUTOMATIC                    = 'es_automatic';
-    const HEADLESS                        = 'headless';
     const HEADLESS_DISABLE                = 'headless_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
@@ -133,6 +132,22 @@ class Constants
     const WALLET_AUTO_DEBIT               = 'wallet_auto_debit';
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
+
+    /**
+     * When creating submerchant, if kyc is handled by partner, we proceed to directly activate the merchant, when
+     * the submerchant is created. Else the submerchant will follow the usual kyc process
+     */
+    const KYC_HANDLED_BY_PARTNER          = 'kyc_handled_by_partner';
+
+    /**
+     * Only partners having this feature will be able to onboard the submerchants using the account apis
+     */
+    const SUBMERCHANT_ONBOARDING          = 'submerchant_onboarding';
+
+    /**
+     * Flag to decide whether razorpay can send communication mails to partner's submerchants
+     */
+    const NO_COMM_WITH_SUBMERCHANTS       = 'no_comm_with_submerchants';
 
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
@@ -347,7 +362,6 @@ class Constants
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
         self::ES_AUTOMATIC                    => true,
-        self::HEADLESS                        => true,
         self::HEADLESS_DISABLE                => true,
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
@@ -404,6 +418,9 @@ class Constants
         self::USE_MSWIPE_TERMINALS            => true,
         self::WALLET_AUTO_DEBIT               => true,
         self::EXPOSE_GATEWAY_PROVIDER         => true,
+        self::KYC_HANDLED_BY_PARTNER          => true,
+        self::NO_COMM_WITH_SUBMERCHANTS       => true,
+        self::SUBMERCHANT_ONBOARDING          => true,
     ];
 
     // Entity type constants

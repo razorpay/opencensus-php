@@ -155,11 +155,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         catch (\Exception $ex)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Unable to parse gateway payment date -> ' . $ex->getMessage(),
-                    'row'           => $row,
+                    'message'       => 'Unable to parse gateway payment date',
+                    'payment_id'    => $this->getPaymentId($row),
+                    'date'          => $row[self::COLUMN_PAYMENT_DATE],
                     'gateway'       => $this->gateway,
                 ]);
 
