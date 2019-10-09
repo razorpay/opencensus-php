@@ -277,7 +277,6 @@ export default class OndemandModal extends Component {
       eventAction: 'Click Settle Now',
       eventLabel: `${this.props.fromWhere} | Settle Now`,
     });
-
     this.updateFee();
   }
 
@@ -447,11 +446,6 @@ export default class OndemandModal extends Component {
           });
         }
       } else {
-        let analyticsPayload = {
-          eventCategory: 'Dashboard - Early Settlement',
-          eventAction: `Close modal`,
-          eventLabel: `preFilled amount - after show breakup| close`,
-        };
         if (this.state.checkedBreakup) {
           this.gaEventDispatcher({
             eventAction: `Close modal`,
