@@ -320,6 +320,7 @@ const registrationDetails = [
           : 'PAN info of Authorized Signatory/Promoter/Director';
       },
       className: 'Input--vTop Input--capitalize',
+      _disabledWhen: isActivatedIndividual,
     },
     {
       // label: 'PAN Owner Name',
@@ -331,6 +332,7 @@ const registrationDetails = [
       description: () => {
         return 'We verify the details with the central PAN database. Please ensure you enter the correct details';
       },
+      _disabledWhen: isActivatedIndividual,
     },
   ],
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
@@ -617,6 +619,10 @@ function showForOrgs(activation) {
     selectedBusinessType &&
     ORG_BusinessTypes.indexOf(Number(selectedBusinessType)) !== -1
   );
+}
+
+function isActivatedIndividual(activation) {
+  return !excludeFor_Indiv(activation) && activation.props.user.activated;
 }
 
 // Tabs name
