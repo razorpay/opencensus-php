@@ -12,28 +12,28 @@ class Processed extends Mailable
 {
     const TEMPLATE_PATH = 'emails.banking_account.notify_status_processed';
 
-    protected $bankAccount;
+    protected $bankingAccount;
 
     protected $config;
 
     /**
      * Cancelled constructor.
-     * @param Entity $bankAccount
+     * @param Entity $bankingAccount
      */
-    public function __construct(Entity $bankAccount)
+    public function __construct(Entity $bankingAccount)
     {
         parent::__construct();
 
-        $this->bankAccount = $bankAccount;
+        $this->bankingAccount = $bankingAccount;
 
         $this->config = App::getFacadeRoot()['config'];
     }
 
     protected function addRecipients()
     {
-        $toEmail = $this->bankAccount->merchant->getEmail();
+        $toEmail = $this->bankingAccount->merchant->getEmail();
 
-        $toName = $this->bankAccount->merchant->getName();
+        $toName = $this->bankingAccount->merchant->getName();
 
         $this->to($toEmail, $toName);
 
@@ -69,8 +69,12 @@ class Processed extends Mailable
 
     protected function addMailData()
     {
+
         $data = [
-            'activation_url' => $this->config['applications.razorx.ur']
+            'view_dashboard_url' => $this->config['applications.razorx.url'],
+            'merchant_name'      => $this->bankingAccount->getBeneficiaryName(),
+            'account_number'     => $this->bankingAccount->getAccountNumber(),
+            'ifsc_code'          => $this->bankingAccount->getAccountIfsc()
         ];
 
         $this->with($data);

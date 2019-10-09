@@ -18,13 +18,13 @@ class Processing extends Mailable
 
     /**
      * Cancelled constructor.
-     * @param Entity $bankAccount
+     * @param Entity $bankingAccount
      */
-    public function __construct(Entity $bankAccount)
+    public function __construct(Entity $bankingAccount)
     {
         parent::__construct();
 
-        $this->bankAccount = $bankAccount;
+        $this->bankAccount = $bankingAccount;
 
         $this->config = App::getFacadeRoot()['config'];
     }
