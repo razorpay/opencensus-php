@@ -72,7 +72,7 @@ export default class OndemandModal extends Component {
     this.setState({
       clickedConfirm: true,
     });
-    var analyticsPayload1 = {
+    let analyticsPayload1 = {
       eventCategory: 'Dashboard - Early Settlement',
       eventAction: `Amount`,
       eventLabel: ``,
@@ -89,7 +89,7 @@ export default class OndemandModal extends Component {
     window.rzpAnalytics(analyticsPayload1);
 
     if (this.state.hasChangedAmount) {
-      var analyticsPayload = {
+      let analyticsPayload = {
         eventCategory: 'Dashboard - Early Settlement',
         eventAction: `confirm`,
         eventLabel: `Changed amount - after show breakup| close`,
@@ -101,7 +101,7 @@ export default class OndemandModal extends Component {
       }
       window.rzpAnalytics(analyticsPayload);
     } else {
-      var analyticsPayload = {
+      let analyticsPayload = {
         eventCategory: 'Dashboard - Early Settlement',
         eventAction: `confirm`,
         eventLabel: `preFilled amount - after show breakup| close`,
@@ -447,10 +447,10 @@ export default class OndemandModal extends Component {
     }
     if (!this.state.clickedConfirm) {
       if (this.state.hasChangedAmount) {
-        var analyticsPayload = {
+        let analyticsPayload = {
           eventCategory: 'Dashboard - Early Settlement',
           eventAction: `Close modal`,
-          eventLabel: `Changed amount - after show breakup| close`,
+          eventLabel: ``,
         };
         if (this.state.checkedBreakup) {
           analyticsPayload.eventLabel = `Changed amount - after show breakup| close`;
@@ -459,7 +459,7 @@ export default class OndemandModal extends Component {
         }
         window.rzpAnalytics(analyticsPayload);
       } else {
-        var analyticsPayload = {
+        let analyticsPayload = {
           eventCategory: 'Dashboard - Early Settlement',
           eventAction: `Close modal`,
           eventLabel: `preFilled amount - after show breakup| close`,
@@ -472,7 +472,7 @@ export default class OndemandModal extends Component {
         window.rzpAnalytics(analyticsPayload);
       }
 
-      var analyticsPayload1 = {
+      let analyticsPayload1 = {
         eventCategory: 'Dashboard - Early Settlement',
         eventAction: `Amount`,
         eventLabel: ``,
