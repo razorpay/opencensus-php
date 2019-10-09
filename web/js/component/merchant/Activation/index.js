@@ -74,10 +74,7 @@ function isL1NotSubmittedForRegBiz(props) {
 }
 
 function isL1NotSubmittedForUnRegBiz(props) {
-  return (
-    props.user.business_type == 11 &&
-    props.user.poi_verification_status !== 'verified'
-  );
+  return props.user.business_type == 11 && props.user.activated !== 1;
 }
 
 function defaultFieldProps(f) {
@@ -720,7 +717,7 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
-  submitL1 = () => {
+  submitL1 = currenActiveTab => {
     console.log('submitting l1');
     const data = this.formData;
     // const { tracking } = this.props;
@@ -778,6 +775,7 @@ export default class ActivationWizard extends React.Component {
       })
       .catch(err => {
         console.log('catched err', err);
+        this.markTabIfActive(currenActiveTab);
         if (err.errors.length && err.errors[0]) {
           this.props.showNotification({
             type: 'error',
@@ -1601,6 +1599,14 @@ function isFieldValid(field, activation) {
     // value missing in required field
     return false;
   }
+
+  if (
+    field.name == 'promoter_pan' &&
+    isL1NotSubmittedForUnRegBiz(activation.props)
+  ) {
+    return false;
+  }
+
   return true;
 }
 
