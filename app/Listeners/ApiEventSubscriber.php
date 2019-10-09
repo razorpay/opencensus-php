@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Terminal;
 use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
@@ -569,6 +570,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTerminalActivated(Terminal\Entity $terminal)
+    {
+        $payload = $this->getTerminalActivatedPayload($terminal);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -806,6 +814,17 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::PAYMENT_DOWNTIME => [
                 'entity' => $downtime->toArrayPublic(),
+            ]
+        ];
+
+        return $payload;
+    }
+
+    protected function getTerminalActivatedPayload(Terminal\Entity $terminal): array
+    {
+        $payload = [
+            Constants\Entity::TERMINAL => [
+                'entity' => $terminal->toArrayPublic(),
             ]
         ];
 

@@ -355,6 +355,13 @@ class Gateway
         $this->action = ACTION::CREATE_TERMINAL;
     }
 
+    public function verifyTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = ACTION::VERIFY_TERMINAL;
+    }
+
     public function debit(array $input)
     {
         $this->input = $input;

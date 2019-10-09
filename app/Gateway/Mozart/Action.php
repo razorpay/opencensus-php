@@ -22,4 +22,6 @@ class Action
     const RECONCILE         = 'reconcile';
 
     const CREATE_TERMINAL   = 'create_terminal';
+
+    const VERIFY_TERMINAL   = 'verify_terminal';
 }

@@ -1302,4 +1302,18 @@ return [
             ],
         ],
     ],
+
+    'testTerminalVerificationWebhook' => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [],
+            'status_code'  => 200,
+        ],
+    ]
 ];

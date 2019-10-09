@@ -78,6 +78,11 @@ final class FactoryData
             'gateway_secure_secret'     => null,
         ]);
 
+        $factory(\RZP\Models\TerminalOnboardingDetail\Entity::class, [
+            'id'                        => $faker->uniqueid,
+            'terminal_id'               => 'factory:RZP\Models\Terminal\Entity',
+        ]);
+
         $factory(\RZP\Models\Merchant\Invoice\Entity::class, [
             'id'                => $faker->uniqueid,
             'merchant_id'       => '10000000000000',

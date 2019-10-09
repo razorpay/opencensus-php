@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal;
 
 use DB;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -11,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
@@ -287,7 +289,6 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::ID)->all();
     }
 
-
     public function getSharedTerminalForGateway($gateway)
     {
         return $this->newQuery()
@@ -455,6 +456,48 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchTerminalsForActivation($count)
+    {
+        $terminalId = $this->dbColumn(Entity::ID);
+
+        $termininalOnboardingDetailRepo = $this->repo->terminal_onboarding_detail;
+
+        $terminalOnboardingTerminalId = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::TERMINAL_ID);
+
+        $terminalOnboardingStatus = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::STATUS);
+
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        return $this->newQuery()
+                    ->select($this->getTableName() . '.*')
+                    ->join(Table::TERMINAL_ONBOARDING_DETAIL, $terminalOnboardingTerminalId, '=', $terminalId)
+                    ->where($terminalOnboardingStatus, '=', TerminalOnboardingDetail\Status::PENDING)
+                    ->where(TerminalOnboardingDetail\Entity::VERIFY_AT, '<', $currentTimestamp)
+                    ->limit($count)
+                    ->get();
+    }
+
+    // fetches all terminals where terminal_onboarding_detail status is created
+    public function fetchTerminalsForOnboarding($input)
+    {
+        $count = $input['count'];
+
+        $terminalId = $this->dbColumn(Entity::ID);
+
+        $termininalOnboardingDetailRepo = $this->repo->terminal_onboarding_detail;
+
+        $terminalOnboardingTerminalId = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::TERMINAL_ID);
+
+        $terminalOnboardingStatus = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::STATUS);
+
+        return $this->newQuery()
+                    ->take($count)
+                    ->select($this->getTableName() . '.*')
+                    ->join(Table::TERMINAL_ONBOARDING_DETAIL, $terminalOnboardingTerminalId, '=', $terminalId)
+                    ->where($terminalOnboardingStatus, '=', TerminalOnboardingDetail\Status::CREATED)
+                    ->get();
+    }
+    
     public function findByMerchantIdGatewayAndCurrency(string $merchantId, string $gateway, string $currency)
     {
         $query = $this->newQuery()
