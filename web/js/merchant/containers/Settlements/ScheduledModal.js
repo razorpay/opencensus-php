@@ -35,8 +35,7 @@ export default class ScheduledModal extends Component {
   }
 
   componentDidMount() {
-    window.rzpAnalytics({
-      eventCategory: `Dashboard - Early Settlement`,
+    this.fireGAEvent({
       eventAction: `Click Enable ES`,
       eventLabel: `Enable Scheduled ES - ${this.props.fromWhere}`,
     });
@@ -50,10 +49,9 @@ export default class ScheduledModal extends Component {
   }
 
   openSupport = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Early Settlement',
-      eventAction: 'Support',
-      eventLabel: 'Clicks | Support',
+    this.fireGAEvent({
+      eventAction: `Support`,
+      eventLabel: `Clicks | Support`,
     });
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
@@ -97,10 +95,9 @@ export default class ScheduledModal extends Component {
   };
 
   onEnable = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Early Settlement',
-      eventAction: 'ES Modal',
-      eventLabel: 'On-Demand Success | Enable Scheduled ES',
+    this.fireGAEvent({
+      eventAction: `ES Modal`,
+      eventLabel: `On-Demand Success | Enable Scheduled ES`,
     });
     let payload = {
       features: {
@@ -142,6 +139,11 @@ export default class ScheduledModal extends Component {
     );
   };
 
+  fireGAEvent = eventPayload => {
+    eventPayload['eventCategory'] = 'Dashboard - Early Settlement';
+    window.rzpAnalytics(eventPayload);
+  };
+
   renderPostEnablement = () => {
     return (
       <>
@@ -167,10 +169,9 @@ export default class ScheduledModal extends Component {
             href="https://razorpay.freshdesk.com/support/solutions/folders/11000011340"
             className="highlight-support"
             onClick={() => {
-              window.rzpAnalytics({
-                eventCategory: 'Dashboard - Early Settlement',
-                eventAction: 'ES Modal',
-                eventLabel: 'FAQs | ES Modal',
+              this.fireGAEvent({
+                eventAction: `ES Modal`,
+                eventLabel: `FAQs | ES Modal`,
               });
             }}
           >
