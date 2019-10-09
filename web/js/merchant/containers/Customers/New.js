@@ -557,7 +557,6 @@ export default class AddCustomer extends Component {
             showDisabledCountry={true}
             hideCountry={!isInttCurrenciesEnabled}
             validateAddress={this.validateAddress}
-            trackChangeOfCountry={trackSelectBillingAddress}
             {...extraProps}
           />
           <div class="row CustomerCreationModal__bottom">
@@ -651,7 +650,6 @@ export default class AddCustomer extends Component {
             showDisabledCountry={true}
             hideCountry={!isInttCurrenciesEnabled}
             validateAddress={this.validateAddress}
-            trackChangeOfCountry={trackSelectShippingAddress}
             {...extraProps}
           />
           <div class="row">
