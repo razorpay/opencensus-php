@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
+namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants;
 
 /**
  * Class StatementSummary

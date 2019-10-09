@@ -10,6 +10,11 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\AccountOwnerInfo;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\StatementSummary;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\StatementConstants;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\TransactionLineItem;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\AccountStatementData;
 
 abstract class Generator extends Base
 {
@@ -22,7 +27,7 @@ abstract class Generator extends Base
 
     const DATE_FORMAT = 'd/m/Y';
 
-    public function __construct($accountNumber, $channel, $fromDate, $toDate)
+    public function __construct(string $accountNumber, string $channel, int $fromDate, int $toDate)
     {
         parent::__construct($accountNumber, $channel, $fromDate, $toDate);
 
@@ -42,13 +47,7 @@ abstract class Generator extends Base
 
         $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
 
-        $allBankAccountTransactions = $this->repo
-                                           ->statement
-                                           ->getStatementsWithInRange($bankingAccount->getMerchantId(),
-                                                                      $this->fromDate,
-                                                                      $this->toDate);
-
-        list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($allBankAccountTransactions);
+        list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($bankingAccount);
 
         return [
             AccountStatementData::ACCOUNT_OWNER_INFO => $accountOwnerInfo,
@@ -59,8 +58,14 @@ abstract class Generator extends Base
         ];
     }
 
-    protected function getAccountSummaryAndTransactions($bankAccountStatements)
+    protected function getAccountSummaryAndTransactions(BankingAccountEntity $bankingAccount)
     {
+        $bankAccountStatements = $this->repo
+                                      ->statement
+                                      ->getStatementsWithInRange($bankingAccount->getMerchantId(),
+                                                                 $this->fromDate,
+                                                                 $this->toDate);
+
         $transactions = [];
 
         $openingBalance = 0;
@@ -216,13 +221,13 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
 
-            AccountOwnerInfo::SANCTION_LIMIT       => BankConstants::SANCTION_LIMIT,
+            AccountOwnerInfo::SANCTION_LIMIT       => StatementConstants::SANCTION_LIMIT,
 
-            AccountOwnerInfo::DRAWING_POWER        => BankConstants::DRAWING_POWER,
+            AccountOwnerInfo::DRAWING_POWER        => StatementConstants::DRAWING_POWER,
 
-            AccountOwnerInfo::BRANCH_TIMINGS       => BankConstants::BRANCH_TIMINGS,
+            AccountOwnerInfo::BRANCH_TIMINGS       => StatementConstants::BRANCH_TIMINGS,
 
-            AccountOwnerInfo::CALL_CENTER          => BankConstants::CALL_CENTER_NUMBER,
+            AccountOwnerInfo::CALL_CENTER          => StatementConstants::CALL_CENTER_NUMBER,
 
             AccountOwnerInfo::CUSTOMER_CITY        => $bankingAccount->getBeneficiaryCity(),
 

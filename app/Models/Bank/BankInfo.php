@@ -14,7 +14,7 @@ class BankInfo
 {
     protected $ifscCode;
 
-    public function __construct($ifscCode)
+    public function __construct(string $ifscCode)
     {
         $this->ifscCode = $ifscCode;
     }

@@ -12,16 +12,18 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\BankingAccount\StatementMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
 {
-    const STORE_TYPE = 'transactions';
+    const STORE_TYPE         = 'transactions';
 
-    const FILE_ID    = 'file_id';
+    const FILE_ID            = 'file_id';
+
+    const DASHBOARD_FILE_URL = '%s/ufh/file/$s';
 
     /**
      * Temporary hack. Should not set balance at a class level.
@@ -69,18 +71,36 @@ class Core extends Base\Core
         return ['processed' => true];
     }
 
+    public function requestAccountStatement($input)
+    {
+        (new Validator)->validateInput(Validator::ACCOUNT_STATEMENT_GENERATE, $input);
+
+        $statementFileId = $this->generateBankAccountStatement($input);
+
+        $sendEmail = filter_var($input[Entity::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
+
+        if ($sendEmail === true)
+        {
+            $this->core()->sendBankAccountStatementEmail($input, $statementFileId);
+
+            return $input;
+        }
+
+        $input[self::FILE_ID] = $statementFileId;
+
+        return $input;
+    }
+
     /**
-     * This would take in the following parameters
-     * @param channel channel name
-     * @param account_number
-     * @param format
-     * @param fromDate
-     * @param toDate
-     * @return mixed
-     *
      * Creates either a PDF/Excel File and returns the file handle to the calling function
+     *
+     * @param $input
+     *
+     * @return string
+     *
+     * @throws Exception\BadRequestValidationFailureException
      */
-    public function generateBankAccountStatement($input)
+    public function generateBankAccountStatement(array $input)
     {
         $accountNumber = $input[Entity::ACCOUNT_NUMBER];
 
@@ -97,13 +117,11 @@ class Core extends Base\Core
             [
                 'channel'        => $channel,
                 'account_number' => $accountNumber,
-                'fromDate'       => $fromDate,
-                'toDate'         => $toDate,
+                'from_date'      => $fromDate,
+                'to_date'        => $toDate,
                 'format'         => $format,
-                'sendEmail'      => $input[Entity::SEND_EMAIL],
+                'send_email'     => $input[Entity::SEND_EMAIL],
             ]);
-
-        SupportedFormats::validate($channel, $format);
 
         $statementGenerator = $this->getGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
 
@@ -115,24 +133,29 @@ class Core extends Base\Core
 
         $ufhResponse = $this->uploadTemporaryFileToStore($temporaryFilePath, $bankingAccount);
 
-        $fileAccessUrl = $this->getDashboardFileAccessUrl($ufhResponse);
+        $fileId = '';
+
+        if(empty($ufhResponse) === false)
+        {
+            $fileId = $ufhResponse[self::FILE_ID];
+        }
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
             [
-                'fileURL' => $fileAccessUrl
+                'file_id' => $fileId
             ]);
 
-        return $fileAccessUrl;
+        return $fileId;
     }
 
-    public function sendBankAccountStatementEmail(array $input, string $fileAccessUrl)
+    public function sendBankAccountStatementEmail(array $input, string $statementFileId = '')
     {
+        $fileAccessUrl = $this->getDashboardFileAccessUrl($statementFileId);
+
         $merchant = $this->merchant;
 
         $toEmails = $input[Entity::TO_EMAIL_LIST];
-
-        $toEmails = explode(',', $toEmails);
 
         $fromDate = $input[Entity::FROM_DATE];
 
@@ -147,25 +170,21 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_EMAIL,
             [
-                'merchantId' => $this->merchant->getId(),
-                'to_emails'  => $toEmails,
-                'from_date'  => $fromDate,
-                'to_date'    => $toDate,
+                'merchant_id' => $this->merchant->getId(),
+                'to_emails'   => $toEmails,
+                'from_date'   => $fromDate,
+                'to_date'     => $toDate,
             ]);
 
         Mail::queue($email);
     }
 
-    protected function getDashboardFileAccessUrl($ufhResponse)
+    protected function getDashboardFileAccessUrl(string $fileId)
     {
-        if(empty($ufhResponse))
-        {
-            return '';
-        }
-        return $this->config['applications.dashboard.url'] . 'ufh/file/' . $ufhResponse[self::FILE_ID];
+        return sprintf(self::DASHBOARD_FILE_URL, $this->config['applications.dashboard.url'], $fileId);
     }
 
-    protected function uploadTemporaryFileToStore($pathToTemporaryFile, BankingAccount\Entity $entity)
+    protected function uploadTemporaryFileToStore(string $pathToTemporaryFile, BankingAccount\Entity $entity)
     {
         $ufhService = $this->app['ufh.service'];
 
@@ -179,27 +198,23 @@ class Core extends Base\Core
                                                          $name = File::name($pathToTemporaryFile),
                                                          self::STORE_TYPE,
                                                          $entity);
+            $this->trace->info(
+                TraceCode::UFH_RESPONSE,
+                [
+                    'response'   => $response
+                ]);
         }
         catch (\Exception $e)
         {
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
-                [
-                    'message' => 'UFH File Upload Failed',
-                    'error'   => $e->getMessage()
-                ]);
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::UFH_FILE_UPLOAD_FAILED);
         }
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
-            [
-                'message' => 'UFH Response',
-                'error'   => $response
-            ]);
 
         return $response;
     }
 
-    protected function getUploadedFileInstance($path)
+    protected function getUploadedFileInstance(string $path)
     {
         $name = File::name($path);
 
@@ -223,7 +238,7 @@ class Core extends Base\Core
         return $object;
     }
 
-    protected function getGenerator($accountNumber, $channel, $format, $fromDate, $toDate)
+    protected function getGenerator(string $accountNumber, string $channel, string $format, int $fromDate, int $toDate)
     {
         $statementGeneratorNamespace = __NAMESPACE__ . '\\' . 'Generator\\Gateway\\' . studly_case($channel);
 

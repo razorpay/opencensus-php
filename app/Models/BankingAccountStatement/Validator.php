@@ -3,9 +3,6 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use RZP\Base;
-use Exception;
-use RZP\Exception\BadRequestValidationFailureException;
-use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 
 class Validator extends Base\Validator
@@ -30,35 +27,27 @@ class Validator extends Base\Validator
     ];
 
     protected static $accountStatementGenerateRules = [
-        Entity::CHANNEL        => 'required|string|custom',
-        Entity::ACCOUNT_NUMBER => 'required|string|between:5,40',
-        Entity::FROM_DATE      => 'required|epoch',
-        Entity::TO_DATE        => 'required|epoch',
-        Entity::FORMAT         => 'required|string|custom',
-        Entity::SEND_EMAIL     => 'required|boolean',
-        Entity::TO_EMAIL_LIST  => 'required_if:send_email,1|string|custom'
+        Entity::CHANNEL              => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER       => 'required|string|between:5,40',
+        Entity::FROM_DATE            => 'required|epoch',
+        Entity::TO_DATE              => 'required|epoch',
+        Entity::FORMAT               => 'required|string|custom',
+        Entity::SEND_EMAIL           => 'required|boolean',
+        Entity::TO_EMAIL_LIST        => 'required_if:send_email,1|array',
+        Entity::TO_EMAIL_LIST . '.*' => 'required_if:send_email,1|email'
     ];
 
-    protected function validateToEmails($attribute, $emailList)
+    protected static $accountStatementGenerateValidators = [
+            'channel_format'
+        ];
+
+    protected function validateChannelFormat($input)
     {
-        # if this is not empty, then it must be a comma-separated list of valid emails
-        $emails = explode(',', $emailList);
+        $channel = $input[Entity::CHANNEL];
 
-        foreach ($emails as $emailToVerify)
-        {
-            $validator = ValidatorFacade::make(['email' => $emailToVerify], [
-                'email' => 'required|email',
-            ]);
+        $format = $input[Entity::FORMAT];
 
-            try
-            {
-                $validator->validate();
-            }
-            catch (Exception $e)
-            {
-                throw new BadRequestValidationFailureException("Invalid Email: $emailToVerify");
-            }
-        }
+        SupportedFormats::validateChannelFormat($channel, $format);
     }
 
     protected function validateFormat($attribute, $format)

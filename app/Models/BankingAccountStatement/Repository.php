@@ -27,12 +27,4 @@ class Repository extends Base\Repository
                     ->latest(Entity::ID)
                     ->first();
     }
-
-    public function findByAccountNumberWithInPeriod($accountNumber, $fromDate = null, $toDate = null)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->whereBetween(Entity::TRANSACTION_DATE, [$fromDate, $toDate])
-                    ->get();
-    }
 }

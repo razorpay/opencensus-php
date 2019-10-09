@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
+namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants;
 
 /**
  * Class BankInformation
@@ -8,7 +8,7 @@ namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
  * Some of the below contents will be taken from IFSC Service, using the Models/Bank/BankInfo class layer
  * Rest will remain hardcoded in this file and used for Statement Generation
  */
-class BankConstants
+class StatementConstants
 {
     const SANCTION_LIMIT     = '0';
 

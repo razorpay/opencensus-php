@@ -92,6 +92,14 @@ class Repository extends Transaction\Repository
         return $statements;
     }
 
+    /**
+     * TODO : https://razorpay.atlassian.net/browse/RX-536
+
+     * @param $merchantId
+     * @param $fromDate
+     * @param $toDate
+     * @return mixed
+     */
     public function getStatementsWithInRange($merchantId, $fromDate, $toDate)
     {
         return $this->getQueryForFindWithParams([])->merchantId($merchantId)
@@ -136,10 +144,10 @@ class Repository extends Transaction\Repository
 
         $query->where($actionColumn, '!=', 0)
               ->orWhere(function ($query) use ($actionColumn, $oppositeActionColumn)
-                {
-                    $query->where($actionColumn, 0)
-                          ->where($oppositeActionColumn, 0);
-                });
+              {
+                  $query->where($actionColumn, 0)
+                        ->where($oppositeActionColumn, 0);
+              });
     }
 
     /**

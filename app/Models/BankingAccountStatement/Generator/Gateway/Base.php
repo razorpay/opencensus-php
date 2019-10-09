@@ -14,7 +14,7 @@ abstract class Base extends BaseCore
 
     protected $toDate;
 
-    public function __construct($accountNumber, $channel, $fromDate, $toDate)
+    public function __construct(string $accountNumber, string $channel, int $fromDate, int $toDate)
     {
         parent::__construct();
 

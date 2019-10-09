@@ -18,6 +18,8 @@ class BankingAccountStatementController extends Controller
     }
 
     /**
+     * TODO: https://razorpay.atlassian.net/browse/RX-537
+     *
      * Expected Input:
      * 'format' : pdf/xlsx/csv
      * 'send_email'  : true/false
@@ -31,7 +33,7 @@ class BankingAccountStatementController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->generateAccountStatement($input);
+        $response = $this->service()->requestAccountStatement($input);
 
         return ApiResponse::json($response);
     }

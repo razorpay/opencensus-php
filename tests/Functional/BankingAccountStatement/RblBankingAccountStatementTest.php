@@ -276,7 +276,9 @@ class RblBankingAccountStatementTest extends TestCase
         $expectedEffectiveBalance = 214.5;
 
         $fileName = storage_path(self::MOCK_UFH_BASE_LOCATION) .
-                                     '/2224440041626905_946684800_' . $currentTime . '.xlsx';
+                    '/2224440041626905_946684800_' .
+                    $currentTime .
+                    '.xlsx';
 
         $spreadsheet = IOFactory::load($fileName);
 
