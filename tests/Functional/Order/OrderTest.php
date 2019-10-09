@@ -367,6 +367,17 @@ class OrderTest extends TestCase
         $this-> assertEquals($payments['count'], 0);
     }
 
+    public function testFetchOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/order_' . $order['id'];
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('virtual_account', $response);
+    }
+
     public function testRetrieveOrderWithReceipt()
     {
         $order = $this->fixtures->create('order');
@@ -408,7 +419,6 @@ class OrderTest extends TestCase
 
         $this->assertEquals($order['items'][0]['id'], $order['items'][0]['payments']['items'][0]['order_id']);
     }
-
 
     public function testStatusAfterPayment()
     {

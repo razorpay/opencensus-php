@@ -4,117 +4,131 @@ namespace RZP\Services\FTS;
 
 final class Constants
 {
-    const ID                            = 'id';
+    const ID                             = 'id';
 
-    const VPA                           = 'vpa';
+    const VPA                            = 'vpa';
 
-    const BANKING_ACCOUNT               = 'banking_account';
+    const CARD                           = 'card';
 
-    const CARD                          = 'card';
+    const CODE                           = 'code';
 
-    const TYPE                          = 'type';
+    const TYPE                           = 'type';
 
-    const MODE                          = 'mode';
+    const MODE                           = 'mode';
 
-    const HANDLE                        = 'handle';
+    const BODY                           = 'body';
 
-    const AMOUNT                        = 'amount';
+    const HANDLE                         = 'handle';
 
-    const STATUS                        = 'status';
+    const AMOUNT                         = 'amount';
 
-    const PAYOUT                        = 'payout';
+    const STATUS                         = 'status';
 
-    const SAVING                        = 'saving';
+    const PAYOUT                         = 'payout';
 
-    const REFUND                        = 'refund';
+    const SAVING                         = 'saving';
 
-    const ACCOUNT                       = 'account';
+    const REFUND                         = 'refund';
 
-    const TRANSFER                      = 'transfer';
+    const CHANNEL                        = 'channel';
 
-    const PRODUCT                       = 'product';
+    const MESSAGE                        = 'message';
 
-    const USERNAME                      = 'username';
+    const ACCOUNT                        = 'account';
 
-    const IFSC_CODE                     = 'ifsc_code';
+    const TRANSFER                       = 'transfer';
 
-    const NARRATION                     = 'narration';
+    const PRODUCT                        = 'product';
 
-    const ENTITY_ID                     = 'entity_id';
+    const USERNAME                       = 'username';
 
-    const SOURCE_ID                     = 'source_id';
+    const IFSC_CODE                      = 'ifsc_code';
 
-    const MODE_IMPS                     = 'IMPS';
+    const NARRATION                      = 'narration';
 
-    const SETTLEMENT                    = 'settlement';
+    const ENTITY_ID                      = 'entity_id';
 
-    const ISSUER_BANK                   = 'issuer_bank';
+    const SOURCE_ID                      = 'source_id';
 
-    const VAULT_TOKEN                   = 'vault_token';
+    const MODE_IMPS                      = 'IMPS';
 
-    const SOURCE_TYPE                   = 'source_type';
+    const SETTLEMENT                     = 'settlement';
 
-    const INITIATE_AT                   = 'initiate_at';
+    const ISSUER_BANK                    = 'issuer_bank';
 
-    const MERCHANT_ID                   = 'merchant_id';
+    const VAULT_TOKEN                    = 'vault_token';
 
-    const BANK_ACCOUNT                  = 'bank_account';
+    const SOURCE_TYPE                    = 'source_type';
 
-    const ACCOUNT_TYPE                  = 'account_type';
+    const CREDENTIALS                    = 'credentials';
 
-    const PREFERRED_MODE                = 'preferred_mode';
+    const TRANSFER_BY                    = 'transfer_by';
 
-    const STATUS_CREATED                = 'created';
+    const INITIATE_AT                    = 'initiate_at';
 
-    const ACCOUNT_NUMBER                = 'account_number';
+    const MERCHANT_ID                    = 'merchant_id';
 
-    const FUND_ACCOUNT_ID               = 'fund_account_id';
+    const BANK_ACCOUNT                   = 'bank_account';
 
-    const DEFAULT_CHANNEL               = 'default_channel';
+    const ACCOUNT_TYPE                   = 'account_type';
 
-    const BENEFICIARY_PIN               = 'beneficiary_pin';
+    const PAYOUT_REFUND                  = 'payout_refund';
 
-    const STATUS_INITIATED              = 'initiated';
+    const PENNY_TESTING                  = 'penny_testing';
 
-    const BENEFICIARY_NAME              = 'beneficiary_name';
+    const PREFERRED_MODE                 = 'preferred_mode';
 
-    const BENEFICIARY_CODE              = 'beneficiary_code';
+    const STATUS_CREATED                 = 'created';
 
-    const BENEFICIARY_CITY              = 'beneficiary_city';
+    const ACCOUNT_NUMBER                 = 'account_number';
 
-    const FUND_TRANSFER_ID              = 'fund_transfer_id';
+    const INTERNAL_ERROR                 = 'internal_error';
 
-    const PREFERRED_CHANNEL             = 'preferred_channel';
+    const FUND_ACCOUNT_ID                = 'fund_account_id';
 
-    const BENEFICIARY_EMAIL             = 'beneficiary_email';
+    const DEFAULT_CHANNEL                = 'default_channel';
 
-    const BENEFICIARY_STATE             = 'beneficiary_state';
+    const BANKING_ACCOUNT                = 'banking_account';
 
-    const BENEFICIARY_MOBILE            = 'beneficiary_mobile';
+    const BENEFICIARY_PIN                = 'beneficiary_pin';
 
-    const IS_VIRTUAL_ACCOUNT            = 'is_virtual_account';
+    const STATUS_INITIATED               = 'initiated';
 
-    const BENEFICIARY_ADDRESS           = 'beneficiary_address';
+    const BENEFICIARY_NAME               = 'beneficiary_name';
 
-    const BENEFICIARY_COUNTRY           = 'beneficiary_country';
+    const BENEFICIARY_CODE               = 'beneficiary_code';
 
-    const BENEFICIARY_BANK_NAME         = 'beneficiary_bank_name';
+    const BENEFICIARY_CITY               = 'beneficiary_city';
 
-    const FUND_ACCOUNT_VALIDATION       = 'fund_account_validation';
+    const FUND_TRANSFER_ID               = 'fund_transfer_id';
 
-    const CREDENTIALS                   = 'credentials';
+    const PREFERRED_CHANNEL              = 'preferred_channel';
 
-    const MOZART_IDENTIFIER             = 'mozart_identifier';
+    const BENEFICIARY_EMAIL              = 'beneficiary_email';
 
-    const MESSAGE                       = 'message';
+    const BENEFICIARY_STATE              = 'beneficiary_state';
 
-    const BODY                          = 'body';
+    const MOZART_IDENTIFIER              = 'mozart_identifier';
 
-    const INTERNAL_ERROR                = 'internal_error';
+    const IMPS_CUTOFF_AMOUNT             = 200000;
 
-    const CODE                          = 'code';
+    const BENEFICIARY_MOBILE             = 'beneficiary_mobile';
 
-    const PREFERRED_SOURCE_ACCOUNT_ID   = 'preferred_source_account_id';
+    const IS_VIRTUAL_ACCOUNT             = 'is_virtual_account';
 
-  const CHANNEL                       = 'channel';
+    const BENEFICIARY_ADDRESS            = 'beneficiary_address';
+
+    const BENEFICIARY_COUNTRY            = 'beneficiary_country';
+
+    const RTGS_CUTOFF_HOUR_MIN           = 8;
+
+    const BENEFICIARY_BANK_NAME          = 'beneficiary_bank_name';
+
+    const FUND_ACCOUNT_VALIDATION        = 'fund_account_validation';
+
+    const PREFERRED_SOURCE_ACCOUNT_ID    = 'preferred_source_account_id';
+
+    const RTGS_REVISED_CUTOFF_HOUR_MAX   = 17;
+
+    const RTGS_REVISED_CUTOFF_MINUTE_MAX = 30;
 }

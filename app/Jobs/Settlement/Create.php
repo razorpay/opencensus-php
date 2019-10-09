@@ -43,19 +43,28 @@ class Create extends Job
     protected $channelWiseCountKey;
 
     /**
+     * @var array
+     */
+    protected $params;
+
+    /**
      * Here, we fetch merchantId and their corresponding unsettled transactionIds.
      *
      * @param string $mode
      * @param string $merchantId
      * @param null   $settlementBucket sending this only to analyze whether this merchant is taken from bucket or not
+     * @param array $params
      */
-    public function __construct(string $mode, string $merchantId, $settlementBucket = null)
+    public function __construct(
+        string $mode, string $merchantId, $settlementBucket = null, array $params = [])
     {
         parent::__construct($mode);
 
         $this->merchantId       = $merchantId;
 
         $this->settlementBucket = $settlementBucket;
+
+        $this->params           = $params;
     }
 
     /**
@@ -87,7 +96,8 @@ class Create extends Job
 
             $startTime = microtime(true);
 
-            $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement($merchant);
+            $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement(
+                                                            $merchant, $this->params);
 
             $response = [
                 'merchant_id'   => $this->merchantId,

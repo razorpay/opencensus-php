@@ -443,6 +443,8 @@ class AttemptTest extends TestCase
         $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
         $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
 
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
         $this->updateFta(
             $attempt['fts_transfer_id'],
             $attempt['source'],
@@ -582,6 +584,8 @@ class AttemptTest extends TestCase
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
         $this->assertEquals($channel, $payout['channel']);
         $this->assertEquals($channel, $attempt['channel']);
         $this->assertEquals(1, $attempt['is_fts']);
@@ -654,6 +658,8 @@ class AttemptTest extends TestCase
         $payout = $this->getLastEntity('payout', true);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
         $this->assertEquals($channel, $payout['channel']);
         $this->assertEquals($channel, $attempt['channel']);

@@ -46,5 +46,8 @@ class Action extends Base\Action
         self::VERIFICATION_SUCCESS            => [
             Entity::AUTH_TOKEN                => 'default',
         ],
+        self::INITIATE_GET_TOKEN_SUCCESS      => [
+            Entity::AUTH_TOKEN                => 'default',
+        ],
     ];
 }

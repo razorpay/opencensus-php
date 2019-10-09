@@ -30,25 +30,7 @@ class Processor extends Base\Processor
             $username = $this->core->suggestUsername($bankAccount);
         }
 
-        if ($this->core->checkForMaxVpaLimit())
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
-                Entity::USERNAME    => $username,
-            ]);
-        }
-
-        if ($this->core->checkUsernameBlocked($username))
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_VPA_NOT_AVAILABLE, [
-                Entity::USERNAME    => $username,
-            ]);
-        }
-        if ($this->core->checkLocalAvailability($username))
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
-                Entity::USERNAME    => $username,
-            ]);
-        }
+        $this->runUsernameValidationChecks($username);
 
         $this->gatewayInput->put(Entity::USERNAME, $username);
         $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
@@ -67,26 +49,7 @@ class Processor extends Base\Processor
 
         $username = $this->input->get(Entity::USERNAME);
 
-        if ($this->core->checkForMaxVpaLimit())
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
-                Entity::USERNAME    => $username,
-            ]);
-        }
-
-        if ($this->core->checkUsernameBlocked($username))
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA, [
-                Entity::USERNAME    => $username,
-            ]);
-        }
-
-        if ($this->core->checkLocalAvailability($username))
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
-                Entity::USERNAME    => $username,
-            ]);
-        }
+        $this->runUsernameValidationChecks($username);
 
         $this->gatewayInput->put(Entity::USERNAME, $username);
 
@@ -106,7 +69,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::ADD_SUCCESS, $input, true);
 
-        $vpa = $this->core->create($this->input->get(Entity::VPA));
+        $vpa = $this->core->createOrUpdate($this->input->get(Entity::VPA));
 
         $bankAccountId = array_get($this->input->get(Entity::BANK_ACCOUNT), Entity::ID);
 
@@ -185,12 +148,7 @@ class Processor extends Base\Processor
 
         $username = $this->input->get(Entity::USERNAME);
 
-        if ($this->core->checkForMaxVpaLimit())
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
-                Entity::USERNAME    => $username,
-            ]);
-        }
+        $this->runUsernameValidationChecks($username);
 
         $this->gatewayInput->put(Entity::USERNAME, $username);
 
@@ -207,12 +165,7 @@ class Processor extends Base\Processor
 
         $username = $this->input->get(Entity::USERNAME);
 
-        if ($this->core->checkForMaxVpaLimit())
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
-                Entity::USERNAME    => $username,
-            ]);
-        }
+        $this->runUsernameValidationChecks($username);
 
         $this->gatewayInput->put(Entity::USERNAME, $username);
 
@@ -267,5 +220,29 @@ class Processor extends Base\Processor
             Entity::SUCCESS     => true,
             Entity::ID          => $vpa->getPublicId(),
         ];
+    }
+
+    protected function runUsernameValidationChecks(string $username)
+    {
+        if ($this->core->checkForMaxVpaLimit())
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MAX_VPA_LIMIT_REACHED, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
+
+        if ($this->core->checkUsernameBlocked($username))
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_VPA_NOT_AVAILABLE, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
+
+        if ($this->core->checkLocalAvailability($username))
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
+                Entity::USERNAME    => $username,
+            ]);
+        }
     }
 }

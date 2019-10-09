@@ -38,9 +38,6 @@ abstract class Base extends BaseModel\Core
 
     const CARD_TAX_CUT_OFF = 200000;
 
-    const REFUND_SLAB1_TAX_CUT_OFF = 100000;
-    const REFUND_SLAB2_TAX_CUT_OFF = 1000000;
-
     /**
      * For which fees needs to be calculated.
      */

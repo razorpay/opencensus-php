@@ -67,6 +67,9 @@ class CreatePricing extends Migration
             $table->tinyInteger(Pricing::INTERNATIONAL)
                   ->default(0);
 
+            $table->tinyInteger(Pricing::FEE_BEARER)
+                  ->default(0); // 0 is platform fee bearer
+
             $table->string(Pricing::RECEIVER_TYPE)
                   ->nullable();
 

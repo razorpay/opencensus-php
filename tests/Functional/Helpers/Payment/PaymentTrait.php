@@ -1033,9 +1033,11 @@ trait PaymentTrait
             $response = $this->makeRequestAndGetContent($request);
         }
 
+        $rrn = $response['gateway_keys']['rrn'] ?? null;
+
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeUpdateRefundStatus($refund, 'processed_event');
+            $this->scroogeUpdateRefundStatus($refund, 'processed_event', null, $rrn);
         }
         // Adding specific amount check - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
@@ -1096,7 +1098,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null)
+    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null, $rrn = null)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1110,6 +1112,11 @@ trait PaymentTrait
         if (empty($refund[RefundEntity::SPEED_PROCESSED]) === false)
         {
             $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
+        }
+
+        if ($rrn !== null)
+        {
+            $input['reference_no'] = $rrn;
         }
 
         $input['event'] = $event;

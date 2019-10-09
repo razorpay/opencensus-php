@@ -7,8 +7,10 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Status;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Jobs\CorePaymentServiceSync;
 
 
 class UpiAxisGatewayTest extends TestCase
@@ -757,5 +759,416 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertEquals('GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST', $payment['internal_error_code']);
         $this->assertEquals('Payment processing failed due to error at bank or wallet gateway',
             $payment['error_description']);
+    }
+
+    public function testUnexpectedPaymentSuccess()
+    {
+        $id = str_random(12);
+
+        $response = $this->makeS2sCallbackAndGetContent($this->unexpectedPaymentContent($id));
+
+        $this->assertCallbackResponse($response);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertArraySubset([
+            'merchant_id'       => '100DemoAccount',
+            'method'            => 'upi',
+            'amount'            => 60000,
+            'status'            => 'authorized',
+            'amount_authorized' => 60000,
+            'vpa'               => 'unexpected@axisbank',
+            'gateway'           => 'upi_axis',
+            'terminal_id'       => '100UPIAXISTmnl',
+            'gateway_captured'  => true,
+        ], $payment->toArray());
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            'payment_id'            => $payment->getId(),
+            'gateway'               => 'upi_axis',
+            'action'                => 'authorize',
+            'type'                  => 'pay',
+            'amount'                => 60000,
+            'vpa'                   => 'unexpected@axisbank',
+            'merchant_reference'    => $id,
+            'gateway_merchant_id'   => 'TSTMERCHI',
+            'npci_txn_id'           => 'AXIS00090439839',
+            'npci_reference_id'     => '714513318376'
+        ], $upi->toArray());
+    }
+
+    public function testUnexpectedPaymentFailure()
+    {
+        $id = str_random(12);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['data'][0]['code']     = 'ZM';
+                $content['data'][0]['result']   = 'F';
+            }
+        });
+
+        $response = $this->makeS2sCallbackAndGetContent($this->unexpectedPaymentContent($id, 'ZM', 'Failed'));
+
+        // We should have gotten a successful response
+
+        $this->assertCallbackResponse($response, 'ZM', 'Failed');
+
+        $collection = $this->getDbEntities('payment');
+
+        $this->assertNull($collection->first());
+
+        $collection = $this->getDbEntities('upi');
+
+        $this->assertNull($collection->first());
+    }
+
+    public function testUnexpectedPaymentPending()
+    {
+        $id = str_random(12);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['data'][0]['code']     = 'D';
+                $content['data'][0]['result']   = 'P';
+            }
+        });
+
+        $response = $this->makeS2sCallbackAndGetContent($this->unexpectedPaymentContent($id, 'BT', 'Deemed'));
+
+        // We should have gotten a successful response
+
+        $this->assertCallbackResponse($response, 'BT', 'Deemed');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            // Payment is created for the merchant itself
+            'merchant_id'       => '100DemoAccount',
+            'method'            => 'upi',
+            'amount'            => 60000,
+            // Payment is also auto captured
+            'status'            => 'failed',
+            'amount_authorized' => 0,
+            'vpa'               => 'unexpected@axisbank',
+            'gateway'           => 'upi_axis',
+            'gateway_captured'  => false,
+        ], $payment->toArray());
+    }
+
+    public function testUnexpectedPaymentDuplicate()
+    {
+        $id = str_random(12);
+
+        $content = $this->unexpectedPaymentContent($id);
+
+        $response = $this->makeS2sCallbackAndGetContent($content);
+
+        $this->assertCallbackResponse($response);
+
+        // There should be only one payment/upi
+        $collection = $this->getDbEntities('payment');
+
+        $this->assertSame(1, $collection->count());
+
+        $collection = $this->getDbEntities('upi');
+
+        $this->assertSame(1, $collection->count());
+
+        $response = $this->makeS2sCallbackAndGetContent($content);
+
+        $this->assertCallbackResponse($response);
+
+        // There should still be only one payment/upi
+        $collection = $this->getDbEntities('payment');
+
+        $this->assertSame(1, $collection->count());
+
+        $collection = $this->getDbEntities('upi');
+
+        $this->assertSame(1, $collection->count());
+    }
+
+    public function testUnexpectedPaymentAmountMismatch()
+    {
+        $id = str_random(12);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['data'][0]['amount']     = '600.50';
+            }
+        });
+
+        $response = $this->makeS2sCallbackAndGetContent($this->unexpectedPaymentContent($id));
+
+        // We should have gotten a successful response
+        $this->assertCallbackResponse($response);
+
+        $collection = $this->getDbEntities('payment');
+
+        $this->assertNull($collection->first());
+
+        $collection = $this->getDbEntities('upi');
+
+        $this->assertNull($collection->first());
+    }
+
+    public function testUnexpectedPaymentSuccessOnDirectSettlementMerchant()
+    {
+        // Same GMID is set for both terminal, changing in callback requires significant refactor
+        $this->sharedTerminal->fill([
+            'gateway_merchant_id' => 'shared_merchant',
+        ])->saveOrFail();
+
+        $terminal = $this->fixtures->create('terminal:direct_settlement_upi_axis_terminal');
+
+        $id = str_random(12);
+
+        $response = $this->makeS2sCallbackAndGetContent($this->unexpectedPaymentContent($id));
+
+        $this->assertCallbackResponse($response);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            // Payment is created for the merchant itself
+            'merchant_id'       => '10000000000000',
+            'method'            => 'upi',
+            'amount'            => 60000,
+            // Payment is also auto captured
+            'status'            => 'captured',
+            'amount_authorized' => 60000,
+            'vpa'               => 'unexpected@axisbank',
+            'gateway'           => 'upi_axis',
+            'terminal_id'       => $terminal->getId(),
+            'gateway_captured'  => true,
+        ], $payment->toArray());
+    }
+
+    public function testUnexpectedPaymentPendingOnDirectSettlementMerchant()
+    {
+        // Same GMID is set for both terminal, changing in callback requires significant refactor
+        $this->sharedTerminal->fill([
+            'gateway_merchant_id' => 'shared_merchant',
+        ])->saveOrFail();
+
+        $terminal = $this->fixtures->create('terminal:direct_settlement_upi_axis_terminal');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['data'][0]['code']     = 'D';
+                $content['data'][0]['result']   = 'P';
+            }
+        });
+
+        $id = str_random(12);
+
+        $response = $this->makeS2sCallbackAndGetContent($this->unexpectedPaymentContent($id, 'BT', 'Deemed'));
+
+        $this->assertCallbackResponse($response, 'BT', 'Deemed');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            // Payment is created for the merchant itself
+            'merchant_id'       => '10000000000000',
+            'method'            => 'upi',
+            'amount'            => 60000,
+            // Payment is also auto captured
+            'status'            => 'failed',
+            'amount_authorized' => 0,
+            'vpa'               => 'unexpected@axisbank',
+            'gateway'           => 'upi_axis',
+            'terminal_id'       => $terminal->getId(),
+            'gateway_captured'  => false,
+        ], $payment->toArray());
+    }
+
+    public function testUnexpectedPaymentFailureOnDirectSettlementMerchant()
+    {
+        // Same GMID is set for both terminal, changing in callback requires significant refactor
+        $this->sharedTerminal->fill([
+            'gateway_merchant_id' => 'shared_merchant',
+        ])->saveOrFail();
+
+        $terminal = $this->fixtures->create('terminal:direct_settlement_upi_axis_terminal');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['data'][0]['code']     = 'ZM';
+                $content['data'][0]['result']   = 'F';
+            }
+        });
+
+        $id = str_random(12);
+
+        $response = $this->makeS2sCallbackAndGetContent($this->unexpectedPaymentContent($id, 'ZM', 'Failed'));
+
+        $this->assertCallbackResponse($response, 'ZM', 'Failed');
+
+        $collection = $this->getDbEntities('payment');
+
+        $this->assertNull($collection->first());
+
+        $collection = $this->getDbEntities('upi');
+
+        $this->assertNull($collection->first());
+    }
+
+    protected function unexpectedPaymentContent(string $id, string $status = '00', string $result = 'Success')
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+        $upi = [
+            'amount'    => '60000',
+            'vpa'       => 'unexpected@axisbank'
+        ];
+        $payment = [
+            'id'        => $id,
+        ];
+        $content = $this->mockServer()->getAsyncCallbackContent($upi, $payment, $status, $result);
+        return $content;
+    }
+
+    protected function assertCallbackResponse(array $response, string $status = '00', string $result = 'Success')
+    {
+        $this->assertEquals(
+            [
+                'callBackstatusCode'        => $status,
+                'callBackstatusDescription' => $result,
+                'callBacktxnId'             => 'AXIS00090439839'
+            ],
+            $response);
+    }
+
+    public function testCpsGatewayEntitySync()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+        $gatewayData = [
+            'mode'                => 'test',
+            'timestamp'           => 294832,
+            'payment_id'          => $payment->getId(),
+            'gateway'             => 'upi_axis',
+            'input'               => [
+                'payment'  => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                    'gateway'  => 'upi_axis',
+                ],
+                'terminal' => [
+                    'gateway_acquirer' => 'axis',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction' => [
+                'payment_id'  => $payment->getId(),
+                'action'      => 'authorize',
+                'amount'      => 50000,
+                'result'      => 'Accepted Collect Request',
+                'status'      => 'collect_request_successful',
+                'type'        => 'collect',
+                'bank'        => '',
+                'expiry_time' => 5,
+                'code'        => '00',
+                'vpa'         => 'razorpay@hdfc',
+            ],
+        ];
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+        $cpsSync->handle();
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertEquals($upi['status_code'], '00');
+        $this->assertEquals($upi['vpa'], 'razorpay@hdfc');
+        $this->assertEquals($upi['payment_id'], $payment->getId());
+        $this->assertEquals($upi['amount'], 50000);
+        $this->assertEquals($upi['expiry_time'], 5);
+    }
+
+    public function testCpsGatewayEntitySyncWithoutAmount()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+        $gatewayData = [
+            'mode'                => 'test',
+            'timestamp'           => 294832,
+            'payment_id'          => $payment->getId(),
+            'gateway'             => 'upi_axis',
+            'input'               => [
+                'payment'  => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                    'gateway'  => 'upi_axis',
+                ],
+                'terminal' => [
+                    'gateway_acquirer' => 'axis',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction' => [
+                'payment_id'  => $payment->getId(),
+                'action'      => 'authorize',
+                'result'      => 'Accepted Collect Request',
+                'status'      => 'collect_request_successful',
+                'type'        => 'collect',
+                'bank'        => '',
+                'expiry_time' => 5,
+                'code'        => '00',
+                'vpa'         => 'razorpay@hdfc',
+            ],
+        ];
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+        $cpsSync->handle();
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertNull($upi);
+    }
+
+    public function testCpsGatewayEntitySyncWithoutPaymentId()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+        $gatewayData = [
+            'mode'                => 'test',
+            'timestamp'           => 294832,
+            'payment_id'          => $payment->getId(),
+            'gateway'             => 'upi_axis',
+            'input'               => [
+                'payment'  => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                    'gateway'  => 'upi_axis',
+                ],
+                'terminal' => [
+                    'gateway_acquirer' => 'axis',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction' => [
+                'action'      => 'authorize',
+                'amount'      => 500000,
+                'result'      => 'Accepted Collect Request',
+                'status'      => 'collect_request_successful',
+                'type'        => 'collect',
+                'bank'        => '',
+                'expiry_time' => 5,
+                'code'        => '00',
+                'vpa'         => 'razorpay@hdfc',
+            ],
+        ];
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+        $cpsSync->handle();
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertNull($upi);
     }
 }

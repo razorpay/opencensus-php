@@ -683,10 +683,9 @@ class Initiator extends Base\Core
 
     /**
      * @param Entity $fta
-     * @param bool $isRegistered
      * @return bool
      */
-    public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false): bool
+    public function sendFTSFundTransferRequest(Entity $fta): bool
     {
         try
         {
@@ -710,7 +709,7 @@ class Initiator extends Base\Core
                 return false;
             }
 
-            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered);
+            FtsFundTransfer::dispatch($this->mode, $fta->getId());
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,

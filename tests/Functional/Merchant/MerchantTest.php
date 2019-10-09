@@ -2788,6 +2788,17 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchEsScheduledPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
     public function testPutEmiMethod()
     {
         $this->fixtures->create('pricing:emi_pricing_plan');

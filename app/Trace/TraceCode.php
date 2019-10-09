@@ -257,6 +257,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_REQUEST                                   = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
+    const HITACHI_CALL_WITH_PROXY                               = 'HITACHI_CALL_WITH_PROXY';
+    const HITACHI_CALL_WITHOUT_PROXY                            = 'HITACHI_CALL_WITHOUT_PROXY';
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
@@ -618,6 +620,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_RECURRING_STATUS_ALREADY_SET                    = 'TOKEN_RECURRING_STATUS_ALREADY_SET';
     const GATEWAY_RECURRING_STATUS_NOT_SET                      = 'GATEWAY_RECURRING_STATUS_NOT_SET';
     const GATEWAY_RECURRING_REJECTED_WITHOUT_REASON             = 'GATEWAY_RECURRING_REJECTED_WITHOUT_REASON';
+    const PAYMENT_PROCESSING_ERROR                              = 'PAYMENT_PROCESSING_ERROR';
 
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
@@ -687,6 +690,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_VALIDATE_AUTH_ERROR                           = 'GATEWAY_VALIDATE_AUTH_ERROR';
     const GATEWAY_VALIDATE_RESPONSE                             = 'GATEWAY_VALIDATE_RESPONSE';
     const GATEWAY_VALIDATE_REQUEST                              = 'GATEWAY_VALIDATE_REQUEST';
+    const GATEWAY_RECONCILE_RESPONSE                            = 'GATEWAY_RECONCILE_RESPONSE';
+    const GATEWAY_RECONCILE_REQUEST                             = 'GATEWAY_RECONCILE_REQUEST';
     const GATEWAY_VALIDATE_ERROR                                = 'GATEWAY_VALIDATE_ERROR';
     const GATEWAY_VALIDATE_REFUND_SUMMARY                       = 'GATEWAY_VALIDATE_REFUND_SUMMARY';
     const GATEWAY_AUTHORIZE_RESPONSE                            = 'GATEWAY_AUTHORIZE_RESPONSE';
@@ -1037,6 +1042,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DELETED_MEMBER_FROM_MAILING_LIST                      = 'DELETED_MEMBER_FROM_MAILING_LIST';
     const PAYOUT_WORKFLOW_EVALUATION_INPUT                      = 'PAYOUT_WORKFLOW_EVALUATION_INPUT';
     const PAYOUT_WORKFLOW_EVALUATION_RESULT                     = 'PAYOUT_WORKFLOW_EVALUATION_RESULT';
+    const PAYOUT_QUEUED                                         = 'PAYOUT_QUEUED';
+    const PAYOUT_METRIC_PUSH_EXCEPTION                          = 'PAYOUT_METRIC_PUSH_EXCEPTION';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -1054,6 +1061,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_PLAN_RULE_UPDATE_ATTEMPT                      = 'PRICING_PLAN_RULE_UPDATE_ATTEMPT';
     const PRICING_PLAN_RULE_ADD_SUCCESS                         = 'PRICING_PLAN_RULE_ADD_SUCCESS';
     const PRICING_PLAN_RULE_UPDATE_SUCCESS                      = 'PRICING_PLAN_RULE_UPDATE_SUCCESS';
+    const PRICING_PLAN_RULE_DELETE_ATTEMPT                      = 'PRICING_PLAN_RULE_DELETE_ATTEMPT';
 
     const WEBHOOK_DISPATCH                                      = 'WEBHOOK_DISPATCH';
     const WEBHOOK_FIRING                                        = 'WEBHOOK_FIRING';
@@ -1590,6 +1598,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_ONBOARDING_BULK_UPDATE_STATUS                 = 'FEATURE_ONBOARDING_BULK_UPDATE_STATUS';
     const FEATURE_ENABLED_MERCHANT_NOTIFIED                     = 'FEATURE_ENABLED_MERCHANT_NOTIFIED';
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED                 = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
+    const ES_ELIGIBLE_MERCHANT_NOTIFIED                         = 'ES_ELIGIBLE_MERCHANT_NOTIFIED';
 
     const MAILCHIMP_JOB_ERROR                                   = 'MAILCHIMP_JOB_ERROR';
 
@@ -1981,6 +1990,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
     const BATCH_SERVICE_CONTACT_BULK_REQUEST                    = 'BATCH_SERVICE_CONTACT_BULK_REQUEST';
     const BATCH_SERVICE_PAYOUT_BULK_REQUEST                     = 'BATCH_SERVICE_PAYOUT_BULK_REQUEST';
+    const BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_REQUEST         = 'BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_REQUEST';
+    const BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_RESPONSE        = 'BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_RESPONSE';
     const BATCH_SERVICE_BULK_EXCEPTION                          = 'BATCH_SERVICE_BULK_EXCEPTION';
     const BATCH_SERVICE_BAD_REQUEST                             = 'BATCH_SERVICE_BAD_REQUEST';
     const BATCH_SERVICE_FAILED                                  = 'BATCH_SERVICE_FAILED';
@@ -2081,7 +2092,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
     const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
     const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
-    const SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR          = 'SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR';
+    const SMART_ROUTING_TERMINALS_COUNT_IS_ZERO                 = 'SMART_ROUTING_TERMINALS_COUNT_IS_ZERO';
 
     /*
      * Trace codes for PowerWallet
@@ -2099,6 +2110,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
+    const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

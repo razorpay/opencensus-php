@@ -240,6 +240,7 @@ class Entity extends Base\PublicEntity
         self::FEE_MODEL,
         self::REFUND_SOURCE,
         self::LOGO_URL,
+        self::ICON_URL,
         self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
@@ -502,6 +503,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_MODEL) === FeeModel::PREPAID;
     }
 
+    public function isPostpaid()
+    {
+        return $this->getAttribute(self::FEE_MODEL) === FeeModel::POSTPAID;
+    }
+
     public function isLive()
     {
         return $this->getAttribute(self::LIVE);
@@ -536,7 +542,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
-      
+
     public function setRestricted(bool $restricted)
     {
         $this->setAttribute(self::RESTRICTED, $restricted);
@@ -1537,6 +1543,16 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
     }
 
+    public function isKycHandledByPartner(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::KYC_HANDLED_BY_PARTNER));
+    }
+
+    public function canCommunicateWithSubmerchant(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::NO_COMM_WITH_SUBMERCHANTS) === false);
+    }
+
     public function createCustomerOnContactEmailNull(): bool
     {
         return (($this->isFeatureEnabled(Feature\Constants::CUST_CONTACT_EMAIL_NULL) === false) and
@@ -1856,6 +1872,11 @@ class Entity extends Base\PublicEntity
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
 
+    public function isHeadlessEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::HEADLESS_DISABLE) === false;
+    }
+
     /**
      * Used for Marketplace, dashboard:
      * Return report data for a linked account under a marketplace merchant
@@ -2054,7 +2075,7 @@ class Entity extends Base\PublicEntity
         $headless   = false;
         $expressPay = false;
 
-        if ($this->isFeatureEnabled(Feature\Constants::HEADLESS) === true)
+        if ($this->isHeadlessEnabled() === true)
         {
             $headless = $iin->isHeadLessOtp();
         }

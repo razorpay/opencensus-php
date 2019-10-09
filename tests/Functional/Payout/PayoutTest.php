@@ -9,7 +9,6 @@ use Config;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -384,23 +383,6 @@ class PayoutTest extends TestCase
         $this->assertEquals(1000, $txn['debit']);
 
         return $payout;
-    }
-
-    public function testCreateMerchantPayoutOnDemandWithAmountLessThan2L()
-    {
-        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $merchant = $this->getEntityById('merchant', '10000000000000', true);
-
-        $this->assertNotEquals(\RZP\Models\Settlement\Channel::YESBANK, $merchant[Merchant\Entity::CHANNEL]);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreatePayoutForAmountLessThanMinFee()
@@ -1097,12 +1079,12 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $this->fixtures->edit(
-            'payout',
-            $payout['id'],
-            [
-                'status' => 'processed'
-            ]);
+//        $this->fixtures->edit(
+//            'payout',
+//            $payout['id'],
+//            [
+//                'status' => 'processed'
+//            ]);
 
         $request['url'] = '/payouts?status=processed&account_number=2224440041626905';
 
@@ -1345,6 +1327,20 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
+    public function testFetchMultiplePayoutsWithBankingProductParameter()
+    {
+        $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultiplePayoutsWithPrimaryProductParameter()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
     public function testBulkPayout()
     {
         $this->ba->batchAuth();
@@ -1355,7 +1351,7 @@ class PayoutTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
 
@@ -1369,10 +1365,10 @@ class PayoutTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
-    
+
     public function createEsIndex()
     {
         $esMock = Config::get('database.es_mock');

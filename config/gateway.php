@@ -764,6 +764,7 @@ return [
         'test_merchant_id_recurring'  => env('NETBANKING_SBI_TEST_MERCHANT_ID_RECURRING'),
         'test_hash_secret'            => env('NETBANKING_SBI_TEST_HASH_SECRET'),
         'test_hash_secret_recurring'  => env('NETBANKING_SBI_TEST_HASH_SECRET_RECURRING'),
+        'live_hash_secret'            => env('NETBANKING_SBI_LIVE_HASH_SECRET'),
         'iv'                          => env('NETBANKING_SBI_IV'),
         'emandate_corporate_id'       => env('EMANDATE_SBI_CORPORATE_ID'),
     ],
@@ -893,4 +894,6 @@ return [
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
+
+    'razorpay_proxy_address' => env('RAZORPAY_PROXY_ADDRESS'),
 ];

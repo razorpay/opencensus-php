@@ -43,6 +43,7 @@ class Gateway extends Base\Gateway
     protected $gateway  = Payment\Gateway::UPI_AXIS;
 
     protected $map = [
+        Entity::PAYMENT_ID              => Entity::PAYMENT_ID,
         Entity::VPA                     => Entity::VPA,
         Entity::RECEIVED                => Entity::RECEIVED,
         Entity::EXPIRY_TIME             => Entity::EXPIRY_TIME,
@@ -59,6 +60,8 @@ class Gateway extends Base\Gateway
         Fields::CODE                    => Entity::STATUS_CODE,
         Fields::GATEWAY_RESPONSE_CODE   => Entity::STATUS_CODE,
         Fields::W_COLLECT_TXN_ID        => Entity::NPCI_TXN_ID,
+        Entity::MERCHANT_REFERENCE      => Entity::MERCHANT_REFERENCE,
+        Fields::CALLBACK_MERCHANT_ID    => Entity::GATEWAY_MERCHANT_ID,
     ];
 
     /**
@@ -188,6 +191,135 @@ class Gateway extends Base\Gateway
             true);
     }
 
+    public function validatePush($input)
+    {
+        parent::action($input, Action::VALIDATE_PUSH);
+
+        $this->isDuplicateUnexpectedPayment($input);
+
+        $this->isValidUnexpectedPayment($input);
+    }
+
+    protected function isDuplicateUnexpectedPayment($callbackData)
+    {
+        $merchantReference = $this->getPaymentIdFromServerCallback($callbackData);
+
+        $gatewayPayment = $this->repo->fetchByMerchantReference($merchantReference);
+
+        if ($gatewayPayment !== null)
+        {
+            throw new Exception\LogicException(
+                'Duplicate Gateway payment found',
+                null,
+                [
+                    'content' => $callbackData
+                ]);
+        }
+    }
+
+    public function getParsedDataFromUnexpectedCallback($callbackData)
+    {
+        $payment = [
+            'method'   => 'upi',
+            'amount'   => $this->getIntegerFormattedAmount($callbackData[Fields::TRANSACTION_AMOUNT]),
+            'currency' => 'INR',
+            'vpa'      => $callbackData[Fields::CUSTOMER_VPA],
+            'contact'  => '+919999999999',
+            'email'    => 'void@razorpay.com',
+        ];
+
+        $callbackMerchantId = $callbackData[Fields::CALLBACK_MERCHANT_ID];
+
+        // TODO:: This needs to be fixed once we get confirmation on why the aggregator ids for one particular terminal
+        // are different. For now adding this hack as a fix.
+
+        if ($callbackMerchantId === 'RAZORPPROD0093689')
+        {
+            $callbackMerchantId = 'ADITYAPROD0093708';
+        }
+
+        $terminal = [
+            'gateway_merchant_id' => $callbackMerchantId
+        ];
+
+        return [
+            'payment'  => $payment,
+            'terminal' => $terminal
+        ];
+    }
+
+    protected function isValidUnexpectedPayment($callbackData)
+    {
+        //
+        // Verifies if the payload specified in the server callback is valid.
+        //
+        $input = [
+            'payment' => [
+                'id'  => $callbackData[Fields::MERCHANT_TRANSACTION_ID],
+            ],
+        ];
+
+        $this->action = Action::VERIFY;
+
+        $gatewayPayment = [
+            Entity::TYPE => Base\Type::PAY
+        ];
+
+        $request = $this->getPaymentVerifyRequestArray($input, $gatewayPayment);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->action = Action::VALIDATE_PUSH;
+
+        $result = ($content[Fields::DATA][0][Fields::RESULT] ?? ($content[Fields::RESULT] ?? null));
+
+        $amount = ($content[Fields::DATA][0][Fields::AMOUNT] ?? ($content[Fields::AMOUNT] ?? null));
+
+        $this->assertAmount(
+            $this->getIntegerFormattedAmount($callbackData[Fields::TRANSACTION_AMOUNT]),
+            $this->getIntegerFormattedAmount($amount));
+
+        $this->checkResponseStatus($result, [Status::VERIFY_DEEMED, Status::VERIFY_PENDING, Status::VERIFY_SUCCESS], $content);
+    }
+
+    public function authorizePush($input)
+    {
+        list($paymentId , $callbackData) = $input;
+
+        $gatewayInput = [
+            'payment' => [
+                'id'     => $paymentId,
+                'vpa'    => $callbackData[Fields::CUSTOMER_VPA],
+                'amount' => $this->getIntegerFormattedAmount($callbackData[Fields::TRANSACTION_AMOUNT]),
+            ],
+        ];
+
+        parent::action($gatewayInput, Action::AUTHORIZE);
+
+        $attributes = [
+            Entity::TYPE                    => Base\Type::PAY,
+            Entity::MERCHANT_REFERENCE      => $callbackData[Fields::MERCHANT_TRANSACTION_ID],
+            Entity::RECEIVED                => 1,
+            Entity::VPA                     => $callbackData[Fields::CUSTOMER_VPA],
+        ];
+
+        $attributes = array_merge($callbackData, $attributes);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
+
+        $result = $callbackData[Fields::GATEWAY_RESPONSE_CODE];
+
+        $this->checkResponseStatus($result, Status::CALLBACK_SUCCESS, $callbackData);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
+    }
+
     /**
      * We only store the VPA because the rest of the fields
      * are filled by the callback
@@ -289,9 +421,11 @@ class Gateway extends Base\Gateway
         return $this->parseResponse($responseBody, $trace);
     }
 
-    private function checkResponseStatus($status, string $successStatus, $content)
+    private function checkResponseStatus($status, $successStatuses, $content)
     {
-        if ($status !== $successStatus)
+        $successStatuses = (array) $successStatuses;
+
+        if (in_array($status, $successStatuses, true) === false)
         {
             $errorCode = ErrorCodes::getErrorCode($status, $content);
 
@@ -625,8 +759,6 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
                 'request'       => $request,
-                'payment_id'    => $input['payment']['id'],
-                'terminal_id'   => $input['terminal']['id'],
                 'gateway'       => $this->gateway,
             ]);
 
@@ -1108,9 +1240,9 @@ class Gateway extends Base\Gateway
         }
 
         $attr = [
-            Entity::VPA                 =>  $input['gateway'][Entity::VPA],
-            Entity::NPCI_REFERENCE_ID   =>  $input['gateway'][Fields::RRN],
-            Entity::STATUS_CODE         =>  Status::COLLECT_SUCCESS,
+            Entity::VPA                 => $input['gateway'][Entity::VPA],
+            Entity::NPCI_REFERENCE_ID   => $input['gateway'][Fields::RRN],
+            Entity::STATUS_CODE         => Status::COLLECT_SUCCESS,
         ];
 
         $gatewayPayment->fill($attr);
@@ -1158,5 +1290,19 @@ class Gateway extends Base\Gateway
         {
             return array($this->config['live_razorpay_merchant_id'], $this->config['live_razorpay_merchant_channel_id']);
         }
+    }
+
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input[Entity::ACTION]);
+        }
+
+        $gatewayEntity->setAction($input[Entity::ACTION]);
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
     }
 }

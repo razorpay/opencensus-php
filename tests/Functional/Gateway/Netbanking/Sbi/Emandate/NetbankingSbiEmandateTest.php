@@ -8,27 +8,32 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
-use RZP\Models\Batch\Status;
 use RZP\Models\Gateway\File;
+use RZP\Models\Payment\Refund;
 use RZP\Models\FileStore\Type;
 use RZP\Gateway\Netbanking\Sbi;
 use RZP\Models\FileStore\Format;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Customer\Token\RecurringStatus;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Customer\Token\Entity as TokenEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
 class NetbankingSbiEmandateTest extends TestCase
 {
-    use PaymentTrait;
     use FileHandlerTrait;
     use DbEntityFetchTrait;
     use EmandateSbiTestTrait;
+    use AttemptTrait;
+    use AttemptReconcileTrait;
 
     protected $payment;
 
@@ -349,6 +354,72 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals('created', $batch['status']);
 
         $this->assertDebitDetails($debitPayments);
+    }
+
+    public function testEmandateRefund()
+    {
+        $this->testDebitFileRecon();
+
+        $payment = $this->getEntities('payment', ['status' => 'captured', 'amount' => 3000, 'count' => 1], true);
+
+        $response = $this->refundPayment($payment['items'][0]['id']);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals($payment['items'][0]['id'], $refund['payment_id']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('SBIN0000001', $bankAccount['ifsc_code']);
+
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('12345678901234', $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
+        $this->assertEquals('refund', $bankAccount['type']);
+
+        $channel = Channel::YESBANK;
+
+        $this->initiateTransfer(
+            $channel,
+            Attempt\Purpose::REFUND,
+            Attempt\Type::REFUND);
+
+        $this->reconcileOnlineSettlements($channel, false);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertNotNull($attempt['utr']);
+
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+
+        $this->reconcileEntitiesForChannel($channel);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->assertNotNull($attempt['utr']);
     }
 
     protected function assertRegistrationDetails($entities)

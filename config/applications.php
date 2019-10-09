@@ -10,10 +10,6 @@ return [
         'cloud'     => true,
     ],
 
-    'dashboard_v2' => [
-        'secret'    => env('APP_DASHBOARD_SECRET_V2'),
-    ],
-
     'dashboard_guest'   => [
         'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
     ],

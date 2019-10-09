@@ -257,7 +257,7 @@ class CustomerTokenTest extends TestCase
             'otp'          => '1',
         ];
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
         $this->fixtures->edit('iin', 411111, ['flows' => $flows]);
 
