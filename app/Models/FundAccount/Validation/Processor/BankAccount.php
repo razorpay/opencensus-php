@@ -64,11 +64,6 @@ class BankAccount extends Base
         }
     }
 
-    public function getAccount(): BankAccountEntity
-    {
-        return $this->account;
-    }
-
     public function preProcessValidation()
     {
         try
