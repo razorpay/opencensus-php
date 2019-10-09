@@ -3,18 +3,18 @@
 namespace RZP\Models\FundAccount\Validation\Processor;
 
 use RZP\Exception;
-use Monolog\Logger;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as Table;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Constants;
-use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundAccount\Validation\Traits\FtaStatus;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 
-class BankAccount extends Base
+class Vpa extends Base
 {
     use FtaStatus;
 
@@ -55,7 +55,6 @@ class BankAccount extends Base
         {
             $e = [
                 'validation'    => $this->validation->getId(),
-                'active_ftas'   => $notFailedFTAs->toArray(),
             ];
 
             throw new Exception\BadRequestException(
@@ -95,17 +94,12 @@ class BankAccount extends Base
     }
 
     /**
-     * Unused right now, everything is async
+     *
      * @return void [type] [description]
      */
     public function processValidation()
     {
-        $this->repo->assertTransactionActive();
-
-        $fundTransferAttempt = $this->createFundTransferAttempt();
-
-        // TODO: Add Trace FTA
-        // TODO: Initiate FTA here.
+        return;
     }
 
     protected function createFundTransferAttempt(): Attempt\Entity
@@ -115,11 +109,10 @@ class BankAccount extends Base
             Attempt\Entity::NARRATION => $this->validation->merchant->getName(),
         ];
 
-        $fta = (new Attempt\Core)->createWithBankAccount(
+        $fta = (new Attempt\Core)->createWithVpa(
             $this->validation,
             $this->account,
-            $fundTransferAttemptInput,
-            true);
+            $fundTransferAttemptInput);
 
         $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_CREATED, $fta->toArrayPublic());
 

@@ -41,8 +41,6 @@ abstract class Base extends Core
 
     public abstract function validateRetry();
 
-    protected abstract function getAccount();
-
     public abstract function preProcessValidation();
 
     public abstract function processValidation();
