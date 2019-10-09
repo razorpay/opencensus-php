@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use ApiResponse;
 use RZP\Http\Route;
 use Illuminate\Routing\Router;
 use RZP\Services\GovernorService;
