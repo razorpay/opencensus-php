@@ -68,50 +68,57 @@ export default class OndemandModal extends Component {
     );
   };
 
+  gaEventDispatcher = eventObject => {
+    eventObject['eventCategory'] = 'Dashboard - Early Settlement';
+    console.log(eventObject);
+    window.rzpAnalytics(eventObject);
+  };
+
   openConfirmSettlement = () => {
     this.setState({
       clickedConfirm: true,
     });
-    let analyticsPayload1 = {
-      eventCategory: 'Dashboard - Early Settlement',
-      eventAction: `Amount`,
-      eventLabel: ``,
-    };
-    if (this.state.hasChangedAmount) {
-      analyticsPayload1.eventLabel = `${this.amountCategory(
-        this.state.amount
-      )} - changed -confirm`;
-    } else {
-      analyticsPayload1.eventLabel = `${this.amountCategory(
-        this.state.amount
-      )} - preFilled -confirm`;
-    }
-    window.rzpAnalytics(analyticsPayload1);
 
     if (this.state.hasChangedAmount) {
-      let analyticsPayload = {
-        eventCategory: 'Dashboard - Early Settlement',
-        eventAction: `confirm`,
-        eventLabel: `Changed amount - after show breakup| close`,
-      };
-      if (this.state.checkedBreakup) {
-        analyticsPayload.eventLabel = `Changed amount - after show breakup| close`;
-      } else {
-        analyticsPayload.eventLabel = `Changed amount - before show breakup| close`;
-      }
-      window.rzpAnalytics(analyticsPayload);
+      this.gaEventDispatcher({
+        eventAction: 'Amount',
+        eventLabel: `${this.amountCategory(
+          this.state.amount
+        )} - changed -confirm`,
+      });
     } else {
-      let analyticsPayload = {
-        eventCategory: 'Dashboard - Early Settlement',
-        eventAction: `confirm`,
-        eventLabel: `preFilled amount - after show breakup| close`,
-      };
+      this.gaEventDispatcher({
+        eventAction: 'Amount',
+        eventLabel: `${this.amountCategory(
+          this.state.amount
+        )} - prefilled -confirm`,
+      });
+    }
+
+    if (this.state.hasChangedAmount) {
       if (this.state.checkedBreakup) {
-        analyticsPayload.eventLabel = `preFilled amount - after show breakup| close`;
+        this.gaEventDispatcher({
+          eventAction: `confirm`,
+          eventLabel: `Changed amount - after show breakup| close`,
+        });
       } else {
-        analyticsPayload.eventLabel = `preFilled amount - before show breakup| close`;
+        this.gaEventDispatcher({
+          eventAction: `confirm`,
+          eventLabel: `Changed amount - before show breakup| close`,
+        });
       }
-      window.rzpAnalytics(analyticsPayload);
+    } else {
+      if (this.state.checkedBreakup) {
+        this.gaEventDispatcher({
+          eventAction: `confirm`,
+          eventLabel: `preFilled amount - after show breakup| close`,
+        });
+      } else {
+        this.gaEventDispatcher({
+          eventAction: `confirm`,
+          eventLabel: `preFilled amount - before show breakup| close`,
+        });
+      }
     }
 
     this.context.confirm({
@@ -120,21 +127,17 @@ export default class OndemandModal extends Component {
       affirmativeLabel: 'Yes, Settle',
       abortLabel: "No, Don't ",
       action: () => {
-        const analyticsPayload = {
-          eventCategory: 'Dashboard - Early Settlement',
+        this.gaEventDispatcher({
           eventAction: `second confirmation`,
           eventLabel: `Yes,Settle | Second Confirm`,
-        };
-        window.rzpAnalytics(analyticsPayload);
+        });
         this.onSubmit();
       },
       abort: () => {
-        const analyticsPayload = {
-          eventCategory: 'Dashboard - Early Settlement',
+        this.gaEventDispatcher({
           eventAction: `second confirmation`,
           eventLabel: `No, Don't | Second Confirm`,
-        };
-        window.rzpAnalytics(analyticsPayload);
+        });
       },
     });
   };
@@ -271,31 +274,20 @@ export default class OndemandModal extends Component {
   };
 
   componentDidMount() {
-    const analyticsPayload1 = {
-      eventCategory: 'Dashboard - Early Settlement',
-      eventAction: `Click Settle Now`,
+    this.gaEventDispatcher({
+      eventAction: 'Click Settle Now',
       eventLabel: `${this.props.fromWhere} | Settle Now`,
-    };
+    });
 
-    window.rzpAnalytics(analyticsPayload1);
-    const analyticsPayload = {
-      eventCategory: 'Dashboard - Early Settlement',
-      eventAction: `Modal`,
-      eventLabel: `opens`,
-    };
-
-    window.rzpAnalytics(analyticsPayload);
     this.updateFee();
   }
 
   openSupport = () => {
-    const analyticsPayload = {
-      eventCategory: 'Dashboard - Early Settlement',
-      eventAction: `support`,
+    this.gaEventDispatcher({
+      eventAction: 'support',
       eventLabel: `Clicks | Support`,
-    };
+    });
 
-    window.rzpAnalytics(analyticsPayload);
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
       rzpTicketSystem.setPrefill('#request', [
@@ -311,13 +303,10 @@ export default class OndemandModal extends Component {
 
   fetchBreakup = () => {
     if (this.state.clickedConfirm) {
-      const analyticsPayload = {
-        eventCategory: 'Dashboard - Early Settlement',
+      this.gaEventDispatcher({
         eventAction: `Show Breakup`,
         eventLabel: `Success Screen | Show Breakup`,
-      };
-
-      window.rzpAnalytics(analyticsPayload);
+      });
     }
 
     if (this.state.needFetch) {
@@ -447,17 +436,17 @@ export default class OndemandModal extends Component {
     }
     if (!this.state.clickedConfirm) {
       if (this.state.hasChangedAmount) {
-        let analyticsPayload = {
-          eventCategory: 'Dashboard - Early Settlement',
-          eventAction: `Close modal`,
-          eventLabel: ``,
-        };
         if (this.state.checkedBreakup) {
-          analyticsPayload.eventLabel = `Changed amount - after show breakup| close`;
+          this.gaEventDispatcher({
+            eventAction: `Close modal`,
+            eventLabel: `Changed amount - after show breakup| close`,
+          });
         } else {
-          analyticsPayload.eventLabel = `Changed amount - before show breakup| close`;
+          this.gaEventDispatcher({
+            eventAction: `Close modal`,
+            eventLabel: `Changed amount - before show breakup| close`,
+          });
         }
-        window.rzpAnalytics(analyticsPayload);
       } else {
         let analyticsPayload = {
           eventCategory: 'Dashboard - Early Settlement',
@@ -465,28 +454,33 @@ export default class OndemandModal extends Component {
           eventLabel: `preFilled amount - after show breakup| close`,
         };
         if (this.state.checkedBreakup) {
-          analyticsPayload.eventLabel = `preFilled amount - after show breakup| close`;
+          this.gaEventDispatcher({
+            eventAction: `Close modal`,
+            eventLabel: `preFilled amount - after show breakup| close`,
+          });
         } else {
-          analyticsPayload.eventLabel = `preFilled amount - before show breakup| close`;
+          this.gaEventDispatcher({
+            eventAction: `Close modal`,
+            eventLabel: `preFilled amount - before show breakup| close`,
+          });
         }
-        window.rzpAnalytics(analyticsPayload);
       }
 
-      let analyticsPayload1 = {
-        eventCategory: 'Dashboard - Early Settlement',
-        eventAction: `Amount`,
-        eventLabel: ``,
-      };
       if (this.state.hasChangedAmount) {
-        analyticsPayload1.eventLabel = `${this.amountCategory(
-          this.state.amount
-        )} - changed -close`;
+        this.gaEventDispatcher({
+          eventAction: `Amount`,
+          eventLabel: `${this.amountCategory(
+            this.state.amount
+          )} - changed -close`,
+        });
       } else {
-        analyticsPayload1.eventLabel = `${this.amountCategory(
-          this.state.amount
-        )} - preFilled -close`;
+        this.gaEventDispatcher({
+          eventAction: `Amount`,
+          eventLabel: `${this.amountCategory(
+            this.state.amount
+          )} - preFilled -close`,
+        });
       }
-      window.rzpAnalytics(analyticsPayload1);
     }
     if (this.state.isSaved) {
       this.props.closeModal();
