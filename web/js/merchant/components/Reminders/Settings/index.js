@@ -237,8 +237,8 @@ export default class ReminderSetting extends React.Component {
 
                 <ReminderOptionSetting
                   name="with_out_expiry"
-                  maxSelections={settings.maxNoReminders}
                   onChange={this.onChange('withOutExpiry')}
+                  selectedReminders={settings.withOutExpiry}
                   remindersList={withOutExpireByConfigs}
                 />
 
