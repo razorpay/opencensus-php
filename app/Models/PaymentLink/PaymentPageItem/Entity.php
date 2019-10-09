@@ -159,6 +159,11 @@ class Entity extends Base\PublicEntity
         return $key === null ? $accessor->all() : $accessor->get($key);
     }
 
+    public function setMinPurchase(int $minPurchase)
+    {
+        $this->setAttribute(self::MIN_PURCHASE, $minPurchase);
+    }
+
     public function setPublicPaymentLinkIdAttribute(array & $attributes)
     {
         $paymentLinkId = $this->getAttribute(self::PAYMENT_LINK_ID);
