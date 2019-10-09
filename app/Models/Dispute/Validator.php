@@ -234,7 +234,7 @@ class Validator extends Base\Validator
         }
     }
 
-    // Checks if values are same in both arrays irrespective of the order
+    // Checks if values are same in both arrays irrespective of the order for non-associative arrays
     public function arrayEqual(array $a, array $b) : bool
     {
         return ((count($a) === count($b)) and (array_diff($a, $b) === array_diff($b, $a)));

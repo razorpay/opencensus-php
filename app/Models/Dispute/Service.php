@@ -14,12 +14,15 @@ use RZP\Models\Dispute\Reason;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
     use FileHandlerTrait;
 
     // Bulk disputes file related constants
+    const bulkCreateAction          = 'bulk_create';
+    const bulkEditAction            = 'bulk_edit';
     const RZPDisputeID              = 'rzp_dispute_id';
     const bulkDisputeCreateFileName = 'bulk_disputes_create_status';
     const bulkDisputeEditFileName   = 'bulk_disputes_edit_status';
@@ -91,60 +94,22 @@ class Service extends Base\Service
     }
 
     /**
-     * Sends Aggregated Emails on merchant level
-     *
-     * @param array $mailData
-     * @param array $merchantData
-     * @param array $disputeData
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
      */
-    public function sendAggregatedEmails(array $mailData, array $merchantData, array $disputeData)
-    {
-        foreach ($mailData as $merchantId => $data)
-        {
-            foreach ($data as $mailId => $disputeIds)
-            {
-                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME] = $merchantData[$merchantId];
-                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $mailId;
-                $bulkMailData[Constants::DISPUTES] = [];
-
-                $totalAmount = 0;
-
-                foreach ($disputeIds as $id)
-                {
-                    $bulkMailData[Constants::DISPUTES][] = $disputeData[$id];
-
-                    $totalAmount += $disputeData[$id][Entity::AMOUNT];
-                }
-
-                $bulkMailData['totalAmount'] = $totalAmount;
-
-                Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
-            }
-        }
-    }
-
     public function bulkCreate(array $input)
     {
-        $validator = new Validator;
+        $this->trace->info(
+            TraceCode::DISPUTE_BULK_CREATE_REQUEST,
+            [
+                'input'      => $input,
+            ]);
 
-        $validator->validateBulkDisputeRequest($input);
-
-        $file = $input[File\Core::FILE];
-
-        $validator->validateBulkDisputesFile($file);
-
-        $disputeFileService = new File\Service();
-
-        $data = $disputeFileService->getFileData($file);
+        $data = $this->validateInputAndGetFileData($input, self::bulkCreateAction);
 
         $orderKeys = $data[0];
-
-        if ($validator->arrayEqual($orderKeys, self::bulkCreateDisputesColumns) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Column names do not match expected values'
-            );
-        }
 
         $outputFileData = $mailData = $merchantData = $disputeData = [];
 
@@ -162,63 +127,32 @@ class Service extends Base\Service
             {
                 $input = $this->convertFileRowToMap($row, $orderKeys);
 
-                $skipMails = $input[Entity::SKIP_EMAIL];
-                $contact   = $input[Entity::CONTACT];
-                $emails    = $input[Entity::MERCHANT_EMAILS];
-
-                // skipping email for each creation
-                $input[Entity::SKIP_EMAIL] = true;
-
                 $paymentId = $input[Entity::PAYMENT_ID];
-
-                $reasonId = (new Reason\Service())->getReasonIdFromAttributes(
-                    $input[Reason\Entity::NETWORK], $input[Reason\Entity::NETWORK_CODE], $input[Reason\Entity::REASON_CODE]);
-
-                if (count($reasonId) !== 1)
-                {
-                    throw new Exception\RecoverableException(
-                        'There are no entries/more than 1 entries in DB for the given combination of network_code and reason_code'
-                    );
-                }
-
-                $input[Entity::REASON_ID] = $reasonId[0];
-
-                unset($input[Entity::CONTACT]);
-                unset($input[Entity::PAYMENT_ID]);
-                unset($input[Entity::MERCHANT_EMAILS]);
-                unset($input[Reason\Entity::NETWORK]);
-                unset($input[Reason\Entity::NETWORK_CODE]);
-                unset($input[Reason\Entity::REASON_CODE]);
 
                 $payment = $this->repo->payment->findByPublicId($paymentId);
 
                 $merchant = $payment->merchant;
 
-                $disputeEntity = $this->create($input, $paymentId, $payment);
+                $createInput = $this->prepareInputForCreate($input);
 
-                if ($skipMails === false)
+                $disputeEntity = $this->create($createInput, $paymentId, $payment);
+
+                $contact = empty($input[Entity::CONTACT]) ? $payment[Payment\Entity::CONTACT] ?? 'N/A' : $input[Entity::CONTACT];
+
+                $disputeEntity[Entity::CONTACT] = $contact;
+
+                // Prepares Mail body data
+                if ($input[Entity::SKIP_EMAIL] === false)
                 {
-                    if (empty($emails) === true)
-                    {
-                        $emails = $this->core()->getMerchantEmailsForDispute($merchant);
-                    }
+                    $emails = $this->core()->getEmailsForCreationMail($merchant, $input);
 
-                    $emails = array_unique($emails);
-
-                    if (array_key_exists(Entity::MERCHANT_ID, $merchantData) === false)
-                    {
-                        $merchantData[$disputeEntity[Entity::MERCHANT_ID]] = $merchant->getName();
-                    }
-
-                    $contact = empty($contact) ? $payment[Payment\Entity::CONTACT] ?? 'N/A' : $contact;
-
-                    $disputeEntity[Entity::CONTACT] = $contact;
+                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]] = $merchant->getName();
 
                     $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity);
 
-                    foreach ($emails as $mail)
+                    foreach ($emails as $email)
                     {
-                        $mailData[$disputeEntity[Entity::MERCHANT_ID]][$mail][] = $disputeEntity[Entity::ID];
+                        $mailData[$disputeEntity[Entity::MERCHANT_ID]][$email][] = $disputeEntity[Entity::ID];
                     }
                 }
 
@@ -236,35 +170,30 @@ class Service extends Base\Service
 
         $this->sendAggregatedEmails($mailData, $merchantData, $disputeData);
 
-        $url = $disputeFileService->generateFile($outputFileData, self::bulkDisputeCreateFileName);
+        $url = (new File\Service)->generateFile($outputFileData, self::bulkDisputeCreateFileName);
 
         return [
             'link' => $url,
         ];
     }
 
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
     public function bulkUpdate(array $input)
     {
-        $validator = new Validator;
+        $this->trace->info(
+            TraceCode::DISPUTE_BULK_EDIT_REQUEST,
+            [
+                'input'      => $input,
+            ]);
 
-        $validator->validateBulkDisputeRequest($input);
-
-        $file = $input[File\Core::FILE];
-
-        $validator->validateBulkDisputesFile($file);
-
-        $disputeFileService = new File\Service();
-
-        $data = $disputeFileService->getFileData($file);
+        $data = $this->validateInputAndGetFileData($input, self::bulkEditAction);
 
         $orderKeys = $data[0];
-
-        if ($validator->arrayEqual($orderKeys, self::bulkEditDisputesColumns) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Column names do not match expected values'
-            );
-        }
 
         $outputKeys   = $orderKeys;
         $outputKeys[] = Constants::ERRORS;
@@ -280,35 +209,11 @@ class Service extends Base\Service
             {
                 $input = $this->convertFileRowToMap($row, $orderKeys);
 
-                $disputeId = $input[Entity::ID];
+                $dispute = $this->repo->dispute->findOrFail($input[Entity::ID]);
 
-                unset($input[Entity::ID]);
+                $editInput = $this->prepareInputForEdit($input);
 
-                if (empty($input[Entity::GATEWAY_DISPUTE_STATUS]) === true)
-                {
-                    unset($input[Entity::GATEWAY_DISPUTE_STATUS]);
-                }
-
-                if ($input[Entity::STATUS] !== Status::LOST)
-                {
-                    unset($input[Entity::SKIP_DEDUCTION]);
-                    unset($input[Entity::COMMENTS]);
-                }
-                else if ($input[Entity::SKIP_DEDUCTION] === true)
-                {
-                    $comment = $input[Entity::COMMENTS];
-
-                    if (strlen($comment) < 5 or strlen($comment) > 255)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'comment should be a min. of 5 characters and max. of 255 characters'
-                        );
-                    }
-                }
-
-                $dispute = $this->repo->dispute->findOrFail($disputeId);
-
-                $this->core()->update($dispute, $input);
+                $this->core()->update($dispute, $editInput);
 
                 $row[] = '';
             }
@@ -320,7 +225,7 @@ class Service extends Base\Service
             $outputFileData[] = $row;
         }
 
-        $url = $disputeFileService->generateFile($outputFileData, self::bulkDisputeEditFileName);
+        $url = (new File\Service)->generateFile($outputFileData, self::bulkDisputeEditFileName);
 
         return [
             'link' => $url,
@@ -369,7 +274,152 @@ class Service extends Base\Service
         return (new File\Core)->getFilesForEntity($dispute);
     }
 
-    // Validates each column of the file and converts it to necessary format
+    /**
+     * @param array $input
+     * @param string $action
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateInputAndGetFileData(array $input, string $action)
+    {
+        $validator = new Validator;
+
+        $validator->validateBulkDisputeRequest($input);
+
+        $file = $input[File\Core::FILE];
+
+        $validator->validateBulkDisputesFile($file);
+
+        $data = (new File\Service)->getFileData($file);
+
+        $headers = [];
+
+        switch ($action)
+        {
+            case self::bulkCreateAction :
+                $headers = self::bulkCreateDisputesColumns;
+                break;
+
+            case self::bulkEditAction :
+                $headers = self::bulkEditDisputesColumns;
+                break;
+        }
+
+        if ($validator->arrayEqual($data[0], $headers) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'File Header columns do not match expected values'
+            );
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\RecoverableException
+     */
+    public function prepareInputForCreate(array $input) : array
+    {
+        // Fetching Reason ID from dispute_reasons table
+        $reasonId = (new Reason\Service())->getReasonIdFromAttributes(
+            $input[Reason\Entity::NETWORK], $input[Reason\Entity::NETWORK_CODE], $input[Reason\Entity::REASON_CODE]);
+
+        if (count($reasonId) !== 1)
+        {
+            throw new Exception\RecoverableException(
+                'There are no entries/more than 1 entries in DB for the given combination of network_code and reason_code'
+            );
+        }
+
+        // skipping email for each creation
+        $input[Entity::SKIP_EMAIL] = true;
+        $input[Entity::REASON_ID] = $reasonId[0];
+
+        unset($input[Entity::CONTACT]);
+        unset($input[Entity::PAYMENT_ID]);
+        unset($input[Reason\Entity::NETWORK]);
+        unset($input[Reason\Entity::NETWORK_CODE]);
+        unset($input[Reason\Entity::REASON_CODE]);
+
+        return $input;
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function prepareInputForEdit(array $input) : array
+    {
+        unset($input[Entity::ID]);
+
+        if (empty($input[Entity::GATEWAY_DISPUTE_STATUS]) === true)
+        {
+            unset($input[Entity::GATEWAY_DISPUTE_STATUS]);
+        }
+
+        if ($input[Entity::STATUS] !== Status::LOST)
+        {
+            unset($input[Entity::SKIP_DEDUCTION]);
+            unset($input[Entity::COMMENTS]);
+        }
+        else if ($input[Entity::SKIP_DEDUCTION] === true)
+        {
+            $comment = $input[Entity::COMMENTS];
+
+            if (strlen($comment) < 5 or strlen($comment) > 255)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'comment should be a min. of 5 characters and max. of 255 characters'
+                );
+            }
+        }
+
+        return $input;
+    }
+
+    /**
+     * Sends Aggregated Emails on merchant level
+     *
+     * @param array $mailData
+     * @param array $merchantData
+     * @param array $disputeData
+     */
+    public function sendAggregatedEmails(array $mailData, array $merchantData, array $disputeData)
+    {
+        foreach ($mailData as $merchantId => $data)
+        {
+            foreach ($data as $mailId => $disputeIds)
+            {
+                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME] = $merchantData[$merchantId];
+                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $mailId;
+                $bulkMailData[Constants::DISPUTES] = [];
+
+                $totalAmount = 0;
+
+                foreach ($disputeIds as $id)
+                {
+                    $bulkMailData[Constants::DISPUTES][] = $disputeData[$id];
+
+                    $totalAmount += $disputeData[$id][Entity::AMOUNT];
+                }
+
+                $bulkMailData['totalAmount'] = $totalAmount;
+
+                Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
+            }
+        }
+    }
+
+    /**
+     * Validates each column of the file and converts it to necessary format
+     *
+     * @param array $row
+     * @param array $keys
+     * @return array
+     */
     private function convertFileRowToMap(array $row, array $keys)
     {
         $input = [];
@@ -400,6 +450,11 @@ class Service extends Base\Service
 
         return $input;
     }
+
+    /**
+     * @param array $dispute
+     * @return array
+     */
 
     public function getDisputeDataForMail(array $dispute) : array
     {

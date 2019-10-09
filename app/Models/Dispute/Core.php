@@ -514,13 +514,31 @@ class Core extends Base\Core
      * @return array
      */
 
-    public function getMerchantEmailsForDispute(Merchant\Entity $merchant) : array
+    public function getDefaultEmailsForDispute(Merchant\Entity $merchant) : array
     {
         $emails = (new MerchantEmail\Service)->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::DISPUTE);
 
         $emails[] = $merchant->getEmail();
 
         $emails = array_unique($emails);
+
+        return $emails;
+    }
+
+    public function getEmailsForCreationMail(Merchant\Entity $merchant, array $input) : array
+    {
+        if (empty($input[Entity::MERCHANT_EMAILS]) === false)
+        {
+            $emails = $input[Entity::MERCHANT_EMAILS];
+
+            $emails = array_unique($emails);
+        }
+        else
+        {
+            // ToDo : Phase 2 : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
+            // Adding merchant Email, merchant dispute PoC in to field
+            $emails = $this->getDefaultEmailsForDispute($merchant);
+        }
 
         return $emails;
     }
@@ -542,18 +560,7 @@ class Core extends Base\Core
             return;
         }
 
-        if (empty($input[Entity::MERCHANT_EMAILS]) === false)
-        {
-            $emails = $input[Entity::MERCHANT_EMAILS];
-
-            $emails = array_unique($emails);
-        }
-        else
-        {
-            // ToDo : Phase 2 : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
-            // Adding merchant Email, merchant dispute PoC in to field
-            $emails = $this->getMerchantEmailsForDispute($merchant);
-        }
+        $emails = $this->getEmailsForCreationMail($merchant, $input);
 
         $data = [
             'merchant'      => [

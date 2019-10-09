@@ -1480,7 +1480,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace codes for dispute entity
     const DISPUTE_CREATE_REQUEST                                = 'DISPUTE_CREATE_REQUEST';
+    const DISPUTE_BULK_CREATE_REQUEST                           = 'DISPUTE_BULK_CREATE_REQUEST';
     const DISPUTE_EDIT_REQUEST                                  = 'DISPUTE_EDIT_REQUEST';
+    const DISPUTE_BULK_EDIT_REQUEST                             = 'DISPUTE_BULK_EDIT_REQUEST';
     const DISPUTE_EDIT_REQUEST_FOR_MERCHANT                     = 'DISPUTE_EDIT_REQUEST_FOR_MERCHANT';
     const DISPUTE_REVERSAL_REQUEST                              = 'DISPUTE_REVERSAL_REQUEST';
     const DISPUTE_REVERSAL_SUCCESS                              = 'DISPUTE_REVERSAL_SUCCESS';
