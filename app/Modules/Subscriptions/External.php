@@ -21,6 +21,8 @@ class External extends Base
 
     protected $request;
 
+    protected $getsEntityResponse;
+
     const REQUEST_TIMEOUT = 10;      // In seconds
 
     const MERCHANT_HEADER_KEY = 'X-Razorpay-MerchantId';
@@ -36,6 +38,8 @@ class External extends Base
         {
             $this->request = $this->initRequestObject();
         }
+
+        $this->getsEntityResponse = true;
     }
 
     protected function initRequestObject()
@@ -63,6 +67,8 @@ class External extends Base
 
     public function fetchCheckoutInfo(array $input, Merchant\Entity $merchant)
     {
+        $this->getsEntityResponse = true;
+
         $isCardChange       = $input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false;
 
         $subscriptionId     = $input[Payment\Entity::SUBSCRIPTION_ID];
@@ -84,8 +90,72 @@ class External extends Base
         return $this->sendRequest($url, Requests::GET, $requestBody, $headers);
     }
 
+    public function fetchSubscriptionForHosted(string $subscriptionId, Merchant\Entity $merchant)
+    {
+        $this->getsEntityResponse = true;
+
+        $headers = [
+            self::MERCHANT_HEADER_KEY => $merchant->getId(),
+            self::MODE_HEADER_KEY     => $this->mode
+        ];
+
+        $mode = $this->mode === 'test' ? 't' : 'l';
+
+        $url = $mode . '/subscriptions/' . $subscriptionId . '/hosted';
+
+        return $this->sendRequest($url, Requests::GET, [], $headers);
+    }
+
+    public function fetchSubscriptionForInvoice(string $subscriptionId, Merchant\Entity $merchant)
+    {
+        $this->getsEntityResponse = false;
+        
+        $headers = [
+            self::MERCHANT_HEADER_KEY => $merchant->getId(),
+            self::MODE_HEADER_KEY     => $this->mode
+        ];
+
+        $mode = $this->mode === 'test' ? 't' : 'l';
+
+        $url = $mode . '/subscriptions/' . $subscriptionId . '/hosted';
+
+        return $this->sendRequest($url, Requests::GET, [], $headers);
+    }
+
+    public function fetchMerchantIdAndMode(string $subscriptionId)
+    {
+        $this->getsEntityResponse = true;
+
+        $headers = [
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $this->getsEntityResponse = false;
+
+        $url = 'subscriptions/'.$subscriptionId.'/merchant_mode';
+
+        return $this->sendRequest($url, Requests::GET, [], $headers);
+    }
+
+    public function fetchSubscription(Merchant\Entity $merchant, string $subscriptionId)
+    {
+        $this->getsEntityResponse = true;
+
+        $headers = [
+            self::MERCHANT_HEADER_KEY => $merchant->getId(),
+            self::MODE_HEADER_KEY     => $this->mode,
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $url = 'subscriptions/' . $subscriptionId ;
+
+        return $this->sendRequest($url, Requests::GET, [], $headers);
+    }
+
     public function fetchSubscriptionInfo(array $input, Merchant\Entity $merchant, $callback = false, $appTokenPresent = false)
     {
+        $this->getsEntityResponse = true;
+        
         $amount             = $input[Payment\Entity::AMOUNT] ?? null;
         $isCardChange       = $input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false;
         $isCardPresent      = (isset($input[Payment\Entity::CARD]) === true);
@@ -172,7 +242,14 @@ class External extends Base
 
         if ($response->success === true)
         {
-            return $this->createSubscriptionEntity($responseBody);
+            if ($this->getsEntityResponse === true)
+            {
+                return $this->createSubscriptionEntity($responseBody);
+            }
+            else
+            {
+                return $responseBody;
+            }
         }
         elseif ($code >= 400 and $code < 500)
         {

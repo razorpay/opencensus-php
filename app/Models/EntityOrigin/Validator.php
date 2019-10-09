@@ -12,4 +12,9 @@ class Validator extends Base\Validator
         'entity_id'   => 'required|string|min:14',
         'entity_type' => 'required|string',
     ];
+
+    protected static $createRules = [
+        'entity_id'   => 'required|string',
+        'entity_type' => 'required|string',
+    ];
 }

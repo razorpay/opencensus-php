@@ -1663,7 +1663,6 @@ final class Route
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
         'payments_downtime_trigger_cron',
-        'entity_origin_create',
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
@@ -1884,6 +1883,7 @@ final class Route
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
+        'entity_origin_create',
 
         'merchant_product_switch',
         'merchant_instant_activation_post',
