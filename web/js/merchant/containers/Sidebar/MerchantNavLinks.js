@@ -1,7 +1,12 @@
 import MainNavLink from 'merchant/components/MainNavLink';
 
 export default function MerchantNavLinks(props) {
-  const { routes, isReportsPending, isChargeAtWillEnabled } = props;
+  const {
+    routes,
+    isReportsPending,
+    isChargeAtWillEnabled,
+    isSettlementEnabled,
+  } = props;
   return (
     <>
       <MainNavLink
@@ -23,7 +28,7 @@ export default function MerchantNavLinks(props) {
         label="Settlements"
         icon="i i-done-all text-success"
         to="/settlements"
-        isCurrent
+        isSettlementEnabled={isSettlementEnabled}
         additionalCondition={user => user.isAllowedView('settlements')}
       />
 

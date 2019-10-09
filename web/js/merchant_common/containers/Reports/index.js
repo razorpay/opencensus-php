@@ -448,7 +448,10 @@ export default function Reports(store, opts) {
           ).then(data => {
             if (data.error) {
               if (typeof window.hj === 'function') {
-                window.hj('tagRecording', ['download_report_failed']);
+                window.hj('tagRecording', [
+                  'download_report_failed',
+                  this.props.user.current,
+                ]);
               }
               return this.props.showNotification({
                 type: 'error',
@@ -457,7 +460,10 @@ export default function Reports(store, opts) {
             }
 
             if (typeof window.hj === 'function') {
-              window.hj('tagRecording', ['download_report_success']);
+              window.hj('tagRecording', [
+                'download_report_success',
+                this.props.user.current,
+              ]);
             }
             window.location = data.url;
           });
@@ -511,14 +517,20 @@ export default function Reports(store, opts) {
             }
 
             if (typeof window.hj === 'function') {
-              window.hj('tagRecording', ['download_report_success']);
+              window.hj('tagRecording', [
+                'download_report_success',
+                this.props.user.current,
+              ]);
             }
 
             location.href = data.data.url;
           })
           .catch(e => {
             if (typeof window.hj === 'function') {
-              window.hj('tagRecording', ['download_report_failed']);
+              window.hj('tagRecording', [
+                'download_report_failed',
+                this.props.user.current,
+              ]);
             }
 
             this.props.showNotification({

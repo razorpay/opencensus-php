@@ -346,6 +346,10 @@ export default class User {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 
+  get isAutomaticSettlementEnabled() {
+    return this.isFeatureEnabled('ES_AUTOMATIC');
+  }
+
   get isDiwaliPromoEnabled() {
     return this.findTag('diwali_promotional_plan');
   }
