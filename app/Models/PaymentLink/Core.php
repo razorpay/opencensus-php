@@ -443,35 +443,22 @@ class Core extends Base\Core
 
     public function migratePaymentPageItemsForMinPurchase(array $input)
     {
-        $paymentPages = [];
-
         $redis = $this->app['redis'];
 
-        if (isset($input[Entity::IDS]) === true)
+        $limit = $input['limit'] ?? 1000;
+
+        $lastSyncTimestamp = $redis->get(self::PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP);
+
+        if ($lastSyncTimestamp === null)
         {
-            foreach ($input[Entity::IDS] as $id)
-            {
-                $paymentPages[] = $this->repo->payment_link->findByPublicId($id);
-            }
+            $lastSyncTimestamp = 0;
         }
-        else
-        {
-            $limit = $input['limit'] ?? 1000;
 
-            $lastSyncTimestamp = $redis->get(self::PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP);
-
-            if ($lastSyncTimestamp === null)
-            {
-                $lastSyncTimestamp = 0;
-            }
-
-            $paymentPages = $this->repo->payment_link->getAllPaymentPagesForMigrationOfMinPurchase($lastSyncTimestamp, $limit);
-        }
+        $paymentPages = $this->repo->payment_link->getAllPaymentPagesForMigrationOfMinPurchase($lastSyncTimestamp, $limit);
 
         $this->trace->info(
             TraceCode::PAYMENT_PAGES_MIGRATION_REQUEST_RECEIVED
         );
-
 
         $migratedPaymentPages = [];
 
@@ -1001,11 +988,11 @@ class Core extends Base\Core
         $paymentPageItemInput[PaymentPageItem\Entity::SETTINGS][PaymentPageItem\Entity::POSITION] = 0;
 
         $allowMultipleUnits = $paymentLink->getSettings()->toArray()[Entity::ALLOW_MULTIPLE_UNITS] ?? null;
-//
-//        if ($allowMultipleUnits === '1')
-//        {
-//            $paymentPageItemInput[PaymentPageItem\Entity::MIN_PURCHASE] = 1;
-//        }
+
+        if ($allowMultipleUnits === '1')
+        {
+            $paymentPageItemInput[PaymentPageItem\Entity::MIN_PURCHASE] = 1;
+        }
 
         return $paymentPageItemInput;
     }
