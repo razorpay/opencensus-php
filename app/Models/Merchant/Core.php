@@ -2426,7 +2426,7 @@ class Core extends Base\Core
             $merchantEmailList);
     }
 
-    public function removeMerchantEmailToMailingList($merchant)
+    public function removeMerchantEmailToMailingList($merchant, $i = 0)
     {
         $transactionReportEmails = $merchant->getTransactionReportEmail();
 
@@ -2437,9 +2437,10 @@ class Core extends Base\Core
         foreach ($transactionReportEmails as $transactionReportEmail)
         {
             MailingListUpdate::dispatch(
-                $this->mode,
-                [$transactionReportEmail],
-                true);
+                                    $this->mode,
+                                    [$transactionReportEmail],
+                                    true)
+                            ->delay($i % 901);
         }
     }
 
