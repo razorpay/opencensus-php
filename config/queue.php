@@ -314,6 +314,10 @@ return [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
         'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
      ],
+    'terminal_onboarding_creation'=> [
+        'test'       => env('AWS_TERMINAL_ONBOARDING_CREATION_TEST_QUEUE'),
+        'live'       => env('AWS_TERMINAL_ONBOARDING_CREATION_LIVE_QUEUE'),
+    ],
     'merchant_balance_update' => [
         'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_LIVE_QUEUE'),

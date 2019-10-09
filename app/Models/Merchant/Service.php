@@ -16,16 +16,19 @@ use Razorpay\OAuth\Application as OAuthApplication;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
@@ -39,6 +42,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Constants\{Mode, Entity as CE};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
@@ -696,6 +700,122 @@ class Service extends Base\Service
             'total_count'  => count($merchantIds),
             'failed_count' => count($failedIds),
             'failed_ids'   => $failedIds
+        ];
+    }
+
+    public function bulkSubmerchantAssign($input)
+    {
+        $validator = (new Validator);
+
+        $submerchantAssignBatchCollection = new Base\PublicCollection;
+
+        $validator->validateBulkSubmerchantAssignCount($input);
+
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+
+        $validator->validateBatchId($batchId);
+
+        $idempotencyKey = null;
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_REQUEST,
+            [
+                'batch_id'  => $batchId,
+                'input'     => $input,
+            ]);
+
+        $terminalService = new Terminal\Service;
+
+        foreach($input as $item)
+        {
+            try
+            {
+                $this->repo->transaction(function() use (& $item,
+                                                         & $submerchantAssignBatchCollection,
+                                                         & $batchId,
+                                                         & $idempotencyKey,
+                                                         $validator,
+                                                         $terminalService)
+                {
+                    $validator->validateInput('bulk_submerchant_assign', $item);
+
+                    $idempotencyKey = $item['idempotency_key'];
+
+                    $data = $this->processEntryForBulkSubmerchantAssign(
+                        $item, $batchId, $idempotencyKey, $terminalService);
+
+                    $submerchantAssignBatchCollection->push($data);
+                });
+
+            }
+            catch(Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                    Trace::ERROR,
+                    TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
+                );
+
+                $exceptionData = [
+                    'batch_id'        => $batchId,
+                    'idempotency_key' => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $submerchantAssignBatchCollection->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                    Trace::CRITICAL,
+                    TraceCode::BATCH_SERVICE_BULK_EXCEPTION
+                );
+
+                $exceptionData = [
+                    'batch_id'        => $batchId,
+                    'idempotency_key' => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $submerchantAssignBatchCollection->push($exceptionData);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_RESPONSE,
+            [
+                'batch_id'  => $batchId,
+                'output'    => $submerchantAssignBatchCollection->toArrayWithItems(),
+            ]);
+
+        return $submerchantAssignBatchCollection->toArrayWithItems();
+    }
+
+    protected function processEntryForBulkSubmerchantAssign($item, $batchId, $idempotencyKey, $terminalService)
+    {
+        $terminalId     = $item['terminal_id'];
+        $submerchantId  = $item['submerchant_id'];
+
+        /*
+            Idempotency is checked inside Terminal/Core before assigning a
+            terminal to a merchant to whom that terminal has been already assigned.
+        */
+        $terminalService->addMerchantToTerminal($terminalId, $submerchantId);
+
+        return [
+            'batch_id'        => $batchId,
+            'submerchant_id'  => $submerchantId,
+            'idempotency_key' => $idempotencyKey,
+            'terminal_id'     => $terminalId,
+            'status'          => 'SUCCESS',
+            'failure_reason'  => null,
         ];
     }
 
@@ -1553,6 +1673,22 @@ class Service extends Base\Service
             $key1 => Cache::get('espricing:' . $key1) ?? 0.3,
             $key2 => Cache::get('espricing:' . $key2) ?? 0.2
         ];
+    }
+
+    public function getScheduledEarlySettlementPricingForMerchant(): array
+    {
+        $pricingPlanId = $this->merchant->getPricingPlanId();
+
+        $scheduledPricing = $this->repo->pricing->getFirstPricingPlanByIdAndFeatureWithoutOrgId($pricingPlanId, PricingFeature::ESAUTOMATIC);
+
+        if ($scheduledPricing === null)
+        {
+            throw new Exception\LogicException(
+                'ES scheduled Pricing has not been assigned to the merchant.',
+                ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND);
+        }
+
+        return $scheduledPricing->toArrayPublic();
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -2415,7 +2551,8 @@ class Service extends Base\Service
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
-        else if ((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false)
+        else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
+                 ($merchant->canCommunicateWithSubmerchant() === true))
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }
@@ -3193,9 +3330,13 @@ class Service extends Base\Service
         $merchants = $this->repo->merchant
                                 ->fetchAllSuspendedMerchants($input);
 
+        $i = 0;
+
         foreach ($merchants as $merchant)
         {
-            $this->core()->removeMerchantEmailToMailingList($merchant);
+            $this->core()->removeMerchantEmailToMailingList($merchant, $i);
+
+            $i++;
         }
     }
 }

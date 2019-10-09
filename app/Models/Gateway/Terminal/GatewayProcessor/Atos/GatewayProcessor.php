@@ -3,31 +3,34 @@
 namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
 
 use App;
+use Carbon\Carbon;
 use RZP\Error\Error;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
-use RZP\Exception\ServerErrorException;
 use RZP\Models\Terminal\Core;
 use RZP\Models\Payment\Gateway;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\TerminalOnboardingDetail;
+use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\BaseGatewayProcessor;
 
 
 class GatewayProcessor extends BaseGatewayProcessor
 {
-    const GATEWAY_INPUT                        = 'gateway_input';
+    const GATEWAY_INPUT          = 'gateway_input';
 
     // MID
     const ATOS_MID_INDEX_KEY     = 'atos_gateway_terminal_creation_mid_index';
     const ATOS_MID_OFFSET        = 999000000000000;
 
+    const TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK = 'TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK';
+
     protected $tidGenerator;
 
     protected $redisMidKey;
-    
+
     public function __construct()
     {
         parent::__construct();
@@ -45,11 +48,11 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     // GetInput Value (params) for terminal creation
     public function getInputValue($gatewayInput, $subMerchant)
-    {           
-        list($accountNumber, $ifscCode) = $this->getBankDetails();
+    {
+        list($accountNumber, $ifscCode) = $this->getPartnerBankDetails();
 
         $terminalData = [
-            Terminal\Entity::STATUS              => Terminal\Status::CREATED, 
+            Terminal\Entity::STATUS              => Terminal\Status::CREATED,
             Terminal\Entity::ENABLED             => 0,
             Terminal\Entity::CATEGORY            => $subMerchant->getCategory(),
             Terminal\Entity::TYPE                => $this->getTerminalType(),
@@ -61,7 +64,7 @@ class GatewayProcessor extends BaseGatewayProcessor
         ];
 
         $terminalData[Terminal\Entity::MC_MPAN] = $gatewayInput[Constants::MPAN][Constants::MASTERCARD];
-        
+
         $terminalData[Terminal\Entity::VISA_MPAN] = $gatewayInput[Constants::MPAN][Constants::VISA];
 
         $terminalData[Terminal\Entity::RUPAY_MPAN] = $gatewayInput[Constants::MPAN][Constants::RUPAY];
@@ -104,14 +107,132 @@ class GatewayProcessor extends BaseGatewayProcessor
             });
     }
 
-    // Leaving empty because its an abstract method in BaseGatewayProcessor class
-    public function getLockResource($merchant, $gateway, $gatewayInput)
+    public function getLockResource($terminal, $gateway, $gatewayInput)
     {
-
+        return $terminal->getId() . '_' . self::TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK;
     }
 
-    protected function getBankDetails()
-    {        
+    public function getGatewayRequestArrayForCreation($terminal)
+    {
+        $subMerchant = $terminal->merchant;
+
+        $partnerMerchant = $this->repo->merchant->getPartnerMerchantFromSubMerchantId($subMerchant->getId());
+        
+        $gatewayRequestArray = [
+            'method'                    => "POST",
+            'gateway'                   => $terminal->getGateway(),
+            'terminal'                  => $terminal->toArrayWithPassword(),
+            'merchant'                  => $subMerchant->toArray(),
+            'merchant_details'          => $subMerchant->merchantDetail,
+            'category_details'          => $this->getCategoryDetails($subMerchant),
+            'partner_merchant'          => $partnerMerchant,
+            'partner_merchant_details'  => $partnerMerchant->merchantDetail,
+            'request_details'           => $this->getRequestDetails($terminal),
+            'bank_details'              => $partnerMerchant->bankAccount->toArrayPublic(),
+            'pricing_details'           => $this->getPricingDetails($terminal),
+            'other_details'             => $this->getPartnerOtherDetails(),
+        ];
+        
+        return $gatewayRequestArray;
+    }
+
+    public function getGatewayRequestArrayForVerification($terminal)
+    {
+        $gatewayRequestArray = [
+            'method'            =>    "POST",
+            'gateway'           =>    $terminal->getGateway(),
+            'terminal'          =>    $terminal->toArrayWithPassword(),
+            'request_details'   =>    $this->getRequestDetails($terminal),
+        ];
+
+        return $gatewayRequestArray;
+    }
+
+    // This function is actually being called from inside the queue job
+    public function updateTerminalDetailsBasedOnCreationResponse($response, $terminal)
+    {
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        if (isset($response[Constants::SUCCESS]) === true and $response[Constants::SUCCESS] === true)
+        {
+            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::PENDING);
+
+            $terminalOnboardingDetail->setVerifyAt(Carbon::now()->getTimestamp());
+
+            $terminal->setStatus(Terminal\Status::PENDING);
+
+            $terminal->save();
+
+            $terminalOnboardingDetail->save();
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, $response);
+        }
+    }
+
+    public function updateTerminalDetailsBasedOnVerifyResponse($response, $terminal)
+    {
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $terminalOnboardingDetail->incrementVerifyBucket();
+
+        $status = $this->getTerminalVerificationStatusFromResponse($response);
+
+        if ($status === Constants::CALLBACK_SUCCESSFUL)
+        {
+            $this->updateTerminalDetailsOnVerifyCallbackSuccesful($terminal, $terminalOnboardingDetail);
+        }
+        else
+        {
+            $this->updateTerminalDetailsOnVerifyCallbackFailure($terminal, $terminalOnboardingDetail);
+        }
+
+        $terminal->save();
+
+        $terminalOnboardingDetail->save();
+    }
+
+    protected function getTerminalVerificationStatusFromResponse($response)
+    {
+        if (empty($response[Constants::DATA][Constants::STATUS]) === true)
+        {
+            $status = Constants::CALLBACK_FAILED;
+        }
+        else
+        {
+            $status = $response[Constants::DATA][Constants::STATUS];
+        }
+
+        return $status;
+    }
+
+    protected function updateTerminalDetailsOnVerifyCallbackSuccesful($terminal, $terminalOnboardingDetail)
+    {
+        $terminal->setStatus(Terminal\Status::ACTIVATED);
+
+        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATED);
+
+        $terminalOnboardingDetail->setVerifyAt(null);
+
+        $this->app['events']->fire('api.terminal.activated', ['main' => $terminal]);
+    }
+
+    protected function updateTerminalDetailsOnVerifyCallbackFailure($terminal, $terminalOnboardingDetail)
+    {
+        $timeStamp = (Carbon::now()->addMinutes(Constants::ATOS_ACTIVATION_NEXT_RETRY_MINS))->getTimestamp();
+
+        $terminalOnboardingDetail->setVerifyAt($timeStamp);
+
+        if($terminalOnboardingDetail->getVerifyBucket() >= Constants::ATOS_ACTIVATION_RETRY_LIMIT)
+        {
+            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATION_FAILED);
+        }
+    }
+
+    protected function getPartnerBankDetails()
+    {
         $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
         $partner = $this->repo->merchant->findOrFail($partnerMerchantId);
@@ -125,7 +246,34 @@ class GatewayProcessor extends BaseGatewayProcessor
         return [$partnerBankAccountNumber, $partnerBankIfscCode];
     }
 
-    // This is a partner property, currently ATOS supporting only direct_settlements
+    protected function getRequestDetails($terminal)
+    {
+        $reqDetails['req_rrn'] = $terminal->terminalOnboardingDetail->getReqRrn();
+
+        return $reqDetails;
+    }
+
+    protected function getCategoryDetails($merchant)
+    {
+        $mcc = (int) $merchant->getCategory();
+
+        $details = MerchantDetail\MccTccMapping::getTccFromMcc($mcc);
+
+        $details['mcc'] = $mcc;
+
+        return $details;
+    }
+
+    protected function getPricingDetails($terminal)
+    {
+        $merchant = $terminal->merchant;
+
+        $mcc = (int) $merchant->getCategory();
+
+        return MerchantDetail\FreechargeAtosOnboardingDetails::getMccPricing($mcc);
+    }
+
+    // TODO: This should be in partner processor, not gateway processor
     protected function getTerminalType($type = null)
     {
         if ($type === null)
@@ -155,4 +303,12 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         return $newMid;
     }
+
+    protected function getPartnerOtherDetails()
+    {
+        // TODO: Currently other details are hardcoded for freecharge, 
+        // need to make this generic
+        return MerchantDetail\FreechargeAtosOnboardingDetails::OTHER_DETAILS;
+    }
+
 }

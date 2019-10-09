@@ -75,6 +75,63 @@ class Gateway extends Base\Gateway
         return $response['next']['redirect'] ?? null;
     }
 
+    public function reconcile(array $input)
+    {
+        parent::action($input, Action::RECONCILE);
+
+        $request = $this->getMozartReconcileRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_RECONCILE_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+            ]);
+
+        return $response;
+    }
+
+    protected function getMozartReconcileRequestArray($input)
+    {
+        if (($input['terminal'] instanceof TerminalEntity) === true)
+        {
+            $input['terminal'] = $input['terminal']->toArrayWithPassword();
+        }
+
+        $gateway = $input['gateway'];
+
+        $content['entities'] = $input;
+
+        $baseUrl = $this->app['config']->get('applications.mozart.url');
+
+        $url =  $baseUrl . 'payments/' . $gateway . '/v1/' . $this->action;
+
+        $authentication = [
+            'api',
+            $this->app['config']->get('applications.mozart.password')
+        ];
+
+        return [
+            'url' => $url,
+            'method' => 'POST',
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'X-Task-ID'    => $this->app['request']->getTaskId(),
+            ],
+            'content' => json_encode($content),
+            'options' => [
+                'auth' => $authentication
+            ]
+        ];
+    }
+
     public function otpGenerate(array $input)
     {
         return $this->authorize($input);
@@ -168,6 +225,21 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_CREATE_TERMINAL_RESPONSE);
         // TODO check error codes and throw exception
+
+        return $response;
+    }
+
+    public function verifyTerminal(array $input)
+    {
+        parent::verifyTerminal($input);
+
+        $request = $this->getTerminalOnboardingMozartRequestArray($input);
+
+        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_RESPONSE);
 
         return $response;
     }
@@ -455,7 +527,7 @@ class Gateway extends Base\Gateway
 
         $content['entities'] = $input;
 
-        $url = $this->getUrlForMozartRequest($input, 'terminals');
+        $url = $this->getUrlForMozartRequest($input, 'onboarding');
 
         return $this->getAuthenticatedMozartRequestArray($url, $content);
     }
@@ -1008,8 +1080,10 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
-        if (($this->action === Action::CREATE_TERMINAL) or
-            ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY)))
+        if (
+            (in_array($this->action, [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL])) or
+            ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
+            )
         {
             return $input['gateway'];
         }

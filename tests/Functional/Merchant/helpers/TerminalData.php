@@ -2425,4 +2425,33 @@ return [
         ]
     ],
 
+    'testTerminalOnboardingVerificationCron'    => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [
+                'activated_terminals'           =>  1,
+                'pending_terminals'             =>  0,
+                'activation_failed_terminals'   =>  0,
+                'not_applicable_terminals'      =>  0,
+                'verification_error_terminals'  =>  0,
+            ],
+            'status_code'  => 200,
+        ]
+    ],
+
+    'testTerminalOnboardingCreationCron'    =>  [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/onboard',
+            ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
 ];

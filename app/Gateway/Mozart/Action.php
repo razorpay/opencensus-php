@@ -18,5 +18,10 @@ class Action
 
     const INTENT            = 'intent';
 
+    //action to fetch reconcile data in case of api based recon
+    const RECONCILE         = 'reconcile';
+
     const CREATE_TERMINAL   = 'create_terminal';
+
+    const VERIFY_TERMINAL   = 'verify_terminal';
 }

@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const SUPPORT_EMAIL      = 'support_email';
     const TERMS              = 'terms';
     const TYPE               = 'type';
+    const TEMPLATE_TYPE      = 'template_type';
 
     const PAYMENT_PAGE_ITEMS = 'payment_page_items';
 

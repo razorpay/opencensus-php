@@ -12,6 +12,8 @@ use Psr\Http\Message\ResponseInterface;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Models\Feature;
+use RZP\Models\Merchant\Webhook;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
@@ -1382,6 +1384,56 @@ class WebhookTest extends TestCase
         // Child merchant initiates the refund
 
         $this->refundPayment($payment['id'], $payment['amount']/2, [], [], false, ['key' => 'rzp_test_partner_' . $client->getId(), 'secret' => $client->getSecret()]);
+    }
+
+    public function testTerminalVerificationWebhook()
+    {
+        $merchant = $this->fixtures->create('merchant', []);
+
+        $this->fixtures->merchant->addFeatures(
+            [Feature\Constants::TERMINAL_ONBOARDING],
+            $merchant->getId()
+        );
+
+        $merchant->setCategory("742");
+        $merchant->save();
+
+        $this->fixtures->create('webhook',
+            [
+                'merchant_id' => $merchant->getId(),
+                'url'         => 'http://www.razorpay.co.in',
+                'events'      => [
+                    'terminal.activated' => '1'
+                ]
+            ]);
+
+        $terminal = $this->fixtures->create('terminal',
+            [
+                'merchant_id' => $merchant->getId(),
+                'enabled'     => false,
+                'gateway'     => 'atos',
+                'status'      => 'pending'
+            ]);
+
+        $activationTime = Carbon::now()->subMinutes(10);
+
+        $this->fixtures->create('terminal_onboarding_detail',
+            [
+                'terminal_id'       => $terminal->getId(),
+                'status'            => 'pending',
+                'verify_bucket'     => 0,
+                'verify_at'         => $activationTime->getTimestamp(),
+            ]);
+
+        $this->ba->cronAuth();
+
+        $this->mockInfernoFire(function ($data)
+        {
+            $this->assertEquals('terminal.activated', $data['event_name']);
+            return true;
+        });
+
+        $this->startTest();
     }
 
     protected function createTransferEntity($payment, $account)

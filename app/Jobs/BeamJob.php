@@ -182,7 +182,7 @@ class BeamJob extends Job
             {
                 $this->release($this->retryTimeLines[$this->attempts() - 1]);
 
-                $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_RETRY);
+                $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_REQUEST_RETRY);
 
                 return;
             }
@@ -196,7 +196,7 @@ class BeamJob extends Job
 
         if (in_array($this->response->status_code, self::HTTP_SUCCESS_CODES, true) === true)
         {
-            $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_SUCCESS);
+            $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_REQUEST_SUCCESS);
 
             $this->delete();
 
@@ -226,7 +226,7 @@ class BeamJob extends Job
         {
             $batchFundTransferId = null;
 
-            $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_FAILED);
+            $this->raiseSettlementBeamJobEvent(EventCode::BEAM_FILE_PUSH_REQUEST_FAILED);
 
             $this->sendEmail();
 

@@ -27,6 +27,20 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
+
+    public function getModeAndMerchant(string $subscriptionId)
+    {
+        $modeAndMerchantId = $this->app['module']->subscription->fetchMerchantIdAndMode($subscriptionId);
+
+        $mode = $modeAndMerchantId['mode'];
+
+        $merchantId = $modeAndMerchantId['merchant_id'];
+
+        $merchant = $this->repo->merchant->connection($mode)->find($merchantId);
+
+        return [$mode, $merchant];
+    }
+
     public function create(array $input): array
     {
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);

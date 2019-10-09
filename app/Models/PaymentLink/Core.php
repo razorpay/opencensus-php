@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
+use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -82,6 +83,8 @@ class Core extends Base\Core
         $this->repo->loadRelations($paymentLink);
 
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
+
+        $this->trackPaymentPageCreatedEvent($paymentLink, $input);
 
         return $paymentLink;
     }
@@ -559,6 +562,18 @@ class Core extends Base\Core
                 Entity::TO_STATUS          => $status,
                 Entity::TO_STATUS_REASON   => $statusReason,
             ]);
+    }
+
+    protected function trackPaymentPageCreatedEvent(Entity $paymentLink, array $input)
+    {
+        if (empty($input[Entity::TEMPLATE_TYPE]) === true)
+        {
+            return;
+        }
+
+        $customProperties[Entity::TEMPLATE_TYPE] = $input[Entity::TEMPLATE_TYPE];
+
+        $this->app['diag']->trackPaymentPageEvent(EventCode::PAYMENT_PAGE_CREATED, $paymentLink, null, $customProperties);
     }
 
     /**

@@ -8,7 +8,7 @@ class Webhook extends Base
     {
         $defaultAttributes = array('events' => ['payment.authorized' => '1']);
 
-        $attributes = array_merge($attributes, $defaultAttributes);
+        $attributes = array_merge($defaultAttributes, $attributes);
 
         return parent::create($attributes);
     }

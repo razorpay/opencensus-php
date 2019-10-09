@@ -25,6 +25,13 @@ class Server extends Base\Mock\Server
         return $this->$gateway($input);
     }
 
+    public function reconcile($input)
+    {
+        $reconcileObj = new ReconcileData();
+
+        return $this->processMockResponse($input, $reconcileObj, 'reconcile');
+    }
+
     public function payInit($input)
     {
         $payInitObj = new PayInitData();
@@ -320,7 +327,7 @@ class Server extends Base\Mock\Server
 
         return $this->makePostResponse($request);
     }
-    
+
     protected function netbanking_idbi($input)
     {
 
@@ -350,10 +357,10 @@ class Server extends Base\Mock\Server
 
     public function createTerminal($body)
     {
-        $response_body = [
+        $responseBody = [
             'data' => [
-                'Description'   => "Success",
-                'Status'        => "00",
+                'description'   => "Success",
+                'status'        => "00",
                 '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
             ],
             'error'             => [],
@@ -362,14 +369,37 @@ class Server extends Base\Mock\Server
             'next'              => null,
             'success'           => true
         ];
-        
-        $response = \Response::make($response_body);
-        
+
+        $response = \Response::make($responseBody);
+
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
- 
+
         return $response;
     }
-    
+
+    public function verifyTerminal($body)
+    {
+        $responseBody = [
+            'data' => [
+                'Description'   => 'Success',
+                'Status'        => '00',
+                'status'        => 'callback_successful',
+                '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
+            ],
+            'error'             => [],
+            'external_trace_id' => '',
+            'mozart_id'         => 'blfq216r1gunssphbs01',
+            'next'              => null,
+            'success'           => true,
+        ];
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');

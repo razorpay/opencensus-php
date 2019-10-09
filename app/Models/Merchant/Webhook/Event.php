@@ -57,6 +57,7 @@ class Event
     const REFUND_PROCESSED                  = 'refund.processed';
     const REFUND_FAILED                     = 'refund.failed';
     const REFUND_CREATED                    = 'refund.created';
+    const TERMINAL_ACTIVATED                = 'terminal.activated';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -101,6 +102,7 @@ class Event
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
         self::REFUND_CREATED,
+        self::TERMINAL_ACTIVATED,
     ];
 
     /**
@@ -151,6 +153,7 @@ class Event
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
         self::REFUND_CREATED,
+        self::TERMINAL_ACTIVATED,
     ];
 
     protected static $bitPosition = [
@@ -197,6 +200,7 @@ class Event
         self::VIRTUAL_ACCOUNT_CLOSED            => 41,
         self::PAYOUT_FAILED                     => 42,
         self::REFUND_CREATED                    => 43,
+        self::TERMINAL_ACTIVATED                => 44,
     ];
 
     /**
@@ -243,6 +247,7 @@ class Event
         self::REFUND_PROCESSED                  => [Product::PRIMARY],
         self::REFUND_FAILED                     => [Product::PRIMARY],
         self::REFUND_CREATED                    => [Product::PRIMARY],
+        self::TERMINAL_ACTIVATED                => [Product::PRIMARY],
     ];
 
     /**
@@ -290,6 +295,7 @@ class Event
         self::REFUND_PROCESSED                  => Entity::REFUND,
         self::REFUND_FAILED                     => Entity::REFUND,
         self::REFUND_CREATED                    => Entity::REFUND,
+        self::TERMINAL_ACTIVATED                => Entity::TERMINAL,
     ];
 
     public static $eventsToFeatureMap = [
@@ -318,6 +324,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => Feature\Constants::CARD_TRANSFER_REFUND,
         self::REFUND_PROCESSED                  => Feature\Constants::CARD_TRANSFER_REFUND,
         self::REFUND_FAILED                     => Feature\Constants::SHOW_REFUND_PUBLIC_STATUS,
+        self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
     ];
 
     /**

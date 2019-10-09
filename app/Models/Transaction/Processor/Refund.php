@@ -6,7 +6,9 @@ use Carbon\Carbon;
 use RZP\Models\Pricing;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\RefundSource;
+use RZP\Models\Transaction\ReconciledType;
 
 class Refund extends Base
 {
@@ -41,9 +43,21 @@ class Refund extends Base
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
+        $this->checkAndSetTxnReconciliation();
+
         $this->repo->saveOrFail($this->txn);
 
         $this->dispatchForSettlementBucketing($this->txn, $settledAt);
+    }
+
+    protected function checkAndSetTxnReconciliation()
+    {
+        if ($this->source->getGateway() === Gateway::WALLET_OPENWALLET)
+        {
+            $this->txn->setReconciledAt(time());
+
+            $this->txn->setReconciledType(ReconciledType::NA);
+        }
     }
 
     protected function getSettledAtTimestampForRefund()

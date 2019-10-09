@@ -355,6 +355,13 @@ class Gateway
         $this->action = ACTION::CREATE_TERMINAL;
     }
 
+    public function verifyTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = ACTION::VERIFY_TERMINAL;
+    }
+
     public function debit(array $input)
     {
         $this->input = $input;
@@ -425,6 +432,12 @@ class Gateway
     {
         throw new Exception\LogicException(
             'Verify Refund is not implemented');
+    }
+
+    public function reconcile(array $input)
+    {
+        throw new Exception\LogicException(
+            'Reconcile is not implemented');
     }
 
     public function canTopup()

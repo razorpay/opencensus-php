@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
@@ -91,9 +92,30 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
+        $this->verifyCallback($gatewayEntity, $input);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function verifyCallback($gatewayPayment, array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function verify(array $input)
@@ -164,6 +186,10 @@ class Gateway extends Base\Gateway
         );
 
         $verify->verifyResponseContent = json_decode($response->body, true);
+
+        $expectedAmount = number_format($verify->input['payment']['amount'] / 100, 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $verify->verifyResponseContent[Fields::AMOUNT]);
 
         $checksumContent = $this->getContentArrayForChecksumCalculation($verify->verifyResponseContent);
 
