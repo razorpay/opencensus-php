@@ -2620,6 +2620,14 @@ class OtpPaymentTest extends TestCase
 
         $otpelf->shouldReceive('otpSend')
             ->with(\Mockery::type('array'))
+            ->with(\Mockery::on(function ($argument) {
+                // Ensure 'client' is sent from api side
+                if (array_key_exists('client', $argument) === true)
+                {
+                    return true;
+                }
+                return false;
+            }))
             ->andReturnUsing(function (array $input)
             {
                 return [
