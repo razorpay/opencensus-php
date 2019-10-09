@@ -106,6 +106,12 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $this->createGatewayDriver($driver, $mock);
     }
 
+    public function getCpsServiceSyncDriver($driver)
+    {
+        $namespace = $this->getGatewayNamespace($driver);
+        return $namespace;
+    }
+
     protected function createGatewayDriver($driver, $mock)
     {
         $namespace = $this->getGatewayNamespace($driver, $mock);

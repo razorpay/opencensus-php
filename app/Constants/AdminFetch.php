@@ -1935,6 +1935,41 @@ class AdminFetch
                 ],
             ],
 
+            Entity::TERMINAL_ONBOARDING_DETAIL => [
+                'terminal_id' => [
+                    Fetch::LABEL  => 'Termminal Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'status' => [
+                    Fetch::LABEL => 'Status',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'retry' => [
+                    Fetch::LABEL  => 'Retry',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN,
+                ],
+                'error_code' => [
+                    Fetch::LABEL  => 'Error Code',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'error_description' => [
+                    Fetch::LABEL  => 'Error Description',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'attempts' => [
+                    Fetch::LABEL  => 'Error Description',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'verify_bucket' => [
+                    Fetch::LABEL  => 'Verify Bucket',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'verify_at' =>  [
+                    Fetch::LABEL  => 'Verify At',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ]
+            ],
+
             Entity::TRANSACTION => [
                 'entity_id' => [
                     Fetch::LABEL  => 'Payment/Refund/Settlement Id',

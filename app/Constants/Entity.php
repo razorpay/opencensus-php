@@ -638,6 +638,10 @@ class Entity
         self::MERCHANT_ACCESS_MAP,
     ];
 
+    protected static $externalEntities = [
+        self::SUBSCRIPTION
+    ];
+
     public static function getAllEntities()
     {
         return array_keys(self::$namespace);
@@ -835,5 +839,10 @@ class Entity
                 return $allowedEntity;
             }
         }
+    }
+
+    public static function isExternalEntity($entity)
+    {
+        return in_array($entity, self::$externalEntities);
     }
 }

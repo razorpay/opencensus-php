@@ -135,6 +135,7 @@ abstract class EntityProcessor extends Base\Core
         }
 
         $customProperties = [
+            'merchant_id'                       => $this->fta->merchant->getId(),
             'channel'                           => $this->fta->getChannel(),
             'purpose'                           => $this->fta->getPurpose(),
             'fund_transfer_attempt_id'          => $this->fta->getId(),

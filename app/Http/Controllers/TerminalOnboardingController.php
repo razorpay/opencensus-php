@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Onboarding;
 
 class TerminalOnboardingController extends Controller
@@ -38,6 +39,38 @@ class TerminalOnboardingController extends Controller
         $input = Request::all();
 
         $data = $this->service()->fetchTerminals($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postOnboardTerminalVerification()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyTerminals($input);
+
+        $this->trace->info(
+            TraceCode::TERMINAL_ONBOARDING_VERIFICATION_CRON_RESPONSE,
+            [
+                'input'    => $input,
+                'response' => $data,
+            ]);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postOnboardTerminalCreation()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->onboardTerminals($input);
+
+        $this->trace->info(
+            TraceCode::TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE,
+            [
+                'input'    => $input,
+                'response' => $data,
+            ]);
 
         return ApiResponse::json($data);
     }

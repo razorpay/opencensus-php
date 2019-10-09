@@ -649,10 +649,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $paymentService = new Payment\Service;
 
         $paymentId = $this->payment->getPublicId();
+        $amount    = $this->payment->getAmount();
 
-        $this->messenger->raiseReconAlert(
+        Base\Reconciliate::$forceAuthorizedPayments[] = [$paymentId, $amount];
+
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
             [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
                 'message'         => 'Payment status is failed. Doing force authorize',
                 'payment_id'      => $this->payment->getId(),
                 'amount'          => $this->payment->getAmount(),

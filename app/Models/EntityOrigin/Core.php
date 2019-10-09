@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
+use RZP\Models\Plan\Subscription;
 
 class Core extends Base\Core
 {
@@ -72,8 +73,15 @@ class Core extends Base\Core
      */
     public function fetchEntityOrigin(Base\PublicEntity $entity)
     {
-        $subscription = $entity->subscription;
-        $receiver     = $entity->receiver;      // Example receiver: Qr_code entity
+        $receiver       = $entity->receiver;      // Example receiver: Qr_code entity
+
+        $subscriptionId = null;
+
+        // check if subscription payment and is payment entity
+        if ($entity->getEntityName() === E::PAYMENT)
+        {
+            $subscriptionId = $entity->getSubscriptionId();
+        }
 
         //
         // If the txn has an associated subscription entity, fetch the subscription's entity_origin.
@@ -81,9 +89,9 @@ class Core extends Base\Core
         // and set the VA's entity_origin as the entity_origin for this txn.
         // If the txn does not have either of those, basic auth is used to extract the origin entity's details.
         //
-        if (empty($subscription) === false)
+        if (empty($subscriptionId) === false)
         {
-            $originEntity = $this->getOriginEntityFromSubscription($subscription);
+            $originEntity = $this->getOriginEntityFromSubscription($subscriptionId);
         }
         else if (empty($receiver) === false)
         {
@@ -154,11 +162,13 @@ class Core extends Base\Core
 
         $entityOrigin->generateId();
 
+        // since entity here can be external entity, we use build instead of associate for entity
+        $input[Entity::ENTITY_ID]   = Entity::stripDefaultSign($entity->getId());
+        $input[Entity::ENTITY_TYPE] = $entity->getEntityName();
+
         $entityOrigin->build($input);
 
         $entityOrigin->origin()->associate($originEntity);
-
-        $entityOrigin->entity()->associate($entity);
 
         return $entityOrigin;
     }
@@ -192,6 +202,16 @@ class Core extends Base\Core
                 $entity = (new OAuthApp\Repository)->findOrFail($entityId);
                 break;
 
+            case Constants::SUBSCRIPTION:
+                $entity =  $this->app['module']
+                                ->subscription
+                                ->fetchSubscription(
+                                    $this->merchant,
+                                    $entityId
+                                );
+
+                break;
+
             default:
                 $entityClass = E::getEntityObject($entityType);
                 $entityId    = $entityClass->verifyIdAndSilentlyStripSign($entityId);
@@ -205,18 +225,13 @@ class Core extends Base\Core
     /**
      * Returns origin entity for the subscription if present
      *
-     * @param Base\PublicEntity $subscription
+     * @param string $subscriptionId
      *
      * @return mixed|null
      */
-    protected function getOriginEntityFromSubscription(Base\PublicEntity $subscription)
+    protected function getOriginEntityFromSubscription(string $subscriptionId)
     {
-        $subscriptionId   = $subscription->getId();
-        $subscriptionName = $subscription->getEntityName();
-
-        $entityOrigin = $this->repo
-            ->entity_origin
-            ->fetchByEntityTypeAndEntityId($subscriptionName, $subscriptionId);
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId('subscription', $subscriptionId);
 
         return optional($entityOrigin)->origin;
     }

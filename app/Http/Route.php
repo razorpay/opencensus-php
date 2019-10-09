@@ -287,6 +287,8 @@ final class Route
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
         'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
+        'terminal_onboarding_verification'         => ['post',     'terminals/onboard/verification',                 'TerminalOnboardingController@postOnboardTerminalVerification'      ],
+        'terminal_onboarding_creation'             => ['post',     'terminals/onboard/creation',                     'TerminalOnboardingController@postOnboardTerminalCreation'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
@@ -1694,7 +1696,6 @@ final class Route
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
         'payments_downtime_trigger_cron',
-        'entity_origin_create',
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
@@ -1709,6 +1710,8 @@ final class Route
         'get_setl_amount',
         'cps_sync_gateway_entities_cron',
         'scrooge_refund_reference1_bulk_update',
+        'terminal_onboarding_creation',
+        'terminal_onboarding_verification',
         'iin_batch_process_record',
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
@@ -1913,6 +1916,7 @@ final class Route
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
+        'entity_origin_create',
 
         'merchant_product_switch',
         'merchant_instant_activation_post',
@@ -3152,6 +3156,8 @@ final class Route
             'refund_speed_processed_backfill',
             'get_setl_amount',
             'cps_sync_gateway_entities_cron',
+            'terminal_onboarding_creation',
+            'terminal_onboarding_verification',
             'reconciliate',
             'mailing_list_remove_suspended_merchant',
         ],

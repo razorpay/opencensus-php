@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Carbon\Carbon;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
@@ -214,6 +215,90 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $this->expectExceptionMessage(
             'A terminal with the same field exists');
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingVerificationCron()
+    {
+        $this->ba->cronAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'gateway'     => 'atos',
+            'status'      => 'pending'
+        ]);
+
+        $merchant = $terminal->merchant;
+        $merchant->setCategory("742");
+        $merchant->save();
+
+        $activationTime = Carbon::now()->subMinutes(10);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'pending',
+            'verify_bucket'     => 0,
+            'verify_at'         => $activationTime->getTimestamp(),
+        ]);
+
+        $this->startTest();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activated');
+        $this->assertNull($updatedTerminalOnboardingDetail['verify_at']);
+    }
+
+    public function testTerminalOnboardingCreationCron()
+    {
+        // To setup merchant_access_map etc
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->ba->cronAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'merchant_id'       => $subMerchantId,
+            'enabled'           => false,
+            'gateway'           => 'atos',
+            'account_number'    => '10010101011',
+            'ifsc_code'         => 'RZPB0000000',
+            'status'            => 'created'
+            ]);
+
+        $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'created',
+            'attempts'          => 0,
+            'verify_bucket'     => 0,
+        ]);
+
+        $merchant = $terminal->merchant;
+
+        $merchant->setCategory("742");
+
+        $merchant->save();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $subMerchantId,
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $url = '/terminals/onboard/creation';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $onboardedTerminals = $this->startTest();
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_fetched']), 1);
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_queued']), 1);
 
         $this->startTest();
     }

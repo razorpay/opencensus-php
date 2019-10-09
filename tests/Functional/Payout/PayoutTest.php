@@ -1079,12 +1079,12 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $this->fixtures->edit(
-            'payout',
-            $payout['id'],
-            [
-                'status' => 'processed'
-            ]);
+//        $this->fixtures->edit(
+//            'payout',
+//            $payout['id'],
+//            [
+//                'status' => 'processed'
+//            ]);
 
         $request['url'] = '/payouts?status=processed&account_number=2224440041626905';
 
