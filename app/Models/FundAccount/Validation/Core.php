@@ -212,7 +212,12 @@ class Core extends Base\Core
             // it is assumed that source already exist.
             $this->repo->saveOrFail($validation);
 
-            $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
+            $fee = $this->getFeesLessThanApplicableBalance($validation, $merchant);
+
+            if ($fee === 0)
+            {
+                return $validation;
+            }
 
             // Transaction might fail because of concurrent request verifying and changing balance at the same time.
             try
@@ -300,14 +305,20 @@ class Core extends Base\Core
         $processor->updateStatusAfterFtaRecon($input);
     }
 
-    private function verifyFeesLessThanApplicableBalance(Entity $validation, Merchant\Entity $merchant)
+    /**
+     * @param Entity          $validation
+     * @param Merchant\Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    private function getFeesLessThanApplicableBalance(Entity $validation, Merchant\Entity $merchant) : int
     {
+        list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
+
         if ($merchant->getFeeModel() === Merchant\FeeModel::POSTPAID)
         {
-            return;
+            return $fee;
         }
-
-        list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
 
         if ($validation->hasBalance() === true)
         {
@@ -320,13 +331,14 @@ class Core extends Base\Core
 
         if ($balance->getFeeCredits() >= $fee)
         {
-            return;
+            return $fee;
         }
 
         if ($balance->getBalance() >= $fee)
         {
-            return;
+            return $fee;
         }
+
         throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
                 null,

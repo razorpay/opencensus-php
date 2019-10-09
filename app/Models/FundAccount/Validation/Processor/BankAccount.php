@@ -2,6 +2,9 @@
 
 namespace RZP\Models\FundAccount\Validation\Processor;
 
+use Carbon\Carbon;
+use Illuminate\Support\Arr;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use Monolog\Logger;
 use RZP\Trace\TraceCode;
@@ -10,14 +13,12 @@ use RZP\Constants\Entity as Table;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Constants;
+use RZP\Models\FundAccount\Validation\AccountStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
-use RZP\Models\FundAccount\Validation\Traits\FtaStatus;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 class BankAccount extends Base
 {
-    use FtaStatus;
-
     public function __construct(Validation $validation)
     {
         parent::__construct($validation);
@@ -63,6 +64,11 @@ class BankAccount extends Base
         }
     }
 
+    public function getAccount(): BankAccountEntity
+    {
+        return $this->account;
+    }
+
     public function preProcessValidation()
     {
         try
@@ -92,20 +98,6 @@ class BankAccount extends Base
                 Constants::slackSettings()
             );
         }
-    }
-
-    /**
-     * Unused right now, everything is async
-     * @return void [type] [description]
-     */
-    public function processValidation()
-    {
-        $this->repo->assertTransactionActive();
-
-        $fundTransferAttempt = $this->createFundTransferAttempt();
-
-        // TODO: Add Trace FTA
-        // TODO: Initiate FTA here.
     }
 
     protected function createFundTransferAttempt(): Attempt\Entity
@@ -217,5 +209,74 @@ class BankAccount extends Base
                     ]
                 );
         }
+    }
+
+    // ------------ Helper Functions ---------
+
+    /**
+     * @param array $input
+     */
+    protected function updateValidationAfterFtaProcessed(array $input)
+    {
+        $this->markValidationAsCompleted(AccountStatus::ACTIVE);
+
+        if ($this->validation->getRegisteredName() === null)
+        {
+            $traceArray = [
+                'input'             => $input,
+                'validation_status' => $this->validation->getStatus(),
+            ];
+
+            $this->slack->queue(
+                TraceCode::BENEFICIARY_NAME_NOT_PRESENT,
+                $traceArray,
+                Constants::slackSettings()
+            );
+
+            $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
+        }
+    }
+
+    /**
+     * @param array $input
+     */
+    protected function updateValidationAfterFtaFailed(array $input)
+    {
+        if ($input['internal_error'] === false)
+        {
+            $this->markValidationAsCompleted(AccountStatus::INVALID);
+
+            return;
+        }
+
+        $traceArray = [
+            'input'             => $input,
+            'validation_status' => $this->validation->getStatus(),
+        ];
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR, $traceArray);
+
+        // We need to retry after some time.
+        // This will be done by creating another FTA from retry CRON.
+        $this->setRetryAt();
+    }
+
+    protected function setRetryAt()
+    {
+        // Calculate Retry At value
+        $nextAttempt = $this->validation->getAttempts() + 1;
+
+        $retryAfter = Arr::get(self::$attemptToRetryAfterSecondsMap, $nextAttempt);
+
+        if ($retryAfter == null)
+        {
+            $retryAfter = self::$attemptToRetryAfterSecondsMap[7];
+        }
+
+        $retryAt = Carbon::now(Timezone::IST)->addSeconds($retryAfter)->getTimestamp();
+
+        $this->validation->setRetryAt($retryAt);
+
+        $this->repo->saveOrFail($this->validation);
     }
 }
