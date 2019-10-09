@@ -184,7 +184,7 @@ class Initiator extends Base\Core
             $customProperties = [
                 'channel'                       => $channel,
                 'fund_transfer_attempt_count'   => $count,
-                'purpose'                       => $purpose,
+                'fund_transfer_attempt_purpose' => $purpose,
                 'fund_transfer_attempt_medium'  => $medium,
             ];
 

@@ -474,6 +474,7 @@ class Processor extends Base\Core
             $transactionCount = $txns->count();
 
             $customProperties = [
+                'merchant_id'           => $merchantId,
                 'channel'               => $channel,
                 'transaction_count'     => $transactionCount,
             ];
