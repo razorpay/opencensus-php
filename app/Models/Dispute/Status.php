@@ -12,14 +12,6 @@ class Status
     const WON          = 'won';
     const CLOSED       = 'closed';
 
-    protected static $statuses = [
-        self::OPEN,
-        self::UNDER_REVIEW,
-        self::LOST,
-        self::WON,
-        self::CLOSED,
-    ];
-
     protected static $closedStatuses = [
         self::WON,
         self::LOST,
@@ -54,16 +46,6 @@ class Status
     public static function exists(string $status): bool
     {
         return defined(get_class() . '::' . strtoupper($status));
-    }
-
-    /**
-     * Return all dispute status defined as an array
-     *
-     * @return array
-     */
-    public static function list(): array
-    {
-        return self::$statuses;
     }
 
     public static function getClosedStatuses(): array

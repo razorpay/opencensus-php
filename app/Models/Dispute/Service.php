@@ -4,15 +4,19 @@ namespace RZP\Models\Dispute;
 
 use Mail;
 use Request;
+use Carbon\Carbon;
+use Lib\PhoneBook;
 
 use RZP\Exception;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\{Base, Payment};
 use RZP\Models\Dispute\File;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Dispute\Reason;
+use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Trace\TraceCode;
 
@@ -26,6 +30,8 @@ class Service extends Base\Service
     const RZPDisputeID              = 'rzp_dispute_id';
     const bulkDisputeCreateFileName = 'bulk_disputes_create_status';
     const bulkDisputeEditFileName   = 'bulk_disputes_edit_status';
+
+    const bulkDisputeCreateDateFormat = 'd/m/Y H:i:s';
 
     const bulkCreateDisputesColumns = [
         Entity::PAYMENT_ID,
@@ -211,6 +217,13 @@ class Service extends Base\Service
 
                 $dispute = $this->repo->dispute->findOrFail($input[Entity::ID]);
 
+                if ($dispute->isClosed() === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        PublicErrorDescription::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE
+                    );
+                }
+
                 $editInput = $this->prepareInputForEdit($input);
 
                 $this->core()->update($dispute, $editInput);
@@ -305,7 +318,7 @@ class Service extends Base\Service
                 break;
         }
 
-        if ($validator->arrayEqual($data[0], $headers) === false)
+        if ($validator->validateArrayEqual($data[0], $headers) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'File Header columns do not match expected values'
@@ -355,12 +368,9 @@ class Service extends Base\Service
     {
         unset($input[Entity::ID]);
 
-        if (empty($input[Entity::GATEWAY_DISPUTE_STATUS]) === true)
-        {
-            unset($input[Entity::GATEWAY_DISPUTE_STATUS]);
-        }
+        $status = $input[Entity::STATUS] ?? NULL;
 
-        if ($input[Entity::STATUS] !== Status::LOST)
+        if ($status !== Status::LOST)
         {
             unset($input[Entity::SKIP_DEDUCTION]);
             unset($input[Entity::COMMENTS]);
@@ -426,26 +436,29 @@ class Service extends Base\Service
 
         foreach ($keys as $key => $value)
         {
-            $res = ($row[$key] !== null) ? stringify($row[$key]) : '';
-            $res = trim($res);
+            $res = $row[$key];
 
-            $validator = (new Validator);
+            // To handle variations in csv and excel files, empty is converted to NULL
+            $res = (empty($res) === false) ? trim(stringify($res)) : NULL;
 
-            $func = 'validateFileColumn' . studly_case($value);
+            $func = 'formatValue' . studly_case($value);
 
-            if (method_exists($validator, $func))
+            if (method_exists($this, $func))
             {
                 if ($value === Reason\Entity::NETWORK_CODE)
                 {
-                    $validator->$func($res, $input);
+                    $res = $this->$func($res, $input);
                 }
                 else
                 {
-                    $validator->$func($res);
+                    $res = $this->$func($res);
                 }
             }
 
-            $input[$value] = $res;
+            if ($res !== NULL)
+            {
+                $input[$value] = $res;
+            }
         }
 
         return $input;
@@ -455,7 +468,6 @@ class Service extends Base\Service
      * @param array $dispute
      * @return array
      */
-
     public function getDisputeDataForMail(array $dispute) : array
     {
         $disputeData = [];
@@ -466,5 +478,189 @@ class Service extends Base\Service
         }
 
         return $disputeData;
+    }
+
+    public function formatValueId($res)
+    {
+        if (empty($res) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Dispute ID cant be empty'
+            );
+        }
+
+        return $res;
+    }
+
+    public function formatValuePaymentId($res)
+    {
+        if (empty($res) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment ID cant be empty'
+            );
+        }
+
+        return $res;
+    }
+
+    public function formatValueMerchantEmails($res)
+    {
+        if (empty($res) === false)
+        {
+            $mails = array_map('trim', explode(',', $res));
+
+            return $mails;
+        }
+
+        return [];
+    }
+
+    public function formatValueReasonCode($res)
+    {
+        if (empty($res) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'reason_code cant be empty'
+            );
+        }
+
+        $validCode = strtolower($res);
+        $validCode = snake_case($validCode);
+
+        if ($res !== $validCode)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid reason_code. Should be snake case with all smalls'
+            );
+        }
+
+        return $res;
+    }
+
+    public function formatValueNetworkCode($res, array &$input)
+    {
+        if (empty($res) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'network_code cant be empty'
+            );
+        }
+
+        $networkCode = array_map('trim', explode('-', $res));
+
+        if (count($networkCode) !== 2)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid network_code format. Ex. Visa-85'
+            );
+        }
+
+        $network = (new Reason\Validator)->validateAndFetchFormattedNetwork($networkCode[0]);
+
+        $input[Reason\Entity::NETWORK] = $network;
+
+        $res = $networkCode[1];
+
+        return $res;
+    }
+
+    public function formatValueRaisedOn($res)
+    {
+        if (empty($res) === true)
+        {
+            $res = Carbon::now(Timezone::IST)->format('d/m/Y');
+        }
+
+        // Creation at beginning of the day IST
+        $res .= ' 00:00:00';
+
+        try
+        {
+            $res = Carbon::createFromFormat(self::bulkDisputeCreateDateFormat, $res, Timezone::IST)->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+            // Because default message thrown is incomprehensible
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid raised_on date. Please provide in d/m/Y format'
+            );
+        }
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($currentTime < $res)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'raised_on day cannot be greater than current day'
+            );
+        }
+
+        return $res;
+    }
+
+    public function formatValueExpiresOn($res)
+    {
+        if (empty($res) === true)
+        {
+            $res = Carbon::now(Timezone::IST)->addDays(9)->format('d/m/Y');
+        }
+
+        // Expires at the end of the day IST
+        $res .= ' 23:59:59';
+
+        try
+        {
+            $res = Carbon::createFromFormat(self::bulkDisputeCreateDateFormat, $res, Timezone::IST)->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+            // Because default message thrown is incomprehensible
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid expires_on date. Please provide in d/m/Y format'
+            );
+        }
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($currentTime >= $res)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'expires_on time cannot be less than or equal to current time'
+            );
+        }
+
+        return $res;
+    }
+
+    public function formatValueContact($res)
+    {
+        if (empty($res) === false)
+        {
+            $number = new PhoneBook($res, true);
+
+            if ($number->isValidNumber() === true)
+            {
+                $res = $number->format();
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid Contact number'
+                );
+            }
+        }
+
+        return $res;
+    }
+
+    public function formatValueSkipEmail($res)
+    {
+        return (new Validator)->validateCustomBoolean($res);
+    }
+
+    public function formatValueSkipDeduction($res)
+    {
+        return (new Validator)->validateCustomBoolean($res);
     }
 }
