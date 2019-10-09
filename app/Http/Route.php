@@ -1191,39 +1191,38 @@ final class Route
         // Governor Proxy APIs - Execute Rule Chain
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',                                                  'GovernorController@executeChains'         ],
 
+        //
         // Governor Proxy APIs New
+        //
 
-        'governor_get_client_v1'                  => ['get',      'clients',                                                                                              'GovernorControllerV1@getClients'          ],
+        'governor_get_client_v1'                  => ['get',      'clients',                                                                                              'GovernorController@proxy'                 ],
 
         // Governor Proxy APIs New - Namespace
-        'governor_create_namespace_v1'            => ['post',     'clients/{client_id}/namespaces',                                                                       'GovernorControllerV1@createNamespace'     ],
-        'governor_list_namespace_v1'              => ['get',      'clients/{client_id}/namespaces',                                                                       'GovernorControllerV1@listNamespaces'      ],
-        'governor_get_namespace_v1'               => ['get',      'namespaces/{namespace_id}',                                                                            'GovernorControllerV1@getNamespace'        ],
-        'governor_update_namespace_v1'            => ['put',      'namespaces/{namespace_id}',                                                                            'GovernorControllerV1@updateNamespace'     ],
-        'governor_delete_namespace_v1'            => ['delete',   'namespaces/{namespace_id}',                                                                            'GovernorControllerV1@deleteNamespace'     ],
+        'governor_create_namespace_v1'            => ['post',     'clients/{client_id}/namespaces',                                                                       'GovernorController@proxy'               ],
+        'governor_list_namespace_v1'              => ['get',      'clients/{client_id}/namespaces',                                                                       'GovernorController@proxy'      ],
+        'governor_get_namespace_v1'               => ['get',      'namespaces/{namespace_id}',                                                                            'GovernorController@proxy'        ],
+        'governor_update_namespace_v1'            => ['put',      'namespaces/{namespace_id}',                                                                            'GovernorController@proxy'     ],
+        'governor_delete_namespace_v1'            => ['delete',   'namespaces/{namespace_id}',                                                                            'GovernorController@proxy'     ],
 
         // Governor Proxy APIs New - Rule
-
-        'governor_create_rule_v1'                 => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',              'GovernorControllerV1@createRule'          ],
-        'governor_list_rule_v1'                   => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',              'GovernorControllerV1@listRule'            ],
-        'governor_get_rule_v1'                    => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorControllerV1@getRule'             ],
-        'governor_delete_rule_v1'                 => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorControllerV1@deleteRule'          ],
-        'governor_update_rule_v1'                 => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorControllerV1@updateRule'          ],
+        'governor_create_rule_v1'                 => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',              'GovernorController@proxy'          ],
+        'governor_list_rule_v1'                   => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',              'GovernorController@proxy'            ],
+        'governor_get_rule_v1'                    => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorController@proxy'             ],
+        'governor_delete_rule_v1'                 => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorController@proxy'          ],
+        'governor_update_rule_v1'                 => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',    'GovernorController@proxy'          ],
 
         // Governor Proxy APIs New - Rule Chain
-        'governor_list_rule_chains_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains',                                                                'GovernorControllerV1@listRuleChains'      ],
-        'governor_create_rule_chain_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains',                                                                'GovernorControllerV1@createRuleChain'     ],
-        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains',                                                                'GovernorControllerV1@deleteRuleChain'     ],
+        'governor_list_rule_chains_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains',                                                                'GovernorController@proxy'      ],
+        'governor_create_rule_chain_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains',                                                                'GovernorController@proxy'     ],
+        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains',                                                                'GovernorController@proxy'     ],
 
         // Governor Proxy APIs New - Rule Groups
-        'governor_list_rule_groups_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                    'GovernorControllerV1@listRuleGroups'      ],
-        'governor_create_rule_group_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                    'GovernorControllerV1@createRuleGroup'     ],
-        'governor_create_bulk_rule_group_v1'      => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/bulk',                               'GovernorControllerV1@createBulkRuleGroup' ],
-        'governor_get_rule_group_v1'              => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorControllerV1@getRuleGroup'        ],
-        'governor_delete_rule_group_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorControllerV1@deleteRuleGroup'     ],
-        'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorControllerV1@updateRuleGroup'     ],
-
-        // Governor Proxy APIs
+        'governor_list_rule_groups_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                    'GovernorController@proxy'      ],
+        'governor_create_rule_group_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                    'GovernorController@proxy'     ],
+        'governor_create_bulk_rule_group_v1'      => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/bulk',                               'GovernorController@proxy' ],
+        'governor_get_rule_group_v1'              => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorController@proxy'        ],
+        'governor_delete_rule_group_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorController@proxy'     ],
+        'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                    'GovernorController@proxy'     ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_credentials'             => ['post',     'banking_accounts/{id}/credentials',                         'BankingAccountController@storeCredentialsAndActivateAccount' ],

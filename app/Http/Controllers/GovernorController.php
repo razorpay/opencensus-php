@@ -2,7 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
+use Illuminate\Routing\Router;
 use Request;
+use RZP\Http\Route;
 use RZP\Services\GovernorService;
 
 class GovernorController extends Controller
@@ -134,5 +136,22 @@ class GovernorController extends Controller
         $response = $this->app['governor']->sendRequest(GovernorService::EXECUTE_CHAINS, $input, $source, $namespace, null , $queryParams);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
+    }
+
+    public function proxy()
+    {
+        $method = Request::method();
+
+        $path = Request::path() . '?' . Request::getQueryString();
+
+        $content = Request::getContent();
+
+        // Symfony returns each header key as an array.
+        $headers  = array_map(function($v) { return current($v); }, Request::header());
+        $headers  = array_only($headers, ['content-type']);
+
+        $response = $this->app['governor']->sendRequestV1($method, $path, $content, $headers);
+
+        return ApiResponse::json($response);
     }
 }

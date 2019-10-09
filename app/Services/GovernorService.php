@@ -96,107 +96,6 @@ class GovernorService
         'method'    =>  "POST",
     ];
 
-    // For new proxy APIs
-
-    const GET_CLIENTS_V1  =   [
-        'url'       =>  "clients",
-        'method'    =>  "GET",
-    ];
-
-    const CREATE_NAMESPACE_V1  =   [
-        'url'       =>  "clients/:client_id/namespaces",
-        'method'    =>  "POST",
-    ];
-
-    const LIST_NAMESPACES_V1  =   [
-        'url'       =>  "clients/:client_id/namespaces",
-        'method'    =>  "GET",
-    ];
-
-    const GET_NAMESPACE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id",
-        'method'    =>  "GET",
-    ];
-
-    const UPDATE_NAMESPACE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id",
-        'method'    =>  "PUT",
-    ];
-
-    const DELETE_NAMESPACE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id",
-        'method'    =>  "DELETE",
-    ];
-    const LIST_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules",
-        'method'    =>  "GET",
-    ];
-
-    const GET_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
-        'method'    =>  "GET",
-    ];
-
-    const DELETE_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
-        'method'    =>  "DELETE",
-    ];
-
-    const UPDATE_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules/:rule_id",
-        'method'    =>  "PUT",
-    ];
-
-    const LIST_RULE_CHAIN_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains",
-        'method'    =>  "GET",
-    ];
-
-    const CREATE_RULE_CHAIN_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains",
-        'method'    =>  "POST",
-    ];
-
-    const DELETE_RULE_CHAIN_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains",
-        'method'    =>  "DELETE",
-    ];
-
-    const LIST_RULE_GROUPS_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups",
-        'method'    =>  "GET",
-    ];
-
-    const CREATE_RULE_GROUP_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups",
-        'method'    =>  "POST",
-    ];
-
-    const CREATE_BULK_RULE_GROUP_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/bulk",
-        'method'    =>  "POST",
-    ];
-
-    const GET_RULE_GROUP_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id",
-        'method'    =>  "GET",
-    ];
-
-    const DELETE_RULE_GROUP_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id",
-        'method'    =>  "DELETE",
-    ];
-
-    const UPDATE_RULE_GROUP_V1 =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id",
-        'method'    =>  "PUT",
-    ];
-
-    const CREATE_RULE_V1  =   [
-        'url'       =>  "namespaces/:namespace_id/rule_chains/:rule_chain_id/rule_groups/:rule_group_id/rules",
-        'method'    =>  "POST",
-    ];
-
     /**
      * The application instance.
      *
@@ -285,43 +184,6 @@ class GovernorService
         return $parsedResponse;
     }
 
-    public function sendRequestV1(array $requestSchema, $data, $client_id = null, $namespace_id = null, $rule_chain_id = null, $rule_group_id = null, $rule_id = null)
-    {
-        $url = $this->getUrlV1($requestSchema, $client_id, $namespace_id, $rule_chain_id, $rule_group_id, $rule_id);
-
-        $auth = $this->getAuthDetailsV1();
-
-        $method = $this->getMethod($requestSchema);
-
-        if($method == 'POST'){
-            $userId = $this->app['basicauth']->getAdmin()->getId();
-            $data['created_by'] = $userId;
-        }
-
-        $request = [
-            'url'     => $url,
-            'method'  => $method,
-            'content' => $data,
-            'headers' => [
-                self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
-            ]
-        ];
-
-        $this->trace->info(TraceCode::GOVERNOR_SERVICE_REQUEST, $request);
-
-        $request['options'] = [
-            'auth' => $auth
-        ];
-
-        $response = $this->sendRawRequest($request);
-
-        $parsedResponse = $this->processResponseV1($response);
-
-        $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse['response_body'] ?? []);
-
-        return $parsedResponse;
-    }
-
     protected function sendRawRequest($request)
     {
         $retryCount = 0;
@@ -395,23 +257,6 @@ class GovernorService
         return $url;
     }
 
-    protected function getUrlV1($requestArray, $client_id = '', $namespace_id = '', $rule_chain_id = '', $rule_group_id = '', $rule_id = ''): string
-    {
-        $baseUrl = $this->getBaseUrl();
-
-        $url = $baseUrl . str_replace_first(':namespace_id', $namespace_id, $requestArray['url']);
-
-        $url = str_replace_first(':client_id', $client_id, $url);
-
-        $url = str_replace_first(':rule_chain_id', $rule_chain_id, $url);
-
-        $url = str_replace_first(':rule_group_id', $rule_group_id, $url);
-
-        $url = str_replace_first(':rule_id', $rule_id, $url);
-
-        return $url;
-    }
-
     protected function getMethod($requestArray): string
     {
         return $requestArray['method'];
@@ -449,7 +294,6 @@ class GovernorService
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
-
 
     protected function jsonToArray($json)
     {
@@ -505,14 +349,8 @@ class GovernorService
             );
         }
 
-        return [
-            'response_body' => $this->jsonToArray($response->body),
-            'response_code' => $response->status_code,
-        ];
-
+        return $this->jsonToArray($response->body);
     }
-
-
 
     public function getAuthDetails(string $source) {
         switch ($source) {
@@ -531,12 +369,70 @@ class GovernorService
         }
     }
 
-    public function getAuthDetailsV1() {
+    public function getAdminAuthDetails() {
 
         return [
             $this->config['adminapi']['username'],
             $this->config['adminapi']['password']
         ];
 
+    }
+
+    public function sendRequestV1(string $method, string $path, string $content, array $headers)
+    {
+        $url = $this->getBaseUrl() . preg_replace('/^v1\//', '', $path);
+
+        $auth = $this->getAdminAuthDetails();
+
+        $data = json_decode($content, true);
+
+        if($method == 'POST'){
+            $userId = $this->app['basicauth']->getAdmin()->getId();
+            $data['created_by'] = $userId;
+        }
+
+        $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();
+
+        $request = [
+            'url'     => $url,
+            'method'  => $method,
+            'content' => $data,
+            'headers' => $headers,
+        ];
+
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_REQUEST, $request);
+
+        $request['options'] = [
+            'auth' => $auth
+        ];
+
+        $response = $this->sendRawRequestV1($request);
+
+        $parsedResponse = $this->processResponseV1($response);
+
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse['response_body'] ?? []);
+
+        return $parsedResponse;
+    }
+
+    protected function sendRawRequestV1($request)
+    {
+        try
+        {
+            $response = $this->request->request(
+                $request['url'],
+                $request['headers'],
+                $request['content'],
+                $request['method'],
+                $request['options']);
+        }
+        catch(\Requests_Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            $this->throwServiceErrorException($e);
+        }
+
+        return $response;
     }
 }
