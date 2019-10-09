@@ -12,9 +12,10 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { AmountTooltip } from 'rzp/ui/Amount';
 import Amount from 'rzp/ui/Amount';
 import debounce from 'rzp/utils/debounce';
+import PropTypes from 'prop-types';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { CLOSEOPTIONS } from './CloseReasons';
-import PropTypes from 'prop-types';
+import ModalCloseReasons from './ModalCloseReasons';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
@@ -32,8 +33,10 @@ export default class OndemandModal extends Component {
       closeClicked: false,
       errors: [],
       breakupShow: false,
+      checkedBreakup: false,
       isLoadingBreakup: false,
       hasChangedAmount: false,
+      clickedConfirm: false,
       closeReason: '',
       needFetch: true,
       taxPercent: 0,
@@ -41,26 +44,12 @@ export default class OndemandModal extends Component {
       tax: 0,
       instantFee: 0,
     };
+
     if (props.currentBalance) {
       this.state.amount = parseInt(props.currentBalance / 100);
     }
     this.updateFeeDebounced = debounce(this.updateFee, 300);
   }
-
-  handleReasonChange = e => {
-    this.setState({ closeReason: e.target.value });
-  };
-
-  submitCloseReason = () => {
-    const analyticsPayload = {
-      eventCategory: 'Dashboard - Instant Settlement Modal',
-      eventAction: `Close - Instant Settlement Modal`,
-      eventLabel: `Reason: ${this.state.closeReason}`,
-    };
-
-    window.rzpAnalytics(analyticsPayload);
-    this.props.closeModal();
-  };
 
   static contextTypes = {
     confirm: PropTypes.func,
@@ -75,33 +64,77 @@ export default class OndemandModal extends Component {
           currency={'INR'}
           parentQuerySelector={'.modal-body'}
         />
-        <div className={'warning-settlement-confirmation'}>
-          Settlements will be affected due to bank holidays
-        </div>
       </div>
     );
   };
 
   openConfirmSettlement = () => {
+    this.setState({
+      clickedConfirm: true,
+    });
+    var analyticsPayload1 = {
+      eventCategory: 'Dashboard - Early Settlement',
+      eventAction: `Amount`,
+      eventLabel: ``,
+    };
+    if (this.state.hasChangedAmount) {
+      analyticsPayload1.eventLabel = `${this.amountCategory(
+        this.state.amount
+      )} - changed -confirm`;
+    } else {
+      analyticsPayload1.eventLabel = `${this.amountCategory(
+        this.state.amount
+      )} - preFilled -confirm`;
+    }
+    window.rzpAnalytics(analyticsPayload1);
+
+    if (this.state.hasChangedAmount) {
+      var analyticsPayload = {
+        eventCategory: 'Dashboard - Early Settlement',
+        eventAction: `confirm`,
+        eventLabel: `Changed amount - after show breakup| close`,
+      };
+      if (this.state.checkedBreakup) {
+        analyticsPayload.eventLabel = `Changed amount - after show breakup| close`;
+      } else {
+        analyticsPayload.eventLabel = `Changed amount - before show breakup| close`;
+      }
+      window.rzpAnalytics(analyticsPayload);
+    } else {
+      var analyticsPayload = {
+        eventCategory: 'Dashboard - Early Settlement',
+        eventAction: `confirm`,
+        eventLabel: `preFilled amount - after show breakup| close`,
+      };
+      if (this.state.checkedBreakup) {
+        analyticsPayload.eventLabel = `preFilled amount - after show breakup| close`;
+      } else {
+        analyticsPayload.eventLabel = `preFilled amount - before show breakup| close`;
+      }
+      window.rzpAnalytics(analyticsPayload);
+    }
+
     this.context.confirm({
       header: 'Are you sure you want to do this settlement?',
       message: this.renderConfirmation,
       affirmativeLabel: 'Yes, Settle',
       abortLabel: "No, Don't ",
       action: () => {
+        const analyticsPayload = {
+          eventCategory: 'Dashboard - Early Settlement',
+          eventAction: `second confirmation`,
+          eventLabel: `Yes,Settle | Second Confirm`,
+        };
+        window.rzpAnalytics(analyticsPayload);
         this.onSubmit();
       },
-      onMount: () => {
-        window.rzpAnalytics({
-          eventCategory: 'Dashboard - Instant Settlement Modal',
-          eventAction: 'Open Form - Confirm Settlement',
-        });
-      },
       abort: () => {
-        window.rzpAnalytics({
-          eventCategory: 'Dashboard - Instant Settlement Modal',
-          eventAction: 'Close Form - Close Confirm Settlement',
-        });
+        const analyticsPayload = {
+          eventCategory: 'Dashboard - Early Settlement',
+          eventAction: `second confirmation`,
+          eventLabel: `No, Don't | Second Confirm`,
+        };
+        window.rzpAnalytics(analyticsPayload);
       },
     });
   };
@@ -201,57 +234,7 @@ export default class OndemandModal extends Component {
     );
   };
 
-  renderClose = () => {
-    return (
-      <div className="onmdemand-close-modal">
-        <ModalHeader
-          class="header"
-          title="Reason"
-          onCloseClick={() => {
-            this.props.closeModal();
-          }}
-        />
-        <div className="modal-body">
-          {CLOSEOPTIONS.map(choice => {
-            return (
-              <div
-                key={'parent-choice-' + choice.value}
-                className="es-close-choices"
-              >
-                <label key={'lab-' + choice.value}>
-                  <input
-                    type="radio"
-                    name="close-reason"
-                    value={choice.value}
-                    key={'inp-choice' + choice.value}
-                    onChange={this.handleReasonChange}
-                  />
-                  {choice.label}
-                </label>
-              </div>
-            );
-          })}
-        </div>
-        <Button.Primary
-          onClick={this.submitCloseReason}
-          disabled={!this.state.closeReason}
-          className="pull-right confirm-close"
-        >
-          Confirm & Close
-        </Button.Primary>
-      </div>
-    );
-  };
-
   updateFee = () => {
-    if (this.state.hasChangedAmount) {
-      const analyticsPayload = {
-        eventCategory: 'Dashboard - Instant Settlement Modal',
-        eventAction: `Input - Amout - ${this.state.amount * 100}`,
-        Currentbalance: `Balance - ${this.props.currentBalance}`,
-      };
-      window.rzpAnalytics(analyticsPayload);
-    }
     this.setState({
       errors: [],
       isLoadingBreakup: true,
@@ -288,10 +271,31 @@ export default class OndemandModal extends Component {
   };
 
   componentDidMount() {
+    const analyticsPayload1 = {
+      eventCategory: 'Dashboard - Early Settlement',
+      eventAction: `Click Settle Now`,
+      eventLabel: `${this.props.fromWhere} | Settle Now`,
+    };
+
+    window.rzpAnalytics(analyticsPayload1);
+    const analyticsPayload = {
+      eventCategory: 'Dashboard - Early Settlement',
+      eventAction: `Modal`,
+      eventLabel: `opens`,
+    };
+
+    window.rzpAnalytics(analyticsPayload);
     this.updateFee();
   }
 
   openSupport = () => {
+    const analyticsPayload = {
+      eventCategory: 'Dashboard - Early Settlement',
+      eventAction: `support`,
+      eventLabel: `Clicks | Support`,
+    };
+
+    window.rzpAnalytics(analyticsPayload);
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
       rzpTicketSystem.setPrefill('#request', [
@@ -306,12 +310,15 @@ export default class OndemandModal extends Component {
   };
 
   fetchBreakup = () => {
-    const analyticsPayload = {
-      eventCategory: 'Dashboard - Instant Settlement Modal',
-      eventAction: `Check - Breakup -amount - ${this.state.amount * 100}`,
-    };
+    if (this.state.clickedConfirm) {
+      const analyticsPayload = {
+        eventCategory: 'Dashboard - Early Settlement',
+        eventAction: `Show Breakup`,
+        eventLabel: `Success Screen | Show Breakup`,
+      };
 
-    window.rzpAnalytics(analyticsPayload);
+      window.rzpAnalytics(analyticsPayload);
+    }
 
     if (this.state.needFetch) {
       let payload = {
@@ -330,6 +337,7 @@ export default class OndemandModal extends Component {
         .then(response => {
           this.setState({
             breakupShow: true,
+            checkedBreakup: true,
             needFetch: false,
             tax: response.data.items[1].amount,
             instantFee: response.data.items[0].amount,
@@ -352,13 +360,6 @@ export default class OndemandModal extends Component {
   };
 
   onSubmit = () => {
-    const analyticsPayload = {
-      eventCategory: 'Dashboard - Instant Settlement Modal',
-      eventAction: `Confirm - Click`,
-    };
-
-    window.rzpAnalytics(analyticsPayload);
-
     let payload = {
       amount: this.state.amount * 100,
       currency: 'INR',
@@ -409,6 +410,7 @@ export default class OndemandModal extends Component {
     if (isInteger(val) && val > 0) {
       if (val * 100 > this.props.currentBalance) {
         trackOndemand.trackAmounTooHigh(this.props.fromWhere);
+
         return (
           <>
             <span>Max amount that can be settled is </span>
@@ -419,6 +421,16 @@ export default class OndemandModal extends Component {
     } else {
       return 'Invalid Amount';
     }
+  };
+
+  amountCategory = amount => {
+    if (amount <= 1000) return '1-1000';
+    else if (amount <= 10000) return '1000-10000';
+    else if (amount <= 50000) return '10000-50000';
+    else if (amoutn <= 100000) return '50000-100000';
+    else if (amount <= 200000) return '100000-200000';
+    else if (amount <= 500000) return '200000-500000';
+    else return '>500000';
   };
 
   handleCloseModal = eventType => {
@@ -433,20 +445,48 @@ export default class OndemandModal extends Component {
         trackOndemand.trackSuccessCloseModal(this.props.fromWhere);
         break;
     }
-    if (this.state.hasChangedAmount) {
-      const analyticsPayload = {
-        eventCategory: 'Dashboard - Instant Settlement Modal',
-        eventAction: `Close -After -InputAmount`,
-      };
+    if (!this.state.clickedConfirm) {
+      if (this.state.hasChangedAmount) {
+        var analyticsPayload = {
+          eventCategory: 'Dashboard - Early Settlement',
+          eventAction: `Close modal`,
+          eventLabel: `Changed amount - after show breakup| close`,
+        };
+        if (this.state.checkedBreakup) {
+          analyticsPayload.eventLabel = `Changed amount - after show breakup| close`;
+        } else {
+          analyticsPayload.eventLabel = `Changed amount - before show breakup| close`;
+        }
+        window.rzpAnalytics(analyticsPayload);
+      } else {
+        var analyticsPayload = {
+          eventCategory: 'Dashboard - Early Settlement',
+          eventAction: `Close modal`,
+          eventLabel: `preFilled amount - after show breakup| close`,
+        };
+        if (this.state.checkedBreakup) {
+          analyticsPayload.eventLabel = `preFilled amount - after show breakup| close`;
+        } else {
+          analyticsPayload.eventLabel = `preFilled amount - before show breakup| close`;
+        }
+        window.rzpAnalytics(analyticsPayload);
+      }
 
-      window.rzpAnalytics(analyticsPayload);
-    } else {
-      const analyticsPayload = {
-        eventCategory: 'Dashboard - Instant Settlement Modal',
-        eventAction: `Close -Before -InputAmount`,
+      var analyticsPayload1 = {
+        eventCategory: 'Dashboard - Early Settlement',
+        eventAction: `Amount`,
+        eventLabel: ``,
       };
-
-      window.rzpAnalytics(analyticsPayload);
+      if (this.state.hasChangedAmount) {
+        analyticsPayload1.eventLabel = `${this.amountCategory(
+          this.state.amount
+        )} - changed -close`;
+      } else {
+        analyticsPayload1.eventLabel = `${this.amountCategory(
+          this.state.amount
+        )} - preFilled -close`;
+      }
+      window.rzpAnalytics(analyticsPayload1);
     }
     if (this.state.isSaved) {
       this.props.closeModal();
@@ -483,8 +523,9 @@ export default class OndemandModal extends Component {
                   <div className="overflow-box">
                     {this.breakup()}
                     <div className="help-block">
-                      Worth of settlement has been initiated ,will be settled to
-                      your bank account on the next business day{` `}
+                      Your settlement has been initiated. Amounts up to 2 Lacs
+                      will be settled instantly. All other amounts to be settled
+                      within 3 working hours{` `}
                       <i className="i i-info-circle" />
                       <Popover
                         align="right"
@@ -612,7 +653,7 @@ export default class OndemandModal extends Component {
               </div>
             )
           ) : (
-            this.renderClose()
+            <ModalCloseReasons closeOrigin="OnDemand" />
           )}
         </React.Fragment>
       </div>

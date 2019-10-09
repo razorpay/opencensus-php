@@ -44,6 +44,7 @@ class AnalyticsMobile extends Component {
     this.props.openModal({
       component: <OndemandModal currentBalance={balance} fromWhere="Home" />,
       size: 'small',
+      disableClose: true,
     });
   }
 
