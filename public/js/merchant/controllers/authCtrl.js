@@ -201,10 +201,7 @@ app
         $scope.signup.currentStep = step;
         if (subStep !== undefined) {
           // for individual upon press take him to step 4
-          if (
-            $scope.signup.merchantData.business_type == 11 ||
-            $scope.signup.settings.partner_intent == true
-          ) {
+          if ($scope.canSkipIntermediateScreens()) {
             $scope.signup.currentSubStep = 0;
           } else {
             $scope.signup.currentSubStep = subStep;
@@ -583,8 +580,7 @@ app
           // if individuval in business type take him directly to last screen
           if (
             $scope.signup.currentSubStep == 0 &&
-            (reqPayload['business_type'] == 11 ||
-              $scope.signup.settings.partner_intent)
+            $scope.canSkipIntermediateScreens()
           ) {
             $scope.signup.currentSubStep = $scope.signup.currentSubStep + 3;
           } else {
@@ -968,10 +964,7 @@ app
         $scope.noTransition = true;
         if (!merchantData.business_type) {
           $scope.signup.currentSubStep = 0;
-        } else if (
-          $scope.signup.settings.partner_intent ||
-          merchantData.business_type == 11
-        ) {
+        } else if ($scope.canSkipIntermediateScreens()) {
           $scope.signup.currentSubStep = 3;
         } else if (!merchantData.transaction_volume) {
           $scope.signup.currentSubStep = 1;
@@ -985,6 +978,12 @@ app
         }, 0);
       }
 
+      $scope.canSkipIntermediateScreens = function() {
+        return (
+          $scope.signup.settings.partner_intent ||
+          $scope.signup.merchantData.business_type == 110
+        );
+      };
       $scope.goToForgotPwd = function() {
         var toRoute = 'access.forgotpwd';
         $state.transitionTo(

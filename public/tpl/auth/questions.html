@@ -104,7 +104,7 @@
           <div class="details-form-input-group">
             <i class="fa fa-building"></i>
             <input  ng-focus="onInputFocus('comapny_name')" type="text" name="business_name" id="business_name" ng-model="signup.merchantData.business_name"
-              class="form-control auth-form-input" placeholder="Company Name">
+              class="form-control auth-form-input" placeholder="Company Name" required ng-minlength="4">
           </div>
           <div class="details-form-input-group">
               <i class="fa fa-globe"></i>
@@ -148,7 +148,7 @@
             <div class="back-btn btn" ng-click="goToSignupStep(1, 2);trackBackClick('Department');">
               Back
             </div>
-            <button type="submit" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails();onFinishClick()">
+            <button type="submit" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails();onFinishClick()">
               Finish
             </button>
           </div>
