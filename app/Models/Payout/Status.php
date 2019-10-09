@@ -49,15 +49,34 @@ class Status
      * change on Payout Entity happens in an order.
      *
      * TODO: Complete this and use it before setting status in payout entity.
-     *
      * @var array
      */
     protected static $fromToStatusMap = [
+        null => [
+            self::CREATED,
+            self::PENDING,
+            self::QUEUED,
+        ],
+        self::QUEUED => [
+            self::CREATED,
+            self::CANCELLED,
+        ],
+        self::PENDING => [
+            self::REJECTED,
+            self::QUEUED,
+            self::CREATED,
+        ],
         self::CREATED => [
+            self::INITIATED,
             self::FAILED,
         ],
         self::INITIATED => [
+            self::REVERSED,
             self::FAILED,
+            self::PROCESSED,
+        ],
+        self::PROCESSED => [
+            self::REVERSED,
         ],
     ];
 
@@ -99,11 +118,11 @@ class Status
         // Eg: Primary accounts
         Entity::DEFAULT => [
             Entity::DEFAULT => [
-                Attempt\Status::CREATED   => Status::CREATED,
-                Attempt\Status::INITIATED => Status::INITIATED,
-                Attempt\Status::REVERSED  => Status::REVERSED,
-                Attempt\Status::FAILED    => Status::REVERSED,
-                Attempt\Status::PROCESSED => Status::PROCESSED,
+                Attempt\Status::CREATED   => self::CREATED,
+                Attempt\Status::INITIATED => self::INITIATED,
+                Attempt\Status::REVERSED  => self::REVERSED,
+                Attempt\Status::FAILED    => self::REVERSED,
+                Attempt\Status::PROCESSED => self::PROCESSED,
             ],
             Channel::AXIS2   => [],
             Channel::ICICI   => [],
@@ -111,11 +130,11 @@ class Status
         // Eg: Virtual Accounts
         AccountType::SHARED => [
             Entity::DEFAULT => [
-                Attempt\Status::CREATED   => Status::CREATED,
-                Attempt\Status::INITIATED => Status::INITIATED,
-                Attempt\Status::REVERSED  => Status::REVERSED,
-                Attempt\Status::FAILED    => Status::REVERSED,
-                Attempt\Status::PROCESSED => Status::PROCESSED,
+                Attempt\Status::CREATED   => self::CREATED,
+                Attempt\Status::INITIATED => self::INITIATED,
+                Attempt\Status::REVERSED  => self::REVERSED,
+                Attempt\Status::FAILED    => self::REVERSED,
+                Attempt\Status::PROCESSED => self::PROCESSED,
             ],
             Channel::YESBANK => [],
         ],
@@ -126,11 +145,11 @@ class Status
                 // should be added for each gateway, if not we expect failures here
             ],
             Channel::RBL => [
-                Attempt\Status::CREATED   => Status::CREATED,
-                Attempt\Status::INITIATED => Status::INITIATED,
-                Attempt\Status::REVERSED  => Status::REVERSED,
-                Attempt\Status::FAILED    => Status::FAILED,
-                Attempt\Status::PROCESSED => Status::PROCESSED,
+                Attempt\Status::CREATED   => self::CREATED,
+                Attempt\Status::INITIATED => self::INITIATED,
+                Attempt\Status::REVERSED  => self::REVERSED,
+                Attempt\Status::FAILED    => self::FAILED,
+                Attempt\Status::PROCESSED => self::PROCESSED,
             ],
         ],
     ];
@@ -172,11 +191,17 @@ class Status
         $channel     = $payout->getChannel();
         $accountType = optional($payout->balance)->getAccountType();
 
-        return Status::$ftaToPayoutStatusMap[$accountType][$channel][$ftaStatus] ??
-               Status::$ftaToPayoutStatusMap[Entity::DEFAULT][Entity::DEFAULT][$ftaStatus];
+        return self::$ftaToPayoutStatusMap[$accountType][$channel][$ftaStatus] ??
+               self::$ftaToPayoutStatusMap[Entity::DEFAULT][Entity::DEFAULT][$ftaStatus];
     }
 
-    public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)
+    /**
+     * Validate status change based on state machine
+     *
+     * @param string      $currentStatus
+     * @param string|null $previousStatus
+     */
+    public static function validateStatusUpdate(string $currentStatus, string $previousStatus = null)
     {
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 
