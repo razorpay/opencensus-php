@@ -322,9 +322,12 @@ class Xlsx extends Generator
 
         $sheet->getRowDimension('1')->setRowHeight(60);
 
-        // give light-blue fill color to the transaction header
-        $sheet->getStyle(self::TRANSACTION_HEADER_CELL_RANGE)->getFill()->setFillType(Fill::FILL_SOLID)
-              ->getStartColor()->setRGB(self::TRANSACTION_CELL_FILL_COLOR);
+        # give light-blue fill color to the transaction header
+        $sheet->getStyle(self::TRANSACTION_HEADER_CELL_RANGE)
+              ->getFill()
+              ->setFillType(Fill::FILL_SOLID)
+              ->getStartColor()
+              ->setRGB(self::TRANSACTION_CELL_FILL_COLOR);
 
         // give all the cells of the transaction table blue border
         $lastTransactionIndex = 'G' . (string) (self::TRANSACTION_DATA_START_ROW +

@@ -190,7 +190,7 @@ class Core extends Base\Core
 
         $uploadedFileInstance = $this->getUploadedFileInstance($pathToTemporaryFile);
 
-        $response = '';
+        $response = null;
 
         try
         {
@@ -210,7 +210,6 @@ class Core extends Base\Core
                                          Trace::ERROR,
                                          TraceCode::UFH_FILE_UPLOAD_FAILED);
         }
-
         return $response;
     }
 
