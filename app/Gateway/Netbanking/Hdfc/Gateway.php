@@ -572,7 +572,7 @@ class Gateway extends Base\Gateway
     {
         $email = $input['payment'][Payment\Entity::EMAIL] ?: Payment\Entity::DUMMY_EMAIL;
 
-        $clientCode = $this->stripEmailSpecialChars($email);
+        $clientCode = str_limit($this->stripEmailSpecialChars($email), 40, '');
 
         return $clientCode;
     }

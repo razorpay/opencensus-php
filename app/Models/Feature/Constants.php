@@ -420,6 +420,7 @@ class Constants
         self::EXPOSE_GATEWAY_PROVIDER         => true,
         self::KYC_HANDLED_BY_PARTNER          => true,
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
+        self::SUBMERCHANT_ONBOARDING          => true,
     ];
 
     // Entity type constants
