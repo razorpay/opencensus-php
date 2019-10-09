@@ -2,9 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use Illuminate\Routing\Router;
 use Request;
 use RZP\Http\Route;
+use Illuminate\Routing\Router;
 use RZP\Services\GovernorService;
 
 class GovernorController extends Controller

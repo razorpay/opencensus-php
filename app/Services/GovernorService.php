@@ -6,7 +6,6 @@ use Requests_Session;
 
 use Requests;
 use RZP\Exception;
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 
@@ -23,6 +22,8 @@ class GovernorService
 
     // request and response fields
     const ERROR     = 'error';
+    const ERROR_MESSAGE = 'error_message';
+    const ERROR_CODE = 'error_code';
 
     const CREATE_NAMESPACE  =   [
         'url'       =>  "rule_engine/namespace",
@@ -109,10 +110,6 @@ class GovernorService
 
     protected $request;
 
-    /**
-     * BasicAuth entity
-     * @var BasicAuth
-     */
     protected $auth;
 
     public function __construct($app)
@@ -334,17 +331,17 @@ class GovernorService
         if ( $response->status_code != 200 )
         {
             $response_Body = $this->jsonToArray($response->body);
-            if ( $response_Body['error']['error_code'] == "BAD_REQUEST_ERROR"){
+            if ( $response_Body[self::ERROR][self::ERROR_CODE] == ErrorCode::BAD_REQUEST_ERROR){
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR_GOVERNOR,
                     null,
                     [],
-                    $response_Body['error']['error_message']
+                    $response_Body[self::ERROR][self::ERROR_MESSAGE]
                 );
             }
 
             throw new Exception\ServerErrorException(
-                $response_Body['error']['error_message'],
+                $response_Body[self::ERROR][self::ERROR_MESSAGE],
                 ErrorCode::SERVER_ERROR
             );
         }
