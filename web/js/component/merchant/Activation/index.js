@@ -152,6 +152,7 @@ export default class ActivationWizard extends React.Component {
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
+    callingL1Api: false,
   };
 
   constructor(props) {
@@ -721,6 +722,7 @@ export default class ActivationWizard extends React.Component {
     console.log('submitting l1');
     const data = this.formData;
     // const { tracking } = this.props;
+    this.setState({ callingL1Api: true });
     return merchantFetch({
       url: 'merchant/instant_activation',
       method: 'POST',
@@ -730,6 +732,7 @@ export default class ActivationWizard extends React.Component {
     })
       .then(response => {
         console.log('got response', response);
+        this.setState({ callingL1Api: false });
         if (this.onActivationSuccess) {
           return this.onActivationSuccess(response);
         }
@@ -774,6 +777,7 @@ export default class ActivationWizard extends React.Component {
         return this.props.history.replace(`/`);
       })
       .catch(err => {
+        this.setState({ callingL1Api: false });
         console.log('catched err', err);
         this.markTabIfActive(currenActiveTab);
         if (err.errors.length && err.errors[0]) {
@@ -1420,7 +1424,20 @@ export default class ActivationWizard extends React.Component {
 
                 {/* Action Button 3 */}
                 {isLastTab &&
-                  !isFormSubmitted && (
+                  !this.props.user.instantActivation.isL1Submitted && (
+                    <Button.Primary
+                      disabled={this.state.callingL1Api}
+                      onClick={this.saveCurrentTab}
+                    >
+                      {this.state.callingL1Api
+                        ? 'Verifying...'
+                        : 'Submit and Verify'}
+                    </Button.Primary>
+                  )}
+
+                {/* Action Button 4 */}
+                {/* {isLastTab &&
+                  !isFormSubmitted && this.props.user.instantActivation.isL1Submitted && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
