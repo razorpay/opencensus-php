@@ -15,7 +15,7 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
-import { saveReportConfigs } from 'merchant/modules/reports';
+import { addPollInstance, saveReportConfigs } from 'merchant/modules/reports';
 import { showNotification } from 'rzp/modules/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../../ga';
 import { exportReportCSV } from '../../model';
@@ -50,10 +50,11 @@ const inActiveStatusReasonMap = {
     openModal,
     closeModal,
     saveReportConfigs,
+    addPollInstance,
   }
 )
 export default class PaymentPagesV3Entity extends React.Component {
-  state = { detailsCollapse: true };
+  state = { detailsCollapse: true, isExportInProgress: false };
 
   componentDidMount() {
     if (!this.props.reportConfigs) {
@@ -79,6 +80,10 @@ export default class PaymentPagesV3Entity extends React.Component {
     ];
   }
 
+  saveLongPollInstances = (reportId, pollInstance) => {
+    this.props.addPollInstance(reportId, pollInstance);
+  };
+
   downloadReport = () => {
     const { user, paymentPageEntity, reportConfigs } = this.props;
     let configId;
@@ -89,27 +94,49 @@ export default class PaymentPagesV3Entity extends React.Component {
 
     for (let i = 0; i < reportConfigs.length; i++) {
       const config = reportConfigs[i];
-      if (config.type === 'payment_link') {
+      if (config.type === 'payment_links') {
         configId = config.id;
         break;
       }
     }
 
-    this.props.showNotification({
-      type: 'success',
-      message: 'Your report will download shortly',
-    });
+    const promise = exportReportCSV(
+      user,
+      paymentPageEntity,
+      configId,
+      this.saveLongPollInstances
+    );
 
-    return exportReportCSV(user, paymentPageEntity, configId).then(data => {
-      if (data.error) {
-        return this.props.showNotification({
-          type: 'error',
-          message: data.error,
+    if (promise && promise.then) {
+      this.setState({
+        isExportInProgress: true,
+      });
+
+      this.props.showNotification({
+        type: 'success',
+        message: 'Your report will download shortly',
+      });
+
+      promise.then(data => {
+        this.setState({
+          isExportInProgress: false,
         });
-      }
 
-      window.location = data.url;
-    });
+        if (data.error || !data.url) {
+          return this.props.showNotification({
+            type: 'error',
+            message: data.error || 'Some error in downloading report',
+          });
+        }
+
+        window.location = data.url;
+      });
+    } else {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Some error in downloading report',
+      });
+    }
   };
 
   openEmbedButtonView = () => {
@@ -379,6 +406,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                 type="button"
                 class="btn Button--primary--invert btn-sm"
                 onClick={this.downloadReport}
+                disabled={this.state.isExportInProgress}
               >
                 <i class="i i-download m-r" />
                 Export All (CSV)

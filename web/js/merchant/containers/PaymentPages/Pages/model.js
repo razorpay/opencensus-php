@@ -1,5 +1,6 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { snakeToTitleCase } from 'common/util';
+import { generateReportV2 } from 'merchant/modules/reports';
 
 function pruneReqPayload(reqPayload) {
   if (reqPayload.amount) {
@@ -129,41 +130,47 @@ export function sendLink(id, data) {
     data: reqPayload,
   });
 }
-
-export function exportReportCSV(user, paymentPageEntity, configId) {
+export function exportReportCSV(
+  user,
+  paymentPageEntity,
+  configId,
+  saveLongPollInstances
+) {
   if (!configId) {
     return;
   }
 
+  const entityCreatedAt = paymentPageEntity.created_at;
+  const nowDate = new Date();
+  let startTime = nowDate.setDate(nowDate.getDate() - 30); // Should be max 30 days in past from current time
+  startTime = startTime < entityCreatedAt ? entityCreatedAt : startTime;
+
   const reqPayload = {
     config_id: configId,
     generated_by: user.current,
-    start_time: 1569938247, // Any random time before deployment of this feature
-    end_time: new Date().getTime() / 1000, // Current time
-    templateoverride: prepareTemplate(paymentPageEntity),
+    start_time: Math.floor(startTime / 1000),
+    end_time: Math.floor(new Date().getTime() / 1000), // Current time
+    template_overrides: _prepareTemplate(paymentPageEntity),
   };
 
-  return merchantFetch({
-    url: 'reporting/logs',
-    method: 'post',
-    data: reqPayload,
-  });
+  // Similar as in merchant_common/containers/Reports/index.js
+  return generateReportV2(reqPayload, true, null, saveLongPollInstances, false);
 }
 
-export function prepareTemplate(paymentPageEntity) {
+export function _prepareTemplate(paymentPageEntity) {
   const UDF_SCHEMA = JSON.parse(paymentPageEntity.settings.udf_schema);
   const udfKeys = {};
 
   UDF_SCHEMA.forEach(udf => {
-    udfKeys[udf.name] = [snakeToTitleCase(udf.name)];
+    udfKeys[udf.name] = ['payments.notes.' + snakeToTitleCase(udf.name)];
   });
 
-  const templateoverride = {
+  const templateOverrides = {
     filters: {
       payment_links: {
         id: {
           op: 'IN',
-          values: [paymentPageEntity.id],
+          values: [paymentPageEntity.id.replace('pl_', '')], // pl_ is trimmed off
         },
       },
     },
@@ -173,5 +180,5 @@ export function prepareTemplate(paymentPageEntity) {
     fields_map: udfKeys,
   };
 
-  return templateoverride;
+  return templateOverrides;
 }
