@@ -651,7 +651,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $paymentId = $this->payment->getPublicId();
         $amount    = $this->payment->getAmount();
 
-        Base\Reconciliate::$forceAuthorizedPayments[] = [$paymentId, $amount];
+        Base\Reconciliate::$forceAuthorizedPayments[] = [
+            'id'        => $this->payment->getId(),
+            'amount'    => $amount,
+        ];
 
         $this->trace->info(
             TraceCode::RECON_INFO_ALERT,

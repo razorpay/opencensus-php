@@ -273,7 +273,7 @@ class Reconciliate extends Base\Core
                             'count'      => count(self::$forceAuthorizedPayments),
                             'payments'   => self::$forceAuthorizedPayments,
                             'gateway'    => $this->gateway,
-
+                            'batch_id'   => $batch->getId()
                         ]);
                 }
 
