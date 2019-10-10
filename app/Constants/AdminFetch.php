@@ -246,6 +246,70 @@ class AdminFetch
                 ],
             ],
 
+
+            Entity::SUBSCRIPTIONS_SUBSCRIPTION => [
+                'auth_attempts' => [
+                    Fetch::LABEL  => 'Auth Attempts',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'customer_email' => [
+                    Fetch::LABEL  => 'Customer Email',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'customer_id' => [
+                    Fetch::LABEL  => 'Customer Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'error_status' => [
+                    Fetch::LABEL  => 'Error Status',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'notes' => Fetch::FIELD_NOTES,
+                'plan_id' => [
+                    Fetch::LABEL  => 'Plan Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'schedule_id' => [
+                    Fetch::LABEL  => 'Schedule Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'authenticated',
+                        'active',
+                        'pending',
+                        'halted',
+                        'cancelled',
+                        'completed',
+                        'expired'
+                    ]
+                ],
+                'token_id' => [
+                    Fetch::LABEL  => 'Token Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::SUBSCRIPTIONS_PLAN => [
+                'interval' => [
+                    Fetch::LABEL  => 'Interval',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'item_id' => [
+                    Fetch::LABEL  => 'Item Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'period' => [
+                    Fetch::LABEL  => 'Period',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
         ];
     }
 
@@ -1685,22 +1749,6 @@ class AdminFetch
                 ],
             ],
 
-            Entity::PLAN => [
-                'interval' => [
-                    Fetch::LABEL  => 'Interval',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'item_id' => [
-                    Fetch::LABEL  => 'Item Id',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
-                'period' => [
-                    Fetch::LABEL  => 'Period',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-            ],
-
             Entity::PRICING => [
                 'plan_id' => [
                     Fetch::LABEL  => 'Plan Id',
@@ -1843,53 +1891,6 @@ class AdminFetch
                 'mode'            => [
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => FundTransfer\Mode::getAll(),
-                ],
-            ],
-
-            Entity::SUBSCRIPTION => [
-                'auth_attempts' => [
-                    Fetch::LABEL  => 'Auth Attempts',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'customer_email' => [
-                    Fetch::LABEL  => 'Customer Email',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'customer_id' => [
-                    Fetch::LABEL  => 'Customer Id',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'error_status' => [
-                    Fetch::LABEL  => 'Error Status',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
-                'notes' => Fetch::FIELD_NOTES,
-                'plan_id' => [
-                    Fetch::LABEL  => 'Plan Id',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'schedule_id' => [
-                    Fetch::LABEL  => 'Schedule Id',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'status' => [
-                    Fetch::LABEL  => 'Status',
-                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => [
-                        'created',
-                        'authenticated',
-                        'active',
-                        'pending',
-                        'halted',
-                        'cancelled',
-                        'completed',
-                        'expired'
-                    ]
-                ],
-                'token_id' => [
-                    Fetch::LABEL  => 'Token Id',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
 

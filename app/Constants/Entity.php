@@ -80,12 +80,6 @@ class Entity
     const GATEWAY_FILE              = 'gateway_file';
     const BANK_ACCOUNT              = 'bank_account';
     const FILE_HANDLER              = 'file_handler';
-    // Subscription
-    const SUBSCRIPTION                  = 'subscription';
-    const SUBSCRIPTION_TRANSACTION      = 'subscription_transaction';
-    const SUBSCRIPTION_VERSION          = 'subscription_version';
-    const SUBSCRIPTION_CYCLE            = 'subscription_cycle';
-    const SUBSCRIPTION_UPDATE_REQUEST   = 'subscription_update_request';
 
     const EXTERNAL                   = 'external';
     const ENTITY_OFFER               = 'entity_offer';
@@ -127,6 +121,7 @@ class Entity
     const BANKING_ACCOUNT_STATEMENT  = 'banking_account_statement';
     const MERCHANT_DOCUMENT          = 'merchant_document';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
+    const SUBSCRIPTION               = 'subscription';
 
     // heimdall
     const ORG                   = 'org';
@@ -274,6 +269,16 @@ class Entity
     const SHIELD_LISTS                 = 'shield.lists';
     const SHIELD_LIST_ITEMS            = 'shield.list_items';
 
+    const SUBSCRIPTIONS_PLAN             = 'subscriptions.plan';
+    const SUBSCRIPTIONS_SUBSCRIPTION     = 'subscriptions.subscription';
+    const SUBSCRIPTIONS_ADDON            = 'subscriptions.addon';
+    const SUBSCRIPTIONS_CYCLE            = 'subscriptions.subscription_cycle';
+    const SUBSCRIPTIONS_TRANSACTION      = 'subscriptions.subscription_transaction';
+    const SUBSCRIPTIONS_VERSION          = 'subscriptions.subscription_version';
+    const SUBSCRIPTIONS_UPDATE_REQUEST   = 'subscription_update_request';
+
+    // Subscription
+
     const COMMISSION = 'commission';
 
     /**
@@ -358,7 +363,6 @@ class Entity
         self::HDFC                      => \RZP\Gateway\Hdfc::class,
         self::USER                      => \RZP\Models\User::class,
         self::OFFER                     => \RZP\Models\Offer::class,
-        self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::ORDER                     => \RZP\Models\Order::class,
         self::TOKEN                     => \RZP\Models\Customer\Token::class,
         self::GEO_IP                    => \RZP\Models\GeoIP::class,
@@ -546,11 +550,6 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
-
-        self::SUBSCRIPTION_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\UpdateRequest::class,
-        self::SUBSCRIPTION_VERSION        => \RZP\Models\Plan\Subscription\Version::class,
-        self::SUBSCRIPTION_CYCLE          => \RZP\Models\Plan\Subscription\Cycle::class,
-        self::SUBSCRIPTION_TRANSACTION    => \RZP\Models\Plan\Subscription\SubscriptionTransaction::class
     ];
 
     protected static $repository = [
@@ -622,6 +621,14 @@ class Entity
         self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
         self::BATCH_SERVICE                => \RZP\Services\BatchMicroService::class,
         self::BATCH_FILE_STORE             => \RZP\Services\BatchMicroService::class,
+
+        self::SUBSCRIPTIONS_SUBSCRIPTION   => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_ADDON          => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_PLAN           => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_CYCLE          => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_VERSION        => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_TRANSACTION    => \RZP\Models\Plan\Subscription\Service::class,
     ];
 
     protected static $syncedInLiveAndTest = [
