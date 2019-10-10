@@ -294,7 +294,7 @@ export default class ActivationWizard extends React.Component {
         // For non-LA account
         firstInValid = 1; // Business Overview tab
       } else {
-        !isFormSubmitted && (this.state.showSubmitLayer = false); // Directly show submit form if it's NOT activated/locked/submitted
+        !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
       }
     }
 
@@ -1435,8 +1435,8 @@ export default class ActivationWizard extends React.Component {
                     </Button.Primary>
                   )}
 
-                {/* Action Button 4 */}
-                {/* {isLastTab &&
+                {/* Action Button 4
+                {isLastTab &&
                   !isFormSubmitted && this.props.user.instantActivation.isL1Submitted && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
