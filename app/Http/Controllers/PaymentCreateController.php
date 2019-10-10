@@ -491,7 +491,8 @@ class PaymentCreateController extends Controller
 
                 $templateData = [
                    'data' => $data,
-                   'cdn'  => $this->config->get('url.cdn.production')
+                   'cdn'  => $this->config->get('url.cdn.production'),
+                   'production' => $this->app->environment() === Environment::PRODUCTION,
                 ];
 
                 return View::make('gateway.gatewayOtpPostForm')
@@ -552,8 +553,9 @@ class PaymentCreateController extends Controller
                                    ->with('data', $data);
                     }
                     $templateData = [
-                       'data' => $data,
-                       'cdn'  => $this->config->get('url.cdn.production')
+                       'data'       => $data,
+                       'cdn'        => $this->config->get('url.cdn.production'),
+                       'production' => $this->app->environment() === Environment::PRODUCTION,
                     ];
 
                     return View::make('gateway.gatewayOtpPostForm')
