@@ -81,7 +81,7 @@ class Core extends Base\Core
 
         if ($sendEmail === true)
         {
-            $this->core()->sendBankAccountStatementEmail($input, $statementFileId);
+            $this->sendBankAccountStatementEmail($input, $statementFileId);
 
             return $input;
         }

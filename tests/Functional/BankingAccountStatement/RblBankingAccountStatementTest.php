@@ -26,7 +26,7 @@ class RblBankingAccountStatementTest extends TestCase
 
     const MOCK_UFH_BASE_LOCATION = 'files/filestore';
 
-    const FILE_PATH              = 'file_path';
+    const FILE_ID                = 'file_id';
 
     public function setUp()
     {
@@ -62,9 +62,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
 
-        $file_path = $response[self::FILE_PATH];
-
-        $this->assertEquals(true, $this->verifyBankAccountStatementFileUrl($file_path));
+        $this->assertArrayHasKey(self::FILE_ID, $response);
 
         $this->verifyGeneratedXlsxFile($currentTime);
 
@@ -248,17 +246,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
-    }
-
-    /**
-     * Will check if the URL is correct.
-     * It should be : <beta-dashboard>/ufh/file/<file_id>
-     * @param $filePath
-     * @return True/False
-     */
-    protected function verifyBankAccountStatementFileUrl($filePath)
-    {
-        return preg_match(self::UFH_FILE_PATH_REGEX,$filePath);
     }
 
     protected function verifyGeneratedXlsxFile($currentTime)
