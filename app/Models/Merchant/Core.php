@@ -1123,7 +1123,7 @@ class Core extends Base\Core
             $application = $this->getPartnerAppByMerchantId($merchant->getId());
 
             $config = [
-                PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID,
+                PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
                 PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
                 PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
                 PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
