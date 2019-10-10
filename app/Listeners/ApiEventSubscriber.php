@@ -5,6 +5,7 @@ namespace RZP\Listeners;
 use Throwable;
 use Razorpay\Trace\Logger;
 
+use RZP\Error;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
@@ -577,6 +578,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTerminalFailed(Terminal\Entity $terminal)
+    {
+        $payload = $this->getTerminalFailedPayload($terminal);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -827,6 +835,26 @@ class ApiEventSubscriber extends Base\Core
                 'entity' => $terminal->toArrayPublic(),
             ]
         ];
+
+        return $payload;
+    }
+
+    protected function getTerminalFailedPayload(Terminal\Entity $terminal): array
+    {
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $terminalArray = $terminal->toArrayPublic();
+
+        // TODO: Instead of generic error code, add specific error codes.
+        $terminalArray['error_code'] = Error\TerminalOnboarding\ErrorCode::SERVER_ERROR_TERMINAL_ONBOARDING_FAILED;
+
+        $terminalArray['error_description'] = $terminalOnboardingDetail->getErrorDescription();
+
+        $payload = [
+            Constants\Entity::TERMINAL => [
+                'entity' => $terminalArray,
+            ]
+        ];  
 
         return $payload;
     }

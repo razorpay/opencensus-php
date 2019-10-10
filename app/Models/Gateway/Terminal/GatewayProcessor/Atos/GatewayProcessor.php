@@ -228,6 +228,10 @@ class GatewayProcessor extends BaseGatewayProcessor
         if($terminalOnboardingDetail->getVerifyBucket() >= Constants::ATOS_ACTIVATION_RETRY_LIMIT)
         {
             $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATION_FAILED);
+
+            $terminal->setStatus(Terminal\Status::FAILED);
+
+            $this->app['events']->fire('api.terminal.failed', ['main' => $terminal]);
         }
     }
 

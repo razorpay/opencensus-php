@@ -257,13 +257,13 @@ class Service extends Base\Service
 
         $lockResource = $gatewayProcessor->getLockResource($terminal, $gateway, []);
 
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
         $this->mutex->acquireAndRelease(
             $lockResource,
-            function() use ($terminal, $gateway, $gatewayProcessor)
+            function() use ($terminal, $terminalOnboardingDetail, $gateway, $gatewayProcessor)
             {
                 $terminal->reload();
-
-                $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
 
                 $currentTimestamp = Carbon::now()->getTimestamp();
 
@@ -305,6 +305,6 @@ class Service extends Base\Service
             }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_ANOTHER_OPERATION_IN_PROGRESS
         );
         
-        return $terminal->getStatus();
+        return $terminalOnboardingDetail->getStatus();
     }
 }

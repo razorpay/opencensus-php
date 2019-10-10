@@ -148,16 +148,17 @@ class Repository extends Base\Repository
 
     public function getByParams(array $params)
     {
-        $params = $this->unsetEmptyParams($params);
-
-        $query = $this->newQuery();
-
-        foreach ($params as $key => $value)
-        {
-            $query = $query->where($key, '=', $value);
-        }
+        $query = $this->buildFetchByParamsQuery($params);
 
         return $query->get();
+    }
+
+    public function getNonFailedByParams(array $params)
+    {
+        $query = $this->buildFetchByParamsQuery($params);
+
+        return $query->where(Entity::STATUS, '!=', Status::FAILED)
+                     ->get();
     }
 
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
@@ -508,5 +509,19 @@ class Repository extends Base\Repository
         $this->addMerchantWhereCondition($query, [$merchantId, Account::SHARED_ACCOUNT]);
 
         return $query->first();
+    }
+
+    protected function buildFetchByParamsQuery(array $params)
+    {
+        $params = $this->unsetEmptyParams($params);
+
+        $query = $this->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            $query = $query->where($key, '=', $value);
+        }
+
+        return $query;
     }
 }

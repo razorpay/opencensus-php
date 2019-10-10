@@ -90,8 +90,12 @@ class TerminalOnboardingCreateJob extends Job
         $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::FAILED);
 
         $this->updateTerminalOnboardingDetailsErrors($exceptionData, $terminalOnboardingDetail);
-        
+
         $terminalOnboardingDetail->save();
+
+        $app = App::getFacadeRoot();
+
+        $app['events']->fire('api.terminal.failed', ['main' => $this->terminal]);
     }
 
     protected function updateTerminalOnboardingDetailsErrors(array $exceptionData, $terminalOnboardingDetail)
@@ -100,14 +104,7 @@ class TerminalOnboardingCreateJob extends Job
         {
             $terminalOnboardingDetail->setErrorCode($exceptionData[Constants::ERROR][Constants::INTERNAL_ERROR_CODE]);
         }
-
-        $retry = $exceptionData[Constants::DATA][Constants::RETRY] ?? false;
-
-        if ($retry === 'true')
-        {
-            $terminalOnboardingDetail->setRetry(true);
-        }
-
+        
         // PSP Gateway Error 
         if ((isset($exceptionData[Constants::ERROR][Constants::GATEWAY_ERROR_CODE]) === true) and  
             ($exceptionData[Constants::ERROR][Constants::GATEWAY_ERROR_CODE] === Constants::GATEWAY_FAILURE_ERROR_CODE))

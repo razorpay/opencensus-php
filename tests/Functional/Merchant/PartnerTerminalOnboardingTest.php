@@ -219,8 +219,54 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->startTest();
     }
 
-    public function testTerminalOnboardingVerificationCron()
+    // We should be able to create terminal with same fields if existing terminal is failed
+    public function testTerminalOnboardingCreateTerminalWithSameFields()
     {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:atos_tid_range_list' => [ [12380001, 123899999], [13380001, 13389999]]
+            ]
+        ];
+        $this->makeRequestAndGetContent($request);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'gateway'     => 'atos',
+            'mc_mpan'     => '1234567880123456',
+            'visa_mpan'   => '1234567890123456',
+            'rupay_mpan'  => '1234567890123457',
+            'status'      => 'failed'
+        ]);
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS);
+
+        $this->expectExceptionMessage(
+            'A terminal with the same field exists');
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingVerificationCronCase1()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_verification.case', "1");
+
         $this->ba->cronAuth();
 
         $terminal = $this->fixtures->create('terminal', [
@@ -250,16 +296,118 @@ class PartnerTerminalOnboardingTest extends TestCase
             true
         );
 
+        $terminal->reload();
+
+        $this->assertEquals($terminal['status'], 'activated');
+
         $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activated');
         $this->assertNull($updatedTerminalOnboardingDetail['verify_at']);
     }
 
-    public function testTerminalOnboardingCreationCron()
+    // Failure case
+    public function testTerminalOnboardingVerificationCronCase2()
     {
-        // To setup merchant_access_map etc
-        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+        $this->app['config']->set('atos_terminal_onboarding_verification.case', "2");
 
         $this->ba->cronAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'gateway'     => 'atos',
+            'status'      => 'pending'
+        ]);
+
+        $merchant = $terminal->merchant;
+        $merchant->setCategory("742");
+        $merchant->save();
+
+        $activationTime = Carbon::now()->subMinutes(10);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'pending',
+            'verify_bucket'     => 0,
+            'verify_at'         => $activationTime->getTimestamp(),
+        ]);
+
+        $this->startTest();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $terminal->reload();
+
+        $this->assertEquals($terminal['status'], 'pending');
+
+        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'pending');
+    }
+
+    // Failure case with exhausted retry
+    public function testTerminalOnboardingVerificationCronCase3()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_verification.case', "2");
+
+        $this->ba->cronAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'gateway'     => 'atos',
+            'status'      => 'pending'
+        ]);
+
+        $merchant = $terminal->merchant;
+        $merchant->setCategory("742");
+        $merchant->save();
+
+        $activationTime = Carbon::now()->subMinutes(10);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'pending',
+            'verify_bucket'     => 9,
+            'verify_at'         => $activationTime->getTimestamp(),
+        ]);
+
+        $this->startTest();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $terminal->reload();
+
+        $this->assertEquals($terminal['status'], 'failed');
+
+        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activation_failed');
+    }
+
+    // Note: we need different unit tests for each case, so that terminalOnboardingDetail don't get mixed
+    // Success case
+    public function testTerminalOnboardingCreationCronCase1()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_creation.case', "1");
+
+        $this->ba->cronAuth();
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
 
         $terminal = $this->fixtures->create('terminal', [
             'merchant_id'       => $subMerchantId,
@@ -270,7 +418,7 @@ class PartnerTerminalOnboardingTest extends TestCase
             'status'            => 'created'
             ]);
 
-        $this->fixtures->create('terminal_onboarding_detail', [
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
             'terminal_id'       => $terminal->getId(),
             'status'            => 'created',
             'attempts'          => 0,
@@ -292,6 +440,8 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $url = '/terminals/onboard/creation';
 
+        $this->testData[__FUNCTION__]  =  $this->testData['testTerminalOnboardingCreationCron'];
+
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $onboardedTerminals = $this->startTest();
@@ -300,6 +450,217 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $this->assertEquals(count($onboardedTerminals['terminal_ids_queued']), 1);
 
-        $this->startTest();
+        $terminal->reload();
+
+        $terminalOnboardingDetail->reload();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+        
+        $this->assertEquals($terminal->getStatus(), 'pending');
+
+        // $this->assertEquals($terminalOnboardingDetail['status'], 'pending');
+    }
+
+    // Validation failure by Mozart
+    public function testTerminalOnboardingCreationCronCase2()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_creation.case', "2");
+
+        $this->ba->cronAuth();
+
+        list($terminal, $terminalOnboardingDetail) = $this->setUpTerminalOnboardingFailureCases();
+
+        $url = '/terminals/onboard/creation';
+
+        $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreationCron'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $onboardedTerminals = $this->startTest();
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_fetched']), 1);
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_queued']), 1);
+        
+        $terminalOnboardingDetail->reload();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $terminal->reload();
+        
+        $this->assertEquals($terminal->getStatus(), 'failed');
+
+        // $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'failed');        
+    }
+
+    // Error from ATOS Gateway
+    public function testTerminalOnboardingCreationCronCase3()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_creation.case', "3");
+
+        $this->ba->cronAuth();
+
+        list($terminal, $terminalOnboardingDetail) = $this->setUpTerminalOnboardingFailureCases();
+
+        $url = '/terminals/onboard/creation';
+
+        $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreationCron'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $onboardedTerminals = $this->startTest();
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_fetched']), 1);
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_queued']), 1);
+        
+        $terminalOnboardingDetail->reload();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $terminal->reload();
+
+        $this->assertEquals($terminal->getStatus(), 'failed');
+
+        // $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'failed');        
+
+        $this->assertEquals($updatedTerminalOnboardingDetail['error_description'], 'Invalid Terminal ID');
+    }
+
+    // Internal Razorpay Error. E.g. mozart route not found / Mozart 502
+    public function testTerminalOnboardingCreationCronCase4()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_creation.case', "4");
+
+        $this->ba->cronAuth();
+
+        list($terminal, $terminalOnboardingDetail) = $this->setUpTerminalOnboardingFailureCases();
+
+        $url = '/terminals/onboard/creation';
+
+        $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreationCron'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $onboardedTerminals = $this->startTest();
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_fetched']), 1);
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_queued']), 1);
+        
+        $terminalOnboardingDetail->reload();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $terminal->reload();
+        
+        $this->assertEquals($terminal->getStatus(), 'failed');
+
+        // $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'failed');        
+
+        $this->assertEquals($updatedTerminalOnboardingDetail['error_description'], 'Invalid route');
+    }
+
+    // Duplicate mpan error from ATOS
+    public function testTerminalOnboardingCreationCronCase5()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_creation.case', "5");
+
+        $this->ba->cronAuth();
+
+        list($terminal, $terminalOnboardingDetail) = $this->setUpTerminalOnboardingFailureCases();
+
+        $url = '/terminals/onboard/creation';
+
+        $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreationCron'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $onboardedTerminals = $this->startTest();
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_fetched']), 1);
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_queued']), 1);
+        
+        $terminalOnboardingDetail->reload();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $terminal->reload();
+
+        $this->assertEquals($terminal->getStatus(), 'failed');
+
+        // $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'failed');        
+
+        $this->assertEquals($updatedTerminalOnboardingDetail['error_code'], 'GATEWAY_ERROR_INVALID_DATA');
+
+        $this->assertEquals($updatedTerminalOnboardingDetail['error_description'], 'Duplicate MVISAPAN');
+    }
+
+    protected function setUpTerminalOnboardingFailureCases()
+    {
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'merchant_id'       => $subMerchantId,
+            'enabled'           => false,
+            'gateway'           => 'atos',
+            'account_number'    => '10010101011',
+            'ifsc_code'         => 'RZPB0000000',
+            'status'            => 'created'
+            ]);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'created',
+            'attempts'          => 0,
+            'verify_bucket'     => 0,
+        ]);
+
+        $subMerchant->setCategory("742");
+
+        $subMerchant->save();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' =>  $subMerchantId,
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+        
+        return [$terminal, $terminalOnboardingDetail];
     }
 }

@@ -1303,7 +1303,7 @@ return [
         ],
     ],
 
-    'testTerminalVerificationWebhook' => [
+    'testTerminalOnboardingVerificationWebhook' => [
         'request' => [
             'url'     => '/terminals/onboard/verification',
             'content' => [
@@ -1315,5 +1315,87 @@ return [
             'content'      => [],
             'status_code'  => 200,
         ],
-    ]
+    ],
+
+    'testTerminalOnboardingVerificationWebhookData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'terminal.activated',
+            'contains' => ['terminal'],
+            'payload' => [
+                'terminal' => [
+                    'entity' => [
+                        'entity'            => 'terminal',
+                        'status'            => 'activated',
+                        'enabled'           =>  false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    
+    'testTerminalOnboardingCreationFailedWebhook' => [
+        'request' => [
+            'url'     => '/terminals/onboard/creation',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [],
+            'status_code'  => 200,
+        ],
+    ],
+
+    'testTerminalOnboardingCreationFailedWebhookData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'terminal.failed',
+            'contains' => ['terminal'],
+            'payload' => [
+                'terminal' => [
+                    'entity' => [
+                        'entity'            => 'terminal',
+                        'status'            => 'failed',
+                        'enabled'           =>  false,
+                        'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
+                        'error_description' => 'Duplicate MVISAPAN', 
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTerminalOnboardingActivationFailedWebhook' => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [],
+            'status_code'  => 200,
+        ],
+    ],
+
+    'testTerminalOnboardingActivationFailedWebhookData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'terminal.failed',
+            'contains' => ['terminal'],
+            'payload' => [
+                'terminal' => [
+                    'entity' => [
+                        'entity'            => 'terminal',
+                        'status'            => 'failed',
+                        'enabled'           =>  false,
+                        'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];
