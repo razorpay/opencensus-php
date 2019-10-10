@@ -7,6 +7,7 @@ import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';
 import Welcome from './welcome';
 import Role from './role';
+import TC from './tc';
 export default class Onboarding extends React.Component {
   state = { value: null };
 
@@ -36,7 +37,7 @@ export default class Onboarding extends React.Component {
                 value={this.state.value}
               />
             )}
-            {sliderProps => <Welcome {...sliderProps} />}
+            {sliderProps => <TC {...sliderProps} />}
           </Slider>
         </div>
       </div>
