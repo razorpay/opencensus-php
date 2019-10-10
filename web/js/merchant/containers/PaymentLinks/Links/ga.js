@@ -1,4 +1,4 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import defaultTrack, { setTrackData } from 'rzp/utils/googleAnalytics';
 
 const eventCategory = 'Dashboard - Payment Links';
 
