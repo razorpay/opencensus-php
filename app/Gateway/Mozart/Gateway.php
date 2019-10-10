@@ -109,13 +109,17 @@ class Gateway extends Base\Gateway
 
         $content['entities'] = $input;
 
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->app['config']->get($urlConfig);
 
         $url =  $baseUrl . 'payments/' . $gateway . '/v1/' . $this->action;
 
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+
         $authentication = [
             'api',
-            $this->app['config']->get('applications.mozart.password')
+            $this->app['config']->get($passwordConfig)
         ];
 
         return [
@@ -533,8 +537,10 @@ class Gateway extends Base\Gateway
     }
 
     protected function getUrlForMozartRequest($input, $prefix)
-    {
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+    {        
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->app['config']->get($urlConfig);
 
         $gateway = $this->getGateway($input);
 
@@ -552,9 +558,11 @@ class Gateway extends Base\Gateway
 
     protected function getAuthenticatedMozartRequestArray($url, $content)
     {
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+
         $authentication = [
             'api',
-            $this->app['config']->get('applications.mozart.password')
+            $this->app['config']->get($passwordConfig)
         ];
 
         return [
