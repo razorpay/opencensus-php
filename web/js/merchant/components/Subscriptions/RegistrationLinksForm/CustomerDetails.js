@@ -91,14 +91,14 @@ export default props => {
         />
 
         <Input.ToCalendar
-          name="expireAt"
-          placeholder="DD-MM-YYYY"
           allowToday
           disablePastDates
+          name="expireAt"
+          placeholder="Expiry (DD-MM-YYYY)"
           placement="topLeft"
           addonAfter={<i class="i i-date-range" />}
           disabled={!!Number(hasNoExpiry)}
-          defaultValue={!Number(hasNoExpiry) ? moment(expireAt) : null}
+          defaultValue={!Number(hasNoExpiry) ? moment(expireAt, 'X') : null}
           onChange={handleDateChange('expireAt')}
           description="Expiry of Registration Link"
         />

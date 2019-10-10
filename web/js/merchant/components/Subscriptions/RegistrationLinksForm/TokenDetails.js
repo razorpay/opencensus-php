@@ -25,17 +25,16 @@ export default ({
       />
 
       <Input.ToCalendar
+        disablePastDates
         name="mandateExpireAt"
         placeholder="Expiry (DD-MM-YYYY)"
-        disablePastDates
         placement="topLeft"
         size="half_big"
         addonAfter={<i class="i i-date-range" />}
         description="Expiry of Token"
         onChange={handleDateChange('mandateExpireAt')}
-        defaultValue={
-          !Number(tokenHasNoExpiry) ? moment(mandateExpireAt) : null
-        }
+        disabled={!!Number(tokenHasNoExpiry)}
+        defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
         disabled={!!Number(tokenHasNoExpiry)}
       />
     </Input.Group>
