@@ -488,7 +488,37 @@ class OtpPaymentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
         $this->mockCardVault();
-        $this->mockOtpElf();
+        $otpelf = $this->mockOtpElf();
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::on(function ($argument)
+            {
+                // Ensure 'client' is sent from api side and that
+                // the ip address is the same as was passed in the s2s request
+                if ($argument['client']['ip'] === '52.34.123.23')
+                {
+                    return true;
+                }
+
+                return false;
+            }))
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => true,
+                    'data' => [
+                        'action' => 'page_resolved',
+                        'data'   => [
+                            'type' => 'otp',
+                            'bank' => 'ICIC',
+                            'next' => [
+                                'submit_otp',
+                                'resend_otp',
+                            ]
+                        ]
+                    ]
+                ];
+            });;
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -506,6 +536,9 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5567630000002004';
         $payment['auth_type'] = 'otp';
+
+        $payment['ip']         = '52.34.123.23';
+        $payment['user_agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36';
 
         $request = [
             'method'  => 'POST',
@@ -2620,14 +2653,6 @@ class OtpPaymentTest extends TestCase
 
         $otpelf->shouldReceive('otpSend')
             ->with(\Mockery::type('array'))
-            ->with(\Mockery::on(function ($argument) {
-                // Ensure 'client' is sent from api side
-                if (array_key_exists('client', $argument) === true)
-                {
-                    return true;
-                }
-                return false;
-            }))
             ->andReturnUsing(function (array $input)
             {
                 return [
