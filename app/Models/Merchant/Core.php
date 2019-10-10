@@ -1120,11 +1120,7 @@ class Core extends Base\Core
         {
             $partner = $this->markAsPartner($merchant, $partnerType);
 
-            $application = (new OAuthApp\Repository)
-                            ->findActiveApplicationsByMerchantIdAndType(
-                                $partner->getId(),
-                                OAuthApp\Type::PARTNER)
-                            ->first();
+            $application = $this->getPartnerAppByMerchantId($merchant->getId());
 
             $config = [
                 PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID,
