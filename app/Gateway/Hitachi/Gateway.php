@@ -48,6 +48,17 @@ class Gateway extends Base\Gateway
 
     const PAYSECURE_MID_SWITCH_TIME = 1567612806; // 4 Sept 2019, 4:00 PM
 
+    const BLACKLISTED_MCC = [
+        '5962',
+        '5966',
+        '5967',
+        '7995',
+        '5912',
+        '5122',
+        '7273',
+        '5993',
+    ];
+
     protected $map = [
         ResponseFields::RETRIEVAL_REF_NUM   => Entity::RRN,
         ResponseFields::STATUS              => Entity::STATUS,
