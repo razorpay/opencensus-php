@@ -14,6 +14,7 @@ import Accordion, {
   AccordionItemContent,
 } from 'rzp/ui/Accordion';
 
+import Alert from 'rzp/ui/Forms/Alert';
 import { Modal, ModalContent } from 'component/Modal';
 import Button, { AsyncBtn } from 'component/Button';
 import DocsLink from 'merchant/components/DocsLink';
@@ -215,6 +216,15 @@ export default class UploadNACHForm extends React.Component {
           {errors.description && (
             <p class="description">{errors.description}</p>
           )}
+
+          {errors.hint && (
+            <Alert
+              class="hint"
+              type="warning"
+              message={errors.hint}
+              showDismiss={false}
+            />
+          )}
         </React.Fragment>
       );
     }
@@ -383,6 +393,12 @@ const getErrorMessage = ([error, status]) => {
       heading: 'NACH form could not be read',
       description:
         'Kindly re-upload an image with better quality as the uploaded form could not be read successfully.',
+      hint: (
+        <React.Fragment>
+          The uploaded image should be <b>clear</b>. It should not be{' '}
+          <b>cropped</b> and not have any <b>shadows</b>.
+        </React.Fragment>
+      ),
     };
   } else if (error.includes('signature is not detected in the NACH form')) {
     return {
