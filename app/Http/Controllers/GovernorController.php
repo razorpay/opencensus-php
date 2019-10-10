@@ -147,11 +147,7 @@ class GovernorController extends Controller
 
         $content = Request::getContent();
 
-        // Symfony returns each header key as an array.
-        $headers  = array_map(function($v) { return current($v); }, Request::header());
-        $headers  = array_only($headers, ['content-type']);
-
-        $response = $this->app['governor']->sendRequestV1($method, $path, $content, $headers);
+        $response = $this->app['governor']->sendRequestV1($method, $path, $content);
 
         return ApiResponse::json($response);
     }

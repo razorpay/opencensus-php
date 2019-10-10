@@ -392,7 +392,7 @@ class GovernorService
 
     }
 
-    public function sendRequestV1(string $method, string $path, string $content, array $headers)
+    public function sendRequestV1(string $method, string $path, string $content)
     {
         $url = $this->getBaseUrl() . preg_replace('/^v1\//', '', $path);
 
@@ -420,33 +420,12 @@ class GovernorService
             'auth' => $auth
         ];
 
-        $response = $this->sendRawRequestV1($request);
+        $response = $this->sendRawRequest($request);
 
         $parsedResponse = $this->processResponseV1($response);
 
         $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse ?? []);
 
         return $parsedResponse;
-    }
-
-    protected function sendRawRequestV1($request)
-    {
-        try
-        {
-            $response = $this->request->request(
-                $request['url'],
-                $request['headers'],
-                $request['content'],
-                $request['method'],
-                $request['options']);
-        }
-        catch(\Requests_Exception $e)
-        {
-            $this->trace->traceException($e);
-
-            $this->throwServiceErrorException($e);
-        }
-
-        return $response;
     }
 }
