@@ -70,6 +70,7 @@ export default class OndemandModal extends Component {
 
   gaEventDispatcher = eventObject => {
     eventObject['eventCategory'] = 'Dashboard - Early Settlement';
+    console.log(eventObject);
     window.rzpAnalytics(eventObject);
   };
 
@@ -78,47 +79,21 @@ export default class OndemandModal extends Component {
       clickedConfirm: true,
     });
 
-    if (this.state.hasChangedAmount) {
-      this.gaEventDispatcher({
-        eventAction: 'Amount',
-        eventLabel: `${this.amountCategory(
-          this.state.amount
-        )} - changed -confirm`,
-      });
-    } else {
-      this.gaEventDispatcher({
-        eventAction: 'Amount',
-        eventLabel: `${this.amountCategory(
-          this.state.amount
-        )} - prefilled -confirm`,
-      });
-    }
+    this.gaEventDispatcher({
+      eventAction: `Confirm`,
+      eventLabel: `${
+        this.state.hasChangedAmount ? 'Changed amount' : 'preFilled amount'
+      } - ${
+        this.state.checkedBreakup ? 'after' : 'before'
+      } show breakup| close`,
+    });
 
-    if (this.state.hasChangedAmount) {
-      if (this.state.checkedBreakup) {
-        this.gaEventDispatcher({
-          eventAction: `confirm`,
-          eventLabel: `Changed amount - after show breakup| close`,
-        });
-      } else {
-        this.gaEventDispatcher({
-          eventAction: `confirm`,
-          eventLabel: `Changed amount - before show breakup| close`,
-        });
-      }
-    } else {
-      if (this.state.checkedBreakup) {
-        this.gaEventDispatcher({
-          eventAction: `confirm`,
-          eventLabel: `preFilled amount - after show breakup| close`,
-        });
-      } else {
-        this.gaEventDispatcher({
-          eventAction: `confirm`,
-          eventLabel: `preFilled amount - before show breakup| close`,
-        });
-      }
-    }
+    this.gaEventDispatcher({
+      eventAction: `Amount`,
+      eventLabel: `${this.amountCategory(this.state.amount)} - ${
+        this.state.hasChangedAmount ? 'Changed amount' : 'preFilled amount'
+      } -confirm`,
+    });
 
     this.context.confirm({
       header: 'Are you sure you want to do this settlement?',
@@ -273,12 +248,24 @@ export default class OndemandModal extends Component {
   };
 
   componentDidMount() {
+    document.addEventListener('keydown', this.escFunction);
     this.gaEventDispatcher({
       eventAction: 'Click Settle Now',
       eventLabel: `${this.props.fromWhere} | Settle Now`,
     });
     this.updateFee();
   }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.escFunction);
+  }
+
+  escFunction = event => {
+    if (event.keyCode === 27) {
+      if (this.state.isSaved) this.handleCloseModal('Close Modal Screen 2');
+      else this.handleCloseModal('Close Modal Screen 1');
+    }
+  };
 
   openSupport = () => {
     this.gaEventDispatcher({
@@ -414,7 +401,7 @@ export default class OndemandModal extends Component {
     if (amount <= 1000) return '1-1000';
     else if (amount <= 10000) return '1000-10000';
     else if (amount <= 50000) return '10000-50000';
-    else if (amoutn <= 100000) return '50000-100000';
+    else if (amount <= 100000) return '50000-100000';
     else if (amount <= 200000) return '100000-200000';
     else if (amount <= 500000) return '200000-500000';
     else return '>500000';
@@ -433,47 +420,21 @@ export default class OndemandModal extends Component {
         break;
     }
     if (!this.state.clickedConfirm) {
-      if (this.state.hasChangedAmount) {
-        if (this.state.checkedBreakup) {
-          this.gaEventDispatcher({
-            eventAction: `Close modal`,
-            eventLabel: `Changed amount - after show breakup| close`,
-          });
-        } else {
-          this.gaEventDispatcher({
-            eventAction: `Close modal`,
-            eventLabel: `Changed amount - before show breakup| close`,
-          });
-        }
-      } else {
-        if (this.state.checkedBreakup) {
-          this.gaEventDispatcher({
-            eventAction: `Close modal`,
-            eventLabel: `preFilled amount - after show breakup| close`,
-          });
-        } else {
-          this.gaEventDispatcher({
-            eventAction: `Close modal`,
-            eventLabel: `preFilled amount - before show breakup| close`,
-          });
-        }
-      }
+      this.gaEventDispatcher({
+        eventAction: `Close modal`,
+        eventLabel: `${
+          this.state.hasChangedAmount ? 'Changed amount' : 'preFilled amount'
+        } - ${
+          this.state.checkedBreakup ? 'after' : 'before'
+        } show breakup| close`,
+      });
 
-      if (this.state.hasChangedAmount) {
-        this.gaEventDispatcher({
-          eventAction: `Amount`,
-          eventLabel: `${this.amountCategory(
-            this.state.amount
-          )} - changed -close`,
-        });
-      } else {
-        this.gaEventDispatcher({
-          eventAction: `Amount`,
-          eventLabel: `${this.amountCategory(
-            this.state.amount
-          )} - preFilled -close`,
-        });
-      }
+      this.gaEventDispatcher({
+        eventAction: `Amount`,
+        eventLabel: `${this.amountCategory(this.state.amount)} - ${
+          this.state.hasChangedAmount ? 'Changed amount' : 'preFilled amount'
+        } -close`,
+      });
     }
     if (this.state.isSaved) {
       this.props.closeModal();
