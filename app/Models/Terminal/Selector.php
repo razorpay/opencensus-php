@@ -269,6 +269,10 @@ class Selector extends Base\Core
 
                 $this->repo->saveOrFail($merchant->methods);
 
+                $this->trace->info(TraceCode::DINERS_DISABLED_FOR_MERCHANT, [
+                    'merchant_id' => $merchant->getId()
+                ]);
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
