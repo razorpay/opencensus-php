@@ -287,7 +287,10 @@ class Selector extends Base\Core
             {
                 throw new Exception\RuntimeException(
                     'No terminal found.',
-                    ['payment' => $this->input['payment']->toArrayAdmin()]);
+                    ['payment' => $this->input['payment']->toArrayAdmin()],
+                    null,
+                    ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND
+               );
             }
         }
 
