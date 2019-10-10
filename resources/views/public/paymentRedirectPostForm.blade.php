@@ -9,19 +9,6 @@
 <meta http-equiv="refresh" content="0;url={{ $data['request']['url'] }}" />
 @include('partials.redirectStyles')
 </head>
-@if ($data['production'])
-<script>
-  var events = {
-    page: 'payment_redirect_postform',
-    props: {
-      payment_id: '{{$data['payment_id']}}',
-    },
-    load: 1,
-    unload: 1
-  }
-</script>
-@include('partials.track')
-@endif
 <body>
   <div id='bg'></div>
   <div style="display:inline-block;vertical-align:middle;height:100%"></div>

@@ -7,18 +7,6 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-@if ($data['production'])
-<script>
-  var events = {
-    page: 'gateway_otp_postform',
-    props: {
-      payment_id: '{{$data['data']['payment_id']}}',
-    },
-    load: 1,
-    unload: 1
-  }
-</script>
-@endif
 <body>
     <div id="preloading">
         <style>
