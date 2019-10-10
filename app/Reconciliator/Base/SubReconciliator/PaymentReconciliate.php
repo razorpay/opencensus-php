@@ -1530,10 +1530,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->trace->info(
             TraceCode::RECON_INFO_ALERT,
             [
-                'message'         => 'Gateway Captured not set for the payment',
-                'info_code'       => 'GATEWAY_CAPTURED_NOT_SET',
-                'payment_id'      => $this->payment->getId(),
-                'gateway'         => $this->gateway
+                'message'           => 'Gateway Captured not set for the payment',
+                'info_code'         => Base\InfoCode::GATEWAY_CAPTURED_NOT_SET,
+                'payment_id'        => $this->payment->getId(),
+                'payment_refunded'  => ($this->payment->getRefundStatus() !== null),
+                'gateway'           => $this->gateway
             ]);
 
         $this->payment->setGatewayCaptured(true);
