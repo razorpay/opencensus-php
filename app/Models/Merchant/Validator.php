@@ -291,7 +291,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $updatePartnerTypeRules = [
-        Entity::PARTNER_TYPE    => 'required|string|in:aggregator,reseller',
+        Entity::PARTNER_TYPE    => 'required|string|custom:partner_type_for_update',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -1319,6 +1319,23 @@ class Validator extends Base\Validator
                 null,
                 null
             );
+        }
+    }
+
+    public function validatePartnerTypeForUpdate($attribute, $value)
+    {
+        $allowedPartnerTypes = [
+            Constants::RESELLER,
+            Constants::AGGREGATOR,
+        ];
+
+        if (in_array($value, $allowedPartnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [$attribute => $value]);
+
         }
     }
 }
