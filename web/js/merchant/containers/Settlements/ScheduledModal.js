@@ -40,9 +40,17 @@ export default class ScheduledModal extends Component {
       eventLabel: `Enable Scheduled ES - ${this.props.fromWhere}`,
     });
     this.fetchPercentageFees();
+    document.addEventListener('keydown', this.escFunction);
   }
 
+  escFunction = event => {
+    if (event.keyCode === 27) {
+      this.setState({ modalClosed: true });
+    }
+  };
+
   componentWillUnmount() {
+    document.removeEventListener('keydown', this.escFunction);
     if (this.props.onExit) {
       this.props.onExit();
     }

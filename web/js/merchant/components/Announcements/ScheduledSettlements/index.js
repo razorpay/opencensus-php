@@ -31,6 +31,7 @@ export default class EarlyScheduledAnnouncement extends Component {
                 <ScheduledModal fromWhere="Home Announcement Banner" />
               ),
               size: 'small',
+              disableClose: true,
             });
           }}
         >

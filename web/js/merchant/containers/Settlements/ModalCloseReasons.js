@@ -35,7 +35,7 @@ export default class ModalCloseReasons extends Component {
 
   render() {
     return (
-      <div className="onmdemand-close-modal">
+      <div className="reasons-close-modal">
         <ModalHeader
           class="header"
           title="Reason"
