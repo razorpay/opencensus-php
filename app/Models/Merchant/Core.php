@@ -229,7 +229,7 @@ class Core extends Base\Core
         // Removing this feature is complicated, but
         // blindly assigning the feature to everybody is not
         (new Feature\Core)->create([
-            Feature\Entity::ENTITY_TYPE     => $merchant->getEntity(),
+            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
         ], $shouldSync = true);
