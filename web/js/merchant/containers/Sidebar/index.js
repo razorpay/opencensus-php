@@ -166,6 +166,8 @@ export default class Sidebar extends Component {
       routes,
       isReportsPending,
       isChargeAtWillEnabled: user.isChargeAtWillEnabled,
+      isSettlementEnabled:
+        user.isOndemandSettlementEnabled || user.isAutomaticSettlementEnabled,
     };
     return (
       <>

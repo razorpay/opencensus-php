@@ -82,6 +82,7 @@ export default class MainNavLink extends Component {
       staticContext,
       isMobileResolution,
       toggleMobileMenu,
+      isSettlementEnabled,
       ...linkProps
     } = this.props;
 
@@ -93,7 +94,7 @@ export default class MainNavLink extends Component {
       );
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
-    } else if (isCurrent) {
+    } else if (isSettlementEnabled) {
       tag = (
         <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />
       );

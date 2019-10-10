@@ -17,8 +17,10 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
-
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
+
+import { trackSearchFilterForInternational } from './ga';
+
 @withRouter
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
@@ -120,6 +122,7 @@ export default class PaymentLinksContainer extends ListContainer {
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
           isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
+          trackSearchFilterForInternational={trackSearchFilterForInternational}
         />
 
         <Alert type={status.type} message={status.message} />
