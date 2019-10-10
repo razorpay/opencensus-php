@@ -947,7 +947,8 @@ class ApiEventSubscriber extends Base\Core
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
         //
-        $signedAccountId = Merchant\Account\Entity::getSignedId($merchant->getId());
+        $listeningMerchant = $this->getListeningMerchant($entity);
+        $signedAccountId = Merchant\Account\Entity::getSignedId($listeningMerchant->getId());
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
@@ -1086,6 +1087,18 @@ class ApiEventSubscriber extends Base\Core
      */
     protected function getMerchantFromEntity(Base\PublicEntity $entity): Merchant\Entity
     {
+        $merchant = $this->getListeningMerchant($entity);
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchant = $merchant->parent;
+        }
+
+        return $merchant;
+    }
+
+    protected function getListeningMerchant(Base\PublicEntity $entity): Merchant\Entity
+    {
         if ($this->listeningMerchant !== null)
         {
             return $this->listeningMerchant;
@@ -1098,11 +1111,6 @@ class ApiEventSubscriber extends Base\Core
         else
         {
             $merchant = $entity->merchant;
-        }
-
-        if ($merchant->isLinkedAccount() === true)
-        {
-            $merchant = $merchant->parent;
         }
 
         return $merchant;

@@ -1009,6 +1009,8 @@ class WebhookTest extends TestCase
             $data['event'] = json_decode($data['event'], true);
 
             $this->assertArrayHasKey('account_id', $data['event']);
+            // Asserts that the account_id in event payload is one of the linked accounts.
+            $this->assertContains($data['event']['account_id'], ['acc_10000000000002', 'acc_10000000000003']);
 
             $this->assertEquals('settlement.processed', $data['event']['event']);
 
