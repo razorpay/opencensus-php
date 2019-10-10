@@ -228,6 +228,7 @@ class Gateway
         self::NETBANKING_RBL    => self::RBL,
         self::PAYTM             => self::PAYTM,
         self::UPI_AXIS          => self::AXIS,
+        self::UPI_ICICI         => self::ICICI,
         self::UPI_MINDGATE      => self::HDFC,
         self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
         self::ATOS              => self::ATOS,
