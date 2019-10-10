@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const STATUS                 = 'status';
     const ACCOUNT_STATUS         = 'account_status';
     const REGISTERED_NAME        = 'registered_name';
+    const UTR                    = 'utr';
     const FEES                   = 'fees';
     const TAX                    = 'tax';
     const AMOUNT                 = 'amount';
@@ -204,6 +205,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::REGISTERED_NAME, $name);
     }
 
+    public function setUtr(string $value = null)
+    {
+        return $this->setAttribute(self::UTR, $value);
+    }
+
     public function setFTSTransferId($ftsTransferId)
     {
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
@@ -219,6 +225,7 @@ class Entity extends Base\PublicEntity
     public function setPublicResultsAttribute(array & $array)
     {
         $array[self::RESULTS] = [
+            self::UTR             => $this->getUtr(),
             self::ACCOUNT_STATUS  => $this->getAccountStatus(),
             self::REGISTERED_NAME => $this->getRegisteredName(),
         ];
@@ -286,12 +293,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT);
     }
 
-    // ------------ Mocked Setters ---------
-
-    public function setUtr(string $value = null)
+    public function getUtr()
     {
-        return;
+        return $this->getAttribute(self::UTR);
     }
+
+    // ------------ Mocked Setters ---------
 
     public function setRemarks(string $value = null)
     {
