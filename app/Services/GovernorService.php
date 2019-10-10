@@ -110,8 +110,6 @@ class GovernorService
 
     protected $request;
 
-    protected $auth;
-
     public function __construct($app)
     {
         $this->app = $app;
@@ -294,6 +292,11 @@ class GovernorService
 
     protected function jsonToArray($json)
     {
+        if (empty($json) === true)
+        {
+            return [];
+        }
+
         $decodeJson = json_decode($json, true);
 
         switch (json_last_error())
@@ -328,25 +331,39 @@ class GovernorService
 
     protected function processResponseV1($response)
     {
+        $responseBody = $this->jsonToArray($response->body);
+
         if ( $response->status_code != 200 )
         {
-            $response_Body = $this->jsonToArray($response->body);
-            if ( $response_Body[self::ERROR][self::ERROR_CODE] == ErrorCode::BAD_REQUEST_ERROR){
+            if (isset($responseBody[self::ERROR])
+                && isset($responseBody[self::ERROR][self::ERROR_CODE])
+                && $responseBody[self::ERROR][self::ERROR_CODE] === ErrorCode::BAD_REQUEST_ERROR)
+            {
+                $this->trace->error(
+                    TraceCode::GOVERNOR_SERVICE_BAD_REQUEST_ERROR,
+                    ['response' => $response]);
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR_GOVERNOR,
                     null,
                     [],
-                    $response_Body[self::ERROR][self::ERROR_MESSAGE]
+                    $responseBody[self::ERROR][self::ERROR_MESSAGE]
                 );
             }
 
+            $this->trace->error(
+                TraceCode::GOVERNOR_SERVICE_ERROR,
+                ['response' => $response]);
+
             throw new Exception\ServerErrorException(
-                $response_Body[self::ERROR][self::ERROR_MESSAGE],
+                $responseBody[self::ERROR][self::ERROR_MESSAGE],
                 ErrorCode::SERVER_ERROR
             );
         }
 
-        return $this->jsonToArray($response->body);
+
+
+        return $responseBody;
     }
 
     public function getAuthDetails(string $source) {
@@ -381,7 +398,7 @@ class GovernorService
 
         $auth = $this->getAdminAuthDetails();
 
-        $data = json_decode($content, true);
+        $data = $this->jsonToArray($content);
 
         if($method == 'POST'){
             $userId = $this->app['basicauth']->getAdmin()->getId();
@@ -407,7 +424,7 @@ class GovernorService
 
         $parsedResponse = $this->processResponseV1($response);
 
-        $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse['response_body'] ?? []);
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse ?? []);
 
         return $parsedResponse;
     }

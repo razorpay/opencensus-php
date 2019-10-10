@@ -2052,6 +2052,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
     const GOVERNOR_SERVICE_RETRY                                = 'GOVERNOR_SERVICE_RETRY';
     const GOVERNOR_SERVICE_ERROR                                = 'GOVERNOR_SERVICE_ERROR';
+    const GOVERNOR_SERVICE_BAD_REQUEST_ERROR                    = 'GOVERNOR_SERVICE_BAD_REQUEST_ERROR';
     const CAPTURE_VERIFY_ONHOLD_FINISH_ACTION                   = 'CAPTURE_VERIFY_ONHOLD_FINISH_ACTION';
     const CAPTURE_VERIFY_ONHOLD_ACTION                          = 'CAPTURE_VERIFY_ONHOLD_ACTION';
     const CAPTURE_VERIFY_FAILED_PAYMENT                         = 'CAPTURE_VERIFY_FAILED_PAYMENT';

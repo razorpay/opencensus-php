@@ -1188,6 +1188,7 @@ final class Route
         // Governor Proxy APIs - Rule Chain
         'governor_create_rule_chain'              => ['post',     '{source}/rule_engine/rule_chain/{namespace}',                                                        'GovernorController@createRuleChain'    ],
         'governor_update_rule_chain'              => ['put',      '{source}/rule_engine/rule_chain/{namespace}',                                                        'GovernorController@updateRuleChain'    ],
+
         'governor_rule_chain_list'                => ['get',      '{source}/rule_engine/rule_chain/{namespace}',                                                        'GovernorController@getRuleChains'      ],
 
         // Governor Proxy APIs - Execute Rule Chain
