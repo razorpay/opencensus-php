@@ -803,7 +803,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
     ];
 
@@ -811,6 +811,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [
