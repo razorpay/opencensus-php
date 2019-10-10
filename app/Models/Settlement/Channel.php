@@ -63,6 +63,7 @@ class Channel
             self::RBL,
             self::AXIS2,
             self::ICICI2,
+            self::CITI,
         ];
     }
 
