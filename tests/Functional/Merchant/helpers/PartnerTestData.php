@@ -1151,4 +1151,61 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testUpdatePartnerTypeAsResellerUsingProxyAuth'   => [
+        'request'   => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'      => 'reseller',
+            ],
+        ],
+        'response'  => [
+            'content'       => [
+                'partner_type'              => 'reseller',
+                'has_commission_configs'    => true,
+            ],
+            'status_code'                   => 200,
+        ],
+    ],
+
+    'testUpdatePartnerTypeAsAggregatorUsingProxyAuth'   => [
+        'request'   => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'      => 'aggregator',
+            ],
+        ],
+        'response'  => [
+            'content'       => [
+                'partner_type'              => 'aggregator',
+                'has_commission_configs'    => true,
+            ],
+            'status_code'                   => 200,
+        ],
+    ],
+
+    'testUpdatePartnerTypeUsingProxyAuthWithInvalidPartnerType' => [
+        'request'       => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'  => 'fully_managed',
+            ],
+        ],
+        'response'      => [
+            'content'   => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                ],
+            ],
+            'status_code'       => 400,
+        ],
+        'exception'     => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

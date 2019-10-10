@@ -934,6 +934,16 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createDefaultPartnerCommissionPlan()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getPartnerCommissionPlanData());
+    }
+
+    public function createDefaultPlanForSubmerchantsOfOnboardedPartners()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getSubmerchantPricingOfOnboardedPartners());
+    }
+
     protected function addPricingRulesToDb($rows)
     {
         foreach ($rows as $row)

@@ -1440,6 +1440,68 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testUpdatePartnerTypeAsResellerUsingProxyAuth()
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->mockAuthServiceCreateApplication($merchant);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->createPlansRequiredForOnboardingPartners();
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->assertTrue($expectedPartner->isPartner());
+
+        $this->assertEquals($expectedPartner->getPartnerType(), Merchant\Constants::RESELLER);
+    }
+
+    public function testUpdatePartnerTypeAsAggregatorUsingProxyAuth()
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->mockAuthServiceCreateApplication($merchant);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->createPlansRequiredForOnboardingPartners();
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->assertTrue($expectedPartner->isPartner());
+
+        $this->assertEquals($expectedPartner->getPartnerType(), Merchant\Constants::AGGREGATOR);
+    }
+
+    public function testUpdatePartnerTypeUsingProxyAuthWithInvalidPartnerType()
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    protected function createPlansRequiredForOnboardingPartners()
+    {
+        $this->fixtures->pricing->createDefaultPartnerCommissionPlan();
+
+        $this->fixtures->pricing->createDefaultPlanForSubmerchantsOfOnboardedPartners();
+    }
+
     protected function createMerchantRequest(
         string $merchantRequestName,
         bool $createSubmission = false,
