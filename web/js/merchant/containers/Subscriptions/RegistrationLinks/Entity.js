@@ -102,11 +102,9 @@ export default class RegistrationLinkEntityContainer extends React.Component {
 
                     {/* method */}
                     <EntityDetailRow label="Method">
-                      {this.paymentMethod && (
-                        <PaymentMethod
-                          mandate={entity.subscription_registration}
-                        />
-                      )}
+                      <PaymentMethod
+                        mandate={entity.subscription_registration}
+                      />
                     </EntityDetailRow>
 
                     {/* Customer Details */}
