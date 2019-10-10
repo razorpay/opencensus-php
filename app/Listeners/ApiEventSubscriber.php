@@ -16,6 +16,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transfer;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Terminal;
@@ -305,6 +306,13 @@ class ApiEventSubscriber extends Base\Core
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onTransferProcessed(Transfer\Entity $transfer)
+    {
+        $payload = $this->getTransferPayload($transfer);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -664,6 +672,14 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getTransferPayload(Transfer\Entity $transfer)
+    {
+        $partialPayload[Constants\Entity::TRANSFER] = [
+            'entity' => $transfer->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
     {
         $receiver = $payment->receiver;

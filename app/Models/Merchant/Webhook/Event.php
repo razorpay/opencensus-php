@@ -57,6 +57,7 @@ class Event
     const REFUND_PROCESSED                  = 'refund.processed';
     const REFUND_FAILED                     = 'refund.failed';
     const REFUND_CREATED                    = 'refund.created';
+    const TRANSFER_PROCESSED                = 'transfer.processed';
     const TERMINAL_ACTIVATED                = 'terminal.activated';
     const TERMINAL_FAILED                   = 'terminal.failed'; // Terminal Creation failed on gateway
 
@@ -103,6 +104,7 @@ class Event
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
         self::REFUND_CREATED,
+        self::TRANSFER_PROCESSED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
     ];
@@ -155,6 +157,7 @@ class Event
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
         self::REFUND_CREATED,
+        self::TRANSFER_PROCESSED,
         self::TERMINAL_ACTIVATED,
     ];
 
@@ -204,6 +207,7 @@ class Event
         self::REFUND_CREATED                    => 43,
         self::TERMINAL_ACTIVATED                => 44,
         self::TERMINAL_FAILED                   => 45,  
+        self::TRANSFER_PROCESSED                => 46,
     ];
 
     /**
@@ -250,6 +254,7 @@ class Event
         self::REFUND_PROCESSED                  => [Product::PRIMARY],
         self::REFUND_FAILED                     => [Product::PRIMARY],
         self::REFUND_CREATED                    => [Product::PRIMARY],
+        self::TRANSFER_PROCESSED                => [Product::PRIMARY],
         self::TERMINAL_ACTIVATED                => [Product::PRIMARY],
         self::TERMINAL_FAILED                   => [Product::PRIMARY],
     ];
@@ -299,6 +304,7 @@ class Event
         self::REFUND_PROCESSED                  => Entity::REFUND,
         self::REFUND_FAILED                     => Entity::REFUND,
         self::REFUND_CREATED                    => Entity::REFUND,
+        self::TRANSFER_PROCESSED                => Entity::TRANSFER,
         self::TERMINAL_ACTIVATED                => Entity::TERMINAL,
         self::TERMINAL_FAILED                   => Entity::TERMINAL,
     ];
@@ -329,6 +335,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => Feature\Constants::CARD_TRANSFER_REFUND,
         self::REFUND_PROCESSED                  => Feature\Constants::CARD_TRANSFER_REFUND,
         self::REFUND_FAILED                     => Feature\Constants::SHOW_REFUND_PUBLIC_STATUS,
+        self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
     ];

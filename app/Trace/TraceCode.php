@@ -1359,6 +1359,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSFER_UPDATE_SETTLEMENT_ID_FAILED                  = 'TRANSFER_UPDATE_SETTLEMENT_ID_FAILED';
     const REVERSAL_REFUND_NOT_AVAILABLE                         = 'REVERSAL_REFUND_NOT_AVAILABLE';
     const REVERSAL_REFUND_AVAILABLE                             = 'REVERSAL_REFUND_AVAILABLE';
+    const ORDER_TRANSFER_REQUEST                                = 'ORDER_TRANSFER_REQUEST';
+    const ORDER_TRANSFER_SUCCESS                                = 'ORDER_TRANSFER_SUCCESS';
+    const ORDER_TRANSFER_PROCESS_RETRY                          = 'ORDER_TRANSFER_PROCESS_RETRY';
+    const ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT                  = 'ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT';
+    const ORDER_TRANSFER_PROCESS_SQS_PUSH_FAILED                = 'ORDER_TRANSFER_PROCESS_SQS_PUSH_FAILED';
+    const ORDER_TRANSFER_PROCESS_REQUEST                        = 'ORDER_TRANSFER_PROCESS_REQUEST';
+    const ORDER_TRANSFER_PROCESS_SUCCESS                        = 'ORDER_TRANSFER_PROCESS_SUCCESS';
+    const ORDER_TRANSFER_PROCESS_FAILURE                        = 'ORDER_TRANSFER_PROCESS_FAILURE';
+    const ORDER_TRANSFER_PROCESSING                             = 'ORDER_TRANSFER_PROCESSING';
+    const ORDER_TRANSFER_PROCESS_INVALID_REQUEST                = 'ORDER_TRANSFER_PROCESS_INVALID_REQUEST';
+
 
     // Trace Code for Gateway Absence StatusCake
 

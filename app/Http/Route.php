@@ -813,6 +813,7 @@ final class Route
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
+        'transfer_process'                         => ['post',     'transfers/process',                              'TransferController@processOrderTransfers'                                   ],
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
@@ -1464,6 +1465,7 @@ final class Route
         'transfer_fetch',
         'transfer_edit',
         'transfer_create',
+        'transfer_process',
         'transfer_create_reversal',
         'virtual_account_create',
         'virtual_account_edit',
@@ -1685,6 +1687,7 @@ final class Route
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
         'mailing_list_remove_suspended_merchant',
+        'transfer_process',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3090,6 +3093,7 @@ final class Route
             'terminal_onboarding_verification',
             'reconciliate',
             'mailing_list_remove_suspended_merchant',
+            'transfer_process',
         ],
 
         'subscriptions' => [

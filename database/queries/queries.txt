@@ -5368,3 +5368,10 @@ ALTER TABLE merchant_details
 
 ALTER TABLE pricing
     ADD COLUMN fee_bearer INT UNSIGNED DEFAULT 0 AFTER international; # 0 is platform fee bearer
+
+ALTER TABLE `transfers`
+ADD COLUMN `status` VARCHAR(255) NOT NULL DEFAULT 'processed' AFTER `source_type`,
+ADD COLUMN `message` VARCHAR(255) DEFAULT NULL AFTER `recipient_settlement_id`,
+ADD COLUMN `origin` VARCHAR(255) DEFAULT NULL AFTER `message`,
+ADD COLUMN `processed_at` INT DEFAULT NULL AFTER `created_at`,
+ADD COLUMN `attempts` INT NOT NULL DEFAULT 0 AFTER `processed_at`;

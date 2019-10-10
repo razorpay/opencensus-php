@@ -14,6 +14,8 @@ class Metric extends Base\Core
     const TRANSFER_CREATE_SUCCESS                  = 'transfer_create_success';
     const TRANSFER_REVERSAL_SUCCESS                = 'transfer_reversal_success';
     const TRANSFER_REVERSAL_FAILED                 = 'transfer_reversal_failed';
+    const TRANSFER_PROCESS_SUCCESS                 = 'transfer_process_success';
+    const TRANSFER_PROCESS_FAILED                  = 'transfer_process_failed';
     const TRANSFER_ROUTE                           = 'transfer_route';
     const TRANSFER_TO_TYPE                         = 'transfer_to_type';
 
@@ -43,6 +45,16 @@ class Metric extends Base\Core
             self::TRANSFER_ROUTE => $this->getRouteName(),
         ];
         $this->pushExceptionMetrics($e, self::TRANSFER_REVERSAL_FAILED, $dimensions);
+    }
+
+    public function pushTransferProcessSuccessMetrics(array $input = [])
+    {
+        $this->trace->count(self::TRANSFER_PROCESS_SUCCESS, $input);
+    }
+
+    public function pushTransferProcessFailedMetrics(\Throwable $e)
+    {
+        $this->pushExceptionMetrics($e, self::TRANSFER_PROCESS_FAILED, $this->getCreateDefaultDimensions());
     }
 
     private function getCreateDefaultDimensions(array $input = [])

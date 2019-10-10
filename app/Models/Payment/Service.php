@@ -21,6 +21,7 @@ use RZP\Models\Offer;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
@@ -31,7 +32,6 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
-use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Service extends Base\Service
@@ -735,7 +735,7 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
-            (new TransferMetric)->pushCreateFailedMetrics($e);
+            (new Transfer\Metric)->pushCreateFailedMetrics($e);
 
             throw $e;
         }
@@ -751,9 +751,25 @@ class Service extends Base\Service
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $transfers = $this->repo
-                          ->transfer
-                          ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $id, $this->merchant);
+        $transferStatus = Transfer\Constant::FETCH_STATUS;
+
+        $transfers = (new Transfer\Core())->getForPayment($id, $transferStatus);
+
+        $payment = $this->repo
+                        ->payment
+                        ->findByIdAndMerchant($id, $this->merchant);
+
+        if ($payment->hasOrder() === true)
+        {
+            $orderId = $payment->getApiOrderId();
+
+            $transfersFromOrder = (new Transfer\Core())->getForOrder($orderId, $transferStatus);
+
+            foreach ($transfersFromOrder as $transferFromOrder)
+            {
+                $transfers->push($transferFromOrder);
+            }
+        }
 
         return $transfers->toArrayPublic();
     }

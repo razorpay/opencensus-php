@@ -591,6 +591,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE                    = 'The linked account does not have sufficient balance to process a reversal.';
     const BAD_REQUEST_LA_TRANSFER_REVERSAL_PERMISSION_MISSING                   = 'The linked account does not have permission to reverse a transfer';
     const BAD_REQUEST_TRANSFER_FOR_LA_REVERSAL_INVALID                          = 'The transfer can not be reversed by the linked account';
+    const BAD_REQUEST_ORDER_TRANSFER_ENTITIES_NOT_SET                           = 'Order transfer entities provided are invalid or not set';
 
     const BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED                            = 'The hold attributes cannot be modified as the amount has already been settled to your account.';
 
