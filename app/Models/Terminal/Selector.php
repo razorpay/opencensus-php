@@ -268,7 +268,8 @@ class Selector extends Base\Core
                 $merchant->methods->setDinersCard(0);
 
                 $this->trace->info(TraceCode::DISABLING_DINERS_FOR_MERCHANT, [
-                    'merchant_id' => $merchant->getId()
+                    'merchant_id' => $merchant->getId(),
+                    'reason'      => 'No terminal found',
                 ]);
 
                 $this->repo->saveOrFail($merchant->methods);
