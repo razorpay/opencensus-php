@@ -10,6 +10,10 @@ const initialState = {
   content: null,
   title: 'Account Activation',
 };
+
+const isUserActivated = (isActivated, businessType, activated) =>
+  (isActivated && businessType != 11) || (businessType == 11 && activated == 1);
+
 @RTracking(() => {
   return window.rzpQ.component('ActivationCard');
 })
@@ -45,6 +49,8 @@ export default class ActivationCard extends Component {
         track,
         international,
         tracking,
+        activated,
+        business_type,
       } = nextProps,
       {
         isL1Submitted,
@@ -55,7 +61,7 @@ export default class ActivationCard extends Component {
 
     let { status, content, title } = initialState;
 
-    if (!isL1Submitted) {
+    if (!isUserActivated(isActivated, business_type, activated)) {
       status = possibleStatuses.active;
       content = (
         <div>
@@ -78,7 +84,7 @@ export default class ActivationCard extends Component {
           </div>
         </div>
       );
-    } else if (isActivated) {
+    } else if (isUserActivated(isActivated, business_type, activated)) {
       title = 'Account Activated';
       status = possibleStatuses.done;
       content =
