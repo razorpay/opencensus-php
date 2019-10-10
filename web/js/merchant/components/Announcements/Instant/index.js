@@ -89,10 +89,6 @@ export default class InstantActivationAnnouncements extends Component {
       } else {
         return null;
       }
-      // else return null;
-      // else if (mode !== 'live' || payments.loading || payments.items.length === 0) {
-      //   return null;
-      // }
     } else {
       if (user.isAccepted) {
         theme = 'success';
