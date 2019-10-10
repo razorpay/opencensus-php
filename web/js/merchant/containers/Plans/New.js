@@ -14,7 +14,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
 import { fetchPlan } from 'merchant/modules/plans';
-import { trackSaveDuplicatePlan } from './ga';
+import { trackSaveDuplicatePlan, trackSelectCurrency } from './ga';
 
 import {
   getKeysSeparatedByPipe,
@@ -156,6 +156,8 @@ export default class AddPlan extends Component {
   };
 
   onCurrencyChange = option => {
+    trackSelectCurrency(option.name); // ISO format(INR)
+
     this.props.change('item[currency]', option.name);
   };
 

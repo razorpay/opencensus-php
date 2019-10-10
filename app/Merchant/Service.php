@@ -509,6 +509,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getPartnerIntent()
+    {
+        $request = new ApiRequestAny(['client_type'    => 'merchant']);
+
+        list($error, $data) = $request->send('merchant/partner-intent', 'GET');
+
+        if(empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return $data['partner_intent'] ?? null;
+    }
+
     public function getMerchantTags($merchantId)
     {
         $adminUser = Auth::guard('api')->user();

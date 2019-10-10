@@ -86,6 +86,8 @@ export default class AddressEntry extends React.Component {
    * Updates the country in PowerSelect.
    */
   updateCountry = ({ option }) => {
+    this.props.trackSelectCountry && this.props.trackSelectCountry(option); // format: name of country
+
     // Set state and invoke onChange.
     this.setState(
       {
