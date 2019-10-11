@@ -8,7 +8,7 @@ namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants;
  * Some of the below contents will be taken from IFSC Service, using the Models/Bank/BankInfo class layer
  * Rest will remain hardcoded in this file and used for Statement Generation
  */
-class StatementConstants
+class Statement
 {
     const SANCTION_LIMIT     = '0';
 

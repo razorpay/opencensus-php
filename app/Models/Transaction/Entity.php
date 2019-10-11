@@ -246,6 +246,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DEBIT);
     }
 
+    public function isCredit()
+    {
+        return ($this->getCredit() > 0);
+    }
+
+    public function isDebit()
+    {
+        return ($this->getDebit() > 0);
+    }
+
     public function getNetAmount()
     {
         return $this->getCredit() - $this->getDebit();

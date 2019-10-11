@@ -100,7 +100,7 @@ class Core extends Base\Core
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function generateBankAccountStatement(array $input)
+    protected function generateBankAccountStatement(array $input)
     {
         $accountNumber = $input[Entity::ACCOUNT_NUMBER];
 
@@ -133,12 +133,7 @@ class Core extends Base\Core
 
         $ufhResponse = $this->uploadTemporaryFileToStore($temporaryFilePath, $bankingAccount);
 
-        $fileId = '';
-
-        if(empty($ufhResponse) === false)
-        {
-            $fileId = $ufhResponse[self::FILE_ID];
-        }
+        $fileId = $ufhResponse[self::FILE_ID] ?? null;
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
@@ -149,7 +144,7 @@ class Core extends Base\Core
         return $fileId;
     }
 
-    public function sendBankAccountStatementEmail(array $input, string $statementFileId = '')
+    protected function sendBankAccountStatementEmail(array $input, string $statementFileId = null)
     {
         $fileAccessUrl = $this->getDashboardFileAccessUrl($statementFileId);
 
@@ -179,7 +174,7 @@ class Core extends Base\Core
         Mail::queue($email);
     }
 
-    protected function getDashboardFileAccessUrl(string $fileId)
+    protected function getDashboardFileAccessUrl(string $fileId = null)
     {
         return sprintf(self::DASHBOARD_FILE_URL, $this->config['applications.dashboard.url'], $fileId);
     }
@@ -215,6 +210,7 @@ class Core extends Base\Core
                                              'temporary_file_path' => $pathToTemporaryFile
                                          ]);
         }
+
         return $response;
     }
 

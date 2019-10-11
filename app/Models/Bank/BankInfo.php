@@ -14,18 +14,11 @@ use Razorpay\IFSC\Entity;
  */
 class BankInfo
 {
-    protected $ifscCode;
-
-    public function __construct(string $ifscCode)
-    {
-        $this->ifscCode = $ifscCode;
-    }
-
-    public function getBankInformation(): Entity
+    public function getBankInformation(string $ifscCode): Entity
     {
         $client = new Client();
 
-        $bankInfo = $client->lookupIFSC($this->ifscCode);
+        $bankInfo = $client->lookupIFSC($ifscCode);
 
         return $bankInfo;
     }

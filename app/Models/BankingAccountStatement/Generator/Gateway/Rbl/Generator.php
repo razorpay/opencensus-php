@@ -10,9 +10,9 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\Statement;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\AccountOwnerInfo;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\StatementSummary;
-use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\StatementConstants;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\
 {TransactionLineItem, AccountStatementData};
 
@@ -20,7 +20,11 @@ abstract class Generator extends Base
 {
     const TEMP_STORAGE_DIR = '/tmp/';
 
-    // This will be set during class initialization, and will be available to all the Child Classes
+    /**
+     * This will be set during class initialization, and will be available to all the Child Classes
+     *
+     * @var array|null
+     */
     protected $data = null;
 
     const DATE_FORMAT = 'd/m/Y';
@@ -60,9 +64,9 @@ abstract class Generator extends Base
     {
         $bankAccountStatements = $this->repo
                                       ->statement
-                                      ->getStatementsWithInRange($bankingAccount->getMerchantId(),
-                                                                 $this->fromDate,
-                                                                 $this->toDate);
+                                      ->getStatementsInRange($bankingAccount->getMerchantId(),
+                                                             $this->fromDate,
+                                                             $this->toDate);
 
         $transactions = [];
 
@@ -80,9 +84,9 @@ abstract class Generator extends Base
 
         if ($bankAccountStatements->count() !== 0)
         {
-            $openingBalance = $bankAccountStatements[count($bankAccountStatements) - 1]->getBalance();
+            $openingBalance = $bankAccountStatements->last()->getBalance();
 
-            $closingBalance = $bankAccountStatements[0]->getBalance();
+            $closingBalance = $bankAccountStatements->first()->getBalance();
 
             $effectiveBalance = $closingBalance;
 
@@ -98,19 +102,19 @@ abstract class Generator extends Base
 
                 array_push($transactions, $lineItem);
 
-                if ($transaction->getCredit())
+                if ($transaction->isCredit() === true)
                 {
                     $creditCount++;
                 }
-                else if ($transaction->getDebit())
+                else if ($transaction->isDebit() === true)
                 {
                     $debitCount++;
                 }
             }
         }
 
-        $statementGeneratedDate = Carbon::createFromTimestamp(time(), Timezone::IST)
-                                          ->format(StatementSummary::STATEMENT_GENERATED_DATE_FORMAT);
+        $statementGeneratedDate = Carbon::createFromTimestamp(Carbon::now()->getTimestamp(), Timezone::IST)
+                                        ->format(StatementSummary::STATEMENT_GENERATED_DATE_FORMAT);
 
         $statementSummary = [
             StatementSummary::OPENING_BALANCE          => (float) $openingBalance / 100,
@@ -136,7 +140,7 @@ abstract class Generator extends Base
     protected function convertToLineItem(TransactionEntity $transaction)
     {
         $formattedTransactionDate = Carbon::createFromTimestamp($transaction->getCreatedAt(), Timezone::IST)
-                                            ->format(TransactionLineItem::ITEM_DATE_FORMAT);
+                                          ->format(TransactionLineItem::ITEM_DATE_FORMAT);
 
         $description = $this->extractDescription($transaction);
 
@@ -152,15 +156,17 @@ abstract class Generator extends Base
             TransactionLineItem::BALANCE             => (float) $transaction->getBalance() / 100
         ];
 
-        if ($transaction->getDebit())
+        $transactionAmount = (float) $transaction->getAmount() / 100;
+
+        if ($transaction->isDebit() === true)
         {
-            $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = (float) $transaction->getAmount() / 100;
+            $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = $transactionAmount;
 
             $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = null;
         }
-        else if ($transaction->getCredit())
+        else if ($transaction->isCredit() === true)
         {
-            $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = (float) $transaction->getAmount() / 100;
+            $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = $transactionAmount;
 
             $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = null;
         }
@@ -182,28 +188,24 @@ abstract class Generator extends Base
 
     /**
      * @param BankingAccountEntity $bankingAccount
-     * @param string $accountOpeningDate
      * @return array
      */
     protected function getAccountOwnerInfo(BankingAccountEntity $bankingAccount): array
     {
-        $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(),
-                                                          Timezone::IST)
-                                                          ->format(self::DATE_FORMAT);
+        $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(), Timezone::IST)
+                                    ->format(self::DATE_FORMAT);
 
-        $fromDate = Carbon::createFromTimestamp($this->fromDate,
-                                                Timezone::IST)
-                                                ->format(self::DATE_FORMAT);
+        $fromDate = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)
+                          ->format(self::DATE_FORMAT);
 
-        $toDate = Carbon::createFromTimestamp($this->toDate,
-                                              Timezone::IST)
-                                               ->format(self::DATE_FORMAT);
+        $toDate = Carbon::createFromTimestamp($this->toDate, Timezone::IST)
+                        ->format(self::DATE_FORMAT);
 
         $statementPeriod = $fromDate . ' - ' . $toDate;
 
         $ifscCode = $bankingAccount->getAccountIfsc();
 
-        $bankInformation = (new BankInfo($ifscCode))->getBankInformation();
+        $bankInformation = (new BankInfo)->getBankInformation($ifscCode);
 
         $customerAddressL2 =  $bankingAccount->getBeneficiaryAddress2() .
                               ', ' .
@@ -224,13 +226,13 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
 
-            AccountOwnerInfo::SANCTION_LIMIT       => StatementConstants::SANCTION_LIMIT,
+            AccountOwnerInfo::SANCTION_LIMIT       => Statement::SANCTION_LIMIT,
 
-            AccountOwnerInfo::DRAWING_POWER        => StatementConstants::DRAWING_POWER,
+            AccountOwnerInfo::DRAWING_POWER        => Statement::DRAWING_POWER,
 
-            AccountOwnerInfo::BRANCH_TIMINGS       => StatementConstants::BRANCH_TIMINGS,
+            AccountOwnerInfo::BRANCH_TIMINGS       => Statement::BRANCH_TIMINGS,
 
-            AccountOwnerInfo::CALL_CENTER          => StatementConstants::CALL_CENTER_NUMBER,
+            AccountOwnerInfo::CALL_CENTER          => Statement::CALL_CENTER_NUMBER,
 
             AccountOwnerInfo::CUSTOMER_CITY        => $bankingAccount->getBeneficiaryCity(),
 
