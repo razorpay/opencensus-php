@@ -3,11 +3,14 @@ import { connect } from 'react-redux';
 import { findBy, filterBy } from 'rzp/utils/rzp-utils';
 import * as NotificationActions from 'rzp/modules/notifications';
 
+import Spinner from 'rzp/ui/Spinner';
+
 import {
   editRemindersMerchantConfigs,
   disableReminders,
-  fetchRemindersMerchantConfigs,
 } from 'merchant/modules/reminders';
+
+import { fetchInvoiceCount } from 'merchant/modules/invoices/details';
 import Setting from 'merchant/components/Reminders/Settings';
 
 @connect(
@@ -71,8 +74,25 @@ export default class PaymentLinksSettings extends React.Component {
     super(props);
 
     this.state = {
-      totalUnpaidLinks: 12, // TODO: Update when API is ready according API response.
+      totalUnpaidLinks: {
+        loading: true,
+        count: 0,
+      },
     };
+  }
+
+  componentDidMount() {
+    fetchInvoiceCount({
+      type: 'link',
+      status: 'issued',
+    }).then(resp => {
+      this.setState({
+        totalUnpaidLinks: {
+          loading: false,
+          count: resp.data.count,
+        },
+      });
+    });
   }
 
   saveSettings = props => {
@@ -121,6 +141,14 @@ export default class PaymentLinksSettings extends React.Component {
   };
 
   render() {
+    if (this.state.totalUnpaidLinks.loading) {
+      return (
+        <div class="page-spinner-container">
+          <Spinner />
+        </div>
+      );
+    }
+
     return (
       <div class="Reminders-settings--payment_links">
         <Setting

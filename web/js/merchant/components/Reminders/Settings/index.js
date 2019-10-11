@@ -101,16 +101,20 @@ export default class ReminderSetting extends React.Component {
       return this.disableReminderSetting();
     }
 
-    this.context.confirm({
-      header: `Disable reminders for all ${this.typeInLowerCase} ?`,
-      message: `There are ${this.props.totalUnpaidLinks} existing unpaid ${
-        this.typeInLowerCase
-      } that have reminders scheduled.`,
-      affirmativeLabel: 'Yes, disable',
-      affirmativePendingLabel: 'Disabling...',
-      abortLabel: 'No, don’t!',
-      action: this.disableReminderSetting,
-    });
+    this.context
+      .confirm({
+        header: `Disable reminders for all ${this.typeInLowerCase} ?`,
+        message: `There are ${
+          this.props.totalUnpaidLinks.count
+        } existing unpaid ${
+          this.typeInLowerCase
+        } that have reminders scheduled.`,
+        affirmativeLabel: 'Yes, disable',
+        affirmativePendingLabel: 'Disabling...',
+        abortLabel: 'No, don’t!',
+        action: this.disableReminderSetting,
+      })
+      .catch();
   };
 
   onSaveClick = () => {
