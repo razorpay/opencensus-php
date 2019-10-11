@@ -90,4 +90,11 @@ class TransferController extends Controller
 
         return ApiResponse::json($transfer);
     }
+
+    public function processOrderTransfers()
+    {
+        $transfer = $this->service()->processOrderTransfers();
+
+        return ApiResponse::json($transfer);
+    }
 }

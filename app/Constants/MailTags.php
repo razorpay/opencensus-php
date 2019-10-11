@@ -158,6 +158,7 @@ class MailTags
 
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
+    const DISPUTES_CREATED_IN_BULK         = 'disputes_created_in_bulk';
     const DISPUTE_ACCEPTED_ADMIN           = 'dispute_accepted_admin';
     const DISPUTE_SUBMITTED_ADMIN          = 'files_submitted_admin';
 

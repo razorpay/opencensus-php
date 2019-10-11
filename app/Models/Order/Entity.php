@@ -5,6 +5,7 @@ namespace RZP\Models\Order;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Offer;
+use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -13,6 +14,7 @@ use RZP\Models\SubscriptionRegistration;
 /**
  * @property Offer\Entity    $offer
  * @property Merchant\Entity $merchant
+ * @property Transfer\Entity $transfer
  */
 class Entity extends Base\PublicEntity
 {
@@ -118,6 +120,8 @@ class Entity extends Base\PublicEntity
 
     const PAYER_NAME        = 'payer_name';
 
+    const TRANSFERS         = 'transfers';
+
     const VIRTUAL_ACCOUNT   = 'virtual_account';
 
     protected $fillable = [
@@ -174,7 +178,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::VIRTUAL_ACCOUNT,
         self::CREATED_AT,
-        self::TOKEN
+        self::TOKEN,
+        self::TRANSFERS,
     ];
 
     protected $casts = [
@@ -264,6 +269,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
+    }
+
+    public function transfers()
+    {
+        return $this->morphMany(Transfer\Entity::class, 'source');
     }
 
 /** End Related Models */

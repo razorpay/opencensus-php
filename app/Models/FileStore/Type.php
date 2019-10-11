@@ -120,13 +120,15 @@ class Type
 
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
-    const BATCH_INPUT                       = 'batch_input';
-    const BATCH_OUTPUT                      = 'batch_output';
-    const BATCH_VALIDATED                   = 'batch_validated';
-    const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
-    const BATCH_SERVICE                     = 'batch_service';
-    const RECONCILIATION_BATCH_OUTPUT       = 'reconciliation_batch_output';
-    const RECONCILIATION_BATCH_ANALYTICS_OUTPUT       = 'reconciliation_batch_analytics_output';
+    const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
+
+    const BATCH_INPUT                           = 'batch_input';
+    const BATCH_OUTPUT                          = 'batch_output';
+    const BATCH_VALIDATED                       = 'batch_validated';
+    const RECONCILIATION_BATCH_INPUT            = 'reconciliation_batch_input';
+    const BATCH_SERVICE                         = 'batch_service';
+    const RECONCILIATION_BATCH_OUTPUT           = 'reconciliation_batch_output';
+    const RECONCILIATION_BATCH_ANALYTICS_OUTPUT = 'reconciliation_batch_analytics_output';
 
     const BLANK                             = 'blank';
 
@@ -266,6 +268,7 @@ class Type
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,
             self::ISG_SUMMARY,
+            self::BULK_DISPUTES_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -392,6 +395,7 @@ class Type
         self::EQUITAS_NETBANKING_REFUND,
         self::ISG_REFUND,
         self::ISG_SUMMARY,
+        self::BULK_DISPUTES_FILE,
     ];
 
     /**

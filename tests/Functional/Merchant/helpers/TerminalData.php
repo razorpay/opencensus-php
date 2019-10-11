@@ -2398,6 +2398,43 @@ return [
         ]
     ],
 
+    'testTerminalOnboardingCreateTerminalWithSameFields' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '1234567880123456',
+                  'visa'        => '1234567890123456',
+                  'rupay'       => '1234567890123457'
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  '1234567880123456',
+                    'rupay_mpan'    =>  '1234567890123457',
+                    'visa_mpan'     =>  '1234567890123456'
+                ]
+
+            ]
+        ]
+    ],
+
+    // Used in all cases
+    'testTerminalOnboardingCreationCron'    =>  [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/onboard/creation',
+            ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
     'testTerminalOnboardingCreateTerminal2' => [
         'request' => [
             'content' => [
@@ -2425,4 +2462,63 @@ return [
         ]
     ],
 
+    'testTerminalOnboardingVerificationCronCase1'    => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [
+                'activated_terminals'           =>  1,
+                'pending_terminals'             =>  0,
+                'activation_failed_terminals'   =>  0,
+                'not_applicable_terminals'      =>  0,
+                'verification_error_terminals'  =>  0,
+            ],
+            'status_code'  => 200,
+        ]
+    ],
+
+    'testTerminalOnboardingVerificationCronCase2'    => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [
+                'activated_terminals'           =>  0,
+                'pending_terminals'             =>  1,
+                'activation_failed_terminals'   =>  0,
+                'not_applicable_terminals'      =>  0,
+                'verification_error_terminals'  =>  0,
+            ],
+            'status_code'  => 200,
+        ]
+    ],
+    
+    'testTerminalOnboardingVerificationCronCase3'    => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [
+                'activated_terminals'           =>  0,
+                'pending_terminals'             =>  0,
+                'activation_failed_terminals'   =>  1,
+                'not_applicable_terminals'      =>  0,
+                'verification_error_terminals'  =>  0,
+            ],
+            'status_code'  => 200,
+        ]
+    ],
 ];

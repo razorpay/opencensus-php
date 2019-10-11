@@ -32,6 +32,17 @@ trait SettlementTrait
                 'merchant_id'    => $merchant->getId(),
             ] + $data
         );
+
+        $customProperties = [
+            'merchant_id'    => $merchant->getId(),
+            'channel'        => $merchant->getChannel(),
+        ] + $data;
+
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::SETTLEMENT_CREATION_SKIPPED,
+            null,
+            null,
+            $customProperties);
     }
 
     /**
@@ -674,7 +685,9 @@ trait SettlementTrait
                 $transactionCount = $txns->count();
 
                 $customProperties = [
+                    'merchant_id'           => $merchantId,
                     'channel'               => $channel,
+                    'settlement_id'         => $setl->getId(),
                     'settlement_amount'     => $setlAmount,
                     'transaction_count'     => $transactionCount
                 ];
@@ -691,7 +704,8 @@ trait SettlementTrait
                 $customProperties += [
                     'fund_transfer_attempt_id'                => $bankTransferAtpt->getId(),
                     'fund_transfer_attempt_mode'              => $bankTransferAtpt->getMode(),
-                    'fund_transfer_attempt_medium'            => $medium
+                    'fund_transfer_attempt_medium'            => $medium,
+                    'fund_transfer_attempt_purpose'           => $bankTransferAtpt->getPurpose(),
                 ];
 
                 $this->app['diag']->trackSettlementEvent(
@@ -710,6 +724,7 @@ trait SettlementTrait
             $transactionCount = $txns->count();
 
             $customProperties = [
+                'merchant_id'           => $merchantId,
                 'channel'               => $channel,
                 'settlement_amount'     => $setlAmount,
                 'transaction_count'     => $transactionCount

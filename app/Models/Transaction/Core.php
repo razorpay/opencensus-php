@@ -1390,7 +1390,8 @@ class Core extends Base\Core
         //
         $transfer = $reversal->entity;
 
-        if ($transfer->isPaymentTransfer() === true)
+        if (($transfer->isPaymentTransfer() === true) or
+            ($transfer->isOrderTransfer() === true))
         {
             //
             // For payment transfers, the transfer txn's `settled_at` is

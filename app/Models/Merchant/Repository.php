@@ -716,6 +716,24 @@ class Repository extends Base\Repository
         return $activatedMerchants;
     }
 
+    public function getPartnerMerchantFromSubMerchantId(string $subMerchantId)
+    {
+        $accessMapRepo = $this->repo->merchant_access_map;
+
+        // db columns
+        $accessMapOwnerId    = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+        $accessMapMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $merchantId          = $this->dbColumn(Entity::ID);
+
+        $query = $this->newQuery()
+                      ->select($this->getTableName() . '.*')
+                      ->join(Table::MERCHANT_ACCESS_MAP, $accessMapOwnerId, '=', $merchantId)
+                      ->where($accessMapMerchantId, '=', $subMerchantId);
+
+        return $query->firstOrFail();
+    }
+
     public function getAllPartnerBankAccountsForSubmerchants(array $submerchantIds): Base\PublicCollection
     {
         // filter mIds so that we get only merchantIds which are mapped to at least one partner

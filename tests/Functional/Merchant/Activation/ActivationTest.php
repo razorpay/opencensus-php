@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Config;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
@@ -14,6 +15,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
 
 /**
  * @group dns-sensitive
@@ -94,6 +96,154 @@ class ActivationTest extends TestCase
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
     }
 
+    public function testInstantActivationForForUnRegisteredTORegisteredSwitch()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        Config::set('applications.mozart.mock', true);
+
+        Config::set('applications.mozart.mock.status', MerchantDetailsConstant::SUCCESS);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'     => $merchantId,
+                'business_type'   => '11',
+                'activation_flow' => 'blacklist',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals(ActivationFlow::WHITELIST, $merchantDetail->getActivationFLow());
+        $this->assertEquals(ActivationFlow::WHITELIST, $merchantDetail->getInternationalActivationFlow());
+        $this->assertEquals('7', $merchantDetail->getAttribute(Entity::TRANSACTION_VOLUME));
+        $this->assertEquals('8', $merchantDetail->getAttribute(Entity::DEPARTMENT));
+    }
+
+    public function testInstantActivationForUnregisteredBusinessWithBlacklistCategories()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchantId,
+            ]
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testInstantActivationForForRegisteredTOUnRegisteredSwitch()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        Config::set('applications.mozart.mock', true);
+
+        Config::set('applications.mozart.pan_authentication', MerchantDetailsConstant::SUCCESS);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchantId,
+                'business_type' => '3',
+                'activation_flow' => 'blacklist',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $testData = $this->testData['testInstantActivationForUnregisteredBusiness'];
+
+        $this->startTest($testData);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNull($merchantDetail->getActivationFLow());
+        $this->assertNull($merchantDetail->getInternationalActivationFlow());
+    }
+
+    public function testInstantActivationForUnregisteredBusiness()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        Config::set('applications.mozart.mock', true);
+
+        Config::set('applications.mozart.pan_authentication', MerchantDetailsConstant::SUCCESS);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNull($merchantDetail->getActivationFLow());
+        $this->assertNull($merchantDetail->getInternationalActivationFlow());
+    }
+
+    public function testIAForUnregisteredBusinessFeatureEnabled()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $tests = [
+            'testIAForUnregisteredBusinessFeatureEnabledNameMisMatch'     => MerchantDetailsConstant::SUCCESS,
+            'testIAForUnregisteredBusinessFeatureEnabledIncorrectDetails' => MerchantDetailsConstant::INCORRECT_DETAILS,
+            'testIAForUnregisteredBusinessFeatureEnabledTimeout'          => MerchantDetailsConstant::FAILURE,
+            'testIAForUnregisteredBusinessFeatureEnabled'                 => MerchantDetailsConstant::SUCCESS, // at bottom because once successful, the request can not be tried again
+        ];
+
+        Config::set('applications.mozart.mock', true);
+
+        foreach ($tests as $test => $mockStatus)
+        {
+
+            Config::set('applications.mozart.pan_authentication', $mockStatus);
+
+            $this->mockRazorX($test,'non_registered_onboarding','on');
+
+            $testData = $this->testData[$test];
+
+            $this->runRequestResponseFlow($testData);
+        }
+    }
+
     protected function mockHubSpotClient($methodName)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
@@ -109,8 +259,10 @@ class ActivationTest extends TestCase
 
     public function mockRazorX(string $functionName, string $featureName, string $variant)
     {
-        $testData = & $this->testData[$functionName];
-        $uniqueLocalId = RazorXClient::getLocalUniqueId('1cXSLlUU8V9sXl',$featureName, Mode::TEST);
+        $testData                       = &$this->testData[$functionName];
+
+        $uniqueLocalId                  = RazorXClient::getLocalUniqueId('1cXSLlUU8V9sXl', $featureName, Mode::TEST);
+
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
     }
 

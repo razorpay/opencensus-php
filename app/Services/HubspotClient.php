@@ -94,7 +94,7 @@ class HubspotClient
         }
     }
 
-    public function trackL1ContactProperties(array $input, Merchant\Entity $merchant, string $activationFlow)
+    public function trackL1ContactProperties(array $input, Merchant\Entity $merchant, string $activationFlow = null)
     {
         $payloadData = $input;
 
