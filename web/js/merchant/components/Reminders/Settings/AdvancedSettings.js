@@ -12,19 +12,14 @@ export default ({ channels, onChannelChange }) => (
         <EntityDetailRow label="Channels">
           <Input.Group class="InputGroup--inline InputGroup--near">
             <div class="Input-content">
-              <Input.Check
-                name="sms"
-                fieldLabel="SMS"
-                checked={channels.sms}
-                onChange={onChannelChange('sms')}
-              />
-
-              <Input.Check
-                name="email"
-                fieldLabel="Email"
-                checked={channels.email}
-                onChange={onChannelChange('email')}
-              />
+              {Object.keys(channels).map(channelName => (
+                <Input.Check
+                  name={channelName}
+                  fieldLabel={channelName.toUpperCase()}
+                  checked={channels[channelName]}
+                  onChange={onChannelChange(channelName)}
+                />
+              ))}
             </div>
 
             <div class="m-t">

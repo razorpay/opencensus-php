@@ -73,6 +73,9 @@ export default class InvoiceDetailContainer extends Component {
 
   componentWillMount() {
     this.props.fetchInvoice(this.props.id);
+    this.props.fetchInvoiceRemindersList(this.props.id).then(resp => {
+      console.log(resp);
+    });
   }
 
   componentWillReceiveProps(nextProps) {

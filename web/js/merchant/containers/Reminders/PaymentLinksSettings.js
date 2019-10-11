@@ -3,11 +3,14 @@ import { connect } from 'react-redux';
 import { findBy, filterBy } from 'rzp/utils/rzp-utils';
 import * as NotificationActions from 'rzp/modules/notifications';
 
+import Spinner from 'rzp/ui/Spinner';
+
 import {
   editRemindersMerchantConfigs,
   disableReminders,
-  fetchRemindersMerchantConfigs,
 } from 'merchant/modules/reminders';
+
+import { fetchInvoiceCount } from 'merchant/modules/invoices/details';
 import Setting from 'merchant/components/Reminders/Settings';
 
 @connect(
@@ -25,7 +28,8 @@ import Setting from 'merchant/components/Reminders/Settings';
     const withExpireByConfigs = [],
       withOutExpireByConfigs = [],
       withExpireByMerchantConfigs = [],
-      withOutExpireByMerchantConfigs = [];
+      withOutExpireByMerchantConfigs = [],
+      channels = new Set([]);
 
     configs.forEach(ele => {
       if (ele.config_template.attr_key === 'expire_by') {
@@ -44,6 +48,8 @@ import Setting from 'merchant/components/Reminders/Settings';
         return;
       }
 
+      ele.channels.forEach(ele => channels.add(ele));
+
       withOutExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
     });
 
@@ -57,6 +63,7 @@ import Setting from 'merchant/components/Reminders/Settings';
       withOutExpireByConfigs,
       withExpireByMerchantConfigs,
       withOutExpireByMerchantConfigs,
+      channels: Array.from(channels),
       user: state.session.user,
     };
   },
@@ -71,8 +78,25 @@ export default class PaymentLinksSettings extends React.Component {
     super(props);
 
     this.state = {
-      totalUnpaidLinks: 12, // TODO: Update when API is ready according API response.
+      totalUnpaidLinks: {
+        loading: true,
+        count: 0,
+      },
     };
+  }
+
+  componentDidMount() {
+    fetchInvoiceCount({
+      type: 'link',
+      status: 'issued',
+    }).then(resp => {
+      this.setState({
+        totalUnpaidLinks: {
+          loading: false,
+          count: resp.data.count,
+        },
+      });
+    });
   }
 
   saveSettings = props => {
@@ -121,11 +145,26 @@ export default class PaymentLinksSettings extends React.Component {
   };
 
   render() {
+    if (this.state.totalUnpaidLinks.loading) {
+      return (
+        <div
+          class="page-spinner-container"
+          key="RemindersSettings--PaymentLinks"
+        >
+          <Spinner />
+        </div>
+      );
+    }
+
     return (
-      <div class="Reminders-settings--payment_links">
+      <div
+        class="Reminders-settings--payment_links"
+        key="RemindersSettings--PaymentLinks"
+      >
         <Setting
           type="Payment Links"
           emailDetails={emailDetails}
+          channels={this.props.channels}
           onSaveClick={this.saveSettings}
           disableReminderSetting={this.disableReminderSetting}
           totalUnpaidLinks={this.state.totalUnpaidLinks}

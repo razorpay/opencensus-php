@@ -13,7 +13,6 @@ import Header from './Header';
 import ReminderOptionSetting from './ReminderOptionSetting';
 
 const initState = {
-  maxNoReminders: 5,
   withExpiry: [],
   withOutExpiry: [],
   advancedSettings: {
@@ -43,7 +42,7 @@ export default class ReminderSetting extends React.Component {
   };
 
   constructor(props) {
-    super();
+    super(props);
 
     this.changeRoute = false;
     this.typeInLowerCase = String(props.type).toLowerCase();
@@ -53,23 +52,22 @@ export default class ReminderSetting extends React.Component {
       checked: true,
       __stashed_settings__: {
         ...initState,
+        withExpiry: props.withExpiry,
+        withOutExpiry: props.withOutExpiry,
       },
       settings: {
         ...initState,
+        withExpiry: props.withExpiry,
+        withOutExpiry: props.withOutExpiry,
       },
       withExpireByConfigs: props.withExpireByConfigs,
       withOutExpireByConfigs: props.withOutExpireByConfigs,
     };
 
-    if (props.withExpiry) {
-      this.state.__stashed_settings__.withExpiry = props.withExpiry;
-      this.state.settings.withExpiry = props.withExpiry;
-    }
-
-    if (props.withOutExpiry) {
-      this.state.__stashed_settings__.withOutExpiry = props.withOutExpiry;
-      this.state.settings.withOutExpiry = props.withOutExpiry;
-    }
+    props.channels.forEach(channel => {
+      this.state.settings.advancedSettings.channels[channel] = true;
+      this.state.__stashed_settings__.advancedSettings.channels[channel] = true;
+    });
   }
 
   disableReminderSetting = () => {
@@ -102,16 +100,20 @@ export default class ReminderSetting extends React.Component {
       return this.disableReminderSetting();
     }
 
-    this.context.confirm({
-      header: `Disable reminders for all ${this.typeInLowerCase} ?`,
-      message: `There are ${this.props.totalUnpaidLinks} existing unpaid ${
-        this.typeInLowerCase
-      } that have reminders scheduled.`,
-      affirmativeLabel: 'Yes, disable',
-      affirmativePendingLabel: 'Disabling...',
-      abortLabel: 'No, don’t!',
-      action: this.disableReminderSetting,
-    });
+    this.context
+      .confirm({
+        header: `Disable reminders for all ${this.typeInLowerCase} ?`,
+        message: `There are ${
+          this.props.totalUnpaidLinks.count
+        } existing unpaid ${
+          this.typeInLowerCase
+        } that have reminders scheduled.`,
+        affirmativeLabel: 'Yes, disable',
+        affirmativePendingLabel: 'Disabling...',
+        abortLabel: 'No, don’t!',
+        action: this.disableReminderSetting,
+      })
+      .catch();
   };
 
   onSaveClick = () => {
@@ -233,13 +235,11 @@ export default class ReminderSetting extends React.Component {
                   name="with_expiry"
                   remindersList={withExpireByConfigs}
                   onChange={this.onChange('withExpiry')}
-                  maxSelections={settings.maxNoReminders}
                   selectedReminders={settings.withExpiry}
                 />
 
                 <ReminderOptionSetting
                   name="with_out_expiry"
-                  maxSelections={settings.maxNoReminders}
                   onChange={this.onChange('withOutExpiry')}
                   selectedReminders={settings.withOutExpiry}
                   remindersList={withOutExpireByConfigs}

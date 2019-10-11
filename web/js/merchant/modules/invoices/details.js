@@ -11,6 +11,19 @@ const INVOICE_INIT = 'INVOICE_INIT';
 const INVOICE_CANCEL = 'INVOICE_CANCEL';
 const INVOICE_PAYMENTS_FETCH = 'INVOICE_PAYMENTS_FETCH';
 
+export const fetchInvoiceCount = data => {
+  return merchantFetch({
+    url: `invoices-count`,
+    data,
+  });
+};
+
+export const fetchInvoiceRemindersList = id => {
+  return merchantFetch({
+    url: `reminders/next_run/invoice/payment_link/${id}`,
+  });
+};
+
 export const fetchCreditNote = id => {
   return merchantFetch(`creditnote/${id}`);
 };

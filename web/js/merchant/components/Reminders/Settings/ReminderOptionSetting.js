@@ -15,10 +15,8 @@ export default class ReminderOptionSetting extends React.Component {
   };
 
   handleRemove = option => () => {
-    const newList = filterBy(
-      this.props.selectedReminders,
-      'value',
-      option.value
+    const newList = this.props.selectedReminders.filter(
+      ele => ele.value != option.value
     );
 
     this.props.onChange(newList);
@@ -40,20 +38,13 @@ export default class ReminderOptionSetting extends React.Component {
   };
 
   render() {
-    const {
-      name,
-      isExpiry,
-      maxSelections,
-      remindersList,
-      selectedReminders,
-    } = this.props;
+    const { name, isExpiry, remindersList, selectedReminders } = this.props;
 
     const label = isExpiry
       ? 'For links with expiry'
       : 'For links without expiry';
 
-    const showAddBtn =
-      maxSelections && selectedReminders.length < maxSelections;
+    const showAddBtn = selectedReminders.length != remindersList.length;
 
     return (
       <div class="setting">
