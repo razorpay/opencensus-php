@@ -23,6 +23,7 @@ class Action
     const VERIFY_REFUND   = 'verify_refund';
     const OMNI_PAY        = 'omni_pay';
     const CREATE_TERMINAL = 'create_terminal';
+    const VERIFY_TERMINAL = 'verify_terminal';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE

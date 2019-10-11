@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
     const VERIFY_AT                 = 'verify_at';
 
     protected $public = [
+        self::ID,
+        self::ENTITY,
         self::TERMINAL_ID,
         self::STATUS,
         self::RETRY,
@@ -60,7 +62,7 @@ class Entity extends Base\PublicEntity
     protected $entity = Constants\Entity::TERMINAL_ONBOARDING_DETAIL;
 
     protected $generateIdOnCreate = true;
-    
+
     public function terminal()
     {
         return $this->belongsTo('RZP\Models\Terminal\Entity');
@@ -68,22 +70,22 @@ class Entity extends Base\PublicEntity
 
 
     // Public Setters
-    public function setStatus($status)
+    public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setRetry($retry)
+    public function setRetry(bool $retry)
     {
         $this->setAttribute(self::RETRY, $retry);
     }
 
-    public function setErrorCode($errorCode)
+    public function setErrorCode(string $errorCode)
     {
         $this->setAttribute(self::ERROR_CODE, $errorCode);
     }
 
-    public function setErrorDescription($errorDescription)
+    public function setErrorDescription(string $errorDescription)
     {
         $this->setAttribute(self::ERROR_DESCRIPTION, $errorDescription);
     }
@@ -103,13 +105,20 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERIFY_AT, $verify_at);
     }
 
+    public function incrementVerifyBucket()
+    {
+        $verify_bucket = $this->getVerifyBucket();
+
+        $this->setAttribute(self::VERIFY_BUCKET, $verify_bucket + 1);
+    }
+
 
     // Public Getters
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
     }
-    
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -143,5 +152,17 @@ class Entity extends Base\PublicEntity
     public function getVerifyAt()
     {
         return $this->getAttribute(self::VERIFY_AT);
+    }
+
+    public function incrementAttempts()
+    {
+        $attempts = $this->getAttempts();
+
+        $this->setAttribute(self::ATTEMPTS, $attempts + 1);
+    }
+
+    public function getReqRrn()
+    {
+        return $this->getTerminalId() . $this->getAttempts();
     }
 }

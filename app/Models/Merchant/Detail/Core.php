@@ -21,17 +21,17 @@ use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Action as Action;
-use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
-use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 
@@ -120,14 +120,25 @@ class Core extends Base\Core
     /**
      * fetches activation_flow and international_activation value
      * using business category and subcategory, then updates in
-     * merchant_details table
+     * merchant_details table.
      *
-     * @param Entity $merchantDetails
+     * For unregistered business bucket we skip activation flow
+     *
+     * @param Entity          $merchantDetails
+     *
+     * @param Merchant\Entity $merchant
      *
      * @throws \RZP\Exception\BadRequestException
      */
-    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
+    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails, Merchant\Entity $merchant)
     {
+        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true)
+        {
+            $merchantDetails->setActivationFlow();
+            $merchantDetails->setInternationalActivationFlow();
+            return;
+        }
+
         $subcategory = $merchantDetails->getBusinessSubcategory();
         $category    = $merchantDetails->getBusinessCategory();
 
@@ -139,7 +150,7 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::MERCHANT_ACTIVATION, $activation_metric_dimensions);
 
-        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($this->merchant);
+        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($merchant, $merchantDetails);
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
@@ -191,22 +202,19 @@ class Core extends Base\Core
      * in MerchantDetails table. The reason for doing so is if Business type is changed from Non registered
      * to some other business type, then need to skip pre signup form from Dashboard login.
      *
-     * @param Entity          $merchantDetails
-     * @param Merchant\Entity $merchant
-     *
-     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @param Entity $merchantDetails
      */
-    public function updateToDefaultDepartmentVolumeIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function updateToDefaultDepartmentVolumeIfApplicable(Entity & $merchantDetails)
     {
-        if ($merchantDetails->isDirty((Entity::BUSINESS_TYPE)) === true)
+        if ($merchantDetails->isDirty([Entity::BUSINESS_TYPE]) === true)
         {
-            $merchantBusinessType = BusinessType::getKeyFromIndex($merchant->merchantDetail[Entity::BUSINESS_TYPE]);
+            $oldMerchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantDetails->getMerchantId());
 
-            if (BusinessType::isUnregisteredBusiness($merchantBusinessType))
+            if (BusinessType::isUnregisteredBusiness($oldMerchantDetail->getBusinessType()))
             {
-                $merchantDetails->setAttribute(Entity::TRANSACTION_VOLUME, Department::getDefaultDepartment());
+                $merchantDetails->setAttribute(Entity::TRANSACTION_VOLUME, TransactionVolume::getDefaultVolume());
 
-                $merchantDetails->setAttribute(Entity::DEPARTMENT, TransactionVolume::getDefaultVolume());
+                $merchantDetails->setAttribute(Entity::DEPARTMENT, Department::getDefaultDepartment());
             }
         }
     }
@@ -239,16 +247,34 @@ class Core extends Base\Core
             // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
-            $this->autoUpdateMerchantActivationFlow($merchantDetails);
+            $this->autoUpdateMerchantActivationFlow($merchantDetails, $merchant);
+
+            $this->updateToDefaultDepartmentVolumeIfApplicable($merchantDetails);
+
+            // do pan validation
+            $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant);
 
             $this->repo->saveOrFail($merchantDetails);
 
+            $merchantCore = new Merchant\Core();
             // Sync few input fields to merchant entity
-            $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
+            $merchant = $merchantCore->syncMerchantEntityFields($merchant, $input);
 
-            // $activationFlow will be an instance of the ActivationFlowInterface
-            $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
-            $activationFlow->process($merchantDetails);
+            if ($merchantCore->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()))
+            {
+                if ($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::VERIFIED)
+                {
+                    // in case of unregistered business if pan is verified then instantly activate merchant
+                    (new Detail\ActivationFlow\Whitelist())->process($merchantDetails);
+                }
+            }
+            else
+            {
+                // $activationFlow will be an instance of the ActivationFlowInterface
+                $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
+                $activationFlow->process($merchantDetails);
+
+            }
 
             $response = $this->createResponse($merchantDetails);
 
@@ -269,11 +295,60 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @return Verifiers\PanVerifierResponse|null
+     */
+    protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, MErchant\Entity $merchant)
+    {
+        if ($merchantDetails->isUnregisteredBusiness() === false)
+        {
+            return null;
+        }
+
+        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness());
+
+        if ($enabled === false)
+        {
+            return null;
+        }
+
+        $input = [
+            DEConstants::PAN_NUMBER => $merchantDetails->getPromoterPan(),
+        ];
+
+        $response = null;
+
+        try
+        {
+            $verifier = FactoryVerifier::getPoiVerifier($input);
+
+            $response = $verifier->verifyDetails();
+
+            $response->setPanOwnerName($merchantDetails->getPromoterPanName());
+
+            $merchantDetails->setPoiVerificationStatus($response->getStatus());
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         null,
+                                         TraceCode::MERCHANT_POI_VERIFICATION_FAILED);
+
+            $merchantDetails->setPoiVerificationStatus(POIStatus::FAILED);
+        }
+
+        return $response;
+    }
+
+    /**
      * @param Merchant\Entity $merchant
      * @param                 $activationProgress
      * @param string          $activationFlow
      */
-    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow)
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow = null)
     {
         $eventAttributes = $merchant->toArrayEvent();
 

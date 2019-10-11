@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Transfer;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
@@ -31,17 +33,23 @@ class Repository extends Base\Repository
     /**
      * Fetch all transfers from a merchant, done on a payment
      *
-     * @param string          $type
-     * @param string          $paymentId
+     * @param string          $sourceType
+     * @param string          $sourceId
      * @param Merchant\Entity $merchant
+     * @param $status         $status
      */
-    public function fetchBySourceTypeAndIdAndMerchant(string $type, string $paymentId, Merchant\Entity $merchant)
+    public function fetchBySourceTypeAndIdAndMerchant(string $sourceType, string $sourceId, Merchant\Entity $merchant, array $status = [])
     {
-        return $this->newQuery()
-                    ->where(Entity::SOURCE_TYPE, $type)
-                    ->where(Entity::SOURCE_ID, $paymentId)
-                    ->merchantId($merchant->getId())
-                    ->get();
+        $query = $this->newQuery()
+                      ->where(Entity::SOURCE_TYPE, $sourceType)
+                      ->where(Entity::SOURCE_ID, $sourceId)
+                      ->merchantId($merchant->getId());
+        if (count($status) > 0)
+        {
+            $query = $query->whereIn(Entity::STATUS, $status);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -90,5 +98,24 @@ class Repository extends Base\Repository
         Settlement\Entity::verifyIdAndStripSign($id);
 
         $query->where(Entity::RECIPIENT_SETTLEMENT_ID, $id);
+    }
+
+    public function fetchTransfersToRetry()
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select(Entity::SOURCE_ID)
+                    ->where(Entity::SOURCE_TYPE, E::ORDER)
+                    ->whereIn(Entity::STATUS, [Status::FAILED, Status::CREATED])
+                    ->where(function($query) {
+                        $to = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+                        $query->where(Entity::PROCESSED_AT, '<', $to)
+                              ->orWhereNull(Entity::PROCESSED_AT);
+                    })
+                    ->where(Entity::ATTEMPTS, '<', Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::SOURCE_ID)
+                    ->toArray();
     }
 }

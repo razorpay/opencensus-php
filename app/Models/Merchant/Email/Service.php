@@ -77,4 +77,21 @@ class Service extends Base\Service
 
         return (array) $deleteOperation;
     }
+
+    /**
+     * Fetch all merchant's single type of emails from databases as an array
+     *
+     * @param string $merchantId
+     * @param string $type
+     *
+     * @return array
+     */
+    public function fetchAllEmailsForMerchantAndType(string $merchantId, string $type) : array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $emails = $this->core()->fetchAllEmailsForMerchantAndType($merchant, $type);
+
+        return $emails;
+    }
 }

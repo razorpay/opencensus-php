@@ -287,6 +287,8 @@ final class Route
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
         'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
+        'terminal_onboarding_verification'         => ['post',     'terminals/onboard/verification',                 'TerminalOnboardingController@postOnboardTerminalVerification'      ],
+        'terminal_onboarding_creation'             => ['post',     'terminals/onboard/creation',                     'TerminalOnboardingController@postOnboardTerminalCreation'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
@@ -811,6 +813,7 @@ final class Route
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
+        'transfer_process'                         => ['post',     'transfers/process',                              'TransferController@processOrderTransfers'                                   ],
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
@@ -937,6 +940,8 @@ final class Route
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                             => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
+        'dispute_bulk_create'                      => ['post',     'disputes/bulk-create',                           'DisputeController@bulkCreate'                                      ],
+        'dispute_bulk_edit'                        => ['post',     'disputes/bulk-edit',                             'DisputeController@bulkUpdate'                                      ],
         'dispute_migrate_adjustments'              => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
         'dispute_reason_create'                    => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
         'dispute_fetch_multiple'                   => ['get',      'disputes',                                       'DisputeController@fetchMultiple'                                   ],
@@ -1462,6 +1467,7 @@ final class Route
         'transfer_fetch',
         'transfer_edit',
         'transfer_create',
+        'transfer_process',
         'transfer_create_reversal',
         'virtual_account_create',
         'virtual_account_edit',
@@ -1663,7 +1669,6 @@ final class Route
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
         'payments_downtime_trigger_cron',
-        'entity_origin_create',
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
@@ -1678,10 +1683,13 @@ final class Route
         'get_setl_amount',
         'cps_sync_gateway_entities_cron',
         'scrooge_refund_reference1_bulk_update',
+        'terminal_onboarding_creation',
+        'terminal_onboarding_verification',
         'iin_batch_process_record',
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
         'mailing_list_remove_suspended_merchant',
+        'transfer_process',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1882,6 +1890,7 @@ final class Route
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
+        'entity_origin_create',
 
         'merchant_product_switch',
         'merchant_instant_activation_post',
@@ -2164,6 +2173,8 @@ final class Route
         'payment_capture_gateway_manual',
         'payment_capture_verify',
         'payment_dispute_create',
+        'dispute_bulk_create',
+        'dispute_bulk_edit',
         'payment_fix_authorize_at',
         'payment_force_authorize',
         'payments_multiple_authorize_refund',
@@ -2500,7 +2511,9 @@ final class Route
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
+        'dispute_bulk_create'                      => Permission::CREATE_DISPUTE,
         'dispute_edit'                             => Permission::EDIT_DISPUTE,
+        'dispute_bulk_edit'                        => Permission::EDIT_DISPUTE,
         'dispute_files_fetch'                      => Permission::FETCH_DISPUTE_FILES,
         'settings_fetch'                           => Permission::VIEW_WALLET_CONFIG,
         'settings_fetch_defined'                   => Permission::VIEW_WALLET_CONFIG,
@@ -3078,8 +3091,11 @@ final class Route
             'refund_speed_processed_backfill',
             'get_setl_amount',
             'cps_sync_gateway_entities_cron',
+            'terminal_onboarding_creation',
+            'terminal_onboarding_verification',
             'reconciliate',
             'mailing_list_remove_suspended_merchant',
+            'transfer_process',
         ],
 
         'subscriptions' => [

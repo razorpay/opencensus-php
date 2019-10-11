@@ -327,13 +327,13 @@ class Core extends Base\Core
         }
     }
 
-    public function updateStatusAfterFtaInitiated(Entity $entity, Attempt\Entity $fta)
+    public function updateStatusAfterFtaInitiated(Entity $payout, Attempt\Entity $fta)
     {
-        $entity->batchFundTransfer()->associate($fta->batchFundTransfer);
+        $payout->batchFundTransfer()->associate($fta->batchFundTransfer);
 
-        $entity->setStatus(Status::INITIATED);
+        $payout->setStatus(Status::INITIATED);
 
-        $this->repo->saveOrFail($entity);
+        $this->repo->saveOrFail($payout);
     }
 
     public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
@@ -727,7 +727,7 @@ class Core extends Base\Core
         //
         // Payout can go to failed state from initiated or created state only
         //
-        Status::validatePreviousToCurrentMapping($currentStatus, Status::FAILED);
+        Status::validateStatusUpdate(Status::FAILED, $currentStatus);
 
         $payout->setStatus(Status::FAILED);
 
@@ -752,9 +752,9 @@ class Core extends Base\Core
                 'Attempted to reverse an already reversed payout',
                 null,
                 [
-                    'payout_id'         => $payout->getId(),
-                    'status'            => $payout->getStatus(),
-                    'reverse_reason'    => $reverseReason,
+                    'payout_id'      => $payout->getId(),
+                    'status'         => $payout->getStatus(),
+                    'reverse_reason' => $reverseReason,
                 ]);
         }
 
@@ -762,9 +762,10 @@ class Core extends Base\Core
             function() use ($payout, $reverseReason) {
                 $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
-                $payout->setStatus(Status::REVERSED);
-
                 $payout->setFailureReason($reverseReason);
+
+                // To be set after failure_reason for metrics purpose
+                $payout->setStatus(Status::REVERSED);
 
                 $this->repo->saveOrFail($payout);
 

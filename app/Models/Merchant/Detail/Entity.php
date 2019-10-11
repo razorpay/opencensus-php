@@ -231,7 +231,6 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT,
         self::INTERNATIONAL_ACTIVATION_FLOW,
         self::CUSTOM_FIELDS,
-        self::DATE_OF_BIRTH,
     ];
 
     protected $public = [
@@ -262,7 +261,6 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_OPERATION_PIN,
         self::PROMOTER_PAN,
         self::PROMOTER_PAN_NAME,
-        self::DATE_OF_BIRTH,
         self::BUSINESS_DOE,
         self::GSTIN,
         self::P_GSTIN,
@@ -654,7 +652,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONTACT_EMAIL, $email);
     }
 
-    public function setActivationFlow(string $activationFlow)
+    public function setActivationFlow(string $activationFlow = null)
     {
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
     }
@@ -664,7 +662,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATION_FLOW);
     }
 
-    public function setInternationalActivationFlow(string $internationalActivationFlow)
+    public function setInternationalActivationFlow(string $internationalActivationFlow = null)
     {
         $this->setAttribute(self::INTERNATIONAL_ACTIVATION_FLOW, $internationalActivationFlow);
     }
@@ -672,6 +670,16 @@ class Entity extends Base\PublicEntity
     public function getInternationalActivationFlow()
     {
         return $this->getAttribute(self::INTERNATIONAL_ACTIVATION_FLOW);
+    }
+
+    public function getPoiVerificationStatus()
+    {
+        return $this->getAttribute(self::POI_VERIFICATION_STATUS);
+    }
+
+    public function setPoiVerificationStatus(string $status)
+    {
+        return $this->setAttribute(self::POI_VERIFICATION_STATUS, $status);
     }
 
     public function setActivationProgress($activationProgress)
@@ -737,6 +745,16 @@ class Entity extends Base\PublicEntity
     public function getBusinessType()
     {
         return BusinessType::getKeyFromIndex($this->getAttribute(self::BUSINESS_TYPE));
+    }
+
+    public function isUnregisteredBusiness(): bool
+    {
+        if (empty($this->getAttribute(self::BUSINESS_TYPE)))
+        {
+            return false;
+        }
+
+        return BusinessType::isUnregisteredBusinessIndex($this->getAttribute(self::BUSINESS_TYPE));
     }
 
     public function getBusinessName()

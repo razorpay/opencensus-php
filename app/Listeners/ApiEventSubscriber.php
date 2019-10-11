@@ -5,6 +5,7 @@ namespace RZP\Listeners;
 use Throwable;
 use Razorpay\Trace\Logger;
 
+use RZP\Error;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
@@ -15,8 +16,10 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transfer;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Terminal;
 use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
@@ -307,6 +310,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTransferProcessed(Transfer\Entity $transfer)
+    {
+        $payload = $this->getTransferPayload($transfer);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onVirtualAccountCredited(Payment\Entity $payment)
     {
         $payload = $this->getVirtualAccountPaymentPayload($payment);
@@ -569,6 +579,20 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTerminalActivated(Terminal\Entity $terminal)
+    {
+        $payload = $this->getTerminalActivatedPayload($terminal);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onTerminalFailed(Terminal\Entity $terminal)
+    {
+        $payload = $this->getTerminalFailedPayload($terminal);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -648,6 +672,14 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getTransferPayload(Transfer\Entity $transfer)
+    {
+        $partialPayload[Constants\Entity::TRANSFER] = [
+            'entity' => $transfer->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
     {
         $receiver = $payment->receiver;
@@ -808,6 +840,37 @@ class ApiEventSubscriber extends Base\Core
                 'entity' => $downtime->toArrayPublic(),
             ]
         ];
+
+        return $payload;
+    }
+
+    protected function getTerminalActivatedPayload(Terminal\Entity $terminal): array
+    {
+        $payload = [
+            Constants\Entity::TERMINAL => [
+                'entity' => $terminal->toArrayPublic(),
+            ]
+        ];
+
+        return $payload;
+    }
+
+    protected function getTerminalFailedPayload(Terminal\Entity $terminal): array
+    {
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $terminalArray = $terminal->toArrayPublic();
+
+        // TODO: Instead of generic error code, add specific error codes.
+        $terminalArray['error_code'] = Error\TerminalOnboarding\ErrorCode::SERVER_ERROR_TERMINAL_ONBOARDING_FAILED;
+
+        $terminalArray['error_description'] = $terminalOnboardingDetail->getErrorDescription();
+
+        $payload = [
+            Constants\Entity::TERMINAL => [
+                'entity' => $terminalArray,
+            ]
+        ];  
 
         return $payload;
     }

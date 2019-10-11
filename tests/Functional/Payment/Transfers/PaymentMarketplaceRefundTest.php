@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
@@ -327,5 +328,52 @@ class PaymentMarketplaceRefundTest extends TestCase
 
             ++$index;
         }
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode) {
+                                  if ($feature === 'transfers_via_order')
+                                  {
+                                      return 'on';
+                                  }
+                                  return 'off';
+                              }));
+    }
+
+    public function testReverseAllOrderTransfers()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $data = $this->testData['createOrderTransfers'];
+
+        $this->ba->privateAuth();
+
+        $order = $this->runRequestResponseFlow($data);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/payments/' . $payment['id'] . '/refund';
+
+        $refund = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('reversed', $transfer['status']);
     }
 }

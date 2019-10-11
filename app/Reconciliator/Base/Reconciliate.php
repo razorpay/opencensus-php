@@ -33,6 +33,8 @@ class Reconciliate extends Base\Core
     const MANUAL         = 'manual';
     const EMANDATE_DEBIT = 'emandate_debit';
 
+    public static $forceAuthorizedPayments = [];
+
     /**
      * This is being used as a hack to ignore the unexpected files coming
      * from NB-ICICI. We return recon type as 'invalid_recon_type'
@@ -262,6 +264,19 @@ class Reconciliate extends Base\Core
             }
             finally
             {
+                if (count(self::$forceAuthorizedPayments) > 0)
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code' => TraceCode::RECON_INFO_ALERT,
+                            'message'    => 'Tried Force authorizing these failed payments',
+                            'count'      => count(self::$forceAuthorizedPayments),
+                            'payments'   => self::$forceAuthorizedPayments,
+                            'gateway'    => $this->gateway,
+                            'batch_id'   => $batch->getId()
+                        ]);
+                }
+
                 $data = $batchProcessor->getReconBatchOutputData();
 
                 $this->setBatchFailureSummary($batch, $data);

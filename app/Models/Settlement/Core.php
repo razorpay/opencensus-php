@@ -180,6 +180,7 @@ class Core extends Base\Core
         }
 
         $customProperties = [
+            'merchant_id'                       => $ftaData['merchant_id'],
             'channel'                           => $entity->getChannel(),
             'fund_transfer_attempt_id'          => $ftaData['fta_id'],
             'batch_fund_transfer_attempt_id'    => $batchFtaId,

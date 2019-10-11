@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
@@ -224,7 +226,8 @@ class Validator extends Base\Validator
         Entity::BUSINESS_CATEGORY           => 'required|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',
         Entity::PROMOTER_PAN                => 'required|pan',
-        Entity::BUSINESS_NAME               => 'required|string|max:255',
+        Entity::PROMOTER_PAN_NAME           => 'sometimes|string|max:255',
+        Entity::BUSINESS_NAME               => 'sometimes|string|max:255',
         Entity::BUSINESS_MODEL              => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE            => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_DBA                => 'required|string|max:255',
@@ -237,6 +240,11 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|max:15',
+    ];
+
+    protected static $instantActivationValidators = [
+        'registered_business_rules',
+        'unregistered_business_rules',
     ];
 
     protected static $websiteDetailsRules = [
@@ -259,6 +267,58 @@ class Validator extends Base\Validator
         Entity::MERCHANTS       => 'filled|array',
         Entity::MERCHANTS . '*' => 'sometimes|public_id|size:14',
     ];
+
+    protected function validateRegisteredBusinessRules(array $input)
+    {
+        if (BusinessType::isUnregisteredBusinessIndex($input[Entity::BUSINESS_TYPE]) === true)
+        {
+            return;
+        }
+
+        // if business is a registered business type, then business name is mandatory
+        if (empty($input[Entity::BUSINESS_NAME]) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED);
+        }
+    }
+
+    protected function validateUnregisteredBusinessRules(array $input)
+    {
+        if (BusinessType::isUnregisteredBusinessIndex($input[Entity::BUSINESS_TYPE]) === false)
+        {
+            return;
+        }
+
+        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($this->entity->merchant, true);
+
+        if ($enabled === false)
+        {
+            return;
+        }
+
+        $this->validateForBlackListedCategories($input);
+
+        if (empty($input[Entity::PROMOTER_PAN_NAME]) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED);
+        }
+    }
+
+    protected function validateForBlackListedCategories(array $input)
+    {
+        $category = array_key_exists(Entity::BUSINESS_CATEGORY, $input) ?
+            $input[Entity::BUSINESS_CATEGORY] : $this->entity->getBusinessCategory();
+
+        $subcategory = array_key_exists(Entity::BUSINESS_SUBCATEGORY, $input) ?
+            $input[Entity::BUSINESS_SUBCATEGORY] : $this->entity->getBusinessSubcategory();
+
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        if ($subcategoryMetaData[Entity::ACTIVATION_FLOW] === ActivationFlow::BLACKLIST)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY);
+        }
+    }
 
     /**
      * Validate the transaction report email
@@ -553,6 +613,9 @@ class Validator extends Base\Validator
 
     /**
      * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function performInstantActivationValidations(array $input)
     {

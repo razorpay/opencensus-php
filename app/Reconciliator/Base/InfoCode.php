@@ -149,4 +149,6 @@ class InfoCode
     const CARD_LOCALE_MISMATCH                          = 'CARD_LOCALE_MISMATCH';
 
     const UNEXPECTED_CARD_LOCALE                        = 'UNEXPECTED_CARD_LOCALE';
+
+    const GATEWAY_CAPTURED_NOT_SET                      = 'GATEWAY_CAPTURED_NOT_SET';
 }

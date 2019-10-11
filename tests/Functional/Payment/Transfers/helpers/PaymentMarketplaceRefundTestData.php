@@ -79,4 +79,42 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'createOrderTransfers' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '20000',
+                        'currency' => 'INR',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testReverseAllOrderTransfers' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'amount' => '50000',
+                'reverse_all' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
 ];

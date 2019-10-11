@@ -14,13 +14,13 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
         Entity::RECEIPT         => 'sometimes|string|max:40',
-        self::EXPAND . '.*'     => 'filled|string|in:payments,virtual_account',
+        self::EXPAND . '.*'     => 'filled|string|in:payments,virtual_account,transfers',
     ];
 
     protected $proxyFetchParamRules = [
         Entity::STATUS          => 'sometimes|in:created,attempted,paid',
         Entity::NOTES           => 'sometimes|notes_fetch',
-        self::EXPAND . '*'      => 'filled|string|in:virtual_account',
+        self::EXPAND . '*'      => 'filled|string|in:virtual_account,transfers',
     ];
 
     protected $appFetchParamRules = [
