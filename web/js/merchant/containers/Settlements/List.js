@@ -48,7 +48,6 @@ import { trackInstantSettlementsBanner } from '../../components/Announcements/ga
 )
 export default class SettlementsListContainer extends ListContainer {
   state = {
-    showRequestESButton: this.props.user.showEarlySettlementAnnouncement,
     openAutoModal: false,
   };
 
@@ -159,10 +158,6 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   removeRequestESButton = e => {
-    this.setState({
-      showRequestESButton: false,
-    });
-
     window.removeEventListener(
       'remove-req-es-button',
       this.removeRequestESButton,
@@ -224,18 +219,6 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  {this.state.showRequestESButton ? (
-                    <Link
-                      class="btn btn-link req-es-btn"
-                      to="/settlements#requestearlyaccess"
-                    >
-                      Request Early Settlements{' '}
-                      <i class="fa fa-circle interpunct" />
-                    </Link>
-                  ) : (
-                    ''
-                  )}
-
                   <ShowWhen
                     additionalCondition={user =>
                       user.isOrgAllowedFunctionality('external_links')
