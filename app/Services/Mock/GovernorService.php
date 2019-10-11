@@ -16,7 +16,7 @@ class GovernorService extends BaseGovernorService
             'response_code' => 400,
         ];
     }
-    public function sendRequestV1(string $method, string $path, string $content, array $headers)
+    public function sendRequestV1(string $method, string $path, string $content)
     {
         return [
             [
