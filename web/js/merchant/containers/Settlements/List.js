@@ -77,7 +77,7 @@ export default class SettlementsListContainer extends ListContainer {
         });
         return;
       }
-      this.showOndemandSettlementForm();
+      this.showOndemandSettlementForm({ clickOrigin: 'Announcement' });
     } else if (this.props.location.hash === '#automaticsettle') {
       this.resetHash();
       this.setState({ openAutoModal: true });
@@ -185,9 +185,13 @@ export default class SettlementsListContainer extends ListContainer {
 
     this.props.openModal({
       component: (
-        <OndemandModal currentBalance={balance} fromWhere="Settlements" />
+        <OndemandModal
+          currentBalance={balance}
+          fromWhere={e.clickOrigin ? 'Announcement' : 'Settlements'}
+        />
       ),
       size: 'small',
+      disableClose: true,
     });
   };
 
