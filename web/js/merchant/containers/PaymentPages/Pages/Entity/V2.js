@@ -119,6 +119,8 @@ export default class PaymentPagesV2Entity extends React.Component {
       paymentPageEntity.sms_status === 'sent' ||
       paymentPageEntity.email_status === 'sent';
 
+    const paymentPageItem = paymentPageEntity.payment_page_items[0];
+
     return (
       <div class="content-wrapper content-sm txn-details Entity--paymentpage Entity--paymentpage-v2">
         <div class="panel panel-default SliderPanel">
@@ -180,23 +182,24 @@ export default class PaymentPagesV2Entity extends React.Component {
                   }
                 />
 
-                {!!paymentPageEntity.amount &&
-                  !paymentPageEntity.stock && (
-                    <EntityDetailRow
-                      label="Total Units Sold"
-                      value={paymentPageEntity.times_paid}
-                    />
-                  )}
-
-                {!!paymentPageEntity.amount && (
+                {/* For dynamic amount */}
+                {!paymentPageItem.item.amount && (
                   <EntityDetailRow
-                    label=" Available Quantity"
+                    label="Units Sold"
+                    value={paymentPageItem.quantity_sold}
+                  />
+                )}
+
+                {/* For fixed amount */}
+                {!!paymentPageItem.item.amount && (
+                  <EntityDetailRow
+                    label="Units Sold"
                     value={() => (
                       <EditStock
-                        stock={paymentPageEntity.stock}
-                        quantitySold={paymentPageEntity.quantity_sold}
+                        totalStock={paymentPageItem.stock}
+                        quantitySold={paymentPageItem.quantity_sold}
                         editFn={editPaymentPage}
-                        paymentPageItemId={paymentPageEntity.paymentPageItemId}
+                        paymentPageItemId={paymentPageItem.id}
                         trackerFn={trackDetailViewEdits}
                         isRoleAllowedEdit={isRoleAllowedEdit}
                       />
