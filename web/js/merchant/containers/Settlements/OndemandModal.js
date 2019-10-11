@@ -70,7 +70,6 @@ export default class OndemandModal extends Component {
 
   gaEventDispatcher = eventObject => {
     eventObject['eventCategory'] = 'Dashboard - Early Settlement';
-    console.log(eventObject);
     window.rzpAnalytics(eventObject);
   };
 
