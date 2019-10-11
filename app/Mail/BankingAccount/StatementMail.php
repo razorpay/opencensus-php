@@ -92,12 +92,12 @@ class StatementMail extends Mailable
     protected function addMailData()
     {
         $data = [
-            'header'           => self::HEADER,
-            'merchant_id'      => $this->merchant->getId(),
-            'name'             => $this->merchant->getName(),
-            'duration'         => $this->getReadableDuration(),
-            'fileDownload_url' => $this->fileDownloadUrl,
-            'generated_at'     => $this->format(Carbon::now()->getTimestamp(), self::DATE_TIME_FORMAT)
+            'header'            => self::HEADER,
+            'merchant_id'       => $this->merchant->getId(),
+            'name'              => $this->merchant->getName(),
+            'duration'          => $this->getReadableDuration(),
+            'file_download_url' => $this->fileDownloadUrl,
+            'generated_at'      => $this->format(Carbon::now()->getTimestamp(), self::DATE_TIME_FORMAT)
         ];
 
         $this->with($data);

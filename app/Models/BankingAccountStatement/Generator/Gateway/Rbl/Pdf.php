@@ -3,11 +3,12 @@
 namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 
 use View;
-use RZP\Exception;
 use Carbon\Carbon;
-use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
 use mikehaertl\wkhtmlto\Pdf as PdfLibrary;
+
+use RZP\Exception;
+use RZP\Constants\Timezone;
+use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 
 class Pdf extends Generator
 {
@@ -15,17 +16,15 @@ class Pdf extends Generator
 
     protected const PDF_MIME_TYPE      = 'application/pdf';
 
-    protected const PDF                = 'pdf';
-
     public function getStatement()
     {
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $this->data);
 
         $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
 
-        $tmpFileName = $this->generateFileName(self::PDF);
+        $tmpFileName = $this->generateFileName(SupportedFormats::PDF);
 
-        $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
+        $tmpFileFullPath = self::TEMP_STORAGE_DIR . $tmpFileName;
 
         $fileHandle = fopen($tmpFileFullPath, 'w');
 
@@ -42,7 +41,8 @@ class Pdf extends Generator
             'print-media-type',
             'footer-font-size' => '6',
             'footer-right'     => 'Page [page] of [topage]',
-            'footer-left'      => 'Date and Time: ' . Carbon::createFromTimestamp(time(), Timezone::IST)
+            'footer-left'      => 'Date and Time: ' . Carbon::createFromTimestamp(Carbon::now()->getTimestamp(),
+                                                                                  Timezone::IST)
                                                             ->format('d/m/Y h:i A'),
             'dpi'              => 290,
             'zoom'             => 1,
