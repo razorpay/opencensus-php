@@ -77,7 +77,7 @@ class Xlsx extends Generator
         ];
 
     // this will be determined after we know the transaction counts
-    protected $SUMMARY_KEY_MAP  =
+    protected $summaryKeyMap  =
         [
             XLSXHeaders::STATEMENT_SUMMARY        => '',
             XLSXHeaders::OPENING_BALANCE          => '',
@@ -89,7 +89,8 @@ class Xlsx extends Generator
             XLSXHeaders::LIEN_AMOUNT              => '',
         ];
 
-    protected $SUMMARY_DATA_MAP =
+    // this will be determined after we know the transaction counts
+    protected $summaryDataMap =
         [
             StatementSummary::OPENING_BALANCE          => '',
             StatementSummary::CLOSING_BALANCE          => '',
@@ -144,49 +145,49 @@ class Xlsx extends Generator
     {
         $tCount = $this->getTotalTransactionCount();
 
-        $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_SUMMARY] =
+        $this->summaryKeyMap[XLSXHeaders::STATEMENT_SUMMARY] =
             'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
-        $this->SUMMARY_KEY_MAP[XLSXHeaders::OPENING_BALANCE] =
+        $this->summaryKeyMap[XLSXHeaders::OPENING_BALANCE] =
             'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
 
-        $this->SUMMARY_KEY_MAP[XLSXHeaders::CLOSING_BALANCE] =
+        $this->summaryKeyMap[XLSXHeaders::CLOSING_BALANCE] =
             'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 2);
 
-        $this->SUMMARY_KEY_MAP[XLSXHeaders::EFFECTIVE_BALANCE] =
+        $this->summaryKeyMap[XLSXHeaders::EFFECTIVE_BALANCE] =
             'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 3);
 
-        $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_GENERATED_DATE] =
+        $this->summaryKeyMap[XLSXHeaders::STATEMENT_GENERATED_DATE] =
             'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 4);
 
-        $this->SUMMARY_KEY_MAP[XLSXHeaders::DEBIT_COUNT] =
+        $this->summaryKeyMap[XLSXHeaders::DEBIT_COUNT] =
             'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
-        $this->SUMMARY_KEY_MAP[XLSXHeaders::CREDIT_COUNT] =
+        $this->summaryKeyMap[XLSXHeaders::CREDIT_COUNT] =
             'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
-        $this->SUMMARY_KEY_MAP[XLSXHeaders::LIEN_AMOUNT] =
+        $this->summaryKeyMap[XLSXHeaders::LIEN_AMOUNT] =
             'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
-        $this->SUMMARY_DATA_MAP[StatementSummary::OPENING_BALANCE] =
+        $this->summaryDataMap[StatementSummary::OPENING_BALANCE] =
             'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
 
-        $this->SUMMARY_DATA_MAP[StatementSummary::CLOSING_BALANCE] =
+        $this->summaryDataMap[StatementSummary::CLOSING_BALANCE] =
             'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 2);
 
-        $this->SUMMARY_DATA_MAP[StatementSummary::EFFECTIVE_BALANCE] =
+        $this->summaryDataMap[StatementSummary::EFFECTIVE_BALANCE] =
             'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 3);
 
-        $this->SUMMARY_DATA_MAP[StatementSummary::STATEMENT_GENERATED_DATE] =
+        $this->summaryDataMap[StatementSummary::STATEMENT_GENERATED_DATE] =
             'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 4);
 
-        $this->SUMMARY_DATA_MAP[StatementSummary::DEBIT_COUNT] =
+        $this->summaryDataMap[StatementSummary::DEBIT_COUNT] =
             'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
-        $this->SUMMARY_DATA_MAP[StatementSummary::CREDIT_COUNT] =
+        $this->summaryDataMap[StatementSummary::CREDIT_COUNT] =
             'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
 
-        $this->SUMMARY_DATA_MAP[StatementSummary::LIEN_AMOUNT] =
+        $this->summaryDataMap[StatementSummary::LIEN_AMOUNT] =
             'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
     }
 
@@ -235,7 +236,7 @@ class Xlsx extends Generator
             $sheet->setCellValue($columnNumber, $header);
         }
 
-        foreach ($this->SUMMARY_KEY_MAP as $header => $columnNumber)
+        foreach ($this->summaryKeyMap as $header => $columnNumber)
         {
             $sheet->setCellValue($columnNumber, $header);
         }
@@ -245,7 +246,7 @@ class Xlsx extends Generator
     {
         $statementSummary = $this->data[AccountStatementData::STATEMENT_SUMMARY];
 
-        foreach ($this->SUMMARY_DATA_MAP as $dataPoint => $columnNumber)
+        foreach ($this->summaryDataMap as $dataPoint => $columnNumber)
         {
             $sheet->setCellValue($columnNumber, $statementSummary[$dataPoint]);
         }
@@ -363,7 +364,7 @@ class Xlsx extends Generator
     {
         $columnsToBold = array_merge(
             array_values(self::ACCOUNT_OWNER_INFO_CELL_MAP),
-            array_values($this->SUMMARY_DATA_MAP)
+            array_values($this->summaryDataMap)
         );
 
         array_push($columnsToBold, self::HEADER_TO_CELL_MAP[XLSXHeaders::SHEET_TITLE]);
@@ -372,7 +373,7 @@ class Xlsx extends Generator
 
         array_push($columnsToBold, self::TRANSACTION_TITLE_CELL);
 
-        array_push($columnsToBold, $this->SUMMARY_KEY_MAP[XLSXHeaders::STATEMENT_SUMMARY]);
+        array_push($columnsToBold, $this->summaryKeyMap[XLSXHeaders::STATEMENT_SUMMARY]);
 
         foreach ($columnsToBold as $column)
         {

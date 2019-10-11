@@ -44,9 +44,9 @@ class Validator extends Base\Validator
 
     protected function validateChannelFormat($input)
     {
-        $channel = $input[Entity::CHANNEL];
+        $channel = array_pull($input, Entity::CHANNEL);
 
-        $format = $input[Entity::FORMAT];
+        $format = array_pull($input, Entity::FORMAT);
 
         SupportedFormats::validateChannelFormat($channel, $format);
     }
