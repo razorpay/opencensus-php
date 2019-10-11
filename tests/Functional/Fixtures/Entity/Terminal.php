@@ -3041,29 +3041,6 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
-    public function createDirectSettlementAxisMigsTerminal(array $attributes = [])
-    {
-        $defaultValues = [
-            'id'                        => '10DirectseTmnl',
-            'card'                      => 1,
-            'netbanking'                => 0,
-            'merchant_id'               => '10000000000000',
-            'gateway'                   => 'axis_migs',
-            'gateway_merchant_id'       => '12345678',
-            'gateway_terminal_id'       => 'abcde1',
-            'gateway_terminal_password' => 'abcdef',
-            'gateway_secure_secret'     => 'supersecret',
-            'type'                      => [
-                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
-                Type::NON_RECURRING                    => '1',
-            ],
-        ];
-
-        $attributes = array_merge($defaultValues, $attributes);
-
-        return $this->create($attributes);
-    }
-
     public function createDirectSettlementRefundHdfcTerminal(array $attributes = [])
     {
         $defaultValues = [

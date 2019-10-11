@@ -982,22 +982,6 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('hdfc', $payment['settled_by']);
     }
 
-    public function testDirectSettlementAxisMigsPayment()
-    {
-        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $payment = $this->getDefaultPaymentArray();
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals('axis_migs', $payment['gateway']);
-        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
-        $this->assertEquals('hdfc', $payment['settled_by']);
-    }
-
     public function testPaymentSettledBy()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
