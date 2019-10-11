@@ -17,18 +17,18 @@ export default ({
       class="InputGroup--vTop"
       checked={isNachFormAval}
       fieldLabel={
-        <div>
+        <React.Fragment>
           I have Customer's signed Form{' '}
-          <span>
+          <React.Fragment>
             <i class="i i-info-circle" />
-            <Popover theme="dark">
+            <Popover theme="dark" align="bottom">
               <PopoverBody>
                 If you’ve already received the customer’s NACH form, you can
                 upload it after the registration link is created.
               </PopoverBody>
             </Popover>
-          </span>
-        </div>
+          </React.Fragment>
+        </React.Fragment>
       }
     />
 
