@@ -1640,6 +1640,7 @@ function isFieldValid(field, activation) {
 
   if (
     field.name == 'promoter_pan' &&
+    activation.props.busines_type == 11 &&
     isL1NotSubmittedForUnRegBiz(activation.props)
   ) {
     return false;
