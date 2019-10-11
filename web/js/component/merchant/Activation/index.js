@@ -67,14 +67,11 @@ const LOADING = {
 };
 
 function isL1NotSubmittedForRegBiz(props) {
-  return (
-    !props.user.instantActivation.isL1Submitted &&
-    props.user.business_type != 11
-  );
+  return !props.user.instantActivation.isL1Submitted;
 }
 
 function isL1NotSubmittedForUnRegBiz(props) {
-  return props.user.business_type == 11 && props.user.activated !== 1;
+  return props.user.activated !== 1;
 }
 
 function defaultFieldProps(f) {
@@ -114,10 +111,13 @@ function defaultFieldProps(f) {
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
 let BANK_ACCOUNT_TAB; // To handle specific case for bank account step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
+const BUSINESS_DETAILS_STEP = 2;
 
 let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
+
+const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
 
 // @RTracking((state, props, args) => {
 //   return window.rzpQ.component('ActivationCard');
@@ -203,6 +203,16 @@ export default class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
+      if (
+        (props.user.business_type != 11 && isL1NotSubmittedForRegBiz(props)) ||
+        (props.user.business_type == 11 && isL1NotSubmittedForUnRegBiz(props))
+      ) {
+        FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
+        FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
+        FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
+        DOCUMENT_UPLOAD_STEP = null;
+      }
+
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
       FORM_TABS_CONTENT[1][3][0].options = ['--Select--'].concat(
         Object.keys(props.categories).map(c => ({
@@ -211,7 +221,8 @@ export default class ActivationWizard extends React.Component {
         }))
       );
     }
-
+    DOCUMENT_UPLOAD_STEP &&
+      SAVE_BUTTON_DISABLED_STEPS.push(DOCUMENT_UPLOAD_STEP);
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
     /*
@@ -719,7 +730,6 @@ export default class ActivationWizard extends React.Component {
   }
 
   submitL1 = currenActiveTab => {
-    console.log('submitting l1');
     const data = this.formData;
     // const { tracking } = this.props;
     this.setState({ callingL1Api: true });
@@ -1195,7 +1205,11 @@ export default class ActivationWizard extends React.Component {
       });
 
     let moreTabs = [];
-    if (!isFormSubmitted) {
+    if (
+      (!isL1NotSubmittedForRegBiz(this.props) ||
+        !isL1NotSubmittedForUnRegBiz(this.props)) &&
+      !isFormSubmitted
+    ) {
       moreTabs.push(
         <li
           key="submit-tab"
@@ -1216,6 +1230,9 @@ export default class ActivationWizard extends React.Component {
       );
     }
 
+    // console.log(activeTab);
+    // console.log(BUSINESS_DETAILS_STEP);
+    // console.log('save button',(activeTab != BUSINESS_DETAILS_STEP || activeTab != DOCUMENT_UPLOAD_STEP));
     return (
       <div class="Activation--wizard Wizard">
         {/* Activation form tabs */}
@@ -1406,7 +1423,7 @@ export default class ActivationWizard extends React.Component {
             {!this.state.showSubmitLayer && (
               <React.Fragment>
                 {/* Action Button 1 */}
-                {activeTab != DOCUMENT_UPLOAD_STEP && (
+                {SAVE_BUTTON_DISABLED_STEPS.indexOf(activeTab) === -1 && (
                   <Button onClick={this.saveCurrentTab}>Save</Button>
                 )}
 
@@ -1424,7 +1441,7 @@ export default class ActivationWizard extends React.Component {
 
                 {/* Action Button 3 */}
                 {isLastTab &&
-                  !this.props.user.instantActivation.isL1Submitted && (
+                  activeTab == BUSINESS_DETAILS_STEP && (
                     <Button.Primary
                       disabled={this.state.callingL1Api}
                       onClick={this.saveCurrentTab}
@@ -1435,9 +1452,13 @@ export default class ActivationWizard extends React.Component {
                     </Button.Primary>
                   )}
 
-                {/* Action Button 4
+                {/* Action Button 4 */}
                 {isLastTab &&
-                  !isFormSubmitted && this.props.user.instantActivation.isL1Submitted && (
+                  !isFormSubmitted &&
+                  ((this.props.user.busines_type != 11 &&
+                    !isL1NotSubmittedForRegBiz(this.props)) ||
+                    (this.props.user.business_type == 11 &&
+                      !isL1NotSubmittedForUnRegBiz(this.props))) && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
