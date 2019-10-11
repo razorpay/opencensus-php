@@ -465,22 +465,27 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     } else {
       // Preparing the V2 request payload in V3 format
-      reqPayload.payment_page_items = [
-        {
-          item: {
-            name: 'Amount',
-            description: '',
-            amount: amount ? rupeesToPaise(amount) : null,
-            currency: currency,
-          },
-          settings: {
-            position: '0', // Always 0 for V2. Also, for udf fields in V2, position is already starting from 1 (via ix + 1 on top)
-          },
-          mandatory: true, // Item is always mandatory
-          stock: quantity,
-          min_purchase: settings.allow_multiple_units ? 1 : null, // 0 => Treating this amount item as Counter
+      const amountField = {
+        item: {
+          name: 'Amount',
+          description: '',
+          amount: amount ? rupeesToPaise(amount) : null,
         },
-      ];
+        settings: {
+          position: '0', // Always 0 for V2. Also, for udf fields in V2, position is already starting from 1 (via ix + 1 on top)
+        },
+        mandatory: true, // Item is always mandatory
+        stock: quantity,
+        min_purchase: settings.allow_multiple_units ? 1 : null, // 1 => Treating this amount item as Counter. Can't be 0, cuz this is mandatory field.
+      };
+
+      if (isEditExistingId) {
+        amountField.id = paymentPageEntity.payment_page_items[0].id;
+      } else {
+        amountField.item.currency = currency;
+      }
+
+      reqPayload.payment_page_items = [amountField];
     }
 
     // console.log('REQ PAYLOAD...', reqPayload);

@@ -164,6 +164,8 @@ export default function(state = initialState, action) {
           return Number(positionA) - Number(positionB);
         });
       } else {
+        // TRANSFOMER FOR V2 to keep V2 UI intact.
+
         // NOTE:  Ignoring id for this item. So, only side effect is whenever a page is edited, then new payment page item will be created
 
         // For V2, mapping new format to old format for FE to handle. Only 1 item must exist in payment_page_items.
@@ -173,9 +175,10 @@ export default function(state = initialState, action) {
           ? paiseToRupees(amountItem.item.amount)
           : null; // Convert in Rupees (or bigger unit)
 
-        entityData.quantity_sold = amountItem.quantity_sold;
-        entityData.stock = amountItem.stock;
+        entityData.times_paid = amountItem.quantity_sold;
+        entityData.quantity = amountItem.stock;
         entityData.paymentPageItemId = amountItem.id;
+        entityData.settings.allow_multiple_units = amountItem.min_purchase == 1;
 
         formItems = udfSchema;
       }
