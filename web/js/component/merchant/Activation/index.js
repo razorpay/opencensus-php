@@ -35,13 +35,12 @@ import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
 
-import FormFields from 'merchant/containers/Activation/L1FormMap';
+import FormFields from 'merchant/containers/activation/L1FormMap';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
-  showPANStatusModal,
 } from 'merchant/modules/home';
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
@@ -123,7 +122,6 @@ let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
     updateSession,
     showInstantActivationSuccessModal,
     showKYCDetailsModal,
-    showPANStatusModal,
   }
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
@@ -192,13 +190,6 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_NAMES = mainFormFieldNamesMeta;
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
-
-      if (!props.user.instantActivation.isL1Submitted) {
-        FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
-        FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
-        FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
-        DOCUMENT_UPLOAD_STEP = null;
-      }
 
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
       FORM_TABS_CONTENT[1][3][0].options = ['--Select--'].concat(
@@ -745,29 +736,21 @@ export default class ActivationWizard extends React.Component {
         // });
 
         // trackTaboola('l1_activation');
-        console.log('this.props -------------->>>>', this.props);
-        console.log('response ------------->>>>', response.data);
-        // Individual Flow
-        if (response.data.business_type == 2) {
-          if (true || response.data.pan_verfication == 'under_review') {
-            this.props.showPANStatusModal();
-          } else {
-            console.log('PAN verficcation succeeded');
-          }
-        } else {
-          const {
-            isWhitelistFlow,
-            isBlacklistFlow,
-            isGraylistFlow,
-          } = this.user.instantActivation;
-          if (isWhitelistFlow) {
-            console.log('entered white list flow');
-            this.props.showInstantActivationSuccessModal();
-            // fireAnalyticsEvents({ fbData: 'activation_complete_success' });
-          } else if (isGraylistFlow) {
-            console.log('entered gray list flow');
-            this.props.showKYCDetailsModal();
-          }
+
+        const {
+          isWhitelistFlow,
+          isBlacklistFlow,
+          isGraylistFlow,
+        } = this.user.instantActivation;
+
+        console.log('I am at flow check');
+        if (isWhitelistFlow) {
+          console.log('entered white list flow');
+          this.props.showInstantActivationSuccessModal();
+          // fireAnalyticsEvents({ fbData: 'activation_complete_success' });
+        } else if (isGraylistFlow) {
+          console.log('entered gray list flow');
+          this.props.showKYCDetailsModal();
         }
 
         // let data = new BingDataObj('activationform', 'complete', 'success', 1);
@@ -1163,8 +1146,6 @@ export default class ActivationWizard extends React.Component {
 
     let isLastTab = activeTab == FORM_TABS.length - 1;
 
-    console.log({ isLastTab });
-
     let content;
     let documentContent; // Document content will always be shown so that upload progress is maintained in DOM
 
@@ -1183,6 +1164,7 @@ export default class ActivationWizard extends React.Component {
     }
 
     documentContent =
+      false &&
       DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].map((field, i) => {
         if (Array.isArray(field)) {
@@ -1197,7 +1179,7 @@ export default class ActivationWizard extends React.Component {
       });
 
     let moreTabs = [];
-    if (this.props.user.instantActivation.isL1Submitted && !isFormSubmitted) {
+    if (!isFormSubmitted) {
       moreTabs.push(
         <li
           key="submit-tab"
@@ -1414,8 +1396,7 @@ export default class ActivationWizard extends React.Component {
 
                 {/* Action Button 2 */}
                 {isLastTab ||
-                  (((this.isLinkedAccountForm || !this.isIndividualTypeLock) &&
-                    console.log('save-next')) || (
+                  ((this.isLinkedAccountForm || !this.isIndividualTypeLock) && (
                     <Button.Primary
                       iconAfter="chevron-right"
                       onClick={this.next}
@@ -1427,22 +1408,14 @@ export default class ActivationWizard extends React.Component {
 
                 {/* Action Button 3 */}
                 {isLastTab &&
-                  !this.props.user.instantActivation.isL1Submitted && (
-                    <Button.Primary onClick={this.saveCurrentTab}>
-                      Submit and Verify
-                    </Button.Primary>
-                  )}
-
-                {/* Action Button 4 */}
-                {/* {isLastTab &&
-                  !isFormSubmitted && this.props.user.instantActivation.isL1Submitted && (
+                  !isFormSubmitted && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
                     >
                       Submit Form
                     </Button.Primary>
-                  )} */}
+                  )}
               </React.Fragment>
             )}
           </footer>
