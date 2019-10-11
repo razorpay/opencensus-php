@@ -217,6 +217,7 @@ class Gateway
     // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [
         self::AMEX              => self::AMEX,
+        self::AXIS_MIGS         => self::HDFC,
         self::HDFC              => self::HDFC,
         self::ISG               => self::HDFC,
         self::BILLDESK          => self::BILLDESK,
