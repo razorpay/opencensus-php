@@ -43,8 +43,6 @@ class Service extends Base\Service
 
         $entity = $this->core->create($input, $this->merchant);
 
-        s($entity->toArrayPublic());
-
         return $entity->toArrayPublic();
     }
 

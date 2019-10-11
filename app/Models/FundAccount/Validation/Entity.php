@@ -110,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY        => null,
         self::ACCOUNT_STATUS  => null,
         self::REGISTERED_NAME => null,
+        self::UTR             => null,
     ];
 
     protected $casts = [

@@ -83,6 +83,7 @@ return [
                 'currency'     => 'INR',
                 'notes'        => [],
                 'results'      => [
+                    'utr'             => null,
                     'account_status'  => null,
                     'registered_name' => null,
                 ],

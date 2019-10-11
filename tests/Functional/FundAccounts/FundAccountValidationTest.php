@@ -55,6 +55,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
         $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['utr']);
         $this->assertEquals('10000000000000', $fav['balance_id']);
 
         // Fee and tax will be calculated at the time fund account validation is created.

@@ -83,7 +83,6 @@ abstract class Base extends Core
 
     protected function markValidationAsCompleted(string $accountStatus, string $utr)
     {
-        s($utr);
         $this->validation->setStatus(Status::COMPLETED);
 
         $this->validation->setAccountStatus($accountStatus);
