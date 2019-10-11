@@ -4669,7 +4669,8 @@ ALTER TABLE schedules
 ALTER TABLE fund_account_validations
     ADD COLUMN account_status VARCHAR(255) DEFAULT NULL after status,
     ADD COLUMN registered_name VARCHAR(255) DEFAULT NULL after account_status,
-    CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0;
+    CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0,
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL after registered_name;
 
 ALTER TABLE bank_accounts DROP COLUMN registered_beneficiary_name;
 
