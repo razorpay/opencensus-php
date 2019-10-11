@@ -42,7 +42,7 @@ export default class ReminderSetting extends React.Component {
   };
 
   constructor(props) {
-    super();
+    super(props);
 
     this.changeRoute = false;
     this.typeInLowerCase = String(props.type).toLowerCase();
@@ -52,23 +52,22 @@ export default class ReminderSetting extends React.Component {
       checked: true,
       __stashed_settings__: {
         ...initState,
+        withExpiry: props.withExpiry,
+        withOutExpiry: props.withOutExpiry,
       },
       settings: {
         ...initState,
+        withExpiry: props.withExpiry,
+        withOutExpiry: props.withOutExpiry,
       },
       withExpireByConfigs: props.withExpireByConfigs,
       withOutExpireByConfigs: props.withOutExpireByConfigs,
     };
 
-    if (props.withExpiry) {
-      this.state.__stashed_settings__.withExpiry = props.withExpiry;
-      this.state.settings.withExpiry = props.withExpiry;
-    }
-
-    if (props.withOutExpiry) {
-      this.state.__stashed_settings__.withOutExpiry = props.withOutExpiry;
-      this.state.settings.withOutExpiry = props.withOutExpiry;
-    }
+    props.channels.forEach(channel => {
+      this.state.settings.advancedSettings.channels[channel] = true;
+      this.state.__stashed_settings__.advancedSettings.channels[channel] = true;
+    });
   }
 
   disableReminderSetting = () => {

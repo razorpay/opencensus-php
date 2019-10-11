@@ -28,7 +28,8 @@ import Setting from 'merchant/components/Reminders/Settings';
     const withExpireByConfigs = [],
       withOutExpireByConfigs = [],
       withExpireByMerchantConfigs = [],
-      withOutExpireByMerchantConfigs = [];
+      withOutExpireByMerchantConfigs = [],
+      channels = new Set([]);
 
     configs.forEach(ele => {
       if (ele.config_template.attr_key === 'expire_by') {
@@ -47,6 +48,8 @@ import Setting from 'merchant/components/Reminders/Settings';
         return;
       }
 
+      ele.channels.forEach(ele => channels.add(ele));
+
       withOutExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
     });
 
@@ -60,6 +63,7 @@ import Setting from 'merchant/components/Reminders/Settings';
       withOutExpireByConfigs,
       withExpireByMerchantConfigs,
       withOutExpireByMerchantConfigs,
+      channels: Array.from(channels),
       user: state.session.user,
     };
   },
@@ -143,17 +147,24 @@ export default class PaymentLinksSettings extends React.Component {
   render() {
     if (this.state.totalUnpaidLinks.loading) {
       return (
-        <div class="page-spinner-container">
+        <div
+          class="page-spinner-container"
+          key="RemindersSettings--PaymentLinks"
+        >
           <Spinner />
         </div>
       );
     }
 
     return (
-      <div class="Reminders-settings--payment_links">
+      <div
+        class="Reminders-settings--payment_links"
+        key="RemindersSettings--PaymentLinks"
+      >
         <Setting
           type="Payment Links"
           emailDetails={emailDetails}
+          channels={this.props.channels}
           onSaveClick={this.saveSettings}
           disableReminderSetting={this.disableReminderSetting}
           totalUnpaidLinks={this.state.totalUnpaidLinks}
