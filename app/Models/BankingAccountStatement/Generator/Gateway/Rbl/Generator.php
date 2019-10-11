@@ -13,16 +13,14 @@ use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\AccountOwnerInfo;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\StatementSummary;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\StatementConstants;
-use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\TransactionLineItem;
-use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\AccountStatementData;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\
+{TransactionLineItem, AccountStatementData};
 
 abstract class Generator extends Base
 {
     const TEMP_STORAGE_DIR = '/tmp/';
 
-    abstract function getStatement();
-
-    # This will be set during class initialization, and will be available to all the Child Classes
+    // This will be set during class initialization, and will be available to all the Child Classes
     protected $data = null;
 
     const DATE_FORMAT = 'd/m/Y';
@@ -172,9 +170,14 @@ abstract class Generator extends Base
 
     protected function extractDescription(TransactionEntity $transaction)
     {
-        $source = $transaction->toArrayPublic()['source'];
+        $transaction = $transaction->toArrayPublic();
 
-        return array_pull($source, 'description');
+        $source = array_pull($transaction, 'source');
+
+        if(empty($source) === false)
+        {
+            return array_pull($source, 'description');
+        }
     }
 
     /**
@@ -247,15 +250,15 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::HOME_BRANCH_NAME     => $bankInformation->getBankName(),
 
-            AccountOwnerInfo::HOME_BRANCH_ADDRESS  => $bankInformation->__get('address'),
+            AccountOwnerInfo::HOME_BRANCH_ADDRESS  => $bankInformation->address,
 
-            AccountOwnerInfo::IFSC_CODE            => $bankInformation->__get('ifsc'),
+            AccountOwnerInfo::IFSC_CODE            => $bankInformation->ifsc,
 
-            AccountOwnerInfo::BRANCH_PHONE_NUMBER  => $bankInformation->__get('contact'),
+            AccountOwnerInfo::BRANCH_PHONE_NUMBER  => $bankInformation->contact,
 
-            AccountOwnerInfo::BRANCH_CITY          => $bankInformation->__get('city'),
+            AccountOwnerInfo::BRANCH_CITY          => $bankInformation->city,
 
-            AccountOwnerInfo::BRANCH_STATE         => $bankInformation->__get('state'),
+            AccountOwnerInfo::BRANCH_STATE         => $bankInformation->state,
         ];
 
         return $accountOwnerInfo;

@@ -322,7 +322,7 @@ class Xlsx extends Generator
 
         $sheet->getRowDimension('1')->setRowHeight(60);
 
-        # give light-blue fill color to the transaction header
+        // give light-blue fill color to the transaction header
         $sheet->getStyle(self::TRANSACTION_HEADER_CELL_RANGE)
               ->getFill()
               ->setFillType(Fill::FILL_SOLID)

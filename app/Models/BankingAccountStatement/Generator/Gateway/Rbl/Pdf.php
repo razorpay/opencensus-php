@@ -56,7 +56,14 @@ class Pdf extends Generator
 
         if ($pdfContent === false)
         {
-            throw new Exception\LogicException('Pdf generation failed: ' . $pdf->getError());
+            throw new Exception\LogicException('Pdf generation failed: ' . $pdf->getError(),
+                                               null,
+                                               [
+                                                   'account_number' => $this->accountNumber,
+                                                   'channel'        => $this->channel,
+                                                   'from_date'      => $this->fromDate,
+                                                   'to_date'        => $this->toDate,
+                                               ]);
         }
 
         return $pdfContent;

@@ -8,8 +8,6 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    const FILE_ID        = 'file_id';
-
     public function fetchStatementForAccount(array $input): array
     {
         $response = $this->core()->processStatementForAccount($input);

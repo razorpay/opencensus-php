@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use RZP\Base;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 
 class Validator extends Base\Validator
@@ -34,12 +35,12 @@ class Validator extends Base\Validator
         Entity::FORMAT               => 'required|string|custom',
         Entity::SEND_EMAIL           => 'required|boolean',
         Entity::TO_EMAIL_LIST        => 'required_if:send_email,1|array',
-        Entity::TO_EMAIL_LIST . '.*' => 'required_if:send_email,1|email'
+        Entity::TO_EMAIL_LIST . '.*' => 'filled|email'
     ];
 
     protected static $accountStatementGenerateValidators = [
-            'channel_format'
-        ];
+        'channel_format'
+    ];
 
     protected function validateChannelFormat($input)
     {

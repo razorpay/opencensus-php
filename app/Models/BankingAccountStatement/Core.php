@@ -23,7 +23,7 @@ class Core extends Base\Core
 
     const FILE_ID            = 'file_id';
 
-    const DASHBOARD_FILE_URL = '%s/ufh/file/$s';
+    const DASHBOARD_FILE_URL = '%s/ufh/file/%s';
 
     /**
      * Temporary hack. Should not set balance at a class level.
@@ -201,14 +201,19 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::UFH_RESPONSE,
                 [
-                    'response'   => $response
+                    'banking_account_id' => $entity->getId(),
+                    'response'           => $response,
                 ]);
         }
         catch (\Exception $e)
         {
             $this->trace->traceException($e,
                                          Trace::ERROR,
-                                         TraceCode::UFH_FILE_UPLOAD_FAILED);
+                                         TraceCode::UFH_FILE_UPLOAD_FAILED,
+                                         [
+                                             'banking_account_id'  => $entity->getId(),
+                                             'temporary_file_path' => $pathToTemporaryFile
+                                         ]);
         }
         return $response;
     }

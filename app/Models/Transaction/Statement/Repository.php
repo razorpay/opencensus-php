@@ -102,7 +102,8 @@ class Repository extends Transaction\Repository
      */
     public function getStatementsWithInRange($merchantId, $fromDate, $toDate)
     {
-        return $this->getQueryForFindWithParams([])->merchantId($merchantId)
+        return $this->newQuery()
+                    ->merchantId($merchantId)
                     ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
                     ->orderBy(Entity::CREATED_AT, 'asc')
                     ->get();
