@@ -256,7 +256,13 @@ export default class ActivationContainer extends React.Component {
     this.updateSession(response.data); // Updating % activation_progress (side bar)
   }
 
-  saveFile = (fieldName, file, progressTracker) => {
+  saveFile = (fieldName, file, progressTracker, destinationUrl) => {
+    const url =
+      Boolean(destinationUrl) &&
+      'string' === typeof destinationUrl &&
+      Boolean(destinationUrl.trim(destinationUrl))
+        ? destinationUrl
+        : 'merchant/activation/upload';
     let formData = new FormData();
 
     //TODO: This mapping is just for past form cross-check. It can be removed now after verifying fields.
@@ -271,10 +277,15 @@ export default class ActivationContainer extends React.Component {
       form_12a_url: 'form_12a_url',
       form_80g_url: 'form_80g_url',
     };
-    formData.append(fieldNameMapping[fieldName], file);
+    //If field name doesn't exist in mapping use document type and generice file name
+    if (!Boolean(fieldNameMapping[fieldName])) {
+      formData.append('document_type', fieldName);
+      fieldName = 'file';
+    }
+    formData.append(fieldName, file);
 
     return merchantFetch({
-      url: 'merchant/activation/upload',
+      url: url,
       method: 'post',
       mode: 'live',
       data: formData,

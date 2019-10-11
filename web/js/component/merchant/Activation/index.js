@@ -153,8 +153,8 @@ export default class ActivationWizard extends React.Component {
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
     callingL1Api: false,
+    address_proof: null,
   };
-
   constructor(props) {
     super(props);
     this.prepareTabs(props);
@@ -231,30 +231,40 @@ export default class ActivationWizard extends React.Component {
     * */
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(a => {
-        a._cmp = Input.File;
-        a._accept = ['pdf', 'image'];
-        a._showAcceptInfo = false;
-        a._showStagedFileStatus = false;
+        if (a._cmp === undefined || a._cmp === Input.File) {
+          a._cmp = Input.File;
+          a._accept = ['pdf', 'image'];
+          a._showAcceptInfo = false;
+          a._showStagedFileStatus = false;
 
-        if (!a.hasOwnProperty('required')) {
-          a.required = true;
+          if (!a.hasOwnProperty('required')) {
+            a.required = true;
+          }
+
+          a.onChange = (file, progressTracker) => {
+            const filename = a.dynamicName ? a.getName(this) : a.name;
+            return props
+              .saveFile(
+                filename,
+                file,
+                progressTracker,
+                a.destinationUrl || null
+              )
+              .then(() => {
+                updateHubSpotContactsProperties({
+                  [filename]: true,
+                });
+
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('kyc.upload_document', {
+                    name: filename,
+                  })
+                );
+
+                this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+              });
+          };
         }
-
-        a.onChange = (file, progressTracker) => {
-          return props.saveFile(a.name, file, progressTracker).then(() => {
-            updateHubSpotContactsProperties({
-              [a.name]: true,
-            });
-
-            tracking.trackEvent(
-              window.rzpQ.onbr().initiated('kyc.upload_document', {
-                name: a.name,
-              })
-            );
-
-            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-          });
-        };
       });
   }
 
@@ -1596,6 +1606,14 @@ function ActivationField(field) {
 
   if (rest.description && typeof rest.description === 'function') {
     rest.description = rest.description(this);
+  }
+
+  if (rest.dynamicLabel) {
+    rest.label = rest.getLabel(this);
+  }
+
+  if (rest.dynamicName) {
+    rest.name = rest.getName(this);
   }
 
   return (
