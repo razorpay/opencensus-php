@@ -245,7 +245,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #9195A6; text-align: center; padding: 8px 0;">If you have any questions, or if you have not signed up for RazorpayX, you can contact support <a class="link" href="{{ $support_url }}" target="_blank" style="text-decoration: none; color: #528FF0;">here.</a></div>
+                                                    <div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #9195A6; text-align: center; padding: 8px 0;">If you have any questions, or if you have not signed up for RazorpayX, you can contact support <a class="link" href="https://razorpay.com/support/" target="_blank" style="text-decoration: none; color: #528FF0;">here.</a></div>
                                                 </div>
 
                                             </td>

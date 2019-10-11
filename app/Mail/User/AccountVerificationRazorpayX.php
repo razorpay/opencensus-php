@@ -59,8 +59,6 @@ class AccountVerificationRazorpayX extends Base\Mailable
     {
         $data = [
             'token'       => $this->token,
-            'org'         => $this->org,
-            'support_url' => '',
         ];
 
         $this->with($data);
