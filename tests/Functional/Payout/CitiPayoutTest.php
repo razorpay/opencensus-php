@@ -3,20 +3,19 @@
 namespace RZP\Tests\Functional\Payout;
 
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class CitiPayoutTest extends TestCase
 {
+    use PayoutTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
-    use PayoutTrait;
 
     public function setUp()
     {
@@ -73,9 +72,9 @@ class CitiPayoutTest extends TestCase
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
         $expectedBreakup = [
-            'name'            => "payout",
+            'name'            => 'payout',
             'transaction_id'  => $txnId,
-            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'pricing_rule_id' => 'Bbg7dTcURsOr77',
             'percentage'      => null,
             'amount'          => 900,
         ];
