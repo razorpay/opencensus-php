@@ -361,6 +361,11 @@ class Core extends Base\Core
 
     protected function addPositionToCustomFields(array & $settings)
     {
+        if (isset($settings[Entity::UDF_SCHEMA]) === false)
+        {
+            return;
+        }
+
         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}');
 
         $modifiedUdfSchema = [];
