@@ -4,14 +4,13 @@ namespace RZP\Tests\Functional\Payout;
 
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+use RZP\Tests\Functional\TestCase;
 
-class CitiPayoutTest extends TestCase
+class IciciPayoutTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
@@ -42,6 +41,7 @@ class CitiPayoutTest extends TestCase
 
         $this->app['cache']->flush();
 
+        (new AdminService)->setConfigKeys([ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS => [$merchantId]]);
         (new AdminService)->setConfigKeys([ConfigKey::CITI_CHANNEL_PAYOUT_MIDS => [$merchantId]]);
 
         $this->ba->privateAuth();
@@ -52,7 +52,7 @@ class CitiPayoutTest extends TestCase
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
-        $this->assertEquals($payout['channel'], 'citi');
+        $this->assertEquals($payout['channel'], 'icici');
         $this->assertNull($payout['user_id']);
 
         $txn = $this->getLastEntity('transaction', true);

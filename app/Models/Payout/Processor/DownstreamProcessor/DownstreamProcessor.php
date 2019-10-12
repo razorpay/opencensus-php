@@ -4,6 +4,8 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
 use Redis;
 
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
@@ -12,7 +14,6 @@ use RZP\Models\Merchant\Balance\AccountType;
 
 class DownstreamProcessor
 {
-    const CITI_CHANNEL_PAYOUT_MIDS  = 'citi_channel_payout_mids';
 
     protected $type;
 
@@ -68,11 +69,16 @@ class DownstreamProcessor
     {
         $merchant = $this->payout->merchant;
 
+        if ($this->checkIfChannelShouldBeIcici($merchant) === true)
+        {
+            return Channel::ICICI;
+        }
+
         if ($this->checkIfChannelShouldBeCiti($merchant) === true)
         {
             return Channel::CITI;
-
         }
+
         return $this->payout->balance->getChannel() ?? Channel::YESBANK;
     }
 
@@ -81,14 +87,21 @@ class DownstreamProcessor
     // Till the time we achieve this by Dynamic routing, we are doing
     // a hack of using config key to store the Mids for which
     // channel for processing the payout should be CITI
-    protected function checkIfChannelShouldBeCiti(Merchant $merchant)
+    protected function checkIfChannelShouldBeCiti(Merchant $merchant): bool
     {
         $mid = $merchant->getId();
 
-        $redis = Redis::connection();
+        $citiMids = (new AdminService())->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
 
-        $isPresent = ($redis->sismember(self::CITI_CHANNEL_PAYOUT_MIDS, $mid) === 1) ? true : false;
+        return (in_array($mid,$citiMids) === true);
+    }
 
-        return $isPresent;
+    protected function checkIfChannelShouldBeIcici(Merchant $merchant): bool
+    {
+        $mid = $merchant->getId();
+
+        $iciciMids = (new AdminService())->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
+
+        return (in_array($mid,$iciciMids) === true);
     }
 }
