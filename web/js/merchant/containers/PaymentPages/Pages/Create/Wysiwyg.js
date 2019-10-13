@@ -392,7 +392,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         };
 
         if (isEditExistingId) {
-          prunedFi.id = id; // Editing existing item
+          if (id) {
+            prunedFi.id = id; // Editing existing item
+          } else {
+            prunedFi.item.currency = currency; // currency to be added only for newly added items
+          }
         } else {
           prunedFi.item.currency = currency; // Currency cannot be edited from UI once Payment page is created
         }
