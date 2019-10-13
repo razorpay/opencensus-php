@@ -335,9 +335,9 @@ class GovernorService
 
         if ( $response->status_code != 200 )
         {
-            if (isset($responseBody[self::ERROR])
-                && isset($responseBody[self::ERROR][self::ERROR_CODE])
-                && $responseBody[self::ERROR][self::ERROR_CODE] === ErrorCode::BAD_REQUEST_ERROR)
+            if ((isset($responseBody[self::ERROR]) === true) &&
+                (isset($responseBody[self::ERROR][self::ERROR_CODE])  === true) &&
+                ($responseBody[self::ERROR][self::ERROR_CODE] === ErrorCode::BAD_REQUEST_ERROR))
             {
                 $this->trace->error(
                     TraceCode::GOVERNOR_SERVICE_BAD_REQUEST_ERROR,
@@ -356,12 +356,10 @@ class GovernorService
                 ['response' => $response]);
 
             throw new Exception\ServerErrorException(
-                $responseBody[self::ERROR][self::ERROR_MESSAGE],
+                null,
                 ErrorCode::SERVER_ERROR
             );
         }
-
-
 
         return $responseBody;
     }
