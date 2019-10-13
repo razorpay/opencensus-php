@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
-use Redis;
-
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Entity;
@@ -14,7 +12,6 @@ use RZP\Models\Merchant\Balance\AccountType;
 
 class DownstreamProcessor
 {
-
     protected $type;
 
     protected $payout;
@@ -86,14 +83,15 @@ class DownstreamProcessor
     // which the payout should be routed in case of shared accounts.
     // Till the time we achieve this by Dynamic routing, we are doing
     // a hack of using config key to store the Mids for which
-    // channel for processing the payout should be CITI
+    // channel for processing the payout should be CITI and ICICI.
+    // The precendence between ICICI and CITI is ICICI.
     protected function checkIfChannelShouldBeCiti(Merchant $merchant): bool
     {
         $mid = $merchant->getId();
 
         $citiMids = (new AdminService())->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
 
-        return (in_array($mid,$citiMids) === true);
+        return (in_array($mid, $citiMids) === true);
     }
 
     protected function checkIfChannelShouldBeIcici(Merchant $merchant): bool
@@ -102,6 +100,6 @@ class DownstreamProcessor
 
         $iciciMids = (new AdminService())->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
 
-        return (in_array($mid,$iciciMids) === true);
+        return (in_array($mid, $iciciMids) === true);
     }
 }
