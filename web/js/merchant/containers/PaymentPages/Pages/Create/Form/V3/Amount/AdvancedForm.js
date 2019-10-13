@@ -120,8 +120,8 @@ export default class AdvancedForm extends React.PureComponent {
     const minVal = this.minAmountLimit && this.minAmountLimit.value;
     const isFieldMandatory = this.props.field.mandatory;
 
-    // max_amount is allowed to be '' or 0 only when item is not mandatory
-    if (maxVal === '' && !isFieldMandatory) {
+    // max_amount is allowed to be ''
+    if (maxVal === '') {
       return;
     }
 
@@ -215,8 +215,10 @@ export default class AdvancedForm extends React.PureComponent {
   validateMinPurchaseLimit = minVal => {
     const maxVal = this.maxPurchaseLimit && this.maxPurchaseLimit.value;
     const stockLimit = this.stockLimit && this.stockLimit.value;
+    const isFieldMandatory = this.props.field.mandatory;
 
-    if (minVal === '') {
+    // min_purchase is allowed to be '' or 0 only when item is not mandatory
+    if (minVal === '' && !isFieldMandatory) {
       return;
     }
 
