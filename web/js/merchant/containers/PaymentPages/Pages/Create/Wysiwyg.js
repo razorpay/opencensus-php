@@ -248,77 +248,41 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
   };
 
-  // Handles both in save and edit mode.
+  // Update settings in store
   handleSaveSettings = formData => {
-    const payload = {};
+    const data = {};
 
     if (formData.expire_by) {
-      payload.expire_by = formData.expire_by;
+      data.expire_by = formData.expire_by;
     }
 
     if (formData.slug) {
-      payload.slug = formData.slug.trim();
+      data.slug = formData.slug.trim();
     }
 
-    payload.settings = {};
+    data.settings = {};
 
     if (typeof formData.theme !== 'undefined') {
       if (formData.theme === '0') {
-        payload.settings.theme = 'dark';
+        data.settings.theme = 'dark';
       } else {
-        payload.settings.theme = 'light';
+        data.settings.theme = 'light';
       }
     }
 
-    payload.settings.payment_success_message =
+    data.settings.payment_success_message =
       formData.payment_success_message || '';
 
-    payload.settings.payment_success_redirect_url = formData.payment_success_redirect_url
+    data.settings.payment_success_redirect_url = formData.payment_success_redirect_url
       ? autoPrefixUrls(formData.payment_success_redirect_url)
       : '';
 
-    const isEditExistingId = this.props.id;
+    // Update in store
+    this.props.updateData(data);
 
-    // In edit mode
-    if (isEditExistingId) {
-      editPaymentPage(this.props.id, payload)
-        .then(resp => {
-          if (resp.data) {
-            this.props.updateData(payload);
-            this.props.markDataSaved();
-
-            this.setState({
-              isSettingsOpened: false,
-            });
-
-            const entityId = resp.data.id;
-
-            this.openPPShareView(
-              entityId,
-              resp.data.short_url,
-              resp.data.title,
-              resp.data.description,
-              true
-            );
-          }
-        })
-        .catch(({ errors }) => {
-          this.setState({
-            isSettingsOpened: false,
-          });
-
-          this.props.showNotification({
-            type: 'error',
-            message: errors,
-          });
-        });
-    } else {
-      this.props.updateData(payload);
-
-      this.setState({
-        isSettingsOpened: false,
-      });
-    }
+    this.setState({
+      isSettingsOpened: false,
+    });
   };
 
   // Handles both Create and Edit payment page.

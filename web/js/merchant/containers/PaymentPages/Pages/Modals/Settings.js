@@ -97,14 +97,11 @@ export default class extends React.Component {
       trackData.push('payment_success_redirect_url');
     }
 
-    trackPageSettingsData(
-      this.props.isNew ? 'Save and Publish' : 'Save',
-      trackData
-    );
+    trackPageSettingsData(this.props.isNew ? 'Update' : 'Save', trackData);
   };
 
   render() {
-    const { isNew, handleClose, isTestMode, paymentPageEntity } = this.props;
+    const { handleClose, isTestMode, paymentPageEntity } = this.props;
 
     const {
       slug,
@@ -308,7 +305,7 @@ export default class extends React.Component {
                   Cancel
                 </Button.Transparent>
                 <Button.Primary type="submit" disabled={disableSubmit}>
-                  {isNew ? 'Save and Publish' : 'Save'}
+                  Save
                 </Button.Primary>
               </footer>
             </Form>
