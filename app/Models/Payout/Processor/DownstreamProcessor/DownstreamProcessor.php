@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
-use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Admin\Service as AdminService;
 
 class DownstreamProcessor
 {
