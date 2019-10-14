@@ -1353,6 +1353,8 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        (new Validator)->setStrictFalse()->validateInput(Validator::PREFERENCES, $input);
+
         $preferences = (new Checkout)->getPreferences($merchant, $this->mode, $input);
 
         return $preferences;

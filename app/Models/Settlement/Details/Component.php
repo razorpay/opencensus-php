@@ -17,6 +17,7 @@ class Component
     const TRANSFER          = 'transfer';
     const REVERSAL          = 'reversal';
     const DISPUTE           = 'dispute';
+    const COMMISSION        = 'commission';
 
     public static function validateComponent(string $component)
     {
@@ -41,6 +42,7 @@ class Component
             self::TRANSFER,
             self::REVERSAL,
             self::DISPUTE,
+            self::COMMISSION,
         ];
     }
 }

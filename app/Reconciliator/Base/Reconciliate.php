@@ -271,8 +271,8 @@ class Reconciliate extends Base\Core
                             'trace_code' => TraceCode::RECON_INFO_ALERT,
                             'message'    => 'Tried Force authorizing these failed payments',
                             'count'      => count(self::$forceAuthorizedPayments),
-                            'payments'   => self::$forceAuthorizedPayments,
                             'gateway'    => $this->gateway,
+                            'payments'   => self::$forceAuthorizedPayments,
                             'batch_id'   => $batch->getId()
                         ]);
                 }

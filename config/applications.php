@@ -70,6 +70,18 @@ return [
         'mock'      => env('MOZART_MOCK', false),
         'url'       => env('MOZART_URL'),
         'password'  => env('MOZART_PASSWORD'),
+
+        'test'  =>  [
+            'mock'      => env('MOZART_TEST_MOCK', false),
+            'url'       => env('MOZART_TEST_URL'),
+            'password'  => env('MOZART_TEST_PASSWORD'),    
+        ],
+        
+        'live'  =>  [
+            'mock'      => env('MOZART_LIVE_MOCK', false),
+            'url'       => env('MOZART_LIVE_URL'),
+            'password'  => env('MOZART_LIVE_PASSWORD'),    
+        ]
     ],
 
     'raven' => [
@@ -114,6 +126,10 @@ return [
         'cps'=> [
             'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
             'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
+        ],
+        'adminapi'=> [
+            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY' ),
+            'password' => env('GOVERNOR_ADMINAPI_SERVICE_SECRET'),
         ],
         'url'       => env('GOVERNOR_LIVE_URL'),
     ],

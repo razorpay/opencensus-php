@@ -7,16 +7,15 @@ use Cache;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Payment;
-use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
-use RZP\Models\FundAccount;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
@@ -188,7 +187,9 @@ abstract class Base extends BaseModel\Core
 
     protected function getAvailableAmountOrFeeCredits()
     {
-        $merchantBalance = $this->entity->merchant->getBalanceByProductType($this->product);
+        $balanceType = Balance\Type::getTypeForProduct($this->product);
+
+        $merchantBalance = $this->entity->merchant->getBalanceByType($balanceType);
 
         $amountCredits = $merchantBalance->getAmountCredits();
 

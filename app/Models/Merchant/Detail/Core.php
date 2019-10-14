@@ -1230,4 +1230,20 @@ class Core extends Base\Core
 
         return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
     }
+
+    public function isAdditionalFieldRequired($field)
+    {
+        $merchantDetail = $this->getMerchantDetails($this->merchant);
+
+        $KYClarificationReasons = $merchantDetail->getKycClarificationReasons();
+
+        if (empty($KYClarificationReasons) === true)
+        {
+            return false;
+        }
+
+        $additionalDetail = $KYClarificationReasons[Entity::ADDITIONAL_DETAILS] ?? [];
+
+        return array_key_exists($field, $additionalDetail) === true;
+    }
 }

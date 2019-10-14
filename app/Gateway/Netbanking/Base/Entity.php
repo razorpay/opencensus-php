@@ -126,6 +126,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
     }
 
+    public function setRefundId($refundId)
+    {
+        $this->setAttribute(self::REFUND_ID, $refundId);
+    }
+
     public function setAccountType(string $accountType)
     {
         $this->setAttribute(self::ACCOUNT_TYPE, $accountType);

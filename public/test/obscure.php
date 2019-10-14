@@ -121,6 +121,7 @@ function disableEmptyInputs(form) {
                 <option value="CBIN">CBI</option>
                 <option value="CNRB">Canara Bank</option>
                 <option value="VIJB">Vijaya Bank</option>
+                <option value="UBIN">Union Bank</option>
                 <option value="CIUB">City union Bank</option>
                 <option value="IDIB">Indian Bank</option>
                 <option value="IBKL">Industrial Development Bank of India</option>

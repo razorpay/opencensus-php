@@ -347,7 +347,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => ['post',     'merchant/activation/bulk_assign_reviewer',       'MerchantController@bulkAssignReviewer'                             ],
         'merchant_activation_update_website'       => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
         'merchant_activation_business_categories'  => ['get',      'merchant/activation/business_categories',        'MerchantController@getBusinessCategories'                          ],
-        'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',       'MerchantController@getNeedsClarificationReasons'                  ],
+        'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',      'MerchantController@getNeedsClarificationReasons'                   ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
@@ -1093,6 +1093,10 @@ final class Route
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
         'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                          ],
+        'commissions_capture'                      => ['post',     'commissions/{id}/capture',                       'CommissionController@capture'                                      ],
+        'commissions_get_aggregates'               => ['get',      'commissions/partner/{id}/aggregate',             'CommissionController@fetchAggregateCommissionDetails'              ],
+        'commissions_capture_by_partner'           => ['post',     'commissions/partner/{id}/capture',               'CommissionController@captureByPartner'                             ],
+        'commissions_mark_for_settlement'          => ['post',     'commissions/partner/{id}/on_hold/clear',         'CommissionController@clearOnHoldForPartner'                        ],
         'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
@@ -1173,28 +1177,62 @@ final class Route
         'credit_note_apply'                        => ['post',     'creditnote/{id}/apply',                          'CreditNoteController@apply'                                        ],
 
         // Governor Proxy APIs - Namespace
-        'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                            'GovernorController@createNamespace'                        ],
+        'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                                                                     'GovernorController@createNamespace'    ],
 
         // Governor Proxy APIs - Domain Model
-        'governor_domain_model_list'              => ['get',      '{source}/rule_engine/data_model/{namespace}',               'GovernorController@getDomainModels'                        ],
-        'governor_create_domain_model'            => ['post',     '{source}/rule_engine/data_model/{namespace}',               'GovernorController@createDomainModel'                      ],
-        'governor_update_namespace'               => ['put',      '{source}/rule_engine/data_model/{namespace}',               'GovernorController@updateDomainModel'                      ],
+        'governor_domain_model_list'              => ['get',      '{source}/rule_engine/data_model/{namespace}',                                                        'GovernorController@getDomainModels'    ],
+        'governor_create_domain_model'            => ['post',     '{source}/rule_engine/data_model/{namespace}',                                                        'GovernorController@createDomainModel'  ],
+        'governor_update_namespace'               => ['put',      '{source}/rule_engine/data_model/{namespace}',                                                        'GovernorController@updateDomainModel'  ],
 
         // Governor Proxy APIs - Rule
-        'governor_create_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRule'                             ],
-        'governor_create_rule_bulk'               => ['post',     '{source}/rule_engine/rule/{namespace}/bulk',                'GovernorController@createRules'                            ],
-        'governor_update_rule'                    => ['put',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@updateRule'                             ],
-        'governor_update_rule_bulk'               => ['put',      '{source}/rule_engine/rule/{namespace}/bulk',                'GovernorController@updateRules'                            ],
-        'governor_rule_list'                      => ['get',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@getRules'                               ],
-        'governor_get_rule'                       => ['get',      '{source}/rule_engine/rule/{namespace}/{rulename}',          'GovernorController@getRule'                                ],
+        'governor_create_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                                                              'GovernorController@createRule'         ],
+        'governor_create_rule_bulk'               => ['post',     '{source}/rule_engine/rule/{namespace}/bulk',                                                         'GovernorController@createRules'        ],
+        'governor_update_rule'                    => ['put',      '{source}/rule_engine/rule/{namespace}',                                                              'GovernorController@updateRule'         ],
+        'governor_update_rule_bulk'               => ['put',      '{source}/rule_engine/rule/{namespace}/bulk',                                                         'GovernorController@updateRules'        ],
+        'governor_rule_list'                      => ['get',      '{source}/rule_engine/rule/{namespace}',                                                              'GovernorController@getRules'           ],
+        'governor_get_rule'                       => ['get',      '{source}/rule_engine/rule/{namespace}/{rulename}',                                                   'GovernorController@getRule'            ],
 
         // Governor Proxy APIs - Rule Chain
-        'governor_create_rule_chain'              => ['post',     '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@createRuleChain'                        ],
-        'governor_update_rule_chain'              => ['put',      '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@updateRuleChain'                        ],
-        'governor_rule_chain_list'                => ['get',      '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@getRuleChains'                          ],
+        'governor_create_rule_chain'              => ['post',     '{source}/rule_engine/rule_chain/{namespace}',                                                        'GovernorController@createRuleChain'    ],
+        'governor_update_rule_chain'              => ['put',      '{source}/rule_engine/rule_chain/{namespace}',                                                        'GovernorController@updateRuleChain'    ],
+
+        'governor_rule_chain_list'                => ['get',      '{source}/rule_engine/rule_chain/{namespace}',                                                        'GovernorController@getRuleChains'      ],
 
         // Governor Proxy APIs - Execute Rule Chain
-        'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
+        'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',                                                'GovernorController@executeChains'      ],
+
+        //
+        // Governor Proxy APIs New
+        //
+
+        'governor_get_client_v1'                  => ['get',      'clients',                                                                                            'GovernorController@proxy'              ],
+
+        // Governor Proxy APIs New - Namespace
+        'governor_create_namespace_v1'            => ['post',     'clients/{client_id}/namespaces',                                                                     'GovernorController@proxy'              ],
+        'governor_list_namespace_v1'              => ['get',      'clients/{client_id}/namespaces',                                                                     'GovernorController@proxy'              ],
+        'governor_get_namespace_v1'               => ['get',      'namespaces/{namespace_id}',                                                                          'GovernorController@proxy'              ],
+        'governor_update_namespace_v1'            => ['put',      'namespaces/{namespace_id}',                                                                          'GovernorController@proxy'              ],
+        'governor_delete_namespace_v1'            => ['delete',   'namespaces/{namespace_id}',                                                                          'GovernorController@proxy'              ],
+
+        // Governor Proxy APIs New - Rule
+        'governor_create_rule_v1'                 => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',            'GovernorController@proxy'              ],
+        'governor_list_rule_v1'                   => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',            'GovernorController@proxy'              ],
+        'governor_get_rule_v1'                    => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',  'GovernorController@proxy'              ],
+        'governor_delete_rule_v1'                 => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',  'GovernorController@proxy'              ],
+        'governor_update_rule_v1'                 => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules/{rule_id}',  'GovernorController@proxy'              ],
+
+        // Governor Proxy APIs New - Rule Chain
+        'governor_list_rule_chains_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
+        'governor_create_rule_chain_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
+        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
+
+        // Governor Proxy APIs New - Rule Groups
+        'governor_list_rule_groups_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                  'GovernorController@proxy'              ],
+        'governor_create_rule_group_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                  'GovernorController@proxy'              ],
+        'governor_create_bulk_rule_group_v1'      => ['patch',    'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/bulk',                             'GovernorController@proxy'              ],
+        'governor_get_rule_group_v1'              => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
+        'governor_delete_rule_group_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
+        'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_credentials'             => ['post',     'banking_accounts/{id}/credentials',                         'BankingAccountController@storeCredentialsAndActivateAccount' ],
@@ -2328,6 +2366,27 @@ final class Route
         'banking_account_update',
         'banking_account_webhook_account_info_internal',
 
+        'governor_create_namespace_v1',
+        'governor_get_client_v1',
+        'governor_list_namespace_v1',
+        'governor_get_namespace_v1',
+        'governor_update_namespace_v1',
+        'governor_delete_namespace_v1',
+        'governor_create_rule_v1',
+        'governor_list_rule_v1',
+        'governor_get_rule_v1',
+        'governor_delete_rule_v1',
+        'governor_list_rule_chains_v1',
+        'governor_create_rule_chain_v1',
+        'governor_delete_rule_chain_v1',
+        'governor_list_rule_groups_v1',
+        'governor_create_rule_group_v1',
+        'governor_create_bulk_rule_group_v1',
+        'governor_get_rule_group_v1',
+        'governor_delete_rule_group_v1',
+        'governor_update_rule_group_v1',
+        'governor_update_rule_v1',
+
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
@@ -2353,6 +2412,12 @@ final class Route
         'setl_process_data',
         'setl_process_data_reset',
         'fund_transfer_attempt_initiate_action',
+
+        'commissions_capture',
+        'commissions_capture_by_partner',
+        'commissions_get_aggregates',
+        'commissions_mark_for_settlement',
+
         'merchant_restrict',
         'user_update_contact_admin',
         'user_account_lock_unlock_admin',
@@ -2806,6 +2871,28 @@ final class Route
         'governor_rule_chain_execute'              => Permission::VIEW_GATEWAY_RULE,
         'webhook_fire'                             => Permission::MAKE_API_CALL,
 
+        'governor_create_namespace_v1'             => Permission::CREATE_GATEWAY_RULE,
+        'governor_get_client_v1'                   => Permission::VIEW_GATEWAY_RULE,
+        'governor_list_namespace_v1'               => Permission::VIEW_GATEWAY_RULE,
+        'governor_get_namespace_v1'                => Permission::VIEW_GATEWAY_RULE,
+        'governor_update_namespace_v1'             => Permission::EDIT_GATEWAY_RULE,
+        'governor_delete_namespace_v1'             => Permission::DELETE_GATEWAY_RULE,
+        'governor_create_rule_v1'                  => Permission::CREATE_GATEWAY_RULE,
+        'governor_list_rule_v1'                    => Permission::VIEW_GATEWAY_RULE,
+        'governor_get_rule_v1'                     => Permission::VIEW_GATEWAY_RULE,
+        'governor_delete_rule_v1'                  => Permission::DELETE_GATEWAY_RULE,
+        'governor_update_rule_v1'                  => Permission::EDIT_GATEWAY_RULE,
+        'governor_list_rule_chains_v1'             => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_rule_chain_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_delete_rule_chain_v1'            => Permission::DELETE_GATEWAY_RULE,
+        'governor_list_rule_groups_v1'             => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_create_bulk_rule_group_v1'       => Permission::CREATE_GATEWAY_RULE,
+        'governor_get_rule_group_v1'               => Permission::VIEW_GATEWAY_RULE,
+        'governor_delete_rule_group_v1'            => Permission::DELETE_GATEWAY_RULE,
+        'governor_update_rule_group_v1'            => Permission::EDIT_GATEWAY_RULE,
+
+
         //Enable maker/checker for payouts
         'payout_create'                            => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                   => Permission::CREATE_PAYOUT,
@@ -2832,6 +2919,11 @@ final class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
+
+        'commissions_capture'                      => Permission::COMMISSION_CAPTURE,
+        'commissions_capture_by_partner'           => Permission::COMMISSION_CAPTURE,
+        'commissions_get_aggregates'               => '*',
+        'commissions_mark_for_settlement'          => Permission::COMMISSION_PAYOUT,
 
         'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
         'user_account_lock_unlock_admin'           => Permission::USER_ACCOUNT_LOCK_UNLOCK,

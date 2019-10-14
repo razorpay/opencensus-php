@@ -161,6 +161,7 @@ class Repository extends Base\Repository
             TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
             [
                 'time_taken' => $txnFetchTimeTaken,
+                'txn_count'  => $results->count(),
                 'params'     => $params,
             ]);
 
@@ -1524,11 +1525,13 @@ class Repository extends Base\Repository
     /**
      * @param string $mid
      * @param string $channel
+     * @param string $balanceType
      * @param array $params
+     *
      * @return Base\PublicCollection
      */
     public function fetchUnsettledTransactionsForProcessing(
-        string $mid, string $channel, array $params = []): Base\PublicCollection
+        string $mid, string $channel,string $balanceType, array $params = []): Base\PublicCollection
     {
         $txnFetchStartTime = microtime(true);
 
@@ -1541,24 +1544,31 @@ class Repository extends Base\Repository
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
 
-        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceIdColumn        = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
 
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
-                      ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
-                      ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
-                              {
-                                  $query->whereNull($transactionBalanceId)
-                                        ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
-                              })
+                      ->leftJoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceId)
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
                       ->where($transactionType, '!=', Type::SETTLEMENT);
+
+        if ($balanceType === Balance\Type::PRIMARY)
+        {
+            $query->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn) {
+                $query->whereNull($transactionBalanceId)
+                      ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+            });
+        }
+        else
+        {
+            $query->where($balanceTypeColumn, $balanceType);
+        }
 
         $query = $this->addSettlementFilters($query, $timestamp, $params);
 
@@ -1567,13 +1577,38 @@ class Repository extends Base\Repository
         $this->trace->info(
             TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
             [
-                'merchant_id' => $mid,
-                'settled_at'  => $timestamp,
-                'time_taken'  => get_diff_in_millisecond($txnFetchStartTime),
-                'params'      => $params,
+                'time_taken'   => get_diff_in_millisecond($txnFetchStartTime),
+                'txn_count'    => $results->count(),
+                'merchant_id'  => $mid,
+                'settled_at'   => $timestamp,
+                'params'       => $params,
+                'balance_type' => $balanceType,
             ]);
 
         return $results;
+    }
+
+    public function fetchPartnerCommissionTransactionsOnHold(
+        string $partnerId,
+        int $timestamp,
+        int $limit,
+        $afterId = null): Base\PublicCollection
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::TYPE, ConstantEntity::COMMISSION)
+                      ->where(Entity::MERCHANT_ID, $partnerId)
+                      ->where(Entity::SETTLED_AT, '<=', $timestamp)
+                      ->where(Entity::ON_HOLD, true)
+                      ->with('source')
+                      ->orderBy(Entity::ID)
+                      ->take($limit);
+
+        if ($afterId !== null)
+        {
+            $query->where(Entity::ID, '>', $afterId);
+        }
+
+        return $query->get();
     }
 
     public function fetchRequiredColumnsForSettlement(bool $fetchAll = true): array
@@ -1624,10 +1659,8 @@ class Repository extends Base\Repository
     {
         $id                     = $this->dbColumn(Entity::ID);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
-
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
-
         return $this->newQuery()
                     ->select($balanceTypeColumn)
                     ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)

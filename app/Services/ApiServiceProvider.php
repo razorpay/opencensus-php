@@ -42,6 +42,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Partner\Commission;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\SubscriptionRegistration;
@@ -590,6 +591,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'entity_origin'             => EntityOrigin\Entity::class,
 
             'application'               => Application\Entity::class,
+
+            'commission'                => Commission\Entity::class,
         ]);
     }
 

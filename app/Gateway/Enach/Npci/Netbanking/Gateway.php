@@ -281,7 +281,7 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::MID                   => $mid,
                 RequestNpciTags::CATEGORY_CODE         => $catCode,
                 RequestNpciTags::UTILITY_CODE          => $mid,
-                RequestNpciTags::CATEGORY_DESCRIPTION  => Base\CategoryCode::getCategoryDescriptionFromCode($catCode),
+                RequestNpciTags::CATEGORY_DESCRIPTION  => str_limit(Base\CategoryCode::getCategoryDescriptionFromCode($catCode), 25, ''),
                 RequestNpciTags::NAME                  => $merchantName,
             ],
 
@@ -297,7 +297,7 @@ class Gateway extends Base\Gateway
             RequestNpciTags::MAX_AMOUNT            => $encryptedData[RequestNpciTags::MAX_AMOUNT],
 
             NpciXmlHeaderTags::DEBTOR              => [
-                RequestNpciTags::DEBTOR_NAME           => $input['token']->getBeneficiaryName(),
+                RequestNpciTags::DEBTOR_NAME           => str_limit($input['token']->getBeneficiaryName(), 40, ''),
                 RequestNpciTags::DEBTOR_ACCOUNT        => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
             ],
 
