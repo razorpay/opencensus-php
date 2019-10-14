@@ -3083,6 +3083,32 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createDirectSettlementCybersourceTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectseTmnl',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'cybersource',
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'     => 'secret',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createDirectSettlementRefundHdfcTerminal(array $attributes = [])
     {
         $defaultValues = [
