@@ -87,12 +87,12 @@ const customToolTip = function(tooltipModel) {
     shouldShowTooltip = false;
 
     /*
-   * Puts hideTooltip at the end of callback queue
-   * as chartjs tries to hide the tooltip just before
-   * `mouseenter` is fired on `tooltipDOM`, which would
-   * lead to hiding of tooltip just before hovering on it,
-   * and makes the tooltip flicker and not useable
-   */
+     * Puts hideTooltip at the end of callback queue
+     * as chartjs tries to hide the tooltip just before
+     * `mouseenter` is fired on `tooltipDOM`, which would
+     * lead to hiding of tooltip just before hovering on it,
+     * and makes the tooltip flicker and not useable
+     */
     return window.setTimeout(() => {
       hideTooltip();
     });
@@ -172,7 +172,7 @@ const customToolTip = function(tooltipModel) {
     if (!noGrouping) {
       tooltipDOM.className = '';
 
-      var dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
+      let dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
         return item1.datasetIndex - item2.datasetIndex;
       });
 
