@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccountStatement;
 use Cache;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -19,7 +20,17 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_REQUEST,
                            ['input' => $input]);
-
-        return $this->core()->requestAccountStatement($input);
+        try
+        {
+            return $this->core()->requestAccountStatement($input);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_STATEMENT_REQUEST,
+                                         $input);
+            throw $e;
+        }
     }
 }

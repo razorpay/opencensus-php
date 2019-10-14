@@ -12,7 +12,6 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\BankingAccount\StatementMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -131,6 +130,12 @@ class Core extends Base\Core
 
         $temporaryFilePath = $statementGenerator->getStatement();
 
+        $this->trace->info(TraceCode::CA_STATEMENT_GENERATED,
+                           [
+                               'banking_account_id'  => $bankingAccount->getId(),
+                               'temporary_file_path' => $temporaryFilePath
+                           ]);
+
         $ufhResponse = $this->uploadTemporaryFileToStore($temporaryFilePath, $bankingAccount);
 
         $fileId = $ufhResponse[self::FILE_ID] ?? null;
@@ -185,31 +190,16 @@ class Core extends Base\Core
 
         $uploadedFileInstance = $this->getUploadedFileInstance($pathToTemporaryFile);
 
-        $response = null;
-
-        try
-        {
-            $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
-                                                         $name = File::name($pathToTemporaryFile),
-                                                         self::STORE_TYPE,
-                                                         $entity);
-            $this->trace->info(
-                TraceCode::UFH_RESPONSE,
-                [
-                    'banking_account_id' => $entity->getId(),
-                    'response'           => $response,
-                ]);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e,
-                                         Trace::ERROR,
-                                         TraceCode::UFH_FILE_UPLOAD_FAILED,
-                                         [
-                                             'banking_account_id'  => $entity->getId(),
-                                             'temporary_file_path' => $pathToTemporaryFile
-                                         ]);
-        }
+        $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
+                                                     $name = File::name($pathToTemporaryFile),
+                                                     self::STORE_TYPE,
+                                                     $entity);
+        $this->trace->info(
+            TraceCode::UFH_RESPONSE,
+            [
+                'banking_account_id' => $entity->getId(),
+                'response'           => $response,
+            ]);
 
         return $response;
     }

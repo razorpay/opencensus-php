@@ -76,31 +76,6 @@ class Xlsx extends Generator
             AccountOwnerInfo::BRANCH_STATE         => 'D11',
         ];
 
-    // this will be determined after we know the transaction counts
-    protected $summaryKeyMap  =
-        [
-            XLSXHeaders::STATEMENT_SUMMARY        => '',
-            XLSXHeaders::OPENING_BALANCE          => '',
-            XLSXHeaders::CLOSING_BALANCE          => '',
-            XLSXHeaders::EFFECTIVE_BALANCE        => '',
-            XLSXHeaders::STATEMENT_GENERATED_DATE => '',
-            XLSXHeaders::DEBIT_COUNT              => '',
-            XLSXHeaders::CREDIT_COUNT             => '',
-            XLSXHeaders::LIEN_AMOUNT              => '',
-        ];
-
-    // this will be determined after we know the transaction counts
-    protected $summaryDataMap =
-        [
-            StatementSummary::OPENING_BALANCE          => '',
-            StatementSummary::CLOSING_BALANCE          => '',
-            StatementSummary::EFFECTIVE_BALANCE        => '',
-            StatementSummary::STATEMENT_GENERATED_DATE => '',
-            StatementSummary::DEBIT_COUNT              => '',
-            StatementSummary::CREDIT_COUNT             => '',
-            StatementSummary::LIEN_AMOUNT              => '',
-        ];
-
     const TRANSACTION_DATA_TO_COLUMN =
         [
             TransactionLineItem::TRANSACTION_DATE    => 'A',
@@ -134,11 +109,52 @@ class Xlsx extends Generator
 
     const DEFAULT_XLSX_FORMAT           = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
+    // this will be determined after we know the transaction counts
+    protected $summaryKeyMap  =
+        [
+            XLSXHeaders::STATEMENT_SUMMARY        => '',
+            XLSXHeaders::OPENING_BALANCE          => '',
+            XLSXHeaders::CLOSING_BALANCE          => '',
+            XLSXHeaders::EFFECTIVE_BALANCE        => '',
+            XLSXHeaders::STATEMENT_GENERATED_DATE => '',
+            XLSXHeaders::DEBIT_COUNT              => '',
+            XLSXHeaders::CREDIT_COUNT             => '',
+            XLSXHeaders::LIEN_AMOUNT              => '',
+        ];
+
+    // this will be determined after we know the transaction counts
+    protected $summaryDataMap =
+        [
+            StatementSummary::OPENING_BALANCE          => '',
+            StatementSummary::CLOSING_BALANCE          => '',
+            StatementSummary::EFFECTIVE_BALANCE        => '',
+            StatementSummary::STATEMENT_GENERATED_DATE => '',
+            StatementSummary::DEBIT_COUNT              => '',
+            StatementSummary::CREDIT_COUNT             => '',
+            StatementSummary::LIEN_AMOUNT              => '',
+        ];
+
+
     public function __construct($accountNumber, $channel, $fromDate, $toDate)
     {
         parent::__construct($accountNumber, $channel, $fromDate, $toDate);
 
         $this->calculateStatementSummaryCellValues();
+    }
+
+    public function getStatement()
+    {
+        $spreadsheet = $this->createTableView();
+
+        $tmpFileName = $this->generateFileName(self::XLSX);
+
+        $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
+
+        $writer = new XlsxWriter($spreadsheet);
+
+        $writer->save($tmpFileFullPath);
+
+        return $tmpFileFullPath;
     }
 
     protected function calculateStatementSummaryCellValues()
@@ -189,21 +205,6 @@ class Xlsx extends Generator
 
         $this->summaryDataMap[StatementSummary::LIEN_AMOUNT] =
             'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
-    }
-
-    function getStatement()
-    {
-        $spreadsheet = $this->createTableView();
-
-        $tmpFileName = $this->generateFileName(self::XLSX);
-
-        $tmpFileFullPath =  self::TEMP_STORAGE_DIR . $tmpFileName;
-
-        $writer = new XlsxWriter($spreadsheet);
-
-        $writer->save($tmpFileFullPath);
-
-        return $tmpFileFullPath;
     }
 
     protected function createTableView(): Spreadsheet
