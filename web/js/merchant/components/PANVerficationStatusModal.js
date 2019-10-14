@@ -1,6 +1,10 @@
 import React from 'react';
 import { ModalMask, Modal } from 'component/Modal';
 
+<<<<<<< HEAD
+=======
+const PAN = 'PAN';
+>>>>>>> Fix files deleted due to rebase
 const PAN_FAILURE = 'PAN_FAILURE'; // timeout in PAN verification
 const PAN_SUCCESS = 'PAN_SUCCESS'; // timeout in PAN verification
 
@@ -38,8 +42,16 @@ const MODAL_CONTENT = {
 };
 
 const PANVerficationStatusModal = ({ user, onClose, onGoToDashboard }) => {
+<<<<<<< HEAD
   const content =
     MODAL_CONTENT[VERIFICATION_STATUS[user.poi_verification_status]];
+=======
+  console.log(user);
+  console.log(user.poi_verification_status);
+  const content =
+    MODAL_CONTENT[VERIFICATION_STATUS[user.poi_verification_status]];
+  console.log('content', content);
+>>>>>>> Fix files deleted due to rebase
   return (
     <ModalMask>
       <Modal className="pan-status-modal" onClose={onClose}>
