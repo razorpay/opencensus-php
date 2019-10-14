@@ -530,6 +530,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->sendRequest($request);
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
     }
 }
