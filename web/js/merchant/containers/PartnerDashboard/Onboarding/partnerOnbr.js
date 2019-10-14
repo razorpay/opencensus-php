@@ -3,7 +3,7 @@ import Slider, { SliderDots } from 'component/Slider';
 import S1 from './steps/S1';
 import S2 from './steps/S2';
 import S3 from './steps/S3';
-import SlideContoller from './steps/SlideController';
+import User from 'merchant/models/User';
 import { updateSession } from 'merchant/modules/session';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
@@ -25,13 +25,11 @@ export default class BaseScreen extends React.Component {
   };
 
   onCompleteClick = () => {
-    const { session, user } = this.props;
-    // this.props.updateSession({
-    //   user:{
-    //     ...user,
-    //     partner_intent: false
-    //   }
-    // });
+    const userval = new User({
+      ...this.props.user,
+      partner_intent: false,
+    });
+    this.props.updateSession({ user: userval });
     merchantFetch({
       url: 'merchant/instant_activation',
       method: 'POST',

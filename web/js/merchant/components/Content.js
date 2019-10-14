@@ -130,10 +130,15 @@ export default class Content extends Component {
 
   getBaseView = () => {
     const { user } = this.props;
+    debugger;
+    if (user.partner_type && user.partner_intent === null) {
+      // if(user.partner_type === null && user.partner_intent === true){
+      return <Onboarding />;
+    }
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
-          <Route path="/dashboard" component={Onboarding} />
+          <Route path="/dashboard" component={Home} />
           <Redirect
             to={user.isPartner() ? '/partners' : '/dashboard'}
             from="/"
