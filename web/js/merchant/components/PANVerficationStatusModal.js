@@ -38,7 +38,7 @@ const MODAL_CONTENT = {
   },
 };
 
-const PANVerficationStatusModal = ({ user, onClose }) => {
+const PANVerficationStatusModal = ({ user, onClose, onGoToDashboard }) => {
   console.log(user);
   console.log(user.poi_verification_status);
   const content =
@@ -53,7 +53,9 @@ const PANVerficationStatusModal = ({ user, onClose }) => {
         </div>
         <div className="modal-body">
           <div className="modal-description">{content.body()}</div>
-          <button className="btn btn-primary">Go to Dashboard</button>
+          <button className="btn btn-primary" onClick={onGoToDashboard}>
+            Go to Dashboard
+          </button>
         </div>
       </Modal>
     </ModalMask>

@@ -33,6 +33,7 @@ import { updateSession } from 'merchant/modules/session';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
+  showPANStatusModal,
 } from 'merchant/modules/home';
 import {
   submitL1Form,
@@ -40,6 +41,7 @@ import {
 } from 'merchant/modules/activationWizard';
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
+import { showNotification } from 'rzp/modules/notifications';
 
 import {
   L1FormSuccess,
