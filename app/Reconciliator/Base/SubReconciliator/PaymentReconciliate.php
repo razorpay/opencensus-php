@@ -148,8 +148,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->payment->getMerchantId());
 
-        $this->setProcessedAtInOutput();
-
         try
         {
             //

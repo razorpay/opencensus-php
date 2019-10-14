@@ -273,12 +273,14 @@ class SubReconciliate extends Base\Core
      */
     protected function insertRowInOutputFile(array $row = [], string $reconType = 'unknown')
     {
+        $processed_at = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+
         $row[self::RECON_TYPE]              = $reconType;
         $row[self::RECON_STATUS]            = '';
         $row[self::ALREADY_RECONCILED_AT]   = '';
         $row[self::RECON_ERROR_MSG]         = '';
         $row[self::MERCHANT_ID]             = '';
-        $row[self::PROCESSED_AT]            = '';
+        $row[self::PROCESSED_AT]            = $processed_at;
         $row[self::BATCH_ID]                = '';
         $row[self::ATTEMPT_NUMBER]          = '';
         $row[self::RECON_ENTITY_ID]         = '';
@@ -573,12 +575,6 @@ class SubReconciliate extends Base\Core
     protected function setMerchantIdInOutput(string $merchantId)
     {
         static::$reconOutputData[static::$currentRowNumber][self::MERCHANT_ID] = $merchantId;
-    }
-
-    protected function setProcessedAtInOutput()
-    {
-        $processed_at = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
-        static::$reconOutputData[static::$currentRowNumber][self::PROCESSED_AT] = $processed_at;
     }
 
     protected function setBatchIdInOutput($batchId)
