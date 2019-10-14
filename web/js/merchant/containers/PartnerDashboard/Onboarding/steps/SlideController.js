@@ -1,6 +1,6 @@
 import React from 'react';
 import { SliderDots } from 'component/Slider';
-const SlideController = ({ sliderProps }) => {
+const SlideController = ({ sliderProps, onNext }) => {
   const { next, prev } = sliderProps;
   return (
     <div style={{ width: '50%' }}>
@@ -12,7 +12,13 @@ const SlideController = ({ sliderProps }) => {
           <a onClick={prev} className="btn btn-link">
             Back
           </a>
-          <a onClick={next} className="btn btn-primary slider-btn">
+          <a
+            onClick={() => {
+              next && next();
+              onNext && onNext();
+            }}
+            className="btn btn-primary slider-btn"
+          >
             Next
             <i class="i i-arrow-forward" />
           </a>
