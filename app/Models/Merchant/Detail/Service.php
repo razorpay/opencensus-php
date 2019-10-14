@@ -539,7 +539,7 @@ class Service extends Base\Service
      */
     public function getNeedsClarificationReasons()
     {
-        $needsClarificationReasonsMap = NeedsClarificationReasons::REASON_MAPPING;
+        $needsClarificationReasonsMap = NeedsClarificationMetaData::REASON_MAPPING;
         $reasonDetails                = NeedsClarificationReasonsList::REASON_DETAILS;
         $response                     = [];
 
@@ -552,7 +552,7 @@ class Service extends Base\Service
                 $reasonList[$reason] = $reasonDetails[$reason];
             }
 
-            $response[$field] = [NeedsClarificationReasons::REASONS => $reasonList];
+            $response[$field] = [NeedsClarificationMetaData::REASONS => $reasonList];
         }
 
         return $response;

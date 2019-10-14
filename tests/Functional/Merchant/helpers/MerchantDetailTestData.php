@@ -1019,4 +1019,202 @@ return [
             ]
         ],
     ],
+
+    'testUpdateKYCClarificationReason' => [
+        'request'  => [
+            'content' => [
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'field1' => [[
+                            'reason_type' => 'custom',
+                            'field_value' => 'adnakdad',
+                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                        ]],
+                        'field3' => [[
+                            'reason_type' => 'predefined',
+                            'field_value' => 'adnakdad',
+                            'reason_code' => 'provide_poc',
+                        ]],
+                    ],
+                    'additional_details'    => [
+                        'field3'               => [[
+                            'reason_type' => 'custom',
+                            'field_type'  => 'document',
+                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                        ]],
+                        'business_description' => [[
+                            'reason_type' => 'predefined',
+                            'field_type'  => 'text',
+                            'reason_code' => 'provide_poc',
+                        ]],
+                    ],
+                ],
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'field1' => [[
+                            'reason_type' => 'custom',
+                            'field_value' => 'adnakdad',
+                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                        ]],
+                        'field3' => [[
+                            'reason_type' => 'predefined',
+                            'field_value' => 'adnakdad',
+                            'reason_code' => 'provide_poc',
+                        ]],
+                    ],
+                    'additional_details'    => [
+                        'field3'               => [[
+                            'reason_type' => 'custom',
+                            'field_type'  => 'document',
+                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                        ],],
+                        'business_description' => [[
+                            'reason_type' => 'predefined',
+                            'field_type'  => 'text',
+                            'reason_code' => 'provide_poc',
+                        ]],
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateKYCClarificationReasonWithFailure' => [
+        'request'   => [
+            'content' => [
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'field3' => [[
+                                         'reason_type' => 'alndalnd',
+                                         'field_value' => 'adnakdad',
+                                         'reason_code' => 'provide_poc',
+                                     ]],
+                    ]
+                ],
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateKycAdditionalDetails' => [
+        'request'  => [
+            'content' => [
+                'kyc_additional_details' => [
+                    'business_description' => [
+                        'field_value' => 'xyz',
+                    ],
+                ],
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateKycAdditionalDetailsWithFailure' => [
+        'request'   => [
+            'content' => [
+                'kyc_additional_details' => [
+                    'business_description' => [
+                        'field_value' => 'xyz',
+                    ],
+                ],
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not required additional field :business_description',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateKycAdditionalDetailsWithInvalidField' => [
+        'request' => [
+            'content' => [
+                'kyc_additional_details' => [
+                    'text_field_xyz' => [
+                        'value' => 'xyz',
+                    ],
+                ],
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not required additional field :text_field_xyz',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateKycAdditionalDetailsData' => [
+        'kyc_clarification_reasons' => [
+            'clarification_reasons' => [
+                'field1' => [[
+                    'reason_type' => 'custom',
+                    'field_value' => 'adnakdad',
+                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                ]],
+                'field3' => [[
+                    'reason_type' => 'predefined',
+                    'field_value' => 'adnakdad',
+                    'reason_code' => 'provide_poc',
+                ]],
+            ],
+            'additional_details'    => [
+                'field3'               => [[
+                    'reason_type' => 'custom',
+                    'field_type'  => 'document',
+                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                ]],
+                'business_description' => [[
+                    'reason_type' => 'predefined',
+                    'field_type'  => 'text',
+                    'reason_code' => 'provide_poc',
+                ]],
+            ],
+        ],
+    ],
+
 ];
