@@ -37,4 +37,13 @@ class Repository extends Base\Repository
                     ->where(Entity::ACTION, '=', $action)
                     ->first();
     }
+
+    public function findByRefundIdActionAndReference1($refundId, $action, $reference1)
+    {
+        return $this->newQuery()
+                    ->where(Entity::REFUND_ID, '=', $refundId)
+                    ->where(Entity::ACTION, '=', $action)
+                    ->where(Entity::REFERENCE1, '=', $reference1)
+                    ->firstOrFail();
+    }
 }

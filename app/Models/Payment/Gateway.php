@@ -1589,6 +1589,10 @@ class Gateway
         Gateway::UPI_RBL,
     ];
 
+    public static $sequenceNoBasedRefundGateways = [
+        Gateway::NETBANKING_SBI
+    ];
+
     public static $upiValidateVpaTerminals = [
         Mode::LIVE => [
             '9Q8w9weX9D1T27',
@@ -2183,4 +2187,18 @@ class Gateway
         return false;
     }
 
+    /**
+     * Some gateways, for example sbi netbanking expect us to send the sequence no or the order in which the refunds
+     * were created. If a payment p1 has three refunds, they would expect us to track the order in which they are created
+     * r1, r2, r3.
+     *
+     * @param $gateway
+     * @return bool
+     *
+     */
+
+    public static function isSequenceNoBasedRefund($gateway)
+    {
+        return (in_array($gateway, self::$sequenceNoBasedRefundGateways, true) === true);
+    }
 }

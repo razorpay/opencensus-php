@@ -211,4 +211,33 @@ class Core extends Base\Core
             $this->repo->transaction->bulkReconciliationUpdate($refundIds);
         }
     }
+
+    /**
+     * This function calculates the sequence number of the refund associated with the payment. For example if a
+     * payment p1 has 3 three refunds. The order in which the refunds were created would be its sequence number. For p1,
+     * the refunds would be numbered as r1, r2, r3. This value is stored in reference3. The function calculates max of
+     * reference 3 for all refunds associated with a payment and increments it by 1.
+     *
+     * @param $payment
+     * @return int
+     *
+     */
+    public static function getNewRefundSequenceNumberForPayment($payment)
+    {
+        $maxSeqNo = 0;
+
+        $refunds = $payment->refunds;
+
+        foreach($refunds as $refund)
+        {
+            $currentSeqNo = $refund->getReference3();
+
+            if (($currentSeqNo !== null) and ($currentSeqNo > $maxSeqNo))
+            {
+                $maxSeqNo = $currentSeqNo;
+            }
+        }
+
+        return $maxSeqNo + 1;
+    }
 }
