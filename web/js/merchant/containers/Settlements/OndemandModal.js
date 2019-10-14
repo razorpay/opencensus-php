@@ -600,7 +600,7 @@ export default class OndemandModal extends Component {
               </div>
             )
           ) : (
-            <ModalCloseReasons closeOrigin="Early Settlement" />
+            <ModalCloseReasons closeOrigin="OnDemand" />
           )}
         </React.Fragment>
       </div>
