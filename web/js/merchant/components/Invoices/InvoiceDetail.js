@@ -37,6 +37,7 @@ export default props => {
     invoice,
     isLoading,
     statusMsg,
+    nextReminders,
     editPaymentLink,
     isRoleAllowedEdit,
     isAutoRemindersUpdating,
@@ -215,6 +216,7 @@ export default props => {
                     <Input.Check
                       name="auto_reminders"
                       fieldLabel="Send auto reminders"
+                      checked={!(invoice.reminder_status === 'disabled')}
                       disabled={isAutoRemindersUpdating}
                       onChange={onChangeSendAutoReminder}
                       autoRender
@@ -222,7 +224,7 @@ export default props => {
 
                     <Stepper
                       list={getRemindersStepperData(
-                        invoice.reminders,
+                        nextReminders,
                         isAutoRemindersUpdating
                       )}
                     />
@@ -387,25 +389,29 @@ const getPaymentDetail = invoice => (
 );
 
 const getRemindersStepperData = (reminders, isAutoRemindersUpdating) => {
-  return reminders.list
-    .filter(reminder => {
-      if (reminders.isEnabled) return true;
+  return reminders.map(reminder => {
+    const currDate = moment(undefined),
+      reminderDate = moment(reminder * 1000);
 
-      return reminder.status === 'completed';
-    })
-    .map(reminder => ({
-      status: reminder.status,
+    const newReminder = {
+      status: reminderDate.diff(currDate, 'days') > 0 ? 'pending' : 'completed',
+      time_to_sent: reminder,
+    };
+
+    return {
+      status: newReminder.status,
       type: (
         <i
           class={`i i-${
-            reminder.status === 'completed' ? 'check-circle' : 'bullet'
+            newReminder.status === 'completed' ? 'check-circle' : 'bullet'
           }`}
         />
       ),
       label: isAutoRemindersUpdating ? (
         <PlaceholderLoader />
       ) : (
-        moment(reminder.time_to_sent * 1000).format('DD MMM YYYY')
+        moment(newReminder.time_to_sent * 1000).format('DD MMM YYYY')
       ),
-    }));
+    };
+  });
 };

@@ -15,34 +15,6 @@ import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
 @connect(
   state => ({
     ...state.invoice,
-    invoice: {
-      ...state.invoice.invoice,
-      reminders: {
-        isEnabled: 1,
-        list: [
-          {
-            status: 'completed',
-            time_to_sent: 1562147611,
-          },
-          {
-            status: 'pending',
-            time_to_sent: 1561147111,
-          },
-          {
-            status: 'pending',
-            time_to_sent: 1561142111,
-          },
-          {
-            status: 'pending',
-            time_to_sent: 1562143111,
-          },
-          {
-            status: 'pending',
-            time_to_sent: 1561141111,
-          },
-        ],
-      },
-    },
     ...state.session,
   }),
   {
@@ -61,7 +33,8 @@ export default class InvoiceDetailContainer extends Component {
     super(...arguments);
     this.state = {
       statusMsg: {},
-      isAutoRemindersUpdating: false,
+      isAutoRemindersUpdating: true,
+      nextReminders: [],
     };
 
     // recording new payments links creation UI form in hotjar
@@ -73,9 +46,7 @@ export default class InvoiceDetailContainer extends Component {
 
   componentWillMount() {
     this.props.fetchInvoice(this.props.id);
-    this.props.fetchInvoiceRemindersList(this.props.id).then(resp => {
-      console.log(resp);
-    });
+    this.fetchInvoiceRemindersList();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -84,16 +55,27 @@ export default class InvoiceDetailContainer extends Component {
     }
   }
 
-  onChangeSendAutoReminder = () => {
+  fetchInvoiceRemindersList = () => {
+    InvoiceActions.fetchInvoiceRemindersList(this.props.id).then(resp => {
+      this.setState({
+        nextReminders: resp.data.next_run_at || [],
+        isAutoRemindersUpdating: false,
+      });
+    });
+  };
+
+  onChangeSendAutoReminder = event => {
     this.setState({
       isAutoRemindersUpdating: true,
     });
 
-    setTimeout(() => {
-      this.setState({
-        isAutoRemindersUpdating: false,
-      });
-    }, 1000);
+    this.editPaymentLink({
+      reminder_enable: event.target.value === '1',
+    }).then(resp => {
+      this.fetchInvoiceRemindersList();
+
+      return resp;
+    });
   };
 
   issueInvoice = (props, notifyProps) => {
@@ -298,6 +280,7 @@ export default class InvoiceDetailContainer extends Component {
         invoice={invoice}
         isLoading={loading}
         statusMsg={statusMsg}
+        nextReminders={this.state.nextReminders}
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}

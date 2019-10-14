@@ -20,7 +20,7 @@ export const fetchInvoiceCount = data => {
 
 export const fetchInvoiceRemindersList = id => {
   return merchantFetch({
-    url: `reminders/next_run/invoice/payment_link/${id}`,
+    url: `reminders/next_run/invoice/${id}`,
   });
 };
 
