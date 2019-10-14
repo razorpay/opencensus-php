@@ -100,6 +100,8 @@ class ConfigKey
         self::FTS_PAYOUT_VPA,
         self::FTS_PAYOUT_CARD,
         self::FTS_PAYOUT_BANK_ACCOUNT,
+        self::CITI_CHANNEL_PAYOUT_MIDS,
+        self::ICICI_CHANNEL_PAYOUT_MIDS,
     ];
 
     public static function isSensitive(string $key)
