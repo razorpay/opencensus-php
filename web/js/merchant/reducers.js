@@ -16,6 +16,7 @@ import disputeReducer from 'merchant/modules/disputes/details';
 import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
+import bMerchantReducer from 'merchant/modules/b-merchants';
 import creditsReducer from 'merchant/modules/credits';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
@@ -90,6 +91,7 @@ export default combineReducers({
   paymentBatchIds: PaymentBatchIdsReducer,
   refundbatches: refundBatchesReducer,
   batchDetails: batchDetailsReducer,
+  bMerchant: bMerchantReducer,
   subscriptions: subscriptionsReducer,
   subscription: subscriptionReducer,
   plans: plansReducer,

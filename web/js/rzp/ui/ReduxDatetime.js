@@ -2,9 +2,10 @@ import Datetime from 'react-datetime';
 
 export default props => {
   const { placeholder, meta, input, ...otherProps } = props;
+  const hasError = meta.touched && meta.error;
 
   return (
-    <div class="custom-date">
+    <div class={`custom-date ${hasError ? 'custom-date-error' : ''}`}>
       <i class="i i-date-range custom-icon" />
       <Datetime
         defaultValue={input.value}
@@ -15,6 +16,7 @@ export default props => {
         }}
         {...otherProps}
       />
+      {hasError && <span className="error">{meta.error}</span>}
     </div>
   );
 };

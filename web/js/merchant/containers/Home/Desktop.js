@@ -19,6 +19,7 @@ import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 //import EarlyScheduledAnnouncement from 'merchant/components/Announcements/ScheduledSettlements';
+import CreditPullAnnouncement from 'merchant/components/Announcements/CreditPull';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
@@ -112,6 +113,8 @@ class AnalyticsDesktop extends Component {
           )}
 
           {/*user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />*/}
+
+          {user.isCreditPullEnabled && <CreditPullAnnouncement />}
 
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && (

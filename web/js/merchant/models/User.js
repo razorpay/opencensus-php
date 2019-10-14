@@ -350,6 +350,10 @@ export default class User {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }
 
+  get isCreditPullEnabled() {
+    return this.isFeatureEnabled('ES_ON_DEMAND');
+  }
+
   get isDiwaliPromoEnabled() {
     return this.findTag('diwali_promotional_plan');
   }
