@@ -35,6 +35,7 @@ class Checker extends Base\Core
         Entity::PAYMENT_NETWORK,
         Entity::PAYMENT_METHOD_TYPE,
         Entity::EMI_DURATIONS,
+        Entity::MAX_OFFER_USAGE,
         self::CARD_USAGE,
     ];
 
@@ -366,6 +367,32 @@ class Checker extends Base\Core
 
         return true;
     }
+
+
+    //Checks the number of successfully captured payments have been made with that offer, should
+    // not exceed the max offer usage cout
+    protected function checkMaxOfferUsage(): bool
+    {
+        $maxCountForOffer = $this->repo
+                                      ->offer
+                                      ->getMaxOfferUsageCount($this->offer->getId());
+        $result = $this->checkMaxCountForOffer($maxCountForOffer);
+
+        $this->traceCheckResult(
+            TraceCode::OFFER_USAGE_CHECK,
+            [
+                'result'                   => $result,
+                'max_count_for_offer' => $maxCountForOffer,
+            ]);
+
+        return $result;
+    }
+    protected function checkMaxCountForOffer($maxCountForOffer): bool
+    {
+        return $this->offer->getCurrentOfferUsage() < $maxCountForOffer;
+
+    }
+
 
     protected function getCardVaultToken(): string
     {

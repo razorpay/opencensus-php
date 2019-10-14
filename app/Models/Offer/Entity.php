@@ -83,6 +83,10 @@ class Entity extends Base\PublicEntity
     const DEFAULT_ERROR_MESSAGE = 'Payment method used is not eligible for offer. ' .
                                     'Please try with a different payment method.';
 
+    const MAX_OFFER_USAGE = 'max_offer_usage';
+
+    const CURRENT_OFFER_USAGE = 'current_offer_usage';
+
     /**
      * Attributes on the basis of which we determine an offer satisfies the same
      * payment criteria as another offer
@@ -126,6 +130,7 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_TEXT,
         self::ERROR_MESSAGE,
         self::TERMS,
+        self::MAX_OFFER_USAGE,
     ];
 
     protected $public = [
@@ -156,6 +161,8 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_TEXT,
         self::ERROR_MESSAGE,
         self::TERMS,
+        self::MAX_OFFER_USAGE,
+        self::CURRENT_OFFER_USAGE,
     ];
 
     protected $visible = [
@@ -187,7 +194,9 @@ class Entity extends Base\PublicEntity
         self::CHECKOUT_DISPLAY,
         self::TERMS,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::MAX_OFFER_USAGE,
+        self::CURRENT_OFFER_USAGE,
     ];
 
     protected $defaults = [
@@ -383,6 +392,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CHECKOUT_DISPLAY);
     }
 
+    public function getMaxOfferUsage()
+    {
+        return $this->getAttribute(self::MAX_OFFER_USAGE);
+    }
+
+    public function getCurrentOfferUsage()
+    {
+        return $this->getAttribute(self::CURRENT_OFFER_USAGE);
+    }
+
 // --------------------- Calculator --------------------------------------------
 
     public function getDiscountedAmountForPayment(int $amount, $payment): int
@@ -432,6 +451,11 @@ class Entity extends Base\PublicEntity
     public function deactivate()
     {
         $this->setAttribute(self::ACTIVE, 0);
+    }
+
+    public function activate()
+    {
+        $this->setAttribute(self::ACTIVE, 1);
     }
 
 // ------------------------Public Setters--------------------------------------------

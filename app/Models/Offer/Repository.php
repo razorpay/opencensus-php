@@ -69,6 +69,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getMaxOfferUsageCount(string $offerId){
+        return $this->newQuery()
+            ->selectRaw(
+                Entity::MAX_OFFER_USAGE)
+            ->where(Entity::ACTIVE, '=', true)
+            ->where(Entity::ID, '=', $offerId)
+            ->get();
+    }
+
     /**
      * Build a query based upon the attribute set in the new offer entity,
      * to check whether an offer exists with the same condition.
@@ -93,4 +102,5 @@ class Repository extends Base\Repository
 
         return $query;
     }
+
 }

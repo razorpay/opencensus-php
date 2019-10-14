@@ -48,6 +48,7 @@ class Validator extends Base\Validator
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
+        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
     ];
 
     protected static $createBulkRules = [
@@ -78,7 +79,7 @@ class Validator extends Base\Validator
         Entity::IINS               => 'filled|array',
         Entity::MAX_PAYMENT_COUNT  => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS   => 'filled|array',
-        Entity::ACTIVE             => 'filled|in:0',
+        Entity::ACTIVE             => 'filled',
         Entity::ENDS_AT            => 'filled|epoch',
         Entity::DISPLAY_TEXT       => 'filled|string|max:255',
         Entity::ERROR_MESSAGE      => 'filled|string|max:255',
