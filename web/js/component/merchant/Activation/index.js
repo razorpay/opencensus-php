@@ -761,8 +761,11 @@ export default class ActivationWizard extends React.Component {
       submitted,
       international,
       poi_verification_status,
+<<<<<<< HEAD
       promoter_pan_name,
       promoter_pan,
+=======
+>>>>>>> Fix files deleted due to rebase
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -774,8 +777,11 @@ export default class ActivationWizard extends React.Component {
       activation_flow,
       international,
       poi_verification_status,
+<<<<<<< HEAD
       promoter_pan,
       promoter_pan_name,
+=======
+>>>>>>> Fix files deleted due to rebase
       submitted: +submitted,
     }));
 
