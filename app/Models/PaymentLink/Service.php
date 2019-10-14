@@ -137,6 +137,11 @@ class Service extends Base\Service
         return $this->core->migratePaymentPageItems($input);
     }
 
+    public function migratePaymentPageItemForMinPurchase($input)
+    {
+        return $this->core->migratePaymentPageItemsForMinPurchase($input);
+    }
+
     protected function fetchSettingForPPI(array & $paymentLink)
     {
         if (isset($paymentLink[Entity::PAYMENT_PAGE_ITEMS]) === false)
