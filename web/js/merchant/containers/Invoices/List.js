@@ -24,7 +24,7 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { track } from './ga';
+import { track, trackSearchFilterForInternational } from './ga';
 
 import OnboardingInvoices from './OnboardingInvoices';
 
@@ -183,6 +183,9 @@ export default class InvoicesListContainer extends ListContainer {
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
             isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
+            trackSearchFilterForInternational={
+              trackSearchFilterForInternational
+            }
           />
 
           <Alert type={status.type} message={status.message} />

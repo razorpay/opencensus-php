@@ -26,6 +26,7 @@ export default class ScheduledBanner extends Component {
         />
       ),
       size: 'small',
+      disableClose: true,
     });
   };
 

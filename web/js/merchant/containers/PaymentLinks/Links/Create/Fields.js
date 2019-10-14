@@ -10,6 +10,8 @@ import {
 } from '../../Edit/EditMinimumAmount';
 import ShowWhen from 'merchant/components/ShowWhen';
 
+import { trackSelectCurrency } from '../ga';
+
 const CustomInput = props => {
   return (
     <div class="Input--custom">
@@ -51,6 +53,10 @@ export default [
       {
         name: 'currency',
         _cmp: Input.CurrencySelect,
+        onChange: currency => {
+          currency && trackSelectCurrency(currency.name);
+          // track 'Dashboard - International - Payment links'	'select currency'
+        },
         parentQuerySelector: '.Modal-body',
       },
       {

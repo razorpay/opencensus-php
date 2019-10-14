@@ -1,4 +1,4 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import defaultTrack, { setTrackData } from 'rzp/utils/googleAnalytics';
 
 const eventCategory = 'Dashboard - Subscriptions';
 
@@ -21,5 +21,23 @@ export function trackClickDuplicateSubscription() {
 export function trackSaveDuplicateSubscription() {
   track({
     eventAction: 'Save - Duplicate Subscription',
+  });
+}
+
+const eventCategoryInternational = 'Dashboard - International - Subscription';
+
+export function trackAddAddon(currency) {
+  defaultTrack({
+    eventCategory: eventCategoryInternational,
+    eventAction: 'Select - Addon',
+    eventLabel: currency,
+  });
+}
+
+export function trackAddPlans(currency) {
+  defaultTrack({
+    eventCategory: eventCategoryInternational,
+    eventAction: 'Select - Plan',
+    eventLabel: currency,
   });
 }
