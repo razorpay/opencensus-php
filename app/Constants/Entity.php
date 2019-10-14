@@ -349,6 +349,7 @@ class Entity
         Entity::REFUND,
         Entity::FUND_ACCOUNT_VALIDATION,
         Entity::ADJUSTMENT,
+        Entity::SETTLEMENT,
     ];
 
     public static $namespace = [

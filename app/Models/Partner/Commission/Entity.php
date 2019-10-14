@@ -116,6 +116,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class, self::PARTNER_ID);
+    }
+
     public function setPublicMerchantAttribute(array &$array)
     {
         // payment, refund, etc
@@ -159,6 +164,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function isCaptured(): bool
+    {
+        return $this->getStatus() === Status::CAPTURED;
+    }
+
+    public function isRecordOnly(): bool
+    {
+        return ($this->getAttribute(self::RECORD_ONLY) === true);
+    }
+
+    public function isSubventionModel(): bool
+    {
+        return ($this->getAttribute(self::MODEL) === PartnerConfig\CommissionModel::SUBVENTION);
+    }
+
     public function getFee(): int
     {
         return $this->getAttribute(self::FEE);
@@ -169,9 +189,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TAX);
     }
 
+    public function getCredit()
+    {
+        return $this->getAttribute(self::CREDIT);
+    }
+
+    public function getDebit()
+    {
+        return $this->getAttribute(self::DEBIT);
+    }
+
     public function getType(): string
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID));
     }
 
     /**

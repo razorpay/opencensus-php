@@ -2005,6 +2005,7 @@ class AdminFetch
                         'transfer',
                         'reversal',
                         'payout',
+                        'commission',
                     ],
                 ],
             ],
@@ -2224,12 +2225,16 @@ class AdminFetch
                     Fetch::LABEL => 'Partner Config Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
+                Commission\Entity::TRANSACTION_ID => [
+                    Fetch::LABEL => 'Transaction Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
                 Commission\Entity::STATUS => [
                     Fetch::LABEL  => 'Commission Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         Commission\Status::CREATED,
-                        Commission\Status::PROCESSED,
+                        Commission\Status::CAPTURED,
                         Commission\Status::REFUNDED,
                     ],
                 ],

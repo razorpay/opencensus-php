@@ -1093,6 +1093,10 @@ final class Route
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
         'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                          ],
+        'commissions_capture'                      => ['post',     'commissions/{id}/capture',                       'CommissionController@capture'                                      ],
+        'commissions_get_aggregates'               => ['get',      'commissions/partner/{id}/aggregate',             'CommissionController@fetchAggregateCommissionDetails'              ],
+        'commissions_capture_by_partner'           => ['post',     'commissions/partner/{id}/capture',               'CommissionController@captureByPartner'                             ],
+        'commissions_mark_for_settlement'          => ['post',     'commissions/partner/{id}/on_hold/clear',         'CommissionController@clearOnHoldForPartner'                        ],
         'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
@@ -2408,6 +2412,12 @@ final class Route
         'setl_process_data',
         'setl_process_data_reset',
         'fund_transfer_attempt_initiate_action',
+
+        'commissions_capture',
+        'commissions_capture_by_partner',
+        'commissions_get_aggregates',
+        'commissions_mark_for_settlement',
+
         'merchant_restrict',
         'user_update_contact_admin',
         'user_account_lock_unlock_admin',
@@ -2909,6 +2919,11 @@ final class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
+
+        'commissions_capture'                      => Permission::COMMISSION_CAPTURE,
+        'commissions_capture_by_partner'           => Permission::COMMISSION_CAPTURE,
+        'commissions_get_aggregates'               => '*',
+        'commissions_mark_for_settlement'          => Permission::COMMISSION_PAYOUT,
 
         'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
         'user_account_lock_unlock_admin'           => Permission::USER_ACCOUNT_LOCK_UNLOCK,
