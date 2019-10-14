@@ -40,6 +40,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
+use RZP\Constants\Environment;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
@@ -530,6 +531,7 @@ trait Authorize
             'formatted_amount'      => $payment->getFormattedAmount(),
             'wallet'                => $payment->getWallet(),
             'merchant'              => $payment->merchant->getBillingLabel(),
+            'merchant_id'           => $payment->merchant->getId(),
         ];
 
         // This is a hack to return direct method for IVR payments
@@ -555,8 +557,9 @@ trait Authorize
             $response['metadata'] = $metaData;
 
             $templateData = [
-               'data' => $response,
-               'cdn'  => $this->app['config']->get('url.cdn.production')
+               'data'       => $response,
+               'cdn'        => $this->app['config']->get('url.cdn.production'),
+               'production' => $this->app->environment() === Environment::PRODUCTION,
             ];
 
             $content = $this->app['view']
@@ -4463,7 +4466,7 @@ trait Authorize
         {
             $data['razorpay_invoice_id']      = $invoice->getPublicId();
             $data['razorpay_invoice_status']  = $invoice->getStatus();
-            $data['razorpay_invoice_receipt'] = $invoice->getReceipt();    
+            $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
         }
 
         $this->fillReturnDataWithSignatureIfApplicable($data);

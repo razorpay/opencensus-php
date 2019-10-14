@@ -159,6 +159,7 @@ class Event
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
         self::TERMINAL_ACTIVATED,
+        self::TERMINAL_FAILED,
     ];
 
     protected static $bitPosition = [
