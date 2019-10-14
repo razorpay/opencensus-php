@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE                       = 'entity_type';
     const FILE                              = 'file';
     const SIGNED_URL                        = 'signed_url';
+    const OCR_VERIFY                        = 'ocr_verify';
 
     protected static $sign = 'doc';
 
@@ -32,6 +33,7 @@ class Entity extends Base\PublicEntity
         self::FILE_STORE_ID,
         self::MERCHANT_ID,
         self::DOCUMENT_TYPE,
+        self::OCR_VERIFY,
     ];
 
     protected $dates = [

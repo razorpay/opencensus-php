@@ -16,4 +16,17 @@ class GovernorService extends BaseGovernorService
             'response_code' => 400,
         ];
     }
+    public function sendRequestV1(string $method, string $path, string $content)
+    {
+        return [
+            [
+                "id" => "cps",
+                "name" => "cps",
+            ],
+            [
+                "id" => "routingengine",
+                "name" => "routingengine"
+            ],
+        ];
+    }
 }
