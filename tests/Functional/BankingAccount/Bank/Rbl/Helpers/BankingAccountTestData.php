@@ -646,7 +646,7 @@ return [
                     [
                         'merchant'      => [
                             'merchant_detail' => [
-                                'contact_email' => 'test@rzp.com'
+                                'contact_email' => 'test@razorpay.com'
                             ]
                         ]
                     ],
@@ -672,7 +672,7 @@ return [
                         'status'        => 'created',
                         'merchant'      => [
                             'merchant_detail' => [
-                                'contact_email' => 'test@rzp.com'
+                                'contact_email' => 'test@razorpay.com'
                             ]
                         ]
                     ],
@@ -700,7 +700,7 @@ return [
                         'status'        => 'created',
                         'merchant'      => [
                             'merchant_detail' => [
-                                'contact_email' => 'test@rzp.com'
+                                'contact_email' => 'test@razorpay.com'
                             ]
                         ]
                     ],
