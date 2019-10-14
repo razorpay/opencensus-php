@@ -596,6 +596,16 @@ class Merchant extends Base
         return $this->edit($id, ['fee_bearer' => 'platform']);
     }
 
+    public function enableDynamicFeeModel($id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_bearer' => 'dynamic']);
+    }
+
+    public function disableDynamicFeeModel($id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_bearer' => 'platform']);
+    }
+
     public function editWhitelistedIpsLive($id = '10000000000000', $ips = [])
     {
         return $this->edit($id, ['whitelisted_ips_live' => $ips]);

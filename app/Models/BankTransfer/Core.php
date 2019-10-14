@@ -446,10 +446,10 @@ class Core extends Base\Core
         return $this->getFees($order->getAmountDue(), $order->merchant, $order->getCurrency());
     }
 
-    public function getFeesForBankTransfer(Entity $bankTransfer, Merchant\Entity $merchant)
+    public function getFeesForBankTransfer(int $amount, Merchant\Entity $merchant)
     {
         // TODO: Change the third parameter below once we add currency support in Bank Transfer
-        return $this->getFees($bankTransfer->getAmount(), $merchant, Currency::INR);
+        return $this->getFees($amount, $merchant, Currency::INR);
     }
 
     /**

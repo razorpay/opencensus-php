@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -152,6 +153,8 @@ class PaymentLinkTest extends TestCase
         ];
 
         $paymentLink = $this->fixtures->create('payment_link', $attributes);
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         // Enable customer fee_bearer model
         $this->fixtures->merchant->enableConvenienceFeeModel();

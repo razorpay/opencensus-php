@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Transaction\Type as TransactionType;
 
@@ -131,6 +132,11 @@ class Processor extends Base\Core
                             'gstin_no'     => $this->gstin,
                             'Merchant_id'  => $this->merchantId,
                         ]);
+                }
+
+                if($feeBearer === Merchant\FeeBearer::DYNAMIC)
+                {
+                    throw new LogicException('Invoice processing currently unsupported for dynamic fee bearer');
                 }
 
                 (new Core)->create($params, $this->merchant);
