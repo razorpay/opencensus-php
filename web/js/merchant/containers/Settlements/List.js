@@ -48,7 +48,6 @@ import { trackInstantSettlementsBanner } from '../../components/Announcements/ga
 )
 export default class SettlementsListContainer extends ListContainer {
   state = {
-    showRequestESButton: this.props.user.showEarlySettlementAnnouncement,
     openAutoModal: false,
   };
 
@@ -77,7 +76,7 @@ export default class SettlementsListContainer extends ListContainer {
         });
         return;
       }
-      this.showOndemandSettlementForm();
+      this.showOndemandSettlementForm({ clickOrigin: 'Announcement' });
     } else if (this.props.location.hash === '#automaticsettle') {
       this.resetHash();
       this.setState({ openAutoModal: true });
@@ -159,10 +158,6 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   removeRequestESButton = e => {
-    this.setState({
-      showRequestESButton: false,
-    });
-
     window.removeEventListener(
       'remove-req-es-button',
       this.removeRequestESButton,
@@ -185,9 +180,13 @@ export default class SettlementsListContainer extends ListContainer {
 
     this.props.openModal({
       component: (
-        <OndemandModal currentBalance={balance} fromWhere="Settlements" />
+        <OndemandModal
+          currentBalance={balance}
+          fromWhere={e.clickOrigin ? 'Announcement' : 'Settlements'}
+        />
       ),
       size: 'small',
+      disableClose: true,
     });
   };
 
@@ -220,18 +219,6 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  {this.state.showRequestESButton ? (
-                    <Link
-                      class="btn btn-link req-es-btn"
-                      to="/settlements#requestearlyaccess"
-                    >
-                      Request Early Settlements{' '}
-                      <i class="fa fa-circle interpunct" />
-                    </Link>
-                  ) : (
-                    ''
-                  )}
-
                   <ShowWhen
                     additionalCondition={user =>
                       user.isOrgAllowedFunctionality('external_links')
@@ -247,7 +234,7 @@ export default class SettlementsListContainer extends ListContainer {
                       <span class="icon i-external-link" />
                     </a>
                   </ShowWhen>
-                  {this.props.user.isOndemandSettlementEnabled && (
+                  {/*this.props.user.isOndemandSettlementEnabled && (
                     <div className="box-left-pad10-inline">
                       <ScheduledBanner
                         onExit={() => {
@@ -261,7 +248,7 @@ export default class SettlementsListContainer extends ListContainer {
                         }
                       />
                     </div>
-                  )}
+                  )*/}
                 </React.Fragment>
               </HeaderAction>
               <SettlementsListFilter

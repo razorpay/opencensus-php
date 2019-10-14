@@ -57,6 +57,9 @@ import {
   trackLinkClick,
   trackClickDuplicateInvoice,
   trackSaveDuplicateInvoice,
+  trackChangeCurrencySettings,
+  trackSelectBillingAddress,
+  trackSelectShippingAddress,
 } from './ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import PickCurrency from 'merchant/components/Invoices/PickCurrency';
@@ -670,6 +673,8 @@ export default class InvoicesNewContainer extends Component {
   openInvoiceCurrencyChangeModal = ({ showCross = true, currency }) => {
     const invoiceCurrency = currency || this.state.invoiceCurrency;
 
+    trackChangeCurrencySettings();
+
     this.props.openModal({
       size: 'small',
       component: (
@@ -903,6 +908,11 @@ export default class InvoicesNewContainer extends Component {
           }
           onSave={onSave}
           addressType={type}
+          trackSelectCountry={
+            type === 'billing'
+              ? trackSelectBillingAddress
+              : trackSelectShippingAddress
+          }
         />
       ),
     });

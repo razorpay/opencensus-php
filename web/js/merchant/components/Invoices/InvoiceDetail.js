@@ -353,9 +353,9 @@ export default props => {
                     />
                   )}
                 />
-                {user.isOndemandSettlementEnabled && (
+                {/*user.isOndemandSettlementEnabled && (
                   <ScheduledBanner fromWhere="Payment Pages" />
-                )}
+                )*/}
               </div>
             </div>
           </div>
