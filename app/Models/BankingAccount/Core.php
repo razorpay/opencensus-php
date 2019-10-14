@@ -34,7 +34,7 @@ class Core extends Base\Core
         $this->config = $this->app['config']->get('banking_account');
     }
 
-    public function createOrFetchSharedBankingAccountFromVa(VirtualAccount\Entity $virtualAccount): Entity
+    public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
     {
         // Virtual account has to be with receiver_type bank account
         if ($virtualAccount->hasBankAccount() === false)
@@ -112,16 +112,20 @@ class Core extends Base\Core
                 TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
                 [
                     'Banking Account ID' => $bankingAccount->getId(),
+                    'Merchant ID'        => $this->merchant->getId(),
                     'Status'             => $bankingAccount->getStatus(),
                     'message'            => 'Mail Sent'
                 ]);
         }
         catch(\Exception $e)
         {
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED,
                 [
                     'Banking Account ID' => $bankingAccount->getId(),
+                    'Merchant ID'        => $this->merchant->getId(),
                     'Status'             => $bankingAccount->getStatus(),
                     'Error'              => $e->getMessage(),
                 ]);
