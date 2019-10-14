@@ -82,10 +82,9 @@ class Core extends Base\Core
             case Attempt\Status::FAILED:
                 if ($refund->isScrooge() === true)
                 {
+                    // Not sending reference1 in cases of failure
                     $data = [
                         Entity::STATUS      => Status::FAILED,
-                        // Reference1 is set as part of FTA row processor (status cron)
-                        Entity::REFERENCE1  => $refund->getReference1(),
                         Entity::REFERENCE2  => $refund->getReference2(),
                     ];
 
