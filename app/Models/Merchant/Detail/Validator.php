@@ -252,15 +252,63 @@ class Validator extends Base\Validator
     ];
 
     protected static $patchMerchantDetailsRules = [
-        Entity::BUSINESS_OPERATION_ADDRESS    => 'filled|max:255',
-        Entity::BUSINESS_OPERATION_STATE      => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_CITY       => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN        => 'filled|max:15',
-        Entity::BUSINESS_CATEGORY             => 'sometimes|max:255|custom',
-        Entity::BUSINESS_SUBCATEGORY          => 'sometimes|max:255|custom',
-        Entity::BUSINESS_MODEL                => 'sometimes|max:255',
-        Entity::INTERNATIONAL_ACTIVATION_FLOW => 'filled|custom',
+        Entity::BUSINESS_OPERATION_ADDRESS       => 'filled|max:255',
+        Entity::BUSINESS_OPERATION_STATE         => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY          => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN           => 'filled|max:15',
+        Entity::BUSINESS_CATEGORY                => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY             => 'sometimes|max:255|custom',
+        Entity::BUSINESS_MODEL                   => 'sometimes|max:255',
+        Entity::INTERNATIONAL_ACTIVATION_FLOW    => 'filled|custom',
+        Entity::BANK_DETAILS_VERIFICATION_STATUS => 'filled|custom',
+        Entity::POA_VERIFICATION_STATUS          => 'filled|custom'
     ];
+
+    public function validateBankDetailsVerificationStatus($attribute, $value)
+    {
+        $validBankDetailValidationStatuses = BankDetailsVerificationStatus::ALLOWED_NEXT_BANK_DETAIL_VERIFICATION_STATUSES_MAPPING;
+
+        $this->isAllowedStatusChange(
+            $this->entity->getBankDetailsVerificationStatus(),
+            $value,
+            $validBankDetailValidationStatuses,
+            ErrorCode::BAD_REQUEST_INVALID_BANK_DETAIL_VERIFICATION_STATUS_CHANGE);
+
+    }
+
+    public function validatePOAVerificationStatus($attribute, $value)
+    {
+        $validPoaValidationStatuses = PoaVerificationStatus::ALLOWED_NEXT_POA_VERIFICATION_STATUSES_MAPPING;
+
+        $this->isAllowedStatusChange(
+            $this->entity->getPoaVerificationStatus(),
+            $value,
+            $validPoaValidationStatuses,
+            ErrorCode::BAD_REQUEST_INVALID_POA_VERIFICATION_STATUS_CHANGE);
+    }
+
+    private function isAllowedStatusChange($currentStatus,
+                                           string $newStatus,
+                                           array $allowedStatus,
+                                           string $errorMessage)
+    {
+
+        if (empty($currentStatus) === true)
+        {
+            return;
+        }
+
+        if ((isset($allowedStatus[$currentStatus]) === false) or
+            (in_array($newStatus, $allowedStatus[$currentStatus], true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException($errorMessage, null,
+                                                                     [
+                                                                         "current_status" => $currentStatus,
+                                                                         "new_status"     => $newStatus
+                                                                     ]);
+        }
+
+    }
 
     protected static $bulkAssignReviewerRules = [
         Entity::REVIEWER_ID     => 'required|public_id|size:20',

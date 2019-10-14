@@ -432,6 +432,47 @@ return [
         ],
     ],
 
+    'testMerchantDetailsPatchValidStatusChange' => [
+        'request'  => [
+            'content' => [
+                'bank_details_verification_status' => 'verified',
+                'poa_verification_status'          => 'verified'
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content'     => [
+                'bank_details_verification_status' => 'verified',
+                'poa_verification_status'          => 'verified'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMerchantDetailsPatchInvalidStatusChange' => [
+        'request'   => [
+            'content' => [
+                'bank_details_verification_status' => 'failed',
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_INVALID_BANK_DETAIL_VERIFICATION_STATUS_CHANGE',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testMerchantDetailsPatchNoBusinessCategorySubcategory' => [
         'request'  => [
             'content' => [

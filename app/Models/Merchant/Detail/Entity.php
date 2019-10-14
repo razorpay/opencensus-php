@@ -231,6 +231,8 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT,
         self::INTERNATIONAL_ACTIVATION_FLOW,
         self::CUSTOM_FIELDS,
+        self::BANK_DETAILS_VERIFICATION_STATUS,
+        self::POA_VERIFICATION_STATUS,
     ];
 
     protected $public = [
@@ -647,6 +649,11 @@ class Entity extends Base\PublicEntity
         return substr($gstin, 0, 2);
     }
 
+    public function getBankDetailsVerificationStatus()
+    {
+        return $this->getAttribute(self::BANK_DETAILS_VERIFICATION_STATUS);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
@@ -655,6 +662,11 @@ class Entity extends Base\PublicEntity
     public function setActivationFlow(string $activationFlow = null)
     {
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
+    }
+
+    public function getPoaVerificationStatus()
+    {
+        return $this->getAttribute(self::POA_VERIFICATION_STATUS);
     }
 
     public function getActivationFlow()

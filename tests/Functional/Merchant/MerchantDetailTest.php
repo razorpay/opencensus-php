@@ -370,6 +370,37 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantDetailsPatchValidStatusChange()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    public function testMerchantDetailsPatchInvalidStatusChange()
+    {
+        $attributes     = [
+            'bank_details_verification_status' => 'verified',
+        ];
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
+        $merchant       = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
     /**
      * Asserts the API response when qthe business category and the subcategory are not updated.
      */
