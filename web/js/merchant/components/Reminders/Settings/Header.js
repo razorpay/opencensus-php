@@ -1,6 +1,6 @@
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 
-export default ({ type, checked, onToggle }) => (
+export default ({ disabled, type, checked, onToggle }) => (
   <React.Fragment>
     <span className="title">Reminders for {type}</span>
 
@@ -8,6 +8,7 @@ export default ({ type, checked, onToggle }) => (
       class="m-l"
       type="prime"
       checked={checked}
+      disabled={disabled}
       onChange={onToggle}
     />
     <span class="status-text">{checked ? 'Enabled' : 'Disabled'}</span>

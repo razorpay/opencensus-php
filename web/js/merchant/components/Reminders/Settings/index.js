@@ -19,7 +19,7 @@ const initState = {
     scheduledTime: '10AM - 12PM',
     channels: {
       sms: false,
-      email: true,
+      email: false,
     },
   },
 };
@@ -209,7 +209,7 @@ export default class ReminderSetting extends React.Component {
         withExpireByConfigs,
         withOutExpireByConfigs,
       } = this.state,
-      { type } = this.props;
+      { type, totalUnpaidLinks } = this.props;
 
     return (
       <div class={`setting-item ${checked ? 'enabled' : 'disabled'}`}>
@@ -219,6 +219,7 @@ export default class ReminderSetting extends React.Component {
               <Header
                 type={type}
                 checked={checked}
+                disabled={totalUnpaidLinks.loading}
                 onToggle={this.handleToggle}
               />
             </div>

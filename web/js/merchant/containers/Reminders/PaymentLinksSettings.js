@@ -145,17 +145,6 @@ export default class PaymentLinksSettings extends React.Component {
   };
 
   render() {
-    if (this.state.totalUnpaidLinks.loading) {
-      return (
-        <div
-          class="page-spinner-container"
-          key="RemindersSettings--PaymentLinks"
-        >
-          <Spinner />
-        </div>
-      );
-    }
-
     return (
       <div
         class="Reminders-settings--payment_links"
