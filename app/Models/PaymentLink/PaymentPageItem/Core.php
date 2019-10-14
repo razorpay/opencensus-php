@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink;
+use RZP\Models\Currency\Currency;
 
 class Core extends Base\Core
 {
@@ -145,16 +146,23 @@ class Core extends Base\Core
         {
             $allowMultipleUnits = $paymentPage->getSettings()->toArray()[PaymentLink\Entity::ALLOW_MULTIPLE_UNITS] ?? null;
 
+            $paymentPageItems = $paymentPage->paymentPageItems()->get();
+
+            $paymentPageItem = $paymentPageItems->get(0);
+
             if ($allowMultipleUnits === '1')
             {
-                $paymentPageItems = $paymentPage->paymentPageItems()->get();
-
-                $paymentPageItem = $paymentPageItems->get(0);
-
                 $paymentPageItem->setMinPurchase(1);
-
-                $this->repo->payment_page_item->saveOrFail($paymentPageItem);
             }
+
+            if ($paymentPage->getAmount() === null)
+            {
+                $minAmount = Currency::getMinAmount($paymentPage->getCurrency());
+
+                $paymentPageItem->setMinAmount($minAmount);
+            }
+
+            $this->repo->payment_page_item->saveOrFail($paymentPageItem);
         }
     }
 
