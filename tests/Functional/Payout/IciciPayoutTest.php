@@ -4,7 +4,9 @@ namespace RZP\Tests\Functional\Payout;
 
 
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -70,6 +72,8 @@ class IciciPayoutTest extends TestCase
         $this->assertEquals('Batman', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals(Channel::ICICI, $payoutAttempt['channel']);
+        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -118,6 +122,8 @@ class IciciPayoutTest extends TestCase
         $this->assertEquals('Batman', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('fa_' . $vpaId, 'fa_' . $payoutAttempt['vpa_id']);
+        $this->assertEquals(Channel::ICICI, $payoutAttempt['channel']);
+        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -184,6 +190,10 @@ class IciciPayoutTest extends TestCase
         $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
 
         $this->assertNotNull($fta);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Channel::ICICI, $payoutAttempt['channel']);
+        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
 
         $this->app['cache']->flush();
     }
