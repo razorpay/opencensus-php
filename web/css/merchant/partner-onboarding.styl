@@ -46,12 +46,19 @@
       color:#518FF0;
      .options-group
        margin-top:21px;
-       div
+       div.value
          height: 102px;
          background: #FFFFFF;
          border: 1px solid #D6D6D6;
          box-sizing: border-box;  
          padding:20px;
+         display:flex;
+         align-content:center;
+      div.value.active
+        background: rgba(81, 143, 240, 0.05);
+      div.check
+        flex:1;
+        align-self:'center';
       .no-bottom-border
         border-bottom-width:0px !important;
       .no-top-border
@@ -68,6 +75,24 @@
     .slide-controller
       display:flex;
       align-items:center;
+      div
+        flex:1;
+        justify-content: space-between;
       .SliderDots
           text-align: left;
-          margin-left:50px;  
+          margin-left:50px;
+      .slider-btn
+        background: #518FF0;
+        border: 1px solid #3B80EE;
+        box-sizing: border-box;
+        border-radius: 2px;
+        font-family: Lato;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 17px;
+        width: 100px;
+        color: #FFFFFF;
+        i
+          padding:2px;
+          line-height: 8px;

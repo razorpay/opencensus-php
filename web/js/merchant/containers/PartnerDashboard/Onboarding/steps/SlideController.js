@@ -1,16 +1,22 @@
 import React from 'react';
 import { SliderDots } from 'component/Slider';
-import Button from 'component/Button';
-
 const SlideController = ({ sliderProps }) => {
-  const { next } = sliderProps;
+  const { next, prev } = sliderProps;
   return (
-    <div className="slide-controller">
-      <div>
-        <SliderDots {...sliderProps} />
-      </div>
-      <div>
-        <Button onClick={next}> Next</Button>
+    <div style={{ width: '50%' }}>
+      <div className="slide-controller">
+        <div>
+          <SliderDots {...sliderProps} />
+        </div>
+        <div style={{ textAlign: 'end' }}>
+          <a onClick={prev} className="btn btn-link">
+            Back
+          </a>
+          <a onClick={next} className="btn btn-primary slider-btn">
+            Next
+            <i class="i i-arrow-forward" />
+          </a>
+        </div>
       </div>
     </div>
   );

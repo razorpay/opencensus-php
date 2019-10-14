@@ -10,9 +10,9 @@ function BaseScreen(props) {
     <div className="partner-onboarding-base-screen">
       <Slider>
         {sliderProps => <S1 key={1} />}
-        {sliderProps => <S2 key={1} />}
-        {sliderProps => <S3 key={1} />}
-        {sliderProps => <SlideContoller sliderProps={sliderProps} />}
+        {sliderProps => <S2 key={2} />}
+        {sliderProps => <S3 key={3} />}
+        {sliderProps => <SlideContoller key={4} sliderProps={sliderProps} />}
       </Slider>
     </div>
   );
