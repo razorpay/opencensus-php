@@ -48,8 +48,8 @@ class Validator extends Base\Validator
 
         $format = array_pull($input, Entity::FORMAT);
 
-        if ((is_null($channel) === false) and
-            (is_null($format) === false))
+        if ((empty($channel) === false) and
+            (empty($format) === false))
         {
             SupportedFormats::validateChannelFormat($channel, $format);
         }

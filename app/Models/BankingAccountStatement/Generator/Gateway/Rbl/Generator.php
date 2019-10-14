@@ -10,8 +10,11 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
-use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\
-{Statement, AccountOwnerInfo, StatementSummary, TransactionLineItem, AccountStatementData};
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\{Statement,
+                                                                        AccountOwnerInfo,
+                                                                        StatementSummary,
+                                                                        TransactionLineItem,
+                                                                        AccountStatementData};
 
 abstract class Generator extends Base
 {
@@ -175,11 +178,13 @@ abstract class Generator extends Base
     {
         $source = $transaction->source;
 
-        if((empty($source) === false) and
-           (method_exists($source, 'getDescription') === true))
+        if ((empty($source) === false) and
+            (method_exists($source, 'getDescription') === true))
         {
             return $source->getDescription();
         }
+
+        return null;
     }
 
     /**

@@ -18,19 +18,12 @@ class Service extends Base\Service
 
     public function requestAccountStatement(array $input)
     {
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_REQUEST,
-                           ['input' => $input]);
-        try
-        {
-            return $this->core()->requestAccountStatement($input);
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->traceException($e,
-                                         Trace::ERROR,
-                                         TraceCode::BANKING_ACCOUNT_STATEMENT_REQUEST,
-                                         $input);
-            throw $e;
-        }
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        return $this->core()->requestAccountStatement($input);
     }
 }

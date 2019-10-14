@@ -1386,7 +1386,6 @@ final class Route
     ];
 
     public static $private = [
-        'banking_account_statement_generate',
         'payment_create_private',
         'payment_create_private_old',
         'payment_create_private_json',
@@ -1967,6 +1966,7 @@ final class Route
         'user_update_contact',
         'user_update_contact_merchant',
         'user_account_unlock',
+        'banking_account_statement_generate',
     ];
 
     //
