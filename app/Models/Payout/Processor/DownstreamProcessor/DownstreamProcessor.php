@@ -91,7 +91,7 @@ class DownstreamProcessor
 
         $citiMids = (new AdminService())->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
 
-        return (in_array($mid,$citiMids) === true);
+        return (in_array($mid, $citiMids,true));
     }
 
     protected function checkIfChannelShouldBeIcici(Merchant $merchant): bool
@@ -100,6 +100,6 @@ class DownstreamProcessor
 
         $iciciMids = (new AdminService())->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
 
-        return (in_array($mid,$iciciMids) === true);
+        return (in_array($mid, $iciciMids, true));
     }
 }
