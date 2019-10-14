@@ -949,6 +949,7 @@ final class Route
         'dispute_fetch'                            => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
         'dispute_file_delete'                      => ['delete',   'disputes/{id}/files/{fileId}',                   'DisputeController@deleteFile'                                      ],
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
+        'dispute_poc_mails'                        => ['get',      'disputes/poc-emails',                            'DisputeController@getDefaultCreationEmails'                        ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -2213,6 +2214,7 @@ final class Route
         'payment_dispute_create',
         'dispute_bulk_create',
         'dispute_bulk_edit',
+        'dispute_poc_mails',
         'payment_fix_authorize_at',
         'payment_force_authorize',
         'payments_multiple_authorize_refund',
@@ -2579,6 +2581,7 @@ final class Route
         'dispute_bulk_create'                      => Permission::CREATE_DISPUTE,
         'dispute_edit'                             => Permission::EDIT_DISPUTE,
         'dispute_bulk_edit'                        => Permission::EDIT_DISPUTE,
+        'dispute_poc_mails'                        => Permission::CREATE_DISPUTE,
         'dispute_files_fetch'                      => Permission::FETCH_DISPUTE_FILES,
         'settings_fetch'                           => Permission::VIEW_WALLET_CONFIG,
         'settings_fetch_defined'                   => Permission::VIEW_WALLET_CONFIG,
