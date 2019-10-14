@@ -233,6 +233,7 @@ class Channel
         return [
             self::RBL,
             self::CITI,
+            self::ICICI,
         ];
     }
 
@@ -259,14 +260,21 @@ class Channel
         return [
             self::RBL,
             self::YESBANK,
+            self::ICICI,
+            self::CITI,
         ];
     }
 
+    /**
+     * Used for retrying the stuck transfers on FTS supported channels
+     * @return array
+     */
     public static function getFtsSupportedChannels()
     {
         return [
             self::RBL,
             self::ICICI,
+            self::CITI,
         ];
     }
 }
