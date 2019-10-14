@@ -166,6 +166,8 @@ export default class Sidebar extends Component {
       routes,
       isReportsPending,
       isChargeAtWillEnabled: user.isChargeAtWillEnabled,
+      isSettlementEnabled:
+        user.isOndemandSettlementEnabled || user.isAutomaticSettlementEnabled,
     };
     return (
       <>
@@ -184,7 +186,7 @@ export default class Sidebar extends Component {
                   config={config}
                 />
 
-                {user.isPartner() ? (
+                {user.isPartner() || user.isPartnerIntent() ? (
                   <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} />
                 ) : (
                   <MerchantNavLinks {...merchantNavLinkProps} />

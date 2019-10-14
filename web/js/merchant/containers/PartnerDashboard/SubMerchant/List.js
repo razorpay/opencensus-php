@@ -196,7 +196,9 @@ export default class SubMerchantsList extends ListContainer {
       ];
     }
 
-    return <Onboarding />;
+    if (user.isPartnerIntent()) {
+      return <Onboarding />;
+    }
     return (
       <tabbed-container>
         <header>

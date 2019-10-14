@@ -218,6 +218,7 @@ export default class New extends Component {
       onBackClick,
       hideBack,
       isInttCurrenciesEnabled,
+      trackSelectCountry,
     } = this.props;
 
     const { states, editedAddress } = this.state;
@@ -269,6 +270,7 @@ export default class New extends Component {
               address={editedAddress}
               showDisabledCountry={true}
               hideCountry={!isInttCurrenciesEnabled}
+              trackSelectCountry={trackSelectCountry}
               {...extraProps}
             />
 
