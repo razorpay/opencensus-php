@@ -49,6 +49,7 @@ class Gateway
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
+    const NETBANKING_UBI         = 'netbanking_ubi';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
@@ -721,6 +722,7 @@ class Gateway
             self::NETBANKING_CORPORATION,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
+            self::NETBANKING_UBI,
             self::NETBANKING_AXIS,
             self::NETBANKING_FEDERAL,
             self::NETBANKING_RBL,
@@ -1419,6 +1421,7 @@ class Gateway
         IFSC::HDFC         => Gateway::NETBANKING_HDFC,
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
+        IFSC::UBIN         => Gateway::NETBANKING_UBI,
         IFSC::SIBL         => Gateway::NETBANKING_SIB,
         IFSC::CBIN         => Gateway::NETBANKING_CBI,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
