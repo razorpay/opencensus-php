@@ -117,6 +117,10 @@ class CreateOffers extends Migration
 
             $table->index(Offer::CHECKOUT_DISPLAY);
 
+            $table->index(offer::MAX_OFFER_USAGE);
+
+            $table->index(offer::CURRENT_OFFER_USAGE);
+
             $table->foreign(Offer::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
