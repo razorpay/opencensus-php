@@ -41,7 +41,7 @@ const phone = {
   schema: {
     type: 'number',
     pattern: 'phone',
-    minLength: '8',
+    minLength: 8,
     options: {
       keydown_restrictive: false,
     },
