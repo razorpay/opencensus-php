@@ -68,8 +68,7 @@
   "scripts": {
     "start": "externals=`./scripts/vendor.sh` webpack -w & gulp watch; kill -9 $!",
     "build": "gulp && externals=`./scripts/vendor.sh` webpack && ./scripts/build.sh",
-    "unit-tests": "NODE_PATH=./js mocha 'test/**/*.js' --full-trace --require babel-core/register",
-    "test": "nyc --reporter=text npm run unit-tests"
+    "test": "NODE_PATH=./js mocha 'test/**/*.js' --full-trace --require babel-core/register"
   },
   "devDependencies": {
     "chai": "^4.2.0",
