@@ -18,10 +18,10 @@ import { connect } from 'react-redux';
   }
 )
 export default class BaseScreen extends React.Component {
-  state = { value: null };
+  state = { type: null };
 
   onRoleSelect = role => {
-    this.setState({ value: role });
+    this.setState({ type: role });
   };
 
   onCompleteClick = () => {
@@ -31,10 +31,12 @@ export default class BaseScreen extends React.Component {
     });
     this.props.updateSession({ user: userval });
     merchantFetch({
-      url: 'merchant/instant_activation',
+      url: 'merchant/partner_type',
       method: 'POST',
       mode: 'live',
-      data: {},
+      data: {
+        partner_type: this.state.type,
+      },
       accountId: this.props.accountId,
     })
       .then(response => {})
