@@ -79,6 +79,12 @@ class CreateOffers extends Migration
             $table->integer(Offer::MAX_PAYMENT_COUNT)
                   ->nullable();
 
+            $table->integer(Offer::MAX_OFFER_USAGE)
+                  ->nullable();
+
+            $table->integer(Offer::CURRENT_OFFER_USAGE)
+                  ->nullable();
+            
             $table->text(Offer::LINKED_OFFER_IDS)
                   ->nullable();
 
@@ -116,10 +122,6 @@ class CreateOffers extends Migration
             $table->index(Offer::ACTIVE);
 
             $table->index(Offer::CHECKOUT_DISPLAY);
-
-            $table->index(offer::MAX_OFFER_USAGE);
-
-            $table->index(offer::CURRENT_OFFER_USAGE);
 
             $table->foreign(Offer::MERCHANT_ID)
                   ->references(Merchant::ID)
