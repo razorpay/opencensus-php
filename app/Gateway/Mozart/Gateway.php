@@ -95,6 +95,8 @@ class Gateway extends Base\Gateway
                 'gateway'    => $this->gateway,
             ]);
 
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
         return $response;
     }
 

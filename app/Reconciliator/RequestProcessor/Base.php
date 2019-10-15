@@ -102,6 +102,7 @@ class Base extends Core
     const AMEX                   = 'Amex';
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
     const PHONEPE                = 'Phonepe';
+    const PAYPAL                 = 'paypal';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -172,6 +173,7 @@ class Base extends Core
     const GATEWAY_CRAWLERS = [
         self::NETBANKING_BOB        => Gateway::NETBANKING_BOB,
         self::NETBANKING_CUB        => Gateway::NETBANKING_CUB,
+        self::PAYPAL                => Gateway::WALLET_PAYPAL
     ];
 
     /**

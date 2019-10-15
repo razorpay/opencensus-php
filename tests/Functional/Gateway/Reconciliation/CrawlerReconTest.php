@@ -23,6 +23,29 @@ class CrawlerReconTest extends TestCase
         $this->gateway = '';
     }
 
+    public function testPaypalCrawlerReconciliation()
+    {
+        $this->gateway = 'wallet_paypal';
+
+        $payment = $this->createPayment('wallet_paypal', ['id'=>'DJEN97tL54dTIN', 'amount'=>1, 'currency'=>'USD','method'=>'wallet']);
+
+        $this->createWallet($payment['id'], 1,'wallet_paypal','USD');
+
+        $response = $this->reconcile('paypal');
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertEquals($data['Gateway_Transaction_ID'], '0UL4129173139950S');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+        
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testCubCrawlerReconciliation()
     {
         $this->gateway = 'netbanking_cub';
@@ -53,6 +76,24 @@ class CrawlerReconTest extends TestCase
         try
         {
             $this->reconcile('NetbankingCub', ['return_no_records' => true]);
+        }
+        catch (ReconciliationException $e)
+        {
+            $reconException = true;
+        }
+
+        $this->assertTrue($reconException);
+    }
+
+    public function testPaypalCrawlerReconciliationGatewayFailure()
+    {
+        $this->gateway = 'wallet_paypal';
+
+        $reconException  = false;
+
+        try
+        {
+            $this->reconcile('paypal', ['gateway_failure' => true]);
         }
         catch (ReconciliationException $e)
         {
@@ -108,7 +149,20 @@ class CrawlerReconTest extends TestCase
         return $netbanking;
     }
 
+    protected function createWallet($paymentId, $amount, $gateway, $currency)
+    {
+        $mozartAttributes = [
+            'payment_id' => $paymentId,
+            'gateway'    => $gateway,
+            'amount'     => $amount,
+            'raw'        => json_encode(['payment_id' => $paymentId,'Gateway_Transaction_ID' => '0UL4129173139950S','currency'   => $currency]),
+            'action'     => 'authorize',
+        ];
 
+        $wallet = $this->fixtures->create('mozart', $mozartAttributes);
+
+        return $wallet;
+    }
 
     protected function reconcile($gateway, $metaInfo = null)
     {

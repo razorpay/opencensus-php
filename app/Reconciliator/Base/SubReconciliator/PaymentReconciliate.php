@@ -56,6 +56,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::AMEX,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,
+        RequestProcessor\Base::PAYPAL
     ];
 
     /**
