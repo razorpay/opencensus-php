@@ -1,9 +1,7 @@
 .partner-onboarding-base-screen
-    min-height:403px
-    min-width:850px
+    min-height:403px;
     border-radius: 4px;
     background: #FEFEFF;
-    background-image:url('assets/onboarding/prt-bkg.png')
     background-repeat:no-repeat;
     background-size:603px;
     background-position: top 0 right 0%;
@@ -12,7 +10,6 @@
     padding: 56px;
     .partner-onbr-info
       min-height: 260px;
-      width:50%;
       p
         font-size: 14px;
     .title
@@ -106,3 +103,26 @@
         i
           padding:2px;
           line-height: 8px;
+
+@media (min-width: 800px)
+  .partner-onboarding-base-screen
+    min-width:850px;
+    background-image:url('assets/onboarding/prt-bkg.png')
+    .partner-onbr-info
+      width: 50%;
+  .slide-controller-wrapper
+    width:50%;
+@media  (min-width: 320px) and (max-width: 1024px)
+ .partner-onboarding-base-screen
+    width:80vw;
+    .partner-onbr-info
+      width: 100%;
+  .slide-controller-wrapper
+    width:100%;
+    .slide-controller
+      display: block;
+      div
+        display: inline-block;
+      
+
+    

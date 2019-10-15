@@ -10,7 +10,7 @@ const SlideController = ({
 }) => {
   const { next, prev } = sliderProps;
   return (
-    <div style={{ width: '50%' }}>
+    <div className="slide-controller-wrapper">
       <div className="slide-controller">
         <div>
           <SliderDots {...sliderProps} />
