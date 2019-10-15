@@ -1,5 +1,6 @@
 import React from 'react';
-import Slider, { SliderDots } from 'component/Slider';
+import Slider from 'component/Slider';
+import S0 from './steps/S0';
 import S1 from './steps/S1';
 import S2 from './steps/S2';
 import S3 from './steps/S3';
@@ -18,7 +19,7 @@ import { connect } from 'react-redux';
   }
 )
 export default class BaseScreen extends React.Component {
-  state = { value: null };
+  state = { value: null, isNew: false };
 
   onRoleSelect = role => {
     this.setState({ value: role });
@@ -46,6 +47,7 @@ export default class BaseScreen extends React.Component {
     return (
       <div className="partner-onboarding-base-screen">
         <Slider>
+          {sliderProps => <S0 key={0} sliderProps={sliderProps} />}
           {sliderProps => <S1 key={1} sliderProps={sliderProps} />}
           {sliderProps => (
             <S2

@@ -1,5 +1,5 @@
 .partner-onboarding-base-screen
-    min-height:503px
+    min-height:403px
     min-width:850px
     border-radius: 4px;
     background: #FEFEFF;
@@ -9,10 +9,12 @@
     background-position: top 0 right 0%;
     font-family: Lato;
     font-style: normal;
+    padding: 56px;
     .partner-onbr-info
+      min-height: 260px;
       width:50%;
-      height:400px;
-      padding: 50px 0px 50px 50px;
+      p
+        font-size: 14px;
     .title
       font-weight: bold;
       font-size: 24px;
@@ -56,9 +58,17 @@
          align-content:center;
       div.value.active
         background: rgba(81, 143, 240, 0.05);
+        border-left: solid 4px #518FF0;
+        div.check i 
+          color:#518FF0;
+        .info-grey
+           color:#518FF0;
       div.check
         flex:1;
-        align-self:'center';
+        align-self:center;
+        i
+          font-size: 18px;
+          color: #D9D9D9;
       .no-bottom-border
         border-bottom-width:0px !important;
       .no-top-border
@@ -80,7 +90,6 @@
         justify-content: space-between;
       .SliderDots
           text-align: left;
-          margin-left:50px;
       .slider-btn
         background: #518FF0;
         border: 1px solid #3B80EE;

@@ -17,7 +17,7 @@ const S1 = props => {
             Get started with referring merchants and track your commissions and
             all directly from your dashoard.
           </p>
-          <p className="" style={{ marginTop: '30px' }}>
+          <p className="" style={{ marginTop: '20px' }}>
             First, let’s fill a few more details.
           </p>
         </div>

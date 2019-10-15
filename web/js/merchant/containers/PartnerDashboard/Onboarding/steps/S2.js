@@ -26,7 +26,7 @@ const s2 = props => {
             </div>
             <div className="check">
               <i class="i i-check" />
-            </div>1
+            </div>
           </div>
         </div>
         <div class="partner--role-notes">
@@ -36,17 +36,18 @@ const s2 = props => {
               Support
             </a>
           </p>
-
-          <a
-            className=""
-            style={{
-              textDecoration: 'underline',
-              color: '#57666E',
-              marginTop: '40px',
-            }}
-          >
-            I just want to use Razorpay products
-          </a>
+          <p style={{ marginTop: '10px' }}>
+            <a
+              target="_blank"
+              style={{
+                textDecoration: 'underline',
+                color: '#57666E',
+              }}
+            >
+              I just want to use Razorpay products{' '}
+            </a>
+            <i className="i i-external-link " />
+          </p>
         </div>
       </div>
       <SlideContoller key={4} sliderProps={props.sliderProps} />
