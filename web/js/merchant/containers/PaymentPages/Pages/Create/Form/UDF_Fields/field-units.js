@@ -29,9 +29,6 @@ const email = {
   schema: {
     type: 'string',
     pattern: 'email',
-    options: {
-      keydown_restrictive: false,
-    },
   },
 };
 
@@ -41,10 +38,7 @@ const phone = {
   schema: {
     type: 'number',
     pattern: 'phone',
-    minLength: 8,
-    options: {
-      keydown_restrictive: false,
-    },
+    minLength: '8',
   },
 };
 
