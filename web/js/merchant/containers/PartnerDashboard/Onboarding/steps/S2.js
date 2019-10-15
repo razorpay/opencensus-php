@@ -7,7 +7,10 @@ const s2 = props => {
       <div className="partner-onbr-info">
         <div className="title">What do you want to do as a Partner?</div>
         <div className="options-group">
-          <div className="value active" onClick={() => props.onRoleSelect(0)}>
+          <div
+            className="value active"
+            onClick={() => props.onRoleSelect('reseller')}
+          >
             <div style={{ flex: 9 }}>
               <p className="info info-grey">Refer Merchants</p>
               <p>Refer merchants and businesses to Razorpay</p>
@@ -18,7 +21,7 @@ const s2 = props => {
           </div>
           <div
             className="no-top-border value"
-            onClick={() => props.onRoleSelect(1)}
+            onClick={() => props.onRoleSelect('aggregator')}
           >
             <div style={{ flex: 9 }}>
               <p className="info info-grey">Refer and Manage Merchants</p>
