@@ -77,7 +77,7 @@ abstract class Base extends Core
         throw new Exception\LogicException('Not supported for source type: ' . json_encode($this->validation->getFundAccountType()));
     }
 
-    protected function markValidationAsCompleted(string $accountStatus)
+    public function markValidationAsCompleted(string $accountStatus)
     {
         $this->validation->setStatus(Status::COMPLETED);
 

@@ -23,4 +23,11 @@ class Repository extends Base\Repository
             ->orderBy(Entity::RETRY_AT, 'asc')
             ->get()->pluck('id')->all();
     }
+
+    public function getFundAccountValidationById(string $id) : Entity
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, $id)
+            ->first();
+    }
 }

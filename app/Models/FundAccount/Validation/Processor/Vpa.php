@@ -3,11 +3,15 @@
 namespace RZP\Models\FundAccount\Validation\Processor;
 
 use RZP\Exception;
+use RZP\Jobs\FaVpaValidation;
 use RZP\Models\FundAccount\Validation\Constants;
+use RZP\Models\Payment\Processor\Vpa as VpaTrait;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 class Vpa extends Base
 {
+    use VpaTrait;
+
     public function __construct(Validation $validation)
     {
         parent::__construct($validation);
@@ -23,14 +27,8 @@ class Vpa extends Base
 
     public function preProcessValidation()
     {
-        try
-        {
-            // TODO = call vpa validation function here
-        }
-        catch (\Throwable $e)
-        {
+        FaVpaValidation::dispatch($this->mode, $this->validation->getId());
 
-        }
     }
 
     public function setDefaultValuesForValidation()
