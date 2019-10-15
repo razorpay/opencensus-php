@@ -45,6 +45,12 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $this->createClaimAndRefundPayment();
 
+        $refund = $this->getDbLastEntity('refund');
+
+        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertEquals(1, $refund->getReference3());
+        $this->assertEquals('processed', $refund->getStatus());
+
         $content = $this->generateFiles();
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
@@ -53,6 +59,40 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         $this->performPostFileGenerationAssertions();
+    }
+
+    public function testMultipleRefundsSeqNo()
+    {
+        $payments    = [];
+        $refunds     = [];
+        $seqNoList   = [];
+        $expected    = [];
+
+        for ($i = 0; $i < 2; $i++)
+        {
+            $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+            $payments[] = $this->doAuthAndCapturePayment($payment);
+        }
+
+        // full refund
+        $refunds[] = $this->refundPayment($payments[0]['id']);
+
+        // partial refunds
+        $refunds[] = $this->refundPayment($payments[1]['id'], 10000);
+        $refunds[] = $this->refundPayment($payments[1]['id'], 10000);
+
+        // expected output
+        $expected[$refunds[0]['id']] = 1;
+        $expected[$refunds[1]['id']] = 1;
+        $expected[$refunds[2]['id']] = 2;
+
+        foreach ($refunds as $refund)
+        {
+            $seqNoList[$refund['id']] = ($this->getDbEntityById('refund', $refund['id']))->getReference3();
+        }
+
+        $this->assertArraySelectiveEquals($expected, $seqNoList);
     }
 
     public function testClaimFileWithEmandatePayment()

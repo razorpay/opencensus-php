@@ -54,6 +54,11 @@ trait HasBalance
         return $this->getBalanceType() === Balance\Type::BANKING;
     }
 
+    public function isBalanceTypeCommission(): bool
+    {
+        return $this->getBalanceType() === Balance\Type::COMMISSION;
+    }
+
     public function setPublicBalanceIdAttribute(array & $attributes)
     {
         $balanceId = $this->getAttribute(self::BALANCE_ID);

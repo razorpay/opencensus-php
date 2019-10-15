@@ -47,6 +47,7 @@ use RZP\Models\Payment\Refund\Speed as RefundSpeed;
  * @property BankAccount\Entity $bankAccount
  * @property Balance\Entity     $bankingBalance
  * @property Balance\Entity     $primaryBalance
+ * @property Balance\Entity     $commissionBalance
  */
 class Entity extends Base\PublicEntity
 {
@@ -921,19 +922,28 @@ class Entity extends Base\PublicEntity
                     ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
     }
 
-    public function getBalanceByProductType(string $product)
+    public function commissionBalance()
     {
-        switch ($product)
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::COMMISSION);
+    }
+
+    public function getBalanceByType(string $type)
+    {
+        switch ($type)
         {
-            case Product::PRIMARY:
+            case Balance\Type::PRIMARY:
                 return $this->primaryBalance;
 
-            case Product::BANKING:
+            case Balance\Type::BANKING:
                 return $this->bankingBalance;
+
+            case Balance\Type::COMMISSION:
+                return $this->commissionBalance;
 
             default:
                 throw new LogicException(
-                    "Invalid product type - {$product}",
+                    "Invalid balance type - {$type}",
                     null,
                     [
                         Entity::MERCHANT_ID => $this->getId(),
@@ -941,9 +951,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getBalanceByProductTypeOrFail(string $product): Balance\Entity
+    public function getBalanceByTypeOrFail(string $type): Balance\Entity
     {
-        $balance = $this->getBalanceByProductType($product);
+        $balance = $this->getBalanceByType($type);
 
         if ($balance === null)
         {
@@ -951,8 +961,8 @@ class Entity extends Base\PublicEntity
                 ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
                 null,
                 [
-                    self::ID      => $this->getKey(),
-                    self::PRODUCT => $product,
+                    self::ID             => $this->getKey(),
+                    Balance\Entity::TYPE => $type,
                 ]);
         }
 

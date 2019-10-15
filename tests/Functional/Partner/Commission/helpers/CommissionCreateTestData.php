@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Tests\Functional\Partner\Constants;
 
 return [
     'testImplicitVariableOnPaymentCapture' => [
@@ -236,6 +237,64 @@ return [
             'content' => [
                 'status' => 'captured',
                 'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testClearOnHoldForCommission' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/commissions/partner/{id}/on_hold/clear',
+            'content' => [
+                'to' => 1963800112,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testInitiateCommissionSettlement' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/settlements/initiate',
+            'content' => [
+                'merchant_ids' => [Constants::DEFAULT_PLATFORM_MERCHANT_ID],
+                'use_queue'    => true,
+                'balance_type' => 'commission',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_merchants' => 1,
+                'enqueued'        => 1,
+                'enqueue_failed'  => 0,
+            ],
+        ],
+    ],
+
+    'testCaptureCommission' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/commissions/{id}/capture',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+            ],
+        ],
+    ],
+
+    'testCaptureCommissionByPartner' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/commissions/partner/{id}/capture',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
             ],
         ],
     ],

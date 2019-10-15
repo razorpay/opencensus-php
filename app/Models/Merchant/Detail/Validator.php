@@ -24,8 +24,12 @@ class Validator extends Base\Validator
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
     const INVALID_BUSINESS_CATEGORY                     = 'Invalid business category';
     const INVALID_BUSINESS_SUBCATEGORY                  = 'Invalid business subcategory';
+    const INVALID_PREDEFINED_REASON                     = 'Invalid Predefined Reason';
+    const INVALID_ADDITIONAL_DETAIL_FIELD               = 'Invalid additional detail field';
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
+    const INVALID_REASON_TYPE                           = 'Invalid reason type';
+    const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
 
     // Constant representing operations for which Validation rules exists
     const BULK_EDIT                                     = 'bulkEdit';
@@ -181,6 +185,8 @@ class Validator extends Base\Validator
         Entity::INTERNAL_NOTES                  => 'sometimes|string',
         Entity::INTERNATIONAL_ACTIVATION_FLOW   => 'sometimes|custom',
         Entity::CUSTOM_FIELDS                   => 'filled|array',
+        Entity::KYC_CLARIFICATION_REASONS       => 'sometimes|array|custom',
+        Entity::KYC_ADDITIONAL_DETAILS          => 'sometimes|array|custom',
     ];
 
     protected static $preSignupRules = [
@@ -252,15 +258,63 @@ class Validator extends Base\Validator
     ];
 
     protected static $patchMerchantDetailsRules = [
-        Entity::BUSINESS_OPERATION_ADDRESS    => 'filled|max:255',
-        Entity::BUSINESS_OPERATION_STATE      => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_CITY       => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN        => 'filled|max:15',
-        Entity::BUSINESS_CATEGORY             => 'sometimes|max:255|custom',
-        Entity::BUSINESS_SUBCATEGORY          => 'sometimes|max:255|custom',
-        Entity::BUSINESS_MODEL                => 'sometimes|max:255',
-        Entity::INTERNATIONAL_ACTIVATION_FLOW => 'filled|custom',
+        Entity::BUSINESS_OPERATION_ADDRESS       => 'filled|max:255',
+        Entity::BUSINESS_OPERATION_STATE         => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY          => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN           => 'filled|max:15',
+        Entity::BUSINESS_CATEGORY                => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY             => 'sometimes|max:255|custom',
+        Entity::BUSINESS_MODEL                   => 'sometimes|max:255',
+        Entity::INTERNATIONAL_ACTIVATION_FLOW    => 'filled|custom',
+        Entity::BANK_DETAILS_VERIFICATION_STATUS => 'filled|custom',
+        Entity::POA_VERIFICATION_STATUS          => 'filled|custom'
     ];
+
+    public function validateBankDetailsVerificationStatus($attribute, $value)
+    {
+        $validBankDetailValidationStatuses = BankDetailsVerificationStatus::ALLOWED_NEXT_BANK_DETAIL_VERIFICATION_STATUSES_MAPPING;
+
+        $this->isAllowedStatusChange(
+            $this->entity->getBankDetailsVerificationStatus(),
+            $value,
+            $validBankDetailValidationStatuses,
+            ErrorCode::BAD_REQUEST_INVALID_BANK_DETAIL_VERIFICATION_STATUS_CHANGE);
+
+    }
+
+    public function validatePOAVerificationStatus($attribute, $value)
+    {
+        $validPoaValidationStatuses = PoaVerificationStatus::ALLOWED_NEXT_POA_VERIFICATION_STATUSES_MAPPING;
+
+        $this->isAllowedStatusChange(
+            $this->entity->getPoaVerificationStatus(),
+            $value,
+            $validPoaValidationStatuses,
+            ErrorCode::BAD_REQUEST_INVALID_POA_VERIFICATION_STATUS_CHANGE);
+    }
+
+    private function isAllowedStatusChange($currentStatus,
+                                           string $newStatus,
+                                           array $allowedStatus,
+                                           string $errorMessage)
+    {
+
+        if (empty($currentStatus) === true)
+        {
+            return;
+        }
+
+        if ((isset($allowedStatus[$currentStatus]) === false) or
+            (in_array($newStatus, $allowedStatus[$currentStatus], true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException($errorMessage, null,
+                                                                     [
+                                                                         "current_status" => $currentStatus,
+                                                                         "new_status"     => $newStatus
+                                                                     ]);
+        }
+
+    }
 
     protected static $bulkAssignReviewerRules = [
         Entity::REVIEWER_ID     => 'required|public_id|size:20',
@@ -319,6 +373,30 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY);
         }
     }
+
+    protected static $kycClarificationReasonRules = [
+        Entity::CLARIFICATION_REASONS     => 'filled|array|custom',
+        Entity::ADDITIONAL_DETAILS        => 'filled|array|custom:clarification_reasons',
+    ];
+
+    protected static $clarificationReasonJsonValidationRules = [
+        Merchant\Constants::REASON_TYPE => ['required','string','in:custom,predefined'],
+        Merchant\Constants::FIELD_VALUE => 'filled',
+        Merchant\Constants::FIELD_TYPE  => ['filled', 'in:document,text'],
+        Merchant\Constants::REASON      => 'required_if:reason_type,custom|string|max:100',
+        Merchant\Constants::REASON_CODE => 'required_if:reason_type,predefined|custom',
+    ];
+
+    protected static $predefinedClarificationReasonValuesRules = [
+        Merchant\Constants::REASON_TYPE => "required|string|in:predefined",
+        Merchant\Constants::FIELD_VALUE => 'filled',
+        Merchant\Constants::FIELD_TYPE  => ['filled', 'in:document,text'],
+        Merchant\Constants::REASON_CODE => 'required|custom',
+    ];
+
+    protected static $clarificationResponseRules = [
+        Merchant\Constants::FIELD_VALUE => 'required|string|max:200',
+    ];
 
     /**
      * Validate the transaction report email
@@ -477,6 +555,99 @@ class Validator extends Base\Validator
                 [
                     Entity::BUSINESS_CATEGORY    => $category,
                     Entity::BUSINESS_SUBCATEGORY => $subcategory,
+                ]);
+        }
+    }
+
+    public function validateKycAdditionalDetails(string $attribute, $value)
+    {
+        $merchantDetailCore = (new Core);
+
+        if (isset($value) === false)
+        {
+            return;
+        }
+
+        foreach ($value as $key => $values)
+        {
+            if ((NeedsClarificationMetaData::isValidPredefinedAdditionalField($key) == true) and
+                ($merchantDetailCore->isAdditionalFieldRequired($key) === true))
+            {
+
+                (new Validator())->validateInput("clarificationResponse", $values);
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    self::ADDITIONAL_FIELD_NOT_REQUIRED . ':' . $key,
+                    Merchant\Constants::FIELD_NAME,
+                    [
+                        Merchant\Constants::FIELD_NAME => $key
+                    ]
+                );
+
+            }
+        }
+    }
+
+    /**
+     * Custom function for validation of NEEDS_CLARIFICATION_REASON
+     *
+     * @param string $attribute
+     * @param        $value
+     *
+     */
+    public function validateKYCClarificationReasons(string $attribute, $value)
+    {
+        (new Validator())->validateInput("kycClarificationReason", $value);
+
+    }
+
+    /**
+     * @param string $attribute
+     * @param        $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateClarificationReasons(string $attribute, $value)
+    {
+        if (isset($value) === false)
+        {
+            return;
+        }
+
+        $arrayValues = array_values($value);
+
+        foreach ($arrayValues as $key => $values)
+        {
+            foreach ($values as $val)
+            {
+                if ((is_array($val)) === true)
+                {
+                    (new Validator)->validateInput('clarificationReasonJsonValidation', $val);
+                }
+                else
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        self::INVALID_REASON_TYPE,
+                        Merchant\Constants::REASON,
+                        [
+                            Merchant\Constants::REASON_TYPE => $value
+                        ]);
+                }
+            }
+        }
+    }
+
+    public function validateReasonCode(string $attribute, $predefinedReason)
+    {
+        if (NeedsClarificationReasonsList::isValidPredefinedReason($predefinedReason) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_PREDEFINED_REASON . ': ' . $predefinedReason,
+                Merchant\Constants::REASON,
+                [
+                    Merchant\Constants::REASON => $predefinedReason
                 ]);
         }
     }

@@ -177,7 +177,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => InfoCode::UNKNOWN_CARD_TYPE,
                     'recon_card_type' => $cardType,
-                    'row'             => $row,
+                    'payment_id'      => $this->payment->getId(),
                     'gateway'         => $this->gateway
                 ]);
 

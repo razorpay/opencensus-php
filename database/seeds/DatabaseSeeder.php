@@ -1187,6 +1187,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingAllahabadTerminals();
         $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
+        $this->createNetbankingUbiTerminal();
         $this->createNetbankingEquitasTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
@@ -1768,6 +1769,24 @@ class DatabaseSeeder extends Seeder
                     'created_at'                => time(),
                     'updated_at'                => time(),
                     'type'                      => 6,
+            ]
+        );
+    }
+
+    protected function createNetbankingUbiTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_UBI_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_UBI,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_ubi',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_ubi_terminal_pass'),
+                'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
             ]
         );
     }

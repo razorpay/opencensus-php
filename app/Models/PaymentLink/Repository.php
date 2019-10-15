@@ -95,4 +95,13 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->get();
     }
+
+    public function getAllPaymentPagesForMigrationOfMinPurchase(int $timestamp, $limit = 1000)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CREATED_AT, '>=', $timestamp)
+                    ->orderBy(Entity::CREATED_AT)
+                    ->limit($limit)
+                    ->get();
+    }
 }

@@ -127,6 +127,10 @@ return [
             'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
             'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
         ],
+        'adminapi'=> [
+            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY' ),
+            'password' => env('GOVERNOR_ADMINAPI_SERVICE_SECRET'),
+        ],
         'url'       => env('GOVERNOR_LIVE_URL'),
     ],
 

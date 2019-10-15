@@ -606,6 +606,11 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+            Payment\Gateway::NETBANKING_UBI => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
+            ],
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -734,7 +739,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
             ],
-
+            Payment\Gateway::NETBANKING_UBI => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
             Payment\Gateway::NETBANKING_IBK => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
@@ -989,6 +998,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_CITI,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::WALLET_PAYPAL,
+            Payment\Gateway::NETBANKING_UBI,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
@@ -1015,6 +1025,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
+            Payment\Gateway::NETBANKING_UBI,
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,

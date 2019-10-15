@@ -151,4 +151,6 @@ class InfoCode
     const UNEXPECTED_CARD_LOCALE                        = 'UNEXPECTED_CARD_LOCALE';
 
     const GATEWAY_CAPTURED_NOT_SET                      = 'GATEWAY_CAPTURED_NOT_SET';
+
+    const RECON_GATEWAY_REFUNDED                        = 'RECON_GATEWAY_REFUNDED';
 }

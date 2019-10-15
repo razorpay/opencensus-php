@@ -49,6 +49,7 @@ class Gateway
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
+    const NETBANKING_UBI         = 'netbanking_ubi';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
@@ -217,6 +218,8 @@ class Gateway
     // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [
         self::AMEX              => self::AMEX,
+        self::AXIS_MIGS         => self::HDFC,
+        self::CYBERSOURCE       => self::HDFC,
         self::HDFC              => self::HDFC,
         self::ISG               => self::HDFC,
         self::BILLDESK          => self::BILLDESK,
@@ -227,6 +230,7 @@ class Gateway
         self::NETBANKING_RBL    => self::RBL,
         self::PAYTM             => self::PAYTM,
         self::UPI_AXIS          => self::AXIS,
+        self::UPI_ICICI         => self::ICICI,
         self::UPI_MINDGATE      => self::HDFC,
         self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
         self::ATOS              => self::ATOS,
@@ -719,6 +723,7 @@ class Gateway
             self::NETBANKING_CORPORATION,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
+            self::NETBANKING_UBI,
             self::NETBANKING_AXIS,
             self::NETBANKING_FEDERAL,
             self::NETBANKING_RBL,
@@ -1417,6 +1422,7 @@ class Gateway
         IFSC::HDFC         => Gateway::NETBANKING_HDFC,
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
+        IFSC::UBIN         => Gateway::NETBANKING_UBI,
         IFSC::SIBL         => Gateway::NETBANKING_SIB,
         IFSC::CBIN         => Gateway::NETBANKING_CBI,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
@@ -1585,6 +1591,10 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_AXIS,
         Gateway::UPI_RBL,
+    ];
+
+    public static $sequenceNoBasedRefundGateways = [
+        Gateway::NETBANKING_SBI
     ];
 
     public static $upiValidateVpaTerminals = [
@@ -2181,4 +2191,18 @@ class Gateway
         return false;
     }
 
+    /**
+     * Some gateways, for example sbi netbanking expect us to send the sequence no or the order in which the refunds
+     * were created. If a payment p1 has three refunds, they would expect us to track the order in which they are created
+     * r1, r2, r3.
+     *
+     * @param $gateway
+     * @return bool
+     *
+     */
+
+    public static function isSequenceNoBasedRefund($gateway)
+    {
+        return (in_array($gateway, self::$sequenceNoBasedRefundGateways, true) === true);
+    }
 }

@@ -7,16 +7,14 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\Settlement\Create;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Kotak;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
-use RZP\Models\FundTransfer\Base\Reconciliation\Mock;
 
 class Service extends Base\Service
 {
@@ -24,7 +22,9 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('settlement_initiate', $input);
 
-        $data = (new Settlement\Processor)->process($input, $channel);
+        $balanceType = $input['balance_type'] ?? Balance\Type::PRIMARY;
+
+        $data = (new Settlement\Processor)->process($input, $channel, $balanceType);
 
         return $data;
     }

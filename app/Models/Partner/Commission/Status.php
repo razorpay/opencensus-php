@@ -8,14 +8,14 @@ class Status
 {
     const CREATED   = 'created';
     const REFUNDED  = 'refunded';
-    const PROCESSED = 'processed';
+    const CAPTURED  = 'captured';
 
     /*
      * Allowed next statuses mapping
      */
     const ALLOWED_NEXT_STATUSES_MAPPING = [
-        self::CREATED   => [self::PROCESSED, self::REFUNDED],
-        self::PROCESSED => [self::REFUNDED],
+        self::CREATED   => [self::CAPTURED, self::REFUNDED],
+        self::CAPTURED  => [self::REFUNDED],
         self::REFUNDED  => [],
     ];
 
@@ -31,7 +31,7 @@ class Status
      */
     public static function validateStatus(string $status)
     {
-        $validStatus = [self::CREATED, self::PROCESSED, self::REFUNDED];
+        $validStatus = [self::CREATED, self::CAPTURED, self::REFUNDED];
 
         if (in_array($status, $validStatus, true) === false)
         {
