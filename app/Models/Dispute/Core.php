@@ -516,9 +516,22 @@ class Core extends Base\Core
 
     public function getDefaultEmailsForDispute(Merchant\Entity $merchant) : array
     {
-        $emails = (new MerchantEmail\Service)->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::DISPUTE);
+        $emails = [];
 
-        $emails[] = $merchant->getEmail();
+        $disputeEmails = (new MerchantEmail\Service)
+                            ->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::DISPUTE);
+
+        $emails = array_merge($emails, $disputeEmails);
+
+        $chargebackEmails = (new MerchantEmail\Service)
+                            ->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::CHARGEBACK);
+
+        $emails = array_merge($emails, $chargebackEmails);
+
+        if (empty($emails) === true)
+        {
+            $emails[] = $merchant->getEmail();
+        }
 
         $emails = array_unique($emails);
 
@@ -548,7 +561,7 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         array $input)
     {
-        if ((isset($input[Entity::SKIP_EMAIL]) === true) and ($input[Entity::SKIP_EMAIL] === true))
+        if (empty($input[Entity::SKIP_EMAIL]) === false)
         {
             return;
         }
