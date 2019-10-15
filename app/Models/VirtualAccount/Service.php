@@ -112,7 +112,7 @@ class Service extends Base\Service
 
     protected function editAmountExpectedToIncludeFees(Order\Entity $order, array & $virtualAccount)
     {
-        if ($order->merchant->isFeeBearerCustomerOrDynamic() === true)
+        if ($order->merchant->isFeeBearerCustomer() === true)
         {
             $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
 

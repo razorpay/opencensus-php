@@ -87,7 +87,7 @@ trait Capture
 
         $amount = $payment->getAmount();
 
-        if ($payment->isFeeBearerCustomer() === true)
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $amount -= $payment->getFee();
         }
@@ -370,7 +370,7 @@ trait Capture
      */
     protected function modifyCaptureAmountForPaymentFee(Payment\Entity $payment, int & $captureAmount)
     {
-        if ($payment->isFeeBearerCustomer() === true)
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $captureAmount = $captureAmount + $payment->getFee();
 
@@ -855,7 +855,7 @@ trait Capture
 
         $payment->setTax($txn->getTax());
 
-        if ($payment->isFeeBearerCustomer() === false)
+        if ($this->merchant->isFeeBearerCustomer() === false)
         {
             //set and fee values from txn
             $payment->setFee($txn->getFee());

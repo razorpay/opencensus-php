@@ -1024,7 +1024,6 @@ return [
                     'percent_rate' => 0,
                     'fixed_rate'   => '500000',
                     'type'         => 'commission',
-                    'fee_bearer'   => 'customer',
                 ],
             ],
             'attach_submerchant' => [

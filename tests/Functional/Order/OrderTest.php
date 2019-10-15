@@ -8,7 +8,6 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -479,8 +478,6 @@ class OrderTest extends TestCase
     public function testAutoCaptureFeeBearerCustomer()
     {
         $this->fixtures->merchant->enableConvenienceFeeModel();
-
-        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $payment = $this->getDefaultPaymentArray();
         $this->ba->publicAuth();

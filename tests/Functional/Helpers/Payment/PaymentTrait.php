@@ -6,7 +6,6 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
-use RZP\Models\Merchant\FeeBearer;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
@@ -2241,111 +2240,5 @@ trait PaymentTrait
             ->andReturnUsing($callable);
 
         $this->app->instance('fts_create_account', $fts);
-    }
-
-    protected function setDefaultMerchantMethods()
-    {
-        // Disable all methods and only enable card.
-        // The default pricing plan has only card enabled
-
-        $this->fixtures->merchant->disableAllMethods();
-
-        $this->fixtures->merchant->enableCard();
-    }
-
-    protected function createPricingPlan($pricingPlan = [])
-    {
-        $defaultPricingPlan = [
-            'plan_name'           => 'TestPlan1',
-            'payment_method'      => 'card',
-            'payment_method_type' => 'credit',
-            'payment_network'     => 'DICL',
-            'payment_issuer'      => 'HDFC',
-            'percent_rate'        => 1000,
-            'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay',
-            'type'                => 'pricing',
-        ];
-
-        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
-
-        $plan = $this->fixtures->create('pricing', $pricingPlan);
-
-        $plan = $plan->toArray();
-
-        $plan['id'] = $plan['plan_id'];
-
-        return $plan;
-    }
-
-    public function getPricingPlanForFeeBearerTest(string $pricingFeeBearer)
-    {
-        $defaultPricingPlan = [
-            'plan_name'                 => 'TestPlan1',
-            'payment_method'            => 'card',
-            'payment_method_type'       => 'credit',
-            'percent_rate'              => 1000,
-            'fixed_rate'                =>  0,
-            'payment_network'           => 'MC',
-            'payment_issuer'            => 'SBIN',
-            'org_id'                    => '10000000000000',
-            'type'                      => 'pricing',
-            'fee_bearer'                => $pricingFeeBearer,
-        ];
-
-        $plan = $this->createPricingPlan($defaultPricingPlan);
-
-        return $plan;
-    }
-
-    protected function setUpMerchantForFeeBearerTest(string $merchantFeeBearer, array $pricingPlan)
-    {
-        $this->fixtures->merchant->edit('10000000000000', [
-            'pricing_plan_id' => $pricingPlan['id'],
-            'fee_bearer'      => $merchantFeeBearer,
-        ]);
-    }
-
-    protected function setUpAndGetPaymentArrayForFeeBearerPricingTest(string $merchantFeeBearer, string $pricingFeeBearer)
-    {
-        $this->mockCardVault();
-
-        $this->ba->publicAuth();
-
-        $this->setDefaultMerchantMethods();
-
-        $this->fixtures->iin->create([
-            'iin' => '555555',
-            'country' => 'IN',
-            'network' => 'MasterCard',
-            'type'    => 'credit',
-        ]);
-
-        $plan = $this->getPricingPlanForFeeBearerTest($pricingFeeBearer);
-
-        $this->setUpMerchantForFeeBearerTest($merchantFeeBearer, $plan);
-
-        return $this->getPaymentArrayForFeeBearerTest($merchantFeeBearer);
-    }
-
-    protected function getPaymentArrayForFeeBearerTest($merchantFeeBearer)
-    {
-        $defaultPaymentArray = $this->getDefaultPaymentArray();
-
-        $defaultPaymentArray['card']['number'] = '555555555555558';
-
-        if ($merchantFeeBearer === FeeBearer::PLATFORM)
-        {
-            return $defaultPaymentArray;
-        }
-
-        try
-        {
-            return $this->getFeesForPayment($defaultPaymentArray)['input'];
-        }
-        catch (Exception\LogicException $logicException)
-        {
-            return $defaultPaymentArray;
-        }
     }
 }

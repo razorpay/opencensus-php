@@ -225,7 +225,7 @@ class Core extends Base\Core
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
             $txn->setPricingRule(null);
 
-            if ($payment->isFeeBearerCustomer() === false)
+            if ($merchant->isFeeBearerCustomer() === false)
             {
                 //set and fee values from txn
                 $payment->setFee($fee);
@@ -347,7 +347,7 @@ class Core extends Base\Core
 
         $txn->setFeeModel($merchant->getFeeModel());
 
-        $txn->setFeeBearer($payment->getFeeBearer());
+        $txn->setFeeBearer($merchant->getFeeBearer());
 
         $amount = $payment->getBaseAmount();
         $txn->setAmount($amount);
