@@ -39,6 +39,13 @@ const phone = {
     type: 'number',
     pattern: 'phone',
     minLength: '8',
+    options: {
+      /*
+      icon: {
+        before: 'i-phone', // TODO: Supporting it?
+      },
+*/
+    },
   },
 };
 

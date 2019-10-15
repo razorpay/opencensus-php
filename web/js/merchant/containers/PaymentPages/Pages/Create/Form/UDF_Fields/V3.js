@@ -80,18 +80,25 @@ export function mapFieldToIndex(field) {
     ...schemaFields
   } = field;
 
+  const { options: optionsInFieldSchema, ...restInFieldSchema } = schemaFields;
   const fieldTypes = flattenFIELD_TYPES();
 
   for (let i = 0; i < fieldTypes.length; i++) {
-    const FIELD_TYPES_keys = Object.keys(fieldTypes[i].schema);
-    const FIELD_TYPES_opts_keys = fieldTypes[i].schema.options
-      ? Object.keys(fieldTypes[i].schema.options)
-      : {};
+    const {
+      options: optionsInDefinedSchema,
+      ...restInDefinedSchema
+    } = fieldTypes[i].schema;
 
-    const field_keys = Object.keys(schemaFields);
-    const field_opts_keys = schemaFields.options
-      ? Object.keys(schemaFields.options)
-      : {};
+    const FIELD_TYPES_keys = Object.keys(restInDefinedSchema); //Needs to be separated since backend sometimes sends empty options when it's not required.
+    const FIELD_TYPES_opts_keys = optionsInDefinedSchema
+      ? Object.keys(fieldTypes[i].schema.options)
+      : {}; // It's not [] due to BE sending it as object, so for correct comparison
+
+    const field_keys = Object.keys(restInFieldSchema);
+    const field_opts_keys =
+      optionsInFieldSchema && optionsInFieldSchema.length
+        ? Object.keys(optionsInFieldSchema)
+        : {}; // It's not [] due to BE sending it as object, so for correct comparison
 
     let isMismatch = false;
 
@@ -107,10 +114,8 @@ export function mapFieldToIndex(field) {
     }
 
     for (let j = 0; j < FIELD_TYPES_keys.length; j++) {
-      // EXCEPTION 1: Ignore schema.settings as it's not part of actual udf_schema
-      // EXCEPTION 2: values of schema.options is checked in next for-each block.
-      // EXCEPTION 3: value for enum is not to be compared as it's an array, it can be skipped and options.cmp will handle existence of 'key:enum'
-      if (['options', 'enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
+      // EXCEPTION: value for enum is not to be compared as it's an array and will have unique values, it can be skipped and options.cmp will handle existence of 'key:enum'
+      if (['enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
         continue;
       }
 
