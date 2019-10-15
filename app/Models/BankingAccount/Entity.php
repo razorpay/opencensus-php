@@ -77,7 +77,16 @@ class Entity extends Base\PublicEntity
 
     const USERNAME                          = 'username';
     const PASSWORD                          = 'password';
+    // For rbl this is the corp_id
     const REFERENCE1                        = 'reference1';
+    // For rbl this is the ldap id
+    const REFERENCE2                        = 'reference2';
+    // For rbl this is the ldap password
+    const REFERENCE3                        = 'reference3';
+    // For rbl this is the merchant's portal username
+    const REFERENCE4                        = 'reference4';
+    // For rbl this is the merchant's portal password
+    const REFERENCE5                        = 'reference5';
 
     const ACCOUNT_TYPE                      = 'account_type';
 
@@ -106,6 +115,10 @@ class Entity extends Base\PublicEntity
         self::USERNAME,
         self::PASSWORD,
         self::REFERENCE1,
+        self::REFERENCE2,
+        self::REFERENCE3,
+        self::REFERENCE4,
+        self::REFERENCE5,
         self::BENEFICIARY_PIN,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
