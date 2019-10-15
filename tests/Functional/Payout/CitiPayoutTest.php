@@ -62,7 +62,7 @@ class CitiPayoutTest extends TestCase
         $this->assertNotNull($txn['balance_id']);
 
         $balance = $this->getLastEntity('balance', true);
-        $this->assertEquals('yesbank', $balance['channel']);
+        $this->assertNull($balance['channel']);
         $this->assertEquals('shared', $balance['account_type']);
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -112,7 +112,7 @@ class CitiPayoutTest extends TestCase
         $this->assertNotNull($txn['balance_id']);
 
         $balance = $this->getLastEntity('balance', true);
-        $this->assertEquals('yesbank', $balance['channel']);
+        $this->assertNull($balance['channel']);
         $this->assertEquals('shared', $balance['account_type']);
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
