@@ -24,24 +24,31 @@ export default class BaseScreen extends React.Component {
     this.setState({ type: role });
   };
 
-  onCompleteClick = () => {
+  closeTransaction = (url, data) => {
     const userval = new User({
       ...this.props.user,
       partner_intent: false,
     });
     this.props.updateSession({ user: userval });
     merchantFetch({
-      url: 'merchant/partner_type',
-      method: 'POST',
+      url: url,
+      method: 'PATCH',
       mode: 'live',
-      data: {
-        partner_type: this.state.type,
-      },
-      accountId: this.props.accountId,
+      data,
     })
       .then(response => {})
       .catch(err => {});
     this.props.closeModal();
+  };
+
+  onCompleteClick = () => {
+    this.closeTransaction('merchant/partner_type', {
+      partner_type: this.state.type,
+    });
+  };
+
+  onNotIntrestedClick = () => {
+    this.closeTransaction('merchant/partner-intent', { partner_intent: false });
   };
 
   render() {
