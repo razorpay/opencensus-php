@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/bin/bash
 
 cd ../public/dist;
 rm -f css/icons.css;
