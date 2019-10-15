@@ -11,8 +11,10 @@ use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Models\Address;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
@@ -46,6 +48,102 @@ class PaymentCreateTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+    }
+
+    public function testCreatePaymentWithBillingAddress()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+
+        $paymentArray['billing_address'] = $billingAddressArray;
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+
+        // fetching payment in admin auth.
+        $paymentEntity = $this->getLastPayment(true);
+
+        $addressEntity = $this->getLastEntity('address', true);
+
+
+        $this->assertEquals($paymentFromResponse['id'], $paymentEntity['id']);
+
+        $this->assertEquals($paymentEntity['id'], $addressEntity['entity_id']);
+
+        $this->assertEquals('payment', $addressEntity['entity_type']);
+
+        foreach (['line1', 'line2', 'city', 'state', 'country'] as $attribute)
+        {
+            $this->assertEquals($billingAddressArray[$attribute], $addressEntity[$attribute]);
+        }
+
+        // address entity stores zip code as "zipcode"
+        // in input to paymentcreate, we get zip code as "postal_code"
+        $this->assertEquals($billingAddressArray['postal_code'], $addressEntity['zipcode']);
+    }
+
+    public function testCreatePaymentWithBillingAddressWithMandatoryFieldsMissing()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $originalBillingAddressArray = $this->getDefaultBillingAddressArray();
+
+        foreach(['line1', 'city', 'country'] as $mandatoryField)
+        {
+            $billingAddressArray = $originalBillingAddressArray;
+
+            unset($billingAddressArray[$mandatoryField]);
+
+            try
+            {
+                $paymentArray['billing_address'] = $billingAddressArray;
+
+                $this->doAuthAndCapturePayment($paymentArray);
+
+                $this->fail('Should have thrown exception because ' . $mandatoryField . ' was missing');
+            }
+            catch(Exception\BadRequestValidationFailureException $exception)
+            {
+                $this->assertContains($mandatoryField, $exception->getMessage());
+            }
+        }
+    }
+
+    public function testCreatePaymentWithBillingAddressWithOptionalFieldsMissing()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $originalBillingAddressArray = $this->getDefaultBillingAddressArray();
+
+        foreach(['line2', 'zipcode', 'state'] as $optionalField)
+        {
+            $billingAddressArray = $originalBillingAddressArray;
+
+            unset($billingAddressArray[$optionalField]);
+
+            $paymentArray['billing_address'] = $billingAddressArray;
+
+            $this->doAuthAndCapturePayment($paymentArray);
+        }
+    }
+
+
+    public function testCreatePaymentWithoutBillingAddress()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentFromResponse['id'], $paymentEntity['id']);
+
+        $addressEntity = $this->getDbEntity('address', [
+                                 'entity_type' => 'payment',
+                                 'entity_id'   => Entity::verifyIdAndStripSign($paymentFromResponse['id'])
+                            ]);
+
+        $this->assertNull($addressEntity);
     }
 
     public function testCreatePaymentWithoutOrderId()
