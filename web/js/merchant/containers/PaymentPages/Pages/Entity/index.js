@@ -28,13 +28,6 @@ import PaymentPagesV3Entity from './V3';
 
 import ActivateAgain from '../Modals/ActivateAgain';
 
-/* Human readable reason to be displayed */
-const inActiveStatusReasonMap = {
-  completed: 'Total payments made reached Times payable limit',
-  expired: 'The link is expired',
-  deactivated: 'You manually deactivated the link',
-};
-
 @withRouter
 @connect(state => ({ user: state.session.user }), {
   updatePPInReduxList,
@@ -341,12 +334,7 @@ export default class extends React.Component {
               ? this.state.paymentPageEntity.expire_by
               : undefined
           }
-          timesPayable={
-            isCompleted ? this.state.paymentPageEntity.times_payable : undefined
-          }
-          timesPaid={
-            isCompleted ? this.state.paymentPageEntity.times_paid : undefined
-          }
+          isCompleted={isCompleted}
           handleClose={this.props.closeModal}
           handleClick={data => {
             return activatePaymentPage(this.state.paymentPageEntity.id, data)

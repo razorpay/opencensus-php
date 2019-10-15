@@ -34,7 +34,7 @@ import Button from 'component/Button';
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
-  completed: 'All the available units are sold',
+  completed: 'One or more items are out of stock',
   expired: 'The link is expired',
   deactivated: 'You manually deactivated the link',
 };
