@@ -1,15 +1,18 @@
 import React from 'react';
+import { classList } from 'common/util';
 import SlideContoller from './SlideController';
 
-const s2 = props => {
+const s2 = ({ role, onRoleSelect, sliderProps }) => {
   return (
     <>
-      <div className="partner-onbr-info">
+      <div className={'partner-onbr-info'}>
         <div className="title">What do you want to do as a Partner?</div>
         <div className="options-group">
           <div
-            className="value active"
-            onClick={() => props.onRoleSelect('reseller')}
+            class={classList('value', role === 'reseller' && 'active')}
+            onClick={() => {
+              onRoleSelect('reseller');
+            }}
           >
             <div style={{ flex: 9 }}>
               <p className="info info-grey">Refer Merchants</p>
@@ -20,8 +23,12 @@ const s2 = props => {
             </div>
           </div>
           <div
-            className="no-top-border value"
-            onClick={() => props.onRoleSelect('aggregator')}
+            class={classList(
+              'top-no-border',
+              'value',
+              role === 'aggregator' && 'active'
+            )}
+            onClick={() => onRoleSelect('aggregator')}
           >
             <div style={{ flex: 9 }}>
               <p className="info info-grey">Refer and Manage Merchants</p>
@@ -53,7 +60,7 @@ const s2 = props => {
           </p>
         </div>
       </div>
-      <SlideContoller key={4} sliderProps={props.sliderProps} />
+      <SlideContoller sliderProps={sliderProps} disNext={!Boolean(role)} />
     </>
   );
 };

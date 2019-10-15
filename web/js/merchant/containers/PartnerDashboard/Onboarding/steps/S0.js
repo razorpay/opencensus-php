@@ -18,6 +18,7 @@ const S0 = props => {
         </div>
         <div style={{ marginTop: '21px', padding: '2px' }}>
           <a
+            href="https://razorpay.com/partners/"
             target="_blank"
             className=""
             style={{

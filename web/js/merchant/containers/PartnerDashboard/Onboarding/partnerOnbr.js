@@ -19,17 +19,17 @@ import { connect } from 'react-redux';
   }
 )
 export default class BaseScreen extends React.Component {
-  state = { value: null, isNew: false, type: null };
+  state = { role: null };
 
   onRoleSelect = role => {
-    this.setState({ type: role });
+    this.setState({ role });
   };
 
   closeTransaction = (url, data) => {
     const userval = new User({
       ...this.props.user,
       partner_intent: false,
-      partner_type: this.state.type,
+      partner_type: this.state.role,
     });
     this.props.updateSession({ user: userval });
     merchantFetch({
@@ -45,25 +45,26 @@ export default class BaseScreen extends React.Component {
 
   onCompleteClick = () => {
     this.closeTransaction('merchant/partner_type', {
-      partner_type: this.state.type,
+      partner_type: this.state.role,
     });
   };
 
   onNotIntrestedClick = () => {
     this.closeTransaction('merchant/partner-intent', { partner_intent: false });
   };
-
   render() {
     return (
       <div className="partner-onboarding-base-screen">
         <Slider>
-          {sliderProps => <S0 key={0} sliderProps={sliderProps} />}
+          {this.props.user.merchant_partner_intent &&
+            (sliderProps => <S0 key={0} sliderProps={sliderProps} />)}
           {sliderProps => <S1 key={1} sliderProps={sliderProps} />}
           {sliderProps => (
             <S2
               key={2}
               sliderProps={sliderProps}
               onRoleSelect={this.onRoleSelect}
+              role={this.state.role}
             />
           )}
           {sliderProps => (
