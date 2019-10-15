@@ -1200,7 +1200,6 @@ export default class ActivationWizard extends React.Component {
     }
 
     documentContent =
-      false &&
       DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].map((field, i) => {
         if (Array.isArray(field)) {
