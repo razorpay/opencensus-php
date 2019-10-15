@@ -130,8 +130,7 @@ export default class Content extends Component {
 
   getBaseView = () => {
     const { user } = this.props;
-    // if (user.partner_type && user.partner_intent === true) {
-    if (user.partner_type === null && user.partner_intent === true) {
+    if (user.isPartnerIntent()) {
       return <Onboarding />;
     }
 

@@ -313,11 +313,7 @@ export default class User {
 
   // checks if the merchant or user has shown intent to become partner
   isPartnerIntent() {
-    const params = getURLQueryParams(window.location.search);
-    return (
-      params.r == 'partner' ||
-      (this.partner_type === null && this.partner_intent)
-    );
+    return this.partner_type === null && this.partner_intent;
   }
 
   get isHavingPartnerConfigs() {
