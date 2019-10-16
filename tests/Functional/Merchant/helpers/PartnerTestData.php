@@ -1073,7 +1073,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
     ],
-  
+
     'testSendSubmerchantPasswordResetLinkWhenMerchantIsNotAPartner' => [
         'request'   => [
             'url'    => '/submerchants/10000000000009/reset_password',
@@ -1165,7 +1165,6 @@ return [
                 'partner_type'              => 'reseller',
                 'has_commission_configs'    => true,
             ],
-            'status_code'                   => 200,
         ],
     ],
 
@@ -1182,7 +1181,6 @@ return [
                 'partner_type'              => 'aggregator',
                 'has_commission_configs'    => true,
             ],
-            'status_code'                   => 200,
         ],
     ],
 

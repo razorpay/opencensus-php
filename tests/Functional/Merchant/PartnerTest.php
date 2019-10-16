@@ -1448,19 +1448,13 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->createDummyPartnerApp();
 
-        $this->createPlansRequiredForOnboardingPartners();
-
-        $this->fixtures->pricing->createPromotionalPlan();
-
         $this->ba->proxyAuth();
 
         $this->startTest();
 
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
-        $this->assertTrue($expectedPartner->isPartner());
-
-        $this->assertEquals($expectedPartner->getPartnerType(), Merchant\Constants::RESELLER);
+        $this->assertTrue($expectedPartner->isResellerPartner());
     }
 
     public function testUpdatePartnerTypeAsAggregatorUsingProxyAuth()
@@ -1471,19 +1465,13 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->createDummyPartnerApp();
 
-        $this->createPlansRequiredForOnboardingPartners();
-
-        $this->fixtures->pricing->createPromotionalPlan();
-
         $this->ba->proxyAuth();
 
         $this->startTest();
 
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
-        $this->assertTrue($expectedPartner->isPartner());
-
-        $this->assertEquals($expectedPartner->getPartnerType(), Merchant\Constants::AGGREGATOR);
+        $this->assertTrue($expectedPartner->isAggregatorPartner());
     }
 
     public function testUpdatePartnerTypeUsingProxyAuthWithInvalidPartnerType()
