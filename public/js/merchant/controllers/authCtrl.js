@@ -91,6 +91,7 @@ app
       // signup state container
       var email = $location.search().email;
       var role = $location.search().r;
+      debugger;
       try {
         email = atob(decodeURIComponent(email));
       } catch (e) {
@@ -337,6 +338,8 @@ app
         payload.data.password_confirmation = payload.data.password;
 
         payload.data.business_name = payload.data.business_name || '';
+
+        payload.data.partner_intent = $scope.signup.settings.partner_intent;
 
         // Business name cannot be empty or null. Same as quickSendDetails
         if (!payload.data.business_name) {
@@ -982,8 +985,8 @@ app
 
       $scope.canSkipIntermediateScreens = function() {
         return (
-          $scope.signup.settings.partner_intent ||
-          $scope.signup.merchantData.business_type == 110
+          $scope.signup.settings.partner_intent || true
+          // $scope.signup.merchantData.business_type == 110
         );
       };
       $scope.goToForgotPwd = function() {
