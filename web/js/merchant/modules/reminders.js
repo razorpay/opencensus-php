@@ -19,7 +19,7 @@ export const fetchReminders = () => {
   };
 };
 
-export const disableReminders = (id, data) => {
+export const disableEnableReminders = (id, data) => {
   return {
     type: REMINDERS_UPDATE,
     payload: merchantFetch({
@@ -31,16 +31,13 @@ export const disableReminders = (id, data) => {
 };
 
 export const createReminders = namespace => {
-  return {
-    type: REMINDERS_FETCH,
-    payload: merchantFetch({
-      url: 'reminders/service/merchant_settings',
-      method: 'post',
-      data: {
-        namespace,
-      },
-    }),
-  };
+  return merchantFetch({
+    url: 'reminders/service/merchant_settings',
+    method: 'post',
+    data: {
+      namespace,
+    },
+  });
 };
 
 export const fetchRemindersConfigs = () => {

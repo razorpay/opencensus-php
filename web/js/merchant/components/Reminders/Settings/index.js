@@ -48,8 +48,7 @@ export default class ReminderSetting extends React.Component {
     this.typeInLowerCase = String(props.type).toLowerCase();
 
     this.state = {
-      // TODO: Update when API is ready according API response.
-      checked: true,
+      isEnabled: props.isEnabled,
       __stashed_settings__: {
         ...initState,
         withExpiry: props.withExpiry,
@@ -72,10 +71,10 @@ export default class ReminderSetting extends React.Component {
 
   disableReminderSetting = () => {
     return this.props
-      .disableReminderSetting()
+      .disableEnableReminders(!this.state.isEnabled)
       .then(() => {
         this.setState({
-          checked: !this.state.checked,
+          isEnabled: !this.state.isEnabled,
         });
 
         this.props.showNotification({
@@ -85,7 +84,7 @@ export default class ReminderSetting extends React.Component {
       })
       .catch(({ errors }) => {
         this.setState({
-          checked: !this.state.checked,
+          isEnabled: !this.state.isEnabled,
         });
 
         this.props.showNotification({
@@ -96,7 +95,7 @@ export default class ReminderSetting extends React.Component {
   };
 
   handleToggle = () => {
-    if (!this.state.checked) {
+    if (!this.state.isEnabled) {
       return this.disableReminderSetting();
     }
 
@@ -205,26 +204,26 @@ export default class ReminderSetting extends React.Component {
   render() {
     const {
         settings,
-        checked,
+        isEnabled,
         withExpireByConfigs,
         withOutExpireByConfigs,
       } = this.state,
       { type, totalUnpaidLinks } = this.props;
 
     return (
-      <div class={`setting-item ${checked ? 'enabled' : 'disabled'}`}>
+      <div class={`setting-item ${isEnabled ? 'enabled' : 'disabled'}`}>
         <div class="panel panel-default">
           <div class="panel-section--theme">
             <div class="panel-heading">
               <Header
                 type={type}
-                checked={checked}
+                isEnabled={isEnabled}
                 disabled={totalUnpaidLinks.loading}
                 onToggle={this.handleToggle}
               />
             </div>
 
-            {checked && (
+            {isEnabled && (
               <div class="panel-body">
                 <Prompt
                   when={this.isChanged()}

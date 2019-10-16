@@ -2,7 +2,6 @@ import { connect } from 'react-redux';
 
 import {
   fetchReminders,
-  createReminders,
   fetchRemindersConfigs,
   fetchRemindersMerchantConfigs,
 } from 'merchant/modules/reminders';
@@ -14,7 +13,6 @@ import PaymentLinksSettings from './PaymentLinksSettings';
 
 @connect(state => state.reminders, {
   fetchReminders,
-  createReminders,
   fetchRemindersConfigs,
   fetchRemindersMerchantConfigs,
 })
@@ -25,32 +23,17 @@ export default class extends React.Component {
 
   fetchDataForReminders = () => {
     return Promise.all([
-      this.fetchReminders(),
+      this.props.fetchReminders(),
       this.props.fetchRemindersConfigs(),
       this.props.fetchRemindersMerchantConfigs(),
     ]);
   };
 
-  fetchReminders = () => {
-    return this.props.fetchReminders().then(resp => {
-      if (resp.data.count === 0) {
-        const promiseList = REMINDERS_TYPES_LIST.map(key =>
-          this.props.createReminders(key)
-        );
-
-        return new Promise.all(promiseList);
-      }
-
-      return resp;
-    });
-  };
-
   render() {
-    const { items } = this.props.reminders,
-      loading =
-        this.props.reminders.loading ||
-        this.props.configs.loading ||
-        this.props.merchant_config.loading;
+    const loading =
+      this.props.reminders.loading ||
+      this.props.configs.loading ||
+      this.props.merchant_config.loading;
 
     if (loading) {
       return (
@@ -59,10 +42,6 @@ export default class extends React.Component {
         </div>
       );
     }
-
-    const settingsProps = {
-      disableReminder: this.disableReminder,
-    };
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
@@ -79,20 +58,9 @@ export default class extends React.Component {
         </HeaderAction>
 
         <div class="Reminders-settings">
-          {items.length &&
-            items.map(
-              item =>
-                REMINDERS_TYPE_MAP[item.namespace] &&
-                REMINDERS_TYPE_MAP[item.namespace](settingsProps)
-            )}
+          <PaymentLinksSettings />
         </div>
       </div>
     );
   }
 }
-
-const REMINDERS_TYPES_LIST = ['payment_link'];
-
-const REMINDERS_TYPE_MAP = {
-  payment_link: props => <PaymentLinksSettings {...props} />,
-};
