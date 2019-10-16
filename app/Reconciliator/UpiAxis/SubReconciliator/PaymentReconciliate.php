@@ -26,12 +26,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const ACCOUNT_CUST_NAME       = 'account_cust_name';
     const COLUMN_PAYMENT_ID       = ['order_id', 'orderid'];
     const COLUMN_TRANSACTION_DATE = ['transaction_date', 'txn_date'];
+    const COLUMN_MOBILE_NO        = 'mobile_no';
 
     const ACCOUNT_DETAILS_VPA   = 'vpa';
     const ACCOUNT_DETAILS_IFSC  = 'ifsc';
     const ACCOUNT_DETAILS_NAME  = 'name';
 
     const SUCCESS = 'Success';
+
+    const BLACKLISTED_COLUMNS = [
+        self::ACCOUNT_CUST_NAME,
+        self::VPA,
+        self::COLUMN_MOBILE_NO,
+    ];
 
     protected function getPaymentId(array $row)
     {
