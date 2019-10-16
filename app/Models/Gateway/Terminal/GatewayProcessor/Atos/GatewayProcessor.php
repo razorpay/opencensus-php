@@ -117,16 +117,32 @@ class GatewayProcessor extends BaseGatewayProcessor
         $subMerchant = $terminal->merchant;
 
         $partnerMerchant = $this->repo->merchant->getPartnerMerchantFromSubMerchantId($subMerchant->getId());
+
+        $merchantDetail = $subMerchant->merchantDetail;
+
+        $partnerMerchantDetail = $partnerMerchant->merchantDetail;
         
+        /*
+        There is a validation in Mozart that merchant contact_name be present, as its required in ATOS onboarding
+        If submerchant's contact_name is empty, we are sending partner's contact_name,
+        if that is empty too, we are sending it as Razorpay.
+        */
+        if (empty($merchantDetail->getContactName()))
+        {
+            $contactName = is_null($partnerMerchantDetail) === false ? $partnerMerchantDetail->getContactName() : "Razorpay";
+
+            $merchantDetail->setContactName($contactName);
+        }
+
         $gatewayRequestArray = [
             'method'                    => "POST",
             'gateway'                   => $terminal->getGateway(),
             'terminal'                  => $terminal->toArrayWithPassword(),
             'merchant'                  => $subMerchant->toArray(),
-            'merchant_details'          => $subMerchant->merchantDetail,
+            'merchant_details'          => $merchantDetail,
             'category_details'          => $this->getCategoryDetails($subMerchant),
             'partner_merchant'          => $partnerMerchant,
-            'partner_merchant_details'  => $partnerMerchant->merchantDetail,
+            'partner_merchant_details'  => $partnerMerchantDetail,
             'request_details'           => $this->getRequestDetails($terminal),
             'bank_details'              => $partnerMerchant->bankAccount->toArrayPublic(),
             'pricing_details'           => $this->getPricingDetails($terminal),
