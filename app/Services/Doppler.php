@@ -146,7 +146,7 @@ class Doppler
                 'created_at'            => $payment->getCreatedAt(),
                 'authorized_at'         => Carbon::now()->getTimestamp(),
                 'error_code'            => $errorCode ?? null,
-                'internal_error_code'   => "",
+                'internal_error_code'   => $internalErrorCode ?? null,
             ];
 
             return $data;
