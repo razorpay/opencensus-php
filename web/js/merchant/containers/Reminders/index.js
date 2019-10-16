@@ -8,6 +8,7 @@ import {
 
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Spinner from 'rzp/ui/Spinner';
+import Alert from 'rzp/ui/Forms/Alert';
 
 import PaymentLinksSettings from './PaymentLinksSettings';
 
@@ -17,6 +18,14 @@ import PaymentLinksSettings from './PaymentLinksSettings';
   fetchRemindersMerchantConfigs,
 })
 export default class extends React.Component {
+  constructor(props) {
+    super();
+
+    this.state = {
+      errors: '',
+    };
+  }
+
   componentDidMount() {
     this.fetchDataForReminders();
   }
@@ -26,7 +35,11 @@ export default class extends React.Component {
       this.props.fetchReminders(),
       this.props.fetchRemindersConfigs(),
       this.props.fetchRemindersMerchantConfigs(),
-    ]);
+    ]).catch(err => {
+      this.setState({
+        errors: 'Failed to fetch data',
+      });
+    });
   };
 
   render() {
@@ -57,9 +70,13 @@ export default class extends React.Component {
           </div>
         </HeaderAction>
 
-        <div class="Reminders-settings">
-          <PaymentLinksSettings />
-        </div>
+        {this.state.errors ? (
+          <Alert type="error" message={this.state.errors} showDismiss={false} />
+        ) : (
+          <div class="Reminders-settings">
+            <PaymentLinksSettings />
+          </div>
+        )}
       </div>
     );
   }

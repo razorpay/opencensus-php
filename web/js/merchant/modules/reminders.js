@@ -88,6 +88,9 @@ export default function(state = initialState, action) {
     case `${REMINDERS_FETCH}::PENDING`:
       return set(state, 'reminders', set(state.reminders, 'loading', true));
 
+    case `${REMINDERS_FETCH}::ERROR`:
+      return set(state, 'reminders', set(state.reminders, 'loading', false));
+
     case `${REMINDERS_FETCH}::SUCCESS`: {
       return set(
         state,
@@ -111,6 +114,9 @@ export default function(state = initialState, action) {
       );
     }
 
+    case `${REMINDERS_UPDATE}::ERROR`:
+      return set(state, 'reminders', set(state.reminders, 'loading', false));
+
     case `${REMINDER_MERCHANT_CONFIG_FETCH}::PENDING`:
       return set(
         state,
@@ -128,6 +134,13 @@ export default function(state = initialState, action) {
         })
       );
     }
+
+    case `${REMINDER_MERCHANT_CONFIG_FETCH}::ERROR`:
+      return set(
+        state,
+        'merchant_config',
+        set(state.merchant_config, 'loading', false)
+      );
 
     case `${REMINDER_MERCHANT_CONFIG_UPDATE}::SUCCESS`: {
       return set(
@@ -153,6 +166,9 @@ export default function(state = initialState, action) {
         })
       );
     }
+
+    case `${REMINDER_CONFIG_FETCH}::ERROR`:
+      return set(state, 'configs', set(state.configs, 'loading', false));
 
     default:
       return state;
