@@ -22,10 +22,10 @@ class Validator extends Base\Validator
 
     protected static $createForPaymentRules = [
         Entity::TYPE    => 'required|custom',
-        Entity::LINE1   => 'required|string|between:10,255',
+        Entity::LINE1   => 'required|string|between:1,255',
         Entity::LINE2   => 'sometimes|string|between:5,255',
         Entity::CITY    => 'required|string|between:2,32',
-        Entity::ZIPCODE => 'sometimes|string|between:2,10',
+        Entity::ZIPCODE => 'sometimes|between:2,10',
         Entity::STATE   => 'sometimes|string|between:2,32',
         Entity::COUNTRY => 'required|string|between:2,64|custom',
         Entity::PRIMARY => 'sometimes|in:0,1',
