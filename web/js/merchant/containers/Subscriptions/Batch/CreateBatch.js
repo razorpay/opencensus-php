@@ -42,7 +42,8 @@ export default class CreateHostedMandateBatch extends Component {
       validateBatch={this.props.validateRegistrationLinkBatch}
       gaEvents={gaEvents}
       maxRows="10,000"
-      batchType="registration_link"
+      batchType="auth_link"
+      batchTypeText="Registration Link"
       renderBatchCreationForm={RegistrationLinksBatchForm}
       docUrl="https://razorpay.com/docs/recurring-payments/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_authorization_links.csv"
