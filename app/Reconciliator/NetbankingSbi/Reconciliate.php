@@ -53,4 +53,9 @@ class Reconciliate extends Base\Reconciliate
            return parent::getNumLinesToSkip($fileDetails);
         }
     }
+
+    public function getFileType(string $mimeType): string
+    {
+        return FileProcessor::CSV;
+    }
 }

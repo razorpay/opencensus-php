@@ -12,7 +12,7 @@ class Validator extends Base\Core
 {
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'  => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
-        'txt'  => ['text/plain', 'application/octet-stream'],
+        'txt'  => ['text/plain', 'application/octet-stream', 'audio/x-unknown'],
         // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
         'zip'  => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
