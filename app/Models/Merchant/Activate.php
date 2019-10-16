@@ -15,15 +15,14 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
-use RZP\Jobs\MailingListUpdate;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
-use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Mail\Merchant\Activation as ActivationMail;
-use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
+use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationMail;
 
 class Activate extends Base\Core
 {
@@ -380,25 +379,36 @@ class Activate extends Base\Core
 
     public function notifyMerchantForInstantActivation(Entity $merchant)
     {
-        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+        $instantActivationMail = null;
 
-        $data = [
-            'merchant' => [
-                Entity::NAME              => $merchant->getName(),
-                Entity::BILLING_LABEL     => $merchant->getBillingLabel(),
-                Entity::EMAIL             => $merchant->getEmail(),
-                Entity::ACTIVATION_SOURCE => $merchant->getActivationSource(),
-                Entity::BUSINESS_BANKING  => $merchant->isBusinessBankingEnabled(),
-                'org'                     => [
-                    OrgEntity::BUSINESS_NAME => $org->getBusinessName(),
-                    OrgEntity::CUSTOM_CODE   => $org->getCustomCode(),
+        $activationSource = $merchant->getActivationSource();
+
+        if ($activationSource === Product::BANKING)
+        {
+            $instantActivationMail = new RazorpayXInstantActivationMail($merchant);
+        }
+        else if ($activationSource === Product::PRIMARY)
+        {
+            $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+            $data = [
+                'merchant' => [
+                    Entity::NAME              => $merchant->getName(),
+                    Entity::BILLING_LABEL     => $merchant->getBillingLabel(),
+                    Entity::EMAIL             => $merchant->getEmail(),
+                    Entity::ACTIVATION_SOURCE => $merchant->getActivationSource(),
+                    Entity::BUSINESS_BANKING  => $merchant->isBusinessBankingEnabled(),
+                    'org'                     => [
+                        OrgEntity::BUSINESS_NAME => $org->getBusinessName(),
+                        OrgEntity::CUSTOM_CODE   => $org->getCustomCode(),
+                    ],
                 ],
-            ],
-        ];
+            ];
 
-        $data['merchant']['org'][HostNameEntity::HOSTNAME] = $org->getPrimaryHostName();
+            $data['merchant']['org'][HostNameEntity::HOSTNAME] = $org->getPrimaryHostName();
 
-        $instantActivationMail = new InstantActivationMail($data, $org->toArray());
+            $instantActivationMail = new InstantActivationMail($data, $org->toArray());
+        }
 
         Mail::queue($instantActivationMail);
     }
