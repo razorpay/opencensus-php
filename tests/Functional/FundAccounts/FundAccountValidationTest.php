@@ -456,8 +456,6 @@ class FundAccountValidationTest extends TestCase
     {
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->createFavVpaPricingPlan();
-
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $fundAccountResponse = $this->createFundAccountVpa();

@@ -216,22 +216,4 @@ trait TestsBusinessBanking
 
         $this->fixtures->create('pricing', $pricingPlan);
     }
-
-    protected function createFavVpaPricingPlan()
-    {
-        $pricingPlan = [
-            'plan_name'           => 'FAV VPA Plan',
-            'percent_rate'        => 0,
-            'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay',
-            'type'                => 'pricing',
-            'plan_id'             => '1hDYlICobzOCYt',
-            'product'             => 'banking',
-            "feature"             => 'fund_account_validation',
-            'payment_method'      => 'vpa',
-            'account_type'        => 'shared'
-        ];
-
-        $this->fixtures->create('pricing', $pricingPlan);
-    }
 }

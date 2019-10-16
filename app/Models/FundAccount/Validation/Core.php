@@ -212,12 +212,12 @@ class Core extends Base\Core
             // it is assumed that source already exist.
             $this->repo->saveOrFail($validation);
 
-            $fee = $this->getFeesLessThanApplicableBalance($validation, $merchant);
-
-            if ($fee === 0)
+            if ($validation->getFundAccountType() === FundAccount\Type::VPA)
             {
                 return $validation;
             }
+
+            $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
 
             // Transaction might fail because of concurrent request verifying and changing balance at the same time.
             try
@@ -311,14 +311,14 @@ class Core extends Base\Core
      *
      * @throws Exception\BadRequestException
      */
-    private function getFeesLessThanApplicableBalance(Entity $validation, Merchant\Entity $merchant) : int
+    private function verifyFeesLessThanApplicableBalance(Entity $validation, Merchant\Entity $merchant)
     {
-        list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
-
         if ($merchant->getFeeModel() === Merchant\FeeModel::POSTPAID)
         {
-            return $fee;
+            return;
         }
+
+        list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
 
         if ($validation->hasBalance() === true)
         {
@@ -331,12 +331,12 @@ class Core extends Base\Core
 
         if ($balance->getFeeCredits() >= $fee)
         {
-            return $fee;
+            return;
         }
 
         if ($balance->getBalance() >= $fee)
         {
-            return $fee;
+            return;
         }
 
         throw new Exception\BadRequestException(
