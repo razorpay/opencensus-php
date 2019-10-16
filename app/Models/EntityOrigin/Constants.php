@@ -5,6 +5,7 @@ namespace RZP\Models\EntityOrigin;
 class Constants
 {
     // Origin types
-    const MERCHANT    = 'merchant';
-    const APPLICATION = 'application';
+    const MERCHANT     = 'merchant';
+    const APPLICATION  = 'application';
+    const SUBSCRIPTION = 'subscription';
 }

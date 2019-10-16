@@ -1353,6 +1353,8 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        (new Validator)->setStrictFalse()->validateInput(Validator::PREFERENCES, $input);
+
         $preferences = (new Checkout)->getPreferences($merchant, $this->mode, $input);
 
         return $preferences;
@@ -3339,9 +3341,13 @@ class Service extends Base\Service
         $merchants = $this->repo->merchant
                                 ->fetchAllSuspendedMerchants($input);
 
+        $i = 0;
+
         foreach ($merchants as $merchant)
         {
-            $this->core()->removeMerchantEmailToMailingList($merchant);
+            $this->core()->removeMerchantEmailToMailingList($merchant, $i);
+
+            $i++;
         }
     }
 }

@@ -265,6 +265,22 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function netbanking_ubi($input)
+    {
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'get',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function netbanking_cbi($input)
     {
         $request = [
@@ -327,7 +343,7 @@ class Server extends Base\Mock\Server
 
         return $this->makePostResponse($request);
     }
-    
+
     protected function netbanking_idbi($input)
     {
 
@@ -357,26 +373,148 @@ class Server extends Base\Mock\Server
 
     public function createTerminal($body)
     {
-        $response_body = [
-            'data' => [
-                'Description'   => "Success",
-                'Status'        => "00",
-                '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
-            ],
-            'error'             => [],
-            'external_trace_id' => "",
-            'mozart_id'         => "blfq216r1gunssphbs01",
-            'next'              => null,
-            'success'           => true
-        ];
-        
-        $response = \Response::make($response_body);
-        
+        $mockCase = $this->app['config']->get('atos_terminal_onboarding_creation.case');
+
+        switch ($mockCase)
+        {
+            case "1":
+                $responseBody = [
+                    'data' => [
+                        'description'   => "Success",
+                        'res_code'        => "00",
+                        '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => "",
+                    'mozart_id'         => "blfq216r1gunssphbs01",
+                    'next'              => null,
+                    'success'           => true
+                ];
+                break;
+
+            case "2":
+                $responseBody = [
+                    'data'      =>  [],
+                    'error'     =>  [
+                        'description'               => "INPUT_VALIDATION_FAILED {\"component\":\"Validate\",\"data\":\"{\\\"entities.bank_details.account_number\\\":[\\\"The entities.bank_details.account_number field is required\\\"],\\\"entities.merchant_details.business_registered_address\\\":[\\\"The entities.merchant_details.business_registered_address field is required\\\"],\\\"entities.merchant_details.business_registered_city\\\":[\\\"The entities.merchant_details.business_registered_city field is required\\\"],\\\"entities.merchant_details.business_registered_pin\\\":[\\\"The entities.merchant_details.business_registered_pin field is required\\\"],\\\"entities.merchant_details.business_registered_state\\\":[\\\"The entities.merchant_details.business_registered_state field is required\\\"],\\\"entities.merchant_details.contact_mobile\\\":[\\\"The entities.merchant_details.contact_mobile field is required\\\"],\\\"entities.merchant_details.contact_name\\\":[\\\"The entities.merchant_details.contact_name field is required\\\"]}\",\"message\":\"Error performing validation\",\"step_name\":\"Validator\"}",
+                        'gateway_error_code'        =>  "",
+                        'gateway_error_description' =>  "",
+                        'gateway_status_code'       =>  0,
+                        'internal_error_code'       =>  "BAD_REQUEST_VALIDATION_FAILURE",
+                    ],
+                    'success'   => false,   
+                 ];
+                 break;
+
+            case "3":
+                $responseBody = [
+                    'data'      =>  [
+                        '_raw'          =>  '{\"MID\":\"999122000040352\",\"TID\":\"9137251R\",\"REQRRN\":\"1000000131\",\"RESDTTM\":\"03092019115555\",\"RESCODE\":\"05\",\"RESDESC\":\"Invalid Terminal ID\",\"REQTYPE\":\"E\",\"BANKCODE\":\"00031\"}',
+                        'description'   =>  'Invalid Terminal ID',
+                        'retry'         =>  'false',
+                    ],
+                    'error'     =>  [
+                        'description'               =>  "",
+                        'gateway_error_code'        =>  '05',
+                        'gateway_error_description' =>  '(No error description was mapped for this error code)',
+                        'gateway_status_code'       =>  200,
+                        'internal_error_code'       =>  'GATEWAY_ERROR_UNKNOWN_ERROR',
+                    ],
+                    'success'   => false,   
+                ];
+                break;
+            
+            case "4":
+                $responseBody = [
+                    'data' => [],
+                    'error' =>[
+                        'description' =>  "Invalid route",
+                        'gateway_error_code' =>  "",
+                        'gateway_error_description' => "",
+                        'gateway_status_code' =>  0,
+                        'internal_error_code' =>  "SERVER_ERROR_LOGICAL_ERROR"
+                    ],
+                    'external_trace_id' => "a21c02be54abfc98f5421f001ba4ad4d",
+                    'mozart_id' => "bm8eb47cfeaesrbbagsg",
+                    'next' => [],
+                    'success' => false
+                ];
+                break;
+
+            case "5":
+                $responseBody = [
+                    "data" => [
+                    "_raw" => "{\"BANKCODE\":\"00031\",\"MID\":\"999000000000031\",\"TID\":\"12380040\",\"REQRRN\":\"DLze1ggH2WSxHi0\",\"RESDTTM\":\"24092019152250\",\"RESCODE\":\"05\",\"RESDESC\":\"Duplicate MVISAPAN\",\"REQTYPE\":\"N\"}",
+                    "description" => "Duplicate MVISAPAN",
+                    "res_code" => "05",
+                    "retry" => "false",
+                    "status" => "terminal_creation_failed"
+                    ],
+                    "error" =>  [
+                    "description" => "GATEWAY_ERROR",
+                    "gateway_error_code" => "05",
+                    "gateway_error_description" => "GATEWAY_ERROR",
+                    "gateway_status_code" => 200,
+                    "internal_error_code" => "GATEWAY_ERROR_INVALID_DATA"
+                    ],
+                    "next" => [],
+                    "success" => false
+                ];
+                break;
+        }
+
+        $response = \Response::make($responseBody);
+
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
- 
+
         return $response;
     }
-    
+
+    public function verifyTerminal($body)
+    {
+        $mockCase = $this->app['config']->get('atos_terminal_onboarding_verification.case');
+
+        switch ($mockCase)
+        {
+            case "1":
+                $responseBody = [
+                    'data' => [
+                        'description'   => 'Success',
+                        'res_code'        => '00',
+                        'status'        => 'callback_successful',
+                        '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+            case "2":
+                $responseBody = [
+                    'data' => [
+                        'description'   => 'Failed',
+                        'res_code'        => '00',
+                        'status'        => 'callback_failed',
+                        '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+        }
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');

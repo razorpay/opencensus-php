@@ -2339,6 +2339,44 @@ class MerchantTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
+    public function testGetCheckoutPreferencesWithContactDetails()
+    {
+        $this->fixtures->create('contact', [
+            'id' => "ABCD123321DCBA",
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            'id'           => '100000000000fa',
+            'source_id'    => 'ABCD123321DCBA',
+            'source_type'  => 'contact',
+            'account_type' => 'bank_account',
+            'account_id'   => '1000000lcustba',
+        ]);
+
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency'      => 'INR',
+                'contact_id'    => 'cont_ABCD123321DCBA',
+            ],
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['contact']['id'], 'cont_ABCD123321DCBA');
+        $this->assertEquals($response['contact']['fund_accounts'][0]['id'], 'fa_100000000000fa');
+    }
+
+    public function testGetCheckoutPreferencesWithContactDetailsWhereContactDoesNotExist()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesForPaidOrder()
     {
         $order = $this->fixtures->order->createPaid();

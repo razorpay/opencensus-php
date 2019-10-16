@@ -843,3 +843,29 @@ if (! function_exists('get_diff_in_millisecond'))
         return (int) $requestTime;
     }
 }
+
+if (!function_exists('get_similar_text_percent'))
+{
+    /**
+     * Returns the percentage of similar text between first & second string
+     * The percentage is in float. First and second strings are converted to
+     * lower case and removes any spaces/tabs if exists.
+     *
+     * @param string $first
+     * @param string $second
+     *
+     * @return int
+     */
+    function get_similar_text_percent(string $first, string $second)
+    {
+        $first = strtolower(preg_replace('/\s+/', '', $first));
+
+        $second = strtolower(preg_replace('/\s+/', '', $second));
+
+        $percent = 0;
+
+        similar_text($first, $second, $percent);
+
+        return $percent;
+    }
+}

@@ -41,6 +41,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getRefundId(array $row)
     {
         if ($this->isCybersource($row) === true)

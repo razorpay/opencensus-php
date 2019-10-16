@@ -26,6 +26,7 @@ class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
     const MAXIMAGESIZE = 1024 * 1024;
+    const PREFERENCES = 'preferences';
 
     const BATCH_ID                          = 'Batch Id';
     const BULK_SUBMERCHANT_ASSIGN           = 'Bulk Submerchant Assign';
@@ -292,6 +293,10 @@ class Validator extends Base\Validator
 
     protected static $updatePartnerTypeRules = [
         Entity::PARTNER_TYPE    => 'required|string|custom:partner_type_for_update',
+    ];
+
+    protected static $preferencesRules = [
+        'contact_id'  => 'filled|public_id',
     ];
 
     protected function validateIsTestAccount(array $input)

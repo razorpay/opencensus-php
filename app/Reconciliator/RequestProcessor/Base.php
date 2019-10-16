@@ -76,6 +76,7 @@ class Base extends Core
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
+    const NETBANKING_BOB_V2      = 'NetbankingBobV2';
     const NETBANKING_OBC         = 'NetbankingObc';
     const NETBANKING_VIJAYA      = 'NetbankingVijaya';
     const NETBANKING_EQUITAS     = 'NetbankingEquitas';
@@ -102,6 +103,7 @@ class Base extends Core
     const AMEX                   = 'Amex';
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
     const PHONEPE                = 'Phonepe';
+    const PAYPAL                 = 'paypal';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -170,8 +172,9 @@ class Base extends Core
     ];
 
     const GATEWAY_CRAWLERS = [
-        self::NETBANKING_BOB        => Gateway::NETBANKING_BOB,
+        self::NETBANKING_BOB_V2     => Gateway::NETBANKING_BOB_V2,
         self::NETBANKING_CUB        => Gateway::NETBANKING_CUB,
+        self::PAYPAL                => Gateway::WALLET_PAYPAL
     ];
 
     /**

@@ -91,7 +91,7 @@ return [
                         'total_amount_paid' => 0,
                         'min_purchase' => NULL,
                         'max_purchase' => NULL,
-                        'min_amount' => NULL,
+                        'min_amount' => 100,
                         'max_amount' => NULL,
                     ]
                 ],

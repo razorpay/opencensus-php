@@ -52,7 +52,7 @@ class Core extends Base\Core
 
         unset($adjInput[Entity::TYPE]);
 
-        $balance = $merchant->getBalanceByProductTypeOrFail($balanceType);
+        $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
         $adj = (new Adjustment\Entity)->build($adjInput);
 
@@ -267,6 +267,11 @@ class Core extends Base\Core
                 $channel = $adj->balance->getChannel() ?? BankingChannel::YESBANK;
 
                 $adj->setChannel($channel);
+            }
+            else if ($adj->isBalanceTypeCommission() === true)
+            {
+                // commission adjustments to be made from yes_bank channel
+                $adj->setChannel(BankingChannel::YESBANK);
             }
             else
             {

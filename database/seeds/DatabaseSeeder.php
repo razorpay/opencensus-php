@@ -932,9 +932,9 @@ class DatabaseSeeder extends Seeder
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::WALLET_PAYPAL,
                 'card'                  => '0',
-                'gateway_merchant_id'   => 'NXR8P4C58AYQE',
-                'gateway_terminal_password2'=> Crypt::encrypt('AR2npSdWeXHqtuW2iGNL2_9q2TGsWl16ZnsTpNNoxrJ2Kv8vjGFPH_HjUVriDDh_-ZxDtA1IKLdJlLf4'),
-                'gateway_terminal_password' => Crypt::encrypt('EPaeTqZhSRferbORXbPF9Ew7uX7sErYkR1C6GCsjrVJFPriHKE3AJFGHQQzwiGvnwWxA_oUyNiTaKv_f'),
+                'gateway_merchant_id'   => 'SPSZR25DLBKN6',
+                'gateway_terminal_password2'=> Crypt::encrypt('ASRpJkZhu1smSXgJwfTbhLp2qwbW2bscsUpR0mnC3xgMoMiLsq8Urw2C3WAEM4HGdvXOS3GWzZ5rajyD'),
+                'gateway_terminal_password' => Crypt::encrypt('EHybzKmmxFOCLN3UdYt3b5TX5-jBNdDBnzXGMsjDplQI5E2vH59vzbcx3gP7AyEgw0gLwCECKIWBLsXk'),
                 'recurring'             => 0,
                 'created_at'            => time(),
                 'updated_at'            => time(),
@@ -1187,6 +1187,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingAllahabadTerminals();
         $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
+        $this->createNetbankingUbiTerminal();
         $this->createNetbankingEquitasTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
@@ -1768,6 +1769,24 @@ class DatabaseSeeder extends Seeder
                     'created_at'                => time(),
                     'updated_at'                => time(),
                     'type'                      => 6,
+            ]
+        );
+    }
+
+    protected function createNetbankingUbiTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_UBI_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_UBI,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_ubi',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_ubi_terminal_pass'),
+                'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
             ]
         );
     }

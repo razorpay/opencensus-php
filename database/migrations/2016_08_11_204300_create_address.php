@@ -35,7 +35,8 @@ class CreateAddress extends Migration
                   ->nullable();
             $table->string(Entity::ZIPCODE, 16)
                   ->nullable();
-            $table->string(Entity::STATE, 64);
+            $table->string(Entity::STATE, 64)
+                  ->nullable();
             $table->string(Entity::COUNTRY, 64);
 
             $table->string(Entity::TYPE, 32);

@@ -20,6 +20,7 @@ use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Gateway\Hitachi\Gateway as HitachiGateway;
 
 class TransactionFilter extends Terminal\Filter
 {
@@ -558,6 +559,16 @@ class TransactionFilter extends Terminal\Filter
     {
         $merchant = $this->input['merchant'];
         $merchantMcc = $merchant->getCategory();
+
+        // These MCCs are blacklisted by RBL and Hitachi. Hence, should not go via hitachi.
+        // We already have gateway rules enabled for this, but this is a fallback in case
+        // the gateway rules fails.
+        // Violation of the agreement with Hitachi and RBL, which results in getting fined by the bank.
+        if (($terminal->getGateway() === Gateway::HITACHI) and
+            (in_array($merchantMcc, HitachiGateway::BLACKLISTED_MCC) === true))
+        {
+            return false;
+        }
 
         if (($this->input['payment']->isMethodCardOrEmi() === true) and
             (in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true))

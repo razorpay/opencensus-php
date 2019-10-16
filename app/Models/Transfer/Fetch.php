@@ -15,6 +15,7 @@ class Fetch extends BaseFetch
             Entity::TRANSACTION_ID          => 'sometimes|alpha_num|size:14',
             Entity::MERCHANT_ID             => 'sometimes|alpha_num|size:14',
             Entity::SOURCE                  => 'sometimes|string|min:14',
+            Entity::STATUS                  => 'sometimes|array',
         ],
     ];
 
@@ -29,6 +30,7 @@ class Fetch extends BaseFetch
             Entity::RECIPIENT,
             Entity::RECIPIENT_SETTLEMENT_ID,
             self::EXPAND_EACH,
+            Entity::STATUS,
         ],
     ];
 }
