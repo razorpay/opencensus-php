@@ -98,7 +98,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment)
+    public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment, array $input)
     {
         $verbose = true;
 
@@ -119,6 +119,12 @@ class Core extends Base\Core
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
+            $payment->setAmount($input['order_amount']);
+
+            $order = $payment->order;
+
+            $order->setDiscount(false);
+
         }
 
         $this->trace->info(

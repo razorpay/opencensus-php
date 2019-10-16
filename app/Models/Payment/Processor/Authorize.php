@@ -1626,7 +1626,7 @@ trait Authorize
 
         if ($offer !== null)
         {
-            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment);
+            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment, $input);
         }
     }
 

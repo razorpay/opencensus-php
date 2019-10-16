@@ -1125,6 +1125,8 @@ class Processor
             $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
+
+            $input['order_amount'] = $orderAmount;
         }
     }
 

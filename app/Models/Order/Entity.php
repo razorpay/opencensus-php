@@ -378,6 +378,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, $amount);
     }
 
+    public function setDiscount(bool $discount )
+    {
+        return $this->setAttribute(self::DISCOUNT, $discount);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

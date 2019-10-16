@@ -458,6 +458,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVE, 1);
     }
 
+    public function setCurrentUsageCount(int $count)
+    {
+        $this->setAttribute(self::CURRENT_OFFER_USAGE, $count);
+    }
+
 // ------------------------Public Setters--------------------------------------------
 
     public function setPublicLinkedOfferIdsAttribute(array & $array)

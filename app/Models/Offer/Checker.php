@@ -373,24 +373,17 @@ class Checker extends Base\Core
     // not exceed the max offer usage cout
     protected function checkMaxOfferUsage(): bool
     {
-        $maxCountForOffer = $this->repo
-                                      ->offer
-                                      ->getMaxOfferUsageCount($this->offer->getId());
-        $result = $this->checkMaxCountForOffer($maxCountForOffer);
+
+        $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
 
         $this->traceCheckResult(
             TraceCode::OFFER_USAGE_CHECK,
             [
                 'result'                   => $result,
-                'max_count_for_offer' => $maxCountForOffer,
+                'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
             ]);
 
         return $result;
-    }
-    protected function checkMaxCountForOffer($maxCountForOffer): bool
-    {
-        return $this->offer->getCurrentOfferUsage() < $maxCountForOffer;
-
     }
 
 

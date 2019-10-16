@@ -316,9 +316,10 @@ trait Capture
      */
     protected function capturePayment(Payment\Entity $payment, int $captureAmount, string $currency)
     {
-        try
-        {
+        try {
+
             $this->modifyCaptureAmountForDiscountedOrder($payment, $captureAmount);
+
 
             $this->modifyCaptureAmountForPaymentFee($payment, $captureAmount);
 
