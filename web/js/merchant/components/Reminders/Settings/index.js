@@ -18,7 +18,7 @@ const initState = {
   advancedSettings: {
     scheduledTime: '10AM - 12PM',
     channels: {
-      sms: false,
+      sms: true,
       email: true,
     },
   },
@@ -44,12 +44,12 @@ export default class ReminderSetting extends React.Component {
   constructor(props) {
     super(props);
 
-    this.changeRoute = false;
+    this.currLocation = this.props.location.pathname;
+    this.confirmedNavigation = false;
     this.typeInLowerCase = String(props.type).toLowerCase();
 
     this.state = {
-      // TODO: Update when API is ready according API response.
-      checked: true,
+      isEnabled: props.isEnabled,
       __stashed_settings__: {
         ...initState,
         withExpiry: props.withExpiry,
@@ -72,10 +72,10 @@ export default class ReminderSetting extends React.Component {
 
   disableReminderSetting = () => {
     return this.props
-      .disableReminderSetting()
+      .disableEnableReminders(!this.state.isEnabled)
       .then(() => {
         this.setState({
-          checked: !this.state.checked,
+          isEnabled: !this.state.isEnabled,
         });
 
         this.props.showNotification({
@@ -85,7 +85,7 @@ export default class ReminderSetting extends React.Component {
       })
       .catch(({ errors }) => {
         this.setState({
-          checked: !this.state.checked,
+          isEnabled: !this.state.isEnabled,
         });
 
         this.props.showNotification({
@@ -96,7 +96,7 @@ export default class ReminderSetting extends React.Component {
   };
 
   handleToggle = () => {
-    if (!this.state.checked) {
+    if (!this.state.isEnabled) {
       return this.disableReminderSetting();
     }
 
@@ -186,44 +186,56 @@ export default class ReminderSetting extends React.Component {
   };
 
   handleRouteChange = location => {
-    this.context.confirm({
-      header: 'Discard unsaved changes?',
-      message:
-        'You have made changes to the reminder schedule.  All changes will be lost.',
-      affirmativeLabel: 'Discard',
-      abortLabel: 'Cancel',
-      action: () => {
-        this.changeRoute = true;
+    this.context
+      .confirm({
+        header: 'Discard unsaved changes?',
+        message:
+          'You have made changes to the reminder schedule.  All changes will be lost.',
+        affirmativeLabel: 'Discard',
+        abortLabel: 'Cancel',
+        action: () => {
+          this.setState(
+            {
+              settings: {
+                ...this.state.__stashed_settings__,
+              },
+            },
+            () => {
+              this.props.history.push(location.pathname);
+            }
+          );
+        },
+      })
+      .catch(() => {
+        this.props.history.push(this.currLocation);
+      });
 
-        this.props.history.push(location.pathname);
-      },
-    });
-
-    return this.changeRoute;
+    return false;
   };
 
   render() {
     const {
         settings,
-        checked,
+        isEnabled,
         withExpireByConfigs,
         withOutExpireByConfigs,
       } = this.state,
-      { type } = this.props;
+      { type, totalUnpaidLinks } = this.props;
 
     return (
-      <div class={`setting-item ${checked ? 'enabled' : 'disabled'}`}>
+      <div class={`setting-item ${isEnabled ? 'enabled' : 'disabled'}`}>
         <div class="panel panel-default">
           <div class="panel-section--theme">
             <div class="panel-heading">
               <Header
                 type={type}
-                checked={checked}
+                isEnabled={isEnabled}
+                disabled={totalUnpaidLinks.loading}
                 onToggle={this.handleToggle}
               />
             </div>
 
-            {checked && (
+            {isEnabled && (
               <div class="panel-body">
                 <Prompt
                   when={this.isChanged()}

@@ -2,55 +2,51 @@ import { connect } from 'react-redux';
 
 import {
   fetchReminders,
-  createReminders,
   fetchRemindersConfigs,
   fetchRemindersMerchantConfigs,
 } from 'merchant/modules/reminders';
 
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Spinner from 'rzp/ui/Spinner';
+import Alert from 'rzp/ui/Forms/Alert';
 
 import PaymentLinksSettings from './PaymentLinksSettings';
 
 @connect(state => state.reminders, {
   fetchReminders,
-  createReminders,
   fetchRemindersConfigs,
   fetchRemindersMerchantConfigs,
 })
 export default class extends React.Component {
+  constructor(props) {
+    super();
+
+    this.state = {
+      errors: '',
+    };
+  }
+
   componentDidMount() {
     this.fetchDataForReminders();
   }
 
   fetchDataForReminders = () => {
     return Promise.all([
-      this.fetchReminders(),
+      this.props.fetchReminders(),
       this.props.fetchRemindersConfigs(),
       this.props.fetchRemindersMerchantConfigs(),
-    ]);
-  };
-
-  fetchReminders = () => {
-    return this.props.fetchReminders().then(resp => {
-      if (resp.data.count === 0) {
-        const promiseList = REMINDERS_TYPES_LIST.map(key =>
-          this.props.createReminders(key)
-        );
-
-        return new Promise.all(promiseList);
-      }
-
-      return resp;
+    ]).catch(err => {
+      this.setState({
+        errors: 'Failed to fetch data',
+      });
     });
   };
 
   render() {
-    const { items } = this.props.reminders,
-      loading =
-        this.props.reminders.loading ||
-        this.props.configs.loading ||
-        this.props.merchant_config.loading;
+    const loading =
+      this.props.reminders.loading ||
+      this.props.configs.loading ||
+      this.props.merchant_config.loading;
 
     if (loading) {
       return (
@@ -59,10 +55,6 @@ export default class extends React.Component {
         </div>
       );
     }
-
-    const settingsProps = {
-      disableReminder: this.disableReminder,
-    };
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
@@ -78,21 +70,14 @@ export default class extends React.Component {
           </div>
         </HeaderAction>
 
-        <div class="Reminders-settings">
-          {items.length &&
-            items.map(
-              item =>
-                REMINDERS_TYPE_MAP[item.namespace] &&
-                REMINDERS_TYPE_MAP[item.namespace](settingsProps)
-            )}
-        </div>
+        {this.state.errors ? (
+          <Alert type="error" message={this.state.errors} showDismiss={false} />
+        ) : (
+          <div class="Reminders-settings">
+            <PaymentLinksSettings />
+          </div>
+        )}
       </div>
     );
   }
 }
-
-const REMINDERS_TYPES_LIST = ['payment_link'];
-
-const REMINDERS_TYPE_MAP = {
-  payment_link: props => <PaymentLinksSettings {...props} />,
-};

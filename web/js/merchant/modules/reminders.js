@@ -19,7 +19,7 @@ export const fetchReminders = () => {
   };
 };
 
-export const disableReminders = (id, data) => {
+export const disableEnableReminders = (id, data) => {
   return {
     type: REMINDERS_UPDATE,
     payload: merchantFetch({
@@ -31,16 +31,13 @@ export const disableReminders = (id, data) => {
 };
 
 export const createReminders = namespace => {
-  return {
-    type: REMINDERS_FETCH,
-    payload: merchantFetch({
-      url: 'reminders/service/merchant_settings',
-      method: 'post',
-      data: {
-        namespace,
-      },
-    }),
-  };
+  return merchantFetch({
+    url: 'reminders/service/merchant_settings',
+    method: 'post',
+    data: {
+      namespace,
+    },
+  });
 };
 
 export const fetchRemindersConfigs = () => {
@@ -91,6 +88,9 @@ export default function(state = initialState, action) {
     case `${REMINDERS_FETCH}::PENDING`:
       return set(state, 'reminders', set(state.reminders, 'loading', true));
 
+    case `${REMINDERS_FETCH}::ERROR`:
+      return set(state, 'reminders', set(state.reminders, 'loading', false));
+
     case `${REMINDERS_FETCH}::SUCCESS`: {
       return set(
         state,
@@ -114,6 +114,9 @@ export default function(state = initialState, action) {
       );
     }
 
+    case `${REMINDERS_UPDATE}::ERROR`:
+      return set(state, 'reminders', set(state.reminders, 'loading', false));
+
     case `${REMINDER_MERCHANT_CONFIG_FETCH}::PENDING`:
       return set(
         state,
@@ -131,6 +134,13 @@ export default function(state = initialState, action) {
         })
       );
     }
+
+    case `${REMINDER_MERCHANT_CONFIG_FETCH}::ERROR`:
+      return set(
+        state,
+        'merchant_config',
+        set(state.merchant_config, 'loading', false)
+      );
 
     case `${REMINDER_MERCHANT_CONFIG_UPDATE}::SUCCESS`: {
       return set(
@@ -156,6 +166,9 @@ export default function(state = initialState, action) {
         })
       );
     }
+
+    case `${REMINDER_CONFIG_FETCH}::ERROR`:
+      return set(state, 'configs', set(state.configs, 'loading', false));
 
     default:
       return state;

@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 import { findBy, filterBy } from 'rzp/utils/rzp-utils';
 import * as NotificationActions from 'rzp/modules/notifications';
 
-import Spinner from 'rzp/ui/Spinner';
-
 import {
+  fetchReminders,
   editRemindersMerchantConfigs,
-  disableReminders,
+  disableEnableReminders,
+  createReminders,
 } from 'merchant/modules/reminders';
 
 import { fetchInvoiceCount } from 'merchant/modules/invoices/details';
@@ -54,11 +54,9 @@ import Setting from 'merchant/components/Reminders/Settings';
     });
 
     return {
-      paymentLinkReminder: findBy(
-        state.reminders.reminders.items,
-        'namespace',
-        'payment_link'
-      ),
+      paymentLinkReminder:
+        findBy(state.reminders.reminders.items, 'namespace', 'payment_link') ||
+        {},
       withExpireByConfigs,
       withOutExpireByConfigs,
       withExpireByMerchantConfigs,
@@ -68,8 +66,9 @@ import Setting from 'merchant/components/Reminders/Settings';
     };
   },
   {
+    fetchReminders,
     editRemindersMerchantConfigs,
-    disableReminders,
+    disableEnableReminders,
     ...NotificationActions,
   }
 )
@@ -138,24 +137,20 @@ export default class PaymentLinksSettings extends React.Component {
       });
   };
 
-  disableReminderSetting = () => {
-    return this.props.disableReminders(this.props.paymentLinkReminder.id, {
-      active: false,
-    });
+  disableEnableReminders = active => {
+    if (!this.props.paymentLinkReminder.id) {
+      return createReminders('payment_link').then(this.props.fetchReminders);
+    }
+
+    return this.props.disableEnableReminders(
+      this.props.paymentLinkReminder.id,
+      {
+        active: active === '1',
+      }
+    );
   };
 
   render() {
-    if (this.state.totalUnpaidLinks.loading) {
-      return (
-        <div
-          class="page-spinner-container"
-          key="RemindersSettings--PaymentLinks"
-        >
-          <Spinner />
-        </div>
-      );
-    }
-
     return (
       <div
         class="Reminders-settings--payment_links"
@@ -164,9 +159,10 @@ export default class PaymentLinksSettings extends React.Component {
         <Setting
           type="Payment Links"
           emailDetails={emailDetails}
+          isEnabled={this.props.paymentLinkReminder.active}
           channels={this.props.channels}
           onSaveClick={this.saveSettings}
-          disableReminderSetting={this.disableReminderSetting}
+          disableEnableReminders={this.disableEnableReminders}
           totalUnpaidLinks={this.state.totalUnpaidLinks}
           withExpiry={this.props.withExpireByMerchantConfigs}
           withOutExpiry={this.props.withOutExpireByMerchantConfigs}
