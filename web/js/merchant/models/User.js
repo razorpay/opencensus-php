@@ -343,18 +343,6 @@ export default class User {
     return ((this.experiments || {})[name] || {}).result === 'on';
   }
 
-  get showEarlySettlementAnnouncement() {
-    return (
-      this.activated &&
-      this.findTag('announcement_early_settlements') &&
-      !LocalStorageService.getItem(
-        `early-settlement-requested-${this.current}`
-      ) &&
-      !this.findTag('es_automatic') &&
-      !this.isFeatureEnabled('es_on_demand')
-    );
-  }
-
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
