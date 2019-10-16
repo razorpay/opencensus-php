@@ -70,6 +70,11 @@ class Doppler
         try
         {
             $this->sns->publish(json_encode($eventData), $this->sns_topic);
+            $this->trace->info(
+                TraceCode::DOPPLER_SNS_PUBLISH,
+                [
+                    'sns_topid'        => $this->sns_topic,
+                ]);
         }
         catch (\Throwable $e)
         {
