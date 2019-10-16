@@ -466,4 +466,39 @@ return [
             ],
         ],
     ],
+    'testFundAccValidationWithAccountNumberAndVPA' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'vpa',
+                    'active'       => true,
+                    'details'      => [
+                        'address' => "jayesh@upi"
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 0,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
 ];

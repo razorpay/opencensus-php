@@ -4,10 +4,10 @@ namespace RZP\Jobs;
 
 
 use App;
-use RZP\Exception\GatewayErrorException;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\Payment\Processor\Vpa;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\FundAccount\Validation\AccountStatus;
 use \RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
 
@@ -17,16 +17,8 @@ class FaVpaValidation extends Job
 
     use Vpa;
 
-    const RELEASE_WAIT_SECS    = 60;
-
-    /**
-     * @var string
-     */
     protected $queueConfigKey = 'fa_vpa_validation';
 
-    /**
-     * @var
-     */
     protected $favId;
 
     protected $repo;
