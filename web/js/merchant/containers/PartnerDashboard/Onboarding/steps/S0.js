@@ -32,7 +32,7 @@ const S0 = props => {
           </a>
         </div>
       </div>
-      <SlideContoller key={4} sliderProps={props.sliderProps} />
+      <SlideContoller sliderProps={props.sliderProps} />
     </>
   );
 };

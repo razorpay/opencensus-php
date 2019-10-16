@@ -16,7 +16,7 @@ const SlideController = ({
           <SliderDots {...sliderProps} />
         </div>
         <div style={{ textAlign: 'end' }}>
-          <a onClick={prev} className="btn btn-link">
+          <a onClick={() => prev && prev()} className="btn btn-link">
             Back
           </a>
           <a

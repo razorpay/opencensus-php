@@ -2,7 +2,7 @@ import React from 'react';
 import { classList } from 'common/util';
 import SlideContoller from './SlideController';
 
-const s2 = ({ role, onRoleSelect, sliderProps }) => {
+const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser }) => {
   return (
     <>
       <div className={'partner-onbr-info'}>
@@ -15,8 +15,8 @@ const s2 = ({ role, onRoleSelect, sliderProps }) => {
             }}
           >
             <div style={{ flex: 9 }}>
-              <p className="info info-grey">Refer Merchants</p>
-              <p>Refer merchants and businesses to Razorpay</p>
+              <p className="info info-grey">Refer Businesses</p>
+              <p>Refer individuals and businesses to Razorpay</p>
             </div>
             <div className="check">
               <i class="i i-check" />
@@ -31,8 +31,10 @@ const s2 = ({ role, onRoleSelect, sliderProps }) => {
             onClick={() => onRoleSelect('aggregator')}
           >
             <div style={{ flex: 9 }}>
-              <p className="info info-grey">Refer and Manage Merchants</p>
-              <p>Refer and manage your customer accounts on Razorpay</p>
+              <p className="info info-grey">Refer & Manage Merchants</p>
+              <p>
+                Refer and manage the payment stack for your referred accounts
+              </p>
             </div>
             <div className="check">
               <i class="i i-check" />
@@ -46,18 +48,20 @@ const s2 = ({ role, onRoleSelect, sliderProps }) => {
               Support
             </a>
           </p>
-          <p style={{ marginTop: '10px' }}>
-            <a
-              target="_blank"
-              style={{
-                textDecoration: 'underline',
-                color: '#57666E',
-              }}
-            >
-              I just want to use Razorpay products{' '}
-            </a>
-            <i className="i i-external-link " />
-          </p>
+          {!isExistingUser && (
+            <p style={{ marginTop: '10px' }}>
+              <a
+                target="_blank"
+                style={{
+                  textDecoration: 'underline',
+                  color: '#57666E',
+                }}
+              >
+                I just want to use Razorpay products{' '}
+              </a>
+              <i className="i i-external-link " />
+            </p>
+          )}
         </div>
       </div>
       <SlideContoller sliderProps={sliderProps} disNext={!Boolean(role)} />

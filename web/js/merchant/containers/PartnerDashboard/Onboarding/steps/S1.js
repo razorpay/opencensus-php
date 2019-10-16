@@ -22,7 +22,7 @@ const S1 = props => {
           </p>
         </div>
       </div>
-      <SlideContoller key={4} sliderProps={props.sliderProps} />
+      <SlideContoller sliderProps={props.sliderProps} />
     </>
   );
 };
