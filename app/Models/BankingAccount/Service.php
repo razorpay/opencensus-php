@@ -66,7 +66,7 @@ class Service extends Base\Service
             ['id'=> $id]);
 
         /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
         // validating if user tries to add/change credentials
         // after his account gets activated successfully

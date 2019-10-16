@@ -241,6 +241,8 @@ class BankingAccountTest extends TestCase
 
         $this->setMozartMockResponse($mozartResponse);
 
+        $this->ba->adminAuth();
+
         $this->startTest($dataToReplace);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
@@ -289,6 +291,8 @@ class BankingAccountTest extends TestCase
             return [];
         });
 
+        $this->ba->adminAuth();
+
         $this->startTest($dataToReplace);
     }
 
@@ -310,6 +314,8 @@ class BankingAccountTest extends TestCase
         {
             return [];
         });
+
+        $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
     }
