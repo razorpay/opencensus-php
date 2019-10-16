@@ -316,6 +316,13 @@ export default class User {
     return this.partner_type === null && this.partner_intent;
   }
 
+  isSignUpPartnerIntent() {
+    return (
+      this.partner_type === null &&
+      this.partner_intent &&
+      this.merchant_partner_intent === false
+    );
+  }
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
     return (
