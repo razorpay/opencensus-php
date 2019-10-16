@@ -60,9 +60,9 @@ class Service extends Base\Service
         return $account->toArrayPublic();
     }
 
-    public function storeCredentialsAndActivateAccount(string $id, array $input)
+    public function activate(string $id, array $input)
     {
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
             ['id'=> $id]);
 
         /** @var Entity $bankingAccount */
@@ -73,9 +73,7 @@ class Service extends Base\Service
 
         $this->checkIfAccountAlreadyActivated($bankingAccount);
 
-        $this->core->storeCredentialsAndActivateAccount($bankingAccount, $input);
-
-        $this->core->createAccountMappingForFts($bankingAccount);
+        $this->core->activate($bankingAccount, $input);
 
         return $bankingAccount->toArrayPublic();
     }

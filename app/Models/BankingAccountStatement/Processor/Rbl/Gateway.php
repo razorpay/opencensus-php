@@ -118,9 +118,9 @@ class Gateway extends BaseProcessor
 
     protected function getRequestDataForMozart(array $input, array $lastTransaction)
     {
+        /** @var BankingAccountEntity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByAccountNumberAndChannel($this->accountNumber,
                                                                                       $this->channel);
-
         $data = [
             Fields::ATTEMPT => [
                 Fields::ID                          => (string) Carbon::now()->timestamp,
@@ -131,13 +131,11 @@ class Gateway extends BaseProcessor
             Fields::SOURCE_ACCOUNT => [
                 Fields::ACCOUNT_NUMBER              => $this->accountNumber,
                 Fields::CREDENTIALS => [
-                    Fields::SUBCORP_ID              => $bankingAccount->getReference1(),
-                    Fields::SUBCORP_USER_ID         => $bankingAccount->getUsername(),
-                    Fields::SUBCORP_USER_PASSWORD   => $bankingAccount->getPassword(),
-                    Fields::CLIENT_ID               => Config::get('gateway.mozart.razorpayx.direct.rbl.client_id'),
-                    Fields::CLIENT_SECRET           => Config::get('gateway.mozart.razorpayx.direct.rbl.client_secret'),
-                    Fields::AUTH_USERNAME           => Config::get('gateway.mozart.razorpayx.direct.rbl.auth_username'),
-                    Fields::AUTH_PASSWORD           => Config::get('gateway.mozart.razorpayx.direct.rbl.auth_password'),
+                    Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
+                    Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
+                    Fields::CLIENT_ID               => $bankingAccount->getReference2(),
+                    Fields::CLIENT_SECRET           => $bankingAccount->getReference3(),
+                    Fields::CORP_ID                 => $bankingAccount->getReference1(),
                 ]
             ],
             Fields::LAST_TRANSACTION => $this->getPaginationDataForRequest($lastTransaction),

@@ -44,10 +44,7 @@ class Fields
     const RZP_ALERT_NOTIFICATION_RESPONSE   = 'RZPAlertNotiRes';
 
     // Credentials fields
-    const SUBCORP_ID                        = 'subcorp_id';
-    const SUBCORP_USER_ID                   = 'subcorp_user_id';
-    const SUBCORP_USER_NAME                 = 'subcorp_user_name';
-    const SUBCORP_USER_PASSWORD             = 'subcorp_user_password';
+    const CORP_ID                           = 'corp_id';
     const CLIENT_ID                         = 'client_id';
     const CLIENT_SECRET                     = 'client_secret';
     const USERNAME                          = 'auth_username';
@@ -82,8 +79,6 @@ class Fields
       self::RZP_REFERENCE_NUMBER    => Entity::BANK_REFERENCE_NUMBER,
       self::EMAIL_ID                => Entity::BENEFICIARY_EMAIL,
       self::PHONE_NUM               => Entity::BENEFICIARY_MOBILE,
-      self::SUBCORP_ID              => Entity::REFERENCE1,
-      self::SUBCORP_USER_NAME       => Entity::USERNAME,
-      self::SUBCORP_USER_PASSWORD   => Entity::PASSWORD
+      self::CORP_ID                 => Entity::REFERENCE1,
     ];
 }

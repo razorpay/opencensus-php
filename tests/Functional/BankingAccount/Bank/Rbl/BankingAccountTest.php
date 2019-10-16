@@ -197,7 +197,7 @@ class BankingAccountTest extends TestCase
         $this->assertNotEquals($bankingAccount['account_number'], 31900299180853);
     }
 
-    public function testStoreMerchantCredentials()
+    public function testActivate()
     {
         $attribute = ['activation_status' => 'activated'];
 
@@ -210,14 +210,19 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
-           'account_number'         => '1234567890',
+            'account_number'        => '1234567890',
             'beneficiary_state'     => 'karnataka',
             'beneficiary_country'   => 'india',
+            'username'              => 'MERCHANT_1234',
+            'password'              => 'RANDOM_STRING',
+            'reference1'            => 'MERCHANT_SUB_CORP',
+            'reference2'            => 'RANDOM_STRING',
+            'reference3'            => 'RANDOM_STRING',
         ]);
 
         $dataToReplace = [
           'request' => [
-              'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/credentials'
+              'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
           ]
         ];
 
@@ -254,7 +259,40 @@ class BankingAccountTest extends TestCase
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
     }
 
-    public function testStoreMerchantCredentialsFailedDueToVaultFailure()
+    public function testActivateFailedDueToVaultFailure()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'username'              => 'MERCHANT_1234',
+            'password'              => 'RANDOM_STRING',
+            'reference1'            => 'MERCHANT_SUB_CORP',
+            'reference2'            => 'RANDOM_STRING',
+            'reference3'            => 'RANDOM_STRING',
+        ]);
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
+            ]
+        ];
+
+        $this->mockCardVault(function ()
+        {
+            return [];
+        });
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testActivateFailedDueToMissingData()
     {
         $this->ba->proxyAuth();
 
@@ -264,7 +302,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace = [
             'request' => [
-                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/credentials'
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
             ]
         ];
 

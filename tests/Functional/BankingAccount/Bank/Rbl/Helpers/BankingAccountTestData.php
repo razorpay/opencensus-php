@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\BankingAccount;
 use RZP\Error\PublicErrorCode;
 
@@ -269,9 +270,9 @@ return [
         ],
     ],
 
-    'testStoreMerchantCredentials' => [
+    'testActivate' => [
         'request'  => [
-            'url'     => '/banking_accounts/{id}/credentials',
+            'url'     => '/banking_accounts/{id}/activate',
             'method'  => 'POST',
             'content' => [
                 'subcorp_id'              => 'MERCHANT_SUB_CORP',
@@ -284,13 +285,12 @@ return [
                 'entity'        => 'banking_account',
                 'channel'       => 'rbl',
                 'status'        => 'activated',
-                'username'      => 'MERCHANT_1234',
                 'reference1'    => 'MERCHANT_SUB_CORP'
             ]
         ],
     ],
 
-    'testStoreMerchantCredentialsFailedDueToVaultFailure' => [
+    'testActivateFailedDueToVaultFailure' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/credentials',
             'method'  => 'POST',
@@ -312,6 +312,31 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+        ],
+    ],
+
+    'testActivateFailedDueToMissingData' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'              => 'MERCHANT_SUB_CORP',
+                'subcorp_user_name'       => 'MERCHANT_1234',
+                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION,
         ],
     ],
 

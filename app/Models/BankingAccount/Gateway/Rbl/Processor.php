@@ -13,6 +13,7 @@ use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 
@@ -44,6 +45,38 @@ class Processor extends BankingAccount\Gateway\Processor
     protected $mozartGatewayErrorCodes = ['ER022', 'ERR_PG_003'];
 
     protected $mozartErrorInformation = ['UserID or Password Not Correct '];
+
+    public function processActivation(Entity $bankingAccount, array $input)
+    {
+        $this->verifyStoredCredentials($bankingAccount);
+
+        //
+        // This is in a transaction because, BankingAccount entity update
+        // and Balance entity creation, both should succeed or fail
+        //
+        $this->repo->transaction(function () use ($bankingAccount, $input)
+        {
+            $merchant = $bankingAccount->merchant;
+
+            $mode = $this->app['rzp.mode'];
+
+            $balanceInfo = $this->getBalanceAttributesToSave($bankingAccount);
+
+            $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
+
+            $input[Entity::STATUS] = BankingAccount\Status::ACTIVATED;
+
+            (new BankingAccount\Core)->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+
+            $bankingAccount->fill($input);
+
+            $bankingAccount->balance()->associate($balance);
+
+            $this->createAccountMappingForFts($bankingAccount);
+
+            $this->repo->saveOrFail($bankingAccount);
+        });
+    }
 
     public function preProcessAccountInfoNotification(array $input)
     {
@@ -139,31 +172,19 @@ class Processor extends BankingAccount\Gateway\Processor
 
     /**
      * @param BankingAccount\Entity $bankingAccount
-     * @param array                 $input
      *
      * @return void
      * @throws BadRequestException
      * @throws \Requests_Exception
      * @throws \Throwable
      */
-    public function storeCredentials(BankingAccount\Entity $bankingAccount, array $input)
+    public function verifyStoredCredentials(BankingAccount\Entity $bankingAccount)
     {
-        (new Validator)->validateInput(Validator::ADD_CREDENTIALS, $input);
-
-        $input[Fields::SUBCORP_USER_PASSWORD] = $this->tokenizeCredentials($input[Fields::SUBCORP_USER_PASSWORD]);
-
-        $response = $this->verifyCredentials($bankingAccount, $input);
+        $response = $this->verifyCredentials($bankingAccount);
 
         $balance = $this->fetchBalanceFromMozartResponse($response);
 
         $this->checkBalanceForActivation($balance);
-
-        // we will save credentials only once the fetch balance call is successful
-        $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
-
-        $bankingAccount->fill($attributes);
-
-        $this->repo->banking_account->saveOrFail($bankingAccount);
     }
 
     public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
@@ -171,13 +192,11 @@ class Processor extends BankingAccount\Gateway\Processor
         $rbl = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
 
         $credentials = [
-            Fields::USERNAME                  => $rbl[Fields::AUTH_USERNAME],
-            Fields::PASSWORD                  => $rbl[Fields::AUTH_PASSWORD],
-            Fields::CLIENT_ID                 => $rbl[Fields::CLIENT_ID],
-            Fields::CLIENT_SECRET             => $rbl[Fields::CLIENT_SECRET],
-            Fields::SUBCORP_ID                => $bankingAccount->getReference1(),
-            Fields::SUBCORP_USER_ID           => $bankingAccount->getUsername(),
-            Fields::SUBCORP_USER_PASSWORD     => $bankingAccount->getPassword(),
+            Fields::USERNAME                  => $bankingAccount->getUsername(),
+            Fields::PASSWORD                  => $bankingAccount->getPassword(),
+            Fields::CORP_ID                   => $bankingAccount->getReference1(),
+            Fields::CLIENT_ID                 => $bankingAccount->getReference2(),
+            Fields::CLIENT_SECRET             => $bankingAccount->getReference3(),
         ];
 
         $mozartIdentifier = $rbl[Fields::MOZART_IDENTIFIER];
@@ -213,9 +232,9 @@ class Processor extends BankingAccount\Gateway\Processor
         }
     }
 
-    protected function verifyCredentials(BankingAccount\Entity $bankingAccount, array $input)
+    protected function verifyCredentials(BankingAccount\Entity $bankingAccount)
     {
-        $request = $this->formatDataForMozartFetchBalanceApi($bankingAccount, $input);
+        $request = $this->formatDataForMozartFetchBalanceApi($bankingAccount);
 
         $retryCount = 0;
 
@@ -306,41 +325,23 @@ class Processor extends BankingAccount\Gateway\Processor
         return intval(number_format($amount * 100, 0, '.', ''));
     }
 
-    protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount, array $input)
+    protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount)
     {
-        $credentials = $this->getAccountCredentials();
-
-        $merchantCredentials = [
-            Fields::SUBCORP_ID                => $input[Fields::SUBCORP_ID],
-            Fields::SUBCORP_USER_ID           => $input[Fields::SUBCORP_USER_NAME],
-            Fields::SUBCORP_USER_PASSWORD     => $input[Fields::SUBCORP_USER_PASSWORD]
-        ];
-
-        $credentials = array_merge($credentials, $merchantCredentials);
-
         $data = [
             Fields::SOURCE_ACCOUNT => [
                 Fields::SOURCE_ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
                 Fields::ID                      => $bankingAccount->getBankReferenceNumber(),
-                Fields::CREDENTIALS             => $credentials,
+                Fields::CREDENTIALS             => [
+                    Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
+                    Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
+                    Fields::CORP_ID                 => $bankingAccount->getReference1(),
+                    Fields::CLIENT_ID               => $bankingAccount->getReference2(),
+                    Fields::CLIENT_SECRET           => $bankingAccount->getReference3(),
+                ],
             ],
         ];
 
         return $data;
-    }
-
-    protected function getAccountCredentials()
-    {
-        $config = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
-
-        $credentials = [
-            Fields::USERNAME      => $config[Fields::AUTH_USERNAME],
-            Fields::PASSWORD      => $config[Fields::AUTH_PASSWORD],
-            Fields::CLIENT_ID     => $config[Fields::CLIENT_ID],
-            Fields::CLIENT_SECRET => $config[Fields::CLIENT_SECRET],
-        ];
-
-        return $credentials;
     }
 
     protected function validateInputForAccountCreation(array $input)
@@ -350,7 +351,11 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function preProcessInputForAccountCreation(array $input)
     {
-        $availability =  $this->isPincodeServiceable($input[BankingAccount\Entity::PINCODE]);
+        //
+        // Commented this because currently we're not rejecting requests based on pincodes
+        // This can be useful later when product prioritizes this
+        //
+        // $availability =  $this->isPincodeServiceable($input[BankingAccount\Entity::PINCODE]);
 
         $mutex = $this->app['api.mutex'];
 
@@ -495,5 +500,36 @@ class Processor extends BankingAccount\Gateway\Processor
         unset($input[Fields::PHONE_NUM]);
 
         return $input;
+    }
+
+    protected function validateBeforeActivation(Entity $bankingAccount, array $input = [])
+    {
+        $expected = [
+            Entity::ACCOUNT_NUMBER  => true,
+            Entity::USERNAME        => true,
+            Entity::PASSWORD        => true,
+            Entity::REFERENCE1      => true,
+            Entity::REFERENCE2      => true,
+            Entity::REFERENCE3      => true,
+        ];
+
+        $actual = [
+            Entity::ACCOUNT_NUMBER  => (empty($bankingAccount->getAccountNumber()) === false),
+            Entity::USERNAME        => (empty($bankingAccount->getUsername()) === false),
+            Entity::PASSWORD        => (empty($bankingAccount->getPassword()) === false),
+            Entity::REFERENCE1      => (empty($bankingAccount->getReference1()) === false),
+            Entity::REFERENCE2      => (empty($bankingAccount->getReference2()) === false),
+            Entity::REFERENCE3      => (empty($bankingAccount->getReference3()) === false),
+        ];
+
+        $diff = array_diff($actual, $expected);
+
+        if (count($diff) > 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION,
+                null,
+                array_keys($diff));
+        }
     }
 }

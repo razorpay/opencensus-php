@@ -75,13 +75,15 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER_LENGTH             = 40;
     const ACCOUNT_IFSC_LENGTH               = 11;
 
+    // for rbl this is ldap id
     const USERNAME                          = 'username';
+    // for rbl this is ldap password
     const PASSWORD                          = 'password';
     // For rbl this is the corp_id
     const REFERENCE1                        = 'reference1';
-    // For rbl this is the ldap id
+    // For rbl this is the client_id
     const REFERENCE2                        = 'reference2';
-    // For rbl this is the ldap password
+    // For rbl this is the client_secret
     const REFERENCE3                        = 'reference3';
     // For rbl this is the merchant's portal username
     const REFERENCE4                        = 'reference4';
@@ -190,7 +192,6 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
-        self::USERNAME,
         self::PINCODE,
     ];
 
@@ -356,6 +357,16 @@ class Entity extends Base\PublicEntity
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getReference2()
+    {
+        return $this->getAttribute(self::REFERENCE2);
+    }
+
+    public function getReference3()
+    {
+        return $this->getAttribute(self::REFERENCE3);
     }
 
     public function isAlreadyActivated()
