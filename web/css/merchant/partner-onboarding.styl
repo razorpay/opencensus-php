@@ -1,18 +1,17 @@
 .partner-onboarding-base-screen
-    min-height:503px
-    min-width:850px
+    min-height:403px;
     border-radius: 4px;
     background: #FEFEFF;
-    background-image:url('assets/onboarding/prt-bkg.png')
     background-repeat:no-repeat;
     background-size:603px;
     background-position: top 0 right 0%;
     font-family: Lato;
     font-style: normal;
+    padding: 56px;
     .partner-onbr-info
-      width:50%;
-      height:400px;
-      padding: 50px 0px 50px 50px;
+      min-height: 260px;
+      p
+        font-size: 14px;
     .title
       font-weight: bold;
       font-size: 24px;
@@ -54,11 +53,20 @@
          padding:20px;
          display:flex;
          align-content:center;
+         cursor: pointer;
       div.value.active
         background: rgba(81, 143, 240, 0.05);
+        border-left: solid 4px #518FF0;
+        div.check i 
+          color:#518FF0;
+        .info-grey
+           color:#518FF0;
       div.check
         flex:1;
-        align-self:'center';
+        align-self:center;
+        i
+          font-size: 18px;
+          color: #D9D9D9;
       .no-bottom-border
         border-bottom-width:0px !important;
       .no-top-border
@@ -80,7 +88,6 @@
         justify-content: space-between;
       .SliderDots
           text-align: left;
-          margin-left:50px;
       .slider-btn
         background: #518FF0;
         border: 1px solid #3B80EE;
@@ -96,3 +103,26 @@
         i
           padding:2px;
           line-height: 8px;
+
+@media (min-width: 800px)
+  .partner-onboarding-base-screen
+    min-width:850px;
+    background-image:url('assets/onboarding/prt-bkg.png')
+    .partner-onbr-info
+      width: 50%;
+  .slide-controller-wrapper
+    width:50%;
+@media  (min-width: 320px) and (max-width: 1024px)
+ .partner-onboarding-base-screen
+    width:80vw;
+    .partner-onbr-info
+      width: 100%;
+  .slide-controller-wrapper
+    width:100%;
+    .slide-controller
+      display: block;
+      div
+        display: inline-block;
+      
+
+    
