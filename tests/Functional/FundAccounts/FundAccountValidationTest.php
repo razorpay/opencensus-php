@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\FundAccount;
 
 use \RZP\Constants;
+use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -33,6 +34,8 @@ class FundAccountValidationTest extends TestCase
         parent::setUp();
 
         $this->fixtures->merchant->addFeatures(['fund_account_validations']);
+
+        $this->fixtures->merchant->addFeatures(['pass_utr']);
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 

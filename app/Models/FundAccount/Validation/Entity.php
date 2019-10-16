@@ -5,6 +5,7 @@ namespace RZP\Models\FundAccount\Validation;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits;
+use RZP\Models\Feature\Constants as MerchantFeature;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
@@ -226,10 +227,17 @@ class Entity extends Base\PublicEntity
     public function setPublicResultsAttribute(array & $array)
     {
         $array[self::RESULTS] = [
-            self::UTR             => $this->getUtr(),
             self::ACCOUNT_STATUS  => $this->getAccountStatus(),
             self::REGISTERED_NAME => $this->getRegisteredName(),
         ];
+
+        $merchant = $this->merchant;
+
+        if ( ($merchant !== null) and
+            ($merchant->isFeatureEnabled(MerchantFeature::PASS_UTR) === true))
+        {
+            $array[self::RESULTS][self::UTR] = $this->getUtr();
+        }
     }
 
     // -------------- Getters --------------
