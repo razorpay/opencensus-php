@@ -675,9 +675,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
     }
 
+    public function setPoaVerificationStatus(string $poaVerificationStatus)
+    {
+        $this->setAttribute(self::POA_VERIFICATION_STATUS, $poaVerificationStatus);
+    }
+
     public function getPoaVerificationStatus()
     {
         return $this->getAttribute(self::POA_VERIFICATION_STATUS);
+    }
+
+    public function isPoaVerified() : bool
+    {
+        return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
+    }
+
+    public function isBankDetailStatusVerified() : bool
+    {
+        return ($this->getBankDetailsVerificationStatus() === BankDetailsVerificationStatus::VERIFIED);
     }
 
     public function getActivationFlow()

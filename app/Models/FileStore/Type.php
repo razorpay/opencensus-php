@@ -166,6 +166,13 @@ class Type
     const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
     const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
     const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
+    const MERCHANT_DRIVER_LICENSE_FRONT         = 'driver_license_front';
+    const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
+    const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
+    const MERCHANT_PASSPORT_BACK                = 'passport_back';
+    const MERCHANT_PASSPORT_FRONT               = 'passport_front';
+    const MERCHANT_VOTER_ID_FRONT               = 'voter_id_front';
+    const MERCHANT_VOTER_ID_BACK                = 'voter_id_back';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -290,6 +297,13 @@ class Type
             self::MERCHANT_PROMOTER_ADDRESS_URL,
             self::MERCHANT_FORM_12A_URL,
             self::MERCHANT_FORM_80G_URL,
+            self::MERCHANT_DRIVER_LICENSE_FRONT,
+            self::MERCHANT_AADHAR_FRONT,
+            self::MERCHANT_AADHAR_BACK,
+            self::MERCHANT_PASSPORT_FRONT,
+            self::MERCHANT_PASSPORT_BACK,
+            self::MERCHANT_VOTER_ID_FRONT,
+            self::MERCHANT_VOTER_ID_BACK,
         ],
 
         Constants\Entity::INVOICE => [

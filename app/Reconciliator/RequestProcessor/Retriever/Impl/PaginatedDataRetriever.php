@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\RequestProcessor\Retriever\Impl;
 
 use App;
+use RZP\Trace\TraceCode;
 
 class PaginatedDataRetriever extends DefaultDataRetriever
 {

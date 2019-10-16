@@ -3,9 +3,12 @@
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
 use RZP\Models\Payout\Entity;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Admin\Service as AdminService;
 
 class DownstreamProcessor
 {
@@ -59,8 +62,48 @@ class DownstreamProcessor
         return $this->payout->balance->getAccountType() ?? AccountType::SHARED;
     }
 
-    protected function getChannelForFundTransfer()
+    /**
+     * TODO: Currently there is no proper way to decide the channel through
+     * which the payout should be routed in case of shared accounts.
+     * Till the time we achieve this by Dynamic routing, we are doing
+     * a hack of using config key to store the MIDs for which
+     * channel for processing the payout should be CITI and ICICI.
+     * The precedence between ICICI and CITI is ICICI.
+     *
+     * @return string
+     */
+    protected function getChannelForFundTransfer(): string
     {
+        $merchant = $this->payout->merchant;
+
+        if ($this->checkIfChannelShouldBeIcici($merchant) === true)
+        {
+            return Channel::ICICI;
+        }
+
+        if ($this->checkIfChannelShouldBeCiti($merchant) === true)
+        {
+            return Channel::CITI;
+        }
+
         return $this->payout->balance->getChannel() ?? Channel::YESBANK;
+    }
+
+    protected function checkIfChannelShouldBeIcici(Merchant $merchant): bool
+    {
+        $mid = $merchant->getId();
+
+        $iciciMids = (new AdminService())->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
+
+        return (in_array($mid, $iciciMids, true));
+    }
+
+    protected function checkIfChannelShouldBeCiti(Merchant $merchant): bool
+    {
+        $mid = $merchant->getId();
+
+        $citiMids = (new AdminService())->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
+
+        return (in_array($mid, $citiMids, true));
     }
 }
