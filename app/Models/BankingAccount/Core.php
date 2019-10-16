@@ -2,11 +2,11 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Razorpay\IFSC\Bank;
-
+use Mail;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Services\FTS;
+use Razorpay\IFSC\Bank;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -21,6 +21,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Mail\BankingAccount\MerchantStatusUpdateMailerFactory;
 
 class Core extends Base\Core
 {
@@ -92,6 +93,43 @@ class Core extends Base\Core
             $bankingAccountInput,
             $virtualAccount->merchant,
             $virtualAccount->balance);
+    }
+
+    public function statusHasChanged(string $previousStatus, string $newStatus): bool
+    {
+        return $previousStatus !== $newStatus;
+    }
+
+    public function notifyMerchantAboutUpdatedStatus(Entity $bankingAccount)
+    {
+        try
+        {
+            $mailer = MerchantStatusUpdateMailerFactory::getMailer($bankingAccount);
+
+            Mail::queue($mailer);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
+                [
+                    'Banking Account ID' => $bankingAccount->getId(),
+                    'Merchant ID'        => $bankingAccount->merchant->getId(),
+                    'Status'             => $bankingAccount->getStatus(),
+                    'message'            => 'Mail Sent'
+                ]);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED,
+                [
+                    'Banking Account ID' => $bankingAccount->getId(),
+                    'Merchant ID'        => $bankingAccount->merchant->getId(),
+                    'Status'             => $bankingAccount->getStatus(),
+                    'Error'              => $e->getMessage(),
+                ]);
+        }
     }
 
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity

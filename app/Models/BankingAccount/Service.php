@@ -28,6 +28,8 @@ class Service extends Base\Service
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
 
+        $this->core->notifyMerchantAboutUpdatedStatus($account);
+
         return $account->toArrayPublic();
     }
 
@@ -43,6 +45,8 @@ class Service extends Base\Service
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
+        $previousStatus = $bankingAccount->getStatus();
+
         $channel = $bankingAccount->getChannel();
 
         $this->trace->info(
@@ -57,13 +61,19 @@ class Service extends Base\Service
 
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
+        if ($this->core->statusHasChanged($previousStatus, $bankingAccount->getStatus()) == true)
+        {
+            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+        }
+
         return $account->toArrayPublic();
     }
+
 
     public function storeCredentialsAndActivateAccount(string $id, array $input)
     {
         $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
-            ['id'=> $id]);
+                           ['id' => $id]);
 
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);

@@ -1,9 +1,15 @@
 <?php
 
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\Mail;
+use RZP\Mail\BankingAccount\Created;
 use RZP\Models\BankingAccount\Entity;
+use RZP\Mail\BankingAccount\Processed;
+use RZP\Mail\BankingAccount\Cancelled;
+use RZP\Mail\BankingAccount\Processing;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
+use RZP\Mail\BankingAccount\Unserviceable;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -499,17 +505,16 @@ class BankingAccountTest extends TestCase
         $this->createBankingAccount();
 
         $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560047,
+            'business_dba'               => 'test',
+            'business_name'              => 'rzp_test',
+            'business_operation_city'    => 'Bangalore',
         ];
-
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->ba->adminAuth();
@@ -522,19 +527,17 @@ class BankingAccountTest extends TestCase
         $this->createBankingAccount();
 
         $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560047,
+            'business_dba'               => 'test',
+            'business_name'              => 'rzp_test',
+            'business_operation_city'    => 'Bangalore',
         ];
-
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
-
 
         $this->ba->adminAuth();
 
@@ -556,20 +559,21 @@ class BankingAccountTest extends TestCase
 
     public function testFetchBankingAccountsOfCreatedStatus()
     {
+        Mail::fake();
+
         $response = $this->createBankingAccount();
 
         $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560047,
+            'business_dba'               => 'test',
+            'business_name'              => 'rzp_test',
+            'business_operation_city'    => 'Bangalore',
         ];
-
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->ba->adminAuth();
@@ -581,10 +585,14 @@ class BankingAccountTest extends TestCase
             ]);
 
         $this->startTest();
+
+        Mail::assertQueued(Created::class);
     }
 
     public function testUpdatedStatusFromCreatedToCancelled()
     {
+        Mail::fake();
+
         $bankingAccount = $this->createBankingAccount();
 
         $dataToReplace = [
@@ -601,6 +609,98 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::CANCELLED, $bankingAccount->getStatus());
+
+        Mail::assertQueued(Cancelled::class);
+    }
+
+    public function testUpdatedStatusFromInitiatedToProcessing()
+    {
+        Mail::fake();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'] ,
+                              [
+                                  'status' => 'initiated',
+                              ]);
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::PROCESSING, $bankingAccount->getStatus());
+
+        Mail::assertQueued(Processing::class);
+    }
+
+    public function testUpdatedStatusFromProcessingToProcessed()
+    {
+        Mail::fake();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'] ,
+                              [
+                                  'status' => 'processing',
+                              ]);
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::PROCESSED, $bankingAccount->getStatus());
+
+        Mail::assertQueued(Processed::class);
+    }
+
+    public function testUpdatedStatusFromProcessingToUnserviceable()
+    {
+        Mail::fake();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'] ,
+                              [
+                                  'status' => 'processing',
+                              ]);
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::UNSERVICEABLE, $bankingAccount->getStatus());
+
+        Mail::assertQueued(Unserviceable::class);
     }
 
     public function testUpdatedStatusFromProcessingToRejected()
@@ -612,7 +712,6 @@ class BankingAccountTest extends TestCase
             [
                 'status' => 'processing',
             ]);
-
 
         $dataToReplace = [
             'request'  => [

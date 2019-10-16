@@ -131,6 +131,23 @@ return [
         ],
     ],
 
+    'testUpdatedStatusFromProcessingToUnserviceable' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::UNSERVICEABLE,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                 => '10000000000000',
+                'channel'                     => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::UNSERVICEABLE,
+            ],
+        ],
+    ],
+
     'testUpdatedStatusFromCreatedToCancelled' => [
         'request'  => [
             'url'     => '/banking_account',
@@ -144,6 +161,56 @@ return [
                 'merchant_id'                  => '10000000000000',
                 'channel'                      => 'rbl',
                 BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
+            ],
+        ],
+    ],
+
+    'testUpdatedStatusFromProcessingToProcessed' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS                         => BankingAccount\Status::PROCESSED,
+                BankingAccount\Entity::BANK_INTERNAL_STATUS           => BankingAccount\Gateway\Rbl\Status::CLOSED,
+                BankingAccount\Entity::ACCOUNT_IFSC                   => 'RATN0000156',
+                BankingAccount\Entity::ACCOUNT_NUMBER                 => '309002180853',
+                BankingAccount\Entity::BENEFICIARY_NAME               => 'INTERNET BANKING CA',
+                BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER => 'random',
+                BankingAccount\Entity::BANK_REFERENCE_NUMBER          => '12345',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS1           => 'RAM NAGAR',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS2           => 'ADARSHA LANE',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS3           => '.',
+                BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE        => '1571119612',
+                BankingAccount\Entity::BENEFICIARY_CITY               => 'MUMBAI',
+                BankingAccount\Entity::BENEFICIARY_STATE              => 'MAHARASH',
+                BankingAccount\Entity::BENEFICIARY_COUNTRY            => 'INDIA',
+                BankingAccount\Entity::BENEFICIARY_MOBILE             => '1231231231',
+                BankingAccount\Entity::BENEFICIARY_EMAIL              => 'test@razorpay.com',
+                BankingAccount\Entity::BENEFICIARY_PIN                => '560030',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                 => '10000000000000',
+                'channel'                     => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+            ],
+        ],
+    ],
+
+    'testUpdatedStatusFromInitiatedToProcessing' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSING,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSING,
             ],
         ],
     ],
@@ -646,7 +713,7 @@ return [
                     [
                         'merchant'      => [
                             'merchant_detail' => [
-                                'contact_email' => 'test@rzp.com'
+                                'contact_email' => 'test@razorpay.com'
                             ]
                         ]
                     ],
@@ -672,7 +739,7 @@ return [
                         'status'        => 'created',
                         'merchant'      => [
                             'merchant_detail' => [
-                                'contact_email' => 'test@rzp.com'
+                                'contact_email' => 'test@razorpay.com'
                             ]
                         ]
                     ],
@@ -700,7 +767,7 @@ return [
                         'status'        => 'created',
                         'merchant'      => [
                             'merchant_detail' => [
-                                'contact_email' => 'test@rzp.com'
+                                'contact_email' => 'test@razorpay.com'
                             ]
                         ]
                     ],
