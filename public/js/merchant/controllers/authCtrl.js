@@ -328,8 +328,10 @@ app
         var payload = {
           method: 'post',
           url: '/user/register',
-          transformRequest: transformRequestAsFormPost,
           data: data,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         };
 
         payload.data.password_confirmation = payload.data.password;
