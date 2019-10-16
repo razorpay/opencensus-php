@@ -452,7 +452,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($fav['id'], $fta['source']);
     }
 
-    public function testFundAccValidationWithAccountNumberAndVPA()
+    public function testFundAccValidationWithAccountNumberAndVpa()
     {
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 

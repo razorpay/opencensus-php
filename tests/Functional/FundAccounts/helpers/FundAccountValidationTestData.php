@@ -466,7 +466,7 @@ return [
             ],
         ],
     ],
-    'testFundAccValidationWithAccountNumberAndVPA' => [
+    'testFundAccValidationWithAccountNumberAndVpa' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
             'method'  => 'post',
