@@ -289,12 +289,12 @@ class Service extends Base\Service
     }
 
     public function storeActivationFile(
-        Base\PublicEntity $merchantDetails,
+        Base\PublicEntity $publicEntity,
         array $input)
     {
         $params = [];
 
-        $merchant = $merchantDetails->merchant;
+        $merchant = $publicEntity->merchant;
 
         foreach ($input as $key => $value)
         {
@@ -306,7 +306,7 @@ class Service extends Base\Service
             $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
 
             $file = $this->createFile(
-                $merchantDetails,
+                $publicEntity,
                 $value->extension(),
                 $value,
                 $fileName,

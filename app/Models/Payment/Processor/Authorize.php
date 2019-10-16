@@ -27,6 +27,7 @@ use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Address;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
@@ -203,6 +204,8 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
+            $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
+
             return null;
         }
 
@@ -265,6 +268,9 @@ trait Authorize
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
+
+            $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
+
 
             // passing $terminalGateawyInput and $gatewayInput
             $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
@@ -6110,5 +6116,25 @@ trait Authorize
         }
 
         $gatewayInput['order']['account_number'] = $accountNumber;
+    }
+
+    public function validateAndSaveBillingAddressIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (isset($input[Payment\Entity::BILLING_ADDRESS]) === false)
+        {
+            return;
+        }
+
+        $billingAddressFromInput = $input[Payment\Entity::BILLING_ADDRESS];
+
+        $billingAddressFromInput['type'] = Address\Type::BILLING_ADDRESS;
+
+        // address entity stores zip code as "zipcode"
+        // in input, we get zip code as "postal_code"
+        $billingAddressFromInput['zipcode'] = $billingAddressFromInput['postal_code'];
+
+        unset($billingAddressFromInput['postal_code']);
+
+        (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }

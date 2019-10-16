@@ -5380,6 +5380,9 @@ ADD COLUMN `origin` VARCHAR(255) DEFAULT NULL AFTER `message`,
 ADD COLUMN `processed_at` INT DEFAULT NULL AFTER `created_at`,
 ADD COLUMN `attempts` INT NOT NULL DEFAULT 0 AFTER `processed_at`;
 
+ALTER TABLE `addresses`
+    MODIFY COLUMN `state` varchar(64)  null;
+
 ALTER TABLE merchant_documents
     ADD COLUMN `ocr_verify` varchar(30) DEFAULT NULL AFTER `entity_type`;
 

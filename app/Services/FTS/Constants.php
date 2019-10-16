@@ -12,6 +12,8 @@ final class Constants
 
     const CODE                           = 'code';
 
+    const NAME                           = "name";
+
     const TYPE                           = 'type';
 
     const MODE                           = 'mode';
@@ -67,6 +69,8 @@ final class Constants
     const INITIATE_AT                    = 'initiate_at';
 
     const MERCHANT_ID                    = 'merchant_id';
+
+    const NETWORK_CODE                   = 'network_code';
 
     const BANK_ACCOUNT                   = 'bank_account';
 

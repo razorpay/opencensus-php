@@ -50,6 +50,7 @@ class Validator extends Base\Validator
         'email'                         => 'sometimes|nullable|email',
         'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
         'contact'                       => 'sometimes|nullable|contact_syntax',
+        'billing_address'               => 'sometimes',
         'signature'                     => 'sometimes|nullable|string',
         'notes'                         => 'sometimes|notes',
         'notes.merchant_order_id'       => 'required_with:signature',
