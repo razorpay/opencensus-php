@@ -30,6 +30,7 @@ export default class BaseScreen extends React.Component {
       ...this.props.user,
       partner_intent: false,
       partner_type: this.state.role,
+      merchant_partner_intent: false,
     });
     this.props.updateSession({ user: userval });
     merchantFetch({

@@ -2,10 +2,14 @@ import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import React, { Component } from 'react';
 import PartnerOnbr from './partnerOnbr';
 import { connect } from 'react-redux';
-
-@connect(state => ({
-  user: state.session.user,
-}))
+import { updateSession } from 'merchant/modules/session';
+import User from 'merchant/models/User';
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  { updateSession }
+)
 export class onboardPartner extends Component {
   state = { showModal: true };
 
@@ -13,6 +17,13 @@ export class onboardPartner extends Component {
     this.setState({
       showModal: false,
     });
+    const userval = new User({
+      ...this.props.user,
+      partner_intent: false,
+      partner_type: null,
+      merchant_partner_intent: false,
+    });
+    this.props.updateSession({ user: userval });
   };
   render() {
     if (!this.state.showModal) {
