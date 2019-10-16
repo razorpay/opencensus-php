@@ -11,6 +11,7 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
+use RZP\Error\ErrorClass;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Upi;
@@ -18,6 +19,7 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Risk;
 use RZP\Models\Card;
+use RZP\Error\Error;
 use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
@@ -69,14 +71,6 @@ trait Authorize
     protected $headlessError = false;
 
     protected $isS2SJsonRoute = false;
-
-    protected static $dopplerEventErrorCodes = [
-        ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
-        ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
-        ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,
-        ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
-        ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
-    ];
 
     /**
      * @param Payment\Entity $payment
@@ -344,7 +338,9 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
-                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_FAILURE_EVENT);
+                // Payment Authentication failed for the gateway.
+                // That means we could not redirect to the ACS page using $terminal->gateway() or mpi_blade
+                // in case terminal is authorization terminals like Hitachi.
 
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
@@ -352,6 +348,12 @@ trait Authorize
                 {
                     continue;
                 }
+
+                $errorCode = $e->getError()->getPublicErrorCode();
+
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_FAILURE_EVENT, $errorCode, $internalErrorCode);
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -361,8 +363,6 @@ trait Authorize
                 $retryAttempts++;
 
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
-
-                $internalErrorCode = $e->getError()->getInternalErrorCode();
 
                 $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
@@ -457,14 +457,8 @@ trait Authorize
 
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
-        $sendEventToDoppler = false;
 
-        if (in_array($e->getCode(), self::$dopplerEventErrorCodes) === true )
-        {
-            $sendEventToDoppler = true;
-        }
-
-        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE, $sendEventToDoppler);
+        $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
 
@@ -5472,7 +5466,7 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
-            $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_SUCCESS_EVENT);
+            $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT, "", "");
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
