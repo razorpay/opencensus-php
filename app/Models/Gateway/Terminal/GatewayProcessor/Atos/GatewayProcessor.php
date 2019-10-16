@@ -129,7 +129,12 @@ class GatewayProcessor extends BaseGatewayProcessor
         */
         if (empty($merchantDetail->getContactName()))
         {
-            $contactName = is_null($partnerMerchantDetail) === false ? $partnerMerchantDetail->getContactName() : "Razorpay";
+            $contactName = is_null($partnerMerchantDetail) === false ? $partnerMerchantDetail->getContactName() : Constants::RAZORPAY;
+
+            if (empty($contactName) === true)
+            {
+                $contactName = Constants::RAZORPAY;
+            }
 
             $merchantDetail->setContactName($contactName);
         }
