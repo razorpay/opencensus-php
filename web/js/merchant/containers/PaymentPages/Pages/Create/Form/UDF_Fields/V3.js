@@ -90,15 +90,16 @@ export function mapFieldToIndex(field) {
     } = fieldTypes[i].schema;
 
     const FIELD_TYPES_keys = Object.keys(restInDefinedSchema); //Needs to be separated since backend sometimes sends empty options when it's not required.
-    const FIELD_TYPES_opts_keys = optionsInDefinedSchema
-      ? Object.keys(fieldTypes[i].schema.options)
-      : {}; // It's not [] due to BE sending it as object, so for correct comparison
+    const FIELD_TYPES_opts_keys =
+      optionsInDefinedSchema && optionsInDefinedSchema.length
+        ? Object.keys(optionsInDefinedSchema)
+        : [];
 
     const field_keys = Object.keys(restInFieldSchema);
     const field_opts_keys =
       optionsInFieldSchema && optionsInFieldSchema.length
         ? Object.keys(optionsInFieldSchema)
-        : {}; // It's not [] due to BE sending it as object, so for correct comparison
+        : [];
 
     let isMismatch = false;
 
