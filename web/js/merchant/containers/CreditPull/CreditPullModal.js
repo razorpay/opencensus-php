@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, FieldArray, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -14,6 +14,12 @@ import * as MerchantActions from 'merchant/modules/b-merchants';
 import * as ModalActions from 'rzp/modules/modals';
 import bMerchantReducer from 'merchant/modules/b-merchants';
 import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
+import ajax from '../../../merchantLA/utils/ajax';
+import {
+  VerifyOtp,
+  AskMobileNumber,
+} from 'merchant/containers/Team/TwoFaModals';
+import CreditPullClose from './CreditPullClose';
 
 const validate = values => {
   const errors = {};
@@ -31,6 +37,8 @@ const validate = values => {
   }
   return errors;
 };
+
+const SMALL_MODAL = 'small';
 
 @connect(
   state => {
@@ -56,8 +64,6 @@ export default class CreditPullModal extends Component {
 
     this.state = {
       errors: null,
-      fees: '',
-      autoEnabled: false,
       isLoading: false,
       hasAcceptedTerms: false,
     };
@@ -68,18 +74,148 @@ export default class CreditPullModal extends Component {
   }
 
   save = props => {
-    console.log('ONLY CALLED IF VALID');
-    console.log(this.props);
+    this.setState({
+      merchantData: props,
+    });
+
+    this.patchUpdateMerchant(props)
+      .then(response => {
+        return this.sendReqForOtp(props.mobile);
+      })
+      .then(tokenStuff => {
+        console.log('OTP Token received');
+        //Reply from OTP Service
+        this.openVerify(tokenStuff);
+      })
+      .catch(error => {
+        console.log(error);
+      });
   };
 
-  successModalHeader = () => {
-    return (
-      <div>
-        <i className="i i-done-all text-success modal-header-success" />
-        Successfully Enabled!
-      </div>
+  isValidDate = current => {
+    let yearsBefore = window.moment().subtract(18, 'years');
+    return current.isBefore(yearsBefore);
+  };
+
+  patchUpdateMerchant = data => {
+    console.log('Patch call for updating merchant');
+    return ajax(
+      {
+        url: 'es/scheduled_pricing',
+        method: 'GET',
+      },
+      {},
+      '/merchant/api'
     );
   };
+
+  patchPhoneMerchant = data => {
+    console.log('Patch call for updating merchant phone');
+    return ajax(
+      {
+        url: 'es/scheduled_pricing',
+        method: 'GET',
+      },
+      {},
+      '/merchant/api'
+    );
+  };
+
+  verifyMobile = responseFromOtp => {
+    this.props.openModal({
+      component: (
+        <AskMobileNumber
+          closeModal={this.props.closeModal}
+          blank={true}
+          customTitle="Enter OTP Number"
+          customMessage="Update the phone number for OTP verification. The phone number should exist in the PAN database."
+          onSubmit={data => {
+            this.patchPhoneMerchant(data.contact_mobile)
+              .then(resp => {
+                return this.sendReqForOtp(data.contact_mobile);
+              })
+              .then(tokenStuff => {
+                console.log('OTP Token received');
+                this.openVerify(tokenStuff, data.contact_mobile);
+              })
+              .catch(error => {
+                console.log(error);
+                throw {
+                  errors: ['Verification failed because of incorrect OTP.'],
+                };
+              });
+          }}
+        />
+      ),
+      size: SMALL_MODAL,
+    });
+  };
+
+  openVerify = (tokenStuff, newPhone) => {
+    this.props.openModal({
+      component: (
+        <VerifyOtp
+          closeModal={this.props.closeModal}
+          customClass={'credit-otp'}
+          onSubmit={data => {
+            return this.sendReqForOtpConfirmation(data)
+              .then(response => {
+                //Now call dashboard stuff
+                this.openErrorScreen(
+                  'Sorry, some informations are not matching with PAN database. Please try after sometime.'
+                );
+              })
+              .catch(error => {
+                throw {
+                  errors: ['Verification failed because of incorrect OTP.'],
+                };
+              });
+          }}
+          onResend={data => {
+            return this.sendReqForOtp(data, tokenStuff).then(() => {
+              console.log('OTP Token received');
+            });
+          }}
+          onChangeMobileNumber={this.verifyMobile}
+          contactMobile={newPhone ? newPhone : this.state.merchantData.mobile}
+        />
+      ),
+      size: SMALL_MODAL,
+    });
+  };
+
+  openErrorScreen = message => {
+    this.props.openModal({
+      component: <CreditPullClose message={message} />,
+      size: SMALL_MODAL,
+    });
+  };
+
+  sendReqForOtpConfirmation = (data, newPhone) => {
+    console.log('Confirming OTP');
+    return ajax(
+      {
+        url: 'es/scheduled_pricing',
+        method: 'GET',
+      },
+      {},
+      '/merchant/api'
+    );
+  };
+
+  sendReqForOtp = (mobile, tokenStuff) => {
+    console.log('Triggering OTP Request');
+    return ajax(
+      {
+        url: 'es/scheduled_pricing',
+        method: 'GET',
+      },
+      {},
+      '/merchant/api'
+    );
+  };
+
+  handleFinalSubmit = data => {};
 
   renderPreEnablement = () => {
     const { handleSubmit } = this.props;
@@ -98,73 +234,79 @@ export default class CreditPullModal extends Component {
         >
           <div className="modal-body">
             <Alert type="error" message={this.state.errors} />
-            <div>
-              <div className="form-group customer">
-                <label className="col-md-3 control-label help-label label-required">
-                  Name
-                </label>
-                <div className="col-md-4">
-                  <Field
-                    name="firstName"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="First Name"
-                    validate={required('Please enter a first name')}
-                  />
-                </div>
-
-                <div className="col-md-4">
-                  <Field
-                    name="lastName"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="Last Name"
-                    validate={required('Please enter a last email')}
-                  />
-                </div>
+            <div className="form-group">
+              <label className="col-md-3 control-label help-label label-required">
+                Name
+              </label>
+              <div className="col-md-4">
+                <Field
+                  name="firstName"
+                  component={InputField}
+                  class="form-control"
+                  placeholder="First Name"
+                  validate={required('Please enter a first name')}
+                />
               </div>
 
-              <div className="form-group customer">
-                <label className="col-md-3 control-label label-required">
-                  Contact Details
-                </label>
-                <div className="col-md-4">
-                  <Field
-                    name="mobile"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="Mobile Number"
-                    validate={[
-                      required('Please enter a phone number'),
-                      phone('Please enter a valid phone number'),
-                    ]}
-                  />
-                </div>
+              <div className="col-md-4">
+                <Field
+                  name="lastName"
+                  component={InputField}
+                  class="form-control"
+                  placeholder="Last Name"
+                  validate={required('Please enter a last email')}
+                />
+              </div>
+            </div>
 
-                <div className="col-md-4">
-                  <Field
-                    name="email"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="Email"
-                    disabled={true}
-                  />
-                </div>
+            <div className="form-group">
+              <label className="col-md-3 control-label label-required">
+                Contact Details
+              </label>
+              <div className="col-md-4">
+                <Field
+                  name="mobile"
+                  component={InputField}
+                  class="form-control"
+                  placeholder="Mobile Number"
+                  validate={[
+                    required('Please enter a phone number'),
+                    phone('Please enter a valid phone number'),
+                  ]}
+                />
               </div>
 
-              <div className="form-group">
-                <label className="col-md-3 control-label label-required">
-                  PAN Number
-                </label>
-                <div className="col-md-4">
-                  <Field
-                    name="pan"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="PAN Number"
-                    disabled={true}
-                  />
-                </div>
+              <div className="col-md-4">
+                <Field
+                  name="email"
+                  component={InputField}
+                  class="form-control"
+                  placeholder="Email"
+                  disabled={true}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <div className="col-md-3" />
+              <div className="col-md-8">
+                <i className="i-warning warning" /> Please Use the Mobile No.
+                Registered with your Credit Card/Loan account
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="col-md-3 control-label label-required">
+                PAN Number
+              </label>
+              <div className="col-md-4">
+                <Field
+                  name="pan"
+                  component={InputField}
+                  class="form-control"
+                  placeholder="PAN Number"
+                  disabled={true}
+                />
               </div>
             </div>
 
@@ -194,8 +336,11 @@ export default class CreditPullModal extends Component {
                   name="dateOfBirth"
                   component={ReduxDatetime}
                   placeholder="Select a date"
+                  dateFormat="DD-MM-YYYY"
                   required={true}
+                  viewMode={'years'}
                   timeFormat={false}
+                  isValidDate={this.isValidDate}
                 />
               </div>
             </div>
@@ -216,7 +361,7 @@ export default class CreditPullModal extends Component {
                 />
               </div>
               <div className="col-md-3" />
-              <div className="col-md-4" style={{ paddingTop: '15px' }}>
+              <div className="col-md-4 paddyTop15">
                 <Field
                   name="city"
                   component={InputField}
@@ -226,7 +371,7 @@ export default class CreditPullModal extends Component {
                 />
               </div>
 
-              <div className="col-md-4" style={{ paddingTop: '15px' }}>
+              <div className="col-md-4 paddyTop15">
                 <Field
                   name="state"
                   component={InputField}
@@ -256,6 +401,14 @@ export default class CreditPullModal extends Component {
                 />
               </div>
             </div>
+
+            <div className="form-group">
+              <div className="col-md-3" />
+              <div className="col-md-8 orange-pad">
+                We verify the details with the PAN database. Please ensure you
+                enter the correct details.
+              </div>
+            </div>
           </div>
 
           <div className="modal-footer">
@@ -272,6 +425,12 @@ export default class CreditPullModal extends Component {
                 Share my credit report with Razorpay and Razorpay's partners.
               </label>
             </div>
+
+            <span className="exp-logo-text">Powered by</span>
+            <img
+              className="exp-logo"
+              src="https://cdn.razorpay.com/static/assets/experian_logo.png"
+            />
 
             <button
               type="button"

@@ -50,12 +50,18 @@ class VerifyOtp extends Component {
     return (
       <div>
         <ModalHeader title="Verify Mobile Number" onCloseClick={closeModal} />
-        <div class="modal-body">
+        <div
+          className={`modal-body ${
+            this.props.customClass ? this.props.customClass : ''
+          }`}
+        >
           <p>
-            An SMS with 6-digit OTP has been sent to {contactMobile}{' '}
-            <a onClick={onChangeMobileNumber}>[Change]</a>
+            {this.props.customMessage
+              ? this.props.customMessage
+              : `An SMS with 6-digit OTP has been sent to ${contactMobile} `}
+            <a onClick={onChangeMobileNumber}>Change</a>
           </p>
-          <p>OTP will expire in 5mins.</p>
+          <p>OTP will expire in 5 mins.</p>
 
           <OtpInput
             onComplete={this.updateOtpValue}
@@ -101,18 +107,30 @@ class AskMobileNumber extends Component {
     return this.props.onSubmit(data);
   };
 
+  componentWillMount() {
+    //handling the use case where the number should be empty
+    if (this.props.blank) {
+      this.props.change('contact_mobile', '');
+    }
+  }
+
   render() {
     const { closeModal, handleSubmit } = this.props;
     return (
       <div class="2fa-modal">
         <ModalHeader
-          title="Setting up 2-step verification"
+          title={
+            this.props.customTitle
+              ? this.props.customTitle
+              : `Setting up 2-step verification`
+          }
           onCloseClick={closeModal}
         />
         <div class="modal-body">
           <p>
-            Let's setup a mobile number where you will receive an SMS with OTP
-            everytime you log in.
+            {this.props.customMessage
+              ? this.props.customMessage
+              : `Let's setup a mobile number where you will receive an SMS with OTP everytime you log in.`}
           </p>
           <form style={{ marginBottom: '35px' }}>
             <div class="form-group">
