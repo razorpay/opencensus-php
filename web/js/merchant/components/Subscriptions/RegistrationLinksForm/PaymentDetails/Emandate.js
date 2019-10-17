@@ -9,6 +9,7 @@ export default ({
   bankName,
   beneficiaryName,
   bankAccountNumber,
+  trackSkipBankDetails,
 }) => (
   <React.Fragment>
     <Input.Check
@@ -16,6 +17,7 @@ export default ({
       checked={skipBankDetails}
       defaultChecked="0"
       fieldLabel="Skip Bank Details"
+      onChange={trackSkipBankDetails}
     />
 
     <BankDetails

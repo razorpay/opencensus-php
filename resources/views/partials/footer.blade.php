@@ -5,7 +5,7 @@
     if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
         useAnalytics = false;
     }
-    if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
+    if (true || window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
          analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing'], {
            ga: 'UA-53341507-2',
            fb: '697927486977350'

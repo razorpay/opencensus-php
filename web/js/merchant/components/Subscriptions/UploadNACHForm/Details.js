@@ -7,13 +7,19 @@ export default ({
   downloadSignedNACHFile,
   registrationLinkId,
   preFilledNachFileURL,
+  trackClickViewNACHForm,
+  trackClickUploadNACHForm,
+  trackClickDownloadNACHForm,
 }) => {
   if (downloadSignedNACHFile) {
     return (
       <React.Fragment>
         <AsyncButton
           class="btn btn-link nach-download-btn"
-          onClick={downloadSignedNACHFile}
+          onClick={() => {
+            trackClickViewNACHForm();
+            downloadSignedNACHFile();
+          }}
           target="_blank"
         >
           <i class="i i-file-attach" />
@@ -34,6 +40,7 @@ export default ({
       <Link
         class="btn btn-primary"
         to={`/registration_links/${registrationLinkId}/upload_nach`}
+        onClick={trackClickUploadNACHForm}
       >
         Upload form
       </Link>
@@ -42,6 +49,7 @@ export default ({
         href={preFilledNachFileURL}
         class="btn btn-default m-l"
         target="_blank"
+        onClick={trackClickDownloadNACHForm}
       >
         Download form
       </a>

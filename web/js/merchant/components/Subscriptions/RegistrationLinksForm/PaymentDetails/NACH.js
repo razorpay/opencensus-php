@@ -9,6 +9,8 @@ export default ({
   bankAccountIFSC,
   beneficiaryName,
   bankAccountNumber,
+  trackReceivedNACHForm,
+  trackNACHToolTipHover,
 }) => (
   <React.Fragment>
     <Input.Check
@@ -16,6 +18,7 @@ export default ({
       label="NACH Form"
       class="InputGroup--vTop"
       checked={isNachFormAval}
+      onChange={trackReceivedNACHForm}
       fieldLabel={
         <React.Fragment>
           I have Customer's signed Form{' '}
@@ -23,8 +26,10 @@ export default ({
             <i class="i i-info-circle" />
             <Popover theme="dark" align="bottom">
               <PopoverBody>
-                If you’ve already received the customer’s NACH form, you can
-                upload it after the registration link is created.
+                <div onMouseOver={trackNACHToolTipHover}>
+                  If you’ve already received the customer’s NACH form, you can
+                  upload it after the registration link is created.
+                </div>
               </PopoverBody>
             </Popover>
           </React.Fragment>

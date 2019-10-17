@@ -217,6 +217,11 @@ class ErrorMessage extends React.PureComponent {
   };
 
   resubmitNACHFile = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Subscription - Token',
+      eventAction: 'Click - Resubmit NACH Form',
+    });
+
     return resubmitNACHFile(this.props.id);
   };
 

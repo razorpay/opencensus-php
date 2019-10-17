@@ -20,6 +20,13 @@ import {
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 
+import {
+  trackOpenAuthLink,
+  trackClickUploadNACHForm,
+  trackClickDownloadNACHForm,
+  trackClickViewNACHForm,
+} from './gaAuth';
+
 @withRouter
 @connect(
   state => ({
@@ -41,6 +48,10 @@ export default class RegistrationLinkEntityContainer extends React.Component {
 
   componentWillMount() {
     this.props.fetchRegistrationLink(this.props.id);
+  }
+
+  componentDidMount() {
+    trackOpenAuthLink();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -121,6 +132,11 @@ export default class RegistrationLinkEntityContainer extends React.Component {
                             this.downloadSignedNACHFile
                           }
                           preFilledNachFileURL={entity.created_url}
+                          trackClickUploadNACHForm={trackClickUploadNACHForm}
+                          trackClickDownloadNACHForm={
+                            trackClickDownloadNACHForm
+                          }
+                          trackClickViewNACHForm={trackClickViewNACHForm}
                         />
                       </EntityDetailRow>
                     )}

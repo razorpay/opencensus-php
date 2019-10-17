@@ -22,6 +22,14 @@ import DocsLink from 'merchant/components/DocsLink';
 import FileUpload from 'merchant/components/File/Upload';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
+import {
+  trackUploadNachFormStatus,
+  trackReadNachFormStatus,
+  trackClickMandateDetails,
+  trackClickPersonalDetails,
+  trackClickBankDetails,
+} from './ga';
+
 const MandateFields = ['amount', 'frequency', 'debit_type'];
 
 const PersonalDetailsFields = [
@@ -140,12 +148,23 @@ export default class UploadNACHForm extends React.Component {
 
     return validateNachFile(file, this.props.id)
       .then(resp => {
-        this.setState({
-          extractedData: resp.data,
-          uploading: false,
-        });
+        this.setState(
+          {
+            extractedData: resp.data,
+            uploading: false,
+          },
+          () => {
+            trackClickMandateDetails(this.mandateStatus === 'danger');
+            trackClickPersonalDetails(this.personalDetailsStatus === 'danger');
+            trackClickBankDetails(this.bankAccountStatus === 'danger');
+          }
+        );
+
+        trackReadNachFormStatus('success');
       })
       .catch(error => {
+        trackReadNachFormStatus('error', error.errors[0]);
+
         this.setState({
           uploading: false,
           errors: getErrorMessage(error.errors),
@@ -159,6 +178,8 @@ export default class UploadNACHForm extends React.Component {
         this.setState({
           extractedData: resp.data,
         });
+
+        trackUploadNachFormStatus('success');
 
         this.props.showNotification({
           type: 'success',
@@ -174,6 +195,8 @@ export default class UploadNACHForm extends React.Component {
         }
       })
       .catch(err => {
+        trackUploadNachFormStatus('error', err.errors[0]);
+
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -339,7 +362,7 @@ export default class UploadNACHForm extends React.Component {
             showFileSize
             showStagedFileStatus
             stagedFileStatus="error"
-            maxSize="5000000"
+            maxSize="5242880"
             accept={['image/jpeg', 'image/png']}
             size="large"
             files={file ? [file] : []}

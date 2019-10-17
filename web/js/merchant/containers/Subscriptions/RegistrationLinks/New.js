@@ -28,6 +28,15 @@ import PaymentDetailsForm, {
   checkIfAmount,
 } from 'merchant/components/Subscriptions/RegistrationLinksForm/PaymentDetails';
 import TokenDetailsForm from 'merchant/components/Subscriptions/RegistrationLinksForm/TokenDetails';
+import {
+  trackClickPaymentMethod,
+  trackReceivedNACHForm,
+  trackNACHToolTipHover,
+  trackClickNext,
+  trackSkipBankDetails,
+  trackSubmitCreateForm,
+  trackCloseCreateForm,
+} from './ga';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -123,6 +132,13 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     this.fetchDataForRegistrationLinks();
   }
 
+  componentDidMount() {
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'registration_link');
+      window.hj('tagRecording', ['registration_link_start']);
+    }
+  }
+
   setFormFields = (key, value) => {
     this.setState(currentState => ({
       formFields: {
@@ -156,7 +172,15 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     const validTabs = [...this.state.validTabs];
     validTabs[this.state.currentTab] = true;
 
-    this.setState({ currentTab, validTabs });
+    this.setState({ currentTab, validTabs }, () => {
+      if (currentTab == 1) {
+        trackClickNext('Customer details');
+      }
+
+      if (currentTab == 2) {
+        trackClickNext('Payment details');
+      }
+    });
   };
 
   handleTabChange = ({ target }) => {
@@ -285,6 +309,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   onCreate = () => {
     const payload = this.prepareDataForRequest();
 
+    trackSubmitCreateForm(this.state.formFields.mandateMethod);
+
     return this.props
       .createRegistrationLink(payload)
       .then(response => {
@@ -310,7 +336,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         if (this.props.onClose) {
           this.props.luminateRow(entityId);
 
-          this.props.onClose();
+          this.onClose();
         } else {
           const redirectUrl = '/registration_links/' + entityId;
 
@@ -430,6 +456,10 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             isNACHPayment={this.isNACHPayment}
             isEmandatePayment={this.isEmandatePayment}
             handleNotesChange={this.handleNotesChange}
+            trackClickPaymentMethod={trackClickPaymentMethod}
+            trackReceivedNACHForm={trackReceivedNACHForm}
+            trackNACHToolTipHover={trackNACHToolTipHover}
+            trackSkipBankDetails={trackSkipBankDetails}
           />
         );
       }
@@ -516,15 +546,18 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     );
   };
 
+  onClose = () => {
+    trackCloseCreateForm();
+
+    this.props.onClose();
+  };
+
   render() {
     const isModalView = this.props.onClose;
 
     if (isModalView) {
       return (
-        <Modal
-          class="NewRegistrationLink animate-down"
-          onClose={this.props.onClose}
-        >
+        <Modal class="NewRegistrationLink animate-down" onClose={this.onClose}>
           <ModalContent>{this.renderWizard()}</ModalContent>
         </Modal>
       );
