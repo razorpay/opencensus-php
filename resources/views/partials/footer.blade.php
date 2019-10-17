@@ -27,12 +27,12 @@
     }
     var disableEventEmitters = '{{$env}}'==='dev' ? true : false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname=="dashboard.razorpay.com" ? 'prod' : 'stage';
-    if(analytics){
-        analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','perf','taboola'], {
+    if(window.analytics){
+        analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','taboola'], {
            ga: 'UA-53341507-2',
            fb: '697927486977350',
            lj:'{{$ljKey}}',
-           perf:'medash-{{$env}}'
+          //  perf:'medash-{{$env}}'
          },isLocal,appEnvironment,disableEventEmitters);
         // Init old key as well
         if(undefined!==analytics.createQ){

@@ -5,18 +5,62 @@
     font-size: 60%
     padding-left: 2px;
 
+.settle-list-filter
+  display: -webkit-inline-box;
+
 .settlement-doc-btn
   padding-left: 3px;
   padding-left: 5px;
+
+.settle-current-icon
+  font-size: 100%;
+  color: #1F9C1D;
+  .rzp-popover
+    font-style:normal;
+
+.schedule-enable-container
+  padding: 5px 0;
 
 @media only screen and (max-width: 500px)
   .settlement-doc-btn
     display: none
 
+.reasons-close-modal {
+  min-height: 320px;
+
+  .modal-body {
+    input[type="radio"] {
+      margin-right: 10px;
+    }
+    label{
+      font-weight: normal;
+    }
+  }
+  .confirm-close {
+    margin: 0 20px 0 20px;
+  }
+
+  .es-close-choices{
+    padding: 5px;
+  }
+}
+
+.box-left-pad10-inline
+  border-left: 1.5px solid #cfdadd;
+  display: inline-block;
+  padding-left: 10px;
+
+.scheduled-btn-act
+  padding: 5px 10px !important;
+  margin-left: 10px;
+
+.scheduled-enable
+  color: #528FF0;
+  margin-right: 10px;
+
 .settlement-balance-amount
   font-weight: bold
   vertical-align: middle
-  border-left: 2px solid #cfdadd;
   padding: 0 5px
 
 .tether-element .settle-btn
@@ -27,6 +71,68 @@
   color: white;
   padding-right: 10px;
 }
+
+.es-auto-banner
+  .es-schedule-banner-text
+    position:relative;
+    top:10px;
+
+.warning-settlement-confirmation
+  border-left: 2px solid #F7C515;
+  background-color: rgba(247, 197, 21, 0.13);
+  padding: 5px;
+  margin: 10px 0 10px 0;
+
+.container-scheduled-modal
+  min-height: 300px;
+  .highlight-support
+    color: #528FF0;
+    position: relative;
+    top: 5px;
+    font-weight: bolder;
+    font-size: 1.2em;
+  .modal-header-success
+    padding-right: 10px;
+  .overflow-box
+    margin: 10px -35px 20px -35px;
+    border: 1px solid rgba(173,188,201,0.17);
+    padding: 20px;
+    box-shadow: 0px 2px 6px rgba(62,71,84,0.13);
+    border-radius: 2px;
+    background-color: #fff;
+    .schedule-desc-container
+      display:inline-block;
+      width: 50%;
+      float: left;
+    .schedule-img-container
+      display:inline-block;
+      width: 50%;
+      position: relative;
+      top: 20px;
+      img
+        width: 150px;
+    ul.schedule-desc
+      padding-inline-start: 20px;
+      li
+        padding: 5px 0;
+    button.enable-schedule-btn
+      width: 100%;
+    div.schedule-header
+      font-weight: bolder;
+      padding-bottom: 10px;
+    .Input-label
+      font-size: 16px
+      color: #515978
+      margin-bottom: 6px
+    .Input-el
+      font-size: 20px;
+      color:#0D2366
+
+  .border
+    margin-top:20px
+    border-left: 3px solid #528FF0;
+    padding-left:8px
+    margin-bottom:20px
 
 .onmdemand-modal
   color: #58666E
@@ -76,6 +182,16 @@
     height:15px
     font-size: 20px
 
+  .currency-big-1
+    font-size: 27px
+    color: #0D2366;
+
+  .modal-header-success
+    padding-right: 10px;
+
+  .success-breakup
+    margin-top: -30px;
+
   .fixed
     font-size:12px
 
@@ -88,6 +204,10 @@
     margin-top:0
     background-color: white
     border:1px solid rgba(173, 188, 201, 0.17);
+
+  .dropdown-1
+    border-bottom:1px solid rgba(173, 188, 201, 0.17)
+    margin-top:20px
 
   .dropdown-closed
     display:none
@@ -117,14 +237,12 @@
     animation: spin 1s linear infinite;
 
   .overflow-box
-    margin:10px;
+    margin: 10px -45px 20px -45px;
     border:1px solid rgba(173, 188, 201, 0.17);
-    margin-left:-45px
     padding-top:0px
     padding-left:20px
     padding-right:20px
     padding-bottom:20px
-    margin-right:-45px;
     box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.13);
     border-radius: 2px
     background-color: white
@@ -136,8 +254,6 @@
       font-size: 20px;
       color:#0D2366
 
-
-
   .i-info-circle
     color: #9fb1c7
 
@@ -146,3 +262,4 @@
 
   .settlement-doc-btn,.fa-circle.interpunct
     display: none
+

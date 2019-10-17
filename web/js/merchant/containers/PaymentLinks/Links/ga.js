@@ -1,4 +1,4 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import defaultTrack, { setTrackData } from 'rzp/utils/googleAnalytics';
 
 const eventCategory = 'Dashboard - Payment Links';
 
@@ -86,5 +86,23 @@ export function trackClickDuplicatePaymentLink() {
 export function trackSaveDuplicatePaymentLink() {
   track({
     eventAction: 'Save - Duplicate Payment Link',
+  });
+}
+
+const eventCategoryInternational = 'Dashboard - International - Payment Links';
+
+export function trackSearchFilterForInternational(filterValue) {
+  defaultTrack({
+    eventCategory: eventCategoryInternational,
+    eventAction: 'Select - Search filter',
+    label: filterValue,
+  });
+}
+
+export function trackSelectCurrency(currency) {
+  defaultTrack({
+    eventCategory: eventCategoryInternational,
+    eventAction: 'Select - Currency',
+    label: currency,
   });
 }

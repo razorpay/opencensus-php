@@ -3,8 +3,8 @@ import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { fetchPlans } from 'merchant/modules/plans';
-import { fetchItems } from 'merchant/modules/items';
 import {
+  fetchSubscriptionItems,
   fetchSubscription,
   saveSubscription,
 } from 'merchant/modules/subscriptions';
@@ -27,7 +27,11 @@ import Review from './Review';
 import Spinner from 'rzp/ui/Spinner';
 import moment from 'moment';
 
-import { trackSaveDuplicateSubscription } from '../../ga';
+import {
+  trackSaveDuplicateSubscription,
+  trackAddAddon,
+  trackAddPlans,
+} from '../../ga';
 
 @withRouter
 @connect(
@@ -40,7 +44,7 @@ import { trackSaveDuplicateSubscription } from '../../ga';
     fetchSubscription,
     fetchCustomer,
     fetchPlans,
-    fetchItems,
+    fetchSubscriptionItems,
     saveSubscription,
     showNotification,
   }
@@ -59,7 +63,7 @@ export default class NewSubscriptionLink extends Component {
   componentWillMount() {
     this.props.fetchPlans({ count: 100 }).then(_ => this.initializePlan());
 
-    this.props.fetchItems({ count: 100, type: 'addon' });
+    this.props.fetchSubscriptionItems({ count: 100, type: 'addon' });
 
     this.fetchIfIntentDuplicate();
   }
@@ -216,6 +220,8 @@ export default class NewSubscriptionLink extends Component {
   handleChangeInPlan = ({ option }) => {
     const { currencyOfSelectedPlan, fields, internals } = this.state;
 
+    trackAddPlans(option.currency);
+
     const currSelectedPlan = findBy(this.props.plans.items, 'id', option.id);
 
     if (
@@ -262,7 +268,9 @@ export default class NewSubscriptionLink extends Component {
     });
   };
 
-  handleSelectItem = addonIndex => ({ option }) => {
+  handleSelectAddonItem = addonIndex => ({ option }) => {
+    trackAddAddon(option.currency);
+
     const fields = { ...this.state.fields };
     fields.addons[addonIndex] = {
       item: {
@@ -439,7 +447,7 @@ export default class NewSubscriptionLink extends Component {
         return (
           <AddOnDetails
             items={this.props.items}
-            onSelectItem={this.handleSelectItem}
+            onSelectItem={this.handleSelectAddonItem}
             onAddAddon={this.handleAddaddon}
             fields={this.state.fields}
             internals={this.state.internals}

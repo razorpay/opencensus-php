@@ -141,6 +141,7 @@ export default class AddressSelectionModal extends Component {
       backLabel,
       addressType,
       isInttCurrenciesEnabled,
+      trackSelectCountry,
     } = this.props;
 
     const { customer, selected, showAddAddress, addresses } = this.state;
@@ -174,6 +175,7 @@ export default class AddressSelectionModal extends Component {
         hideBack={addresses && addresses.length === 0}
         addressType={addressType}
         isInttCurrenciesEnabled={isInttCurrenciesEnabled}
+        trackSelectCountry={trackSelectCountry}
       />
     );
 

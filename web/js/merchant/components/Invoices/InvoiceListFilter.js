@@ -3,16 +3,43 @@ import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-export default ({ type, isInttCurrenciesEnabled, ...otherProps }) => {
-  let label = type === 'link' ? 'Payment Link' : 'Invoice';
+export default ({
+  type,
+  isInttCurrenciesEnabled,
+  trackSearchFilterForInternational,
+  onSubmit,
+  ...otherProps
+}) => {
+  const isTypeLink = type === 'link';
+  let label = isTypeLink ? 'Payment Link' : 'Invoice';
+
+  function _onSubmit(params) {
+    let trackLabel;
+
+    switch (params.international) {
+      case '0':
+        trackLabel = 'Indian';
+        break;
+      case '1':
+        trackLabel = 'International';
+        break;
+      default:
+        trackLabel = 'All Currencies';
+    }
+
+    trackSearchFilterForInternational(trackLabel);
+
+    return onSubmit(params);
+  }
 
   return (
-    <ListFilter {...otherProps}>
+    <ListFilter {...otherProps} onSubmit={_onSubmit}>
       <div class="form-group list-filter-item">
         <label>{label} Status</label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
-          <option value="draft">Draft</option>
+          {!isTypeLink && <option value="draft">Draft</option>}
+
           <option value="issued">Issued</option>
           <option value="partially_paid">Partially Paid</option>
           <option value="paid">Paid</option>
