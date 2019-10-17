@@ -2,7 +2,7 @@
 
 namespace RZP\Mail\BankingAccount;
 
-class Unserviceable extends UpdateNotifications
+class Unserviceable extends UpdateNotificationBase
 {
     const TEMPLATE_PATH = 'emails.banking_account.notify_status_cancelled';
 

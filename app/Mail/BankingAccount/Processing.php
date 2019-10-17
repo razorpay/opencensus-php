@@ -2,11 +2,11 @@
 
 namespace RZP\Mail\BankingAccount;
 
-class Processing extends UpdateNotifications
+class Processing extends UpdateNotificationBase
 {
     const TEMPLATE_PATH = 'emails.banking_account.notify_status_processing';
 
-    const SUBJECT       = 'Your RazorpayX Current Account is Processing';
+    const SUBJECT       = 'Your RazorpayX Current Account is under processing';
 
     protected function addMailData()
     {

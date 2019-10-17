@@ -2,11 +2,11 @@
 
 namespace RZP\Mail\BankingAccount;
 
-class Created extends UpdateNotifications
+class Created extends UpdateNotificationBase
 {
     const TEMPLATE_PATH = 'emails.banking_account.notify_status_created';
 
-    const SUBJECT = 'Your request for RazorpayX Current Account has been received';
+    const SUBJECT = 'Woohoo! We received your request for RazorpayX Current Account';
 
     protected function addMailData()
     {
