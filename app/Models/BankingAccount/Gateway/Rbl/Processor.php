@@ -48,7 +48,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
     public function processActivation(Entity $bankingAccount, array $input)
     {
-        $this->verifyStoredCredentials($bankingAccount);
+        $this->fetchAndVerifyBalance($bankingAccount);
+
+        $this->createAccountMappingForFts($bankingAccount);
 
         //
         // This is in a transaction because, BankingAccount entity update
@@ -71,8 +73,6 @@ class Processor extends BankingAccount\Gateway\Processor
             $bankingAccount->fill($input);
 
             $bankingAccount->balance()->associate($balance);
-
-            $this->createAccountMappingForFts($bankingAccount);
 
             $this->repo->saveOrFail($bankingAccount);
         });
@@ -178,7 +178,7 @@ class Processor extends BankingAccount\Gateway\Processor
      * @throws \Requests_Exception
      * @throws \Throwable
      */
-    public function verifyStoredCredentials(BankingAccount\Entity $bankingAccount)
+    public function fetchAndVerifyBalance(BankingAccount\Entity $bankingAccount)
     {
         $response = $this->verifyCredentials($bankingAccount);
 

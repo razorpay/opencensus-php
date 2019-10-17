@@ -290,7 +290,7 @@ return [
         ],
     ],
 
-    'testActivateFailedDueToVaultFailure' => [
+    'testActivateFailedDueToFtsFailure' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/credentials',
             'method'  => 'POST',

@@ -98,11 +98,20 @@ abstract class Processor extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(
+            $this->trace->traceException(
+                $e,
+                Trace\Logger::CRITICAL,
                 TraceCode::FTS_FAILURE_EXCEPTION,
                 [
                     'code'          => $e->getCode(),
                     'message'       => $e->getMessage(),
+                ]);
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+                null,
+                [
+                    'banking_account' => $bankingAccount->getPublicId(),
                 ]);
         }
 

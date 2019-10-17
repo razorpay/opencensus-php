@@ -261,9 +261,13 @@ class BankingAccountTest extends TestCase
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
     }
 
-    public function testActivateFailedDueToVaultFailure()
+    public function testActivateFailedDueToFtsFailure()
     {
-        $this->ba->proxyAuth();
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
 
         $this->createBankingAccount();
 
@@ -286,9 +290,14 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
-        $this->mockCardVault(function ()
+        $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' .
+            Rbl\Status::SUCCESS));
+
+        $this->setMozartMockResponse($mozartResponse);
+
+        $this->mockFundAccountService(function ()
         {
-            return [];
+            throw new \Exception();
         });
 
         $this->ba->adminAuth();
