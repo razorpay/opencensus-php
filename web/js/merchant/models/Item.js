@@ -46,3 +46,7 @@ export default class Item extends GenericEntity {
     return super.deserializeProperty(prop, value);
   }
 }
+
+export class SubscriptionItem extends Item {
+  resourceUrl = 'subscriptions/items';
+}

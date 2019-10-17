@@ -16,6 +16,8 @@ import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { showNotification } from 'rzp/modules/notifications';
 import {
   trackEarlySettlementRequests,
   trackHowSettlementsWorkClicks,
@@ -26,6 +28,7 @@ import OndemandModal from './OndemandModal';
 import Amount from 'rzp/ui/Amount';
 import Button from 'component/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
+import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 import { trackInstantSettlementsBanner } from '../../components/Announcements/ga';
 
 @withRouter
@@ -38,13 +41,14 @@ import { trackInstantSettlementsBanner } from '../../components/Announcements/ga
   }),
   {
     fetchAll,
+    showNotification,
     ...ModalActions,
     fetchCurrentBalance,
   }
 )
 export default class SettlementsListContainer extends ListContainer {
   state = {
-    showRequestESButton: this.props.user.showEarlySettlementAnnouncement,
+    openAutoModal: false,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -53,6 +57,29 @@ export default class SettlementsListContainer extends ListContainer {
       nextProps.location.hash === '#requestearlyaccess'
     ) {
       this.showRequestEarySettlementForm();
+    }
+  }
+
+  componentDidUpdate() {
+    this.popupIfSettle();
+  }
+
+  popupIfSettle() {
+    if (this.props.location.hash === '#settlenow') {
+      this.resetHash();
+      let balance = this.props.current_balance.data.balance || 0;
+      if (balance < 100) {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Current balance is not sufficient for instant settlement',
+          hidePrevious: true,
+        });
+        return;
+      }
+      this.showOndemandSettlementForm({ clickOrigin: 'Announcement' });
+    } else if (this.props.location.hash === '#automaticsettle') {
+      this.resetHash();
+      this.setState({ openAutoModal: true });
     }
   }
 
@@ -73,6 +100,8 @@ export default class SettlementsListContainer extends ListContainer {
     if (this.props.location.hash === '#requestearlyaccess') {
       this.showRequestEarySettlementForm();
     }
+
+    this.popupIfSettle();
   }
 
   onSearchAnalytics = params => {
@@ -84,6 +113,13 @@ export default class SettlementsListContainer extends ListContainer {
         eventLabel: label,
       });
     }
+  };
+
+  resetHash = () => {
+    this.props.history.push({
+      pathname: this.props.history.location.pathname,
+      hash: '',
+    });
   };
 
   onClearAnalytics = () => {
@@ -122,10 +158,6 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   removeRequestESButton = e => {
-    this.setState({
-      showRequestESButton: false,
-    });
-
     window.removeEventListener(
       'remove-req-es-button',
       this.removeRequestESButton,
@@ -148,9 +180,13 @@ export default class SettlementsListContainer extends ListContainer {
 
     this.props.openModal({
       component: (
-        <OndemandModal currentBalance={balance} fromWhere="Settlements" />
+        <OndemandModal
+          currentBalance={balance}
+          fromWhere={e.clickOrigin ? 'Announcement' : 'Settlements'}
+        />
       ),
       size: 'small',
+      disableClose: true,
     });
   };
 
@@ -183,25 +219,13 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  {this.state.showRequestESButton ? (
-                    <Link
-                      class="btn btn-link req-es-btn"
-                      to="/settlements#requestearlyaccess"
-                    >
-                      Request Early Settlements{' '}
-                      <i class="fa fa-circle interpunct" />
-                    </Link>
-                  ) : (
-                    ''
-                  )}
-
                   <ShowWhen
                     additionalCondition={user =>
                       user.isOrgAllowedFunctionality('external_links')
                     }
                   >
                     <a
-                      class="btn btn-link settlement-doc-btn"
+                      class="btn btn-link settlement-doc-btn pull-left"
                       href="http://razorpay.com/settlement"
                       target="_blank"
                       onClick={trackHowSettlementsWorkClicks}
@@ -210,33 +234,67 @@ export default class SettlementsListContainer extends ListContainer {
                       <span class="icon i-external-link" />
                     </a>
                   </ShowWhen>
-                  {this.props.user.isOrgAllowedFunctionality(
-                    'current_balance'
-                  ) && (
-                    <span class="settlement-balance-amount">
-                      Current Balance:{' '}
-                      <Amount value={balance} currency={'INR'} />
-                    </span>
-                  )}
-
-                  {this.props.user.isOndemandSettlementEnabled && (
-                    <Button.Secondary
-                      class="settle-btn"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={current_balance.loading || balance < 100}
-                    >
-                      Settle Now
-                    </Button.Secondary>
-                  )}
+                  {/*this.props.user.isOndemandSettlementEnabled && (
+                    <div className="box-left-pad10-inline">
+                      <ScheduledBanner
+                        onExit={() => {
+                          this.setState({ openAutoModal: false });
+                        }}
+                        openAutoModal={this.state.openAutoModal}
+                        fromWhere={
+                          this.state.openAutoModal
+                            ? 'Announcement'
+                            : 'Settlements'
+                        }
+                      />
+                    </div>
+                  )*/}
                 </React.Fragment>
               </HeaderAction>
               <SettlementsListFilter
                 form="settlementsListFilter"
+                additionalClass="settle-list-filter"
                 count={this.state.count}
                 onSubmit={this.search}
                 onSearchAnalytics={this.onSearchAnalytics}
                 onClearAnalytics={this.onClearAnalytics}
               />
+
+              <div className="pull-right">
+                {this.props.user.isOrgAllowedFunctionality(
+                  'current_balance'
+                ) && (
+                  <span class="settlement-balance-amount">
+                    Current Balance: <Amount value={balance} currency={'INR'} />
+                  </span>
+                )}
+                {this.props.user.isAutomaticSettlementEnabled && (
+                  <>
+                    <i className="i i-early-settlement settle-current-icon">
+                      <Popover align="left" theme="dark">
+                        <PopoverBody>
+                          <span>
+                            Early Settlment has been enabled with your account.
+                          </span>
+                        </PopoverBody>
+                      </Popover>
+                    </i>
+                  </>
+                )}
+
+                {this.props.user.isOndemandSettlementEnabled && (
+                  <div className="box-left-pad10-inline">
+                    <Button.Primary
+                      class="settle-btn"
+                      onClick={this.showOndemandSettlementForm}
+                      disabled={current_balance.loading || balance < 100}
+                    >
+                      <i className="i i-early-settlement settle-now-early" />
+                      Settle Now
+                    </Button.Primary>
+                  </div>
+                )}
+              </div>
 
               {error && <Alert type="error" message={error} />}
 

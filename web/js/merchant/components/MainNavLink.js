@@ -77,10 +77,12 @@ export default class MainNavLink extends Component {
       isBeta = false,
       isPending,
       baseLocation,
+      isCurrent,
       setActivePageName,
       staticContext,
       isMobileResolution,
       toggleMobileMenu,
+      isSettlementEnabled,
       ...linkProps
     } = this.props;
 
@@ -92,6 +94,10 @@ export default class MainNavLink extends Component {
       );
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
+    } else if (isSettlementEnabled) {
+      tag = (
+        <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />
+      );
     }
     //show infinite spin loader if there are some pending items in that section of the app
     if (isPending) {

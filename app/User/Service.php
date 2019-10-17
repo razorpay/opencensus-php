@@ -479,8 +479,6 @@ class Service extends Base\Service
 
                         if (empty($configs) === false)
                         {
-                            $data['merchants'][$merchant['id']]['partner']['has_configs'] = true;
-
                             foreach ($configs as $config)
                             {
                                 if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
