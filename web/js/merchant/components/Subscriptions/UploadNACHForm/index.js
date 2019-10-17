@@ -15,6 +15,7 @@ import Accordion, {
 } from 'rzp/ui/Accordion';
 
 import Alert from 'rzp/ui/Forms/Alert';
+import Amount from 'rzp/ui/Amount';
 import { Modal, ModalContent } from 'component/Modal';
 import Button, { AsyncBtn } from 'component/Button';
 import DocsLink from 'merchant/components/DocsLink';
@@ -233,7 +234,9 @@ export default class UploadNACHForm extends React.Component {
   renderNachFieldData = key => {
     const { isError, value } = this.getDataFromExtractedData(key);
 
-    return <div class={classList(isError && 'text-danger')}>{value}</div>;
+    const child = key === 'amount' ? <Amount value={value} /> : value;
+
+    return <div class={classList(isError && 'text-danger')}>{child}</div>;
   };
 
   renderNachDetails = () => {
