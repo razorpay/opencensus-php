@@ -9,15 +9,19 @@ use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
 class InstantActivation extends Mailable
 {
-    const TEMPLATE_PATH        = 'emails.merchant.razorpayx.instant_activation';
+    const TEMPLATE_PATH        = 'emails.merchant.razorpayx.instant_activation_mail';
 
     const LEARN_MORE_URL       = '';
 
+    const FILL_KYC_URL         = '';
+
     const GUIDE_TO_GO_LIVE_URL = '';
+
+    const VIEW_DASHBOARD_URL   = '';
 
     const SUPPORT_URL          = '';
 
-    const SUBJECT = 'One step away from starting transactions on RazorpayX';
+    const SUBJECT              = 'One step away from starting transactions on RazorpayX';
 
     protected $bankingAccount = null;
 
@@ -49,12 +53,14 @@ class InstantActivation extends Mailable
             'learn_more_url'                       => self::LEARN_MORE_URL,
             'guide_to_go_live_url'                 => self::GUIDE_TO_GO_LIVE_URL,
             'support_url'                          => self::SUPPORT_URL,
+            'fill_kyc_url'                         => self::FILL_KYC_URL,
+            'view_dashboard_url'                   => self::VIEW_DASHBOARD_URL,
             BankingAccountEntity::ACCOUNT_IFSC     => '',
             BankingAccountEntity::ACCOUNT_NUMBER   => '',
             BankingAccountEntity::BENEFICIARY_NAME => ''
         ];
 
-        $data = $this->addBankingAccountData($this->bankingAccount, $data);
+        $this->addBankingAccountData($this->bankingAccount, $data);
 
         $this->with($data);
 
