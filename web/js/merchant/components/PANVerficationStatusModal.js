@@ -1,7 +1,6 @@
 import React from 'react';
 import { ModalMask, Modal } from 'component/Modal';
 
-const PAN = 'PAN';
 const PAN_FAILURE = 'PAN_FAILURE'; // timeout in PAN verification
 const PAN_SUCCESS = 'PAN_SUCCESS'; // timeout in PAN verification
 
@@ -39,11 +38,8 @@ const MODAL_CONTENT = {
 };
 
 const PANVerficationStatusModal = ({ user, onClose, onGoToDashboard }) => {
-  console.log(user);
-  console.log(user.poi_verification_status);
   const content =
     MODAL_CONTENT[VERIFICATION_STATUS[user.poi_verification_status]];
-  console.log('content', content);
   return (
     <ModalMask>
       <Modal className="pan-status-modal" onClose={onClose}>

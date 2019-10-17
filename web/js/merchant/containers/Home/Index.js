@@ -823,7 +823,15 @@ export default class HomeContainer extends Component {
             user={user}
           />
         )}
-        {showPANStatus && <PANVerficationStatusModal user={user} />}
+        {showPANStatus && (
+          <PANVerficationStatusModal
+            onClose={() => {
+              this.props.hidePANStatusModal();
+            }}
+            onGoToDashboard={this.onInstantActivationSuccess}
+            user={user}
+          />
+        )}
         {showKYCDetails && (
           <KycDetailsModal
             onClose={() => {
