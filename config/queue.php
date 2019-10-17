@@ -338,6 +338,10 @@ return [
         'test'       => env('AWS_BENEFICIARY_VERIFY_TEST_QUEUE'),
         'live'       => env('AWS_BENEFICIARY_VERIFY_LIVE_QUEUE'),
     ],
+    'commission' => [
+        'test'       => env('AWS_COMMISSION_QUEUE'),
+        'live'       => env('AWS_COMMISSION_QUEUE'),
+    ],
     'mailing_list_update' => [
         'test'       => env('AWS_MAILING_LIST_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MAILING_LIST_UPDATE_LIVE_QUEUE'),

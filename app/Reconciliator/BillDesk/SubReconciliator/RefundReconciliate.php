@@ -17,6 +17,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
+    const BLACKLISTED_COLUMNS = [];
+
     /**
      * BillDesk reconciliation files only send us the gateway refund ID,
      * which is mapped to api's refund id in BillDesk gateway db.

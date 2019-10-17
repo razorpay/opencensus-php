@@ -8,6 +8,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settlement;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Metric;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\SlackNotification;
@@ -31,10 +33,10 @@ class Create extends Job
     /**
      * @var string
      */
-    protected $settlementBucket;
+    protected $bucketTimestamp;
 
     /**
-     * @var array
+     * @var string
      */
     protected $merchantId;
 
@@ -42,9 +44,8 @@ class Create extends Job
 
     protected $channelWiseCountKey;
 
-    /**
-     * @var array
-     */
+    protected $balanceType;
+
     protected $params;
 
     /**
@@ -52,17 +53,20 @@ class Create extends Job
      *
      * @param string $mode
      * @param string $merchantId
-     * @param null   $settlementBucket sending this only to analyze whether this merchant is taken from bucket or not
-     * @param array $params
+     * @param null   $bucketTimestamp sending this only to analyze whether this merchant is taken from bucket or not
+     * @param string $balanceType
+     * @param array  $params
      */
     public function __construct(
-        string $mode, string $merchantId, $settlementBucket = null, array $params = [])
+        string $mode, string $merchantId, $bucketTimestamp, string $balanceType, array $params = [])
     {
         parent::__construct($mode);
 
         $this->merchantId       = $merchantId;
 
-        $this->settlementBucket = $settlementBucket;
+        $this->bucketTimestamp  = $bucketTimestamp;
+
+        $this->balanceType      = $balanceType;
 
         $this->params           = $params;
     }
@@ -74,7 +78,15 @@ class Create extends Job
     {
         parent::handle();
 
-        $merchant = null;
+        $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
+
+        $channel = $merchant->getChannel();
+
+        // commissions will be settled only from yes_bank channel
+        if ($this->balanceType === Balance\Type::COMMISSION)
+        {
+            $channel = Settlement\Channel::YESBANK;
+        }
 
         try
         {
@@ -89,20 +101,22 @@ class Create extends Job
                 TraceCode::SETTLEMENT_JOB_INIT_FOR_MERCHANT,
                 [
                     'merchant_id'       => $this->merchantId,
-                    'settlement_bucket' => $this->settlementBucket,
-                ]);
+                    'bucket_timestamp'  => $this->bucketTimestamp,
+                ]
+            );
 
             $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
 
             $startTime = microtime(true);
 
             $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement(
-                                                            $merchant, $this->params);
+                $merchant, $channel, $this->balanceType, $this->params);
 
             $response = [
                 'merchant_id'   => $this->merchantId,
+                'balance_type'  => $this->balanceType,
                 'mode'          => $this->mode,
-                'channel'       => $merchant->getChannel(),
+                'channel'       => $channel,
                 'time_taken'    => get_diff_in_millisecond($startTime),
             ] + $setlResponse;
 
@@ -143,6 +157,7 @@ class Create extends Job
             $data = [
                 'merchant_id'       => $this->merchantId ,
                 'mode'              => $this->mode,
+                'balance_type'      => $this->balanceType,
             ];
 
             $this->trace->traceException(
@@ -162,10 +177,10 @@ class Create extends Job
             $this->trace->count(
                 Metric::MERCHANT_SETTLEMENT_PROCESSED,
                 [
-                    'channel' => $merchant->getChannel(),
+                    'channel' => $channel,
                 ]);
 
-            $this->dispatchForSettlementInitiateIfRequired($merchant->getChannel());
+            $this->dispatchForSettlementInitiateIfRequired($channel);
         }
     }
 

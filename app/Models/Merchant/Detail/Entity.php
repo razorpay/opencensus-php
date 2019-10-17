@@ -123,6 +123,10 @@ class Entity extends Base\PublicEntity
     const MERCHANTS                          = 'merchants';
     const ACTIVATION_FLOW                    = 'activation_flow';
     const INTERNATIONAL_ACTIVATION_FLOW      = 'international_activation_flow';
+    const KYC_CLARIFICATION_REASONS          = 'kyc_clarification_reasons';
+    const KYC_ADDITIONAL_DETAILS             = 'kyc_additional_details';
+    const CLARIFICATION_REASONS              = 'clarification_reasons';
+    const ADDITIONAL_DETAILS                 = 'additional_details';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                     = 'fields_pending';
@@ -231,6 +235,11 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT,
         self::INTERNATIONAL_ACTIVATION_FLOW,
         self::CUSTOM_FIELDS,
+        self::DATE_OF_BIRTH,
+        self::KYC_CLARIFICATION_REASONS,
+        self::KYC_ADDITIONAL_DETAILS,
+        self::BANK_DETAILS_VERIFICATION_STATUS,
+        self::POA_VERIFICATION_STATUS,
     ];
 
     protected $public = [
@@ -324,7 +333,9 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ACTIVATION_FLOW,
-        self::INTERNATIONAL_ACTIVATION_FLOW
+        self::INTERNATIONAL_ACTIVATION_FLOW,
+        self::KYC_CLARIFICATION_REASONS,
+        self::KYC_ADDITIONAL_DETAILS,
     ];
 
     protected $defaults = [
@@ -335,10 +346,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::LOCKED                 => 'bool',
-        self::SUBMITTED              => 'bool',
-        self::BUSINESS_INTERNATIONAL => 'bool',
-        self::ACTIVATION_PROGRESS    => 'int',
+        self::LOCKED                    => 'bool',
+        self::SUBMITTED                 => 'bool',
+        self::BUSINESS_INTERNATIONAL    => 'bool',
+        self::ACTIVATION_PROGRESS       => 'int',
+        self::KYC_CLARIFICATION_REASONS => 'array',
+        self::KYC_ADDITIONAL_DETAILS    => 'array'
     ];
 
     const UPLOADED_FIELDS = [
@@ -647,6 +660,16 @@ class Entity extends Base\PublicEntity
         return substr($gstin, 0, 2);
     }
 
+    public function getBankDetailsVerificationStatus()
+    {
+        return $this->getAttribute(self::BANK_DETAILS_VERIFICATION_STATUS);
+    }
+
+    public function setContactName($name)
+    {
+        $this->setAttribute(self::CONTACT_NAME, $name);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
@@ -655,6 +678,26 @@ class Entity extends Base\PublicEntity
     public function setActivationFlow(string $activationFlow = null)
     {
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
+    }
+
+    public function setPoaVerificationStatus(string $poaVerificationStatus)
+    {
+        $this->setAttribute(self::POA_VERIFICATION_STATUS, $poaVerificationStatus);
+    }
+
+    public function getPoaVerificationStatus()
+    {
+        return $this->getAttribute(self::POA_VERIFICATION_STATUS);
+    }
+
+    public function isPoaVerified() : bool
+    {
+        return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
+    }
+
+    public function isBankDetailStatusVerified() : bool
+    {
+        return ($this->getBankDetailsVerificationStatus() === BankDetailsVerificationStatus::VERIFIED);
     }
 
     public function getActivationFlow()
@@ -727,6 +770,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
 
+    public function getContactName()
+    {
+        return $this->getAttribute(self::CONTACT_NAME);
+    }
+
     public function getContactMobile()
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
@@ -760,6 +808,11 @@ class Entity extends Base\PublicEntity
     public function getBusinessName()
     {
         return $this->getAttribute(self::BUSINESS_NAME);
+    }
+
+    public function getKycClarificationReasons()
+    {
+        return $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
     }
 
     public function getBusinessCategory()

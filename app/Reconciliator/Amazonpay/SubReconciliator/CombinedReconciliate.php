@@ -15,6 +15,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     const COLUMN_TRANSFER     = 'Transfer';
     const COLUMN_CLAIM        = 'A to Z Guarantee Claim';
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getReconciliationTypeForRow($row)
     {
         if (isset($row[self::COLUMN_ENTITY_TYPE]) === false)

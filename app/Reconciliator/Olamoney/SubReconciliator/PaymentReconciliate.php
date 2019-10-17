@@ -18,6 +18,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_FEE                = 'tdr_deducted_in_rs';
     const COLUMN_SETTLED_AT         = 'date_of_settlement';
     const SETTLEMENT_DATE_FORMAT    = 'Y-m-d H:i:s.u';
+    const COLUMN_PAYMENT_AMOUNT     = 'bill_amount_in_rs';
 
     protected function getPaymentId(array $row)
     {

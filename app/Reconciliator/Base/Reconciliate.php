@@ -13,10 +13,8 @@ use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
-use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Reconciliate extends Base\Core
 {
@@ -104,46 +102,6 @@ class Reconciliate extends Base\Core
     const DEBIT         = 'debit';
     const DOMESTIC      = 'domestic';
     const INTERNATIONAL = 'international';
-
-
-    const ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS = [
-        RequestProcessor\Base::EBS,
-        RequestProcessor\Base::HDFC,
-        RequestProcessor\Base::AXIS,
-        RequestProcessor\Base::MPESA,
-        RequestProcessor\Base::KOTAK,
-        RequestProcessor\Base::AIRTEL,
-        RequestProcessor\Base::HITACHI,
-        RequestProcessor\Base::PHONEPE,
-        RequestProcessor\Base::PAYZAPP,
-        RequestProcessor\Base::OLAMONEY,
-        RequestProcessor\Base::UPI_HDFC,
-        RequestProcessor\Base::JIOMONEY,
-        RequestProcessor\Base::BILLDESK,
-        RequestProcessor\Base::MOBIKWIK,
-        RequestProcessor\Base::AMAZONPAY,
-        RequestProcessor\Base::UPI_ICICI,
-        RequestProcessor\Base::FREECHARGE,
-        RequestProcessor\Base::CARD_FSS_HDFC,
-        RequestProcessor\Base::NETBANKING_SIB,
-        RequestProcessor\Base::NETBANKING_CUB,
-        RequestProcessor\Base::NETBANKING_CSB,
-        RequestProcessor\Base::NETBANKING_OBC,
-        RequestProcessor\Base::NETBANKING_RBL,
-        RequestProcessor\Base::NETBANKING_BOB,
-        RequestProcessor\Base::NETBANKING_IDFC,
-        RequestProcessor\Base::NETBANKING_YESB,
-        RequestProcessor\Base::NETBANKING_HDFC,
-        RequestProcessor\Base::NETBANKING_AXIS,
-        RequestProcessor\Base::NETBANKING_ICICI,
-        RequestProcessor\Base::NETBANKING_VIJAYA,
-        RequestProcessor\Base::NETBANKING_CANARA,
-        RequestProcessor\Base::NETBANKING_FEDERAL,
-        RequestProcessor\Base::NETBANKING_EQUITAS,
-        RequestProcessor\Base::NETBANKING_INDUSIND,
-        RequestProcessor\Base::NETBANKING_ALLAHABAD,
-        RequestProcessor\Base::NETBANKING_CORPORATION,
-    ];
 
     /*********************
      * Instance objects
@@ -271,8 +229,8 @@ class Reconciliate extends Base\Core
                             'trace_code' => TraceCode::RECON_INFO_ALERT,
                             'message'    => 'Tried Force authorizing these failed payments',
                             'count'      => count(self::$forceAuthorizedPayments),
-                            'payments'   => self::$forceAuthorizedPayments,
                             'gateway'    => $this->gateway,
+                            'payments'   => self::$forceAuthorizedPayments,
                             'batch_id'   => $batch->getId()
                         ]);
                 }
@@ -299,9 +257,9 @@ class Reconciliate extends Base\Core
     }
 
     /**
-     * Creates an output file corresponding to the current recon batch file,
-     * This output file contains all valid rows of input MIS file and 3 additional
-     * columns i.e. recon_type, recon_status, error_msg
+     * Creates an analytics output file corresponding to the current recon batch file,
+     * This output file contains all valid rows of input MIS file and additional
+     * columns i.e. recon_type, recon_status, error_msg, batch_id, attempts etc
      *
      * @param Batch\Entity $batch
      * @param array $data
@@ -313,8 +271,73 @@ class Reconciliate extends Base\Core
 
         $attempt = $batch->getAttempts();
 
-        $this->getOutputWithRemovedBlackListedColumns($data, $batchId, $attempt);
+        $success = true;
 
+        $this->getOutputWithRemovedBlackListedColumns($data, $batchId, $attempt, $success);
+
+        if ($success === false)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO,
+                [
+                    'info_code' => InfoCode::RECON_OUTPUT_FILE_GENERATION_SKIPPED,
+                    'batch_id'  => $batchId,
+                    'gateway'   => $this->gateway,
+                ]
+            );
+
+            return;
+        }
+
+        $outputFileDetails =  $this->getOutputFileNameAndFilePath($extraDetails, $batchId, $attempt, $data);
+
+        $this->createAnalyticsFile($batch, $outputFileDetails, count($data));
+    }
+
+    /**
+     * @param $reconOutputData
+     * @param $batchId
+     * @param $attemptNumber
+     * @param $success :  set to false if blacklisted columns not defined.
+     *
+     * Removes blacklisted columns if present. Adds batch_id, attempt_number column for each row.
+     */
+    protected function getOutputWithRemovedBlackListedColumns(&$reconOutputData, $batchId, $attemptNumber, &$success)
+    {
+        $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
+
+        if ($blackListedColumns === null)
+        {
+            $success = false;
+
+            return;
+        }
+
+        foreach ($reconOutputData as &$row)
+        {
+            foreach ($blackListedColumns as $column)
+            {
+                unset($row[$column]);
+            }
+
+            $row['batch_id'] = $batchId;
+
+            $row['attempt_number'] = $attemptNumber;
+        }
+    }
+
+    /**
+     * Creates file locally and formulates file name
+     * using gateway, sheet name and batch attempts
+     *
+     * @param array $extraDetails
+     * @param $batchId
+     * @param $attempt int
+     * @param $data array
+     * @return array
+     */
+    protected function getOutputFileNameAndFilePath(array $extraDetails, $batchId, $attempt, $data)
+    {
         $sheetName = null;
 
         //
@@ -329,7 +352,19 @@ class Reconciliate extends Base\Core
             $sheetName = '_' . strtolower(str_replace(' ', '_', $sheetName));
         }
 
-        $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
+        $analyticsOutputFileName = $batchId . $sheetName . '_analytics' . self::OUTPUT_FILE_SUFFIX;
+
+        $dirPath = 'reconciliation_output/' . $this->gateway;
+
+        $reconciliationType = $this->getReconciliationType($extraDetails);
+
+        if ((in_array($reconciliationType, self::DEFAULT_S3_PATH_RECON_TYPE, true) === false))
+        {
+            // Append _ReconType
+            $dirPath .= '_' . $reconciliationType;
+        }
+
+        $fileName = $dirPath . '/' . $analyticsOutputFileName;
 
         if ($attempt > 1)
         {
@@ -340,121 +375,60 @@ class Reconciliate extends Base\Core
             $fileName .= '_' . $attempt;
         }
 
+        $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
+
+        return [
+            'file_name' => $fileName,
+            'file_path' => $analyticsOutputFilePath,
+        ];
+    }
+
+    /**
+     * Creates filestore entity for output file and uploads to S3
+     *
+     * @param Batch\Entity $batch
+     * @param array $outputFileDetails
+     * @param int $count
+     */
+    protected function createAnalyticsFile(Batch\Entity $batch, array $outputFileDetails, int $count)
+    {
+        $fileName = $outputFileDetails['file_name'];
+
+        $filePath = $outputFileDetails['file_path'];
+
         $this->trace->info(
             TraceCode::RECON_INFO,
             [
                 'info_code' => InfoCode::RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE,
-                'batch_id'  => $batchId,
-                'row_count' => count($data),
+                'batch_id'  => $batch->getId(),
+                'row_count' => $count,
                 'file_name' => $fileName,
             ]
         );
 
-        $extension = FileStore\Format::CSV;
-
-        $filePath = $this->createCsvFile($data, $fileName, null, self::DIRECTORY_PATH);
-
-        $file = new UploadedFile($filePath, $fileName);
-
         $creator = new FileStore\Creator;
 
-        $creator->localFile($file)
+        $extension = FileStore\Format::CSV;
+
+        $creator->localFilePath($filePath)
                 ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
                 ->name($fileName)
                 ->extension($extension)
-                ->type(FileStore\Type::RECONCILIATION_BATCH_OUTPUT)
+                ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
                 ->entity($batch)
+                ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
                 ->save();
 
         $fileStoreEntity = $creator->get();
 
         $traceData = [
-            'trace_code'   => TraceCode::RECON_BATCH_OUTPUT_FILE,
-            'file_id'      => $fileStoreEntity['id'],
-            'file_name'    => $fileStoreEntity['name'],
-            'batch_id'     => $batchId,
-            'gateway'      => $this->gateway,
+            'file_id'   => $fileStoreEntity['id'],
+            'file_name' => $fileStoreEntity['name'],
+            'batch_id'  => $batch->getId(),
+            'gateway'   => $this->gateway,
         ];
 
-        $this->messenger->raiseReconInfo($traceData);
-
-        $reconciliationType = $this->getReconciliationType($extraDetails);
-
-        $this->generateReconAnalyticsData($data, $batch, $sheetName, $reconciliationType);
-    }
-
-    /**
-     * @param $data
-     * @param $batch
-     * @param $sheetName
-     * @param $reconciliationType
-     */
-    protected function generateReconAnalyticsData($data, $batch, $sheetName, $reconciliationType)
-    {
-        if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
-        {
-            $creator = new FileStore\Creator;
-
-            $extension = FileStore\Format::CSV;
-
-            $batchId = $batch->getId();
-
-            $analyticsOutputFileName = $batchId . $sheetName . '_analytics' . self::OUTPUT_FILE_SUFFIX;
-
-            $dirPath = 'reconciliation_output/' . $this->gateway;
-
-            if ((in_array($reconciliationType, self::DEFAULT_S3_PATH_RECON_TYPE, true) === false))
-            {
-                // Append _ReconType
-                $dirPath .= '_' . $reconciliationType;
-            }
-
-            $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
-
-            $creator->localFilePath($analyticsOutputFilePath)
-                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                    ->name($dirPath . '/' . $analyticsOutputFileName)
-                    ->extension($extension)
-                    ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
-                    ->entity($batch)
-                    ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
-                    ->save();
-
-            $fileStoreEntity = $creator->get();
-
-            $traceData = [
-                'file_id'   => $fileStoreEntity['id'],
-                'file_name' => $fileStoreEntity['name'],
-                'batch_id'  => $batchId,
-                'gateway'   => $this->gateway,
-            ];
-
-            $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
-        }
-    }
-
-    /**
-     * @param $reconOutputData
-     * @param $batchId
-     * @param $attemptNumber
-     * removes blacklisted columns if present. otherwise adds processed_at column for each row.
-     */
-
-    protected function getOutputWithRemovedBlackListedColumns(&$reconOutputData, $batchId, $attemptNumber)
-    {
-        $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
-
-        foreach ($reconOutputData as &$row)
-        {
-            foreach ($blackListedColumns as $column)
-            {
-                unset($row[$column]);
-            }
-
-            $row['batch_id'] = $batchId;
-
-            $row['attempt_number'] = $attemptNumber;
-        }
+        $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
     }
 
     /**
@@ -736,7 +710,7 @@ class Reconciliate extends Base\Core
     // Sends recon batch processing summary
     public function traceBatchProcessingSummary($batch)
     {
-        $outputFiles = $batch->filesByType(FileStore\Type::RECONCILIATION_BATCH_OUTPUT);
+        $outputFiles = $batch->filesByType(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT);
 
         //
         // In case of excel file having 2 or more sheets, those many batch output files

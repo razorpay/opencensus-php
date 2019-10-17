@@ -92,6 +92,7 @@ class Netbanking
         IFSC::FDRL,
         IFSC::IDFB,
         IFSC::RATN,
+        IFSC::UBIN,
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
@@ -445,6 +446,11 @@ class Netbanking
             'tpv' => [
                 IFSC::SIBL
             ]
+        ],
+        Gateway::NETBANKING_UBI => [
+            'retail' => [
+                IFSC::UBIN,
+            ],
         ],
         Gateway::NETBANKING_CBI => [
             'retail' => [

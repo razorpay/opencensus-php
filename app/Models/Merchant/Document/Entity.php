@@ -57,6 +57,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function getOcrVerify()
+    {
+        return $this->getAttribute(self::OCR_VERIFY);
+    }
+
+    public function setOcrVerify(string $ocrVerify)
+    {
+        $this->setAttribute(self::OCR_VERIFY, $ocrVerify);
+    }
+
     public function setEntityType(string $entityType = 'merchant')
     {
         $this->setAttribute(self::ENTITY_TYPE, $entityType);

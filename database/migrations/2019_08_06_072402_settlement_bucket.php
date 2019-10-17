@@ -5,11 +5,14 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Settlement\Bucket\Entity;
 
 class SettlementBucket extends Migration
 {
+    const UNIQUE_INDEX_NAME = 'settlement_bucket_mid_balance_type_bucket_timestamp';
+
     /**
      * Run the migrations.
      *
@@ -25,6 +28,9 @@ class SettlementBucket extends Migration
 
             $table->char(Entity::MERCHANT_ID, UniqueIdEntity::ID_LENGTH);
 
+            $table->char(Entity::BALANCE_TYPE)
+                  ->default(Balance\Type::PRIMARY);
+
             $table->string(Entity::BUCKET_TIMESTAMP);
 
             $table->boolean(Entity::COMPLETED)
@@ -36,7 +42,7 @@ class SettlementBucket extends Migration
 
             $table->index(Entity::BUCKET_TIMESTAMP, Entity::COMPLETED);
 
-            $table->unique([Entity::MERCHANT_ID, Entity::BUCKET_TIMESTAMP]);
+            $table->unique([Entity::MERCHANT_ID, Entity::BALANCE_TYPE, Entity::BUCKET_TIMESTAMP], self::UNIQUE_INDEX_NAME);
         });
     }
 

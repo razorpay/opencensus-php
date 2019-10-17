@@ -1334,19 +1334,6 @@ return [
                 'business_registered_city'    => 'Delhi',
                 'business_registered_pin'     => '560050',
                 'business_type'               => "11",
-                'verification'                => [
-                    'status'          => 'disabled',
-                    'disabled_reason' => 'required_fields',
-                    'required_fields' => [
-                        'address_proof_url',
-                        'bank_account_name',
-                        'bank_account_number',
-                        'bank_branch_ifsc',
-                        'contact_mobile',
-                        'contact_name',
-                        'promoter_address_url',
-                    ],
-                ],
                 'can_submit'                  => false,
                 'activated'                   => 1,
             ],
@@ -1389,19 +1376,6 @@ return [
                 'activation_status'       => 'instantly_activated',
                 'poi_verification_status' => 'verified',
                 'business_type'           => "11",
-                'verification'            => [
-                    'status'          => 'disabled',
-                    'disabled_reason' => 'required_fields',
-                    'required_fields' => [
-                        'address_proof_url',
-                        'bank_account_name',
-                        'bank_account_number',
-                        'bank_branch_ifsc',
-                        'contact_mobile',
-                        'contact_name',
-                        'promoter_address_url',
-                    ],
-                ],
                 'can_submit'              => false,
                 'activated'               => 1,
             ],
@@ -1446,13 +1420,12 @@ return [
                     'status'          => 'disabled',
                     'disabled_reason' => 'required_fields',
                     'required_fields' => [
-                        'address_proof_url',
                         'bank_account_name',
                         'bank_account_number',
                         'bank_branch_ifsc',
                         'contact_mobile',
                         'contact_name',
-                        'promoter_address_url',
+                        'poa_documents',
                     ],
                 ],
                 'can_submit'              => false,
@@ -1495,19 +1468,6 @@ return [
                 'activation_status'       => null,
                 'poi_verification_status' => 'incorrect_details',
                 'business_type'           => "11",
-                'verification'            => [
-                    'status'          => 'disabled',
-                    'disabled_reason' => 'required_fields',
-                    'required_fields' => [
-                        'address_proof_url',
-                        'bank_account_name',
-                        'bank_account_number',
-                        'bank_branch_ifsc',
-                        'contact_mobile',
-                        'contact_name',
-                        'promoter_address_url',
-                    ],
-                ],
                 'can_submit'              => false,
                 'activated'               => 0,
             ],
@@ -1548,19 +1508,6 @@ return [
                 'activation_status'       => null,
                 'poi_verification_status' => 'failed',
                 'business_type'           => "11",
-                'verification'            => [
-                    'status'          => 'disabled',
-                    'disabled_reason' => 'required_fields',
-                    'required_fields' => [
-                        'address_proof_url',
-                        'bank_account_name',
-                        'bank_account_number',
-                        'bank_branch_ifsc',
-                        'contact_mobile',
-                        'contact_name',
-                        'promoter_address_url',
-                    ],
-                ],
                 'can_submit'              => false,
                 'activated'               => 0,
             ],
@@ -1925,6 +1872,52 @@ return [
         'status_code' => 200,
     ],
 
+    'testKycSubmissionWhenPoaIsVerified' => [
+        'request'     => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'url'     => '/merchant/activation',
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '2',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'archived'             => 0,
+                'activation_status'    => 'instantly_activated',
+                'verification'         => [
+                    'status' => 'pending',
+                ],
+                'can_submit'           => true,
+                'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'changeActivationStatus' => [
         'request'  => [
             'content' => [
@@ -1939,6 +1932,52 @@ return [
         ],
     ],
 
+    'testKycSubmissionWhenPoaIsFailed' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '2',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'archived'             => 0,
+                'activation_status'    => 'instantly_activated',
+                'verification'         => [
+                    'status' => 'pending',
+                ],
+                'can_submit'           => true,
+                'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'submitKyc' => [
         'request'  => [
             'content' => [
@@ -1946,12 +1985,52 @@ return [
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
                 'submitted'         => true,
                 'activation_status' => 'under_review',
                 'can_submit'        => true,
+            ],
+        ],
+    ],
+
+    'submitKycActivated' => [
+        'request'  => [
+            'content' => [
+                'submit' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'activated',
+                'can_submit'        => true,
+            ],
+        ],
+    ],
+
+    'validateUnregisteredKycSubmission' => [
+        'request'  => [
+            'content' => [
+                'submit' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],

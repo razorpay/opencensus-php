@@ -71,6 +71,8 @@ class Validator extends Base\Validator
 
         ConfigKey::ATOS_TID_RANGE_LIST                => 'filled|array',
         ConfigKey::ATOS_TID_RANGE_LIST.'.*'           => 'filled|array',
+        ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS          => 'filled|array',
+        ConfigKey::CITI_CHANNEL_PAYOUT_MIDS           => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

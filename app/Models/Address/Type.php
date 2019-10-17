@@ -7,19 +7,24 @@ use RZP\Exception;
 class Type
 {
     const CUSTOMER          = 'customer';
+    const PAYMENT           = 'payment';
 
     const SHIPPING_ADDRESS  = 'shipping_address';
     const BILLING_ADDRESS   = 'billing_address';
 
     protected static $validEntityTypes = [
-        self::CUSTOMER
+        self::CUSTOMER,
+        self::PAYMENT,
     ];
 
     protected static $validTypes = [
         self::CUSTOMER => [
             self::SHIPPING_ADDRESS,
             self::BILLING_ADDRESS,
-        ]
+        ],
+        self::PAYMENT  => [
+            self::BILLING_ADDRESS,
+        ],
     ];
 
     public static function validateEntityType($entityType)

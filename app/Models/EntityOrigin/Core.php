@@ -265,7 +265,6 @@ class Core extends Base\Core
         if ($originEntity === null)
         {
             $authType                  = app('basicauth')->getAuthType();
-            $hasPartnerAuthCallbackKey = app('basicauth')->hasPartnerAuthCallbackKey();
             $routeName                 = app('router')->currentRouteName();
 
             $this->trace->critical(
@@ -274,7 +273,6 @@ class Core extends Base\Core
                     Entity::ORIGIN_TYPE             => $originType,
                     Entity::ORIGIN_ID               => $originId,
                     'auth_type'                     => $authType,
-                    'has_partner_auth_callback_key' => $hasPartnerAuthCallbackKey,
                     'route_name'                    => $routeName,
                 ]
             );

@@ -132,6 +132,7 @@ class Constants
     const WALLET_AUTO_DEBIT               = 'wallet_auto_debit';
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
+    const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
 
     /**
      * When creating submerchant, if kyc is handled by partner, we proceed to directly activate the merchant, when
@@ -421,6 +422,7 @@ class Constants
         self::KYC_HANDLED_BY_PARTNER          => true,
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
+        self::VALIDATE_MERCHANT_DOMAIN        => true,
     ];
 
     // Entity type constants

@@ -4,21 +4,16 @@ namespace RZP\Reconciliator\NetbankingSbi\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Sbi\Status;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
+use RZP\Gateway\Netbanking\Sbi\ReconFields\PaymentReconFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const MERCHANT_ID           = 'merchant_id';
-    const GATEWAY_REFERENCE_NUM = 'gateway_reference_number';
-    const BANK_REFERENCE_NUM    = 'bank_transaction_referenceno';
-    const TRANSACTION_AMOUNT    = 'transaction_amount';
-    const TRANSACTION_STATUS    = 'status';
-    const TRANSACTION_DATE      = 'transaction_date';
-
     protected $netbankingRepo;
+
+    const BLACKLISTED_COLUMNS = [];
 
     public function __construct(string $gateway = null)
     {
@@ -29,29 +24,29 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        return $row[self::GATEWAY_REFERENCE_NUM] ?? null;
+        return $row[PaymentReconFields::GATEWAY_REF_NO] ?? null;
     }
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::BANK_REFERENCE_NUM] ?? null;
+        return $row[PaymentReconFields::BANK_TRAN_REF_NO] ?? null;
     }
 
     protected function getGatewayPaymentDate($row)
     {
-        return $row[self::TRANSACTION_DATE] ?? null;
+        return $row[PaymentReconFields::TRANSACTION_DATE] ?? null;
     }
 
     protected function getReconPaymentStatus(array $row)
     {
-        $status = $row[self::TRANSACTION_STATUS] ?? Status::SUCCESS;
+        $status = $row[PaymentReconFields::STATUS] ?? Status::SUCCESS;
 
         return $this->getApiPaymentStatus($status);
     }
 
     protected function getMerchantId(array $row)
     {
-        return $row[self::MERCHANT_ID] ?? null;
+        return $row[PaymentReconFields::MERCHANT_ID] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -77,7 +72,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        return Helper::getIntegerFormattedAmount($row[self::TRANSACTION_AMOUNT]);
+        return Helper::getIntegerFormattedAmount($row[PaymentReconFields::TRANSACTION_AMOUNT]);
     }
 
     private function getApiPaymentStatus(string $status)
