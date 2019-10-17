@@ -386,6 +386,10 @@ export default class User {
     return this.getExpStatus('mobile_hotjar_survey');
   }
 
+  get isShowCommissionBalanceEnabled() {
+    return this.getExpStatus('show_commission_balance');
+  }
+
   get isAllowedTeamManagement() {
     return this.isMerchantRestricted
       ? this.isAllowedView('team')
