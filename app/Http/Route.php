@@ -938,6 +938,8 @@ final class Route
         'scrooge_refunds_download_gateway_file'    => ['post',     'scrooge/refunds/download-gateway-file',          'ScroogeController@downloadGatewayRefundsFile'                      ],
         'set_scrooge_refund_dark'                  => ['post',     'scrooge/refunds/{id}/dark/{action}',             'ScroogeController@setRefundDark'                                   ],
         'scrooge_processed_refunds_state_change'   => ['post',     'scrooge/refunds/processed-refunds-state-change', 'ScroogeController@bulkStatusUpdate'                                ],
+        'scrooge_set_instant_refunds_mode'         => ['post',     'scrooge/merchants/instant_refunds_mode',         'ScroogeController@setInstantRefundsMode'                           ],
+        'scrooge_delete_instant_refunds_mode'      => ['delete',   'scrooge/merchants/instant_refunds_mode',         'ScroogeController@deleteInstantRefundsMode'                        ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -2306,6 +2308,8 @@ final class Route
         'scrooge_refunds_get',
         'scrooge_refunds_update',
         'scrooge_refunds_download_gateway_file',
+        'scrooge_set_instant_refunds_mode',
+        'scrooge_delete_instant_refunds_mode',
 
         'scrooge_refund_create',
         'scrooge_refund_create_bulk',
@@ -2738,6 +2742,8 @@ final class Route
         'scrooge_refunds_get_multiple'             => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download'                 => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download_gateway_file'    => Permission::VIEW_SCROOGE_REFUNDS,
+        'scrooge_set_instant_refunds_mode'         => Permission::EDIT_MERCHANT,
+        'scrooge_delete_instant_refunds_mode'      => Permission::EDIT_MERCHANT,
         'scrooge_refunds_get'                      => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'scrooge_refund_create'                    => Permission::RETRY_REFUND,

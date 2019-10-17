@@ -228,6 +228,16 @@ class Scrooge
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds'], Requests::POST, $input);
     }
 
+    public function setInstantRefundsMode(array $input): array
+    {
+        return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'], Requests::POST, $input);
+    }
+
+    public function deleteInstantRefundsMode(array $input): array
+    {
+        return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'], Requests::DELETE, $input);
+    }
+
     public function downloadGatewayRefundsFile(array $input): array
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds_gateway_file'],
