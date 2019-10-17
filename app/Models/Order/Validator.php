@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -418,6 +419,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_BANK_INVALID);
+        }
+    }
+
+    public function validateLineItemsCount(int $lineItemsCount)
+    {
+        if ($lineItemsCount > 25)
+        {
+            $message = 'The order may not have more than ' . 25 . ' items in total.';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 

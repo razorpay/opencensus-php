@@ -142,6 +142,53 @@ class Service extends Base\Service
         return $this->core->migratePaymentPageItemsForMinPurchase($input);
     }
 
+    public function createOrder(string $id, array $input)
+    {
+        $paymentLink = $this->getPaymentLinkAndSetModeAndMerchant($id);
+
+        $data = (new Core)->createOrder($paymentLink, $input);
+
+        for($i = 0; $i < count($data[Entity::LINE_ITEMS]); $i++)
+        {
+            $data[Entity::LINE_ITEMS][$i] = $data[Entity::LINE_ITEMS][$i]->toArrayPublic();
+        }
+
+        $data[Entity::ORDER] = $data[Entity::ORDER]->toArrayPublic();
+
+        return $data;
+    }
+
+    public function updatePaymentPageItem(string $paymentPageItemId, array $input)
+    {
+        $paymentPageItem = $this->repo->payment_page_item->findByPublicIdAndMerchant($paymentPageItemId, $this->merchant);
+
+        $paymentPageItem = $this->core->updatePaymentPageItem($paymentPageItem, $input);
+
+        return $paymentPageItem->toArrayPublic();
+    }
+
+    protected function getPaymentLinkAndSetModeAndMerchant(string $id)
+    {
+        $paymentPage = null;
+
+        try
+        {
+            $this->app['basicauth']->setModeAndDbConnection('live');
+
+            $paymentPage = $this->repo->payment_link->findByPublicId($id);
+        }
+        catch (\Exception $e)
+        {
+            $this->app['basicauth']->setModeAndDbConnection('test');
+
+            $paymentPage = $this->repo->payment_link->findByPublicId($id);
+        }
+
+        $this->app['basicauth']->setMerchant($paymentPage->merchant);
+
+        return $paymentPage;
+    }
+
     protected function fetchSettingForPPI(array & $paymentLink)
     {
         if (isset($paymentLink[Entity::PAYMENT_PAGE_ITEMS]) === false)

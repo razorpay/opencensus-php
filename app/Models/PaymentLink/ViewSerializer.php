@@ -53,6 +53,7 @@ class ViewSerializer extends Base\Core
             'environment'    => $this->app->environment(),
             E::MERCHANT      => $this->serializeMerchantForHosted(),
             E::PAYMENT_LINK  => $this->serializePaymentLinkForHosted(),
+            'base_url'       => $this->config['app']['url'],
         ];
     }
 
@@ -75,8 +76,14 @@ class ViewSerializer extends Base\Core
 
         // Prepends default UDF schema for view.
         $defaultUdfSchemaForView = $this->getDefaultUdfSchemaForView();
+
         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
-        array_unshift($udfSchema, ...$defaultUdfSchemaForView);
+
+        if (empty($defaultUdfSchemaForView) === false)
+        {
+            array_unshift($udfSchema, ...$defaultUdfSchemaForView);
+        }
+
         $settings[Entity::UDF_SCHEMA] = json_encode($udfSchema);
 
         // Puts other settings defaults
@@ -108,6 +115,8 @@ class ViewSerializer extends Base\Core
 
     protected function serializePaymentLinkForHosted(): array
     {
+        $this->repo->loadRelations($this->paymentLink);
+
         $serialized = $this->paymentLink->toArrayHosted();
 
         $this->addAdditionalAttributesForPaymentLink($serialized);
@@ -115,8 +124,43 @@ class ViewSerializer extends Base\Core
         $this->addFormattedAmountAttributesForPaymentLink($serialized);
         $this->addFormattedEpochAttributesForPaymentLink($serialized);
         $this->addSettingsOfPaymentLink($serialized);
+        $this->serializePaymentPageItems($serialized);
 
         return $serialized;
+    }
+
+    protected function serializePaymentPageItems(array & $paymentLink)
+    {
+        if (isset($paymentLink[Entity::PAYMENT_PAGE_ITEMS]) === false)
+        {
+            return;
+        }
+
+        $PPICore = new PaymentPageItem\Core;
+
+        for ($i = 0; $i < count($paymentLink[Entity::PAYMENT_PAGE_ITEMS]); $i++)
+        {
+            $paymentPageItem = $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i];
+
+            $paymentPageItem = $PPICore->fetch($paymentPageItem[PaymentPageItem\Entity::ID]);
+
+            $paymentPageItem->settings = $paymentPageItem->getSettings();
+
+            $paymentPageItemSerialized = $paymentPageItem->toArrayHosted();
+
+            $paymentPageItemSerialized['quantity_available'] = $paymentPageItem->getQuantityAvailable();
+
+            $this->serializePPItemSettings($paymentPageItemSerialized);
+
+            $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i] = $paymentPageItemSerialized;
+        }
+    }
+
+    protected function serializePPItemSettings(array & $paymentPageItemSerialized)
+    {
+        $settings = $paymentPageItemSerialized[PaymentPageItem\Entity::SETTINGS];
+
+        $paymentPageItemSerialized[PaymentPageItem\Entity::SETTINGS] = $settings->toArray();
     }
 
     protected function addAdditionalAttributesForPaymentLink(array & $serialized)
@@ -173,6 +217,11 @@ class ViewSerializer extends Base\Core
      */
     protected function getDefaultUdfSchemaForView(): array
     {
+        if ($this->paymentLink->getVersion() === Version::V2)
+        {
+            return [];
+        }
+
         return [
             [
                 'title'    => 'Email',
@@ -180,8 +229,8 @@ class ViewSerializer extends Base\Core
                 'type'     => 'string',
                 'pattern'  => 'email',
                 'required' => true,
-                'options'  => [
-                    'keydown_restrictive' => false,
+                'settings' => [
+                    'position' => 1,
                 ],
             ],
             [
@@ -190,9 +239,10 @@ class ViewSerializer extends Base\Core
                 'type'      => 'number',
                 'pattern'   => 'phone',
                 'required'  => true,
-                'minLength' => 8,
-                'options'   => [
-                    'keydown_restrictive' => false,
+                'minLength' => '8',
+                'options'   => [],
+                'settings' => [
+                    'position' => 2,
                 ],
             ],
         ];

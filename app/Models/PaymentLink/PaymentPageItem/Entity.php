@@ -10,6 +10,9 @@ use RZP\Models\Settings;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink;
 
+/**
+ * @property PaymentLink\Entity $paymentLink
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
@@ -127,6 +130,20 @@ class Entity extends Base\PublicEntity
         self::ITEM,
     ];
 
+    protected $hosted = [
+        self::ID,
+        self::ENTITY,
+        self::PAYMENT_LINK_ID,
+        self::ITEM,
+        self::MANDATORY,
+        self::IMAGE_URL,
+        self::MIN_PURCHASE,
+        self::MAX_PURCHASE,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
+        self::SETTINGS,
+    ];
+
     public function getQuantitySold(): int
     {
         return $this->getAttribute(self::QUANTITY_SOLD);
@@ -159,6 +176,43 @@ class Entity extends Base\PublicEntity
         return $key === null ? $accessor->all() : $accessor->get($key);
     }
 
+    public function getMinAmount()
+    {
+        return $this->getAttribute(self::MIN_AMOUNT);
+    }
+
+    public function getMaxAmount()
+    {
+        return $this->getAttribute(self::MAX_AMOUNT);
+    }
+
+    public function getMinPurchase()
+    {
+        return $this->getAttribute(self::MIN_PURCHASE);
+    }
+
+    public function getMaxPurchase()
+    {
+        return $this->getAttribute(self::MAX_PURCHASE);
+    }
+
+    public function getStock()
+    {
+        return $this->getAttribute(self::STOCK);
+    }
+
+    public function getQuantityAvailable()
+    {
+        $stockAvailable = $this->getStock();
+
+        if (isset($stockAvailable) === true)
+        {
+            return $stockAvailable - $this->getQuantitySold();
+        }
+
+        return null;
+    }
+
     public function setMinPurchase(int $minPurchase)
     {
         $this->setAttribute(self::MIN_PURCHASE, $minPurchase);
@@ -184,6 +238,30 @@ class Entity extends Base\PublicEntity
     public function incrementTotalAmountPaidBy(int $incrementValue)
     {
         $this->setAttribute(self::TOTAL_AMOUNT_PAID, ($this->getTotalAmountPaid() + $incrementValue));
+    }
+
+    public function isStockLeft(): bool
+    {
+        if (is_null($this->getStock()) === true)
+        {
+            return true;
+        }
+
+        $remainingStock = $this->getStock() - $this->getQuantitySold();
+
+        return $remainingStock > 0;
+    }
+
+    public function isSlotLeft(int $slot): bool
+    {
+        if (is_null($this->getStock()) === true)
+        {
+            return true;
+        }
+
+        $remainingStock = $this->getStock() - $this->getQuantitySold();
+
+        return $remainingStock >= $slot;
     }
 
     public function merchant()
