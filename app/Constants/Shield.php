@@ -28,6 +28,7 @@ final class Shield
     const BANK                    = 'bank';
     const WALLET                  = 'wallet';
     const VPA                     = 'vpa';
+    const CARD_FP                 = 'card_fingerprint';
     const CARD_IIN                = 'card_iin';
     const CARD_NETWORK            = 'card_network';
     const CARD_TYPE               = 'card_type';

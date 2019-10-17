@@ -167,6 +167,7 @@ class Shield
             case Payment\Method::EMI:
                 $card = $payment->card;
 
+                $payloadDetails[ShieldConstants::CARD_FP]           = $card->getGlobalFingerPrint();
                 $payloadDetails[ShieldConstants::CARD_IIN]          = $card->getIin();
                 $payloadDetails[ShieldConstants::CARD_NETWORK]      = $card->getNetworkCode();
                 $payloadDetails[ShieldConstants::CARD_TYPE]         = $card->getType();
@@ -187,7 +188,7 @@ class Shield
     {
         $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] = $this->request->header('Accept-Language');
 
-        $paymentAnalytics = $payment->getMetadata("payment_analytics");
+        $paymentAnalytics = $payment->getMetadata('payment_analytics');
 
         if (is_null($paymentAnalytics) === true)
         {
