@@ -397,6 +397,17 @@ class Gateway extends Base\Gateway
         return hash(HashAlgo::SHA256, $str);
     }
 
+    public function getStatusRequest(array $request): array
+    {
+        $this->proxyRequestIfApplicable($request);
+
+        $request['options']['timeout'] = 60;
+
+        $request['options']['verify'] = false;
+
+        return $request;
+    }
+
     protected function validateChecksumAndGetQrData($input)
     {
         //
