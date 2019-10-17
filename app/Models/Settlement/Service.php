@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
+use RZP\Models\Adjustment;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
@@ -126,7 +127,38 @@ class Service extends Base\Service
     {
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $txns = $this->repo->transaction->fetchBySettlement($setl);
+        // Maps the transaction source to the entities to be fetched for it
+        $txnToRelationFetchMap = [
+            // Maps transaction source to entities that need to be fetched
+            E::PAYMENT  => [E::ORDER, E::CARD],
+            E::REFUND   => [
+                E::PAYMENT,
+                E::PAYMENT . '.' . E::CARD,
+                E::PAYMENT . '.' . E::ORDER,
+            ],
+            E::ADJUSTMENT   => [
+                Adjustment\Entity::ENTITY,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::CARD,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
+            ],
+            E::SETTLEMENT,
+        ];
+
+        $start = microtime(true);
+
+        $txns = $this->repo->transaction->fetchBySettlement($setl, $txnToRelationFetchMap);
+
+        $timeTaken = get_diff_in_millisecond($start);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTION_FETCH,
+            [
+                'merchantId'    => $this->merchant->getId(),
+                'settlement_id' => $id,
+                'txn_count'     => $txns->count(),
+                'time_taken'    => $timeTaken
+            ]);
 
         return $txns->toArrayPublic();
     }

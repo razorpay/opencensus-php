@@ -12,6 +12,8 @@ use RZP\Gateway\Mozart\NetbankingYesb\ReconFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         $reconStatus = $this->getReconPaymentStatus($row);

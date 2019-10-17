@@ -620,7 +620,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_RECURRING_STATUS_ALREADY_SET                    = 'TOKEN_RECURRING_STATUS_ALREADY_SET';
     const GATEWAY_RECURRING_STATUS_NOT_SET                      = 'GATEWAY_RECURRING_STATUS_NOT_SET';
     const GATEWAY_RECURRING_REJECTED_WITHOUT_REASON             = 'GATEWAY_RECURRING_REJECTED_WITHOUT_REASON';
-    const PAYMENT_PROCESSING_ERROR                              = 'PAYMENT_PROCESSING_ERROR';
 
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
@@ -878,6 +877,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FAILED_TO_ADD_MERCHANT_TO_SETTLEMENT_BUCKET           = 'FAILED_TO_ADD_MERCHANT_TO_SETTLEMENT_BUCKET';
     const FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT             = 'FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT';
     const SETTLEMENT_TRANSFER_DISABLED                          = 'SETTLEMENT_TRANSFER_DISABLED';
+    const SETTLEMENT_TRANSACTION_FETCH                          = 'SETTLEMENT_TRANSACTION_FETCH';
 
     const VPA_CREATE_REQUEST                                    = 'VPA_CREATE_REQUEST';
     const VPA_CREATED                                           = 'VPA_CREATED';
@@ -1223,7 +1223,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_BATCH_CREATION_FAILED                           = 'RECON_BATCH_CREATION_FAILED';
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
     const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
-    const RECON_BATCH_OUTPUT_FILE                               = 'RECON_BATCH_OUTPUT_FILE';
     const RECON_BATCH_ANALYTICS_OUTPUT_FILE                     = 'RECON_BATCH_ANALYTICS_OUTPUT_FILE';
 
     //Trace code for Transaction Migration

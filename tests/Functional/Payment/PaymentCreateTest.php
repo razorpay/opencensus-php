@@ -115,7 +115,7 @@ class PaymentCreateTest extends TestCase
 
         $originalBillingAddressArray = $this->getDefaultBillingAddressArray();
 
-        foreach(['line2', 'zipcode', 'state'] as $optionalField)
+        foreach(['line2', 'postal_code', 'state'] as $optionalField)
         {
             $billingAddressArray = $originalBillingAddressArray;
 

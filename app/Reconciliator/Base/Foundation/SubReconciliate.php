@@ -41,11 +41,6 @@ class SubReconciliate extends Base\Core
     const RECON_ENTITY_ID       = 'recon_entity_id';
 
     /**
-     * The list of columns which shouldn't be exposed to specific data sources like qubole.
-     */
-    const BLACKLISTED_COLUMNS = [];
-
-    /**
      * For few gateways, we do not get the RZP  payment/refund ID
      * in the MIS row. We want to add extra column recon_entity_id
      * in the output file only for such gateways.
@@ -729,12 +724,29 @@ class SubReconciliate extends Base\Core
     }
 
     /**
+     * Gateway must define const BLACKLISTED_COLUMNS of black listed
+     * columns which should not be included in the output file.
+     *
      * @return array
-     * 1. Gateway should override this function to return list of black listed columns which should not
-     * be included in the output file.
      */
     public function getBlackListedColumnHeadersForOutputFile()
     {
-        return static::BLACKLISTED_COLUMNS;
+        $className = get_class($this);
+
+        // check if constant BLACKLISTED_COLUMNS defined in subreconciliator
+        $defined = defined($className . '::' . 'BLACKLISTED_COLUMNS');
+
+        if ($defined === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'info_code' => InfoCode::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,
+                    'gateway'   => $this->gateway,
+                ]);
+
+            return null;
+        }
+
+        return constant($className . '::' . 'BLACKLISTED_COLUMNS');
     }
 }
