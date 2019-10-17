@@ -234,7 +234,7 @@ class Entity extends Base\PublicEntity
         $merchant = $this->merchant;
 
         if ( ($merchant !== null) and
-            ($merchant->isFeatureEnabled(MerchantFeature::EXPOSE_UTR) === true))
+            ($merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR) === true))
         {
             $array[self::RESULTS][self::UTR] = $this->getUtr();
         }
