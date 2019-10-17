@@ -20,20 +20,22 @@ export const fetchReminders = () => {
 };
 
 export const disableEnableReminders = (id, data) => {
-  return {
-    type: REMINDERS_UPDATE,
-    payload: merchantFetch({
-      url: `reminders/service/merchant_settings/${id}`,
-      method: 'patch',
-      data,
-    }),
-  };
+  return merchantFetch({
+    url: `reminders/service/merchant_settings/${id}`,
+    method: 'PATCH',
+    data: {
+      active: data.active,
+    },
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 };
 
 export const createReminders = namespace => {
   return merchantFetch({
     url: 'reminders/service/merchant_settings',
-    method: 'post',
+    method: 'POST',
     data: {
       namespace,
     },
@@ -102,20 +104,6 @@ export default function(state = initialState, action) {
         })
       );
     }
-
-    case `${REMINDERS_UPDATE}::SUCCESS`: {
-      return set(
-        state,
-        'reminders',
-        merge(state.reminders, {
-          loading: false,
-          ...action.payload.data,
-        })
-      );
-    }
-
-    case `${REMINDERS_UPDATE}::ERROR`:
-      return set(state, 'reminders', set(state.reminders, 'loading', false));
 
     case `${REMINDER_MERCHANT_CONFIG_FETCH}::PENDING`:
       return set(
