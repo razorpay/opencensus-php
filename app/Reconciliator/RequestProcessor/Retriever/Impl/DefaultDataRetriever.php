@@ -48,10 +48,17 @@ class DefaultDataRetriever extends AbstractAPIDataRetriever
         {
             if (isset($value['data']['records']))
             {
-                $output[$key] =  $value['data']['records'];
+                $refactoredList = array_map(function($object){
+                    return $object['Response'];
+                }, $value['data']['records']);
+                $output = array_merge($output, $refactoredList);
             }
         }
 
-        return $output;
+        if (empty($output) === true)
+        {
+            return [];
+        }
+        return ['_' => $output];
     }
 }

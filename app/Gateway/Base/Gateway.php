@@ -1675,7 +1675,9 @@ class Gateway
 
     protected function getMozartApiUrl($input)
     {
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->app['config']->get($urlConfig);
 
         $version = $this->getVersionForAction($input, $this->action);
 
@@ -1691,9 +1693,11 @@ class Gateway
     {
         $url = $this->getMozartApiUrl($input);
 
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password'; 
+
         $authentication = [
             'api',
-            $this->app['config']->get('applications.mozart.password')
+            $this->app['config']->get($passwordConfig)
         ];
 
         $input['terminal'] = $input['terminal']->toArrayWithPassword();

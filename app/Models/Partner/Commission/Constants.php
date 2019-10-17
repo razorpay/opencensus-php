@@ -25,6 +25,11 @@ class Constants
     const SUBVENTION_DAILY    = 'subvention_daily'; // day wise subvention aggregates
     const SUBVENTION_DETAIL   = 'subvention_detail'; // subvention break up details for given day
 
+    const TOTAL_COMMISSION = 'total_commission';
+    const TOTAL_TAX        = 'total_tax';
+    const TOTAL_TDS        = 'total_tds';
+    const TOTAL_NET_AMOUNT = 'total_net_amount';
+
     /**
      * List of entities for which the commission can be rolled out.
      * The entities defined here must implement the CommissionSourceInterface.

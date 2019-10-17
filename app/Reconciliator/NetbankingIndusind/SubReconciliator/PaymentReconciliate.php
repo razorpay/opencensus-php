@@ -10,6 +10,8 @@ use RZP\Gateway\Netbanking\Indusind\ReconciliationFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         if (empty($row[ReconciliationFields::PAYMENT_ID]) === false)

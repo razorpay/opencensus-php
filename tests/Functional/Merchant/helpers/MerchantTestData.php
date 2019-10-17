@@ -643,6 +643,34 @@ return [
         ]
     ],
 
+    'testEditMerchantWhitelistedDomains' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_domains' => [
+                    'example.com',
+                    'razorpay.com'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_domains' => [
+                    'example.com',
+                    'razorpay.com'
+                ],
+            ]
+        ]
+    ],
+
     'testEditMerchantInvalidWhitelistedIpsTest' => [
         'request'  => [
             'content' => [
@@ -1856,6 +1884,29 @@ return [
                     ]
                 ]
             ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithContactDetailsWhereContactDoesNotExist' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'contact_id' => 'cont_AAAAAAAAAAAAAA'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
 

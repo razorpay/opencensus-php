@@ -43,7 +43,9 @@ class TerminalOnboardingCreateJob extends Job
         }
         catch (\Throwable $ex)
         {
-            $this->trace->count(Metric::TERMINAL_ONBOARDING_CREATE_FAILED);
+            $this->trace->count(Metric::TERMINAL_ONBOARDING_CREATE_FAILED, [
+                'mode'      => $this->mode,
+            ]);
 
             $this->trace->traceException(
                 $ex,
@@ -109,7 +111,9 @@ class TerminalOnboardingCreateJob extends Job
         if ((isset($exceptionData[Constants::ERROR][Constants::GATEWAY_ERROR_CODE]) === true) and  
             ($exceptionData[Constants::ERROR][Constants::GATEWAY_ERROR_CODE] === Constants::GATEWAY_FAILURE_ERROR_CODE))
         {
-            $this->trace->count(Metric::TERMINAL_ONBOARDING_PSP_GATEWAY_ERROR);
+            $this->trace->count(Metric::TERMINAL_ONBOARDING_PSP_GATEWAY_ERROR, [
+                'mode'      => $this->mode,
+            ]);
 
             if (isset($exceptionData[Constants::DATA][Constants::DESCRIPTION]))
             {
@@ -119,7 +123,9 @@ class TerminalOnboardingCreateJob extends Job
         // Internal error from Mozart
         else
         {
-            $this->trace->count(Metric::TERMINAL_ONBOARDING_INTERNAL_ERROR);
+            $this->trace->count(Metric::TERMINAL_ONBOARDING_INTERNAL_ERROR, [
+                'mode'      => $this->mode,
+            ]);
 
             if (isset($exceptionData[Constants::ERROR][Constants::DESCRIPTION]) === true)
             {

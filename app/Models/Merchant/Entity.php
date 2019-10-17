@@ -47,6 +47,7 @@ use RZP\Models\Payment\Refund\Speed as RefundSpeed;
  * @property BankAccount\Entity $bankAccount
  * @property Balance\Entity     $bankingBalance
  * @property Balance\Entity     $primaryBalance
+ * @property Balance\Entity     $commissionBalance
  */
 class Entity extends Base\PublicEntity
 {
@@ -76,6 +77,7 @@ class Entity extends Base\PublicEntity
     const CATEGORY                       = 'category';
     const WHITELISTED_IPS_LIVE           = 'whitelisted_ips_live';
     const WHITELISTED_IPS_TEST           = 'whitelisted_ips_test';
+    const WHITELISTED_DOMAINS            = 'whitelisted_domains';
     const CATEGORY2                      = 'category2';
     const INVOICE_CODE                   = 'invoice_code';
     const SCOPE                          = 'scope';
@@ -118,7 +120,7 @@ class Entity extends Base\PublicEntity
     const COUPON_CODE              = 'coupon_code';
 
     // Receipt email to be triggered at payment status
-    const RECEIPT_EMAIL_TRIGGER_EVENT = "receipt_email_trigger_event";
+    const RECEIPT_EMAIL_TRIGGER_EVENT = 'receipt_email_trigger_event';
 
     //
     // Followings are derived data indexed in ES and goes to
@@ -262,6 +264,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::WHITELISTED_DOMAINS,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
@@ -341,6 +344,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::WHITELISTED_DOMAINS,
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
@@ -382,6 +386,7 @@ class Entity extends Base\PublicEntity
         self::NOTES                          => [],
         self::WHITELISTED_IPS_LIVE           => [],
         self::WHITELISTED_IPS_TEST           => [],
+        self::WHITELISTED_DOMAINS            => [],
         self::FEE_CREDITS_THRESHOLD          => null,
         self::CATEGORY                       => 0,
         self::WEBSITE                        => null,
@@ -413,6 +418,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH         => 'bool',
         self::WHITELISTED_IPS_LIVE           => 'array',
         self::WHITELISTED_IPS_TEST           => 'array',
+        self::WHITELISTED_DOMAINS            => 'array',
         self::FEE_CREDITS_THRESHOLD          => 'int',
         self::BUSINESS_BANKING               => 'bool',
         self::SECOND_FACTOR_AUTH             => 'bool',
@@ -921,19 +927,28 @@ class Entity extends Base\PublicEntity
                     ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
     }
 
-    public function getBalanceByProductType(string $product)
+    public function commissionBalance()
     {
-        switch ($product)
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::COMMISSION);
+    }
+
+    public function getBalanceByType(string $type)
+    {
+        switch ($type)
         {
-            case Product::PRIMARY:
+            case Balance\Type::PRIMARY:
                 return $this->primaryBalance;
 
-            case Product::BANKING:
+            case Balance\Type::BANKING:
                 return $this->bankingBalance;
+
+            case Balance\Type::COMMISSION:
+                return $this->commissionBalance;
 
             default:
                 throw new LogicException(
-                    "Invalid product type - {$product}",
+                    "Invalid balance type - {$type}",
                     null,
                     [
                         Entity::MERCHANT_ID => $this->getId(),
@@ -941,9 +956,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getBalanceByProductTypeOrFail(string $product): Balance\Entity
+    public function getBalanceByTypeOrFail(string $type): Balance\Entity
     {
-        $balance = $this->getBalanceByProductType($product);
+        $balance = $this->getBalanceByType($type);
 
         if ($balance === null)
         {
@@ -951,8 +966,8 @@ class Entity extends Base\PublicEntity
                 ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
                 null,
                 [
-                    self::ID      => $this->getKey(),
-                    self::PRODUCT => $product,
+                    self::ID             => $this->getKey(),
+                    Balance\Entity::TYPE => $type,
                 ]);
         }
 
@@ -1316,6 +1331,11 @@ class Entity extends Base\PublicEntity
     public function getMerchantDashboardWhitelistedIpsTest()
     {
         return $this->getAttribute(self::DASHBOARD_WHITELISTED_IPS_TEST);
+    }
+
+    public function getWhitelistedDomains()
+    {
+        return $this->getAttribute(self::WHITELISTED_DOMAINS);
     }
 
     public function getOrgId()

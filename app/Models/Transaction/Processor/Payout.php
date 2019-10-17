@@ -98,8 +98,6 @@ class Payout extends Base
         $this->txn->setGatewayServiceTax(0);
 
         // the transaction is saved in the caller
-
-        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     public function setMerchantBalanceLockForUpdate()

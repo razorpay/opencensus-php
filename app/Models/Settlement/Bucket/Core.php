@@ -10,8 +10,9 @@ use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant as ME;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Merchant\Balance\Type;
 
 class Core extends Base\Core
 {
@@ -114,10 +115,12 @@ class Core extends Base\Core
     /**
      * will return all the merchant ids who's settlement has to go in given bucket
      *
-     * @param null $bucketTimestamp
+     * @param string $balanceType
+     * @param null   $bucketTimestamp
+     *
      * @return array
      */
-    public function getMerchantIdsFromBucket($bucketTimestamp = null): array
+    public function getMerchantIdsFromBucket(string $balanceType, $bucketTimestamp = null): array
     {
         // if the bucket timestamp is not given then derive the same for current timestamp
         if (empty($bucketTimestamp) === true)
@@ -127,7 +130,7 @@ class Core extends Base\Core
 
         $merchantIDs = $this->repo
                             ->settlement_bucket
-                            ->getMerchantIdsFromBucket($bucketTimestamp)
+                            ->getMerchantIdsFromBucket($balanceType, $bucketTimestamp)
                             ->pluck(Entity::MERCHANT_ID)
                             ->toArray();
 
@@ -144,13 +147,14 @@ class Core extends Base\Core
      */
     public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime): bool
     {
-        // check is the transaction can be settled
-        $status = $this->isSettleableTransaction($transactionId);
+        $balanceType = $this->repo->transaction->getTransactionBalanceType($transactionId);
 
-        if ($status === false)
+        if (Balance\Type::isSettleableBalanceType($balanceType) === false)
         {
             return false;
         }
+
+        $balanceType = $balanceType ?? Balance\Type::PRIMARY;
 
         // check merchant specific conditions
         $status = $this->preference
@@ -167,7 +171,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return $this->addToBucket($merchantId, $timestamp, $settlementTime);
+            return $this->addToBucket($merchantId, $timestamp, $balanceType, $settlementTime);
         }
 
         // check merchant preference
@@ -176,7 +180,7 @@ class Core extends Base\Core
 
         if ($status === true)
         {
-            return $this->addToBucket($merchantId, $timestamp, $settlementTime);
+            return $this->addToBucket($merchantId, $timestamp, $balanceType, $settlementTime);
         }
 
         $currentTimestamp = Carbon::now(Timezone::IST);
@@ -189,87 +193,51 @@ class Core extends Base\Core
             Preference::getNextBucket($currentTimestamp->getTimestamp()) :
             Preference::getNextBucket($settlementTime->getTimestamp());
 
-        return $this->addToBucket($merchantId, $bucketTimestamp, $settlementTime);
+        return $this->addToBucket($merchantId, $bucketTimestamp, $balanceType, $settlementTime);
     }
 
     /**
      * marks merchant settlement before give time as completed
      * if timestamp is not provided then timestamp is set to current time
      *
-     * @param string $merchantId
-     * @param null   $timestamp
+     * @param ME\Entity $merchant
+     * @param string    $balanceType
+     * @param null      $timestamp
      */
-    public function markMerchantSettlementAsComplete(string $merchantId, $timestamp = null)
+    public function markMerchantSettlementAsComplete(ME\Entity $merchant, string $balanceType, $timestamp = null)
     {
         if (empty($timestamp) === true)
         {
             $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
-        $this->repo
-             ->settlement_bucket
-             ->markAsComplete($merchantId, $timestamp);
+        $this->repo->settlement_bucket->markAsComplete($merchant->getId(), $balanceType, $timestamp);
     }
 
-    /**
-     * It'll add merchant to next available settlement bucket
-     *
-     * @param string $merchantId
-     */
-    public function addToNextBucket(string $merchantId)
+    public function addToNextBucket(string $merchantId, string $balanceType = Balance\Type::PRIMARY)
     {
         $currentTimestamp = Carbon::now(Timezone::IST);
 
         $bucketTimestamp = Preference::getNextBucket($currentTimestamp->getTimestamp());
 
-        $this->addToBucket($merchantId, $bucketTimestamp);
-    }
-
-    /**
-     * returns true if the transaction belongs to settleable balance type
-     * currently we settle only primary balance
-     *
-     * @param string $transactionId
-     * @return bool
-     */
-    protected function isSettleableTransaction(string $transactionId): bool
-    {
-        // this is added only for back filling purpose.
-        // should remove once done.
-        if (empty($transactionId) === true)
-        {
-            return true;
-        }
-
-        $balanceType = $this->repo
-                            ->transaction
-                            ->getTransactionBalanceType($transactionId);
-
-        //
-        // currently we settlement only primary balance to merchant
-        // if partner settlement has to be done then,
-        // add a type to whitelist and have a type section in bucket
-        //
-        if (($balanceType === Type::PRIMARY) or ($balanceType === null))
-        {
-            return true;
-        }
-
-        return false;
+        $this->addToBucket($merchantId, $bucketTimestamp, $balanceType);
     }
 
     /**
      * creates entry in settlement bucket for the merchant id if its not already added to that bucket
      *
      * @param string $merchantId
-     * @param string $settlementTime
      * @param int    $bucketTimestamp
+     * @param string $balanceType
+     * @param string $settlementTime
+     *
      * @return bool
      */
-    public function addToBucket(string $merchantId, int $bucketTimestamp, $settlementTime = null): bool
+    public function addToBucket(string $merchantId, int $bucketTimestamp, string $balanceType, $settlementTime = null): bool
     {
         $data = [
             Entity::MERCHANT_ID      => $merchantId,
+            Entity::BALANCE_TYPE     => $balanceType,
             Entity::BUCKET_TIMESTAMP => $bucketTimestamp,
         ];
 

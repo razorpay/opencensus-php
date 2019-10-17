@@ -141,8 +141,43 @@ return [
 
                     ]
                 ],
+            ]
+        ]
+    ],
+
+    'testDocumentUploadAndCheckOcrVerificationStatusSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => ''
             ],
         ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                ],
+            ]
+        ]
+    ],
+
+    'testDocumentUploadAndCheckOcrVerificationStatusFailed' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'aadhar_front'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                    "aadhar_front" => [
+
+                    ]
+                ],
+            ]
+        ]
     ],
 
     'testFetchMerchantDocuments' => [
@@ -160,6 +195,7 @@ return [
             ],
         ],
     ],
+
     'testFetchMerchantDocumentsByAdmin' => [
         'request'  => [
             'url'    => '/merchant/documents/1cXSLlUU8V9sXl',

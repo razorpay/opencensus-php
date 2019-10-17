@@ -133,6 +133,7 @@ class Constants
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const PASS_UTR                        = 'pass_utr';
+    const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
 
     /**
      * When creating submerchant, if kyc is handled by partner, we proceed to directly activate the merchant, when
@@ -423,6 +424,7 @@ class Constants
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
         self::PASS_UTR                        => true,
+        self::VALIDATE_MERCHANT_DOMAIN        => true,
     ];
 
     // Entity type constants

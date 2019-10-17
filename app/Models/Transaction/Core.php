@@ -32,10 +32,8 @@ use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
-use RZP\Models\Merchant\RefundSource;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Models\Transaction\Processor as TransactionProcessor;
 
 class Core extends Base\Core
@@ -800,30 +798,7 @@ class Core extends Base\Core
 
     public function createFromSettlement(Settlement\Entity $settlement)
     {
-        $txn = new Transaction\Entity;
-
-        $amount = $settlement->getAmount();
-
-        $values = array(
-            Transaction\Entity::DEBIT       => $amount,
-            Transaction\Entity::CREDIT      => 0,
-            Transaction\Entity::CURRENCY    => 'INR',
-            Transaction\Entity::GATEWAY_FEE => 0,
-            Transaction\Entity::API_FEE     => 0,
-            Transaction\Entity::SETTLED     => 1,
-            Transaction\Entity::SETTLED_AT  => time(),
-            Transaction\Entity::FEE         => 0,
-            Transaction\Entity::AMOUNT      => $amount,
-            Transaction\Entity::CHANNEL     => $settlement->getChannel(),
-        );
-
-        $txn->fillAndGenerateId($values);
-
-        $txn->merchant()->associate($settlement->merchant);
-
-        $this->updateBalances($txn);
-
-        $txn->sourceAssociate($settlement);
+        list($txn, $feeSplit) = $this->createTransactionForSource($settlement);
 
         return $txn;
     }
@@ -895,8 +870,6 @@ class Core extends Base\Core
         ];
 
         $txn->fill($values);
-
-        $this->dispatchForSettlementBucketing($txn, $settledAt);
 
         return $txn;
     }
@@ -1453,6 +1426,11 @@ class Core extends Base\Core
 
     public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
+        if ($feesSplit->isEmpty() === true)
+        {
+            return;
+        }
+
         $this->trace->info(
             TraceCode::CREATING_FEES_BREAKUP,
             [
@@ -1527,7 +1505,7 @@ class Core extends Base\Core
      * This will also suppress the any error occurred at this stage
      * if settled at is null then it wont dispatch the job
      *
-     * @param string $merchantId
+     * @param Entity $txn
      * @param null   $settledAt
      */
     public function dispatchForSettlementBucketing(Entity $txn, $settledAt = null)

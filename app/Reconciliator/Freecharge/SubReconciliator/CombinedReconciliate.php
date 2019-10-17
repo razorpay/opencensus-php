@@ -22,6 +22,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         self::TXN_TYPE_PAYMENT_REVERSAL => BaseReconciliate::REFUND
     ];
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getReconciliationTypeForRow($row)
     {
         $transactionType = $row[self::COLUMN_TRANSACTION_TYPE];

@@ -65,6 +65,38 @@ class External extends Base
         return $request;
     }
 
+    public function fetchAdminEntity(string $entityName, string $entityId, array $input)
+    {
+        $this->getsEntityResponse = false;
+
+        $headers = [
+            self::MODE_HEADER_KEY     => $this->mode,
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $mode = $this->mode === 'test' ? 't' : 'l';
+
+        $url = $mode . '/admin/' . $entityName . '/'.$entityId;
+
+        return $this->sendRequest($url, Requests::GET, $input, $headers);
+    }
+
+    public function fetchMultipleAdminEntity(string $entityName, array $input)
+    {
+        $this->getsEntityResponse = false;
+
+        $headers = [
+            self::MODE_HEADER_KEY     => $this->mode,
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $mode = $this->mode === 'test' ? 't' : 'l';
+
+        $url = $mode . '/admin/' . $entityName ;
+
+        return $this->sendRequest($url, Requests::GET, $input, $headers);
+    }
+
     public function fetchCheckoutInfo(array $input, Merchant\Entity $merchant)
     {
         $this->getsEntityResponse = true;

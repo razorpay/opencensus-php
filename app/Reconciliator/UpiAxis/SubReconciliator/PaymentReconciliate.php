@@ -26,12 +26,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const ACCOUNT_CUST_NAME       = 'account_cust_name';
     const COLUMN_PAYMENT_ID       = ['order_id', 'orderid'];
     const COLUMN_TRANSACTION_DATE = ['transaction_date', 'txn_date'];
+    const COLUMN_MOBILE_NO        = 'mobile_no';
 
     const ACCOUNT_DETAILS_VPA   = 'vpa';
     const ACCOUNT_DETAILS_IFSC  = 'ifsc';
     const ACCOUNT_DETAILS_NAME  = 'name';
 
     const SUCCESS = 'Success';
+
+    const BLACKLISTED_COLUMNS = [
+        self::ACCOUNT_CUST_NAME,
+        self::VPA,
+        self::COLUMN_MOBILE_NO,
+    ];
 
     protected function getPaymentId(array $row)
     {
@@ -240,9 +247,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),

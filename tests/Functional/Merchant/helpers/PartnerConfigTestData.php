@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 
@@ -120,6 +121,8 @@ return [
                 'entity_type'            => 'application',
                 'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'commissions_enabled'    => true,
+                'tds_percentage'         => Entity::DEFAULT_TDS_PERCENTAGE,
+                'has_gst_certificate'    => false,
             ],
         ],
     ],
@@ -135,6 +138,8 @@ return [
                 'explicit_plan_id'       => null,
                 'implicit_plan_id'       => null,
                 'implicit_expiry_at'     => null,
+                'tds_percentage'         => Entity::DEFAULT_TDS_PERCENTAGE,
+                'has_gst_certificate'    => true,
             ],
         ],
         'response' => [
@@ -143,6 +148,8 @@ return [
                 'entity_id'           => Constants::DEFAULT_PLATFORM_APP_ID,
                 'commission_model'    => 'commission',
                 'commissions_enabled' => true,
+                'tds_percentage'      => Entity::DEFAULT_TDS_PERCENTAGE,
+                'has_gst_certificate' => true,
             ],
         ],
     ],
@@ -458,6 +465,7 @@ return [
                 'explicit_plan_id'       => null,
                 'implicit_expiry_at'     => null,
                 'settle_to_partner'      => 1,
+                'tds_percentage'         => Entity::DEFAULT_TDS_PERCENTAGE,
             ],
         ],
         'response' => [
@@ -472,6 +480,8 @@ return [
                 'explicit_should_charge' => false,
                 'commission_model'       => 'commission',
                 'settle_to_partner'      => true,
+                'tds_percentage'         => Entity::DEFAULT_TDS_PERCENTAGE,
+                'has_gst_certificate'    => false,
             ],
         ],
     ],
@@ -486,6 +496,7 @@ return [
                 'explicit_plan_id'       => null,
                 'implicit_expiry_at'     => null,
                 'settle_to_partner'      => 1,
+                'has_gst_certificate'    => true,
             ],
         ],
         'response' => [
@@ -500,6 +511,8 @@ return [
                 'explicit_refund_fees'   => true,
                 'explicit_should_charge' => false,
                 'commission_model'       => 'commission',
+                'tds_percentage'         => Entity::DEFAULT_TDS_PERCENTAGE,
+                'has_gst_certificate'    => true,
             ],
         ],
     ],

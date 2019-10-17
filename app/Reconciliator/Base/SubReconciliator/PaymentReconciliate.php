@@ -56,6 +56,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::AMEX,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,
+        RequestProcessor\Base::NETBANKING_BOB_V2,
+        RequestProcessor\Base::PAYPAL
     ];
 
     /**
@@ -147,8 +149,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
 
         $this->setMerchantIdInOutput($this->payment->getMerchantId());
-
-        $this->setProcessedAtInOutput();
 
         try
         {
@@ -651,7 +651,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $paymentId = $this->payment->getPublicId();
         $amount    = $this->payment->getAmount();
 
-        Base\Reconciliate::$forceAuthorizedPayments[] = [$paymentId, $amount];
+        Base\Reconciliate::$forceAuthorizedPayments[] = [
+            'id'        => $this->payment->getId(),
+            'amount'    => $amount,
+        ];
 
         $this->trace->info(
             TraceCode::RECON_INFO_ALERT,

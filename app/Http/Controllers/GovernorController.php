@@ -3,6 +3,9 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use ApiResponse;
+use RZP\Http\Route;
+use Illuminate\Routing\Router;
 use RZP\Services\GovernorService;
 
 class GovernorController extends Controller
@@ -134,5 +137,18 @@ class GovernorController extends Controller
         $response = $this->app['governor']->sendRequest(GovernorService::EXECUTE_CHAINS, $input, $source, $namespace, null , $queryParams);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
+    }
+
+    public function proxy()
+    {
+        $method = Request::method();
+
+        $path = Request::path() . '?' . Request::getQueryString();
+
+        $content = Request::getContent();
+
+        $response = $this->app['governor']->sendRequestV1($method, $path, $content);
+
+        return ApiResponse::json($response);
     }
 }

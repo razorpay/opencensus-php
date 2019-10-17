@@ -15,7 +15,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_GATEWAY_PAYMENT_ID = 'orderid';
     const COLUMN_GST                = 'gst';
 
-
     protected function getPaymentId(array $row)
     {
         $paymentId = null;

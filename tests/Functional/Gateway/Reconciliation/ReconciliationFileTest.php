@@ -1612,6 +1612,17 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideOlamoneyRefund(array $refund)
+    {
+        $facade = $this->testData['facades']['olamoney'];
+
+        $facade['Unique Bill Id'] = str_replace('rfnd_','',$refund['refund_id']);
+
+        $facade['Transaction Type'] = 'refund';
+
+        return $facade;
+    }
+
     private function overrideMobikwikPayment(array $payment)
     {
         $facade = $this->testData['facades']['mobikwik'];
@@ -2119,6 +2130,49 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $updatedTransaction = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testOlamoneyReconRefundFile()
+    {
+        $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
+
+        $payment = $this->getDefaultWalletPaymentArray('olamoney');
+
+        $this->doAuthPayment($payment);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->gateway = 'wallet_olamoney';
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['status'] = 'error';
+
+            return $content;
+        });
+
+        $this->refundAuthorizedPayment('pay_' . $wallet['payment_id']);
+
+        $walletRefund = $this->getLastEntity('wallet', true);
+
+        $entries[] = $this->overrideOlamoneyRefund($walletRefund);
+
+        $file = $this->writeToCsvFile($entries, 'olamoney');
+
+        $this->runForFiles([$file], 'Olamoney');
+
+        $updatedRefund = $this->getDbEntityById('refund', $walletRefund['refund_id']);
+
+        $updatedTransaction = $this->getDbEntityById('transaction', $updatedRefund['transaction_id']);
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
