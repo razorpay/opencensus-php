@@ -35,7 +35,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['fund_account_validations']);
 
-        $this->fixtures->merchant->addFeatures(['pass_utr']);
+        $this->fixtures->merchant->addFeatures(['expose_utr']);
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
