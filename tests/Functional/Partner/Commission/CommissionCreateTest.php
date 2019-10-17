@@ -78,6 +78,24 @@ class CommissionCreateTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testBulkCaptureByPartner()
+    {
+        list($partner) = $this->createSampleCommission();
+
+        $this->createSampleCommission(
+            ['id' => 'SampleMerchant'],
+            ['id' => 'SampleAppIdOne'],
+            ['id' => 'SubmerchantOne']);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['partner_ids'] = [$partner->getId(), 'SampleMerchant'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testImplicitFixedOnPaymentCapture()
     {
         $testData = $this->setUpCommissionCreate();

@@ -1098,6 +1098,7 @@ final class Route
         'commissions_capture'                      => ['post',     'commissions/{id}/capture',                       'CommissionController@capture'                                      ],
         'commissions_get_aggregates'               => ['get',      'commissions/partner/{id}/aggregate',             'CommissionController@fetchAggregateCommissionDetails'              ],
         'commissions_capture_by_partner'           => ['post',     'commissions/partner/{id}/capture',               'CommissionController@captureByPartner'                             ],
+        'commissions_bulk_capture_by_partner'      => ['post',     'commissions/partner/capture/bulk',               'CommissionController@bulkCaptureByPartner'                         ],
         'commissions_mark_for_settlement'          => ['post',     'commissions/partner/{id}/on_hold/clear',         'CommissionController@clearOnHoldForPartner'                        ],
         'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
 
@@ -2419,6 +2420,7 @@ final class Route
 
         'commissions_capture',
         'commissions_capture_by_partner',
+        'commissions_bulk_capture_by_partner',
         'commissions_get_aggregates',
         'commissions_mark_for_settlement',
 
@@ -2928,6 +2930,7 @@ final class Route
 
         'commissions_capture'                      => Permission::COMMISSION_CAPTURE,
         'commissions_capture_by_partner'           => Permission::COMMISSION_CAPTURE,
+        'commissions_bulk_capture_by_partner'      => Permission::COMMISSION_CAPTURE,
         'commissions_get_aggregates'               => '*',
         'commissions_mark_for_settlement'          => Permission::COMMISSION_PAYOUT,
 

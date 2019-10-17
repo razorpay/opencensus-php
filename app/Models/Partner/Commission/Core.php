@@ -19,7 +19,7 @@ use RZP\Models\Partner\Config as PartnerConfig;
 
 class Core extends Base\Core
 {
-    const COMMISSIONS_BULK_CAPTURE_LIMIT = 1000;
+    const COMMISSIONS_BULK_CAPTURE_LIMIT = 200;
 
     public function build(
         Base\PublicEntity $source,
@@ -208,6 +208,13 @@ class Core extends Base\Core
     {
         $commissionIds = $this->repo->commission->getCommissionIdsToBeCaptured($partner->getId());
 
+        $this->trace->info(
+            TraceCode::COMMISSION_CAPTURE_BY_PARTNER_REQUEST,
+            [
+                'partner_id' => $partner->getId(),
+                'count'      => count($commissionIds),
+            ]);
+
         $batches = array_chunk($commissionIds, self::COMMISSIONS_BULK_CAPTURE_LIMIT, true);
 
         foreach ($batches as $batch)
@@ -216,6 +223,22 @@ class Core extends Base\Core
         }
 
         return count($commissionIds);
+    }
+
+    public function bulkCaptureByPartner(array $input): int
+    {
+        (new Validator)->validateInput('bulk_capture', $input);
+
+        $count = 0;
+
+        foreach ($input[Constants::PARTNER_IDS] as $partnerId)
+        {
+            $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+            $count += $this->captureByPartner($partner);
+        }
+
+        return $count;
     }
 
     public function capture(Entity $commission): Entity
