@@ -31,6 +31,83 @@ import {
   trackClickDuplicatePaymentLink,
 } from 'merchant/containers/PaymentLinks/Links/ga';
 
+const notificationClassMap = {
+  sent: 'text-success',
+  pending: 'text-warning',
+};
+
+const getCustomerDetail = invoice => (
+  <Definition placeholder="--">
+    {invoice.customer_details.customer_name}
+    {invoice.customer_details.customer_email && (
+      <span>
+        {invoice.customer_details.customer_email}
+        {invoice.email_status ? (
+          <span
+            style={{ marginLeft: '10px' }}
+            class={`${notificationClassMap[invoice.email_status]}`}
+          >
+            ({invoice.email_status} mail)
+          </span>
+        ) : null}
+      </span>
+    )}
+    {invoice.customer_details.customer_contact && (
+      <span>
+        {invoice.customer_details.customer_contact}
+        {invoice.sms_status ? (
+          <span
+            style={{ marginLeft: '10px' }}
+            class={`${notificationClassMap[invoice.sms_status]}`}
+          >
+            ({invoice.sms_status} sms)
+          </span>
+        ) : null}
+      </span>
+    )}
+    {invoice.customer_id && <code>{invoice.customer_id}</code>}
+  </Definition>
+);
+
+const getPaymentDetail = invoice => (
+  <Definition placeholder="--">
+    <Amount value={invoice.amount_paid} currency={invoice.currency} />
+    {invoice.partial_payment &&
+    invoice.payments &&
+    invoice.payments.items.length ? (
+      <ContentToggler>
+        <span>View Payment Details</span>
+        <div
+          className="full-width-item sub-entity-list"
+          style={{ fontSize: 14 }}
+        >
+          <DataTable
+            title="Payments"
+            progressLoader={true}
+            columns={[paymentId, paidOn, amount]}
+            items={invoice.payments.items}
+            noStripe={true}
+          />
+        </div>
+      </ContentToggler>
+    ) : (
+      <React.Fragment>
+        {invoice.payment_id && (
+          <Link to={`/payments/${invoice.payment_id}`}>
+            <code>{invoice.payment_id}</code>
+          </Link>
+        )}
+        {invoice.paid_at && (
+          <div>
+            Paid on{' '}
+            <Time value={invoice.paid_at} format="DD MMM YYYY, hh:mm a" />
+          </div>
+        )}
+      </React.Fragment>
+    )}
+  </Definition>
+);
+
 export default props => {
   let {
     user,
@@ -310,83 +387,6 @@ export default props => {
     </div>
   );
 };
-
-const notificationClassMap = {
-  sent: 'text-success',
-  pending: 'text-warning',
-};
-
-const getCustomerDetail = invoice => (
-  <Definition placeholder="--">
-    {invoice.customer_details.customer_name}
-    {invoice.customer_details.customer_email && (
-      <span>
-        {invoice.customer_details.customer_email}
-        {invoice.email_status ? (
-          <span
-            style={{ marginLeft: '10px' }}
-            class={`${notificationClassMap[invoice.email_status]}`}
-          >
-            ({invoice.email_status} mail)
-          </span>
-        ) : null}
-      </span>
-    )}
-    {invoice.customer_details.customer_contact && (
-      <span>
-        {invoice.customer_details.customer_contact}
-        {invoice.sms_status ? (
-          <span
-            style={{ marginLeft: '10px' }}
-            class={`${notificationClassMap[invoice.sms_status]}`}
-          >
-            ({invoice.sms_status} sms)
-          </span>
-        ) : null}
-      </span>
-    )}
-    {invoice.customer_id && <code>{invoice.customer_id}</code>}
-  </Definition>
-);
-
-const getPaymentDetail = invoice => (
-  <Definition placeholder="--">
-    <Amount value={invoice.amount_paid} currency={invoice.currency} />
-    {invoice.partial_payment &&
-    invoice.payments &&
-    invoice.payments.items.length ? (
-      <ContentToggler>
-        <span>View Payment Details</span>
-        <div
-          className="full-width-item sub-entity-list"
-          style={{ fontSize: 14 }}
-        >
-          <DataTable
-            title="Payments"
-            progressLoader={true}
-            columns={[paymentId, paidOn, amount]}
-            items={invoice.payments.items}
-            noStripe={true}
-          />
-        </div>
-      </ContentToggler>
-    ) : (
-      <React.Fragment>
-        {invoice.payment_id && (
-          <Link to={`/payments/${invoice.payment_id}`}>
-            <code>{invoice.payment_id}</code>
-          </Link>
-        )}
-        {invoice.paid_at && (
-          <div>
-            Paid on{' '}
-            <Time value={invoice.paid_at} format="DD MMM YYYY, hh:mm a" />
-          </div>
-        )}
-      </React.Fragment>
-    )}
-  </Definition>
-);
 
 const getRemindersStepperData = (reminders, isAutoRemindersUpdating) => {
   return reminders.map(reminder => {
