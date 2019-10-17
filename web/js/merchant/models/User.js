@@ -156,6 +156,8 @@ export default class User {
   get instantActivation() {
     return {
       activation_flow: this.activation_flow,
+      business_type: this.business_type,
+      activated: this.activated,
 
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
@@ -169,8 +171,15 @@ export default class User {
         return this.activation_flow === 'greylist';
       },
 
+      get isUnregBizActivated() {
+        return this.activated === 1;
+      },
+
       get isL1Submitted() {
-        return !!this.activation_flow;
+        return (
+          (this.business_type != 11 && !!this.activation_flow) ||
+          this.isUnregBizActivated
+        );
       },
     };
   }

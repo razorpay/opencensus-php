@@ -66,13 +66,13 @@ const LOADING = {
   DEFAULT: 2, // Some custom message when form opens
 };
 
-function isL1NotSubmittedForRegBiz(props) {
-  return !props.user.instantActivation.isL1Submitted;
-}
+// function isL1NotSubmittedForRegBiz(props) {
+//   return !props.user.instantActivation.isL1Submitted;
+// }
 
-function isL1NotSubmittedForUnRegBiz(props) {
-  return props.user.activated !== 1;
-}
+// function isL1NotSubmittedForUnRegBiz(props) {
+//   return props.user.activated !== 1;
+// }
 
 function defaultFieldProps(f) {
   const self = this;
@@ -203,10 +203,10 @@ export default class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
-      if (
-        (props.user.business_type != 11 && isL1NotSubmittedForRegBiz(props)) ||
-        (props.user.business_type == 11 && isL1NotSubmittedForUnRegBiz(props))
-      ) {
+      console.log('props.user', props.user.instantActivation);
+      console.log('props.user', props.user.instantActivation.isL1Submitted);
+
+      if (!props.user.instantActivation.isL1Submitted) {
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
@@ -438,7 +438,15 @@ export default class ActivationWizard extends React.Component {
       )
     );
   })
-  goto = (newActiveTab, cb) => {
+  goto = async (newActiveTab, cb) => {
+    if (
+      this.state.activeTab == 2 &&
+      (!this.props.user.instantActivation.isL1Submitted &&
+        newActiveTab === null)
+    ) {
+      await this.submitL1(this.state.activeTab);
+    }
+
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
       // And since showSubmitLayer is set true in same cycle as click on 'Submit Form' handler, it will take previous value which is false.
@@ -1214,11 +1222,7 @@ export default class ActivationWizard extends React.Component {
       });
 
     let moreTabs = [];
-    if (
-      (!isL1NotSubmittedForRegBiz(this.props) ||
-        !isL1NotSubmittedForUnRegBiz(this.props)) &&
-      !isFormSubmitted
-    ) {
+    if (this.props.user.instantActivation.isL1Submitted && !isFormSubmitted) {
       moreTabs.push(
         <li
           key="submit-tab"
@@ -1464,10 +1468,7 @@ export default class ActivationWizard extends React.Component {
                 {/* Action Button 4 */}
                 {isLastTab &&
                   !isFormSubmitted &&
-                  ((this.props.user.busines_type != 11 &&
-                    !isL1NotSubmittedForRegBiz(this.props)) ||
-                    (this.props.user.business_type == 11 &&
-                      !isL1NotSubmittedForUnRegBiz(this.props))) && (
+                  this.props.user.instantActivation.isL1Submitted && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
@@ -1658,7 +1659,7 @@ function isFieldValid(field, activation) {
   if (
     field.name == 'promoter_pan' &&
     activation.props.busines_type == 11 &&
-    isL1NotSubmittedForUnRegBiz(activation.props)
+    !activation.props.user.instantActivation.isL1Submitted
   ) {
     return false;
   }
