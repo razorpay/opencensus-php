@@ -78,7 +78,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       avlblMethods: [],
       emandateBanks: [],
       formFields: {
-        hasNoExpiry: '1',
+        hasNoExpiry: true,
         tokenHasNoExpiry: '1',
         mandateMethod: '',
         customerName: '',

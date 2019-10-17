@@ -86,8 +86,7 @@ export default props => {
         <Input.Check
           fieldLabel="No Expiry"
           name="hasNoExpiry"
-          defaultValue="1"
-          value={hasNoExpiry}
+          checked={hasNoExpiry}
         />
 
         <Input.ToCalendar
@@ -97,8 +96,8 @@ export default props => {
           placeholder="Expiry (DD-MM-YYYY)"
           placement="topLeft"
           addonAfter={<i class="i i-date-range" />}
-          disabled={!!Number(hasNoExpiry)}
-          defaultValue={!Number(hasNoExpiry) ? moment(expireAt, 'X') : null}
+          disabled={hasNoExpiry}
+          defaultValue={!hasNoExpiry && expireAt ? moment(expireAt, 'X') : null}
           onChange={handleDateChange('expireAt')}
           description="Expiry of Registration Link"
         />
