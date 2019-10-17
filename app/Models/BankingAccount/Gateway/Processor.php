@@ -77,43 +77,20 @@ abstract class Processor extends Base\Core
             ['id' => $bankingAccount->getId()]
         );
 
-        // we do not want the merchant to get affected by failures in FTS service so handling
-        // the same in try catch block
-        try
-        {
-            $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
+        $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
 
-            $channel = $bankingAccount->getChannel();
+        $channel = $bankingAccount->getChannel();
 
-            $content = $this->generateRequestForSourceAccount($bankingAccount);
+        $content = $this->generateRequestForSourceAccount($bankingAccount);
 
-            $product = 'PAYOUT';
+        $product = 'PAYOUT';
 
-            $this->makeSourceAccountRequest(
-                $bankingAccount->getId(),
-                $fundAccountId,
-                $content,
-                $product,
-                $channel);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace\Logger::CRITICAL,
-                TraceCode::FTS_FAILURE_EXCEPTION,
-                [
-                    'code'          => $e->getCode(),
-                    'message'       => $e->getMessage(),
-                ]);
-
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
-                null,
-                [
-                    'banking_account' => $bankingAccount->getPublicId(),
-                ]);
-        }
+        $this->makeSourceAccountRequest(
+            $bankingAccount->getId(),
+            $fundAccountId,
+            $content,
+            $product,
+            $channel);
 
         return $bankingAccount;
     }

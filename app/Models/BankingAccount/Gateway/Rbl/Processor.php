@@ -50,13 +50,34 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $this->fetchAndVerifyBalance($bankingAccount);
 
-        $this->createAccountMappingForFts($bankingAccount);
+        try
+        {
+            $this->createAccountMappingForFts($bankingAccount);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::FTS_FAILURE_EXCEPTION,
+                [
+                    'code'          => $e->getCode(),
+                    'message'       => $e->getMessage(),
+                ]);
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+                null,
+                [
+                    'banking_account' => $bankingAccount->getPublicId(),
+                ]);
+        }
 
         //
         // This is in a transaction because, BankingAccount entity update
         // and Balance entity creation, both should succeed or fail
         //
-        $this->repo->transaction(function () use ($bankingAccount, $input)
+        $this->repo->transaction(function () use ($bankingAccount)
         {
             $merchant = $bankingAccount->merchant;
 
@@ -66,7 +87,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
             $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
 
-            $input[Entity::STATUS] = BankingAccount\Status::ACTIVATED;
+            $input = [
+                Entity::STATUS  => BankingAccount\Status::ACTIVATED,
+            ];
 
             (new BankingAccount\Core)->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
