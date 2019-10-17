@@ -19,7 +19,7 @@ class InstantActivation extends Mailable
 
     const SUBJECT = 'One step away from starting transactions on RazorpayX';
 
-    protected $merchant;
+    protected $bankingAccount = null;
 
     /**
      * InstantActivation constructor.
@@ -29,7 +29,17 @@ class InstantActivation extends Mailable
     {
         parent::__construct();
 
-        $this->merchant = $merchant;
+        /***
+         * Assumption is since this is an Instant Activation Email,
+         * the merchant will have only one Banking Account, which will be the Virtual Account
+         * Hence, we will get the first banking account
+         */
+        $bankingAccounts = $merchant->bankingAccounts()->get();
+
+        if (empty($bankingAccounts) === false)
+        {
+            $this->bankingAccount = $bankingAccounts[0];
+        }
     }
 
     protected function addMailData()
@@ -44,21 +54,21 @@ class InstantActivation extends Mailable
             BankingAccountEntity::BENEFICIARY_NAME => ''
         ];
 
-        /***
-         * Assumption is since this is an Instant Activation Email,
-         * the merchant will have only one Banking Account, which will be the Virtual Account
-         * Hence, we will get the first banking account
-         */
-        $bankingAccounts = $this->merchant->bankingAccounts();
-
-        if (empty($bankingAccounts) === false)
-        {
-            $bankingAccount = $bankingAccounts[0];
-
-            $data = $this->addBankingAccountData($bankingAccount, $data);
-        }
+        $data = $this->addBankingAccountData($this->bankingAccount, $data);
 
         $this->with($data);
+
+        return $this;
+    }
+
+    protected function addRecipients()
+    {
+        if ( empty($this->bankingAccount) === false )
+        {
+            $this->to($this->bankingAccount->getBeneficiaryEmail());
+        }
+
+        $this->to('anubhav.shrivastava@razorpay.com');
 
         return $this;
     }
