@@ -13,7 +13,7 @@
         <div>{{$duration}}</div>
         <div class="title" style="width: 580px; background-color: #F9F9F9; color: rgba(0,0,0,0.87); margin: 30px auto 0; padding: 15px 0;">
             <p style="margin: 10px 0 0;">
-                Hi {{$name}} ( {{$merchantId}} ),<br/>
+                Hi {{$name}} ( {{$merchant_id}} ),<br/>
                 Your <b>{{$header}}</b> for {{$duration}}, has been generated.
             </p>
         </div>
@@ -41,7 +41,7 @@
                     </tr>
                     <tr>
                         <td style="margin-top: 5px;">
-                            <span style="color: rgba(0,0,0,0.54);">Generated At:</span> {{$generatedAt}}
+                            <span style="color: rgba(0,0,0,0.54);">Generated At:</span> {{$generated_at}}
                         </td>
                     </tr>
                 </table>
@@ -51,7 +51,7 @@
                     Click here to download your report
                 </p>
                 <div style="display: table-cell; width: 50%; padding: 20px 0;" >
-                    <a href="{{$fileDownloadURL}}" style="display: block; color:#FFFFFF; text-decoration: none; width: 160px; margin: 0 auto; border-radius: 2px; padding: 10px; background-color: #528FF0; text-align: center;">
+                    <a href="{{$file_download_url}}" style="display: block; color:#FFFFFF; text-decoration: none; width: 160px; margin: 0 auto; border-radius: 2px; padding: 10px; background-color: #528FF0; text-align: center;">
                         Download the Report
                     </a>
                 </div>
