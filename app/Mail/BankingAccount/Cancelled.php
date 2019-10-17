@@ -8,13 +8,10 @@ class Cancelled extends UpdateNotificationBase
 
     const SUBJECT           = 'Your RazorpayX CA request has been cancelled at your request';
 
-    const GIVE_FEEDBACK_URL = '';
-
     protected function addMailData()
     {
         $data = [
             'view_dashboard_url' => $this->config['applications.banking_service_url'],
-            'give_feedback_url' => self::GIVE_FEEDBACK_URL
         ];
 
         $this->with($data);

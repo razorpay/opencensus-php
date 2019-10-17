@@ -8,8 +8,6 @@ class Activated extends UpdateNotificationBase
 
     const SUBJECT         = 'Your RazorpayX Current Account is ready!';
 
-    const READ_GUIDE_LINK = '';
-
     protected function addMailData()
     {
         $data = [
@@ -17,7 +15,6 @@ class Activated extends UpdateNotificationBase
             'merchant_name'      => $this->bankingAccount->getBeneficiaryName(),
             'account_number'     => $this->bankingAccount->getAccountNumber(),
             'ifsc_code'          => $this->bankingAccount->getAccountIfsc(),
-            'read_guide_link'    => self::READ_GUIDE_LINK
         ];
 
         $this->with($data);
