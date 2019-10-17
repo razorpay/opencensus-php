@@ -305,6 +305,7 @@ final class Route
         'scrooge_refund_reference1_bulk_update'    => ['post',     'refunds/scrooge_reference1_bulk_update',         'RefundController@bulkUpdateRefundsReference1'                      ],
         'fund_transfer_attempt_bulk_update'        => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
         'fund_transfer_attempt_recon_report'       => ['get',      'fund_transfer_attempts/recon_report',            'FundTransferAttemptController@sendFTAReconReport'                  ],
+        'fund_transfer_attempt_fetch_modes'        => ['get',      'fund_transfer_attempts/modes',                   'FundTransferAttemptController@getSupportedModes'                   ],
         'fund_transfer_attempt_reconcile'          => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
         'fund_transfer_attempt_process'            => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'fund_transfer_attempt_initiate_action'    => ['post',     'fund_transfer_attempts/initiate_action/{channel}','FundTransferAttemptController@initiateFundTransfers',             ],
@@ -1649,6 +1650,7 @@ final class Route
         'scrooge_verify_refund_call',
         'refund_fetch_status',
         'scrooge_entities',
+        'fund_transfer_attempt_fetch_modes',
         'schedule_migration',
         'schedule_process_tasks',
         'scorecard',
@@ -3265,6 +3267,7 @@ final class Route
             'scrooge_verify_refund_call',
             'refund_fetch_status',
             'scrooge_entities',
+            'fund_transfer_attempt_fetch_modes',
             'scrooge_refund_reference1_bulk_update',
         ],
 

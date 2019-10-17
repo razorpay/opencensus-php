@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use App;
 use Mail;
+use ApiResponse;
+
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
@@ -341,6 +344,11 @@ trait Refund
         if (isset($input['fta_data']) === true)
         {
             $data = array_merge($data, $input['fta_data']);
+        }
+
+        if (isset($input[RefundEntity::MODE_REQUESTED]) === true)
+        {
+            $data[RefundEntity::MODE] = $input[RefundEntity::MODE_REQUESTED];
         }
 
         return $data;
@@ -1439,11 +1447,17 @@ trait Refund
 
         if ($refund->isRefundSpeedInstant() === true)
         {
-            list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($refund);
+            $this->setRefundModeRequested($payment, $refund);
 
-            $refund->setFee($fee);
+            // Speed could have changed to normal if mode is not supported
+            if ($refund->isRefundSpeedInstant() === true)
+            {
+                list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($refund);
 
-            $refund->setTax($tax);
+                $refund->setFee($fee);
+
+                $refund->setTax($tax);
+            }
         }
 
         $refund->balance()->associate($refund->merchant->primaryBalance);
@@ -2249,7 +2263,7 @@ trait Refund
 
         try
         {
-            $fundTransferAttemptInput = $this->getFundTransferAttemptInput($payment);
+            $fundTransferAttemptInput = $this->getFundTransferAttemptInput($payment, $data);
 
             if (isset($data['vpa']) === true)
             {
@@ -2633,12 +2647,17 @@ trait Refund
         return $input;
     }
 
-    protected function getFundTransferAttemptInput(Payment\Entity $payment): array
+    protected function getFundTransferAttemptInput(Payment\Entity $payment, $data = []): array
     {
         $input = [
             FundTransferAttempt\Entity::NARRATION => null,
             FundTransferAttempt\Entity::MODE      => null,
         ];
+
+        if (isset($data[RefundEntity::MODE]) === true)
+        {
+            $input[FundTransferAttempt\Entity::MODE] = $data[RefundEntity::MODE];
+        }
 
         if ($payment->isBankTransfer() === true)
         {
@@ -2718,5 +2737,61 @@ trait Refund
             Payment\Method::CARDLESS_EMI,
             Payment\Method::PAYLATER,
         ];
+    }
+
+    protected function setRefundModeRequested(Payment\Entity $payment, RefundEntity &$refund)
+    {
+        $app   = App::getFacadeRoot();
+
+        $queryParams = [
+            RefundConstants::METHOD => $payment->getMethod()
+        ];
+
+        if ($payment->getMethod() === Payment\Method::CARD)
+        {
+            if ($payment->hasCard() === true)
+            {
+                $networkCode = $payment->card->getNetworkCode();
+
+                $queryParams[RefundConstants::NETWORK_CODE] = $networkCode;
+
+                $iin = $payment->card->iinRelation;
+
+                if ($iin !== null)
+                {
+                    $cardType = strtolower($iin->getType());
+
+                    $cardIssuer = $iin->getIssuer();
+
+                    $queryParams[RefundConstants::CARD_TYPE] = $cardType;
+                    $queryParams[RefundConstants::ISSUER] = $cardIssuer;
+                }
+            }
+        }
+
+        $scroogeResponse = $app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
+
+        $scroogeResponseCode = $scroogeResponse[RefundConstants::RESPONSE_CODE];
+
+        if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
+        {
+            $scroogeResponseBody = $scroogeResponse[RefundConstants::RESPONSE_BODY];
+
+            $mode =
+                (empty($scroogeResponseBody[RefundConstants::MODE]) === false) ? $scroogeResponseBody[RefundConstants::MODE] : '';
+
+            $responseStatus =
+                (empty($scroogeResponseBody[RefundConstants::RESPONSE_STATUS]) === false) ? $scroogeResponseBody[RefundConstants::RESPONSE_STATUS] : false;
+
+            if ($responseStatus === true)
+            {
+                $refund->setModeRequested($mode);
+            }
+            else
+            {
+                $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
+            }
+        }
+        // TODO: decide on failure what happens should we default to normal or fail refund creation
     }
 }

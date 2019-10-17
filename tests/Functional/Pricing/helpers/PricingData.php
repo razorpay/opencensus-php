@@ -2266,7 +2266,7 @@ return [
         'request' => [
             'content' => [
                 'payment_method'      => 'card',
-                'payment_method_type' => 'credit',
+                'payment_method_type' => 'IMPS',
                 'payment_network'     => 'MAES',
                 'payment_issuer'      => 'HDFC',
                 'percent_rate'        => 1000,
@@ -2282,7 +2282,7 @@ return [
             'content' => [
                 'plan_name'           => 'TestPlan1',
                 'payment_method'      => 'card',
-                'payment_method_type' => 'credit',
+                'payment_method_type' => 'IMPS',
                 'payment_network'     => 'MAES',
                 'payment_issuer'      => 'HDFC',
                 'percent_rate'        => 1000,

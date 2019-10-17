@@ -50,4 +50,14 @@ class Constants
     const TERTIARY_MESSAGE   = 'tertiary_message';
     const SECONDARY_MESSAGE  = 'secondary_message';
     const MERCHANT_REFERENCE = 'merchant_reference';
+
+    const RESPONSE_CODE          = 'code';
+    const RESPONSE_BODY          = 'body';
+    const RESPONSE_STATUS        = 'status';
+
+    const MODE          = 'mode';
+    const ISSUER        = 'issuer';
+    const METHOD        = 'method';
+    const CARD_TYPE     = 'card_type';
+    const NETWORK_CODE  = 'network_code';
 }

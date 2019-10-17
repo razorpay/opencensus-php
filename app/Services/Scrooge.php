@@ -33,6 +33,7 @@ class Scrooge
     const RefundBaseURL = 'refund';
     const RefundsBaseURL = 'refunds';
     const ListBaseURL = 'list';
+    const MerchantsBaseURL = 'merchants';
 
     const URLS = [
         'retry'                         => 'retry',
@@ -49,6 +50,7 @@ class Scrooge
         'download_refunds_gateway_file' => 'refunds/download-gateway-file',
         'enable-dark'                   => 'enable-dark',
         'disable-dark'                  => 'disable-dark',
+        'instant_refunds_mode'          => 'instant_refunds_mode',
     ];
 
     // Headers
@@ -267,6 +269,18 @@ class Scrooge
         $id = RefundEntity::verifyIdAndStripSign($id);
 
         return $this->sendRequest(self::RefundBaseURL . '/' . $id, Requests::GET, $queryParams);
+    }
+
+    /**
+     * @param string $merchantId
+     * @param array $params
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
+    public function getInstantRefundsMode(string $merchantId, array $params): array
+    {
+        return $this->sendRequest(self::MerchantsBaseURL . '/' . $merchantId . '/' . self::URLS['instant_refunds_mode'], Requests::GET, $params);
     }
 
     /**

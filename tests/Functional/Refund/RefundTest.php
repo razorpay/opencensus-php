@@ -2746,6 +2746,7 @@ class RefundTest extends TestCase
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
 
         // Ensuring that balance check happens only on refund amount and not fee - in case of instant refunds
         // for postpaid fee model merchants
@@ -2773,8 +2774,8 @@ class RefundTest extends TestCase
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3470, $transaction['amount']);
-        $this->assertEquals(118, $transaction['fee']);
-        $this->assertEquals(18, $transaction['tax']);
+        $this->assertEquals(708, $transaction['fee']);
+        $this->assertEquals(108, $transaction['tax']);
         $this->assertEquals($transaction['amount'], $transaction['debit']);
         $this->assertEquals(0, $transaction['credit']);
 
@@ -2782,8 +2783,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals('refund', $feesBreakup[0]['name']);
         $this->assertEquals('tax', $feesBreakup[1]['name']);
-        $this->assertEquals(100, $feesBreakup[0]['amount']);
-        $this->assertEquals(18, $feesBreakup[1]['amount']);
+        $this->assertEquals(600, $feesBreakup[0]['amount']);
+        $this->assertEquals(108, $feesBreakup[1]['amount']);
 
         $reversal = $this->getLastEntity('reversal', true);
 
@@ -2791,14 +2792,14 @@ class RefundTest extends TestCase
         $this->assertEquals($refund['id'], 'rfnd_' . $reversal['entity_id']);
         $this->assertNotNull($reversal['balance_id']);
         $this->assertEquals(0, $reversal['amount']);
-        $this->assertEquals(118, $reversal['fee']);
-        $this->assertEquals(18, $reversal['tax']);
+        $this->assertEquals(708, $reversal['fee']);
+        $this->assertEquals(108, $reversal['tax']);
 
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($reversal['id'], 6)])->last();
 
         $this->assertEquals(0, $transaction['amount']);
-        $this->assertEquals(-118, $transaction['fee']);
-        $this->assertEquals(-18, $transaction['tax']);
+        $this->assertEquals(-708, $transaction['fee']);
+        $this->assertEquals(-108, $transaction['tax']);
         $this->assertEquals(0, $transaction['debit']);
         $this->assertEquals(0, $transaction['credit']);
 
@@ -2806,8 +2807,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals('refund', $feesBreakup[0]['name']);
         $this->assertEquals('tax', $feesBreakup[1]['name']);
-        $this->assertEquals(-100, $feesBreakup[0]['amount']);
-        $this->assertEquals(-18, $feesBreakup[1]['amount']);
+        $this->assertEquals(-600, $feesBreakup[0]['amount']);
+        $this->assertEquals(-108, $feesBreakup[1]['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
