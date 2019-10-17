@@ -5,7 +5,11 @@ import Alert from 'rzp/ui/Forms/Alert';
 import Definition from 'rzp/ui/Definition';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import AccountDetails from 'merchant/components/VirtualAccounts/AccountDetails';
+import AccountDetails, {
+  getVirtualAccountDetails,
+  getVirtualAccountDetailsToCopy,
+} from 'merchant/components/VirtualAccounts/AccountDetails';
+import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import Table from 'rzp/ui/Table/Index';
 import { paymentId, amount } from 'rzp/ui/item/pair';
 
@@ -23,6 +27,12 @@ export default props => {
 
   const isClosed = virtualaccount.status === 'closed';
 
+  const { bankAccount, upiAddress } = getVirtualAccountDetails(virtualaccount);
+  const valueToCopy = getVirtualAccountDetailsToCopy({
+    bankAccount,
+    upiAddress,
+  });
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -39,7 +49,24 @@ export default props => {
           <div class="SliderPanel__Body">
             <Alert type={statusMsg.type} message={statusMsg.message} />
             <div class="panel-body">
-              <AccountDetails virtualaccount={virtualaccount} onCopy={onCopy} />
+              <div class="VirtualAccountDetails">
+                <EntityDetailRow label="Account Details">
+                  <CustomClipboard
+                    value={valueToCopy}
+                    onCopy={() => {
+                      onCopy(virtualaccount);
+                    }}
+                  >
+                    <div class="copy btn btn-link no-padding">Copy Details</div>
+                  </CustomClipboard>
+                </EntityDetailRow>
+
+                <div class="divider" />
+                <AccountDetails
+                  bankAccount={bankAccount}
+                  upiAddress={upiAddress}
+                />
+              </div>
 
               <div style={{ margin: '24px 0' }}>
                 <EntityDetailRow label="Amount Paid">
@@ -84,7 +111,7 @@ export default props => {
                   Object.keys(virtualaccount.notes).length === 0
                     ? '--'
                     : Object.keys(virtualaccount.notes).map((key, index) => (
-                        <div className="m-b" key={index}>
+                        <div class="m-b" key={index}>
                           <Definition>
                             {key}
                             {String(virtualaccount.notes[key])}

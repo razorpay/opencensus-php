@@ -23,6 +23,10 @@ import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
 import CustomerCreation from 'merchant/containers/Customers/New';
 
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
+import AccountDetails, {
+  getVirtualAccountDetails,
+} from 'merchant/components/VirtualAccounts/AccountDetails';
+import { getVirtualAccountDetailsToCopy } from '../../components/VirtualAccounts/AccountDetails';
 
 @connect(
   state => {
@@ -394,33 +398,18 @@ export default class CreateVirtualAccount extends Component {
 }
 
 const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
-  let bankAccount = virtualAccount.receivers[0];
+  const { bankAccount, upiAddress } = getVirtualAccountDetails(virtualAccount);
+  const valueToCopy = getVirtualAccountDetailsToCopy(bankAccount, upiAddress);
+
   return (
     <div>
       <p class="text-muted">
         Share the following information with the customer to accept payments
       </p>
 
-      <div class="form-group">
-        <div class="text-muted">Account Number</div>
-        <div>
-          <b>{bankAccount.account_number}</b>
-        </div>
-      </div>
+      <br />
 
-      <div class="form-group">
-        <div class="text-muted">Beneficiary Name</div>
-        <div>
-          <b>{virtualAccount.name}</b>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <div class="text-muted">IFSC Code</div>
-        <div>
-          <b>{bankAccount.ifsc}</b>
-        </div>
-      </div>
+      <AccountDetails bankAccount={bankAccount} upiAddress={upiAddress} />
 
       {virtualAccount.close_by && (
         <div class="form-group">
@@ -436,15 +425,13 @@ const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
       )}
 
       <CustomClipboard
-        value={`Account Number: ${
-          bankAccount.account_number
-        }\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
+        value={valueToCopy}
         onCopy={() => {
           onCopy(virtualAccount);
         }}
       >
-        <button type="button" class="btn btn-primary btn-block">
-          Copy details to Clipboard
+        <button type="button" class="btn btn-primary btn-block m-t">
+          Copy Account Details
         </button>
       </CustomClipboard>
     </div>
