@@ -55,7 +55,7 @@ class FaVpaValidation extends Job
 
             $faValidation = $this->repoManager
                 ->fund_account_validation
-                ->getFundAccountValidationById($this->favId);
+                ->findOrFail($this->favId);
 
             if ($faValidation === null)
             {
