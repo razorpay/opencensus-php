@@ -79,6 +79,13 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::RECONCILE);
 
+        //Create a mapping if there are more gateways for which migration from api to mozart is done with api based reconciliation.
+        if ($input['gateway'] === 'netbanking_bob_v2')
+        {
+            $input['gateway'] = 'netbanking_bob';
+            $input['payment']['gateway'] = 'netbanking_bob';
+        }
+
         $request = $this->getMozartReconcileRequestArray($input);
 
         $traceReq = [
@@ -95,6 +102,8 @@ class Gateway extends Base\Gateway
                 'gateway'    => $this->gateway,
             ]);
 
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
         return $response;
     }
 
@@ -109,13 +118,17 @@ class Gateway extends Base\Gateway
 
         $content['entities'] = $input;
 
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->app['config']->get($urlConfig);
 
         $url =  $baseUrl . 'payments/' . $gateway . '/v1/' . $this->action;
 
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+
         $authentication = [
             'api',
-            $this->app['config']->get('applications.mozart.password')
+            $this->app['config']->get($passwordConfig)
         ];
 
         return [
@@ -225,6 +238,21 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_CREATE_TERMINAL_RESPONSE);
         // TODO check error codes and throw exception
+
+        return $response;
+    }
+
+    public function verifyTerminal(array $input)
+    {
+        parent::verifyTerminal($input);
+
+        $request = $this->getTerminalOnboardingMozartRequestArray($input);
+
+        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_RESPONSE);
 
         return $response;
     }
@@ -512,14 +540,16 @@ class Gateway extends Base\Gateway
 
         $content['entities'] = $input;
 
-        $url = $this->getUrlForMozartRequest($input, 'terminals');
+        $url = $this->getUrlForMozartRequest($input, 'onboarding');
 
         return $this->getAuthenticatedMozartRequestArray($url, $content);
     }
 
     protected function getUrlForMozartRequest($input, $prefix)
-    {
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+    {        
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->app['config']->get($urlConfig);
 
         $gateway = $this->getGateway($input);
 
@@ -537,9 +567,11 @@ class Gateway extends Base\Gateway
 
     protected function getAuthenticatedMozartRequestArray($url, $content)
     {
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+
         $authentication = [
             'api',
-            $this->app['config']->get('applications.mozart.password')
+            $this->app['config']->get($passwordConfig)
         ];
 
         return [
@@ -582,6 +614,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => Action::PAY_VERIFY,
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
+            ],
+            Payment\Gateway::NETBANKING_UBI => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
             ],
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
@@ -711,7 +748,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
             ],
-
+            Payment\Gateway::NETBANKING_UBI => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
             Payment\Gateway::NETBANKING_IBK => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
@@ -966,6 +1007,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_CITI,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::WALLET_PAYPAL,
+            Payment\Gateway::NETBANKING_UBI,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
@@ -992,6 +1034,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CBI,
+            Payment\Gateway::NETBANKING_UBI,
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
@@ -1065,8 +1108,10 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
-        if (($this->action === Action::CREATE_TERMINAL) or
-            ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY)))
+        if (
+            (in_array($this->action, [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL])) or
+            ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
+            )
         {
             return $input['gateway'];
         }

@@ -741,6 +741,13 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
+    protected static $netbankingUbiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_ubi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
+    ];
+
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_federal',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
@@ -803,7 +810,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
     ];
 
@@ -811,6 +818,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [

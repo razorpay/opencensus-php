@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink;
+use RZP\Models\Currency\Currency;
 
 class Core extends Base\Core
 {
@@ -139,6 +140,32 @@ class Core extends Base\Core
         }
     }
 
+    public function migratePaymentPageItemForMinPurchase(PaymentLink\Entity $paymentPage)
+    {
+        if ($paymentPage->paymentPageItems()->count() === 1)
+        {
+            $allowMultipleUnits = $paymentPage->getSettings()->toArray()[PaymentLink\Entity::ALLOW_MULTIPLE_UNITS] ?? null;
+
+            $paymentPageItems = $paymentPage->paymentPageItems()->get();
+
+            $paymentPageItem = $paymentPageItems->get(0);
+
+            if ($allowMultipleUnits === '1')
+            {
+                $paymentPageItem->setMinPurchase(1);
+            }
+
+            if ($paymentPage->getAmount() === null)
+            {
+                $minAmount = Currency::getMinAmount($paymentPage->getCurrency());
+
+                $paymentPageItem->setMinAmount($minAmount);
+            }
+
+            $this->repo->payment_page_item->saveOrFail($paymentPageItem);
+        }
+    }
+
     protected function getPaymentPageItemInput(PaymentLink\Entity $paymentPage)
     {
         $itemInput = [
@@ -165,6 +192,13 @@ class Core extends Base\Core
             Entity::QUANTITY_SOLD     => $paymentPage->getTimesPaid(),
             Entity::TOTAL_AMOUNT_PAID => $paymentPage->getTotalAmountPaid(),
         ];
+
+        $allowMultipleUnits = $paymentPage->getSettings()->toArray()[PaymentLink\Entity::ALLOW_MULTIPLE_UNITS] ?? null;
+
+        if ($allowMultipleUnits === '1')
+        {
+            $paymentPageItemInput[Entity::MIN_PURCHASE] = 1;
+        }
 
         return $paymentPageItemInput;
     }

@@ -11,6 +11,8 @@ use RZP\Reconciliator\NetbankingAllahabad\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     protected $netbankingRepo;
 
     public function __construct(string $gateway = null)

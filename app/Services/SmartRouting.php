@@ -10,7 +10,7 @@ class SmartRouting
 {
     const X_RAZORPAY_TASKID  = 'X-Razorpay-TaskId';
 
-    const REQUEST_TIMEOUT    = 20;
+    const REQUEST_TIMEOUT    = 1;
 
     const MAX_RETRY_COUNT    = 1;
 

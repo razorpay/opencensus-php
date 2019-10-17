@@ -209,7 +209,7 @@ class Gateway extends Base\Gateway
         {
             $this->action = 'fetch_token';
 
-            $token = $this->fetchToken($input);
+            $token = $this->call(camel_case(Action::FETCH_TOKEN), $input);
 
             $this->action = 'authorize';
         }

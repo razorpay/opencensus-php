@@ -92,8 +92,28 @@ class EventServiceProvider extends ServiceProvider
 
         Queue::after(function (QueueEvents\JobProcessed $event)
         {
+            $this->sendLumberJackEvents();
+
             $this->resetModePostSyncQueueProcessed($event);
         });
+
+        Queue::failing(function (QueueEvents\JobFailed $event)
+        {
+            $this->sendLumberJackEvents();
+        });
+
+        Queue::exceptionOccurred(function (QueueEvents\JobExceptionOccurred $event)
+        {
+            $this->sendLumberJackEvents();
+        });
+    }
+
+    /**
+     * In case of async requests send the lubmerjack events from the worker.
+     */
+    protected function sendLumberJackEvents()
+    {
+        $this->app['diag']->buildRequestAndSend();
     }
 
     /**

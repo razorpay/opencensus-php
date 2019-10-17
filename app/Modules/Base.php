@@ -25,7 +25,10 @@ abstract class Base
     {
         $this->app = App::getFacadeRoot();
 
-        $this->mode = $this->app['rzp.mode'];
+        if (isset($this->app['rzp.mode']) === true)
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
 
         $this->env = $this->app['env'];
 

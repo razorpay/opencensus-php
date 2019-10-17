@@ -2,11 +2,13 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Config;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -14,6 +16,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
 
 /**
  * @group dns-sensitive
@@ -94,6 +97,154 @@ class ActivationTest extends TestCase
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
     }
 
+    public function testInstantActivationForForUnRegisteredTORegisteredSwitch()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        Config::set('applications.mozart.mock', true);
+
+        Config::set('applications.mozart.mock.status', MerchantDetailsConstant::SUCCESS);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'     => $merchantId,
+                'business_type'   => '11',
+                'activation_flow' => 'blacklist',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals(ActivationFlow::WHITELIST, $merchantDetail->getActivationFLow());
+        $this->assertEquals(ActivationFlow::WHITELIST, $merchantDetail->getInternationalActivationFlow());
+        $this->assertEquals('7', $merchantDetail->getAttribute(Entity::TRANSACTION_VOLUME));
+        $this->assertEquals('8', $merchantDetail->getAttribute(Entity::DEPARTMENT));
+    }
+
+    public function testInstantActivationForUnregisteredBusinessWithBlacklistCategories()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchantId,
+            ]
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testInstantActivationForForRegisteredTOUnRegisteredSwitch()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        Config::set('applications.mozart.mock', true);
+
+        Config::set('applications.mozart.pan_authentication', MerchantDetailsConstant::SUCCESS);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchantId,
+                'business_type' => '3',
+                'activation_flow' => 'blacklist',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $testData = $this->testData['testInstantActivationForUnregisteredBusiness'];
+
+        $this->startTest($testData);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNull($merchantDetail->getActivationFLow());
+        $this->assertNull($merchantDetail->getInternationalActivationFlow());
+    }
+
+    public function testInstantActivationForUnregisteredBusiness()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        Config::set('applications.mozart.mock', true);
+
+        Config::set('applications.mozart.pan_authentication', MerchantDetailsConstant::SUCCESS);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNull($merchantDetail->getActivationFLow());
+        $this->assertNull($merchantDetail->getInternationalActivationFlow());
+    }
+
+    public function testIAForUnregisteredBusinessFeatureEnabled()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $tests = [
+            'testIAForUnregisteredBusinessFeatureEnabledNameMisMatch'     => MerchantDetailsConstant::SUCCESS,
+            'testIAForUnregisteredBusinessFeatureEnabledIncorrectDetails' => MerchantDetailsConstant::INCORRECT_DETAILS,
+            'testIAForUnregisteredBusinessFeatureEnabledTimeout'          => MerchantDetailsConstant::FAILURE,
+            'testIAForUnregisteredBusinessFeatureEnabled'                 => MerchantDetailsConstant::SUCCESS, // at bottom because once successful, the request can not be tried again
+        ];
+
+        Config::set('applications.mozart.mock', true);
+
+        foreach ($tests as $test => $mockStatus)
+        {
+
+            Config::set('applications.mozart.pan_authentication', $mockStatus);
+
+            $this->mockRazorX($test,'non_registered_onboarding','on');
+
+            $testData = $this->testData[$test];
+
+            $this->runRequestResponseFlow($testData);
+        }
+    }
+
     protected function mockHubSpotClient($methodName)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
@@ -109,8 +260,10 @@ class ActivationTest extends TestCase
 
     public function mockRazorX(string $functionName, string $featureName, string $variant)
     {
-        $testData = & $this->testData[$functionName];
-        $uniqueLocalId = RazorXClient::getLocalUniqueId('1cXSLlUU8V9sXl',$featureName, Mode::TEST);
+        $testData                       = &$this->testData[$functionName];
+
+        $uniqueLocalId                  = RazorXClient::getLocalUniqueId('1cXSLlUU8V9sXl', $featureName, Mode::TEST);
+
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
     }
 
@@ -382,6 +535,153 @@ class ActivationTest extends TestCase
         $testData = $this->testData['submitKyc'];
         $this->startTest($testData);
     }
+
+    public function testKycSubmissionWhenPoaIsOcrVerified()
+    {
+        $this->kycSubmissionWithSuccessCases('verified', 'verified');
+    }
+
+    public function testKycUnregisteredCanSubmitWithAadhar()
+    {
+        $this->validateKYCSubmission([Type::AADHAR_FRONT, Type::AADHAR_BACK]);
+    }
+
+    public function testKycUnregisteredCanSubmitWithPassport()
+    {
+        $this->validateKYCSubmission([Type::PASSPORT_BACK, Type::PASSPORT_FRONT]);
+    }
+
+    public function testKycUnregisteredCanSubmitWithDL()
+    {
+        $this->validateKYCSubmission([Type::DRIVER_LICENSE_FRONT]);
+    }
+
+    public function testKycUnregisteredCanSubmitWithVoterId()
+    {
+        $this->validateKYCSubmission([Type::VOTER_ID_BACK, Type::VOTER_ID_FRONT]);
+    }
+
+    private function validateKYCSubmission(array $documentTypes)
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+
+        $otherMerchantDetailAttributes = [
+            'business_type' => 2,
+        ];
+
+        $data = array_merge($data, $otherMerchantDetailAttributes);
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $testSuit = 'validateUnregisteredKycSubmission';
+
+        $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $testData = $this->testData[$testSuit];
+
+        $response = $this->startTest($testData);
+
+        $this->assertFalse($response['can_submit']);
+
+        foreach ($documentTypes as $documentType)
+        {
+            $this->createMerchantDocumentEntries($merchantId, $documentType);
+        }
+
+        $response = $this->startTest($testData);
+
+        $this->assertTrue($response['can_submit']);
+    }
+
+    public function testKycSubmissionWhenPoaIsOcrYetTobeVerified()
+    {
+        $this->kycSubmissionWithSuccessCases(null, 'verified');
+    }
+
+    public function kycSubmissionWithSuccessCases($poaVerificationStatus, $bankDetailsVerificationStatus = null)
+    {
+        $this->createMerchantDocumentEntries('1cXSLlUU8V9sXl', 'aadhar_front');
+        $this->createMerchantDocumentEntries('1cXSLlUU8V9sXl', 'aadhar_back');
+
+        $this->getKycVerificationForPoaVerificationSetup($poaVerificationStatus, $bankDetailsVerificationStatus);
+
+        $testSuits = [
+            'testKycSubmissionWhenPoaIsVerified',
+            'submitKycActivated'
+        ];
+
+        foreach ($testSuits as $index => $testSuit)
+        {
+            $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
+
+            $testData = $this->testData[$testSuit];
+
+            $this->startTest($testData);
+        }
+    }
+
+    public function testKycSubmissionWithFailedPoaStatus()
+    {
+        $this->kycSubmissionWithFailureCases('failed');
+    }
+
+    public function testKycSubmissionWithPendingPoaStatus()
+    {
+        $this->kycSubmissionWithFailureCases('pending');
+    }
+
+    public function kycSubmissionWithFailureCases($poaVerificationStatus, $bankDetailsVerificationStatus = null)
+    {
+        $this->createMerchantDocumentEntries('1cXSLlUU8V9sXl', 'aadhar_front', 'failed');
+        $this->createMerchantDocumentEntries('1cXSLlUU8V9sXl', 'aadhar_back', 'failed');
+
+        $this->getKycVerificationForPoaVerificationSetup($poaVerificationStatus, $bankDetailsVerificationStatus);
+
+
+        $testSuits = [
+            'testKycSubmissionWhenPoaIsFailed',
+            'submitKyc'
+        ];
+
+        foreach ($testSuits as $index => $testSuit)
+        {
+            $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
+
+            $testData = $this->testData[$testSuit];
+
+            $this->startTest($testData);
+        }
+    }
+
+    private function getKycVerificationForPoaVerificationSetup($poaVerificationStatus, $bankDetailsVerificationStatus = null)
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $data = $this->getInstantlyActivatedMerchantDetailData($merchantId);
+        // Adding the file upload attributes for simplicity of the test
+        $otherMerchantDetailAttributes = [
+            'address_proof_url'                => '124',
+            'business_pan_url'                 => '124',
+            'business_proof_url'               => '124',
+            'promoter_address_url'             => '124',
+            'business_type'                    => 2,
+            'poa_verification_status'          => $poaVerificationStatus,
+            'bank_details_verification_status' => $bankDetailsVerificationStatus,
+        ];
+        $data = array_merge($data, $otherMerchantDetailAttributes);
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $data = $this->getInstantlyActivatedMerchantData();
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+    }
+
 
     public function testKYCVerificationForInstantlyActivatedMerchant()
     {
@@ -1015,5 +1315,21 @@ class ActivationTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
+    }
+
+    /**
+     * @param        $merchantId
+     * @param        $documentType
+     * @param string $ocrVerificationStatus
+     */
+    private function createMerchantDocumentEntries($merchantId, $documentType, $ocrVerificationStatus = 'verified'): void
+    {
+        $this->fixtures->create(
+            'merchant_document',
+            [
+                'merchant_id'   => $merchantId,
+                'document_type' => $documentType,
+                'ocr_verify'    => $ocrVerificationStatus,
+            ]);
     }
 }

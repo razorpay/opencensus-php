@@ -14,6 +14,7 @@ use Razorpay\Trace\Logger;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
@@ -32,6 +33,8 @@ class Core extends Base\Core
      * @var string
      */
     protected $plHostedBaseUrl;
+
+    const PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP = 'PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP';
 
     public function __construct()
     {
@@ -124,7 +127,7 @@ class Core extends Base\Core
 
             if ($paymentPageItems->isEmpty() !== true)
             {
-                $paymentPageItemUpdateInput = $this->getPaymentPageItemUpdateInput($input);
+                $paymentPageItemUpdateInput = $this->getPaymentPageItemUpdateInput($input, $paymentLink);
 
                 if (empty($paymentPageItemUpdateInput) === false)
                 {
@@ -361,6 +364,11 @@ class Core extends Base\Core
 
     protected function addPositionToCustomFields(array & $settings)
     {
+        if (isset($settings[Entity::UDF_SCHEMA]) === false)
+        {
+            return;
+        }
+
         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}');
 
         $modifiedUdfSchema = [];
@@ -439,6 +447,64 @@ class Core extends Base\Core
         return $summary;
     }
 
+    public function migratePaymentPageItemsForMinPurchase(array $input)
+    {
+        $redis = $this->app['redis'];
+
+        $limit = $input['limit'] ?? 1000;
+
+        $lastSyncTimestamp = $redis->get(self::PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP);
+
+        if ($lastSyncTimestamp === null)
+        {
+            $lastSyncTimestamp = 0;
+        }
+
+        $paymentPages = $this->repo->payment_link->getAllPaymentPagesForMigrationOfMinPurchase($lastSyncTimestamp, $limit);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_PAGES_MIGRATION_REQUEST_RECEIVED
+        );
+
+        $migratedPaymentPages = [];
+
+        $migrationFailedPaymentPages = [];
+
+        foreach ($paymentPages as $paymentPage)
+        {
+            try
+            {
+                $this->migratePaymentPageForMinPurchase($paymentPage);
+
+                $migratedPaymentPages[] = $paymentPage->getId();
+
+                $redis->set(self::PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP, $paymentPage->getCreatedAt());
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $migrationFailedPaymentPages[] = $paymentPage->getId();
+            }
+        }
+
+        $summary = [
+            'total'                          => count($paymentPages),
+            'migrated_payment_pages'         => $migratedPaymentPages,
+            'migration_failed_payment_pages' => $migrationFailedPaymentPages,
+        ];
+
+        $tracePayload         = $summary;
+        $tracePayload['mode'] = $this->mode;
+
+        $this->trace->info(
+            TraceCode::PAYMENT_PAGES_MIGRATED,
+            $tracePayload
+        );
+
+        return $summary;
+    }
+
     protected function addAdditionalDataToSettings(array & $settings)
     {
         $this->addPositionToCustomFields($settings);
@@ -460,6 +526,16 @@ class Core extends Base\Core
         $this->addAdditionalDataToSettings($settings);
 
         $this->upsertSettings($paymentPage, $settings);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_PAGE_MIGRATED,
+            [Entity::ID => $paymentPage->getId()]
+        );
+    }
+
+    protected function migratePaymentPageForMinPurchase(Entity $paymentPage)
+    {
+        (new PaymentPageItem\Core)->migratePaymentPageItemForMinPurchase($paymentPage);
 
         $this->trace->info(
             TraceCode::PAYMENT_PAGE_MIGRATED,
@@ -917,10 +993,24 @@ class Core extends Base\Core
 
         $paymentPageItemInput[PaymentPageItem\Entity::SETTINGS][PaymentPageItem\Entity::POSITION] = 0;
 
+        $allowMultipleUnits = $paymentLink->getSettings()->toArray()[Entity::ALLOW_MULTIPLE_UNITS] ?? null;
+
+        if ($allowMultipleUnits === '1')
+        {
+            $paymentPageItemInput[PaymentPageItem\Entity::MIN_PURCHASE] = 1;
+        }
+
+        if ($paymentLink->getAmount() === null)
+        {
+            $minAmount = Currency::getMinAmount($paymentLink->getCurrency());
+
+            $paymentPageItemInput[PaymentPageItem\Entity::MIN_AMOUNT] = $minAmount;
+        }
+
         return $paymentPageItemInput;
     }
 
-    protected function getPaymentPageItemUpdateInput(array $input)
+    protected function getPaymentPageItemUpdateInput(array $input, Entity $paymentLink)
     {
         $paymentPageItemInput = [];
 
@@ -929,6 +1019,13 @@ class Core extends Base\Core
             $itemInput[Item\Entity::AMOUNT] = $input[Entity::AMOUNT];
 
             $paymentPageItemInput[PaymentPageItem\Entity::ITEM] = $itemInput;
+
+            if ($input[Entity::AMOUNT] === null)
+            {
+                $minAmount = Currency::getMinAmount($paymentLink->getCurrency());
+
+                $paymentPageItemInput[PaymentPageItem\Entity::MIN_AMOUNT] = $minAmount;
+            }
         }
 
         if (array_key_exists(Entity::TIMES_PAYABLE, $input) === true)

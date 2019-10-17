@@ -47,6 +47,14 @@ class Gateway extends Base\Gateway
          */
         ResponseFields::MANDATE_SBI_STATUS   => Base\Entity::STATUS,
         ResponseFields::MANDATE_SBI_REF      => Base\Entity::BANK_PAYMENT_ID,
+
+        /**
+         * Refund fields
+         */
+        Base\Entity::REFUND_ID               => Base\Entity::REFUND_ID,
+        Base\Entity::AMOUNT                  => Base\Entity::AMOUNT,
+        Base\Entity::REFERENCE1              => Base\Entity::REFERENCE1
+
     ];
 
     public function setGatewayParams($input, $mode, $terminal)
@@ -137,8 +145,6 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    //------------------- Verify --------------------------------------------//
-
     public function verify(array $input): array
     {
         parent::verify($input);
@@ -191,6 +197,20 @@ class Gateway extends Base\Gateway
                 ]
             );
         }
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $attributes = [
+            Base\Entity::REFUND_ID  => $input['refund']['id'],
+            Base\Entity::AMOUNT     => $input['refund']['amount'],
+            Base\Entity::STATUS     => Status::SENT,
+            Base\Entity::REFERENCE1 => $input['refund']['reference3']
+        ];
+
+        $this->createGatewayPaymentEntity($attributes);
     }
 
     //-------------------------- Authorize helper ---------------------------//

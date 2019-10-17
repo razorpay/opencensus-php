@@ -186,12 +186,13 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        $shouldHitRoutingServiceFlag = false;
+        $shouldHitRoutingServiceFlag = 0;
+
 
         // checking filtered terminals and razorX experiment for smart routing
         if ((empty($filteredTerminals) === false) && ($this->shouldHitRoutingService($payment->getId()) === true))
         {
-            $shouldHitRoutingServiceFlag = true;
+            $shouldHitRoutingServiceFlag = 1;
         };
 
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose, $shouldHitRoutingServiceFlag);
@@ -267,6 +268,11 @@ class Selector extends Base\Core
 
                 $merchant->methods->setDinersCard(0);
 
+                $this->trace->info(TraceCode::DISABLING_DINERS_FOR_MERCHANT, [
+                    'merchant_id' => $merchant->getId(),
+                    'reason'      => 'No terminal found',
+                ]);
+
                 $this->repo->saveOrFail($merchant->methods);
 
                 throw new Exception\BadRequestException(
@@ -286,11 +292,14 @@ class Selector extends Base\Core
             {
                 throw new Exception\RuntimeException(
                     'No terminal found.',
-                    ['payment' => $this->input['payment']->toArrayAdmin()]);
+                    ['payment' => $this->input['payment']->toArrayAdmin()],
+                    null,
+                    ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND
+               );
             }
         }
 
-        if ($shouldHitRoutingServiceFlag === true)
+        if ($shouldHitRoutingServiceFlag === 1)
         {
             try
             {
@@ -331,11 +340,15 @@ class Selector extends Base\Core
                 }
                 else
                 {
+
+                    $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose, 2);
+
                     $this->trace->error(
                         TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
                         [
                             'input_terminals'    => $sortedTerminals,
                             'sorted_terminals_from_smart_routing' => $newSortedTerminals,
+                            'is_error_timeout' => $terminalSetReceivedFromSmartRouting != null ? false : true,
                         ]);
                 }
 
@@ -349,6 +362,8 @@ class Selector extends Base\Core
             }
             catch (\Throwable $e)
             {
+                $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose, 2);
+
                 $this->trace->error(
                     TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
                     [
@@ -439,7 +454,10 @@ class Selector extends Base\Core
         return $filteredTerminals;
     }
 
-    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false, bool $shouldHitRoutingService = false): array
+    // $shouldHitRoutingService = 0 i.e Run all sorters
+    // 1 = run the diff
+    // 2 = fallback
+    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false, int $shouldHitRoutingService = 0): array
     {
         //
         // Sorting is done on the final list of filtered terminals.
@@ -451,9 +469,13 @@ class Selector extends Base\Core
         $sorters = self::$sorters;
 
         // removing smart routing sorters from the list of api sorters
-        if ($shouldHitRoutingService === true)
+        if ($shouldHitRoutingService === 1)
         {
             $sorters = array_diff(self::$sorters, self::$smartRoutingSorters);
+        }
+        else if ($shouldHitRoutingService === 2)
+        {
+            $sorters = self::$smartRoutingSorters;
         }
 
         foreach ($sorters as $sorter)

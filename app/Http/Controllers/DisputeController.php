@@ -19,6 +19,24 @@ class DisputeController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkCreate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkCreate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bulkUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchMultiple()
     {
         $input = Request::all();
@@ -64,6 +82,13 @@ class DisputeController extends Controller
     public function getFiles(string $id)
     {
         $data = $this->service()->getFiles($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getDefaultCreationEmails()
+    {
+        $data = $this->service()->getDefaultDisputeEmails();
 
         return ApiResponse::json($data);
     }

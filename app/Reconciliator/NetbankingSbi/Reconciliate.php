@@ -4,30 +4,58 @@ namespace RZP\Reconciliator\NetbankingSbi;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Gateway\Netbanking\Sbi\ReconFields\RefundReconFields;
+use RZP\Gateway\Netbanking\Sbi\ReconFields\PaymentReconFields;
 
 class Reconciliate extends Base\Reconciliate
 {
-    protected $columnHeaders = [
-        'Merchant ID',
-        'Gateway Reference Number',
-        'Bank Transaction ReferenceNo',
-        'Transaction Amount',
-        'STATUS',
-        'TRANSACTION Date',
-    ];
+    const RAZORPAY = 'razorpay';
 
     public function getColumnHeadersForType($type)
     {
-        return $this->columnHeaders;
-    }
-
-    public function getDelimiter()
-    {
-        return ',';
+        if ($type === Reconciliate::PAYMENT)
+        {
+            return PaymentReconFields::PAYMENT_COLUMN_HEADERS;
+        }
+        elseif ($type === Reconciliate::REFUND)
+        {
+            return RefundReconFields::REFUND_COLUMN_HEADERS;
+        }
     }
 
     protected function getTypeName($fileName)
     {
-        return self::PAYMENT;
+        if (strpos($fileName, self::RAZORPAY) !== false)
+        {
+            $typeName = self::PAYMENT;
+        }
+        else
+        {
+            $typeName = self::REFUND;
+        }
+
+        return $typeName;
+    }
+
+    public function getNumLinesToSkip(array $fileDetails)
+    {
+        $type = $this->getTypeName($fileDetails['file_name']);
+
+        if ($type === self::REFUND)
+        {
+            return [
+                FileProcessor::LINES_FROM_TOP    => 1,
+                FileProcessor::LINES_FROM_BOTTOM => 0
+            ];
+        }
+        else
+        {
+           return parent::getNumLinesToSkip($fileDetails);
+        }
+    }
+
+    public function getFileType(string $mimeType): string
+    {
+        return FileProcessor::CSV;
     }
 }
