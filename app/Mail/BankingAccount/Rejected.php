@@ -2,17 +2,18 @@
 
 namespace RZP\Mail\BankingAccount;
 
-class Created extends UpdateNotificationBase
+class Rejected extends UpdateNotificationBase
 {
-    const TEMPLATE_PATH = 'emails.banking_account.notify_status_created';
+    const TEMPLATE_PATH = 'emails.banking_account.notify_status_rejected';
 
-    const SUBJECT       = 'Woohoo! We received your request for RazorpayX Current Account';
+    const SUBJECT       = 'Your RazorpayX Current Account request has not been approved :(';
 
     protected function addMailData()
     {
         $data = [
             'view_dashboard_url' => $this->config['applications.banking_service_url']
         ];
+
         $this->with($data);
 
         return $this;

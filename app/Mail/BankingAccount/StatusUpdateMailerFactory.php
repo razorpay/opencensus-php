@@ -32,6 +32,9 @@ class StatusUpdateMailerFactory
             case Status::ACTIVATED:
                 return new Activated($bankingAccount);
 
+            case Status::REJECTED:
+                return new Rejected($bankingAccount);
+
             default:
                 throw new BadRequestValidationFailureException("Invalid Status, cannot send email, status: $status");
         }
