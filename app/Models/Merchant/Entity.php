@@ -1333,6 +1333,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DASHBOARD_WHITELISTED_IPS_TEST);
     }
 
+    public function getWhitelistedDomains()
+    {
+        return $this->getAttribute(self::WHITELISTED_DOMAINS);
+    }
+
     public function getOrgId()
     {
         return $this->getAttribute(self::ORG_ID);

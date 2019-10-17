@@ -11,6 +11,7 @@ use RZP\Models\Risk;
 use RZP\Services\ShieldClient;
 use RZP\Constants\Shield as ShieldConstants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Feature\Constants as Feature;
 
 class Shield
 {
@@ -129,6 +130,11 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_CATEGORY_CODE]  = (string) $merchant->getCategory();
         $payloadDetails[ShieldConstants::MERCHANT_RISK_THRESHOLD] = $merchant->getRiskThreshold();
         $payloadDetails[ShieldConstants::MERCHANT_WEBSITE]        = $merchant->merchantDetail->getWebsite();
+
+        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
+        {
+            $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
+        }
     }
 
     protected function populatePaymentDetails(Payment\Entity $payment, array & $payloadDetails)
