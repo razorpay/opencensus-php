@@ -63,7 +63,7 @@ class UpdateNotificationBase extends Mailable
     protected function addSender()
     {
         $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
-                    Constants::HEADERS[Constants::SUPPORT]);
+                    Constants::HEADERS[Constants::X_SUPPORT]);
 
         return $this;
     }
@@ -71,7 +71,7 @@ class UpdateNotificationBase extends Mailable
     protected function addReplyTo()
     {
         $this->replyTo(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
-                    Constants::HEADERS[Constants::SUPPORT]);
+                    Constants::HEADERS[Constants::X_SUPPORT]);
 
         return $this;
     }
