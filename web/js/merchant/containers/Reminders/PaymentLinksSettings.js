@@ -68,7 +68,6 @@ import Setting from 'merchant/components/Reminders/Settings';
   {
     fetchReminders,
     editRemindersMerchantConfigs,
-    disableEnableReminders,
     ...NotificationActions,
   }
 )
@@ -142,12 +141,9 @@ export default class PaymentLinksSettings extends React.Component {
       return createReminders('payment_link').then(this.props.fetchReminders);
     }
 
-    return this.props.disableEnableReminders(
-      this.props.paymentLinkReminder.id,
-      {
-        active: active === '1',
-      }
-    );
+    return disableEnableReminders(this.props.paymentLinkReminder.id, {
+      active,
+    }).then(this.props.fetchReminders);
   };
 
   render() {
