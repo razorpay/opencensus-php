@@ -173,7 +173,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary  title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;"><div class="center-align" style="text-align: center;"><img class="image medium" src="https://cdn.razorpay.com/static/assets/email/rejected.png" style="margin: 8px; background: transparent; height: 80px;" height="80"></div><div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">Your application could not be taken forward!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div></div></div><div class="description" style="text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;">Hate to be the bearer of bad news, but our partner bank has not approved your request to set up a business current account as your pin code is not serviceable.</div></div>
+                                                    <div class="card secondary  title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;"><div class="center-align" style="text-align: center;"><img class="image medium" src="https://cdn.razorpay.com/static/assets/email/rejected.png" style="margin: 8px; background: transparent; height: 80px;" height="80"></div><div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">Oh-No! You decided to not take it forward!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div></div></div><div class="description" style="text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;">Your Current Account application was cancelled at your request.</div></div>
                                                 </div>
 
                                             </td>
@@ -245,7 +245,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary highlight descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; border-top: 2px solid #3281FF; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; border-color: #528ff0; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">But some silver lining...</div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">This will not impact your existing RazorpayX setup. You can continue to use RazorpayX for your business without any issues.</div><div class="divider" style="padding: 12px 0;"><div class="divider-line" style="height: 1px; background: #3a405f;"></div></div><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Some more silver lining...</div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">We are adding more banks on RazorpayX current account. Once they go live, we will re-initiate the process to open a current account for you. We will keep you posted as well.<button class="btn primary font-bold" style="font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 185px; font-family: Trebuchet MS; color: #FFF; background-color: #3281FF; border-color: #3281FF; margin: 24px auto 0 auto; display: block;"><a class="link" href="{{ $view_dashboard_url }}" target="_blank" style="text-decoration: none; color: #FFF;">GO TO DASHBOARD</a></button></div></div>
+                                                    <div class="card secondary highlight descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; border-top: 2px solid #3281FF; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; border-color: #528ff0; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Your RazorpayX account is still very powerful..</div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">This will not impact your existing RazorpayX setup. You can continue to use RazorpayX for your business without any issues. However, we would love to have you back on RazorpayX current account soon. </div><div class="divider" style="padding: 12px 0;"><button class="btn primary font-bold" style="font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 185px; font-family: Trebuchet MS; color: #FFF; background-color: #3281FF; border-color: #3281FF; margin: 24px auto 0 auto; display: block;"><a class="link" href="{{ $view_dashboard_url }}" target="_blank" style="text-decoration: none; color: #FFF;">GO TO DASHBOARD</a></button></div></div>
                                                 </div>
 
                                             </td>
@@ -317,8 +317,8 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Need further help?</div><div class="description dark margin-bottom-24" style="margin-bottom: 24px; font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">As always, help is just an email reply away: do get in touch if you have questions.<div class="para-dark margin-top-8" style="color: #9195A6; font-size: 14px; line-height: 1.5; margin-top: 8px;"> Team RazorpayX</div><div class="para-dark" style="color: #9195A6; font-size: 14px; line-height: 1.5;"> Xperience the future of banking</div></div></div>
-                                                </div>
+                                                    <div class="card secondary descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Help us improve!</div><div class="description dark margin-bottom-24" style="margin-bottom: 24px; font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">If there’s anything you think we can improve in the onboarding process or RazorpayX in general, please let us know by replying to this email. Your feedback goes a long way in helping us to improve the experience for our users.<button class="btn primary font-bold" style="font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 185px; font-family: Trebuchet MS; color: #FFF; background-color: #3A405F; border-color: #3A405F; margin: 24px auto 0 auto; display: block;"><a class="link" href="{{ $give_feedback_url }}" target="_blank" style="text-decoration: none; color: #FFF;">GIVE FEEDBACK</a></button></div>
+                                                    </div>
 
                                             </td>
                                         </tr>
@@ -331,6 +331,49 @@
                         </table>
 
                     </div>
+                    <div class="footer" style="width: 300px; Margin: 0px auto; max-width: 600px; margin-top: 8px; margin-bottom: 8px;">
+
+                        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                            <tbody>
+                            <tr>
+                                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+                                    <!--[if mso | IE]>
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
+                                        <tr>
+
+                                            <td
+                                                    class="" style="vertical-align:top;width:600px;"
+                                            >
+                                    <![endif]-->
+
+                                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                            <tbody>
+                                            <tr>
+                                                <td style="vertical-align:top;padding:0px;">
+
+                                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+                                                        <tr>
+                                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+                                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                                                    <div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #9195A6; text-align: center; padding: 8px 0;">You are receiving this email because you have subscribed to updates from RazorpayX</div>
+                                                                </div>
+
+                                                            </td>
+                                                        </tr>
+
+                                                    </table>
+
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
 
                     <!--[if mso | IE]>
                     </td>
@@ -345,6 +388,7 @@
         </table>
 
     </div>
+
 
 
     <!--[if mso | IE]>
