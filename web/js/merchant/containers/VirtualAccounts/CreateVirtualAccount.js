@@ -399,7 +399,10 @@ export default class CreateVirtualAccount extends Component {
 
 const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
   const { bankAccount, upiAddress } = getVirtualAccountDetails(virtualAccount);
-  const valueToCopy = getVirtualAccountDetailsToCopy(bankAccount, upiAddress);
+  const valueToCopy = getVirtualAccountDetailsToCopy({
+    bankAccount,
+    upiAddress,
+  });
 
   return (
     <div>
