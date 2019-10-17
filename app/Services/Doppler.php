@@ -73,6 +73,7 @@ class Doppler
                 TraceCode::DOPPLER_SNS_PUBLISH,
                 [
                     'sns_topic'        => $this->sns_topic,
+                    'event_data'       => $eventData,
                 ]);
             $this->sns->publish(json_encode($eventData), $this->sns_topic);
         }
