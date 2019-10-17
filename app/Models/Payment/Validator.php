@@ -25,6 +25,17 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Validator extends Base\Validator
 {
+    protected $trace;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+    }
+
     /**
      * recurring_token epoch constrains :
      * min : Sat Jan  1 05:30:00 IST 2000 => 946684800
@@ -617,6 +628,10 @@ class Validator extends Base\Validator
 
         if ($amount > $maxAmountAllowed)
         {
+            $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
+                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
+            ]);
+
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount',

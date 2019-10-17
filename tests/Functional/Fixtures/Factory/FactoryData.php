@@ -28,7 +28,7 @@ final class FactoryData
             'international'            => 0,
             'website'                  => $faker->url,
             'billing_label'            => $faker->word,
-            'category'                 => 1100,
+            'category'                 => 5399,
             'transaction_report_email' => ['test@razorpay.com'],
             'receipt_email_enabled'    => true,
             'channel'                  => Channel::AXIS,

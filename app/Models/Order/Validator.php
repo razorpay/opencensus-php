@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Order;
 
+use App;
+
 use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Models\BankAccount;
@@ -13,6 +15,17 @@ use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
+    protected $trace;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+    }
+
     protected static $createRules = [
         Entity::AMOUNT                             => 'required|integer|min:0',
         Entity::FIRST_PAYMENT_MIN_AMOUNT           => 'sometimes|nullable|integer|min_amount',
@@ -80,6 +93,10 @@ class Validator extends Base\Validator
 
         if ($amount > $maxAmountAllowed)
         {
+            $this->trace->count(Metric::ORDER_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
+                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
+            ]);
+
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 Entity::AMOUNT,

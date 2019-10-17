@@ -2092,6 +2092,53 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns maximum transaction amount for a merchant
+     *
+     * @param Entity $merchant
+     *
+     * @return int
+     * @throws BadRequestException
+     */
+    public function getMaxPayAmount(Entity $merchant): int
+    {
+        //
+        // for fetching merchant detail we can do $merchant->merchantDetail also
+        // but this function is getting called from merchant entity so doing this will cache $merchant->merchantDetail
+        // merchant detail object hence on subsequent call will get stale  merchantDetail object
+        //
+
+        $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchant->getId());
+
+        if (($merchantDetail !== null) and
+            (empty($merchant->getCategory()) === false) and
+            (Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === true))
+        {
+
+            //
+            // Mcc can have values other then predefined values
+            // for those cases we should return default values
+            //
+            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList((int) $merchant->getCategory()) === false)
+            {
+                $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
+
+                return Entity::MAX_PAYMENT_AMOUNT_DEFAULT;
+            }
+
+            $amount = BusinessSubCategoryMetaData::getFeatureValueUsingMccCode(
+                BusinessSubCategoryMetaData::NON_REGISTERED_MAX_PAYABLE_AMOUNT,
+                $merchant->getCategory(),
+                Entity::MAX_PAYMENT_AMOUNT_DEFAULT);
+        }
+        else
+        {
+            $amount = Entity::MAX_PAYMENT_AMOUNT_DEFAULT;
+        }
+
+        return (int) $amount;
+    }
+
+    /**
      * Enable international and set convert currency as false, if applicable
      *
      * @param Entity        $merchant
@@ -2151,10 +2198,13 @@ class Core extends Base\Core
             return false;
         }
 
-        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: (BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+        $internationalActivationFlowFromCategory = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
             BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
             $category,
-            $subcategory));
+            $subcategory,
+            ActivationFlow::BLACKLIST);
+
+        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: $internationalActivationFlowFromCategory;
 
         //
         // Conditions being checked:
