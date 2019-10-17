@@ -51,22 +51,20 @@ export default class EarningsContainer extends Component {
           </ShowWhen>
         </header>
         <content>
-          <div className="content-wrapper">
-            <ShowWhen
-              additionalCondition={user =>
-                user.isShowCommissionBalanceEnabled &&
-                user.isOrgAllowedFunctionality('current_balance') &&
-                (commissionBalance == 0 || commissionBalance)
-              }
-            >
-              <HeaderAction>
-                <span class="settlement-balance-amount">
-                  Commission Balance:{' '}
-                  <Amount value={commissionBalance} currency="INR" />
-                </span>
-              </HeaderAction>
-            </ShowWhen>
-          </div>
+          <ShowWhen
+            additionalCondition={user =>
+              user.isShowCommissionBalanceEnabled &&
+              user.isOrgAllowedFunctionality('current_balance') &&
+              (commissionBalance == 0 || commissionBalance)
+            }
+          >
+            <HeaderAction>
+              <span class="settlement-balance-amount">
+                Commission Balance:{' '}
+                <Amount value={commissionBalance} currency="INR" />
+              </span>
+            </HeaderAction>
+          </ShowWhen>
           <Switch>
             <Redirect
               to="/partners/earnings/daily"
