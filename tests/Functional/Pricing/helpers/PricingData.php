@@ -1246,11 +1246,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 8,
+                'count' => 10,
                 'entity' => 'collection',
                 'items' => [
                     [
+                        'name' => 'PP190AMEX290',
+                    ],
+                    [
                         'name' => 'CommDefaultPlan',
+                    ],
+                    [
+                        'name' => 'DefaultSubMerchant',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1382,11 +1388,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'count'  => 8,
+                'count'  => 10,
                 'entity' => 'collection',
                 'items'  => [
                     [
+                        'name' => 'PP190AMEX290',
+                    ],
+                    [
                         'name' => 'CommDefaultPlan',
+                    ],
+                    [
+                        'name' => 'DefaultSubMerchant',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1558,9 +1570,19 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'PP190AMEX290',
+                    'rules_count' => 9,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'CommDefaultPlan',
                     'rules_count' => 2,
                     'type'        => 'commission',
+                ],
+                [
+                    'plan_name'   => 'DefaultSubMerchant',
+                    'rules_count' => 16,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
@@ -1628,9 +1650,19 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'PP190AMEX290',
+                    'rules_count' => 9,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'CommDefaultPlan',
                     'rules_count' => 2,
                     'type'        => 'commission',
+                ],
+                [
+                    'plan_name'   => 'DefaultSubMerchant',
+                    'rules_count' => 16,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
