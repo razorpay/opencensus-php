@@ -299,7 +299,7 @@ export default class extends React.Component {
                 <SearchableSelectField
                   name="feature_id"
                   selectedOptionLabelPath="name"
-                  placeholder="At least 2 characters"
+                  placeholder="Atleast 2 characters"
                   searchIndices={['id', 'name']}
                   label="Feature"
                   trackBy="id"

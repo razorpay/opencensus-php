@@ -8,11 +8,13 @@ import { timeCalculator } from 'component/Input/Time';
 import { isInteger } from 'rzp/utils/validators';
 
 const expireByError = 'Expiry has passed';
+const timesPayableError = 'Enter number greater than payments made';
 
 export default class ActivateAgainModal extends React.Component {
   state = {
     expireBy: this.props.expireBy ? moment(this.props.expireBy * 1000) : null,
     hasNoExpiry: '0',
+    timesPayable: this.props.timesPayable,
     hasNoLimit: '0',
   };
 
@@ -20,6 +22,7 @@ export default class ActivateAgainModal extends React.Component {
     this.toggleDisableState();
 
     this.flushExpireByError();
+    this.flushTimesPayableError();
   }
 
   componentDidUpdate() {
@@ -67,7 +70,7 @@ export default class ActivateAgainModal extends React.Component {
   flushExpireByError() {
     /*
     * New time must be greater than current time.
-    * Ideally it must be at least 15 min past current time. But in that case error won't be shown on FE,
+    * Ideally it must be atleast 15 min past current time. But in that case error won't be shown on FE,
     * but only calendar+time will be shown to be filled again.
     *
     * */
@@ -81,12 +84,33 @@ export default class ActivateAgainModal extends React.Component {
     });
   }
 
+  flushTimesPayableError() {
+    // Has no limit, or new times payable is more than times-paid
+    const resetError =
+      (this.state.hasNoLimit == '0' &&
+        this.state.timesPayable > this.props.timesPaid) ||
+      this.state.hasNoLimit == '1';
+
+    this.setState({
+      timesPayableError: resetError ? null : timesPayableError,
+    });
+  }
+
+  editTimesPayable = e => {
+    this.setState(
+      {
+        timesPayable: e.target.value,
+      },
+      this.flushTimesPayableError
+    );
+  };
+
   render() {
     let msg = [];
-    this.props.expireBy && msg.push('Kindly change the expiry to a later date');
-    this.props.isCompleted &&
+    this.props.expireBy && msg.push('change the expiry to a later date');
+    this.props.timesPayable &&
       msg.push(
-        'One or more items are not purchasable by the customer. Update stock information'
+        'increase the max number of times you want to accept the payments'
       );
 
     msg = msg.join(' and ');
@@ -100,10 +124,8 @@ export default class ActivateAgainModal extends React.Component {
 
         <div class="modal-body">
           <p>
-            {!!msg.length && `${msg}.`}
-            <br />
-            <br />
-            Once you activate the page, you will be able to accept payments.
+            Once you activate the page, you will be able to accept payments.{' '}
+            {msg.length && 'Kindly '} {msg}.
           </p>
 
           <div class="ModalForm ModalForm--ActivationAgain">
@@ -156,6 +178,65 @@ export default class ActivateAgainModal extends React.Component {
               </div>
             )}
 
+            {this.props.timesPayable && (
+              <div class="ModalForm-field">
+                <div class="Input-label">Total Quantity</div>
+
+                <div class="InputGroup Input">
+                  <Input.Check
+                    fieldLabel="No Limit"
+                    name="hasNoLimit"
+                    defaultValue="0"
+                    value={this.state.hasNoExpiry}
+                    validator={val => {
+                      if (!isInteger(val)) {
+                        return 'Enter valid number';
+                      }
+                    }}
+                    onChange={e => {
+                      this.setState(
+                        {
+                          hasNoLimit: e.target.value,
+                        },
+                        this.flushTimesPayableError
+                      );
+
+                      if (e.target.value == '0') {
+                        setTimeout(
+                          () =>
+                            document
+                              .getElementsByName('times_payable')[0]
+                              .focus(),
+                          10
+                        );
+                      }
+                    }}
+                  />
+                  <Input
+                    name="times_payable"
+                    class="Input"
+                    placeholder="TimesPayable"
+                    value={this.state.timesPayable}
+                    disabled={this.state.hasNoLimit === '1'}
+                    propagatedError={this.state.timesPayableError}
+                    required={true}
+                    onFocus={e => {
+                      e.target.select();
+                    }}
+                    validator={() => {
+                      if (
+                        this.state.hasNoLimit === '0' &&
+                        !this.state.timesPayable
+                      ) {
+                        return 'Please fill out this field';
+                      }
+                    }}
+                    onChange={this.editTimesPayable}
+                  />
+                </div>
+              </div>
+            )}
+
             <div style={{ textAlign: 'center', marginTop: 40 }}>
               <Button onClick={this.props.handleClose}>No, don't</Button>
               <AsyncBtn.Primary
@@ -169,6 +250,13 @@ export default class ActivateAgainModal extends React.Component {
                       this.state.hasNoExpiry == '1'
                         ? null
                         : Math.floor(this.state.expire_by / 1000);
+                  }
+
+                  if (this.props.timesPayable) {
+                    reqPayload.times_payable =
+                      this.state.hasNoLimit == '1'
+                        ? null
+                        : Number(this.state.timesPayable);
                   }
 
                   return this.props.handleClick(reqPayload).then(resp => {

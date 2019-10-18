@@ -33,7 +33,7 @@ export function validateMinAmount(val, maxAmount) {
   }
 
   if (Number(val) > 0 && Number(val) < 1) {
-    return `${MIN_AMOUNT_TEXT} must be at least ₹1`;
+    return `${MIN_AMOUNT_TEXT} must be atleast ₹1`;
   }
   if (Number(val) >= maxAmount) {
     return `${MIN_AMOUNT_TEXT} must be less than Amount`;
