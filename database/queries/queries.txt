@@ -5401,3 +5401,6 @@ ALTER TABLE settlement_bucket
 
 ALTER TABLE merchants
    ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
+
+ALTER TABLE gateway_downtimes
+    Add COLUMN psp VARCHAR(50) DEFAULT NULL AFTER method;
