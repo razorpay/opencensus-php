@@ -22,7 +22,7 @@ export default class ModalCloseReasons extends Component {
 
   submitCloseReason = () => {
     const analyticsPayload = {
-      eventCategory: 'Dashboard - Instant Settlement Modal',
+      eventCategory: 'Dashboard - Early Settlement',
       eventAction: `Reasons - ${this.props.closeOrigin}`,
       eventLabel: `Reason - ${this.state.closeReason} - ${
         this.props.closeOrigin
