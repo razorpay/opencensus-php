@@ -35,8 +35,6 @@ class FundAccountValidationTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['fund_account_validations']);
 
-        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
-
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
         $this->ba->privateAuth();
@@ -45,6 +43,9 @@ class FundAccountValidationTest extends TestCase
     public function testCreateValidationWithFundAccountId()
     {
         $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
@@ -86,6 +87,34 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(1000000, $txn['balance']);
         $this->assertEquals(0, $txn['fee_credits']);
         $this->assertEquals('default', $txn['credit_type']);
+
+        // utr should be present in response['results'] array
+        $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
+
+        return $response;
+    }
+
+    public function testCreateValidationWithExposeUTRNotSetInResponse()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // remove features is not required as by default feature would be disabled
+        //$this->fixtures->merchant->removeFeatures(['expose_fa_validation_utr']);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $response = $this->startTest();
+
+        $fav      = $this->getLastEntity('fund_account_validation', true);
+
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['registered_name']);
+
+        // utr should not be present in response['results'] array
+        $this->assertArrayKeysExist($response['results'], ['account_status','registered_name']);
+
         return $response;
     }
 
