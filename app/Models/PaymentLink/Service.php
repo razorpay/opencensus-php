@@ -202,7 +202,7 @@ class Service extends Base\Service
         {
             $paymentPageItem = $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i];
 
-            $paymentPageItem = $PPICore->fetch($paymentPageItem[PaymentPageItem\Entity::ID]);
+            $paymentPageItem = $PPICore->fetch($paymentPageItem[PaymentPageItem\Entity::ID], $this->merchant);
 
             $paymentPageItem->settings = $paymentPageItem->getSettings();
 

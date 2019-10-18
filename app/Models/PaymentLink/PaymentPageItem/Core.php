@@ -43,9 +43,9 @@ class Core extends Base\Core
         return $paymentPageItem;
     }
 
-    public function fetch(string $id)
+    public function fetch(string $id, Merchant\Entity $merchant)
     {
-        $paymentPageItem = $this->repo->payment_page_item->findByPublicIdAndMerchant($id, $this->merchant);
+        $paymentPageItem = $this->repo->payment_page_item->findByPublicIdAndMerchant($id, $merchant);
 
         return $paymentPageItem;
     }
