@@ -129,6 +129,7 @@ const businessModel = [
     //     }
     //   }
     // },
+    _disabledWhen: activation => isL1Submitted(activation),
   },
   [
     {
@@ -136,9 +137,17 @@ const businessModel = [
       name: 'business_category',
       _cmp: Input.Select,
       options: [],
-      // _disabledWhen: function(form) {
-      //   return !!form.props.user.showInstantActivation;
-      // },
+      _disabledWhen: function(activation) {
+        console.log(
+          'activationPropsUserShowInstantActivation',
+          activation.props.user.showInstantActivation
+        );
+        // return !!activation.props.user.showInstantActivation; TODO: Confirm with aseem about this condition
+        return (
+          activation.props.user.instantActivation.isL1Submitted &&
+          !!activation.props.user.showInstantActivation
+        );
+      },
     },
     {
       label: 'Business Model',
@@ -204,9 +213,13 @@ const businessModel = [
         // 'Others' business_category has no sub_category
         return hasBusinessCategory;
       },
-      // _disabledWhen: function(form) {
-      //   return !!form.props.user.showInstantActivation;
-      // },
+      _disabledWhen: function(activation) {
+        // return !!form.props.user.showInstantActivation; // TODO: change along with business_category
+        return (
+          activation.props.user.instantActivation.isL1Submitted &&
+          !!activation.props.user.showInstantActivation
+        );
+      },
     },
   ],
   [
@@ -293,10 +306,8 @@ const registrationDetails = [
       const currentBusinessType =
         activation.state.dirty.business_type ||
         activation.props.data.business_type;
-      // console.log(activation.props.user.showInstantActivation);
-      // console.log(activation.props.user.instantActivation);
       return (
-        activation.props.user.instantActivation.isL1Submitted &&
+        isL1Submitted(activation) &&
         currentBusinessType &&
         CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1
       );
@@ -673,14 +684,16 @@ export function excludeFor_Indiv(activation) {
 }
 
 function isL1Submitted(activation) {
-  return activation.props.user.isL1Submitted;
+  return activation.props.user.instantActivation.isL1Submitted;
 }
 
 function excludeFor_CompanyPan(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
   return (
-    [INDIVIDUAL, PROPRIETORSHIP].indexOf(Number(currentBusinessType)) === -1
+    [INDIVIDUAL, NOT_YET_REGISTERED, PROPRIETORSHIP].indexOf(
+      Number(currentBusinessType)
+    ) === -1
   );
 }
 
