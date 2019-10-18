@@ -21,10 +21,6 @@ const currencies = {
   },
 };
 
-export function getCurrency(currencyISO) {
-  return window.currencyList[currencyISO] || {};
-}
-
 export default ({
   value,
   currency = 'INR',
