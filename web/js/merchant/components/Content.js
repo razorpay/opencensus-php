@@ -13,6 +13,7 @@ import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
 import PaymentPages from 'merchant/containers/PaymentPages/Index';
+import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
@@ -23,7 +24,7 @@ import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-
+import Onboarding from './../containers/PartnerDashboard/Onboarding/index';
 import ErrorBoundary from 'common/ErrorBoundary';
 
 import {
@@ -130,6 +131,10 @@ export default class Content extends Component {
 
   getBaseView = () => {
     const { user } = this.props;
+    if (user.isPartnerIntent()) {
+      return <Onboarding />;
+    }
+
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
@@ -195,6 +200,14 @@ export default class Content extends Component {
             path="/paymentlinks"
             component={PaymentLinks}
             additionalCondition={user => user.isAllowedView('payment_links')}
+          />
+
+          <ShowWhenRoute
+            path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
+            component={PaymentPagesDetails}
+            additionalCondition={user =>
+              user.isAllowedView('payment_pages') && user.isPPV3Enabled
+            }
           />
 
           <ShowWhenRoute

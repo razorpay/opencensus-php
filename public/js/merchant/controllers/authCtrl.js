@@ -91,6 +91,7 @@ app
       // signup state container
       var email = $location.search().email;
       var role = $location.search().r;
+      debugger;
       try {
         email = atob(decodeURIComponent(email));
       } catch (e) {
@@ -328,13 +329,17 @@ app
         var payload = {
           method: 'post',
           url: '/user/register',
-          transformRequest: transformRequestAsFormPost,
           data: data,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         };
 
         payload.data.password_confirmation = payload.data.password;
 
         payload.data.business_name = payload.data.business_name || '';
+
+        payload.data.partner_intent = $scope.signup.settings.partner_intent;
 
         // Business name cannot be empty or null. Same as quickSendDetails
         if (!payload.data.business_name) {

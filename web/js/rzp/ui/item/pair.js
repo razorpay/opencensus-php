@@ -37,6 +37,17 @@ export const amountTransferred = {
   columnClass: textRightClass,
 };
 
+export const customer = {
+  title: 'Customer',
+  value: item => (
+    <div>
+      <span class="contact">{item.contact}</span>
+      <br />
+      <span class="email">{item.email}</span>
+    </div>
+  ),
+};
+
 export const email = { title: 'Email', value: item => item.email };
 export const contact = { title: 'Contact', value: item => item.contact };
 export const currency = { title: 'Currency', value: item => item.currency };
