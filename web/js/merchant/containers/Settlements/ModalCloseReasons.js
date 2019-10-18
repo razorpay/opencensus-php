@@ -22,7 +22,7 @@ export default class ModalCloseReasons extends Component {
 
   submitCloseReason = () => {
     const analyticsPayload = {
-      eventCategory: 'Dashboard - Instant Settlement Modal',
+      eventCategory: 'Dashboard - Early Settlement',
       eventAction: `Reasons - ${this.props.closeOrigin}`,
       eventLabel: `Reason - ${this.state.closeReason} - ${
         this.props.closeOrigin
@@ -35,7 +35,7 @@ export default class ModalCloseReasons extends Component {
 
   render() {
     return (
-      <div className="onmdemand-close-modal">
+      <div className="reasons-close-modal">
         <ModalHeader
           class="header"
           title="Reason"

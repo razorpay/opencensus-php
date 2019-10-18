@@ -521,19 +521,13 @@ class Service extends Base\Service
             }
 
             // for non-registered check if pre_signup_complete done or not;
-
-            if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
+            // If partner_intent is true or is unregistered business
+            // Validate only for subset of the fields
+            if ($this->isPartnerIntentTrue($data) || $this->isUnregisteredBusinessType($data))
             {
-                // check business_type
-
-                $businessType = $data['pre_signup']['business_type'] ?? null;
-
-                if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
+                if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
                 {
-                    if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
-                    {
-                        $data['pre_signup_complete'] = true;
-                    }
+                    $data['pre_signup_complete'] = true;
                 }
             }
 
@@ -871,7 +865,8 @@ class Service extends Base\Service
             'sellerapp_plus',
             'second_factor_auth',
             'disable-view-reports',
-            'mobile_hotjar_survey'
+            'mobile_hotjar_survey',
+            'show_commission_balance'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
@@ -883,5 +878,27 @@ class Service extends Base\Service
 
 
         return $data;
+    }
+
+    protected function isUnregisteredBusinessType(array $data): bool
+    {
+      
+            $businessType = $data['pre_signup']['business_type'] ?? null;
+
+            if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
+            {
+                return true;
+            }
+
+        return false;
+    }
+
+    protected function isPartnerIntentTrue(array $data): bool
+    {
+        if (isset($data['partner_intent']) and $data['partner_intent'] === true)
+        {
+            return true;
+        }
+        return false;
     }
 }

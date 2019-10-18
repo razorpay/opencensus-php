@@ -28,3 +28,7 @@ export const fetchSingleDayAggregate = (from, queryType) => {
     payload: new Commission().fetchSingleDayAggregateData({ from, queryType }),
   };
 };
+
+export const fetchCommissionBalances = () => {
+  return new Commission().fetchCommissionBalances();
+};
