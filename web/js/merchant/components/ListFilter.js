@@ -78,7 +78,7 @@ export default class ListFilter extends Component {
         {this.props.children}
         <div class="form-group list-filter-item btn-toolbar">
           <AsyncButton
-            class="btn-sm btn-default"
+            class="btn btn-sm btn-default"
             onClick={handleSubmit(this.handleOnSubmit)}
             text="Search"
           />

@@ -9,7 +9,6 @@ const ADD_REPORT = 'ADD_REPORT';
 const UPDATE_REPORT = 'UPDATE_REPORT';
 const REMOVE_REPORT = 'REMOVE_REPORT';
 const ADD_POLL_INSTANCE = 'ADD_POLL_INSTANCE';
-const SAVE_REPORT_CONFIGS = 'SAVE_REPORT_CONFIGS';
 
 const downloadReportErrorMsg = {
   error: 'Oops!, Unable to generate report',
@@ -66,13 +65,6 @@ export const getConfigs = shouldFetchPartnerConfigs => {
   });
 };
 
-export const saveReportConfigs = _ => {
-  return {
-    type: SAVE_REPORT_CONFIGS,
-    payload: getConfigs(),
-  };
-};
-
 export const generateReport = ajaxParams => {
   return {
     type: GENERATE_REPORT,
@@ -99,11 +91,11 @@ export const generateReportV2 = (
   return createLog(params, accountHeaderVal, isPartnerReport)
     .then(resp => {
       if (!resp.success || !resp.data || !resp.data.id) {
-        onProgress && onProgress(resp.data);
+        onProgress(resp.data);
         return downloadReportErrorMsg;
       }
 
-      onProgress && onProgress(resp.data, true);
+      onProgress(resp.data, true);
 
       const logId = resp.data.id;
 
@@ -156,16 +148,16 @@ export const generateReportV2 = (
             resp.data.status === 'failed' ||
             resp.data.status === 'created'
           ) {
-            onProgress && onProgress({ ...resp.data, status: 'failed' });
+            onProgress({ ...resp.data, status: 'failed' });
             return downloadReportErrorMsg;
           }
 
-          onProgress && onProgress(resp.data);
+          onProgress(resp.data);
 
           const fileId = resp.data.file_id;
 
           if (!fileId) {
-            onProgress && onProgress(resp.data);
+            onProgress(resp.data);
             return {
               error: 'No data found for the given dates',
             };
@@ -257,7 +249,6 @@ export const areReportsStillDownloading = reports => {
 let initialState = {
   currentReportList: {},
   pollInstances: {},
-  reportConfigs: null,
 };
 
 export function reportsReducer(state = initialState, action) {
@@ -278,9 +269,6 @@ export function reportsReducer(state = initialState, action) {
       }
 
       return set(state, 'currentReportList', currentReportList);
-
-    case `${SAVE_REPORT_CONFIGS}::SUCCESS`:
-      return set(state, 'reportConfigs', action.payload.data.items);
 
     case `${REMOVE_REPORT}`:
       if (currentReportList[action.reportId]) {
