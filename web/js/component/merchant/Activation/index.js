@@ -170,9 +170,11 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    this.formName = props.user.showInstantActivation
-      ? 'KYC Form'
-      : 'Activation Form';
+    this.formName =
+      props.user.showInstantActivation &&
+      props.user.instantActivation.isL1Submitted
+        ? 'KYC Form'
+        : 'Activation Form';
   }
 
   prepareTabs(props) {
