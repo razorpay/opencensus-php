@@ -521,8 +521,9 @@ class Service extends Base\Service
             }
 
             // for non-registered check if pre_signup_complete done or not;
-
-            if ($this->isPartnerIntentTrue($data) or $this->isExperimentOnAndIsUnregisteredBusinessType($data))
+            // If partner_intent is true or is unregistered business
+            // Validate only for subset of the fields
+            if ($this->isPartnerIntentTrue($data) || $this->isUnregisteredBusinessType($data))
             {
                 if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
                 {
@@ -878,19 +879,15 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
+    protected function isUnregisteredBusinessType(array $data): bool
     {
-        if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
-        {
-            // check business_type
-
+      
             $businessType = $data['pre_signup']['business_type'] ?? null;
 
             if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
             {
                 return true;
             }
-        }
 
         return false;
     }
