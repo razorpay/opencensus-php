@@ -515,6 +515,7 @@ const uploadFields = [
     name: 'business_proof_url',
     label: 'Business Registration Proof',
     _autoRenderImpure: true, // Here, Description on other field while render.
+    _cmp: Input.File,
     description: activation => {
       const currentBusinessType =
         activation.state.dirty.business_type != null
@@ -572,12 +573,14 @@ const uploadFields = [
   {
     name: 'business_pan_url',
     label: 'Company PAN',
+    _cmp: Input.File,
     description: 'PAN details should be of the mentioned business only.',
     _when: excludeFor_Indiv,
   },
   {
     name: 'address_proof_url',
     label: "Company's Bank Account Statement with Address",
+    _cmp: Input.File,
     description:
       'Your Bank account number, IFSC code, and Company Name should be clearly visible',
     _when: excludeFor_Indiv,
@@ -585,6 +588,7 @@ const uploadFields = [
   {
     name: 'promoter_address_url',
     label: "Authorized Signatory's Address Proof",
+    _cmp: Input.File,
     description: (
       <span>
         Upload<b> both sides </b>of the government issued photo ID (Passport /
@@ -604,12 +608,14 @@ const uploadFields = [
   {
     name: 'form_12a_url',
     label: 'Form 12A Allotment Letter',
+    _cmp: Input.File,
     required: requiredForNGO,
     _when: showForOrgs,
   },
   {
     name: 'form_80g_url',
     label: 'Form 80G Allotment Letter',
+    _cmp: Input.File,
     required: requiredForNGO,
     _when: showForOrgs,
   },
@@ -620,6 +626,7 @@ const uploadFields = [
     options: Object.keys(ADDRESS_PROOF_TYPES).map(type => {
       return { label: ADDRESS_PROOF_TYPES[type].label, name: type };
     }),
+    _when: _showForIndiv,
   },
   {
     label: 'First Page',
@@ -680,6 +687,16 @@ export function excludeFor_Indiv(activation) {
 
   return (
     [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) === -1
+  );
+}
+
+/* Include for Individual/Not Yet Registered */
+export function _showForIndiv(activation) {
+  const currentBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+
+  return (
+    [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) !== -1
   );
 }
 
