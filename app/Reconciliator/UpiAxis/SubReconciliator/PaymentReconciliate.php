@@ -26,6 +26,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const ACCOUNT_CUST_NAME       = 'account_cust_name';
     const COLUMN_PAYMENT_ID       = ['order_id', 'orderid'];
     const COLUMN_TRANSACTION_DATE = ['transaction_date', 'txn_date'];
+    const COLUMN_MOBILE_NO        = 'mobile_no';
 
     const ACCOUNT_DETAILS_VPA   = 'vpa';
     const ACCOUNT_DETAILS_IFSC  = 'ifsc';
@@ -33,23 +34,38 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const SUCCESS = 'Success';
 
+    const BLACKLISTED_COLUMNS = [
+        self::ACCOUNT_CUST_NAME,
+        self::VPA,
+        self::COLUMN_MOBILE_NO,
+    ];
+
     protected function getPaymentId(array $row)
     {
         //
         // check if the recon status is failed. Return refund
         // Id as null so that such rows don't get processed.
         //
-        if ($this->getReconPaymentStatus($row) === Payment\Status::FAILED)
-        {
-            $this->setFailUnprocessedRow(false);
-
-            return null;
-        }
 
         $paymentId = array_first(self::COLUMN_PAYMENT_ID, function ($pid) use ($row)
         {
             return (isset($row[$pid]) === true);
         });
+
+        if ($this->getReconPaymentStatus($row) === Payment\Status::FAILED)
+        {
+            $this->setFailUnprocessedRow(false);
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'payment_id' => $paymentId,
+                    'gateway'    => $this->gateway
+                ]);
+
+            return null;
+        }
 
         if (UniqueIdEntity::verifyUniqueId($row[$paymentId], false) === false)
         {
@@ -231,9 +247,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),

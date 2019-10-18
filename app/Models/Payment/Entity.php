@@ -50,6 +50,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
+ * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
  */
@@ -169,6 +170,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
+    const BILLING_ADDRESS       = 'billing_address';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -3276,6 +3278,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public static function getRedirectToAuthorizeTrackIdKey(string $trackId): string
     {
         return 'payment:redirect.authorize.' . $trackId . '.encrypt';
+    }
+
+    public function getPaymentResponseCacheKey(): string
+    {
+        return 'payment:response' . $this->getId() . '.cache';
     }
 
     public function getTransactionType()

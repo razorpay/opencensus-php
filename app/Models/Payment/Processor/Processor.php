@@ -132,6 +132,11 @@ class Processor
      */
     const REDIRECT_CACHE_TTL = 20;
 
+    /**
+     * Timeout to store redirect authorize response cache
+     */
+    const REDIRECT_CACHE_RESPONSE_TTL = 2;
+
     const CACHE_KEY = 'fallback_%s_card_details';
 
     /**
@@ -302,8 +307,6 @@ class Processor
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PAYMENT_PROCESSING_ERROR);
-
             $payment = $payment ?? null;
 
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
@@ -1819,7 +1822,20 @@ class Processor
                     $this->persistCardDetails($gateway, $action, $gatewayData);
                 }
 
-                $gatewayData['cps_route'] = true;
+                //Temp changes for yesb as we need to route only authorize and verify to cps not callback.
+                if (($action === Action::CALLBACK) and ($gateway === Payment\Gateway::NETBANKING_YESB))
+                {
+                    $gatewayData['cps_route'] = false;
+
+                    $this->trace->info(TraceCode::GATEWAY_CPS_SWITCH_ROUTE_CALLBACK, [
+                        'payment_id'             => $this->payment->getId(),
+                        'gateway_cps_route'      => false,
+                    ]);
+                }
+                else
+                {
+                    $gatewayData['cps_route'] = true;
+                }
             }
             // Else if this payment was earlier authorized by CPS then disable the cps_route flag
             else if ($action !== Action::AUTHORIZE)
@@ -2682,7 +2698,8 @@ class Processor
             return true;
         }
 
-        if (($order->isPaid() === true) or
+        if ((($order->isPaid() === true) and
+            ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === false)) or
             ($order->getPaymentCapture() === false))
         {
             return false;

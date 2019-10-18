@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
 
@@ -198,8 +199,9 @@ class ViewDataSerializer extends Base\Core
 
             case Preferences::MID_BOB:
                 $customLabels = [
-                    'amount'     => 'TOTAL AMOUNT DUE',
-                    'expire_by'  => 'PAYMENT LINK EXPIRES ON'
+                    'amount'         => 'TOTAL AMOUNT DUE',
+                    'expire_by'      => 'PAYMENT LINK EXPIRES ON',
+                    'receipt_number' => 'CREDIT CARD NUMBER',
                 ];
                 break;
 
@@ -434,7 +436,16 @@ class ViewDataSerializer extends Base\Core
     {
         if ($this->invoice->isOfSubscription() === true)
         {
-            $serialized[E::SUBSCRIPTION] = $this->invoice->subscription->toArrayHosted();
+            $subscriptionId = $this->invoice->getSubscriptionId();
+
+            $subscription = $this->app['module']
+                                 ->subscription
+                                 ->fetchSubscriptionForInvoice(
+                                     Subscription\Entity::getSignedId($subscriptionId),
+                                     $this->merchant
+                                 );
+
+            $serialized[E::SUBSCRIPTION] = $subscription;
         }
     }
 

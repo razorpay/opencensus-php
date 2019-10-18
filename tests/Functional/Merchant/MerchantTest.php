@@ -371,9 +371,9 @@ class MerchantTest extends TestCase
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  '9801234567',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9801234567',
         ]);
 
         $mappingData = [
@@ -411,13 +411,13 @@ class MerchantTest extends TestCase
     public function testMerchant2faEnable()
     {
         $merchant = $this->fixtures->create('merchant', [
-                MerchantEntity::SECOND_FACTOR_AUTH      =>  0,
+                MerchantEntity::SECOND_FACTOR_AUTH      => 0,
             ]);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-                UserEntity::SECOND_FACTOR_AUTH      =>  0,
-                UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-                UserEntity::CONTACT_MOBILE          =>  '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
                 UserEntity::PASSWORD                => 'hello123',
             ], 'owner');
 
@@ -444,13 +444,13 @@ class MerchantTest extends TestCase
     public function testFailedMerchant2faEnableInvalidPass()
     {
         $merchant = $this->fixtures->create('merchant', [
-                MerchantEntity::SECOND_FACTOR_AUTH      =>  0,
+                MerchantEntity::SECOND_FACTOR_AUTH      => 0,
             ]);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-                UserEntity::SECOND_FACTOR_AUTH      =>  0,
-                UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-                UserEntity::CONTACT_MOBILE          =>  '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
                 UserEntity::PASSWORD                => 'hello123',
             ], 'owner');
 
@@ -477,13 +477,13 @@ class MerchantTest extends TestCase
     public function testMerchant2faDisable()
     {
         $merchant = $this->fixtures->create('merchant', [
-            MerchantEntity::SECOND_FACTOR_AUTH      =>  1,
+            MerchantEntity::SECOND_FACTOR_AUTH      => 1,
               ]);
 
          $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  '9999999999',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
             UserEntity::PASSWORD                => 'hello123',
         ], 'owner');
 
@@ -511,9 +511,9 @@ class MerchantTest extends TestCase
     public function testFailedMerchantEnable2faMobNotPresent()
     {
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -553,9 +553,9 @@ class MerchantTest extends TestCase
     public function testFailedMerchantEnable2faMobNotVerified()
     {
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -599,15 +599,15 @@ class MerchantTest extends TestCase
         ]);
 
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -667,9 +667,9 @@ class MerchantTest extends TestCase
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  '9801234567',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => '9801234567',
         ]);
 
         $mappingData = [
@@ -873,6 +873,15 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantWhitelistedDomains()
     {
         $this->createMerchant();
 
@@ -2020,8 +2029,8 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
-            'issuer'      => 'ALL',]);
-
+            'issuer'      => 'ALL',
+        ]);
 
         $this->startTest();
     }
@@ -2338,6 +2347,44 @@ class MerchantTest extends TestCase
         $this->ba->publicAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGetCheckoutPreferencesWithContactDetails()
+    {
+        $this->fixtures->create('contact', [
+            'id' => 'ABCD123321DCBA',
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            'id'           => '100000000000fa',
+            'source_id'    => 'ABCD123321DCBA',
+            'source_type'  => 'contact',
+            'account_type' => 'bank_account',
+            'account_id'   => '1000000lcustba',
+        ]);
+
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency'      => 'INR',
+                'contact_id'    => 'cont_ABCD123321DCBA',
+            ],
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['contact']['id'], 'cont_ABCD123321DCBA');
+        $this->assertEquals($response['contact']['fund_accounts'][0]['id'], 'fa_100000000000fa');
+    }
+
+    public function testGetCheckoutPreferencesWithContactDetailsWhereContactDoesNotExist()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutPreferencesForPaidOrder()
@@ -2785,6 +2832,17 @@ class MerchantTest extends TestCase
         $admin->merchants()->attach('10000000000000');
 
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchEsScheduledPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->proxyAuthTest();
 
         $this->startTest();
     }
@@ -3575,7 +3633,7 @@ class MerchantTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode='test')
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode = 'test')
     {
         DB::connection($mode)->table('merchant_users')
             ->insert([
@@ -4325,7 +4383,7 @@ class MerchantTest extends TestCase
     {
         Queue::fake();
 
-        $this->CreateBalanceEntities();
+        $this->createBalanceEntities();
 
         $this->ba->proxyAuth();
 
@@ -4342,7 +4400,7 @@ class MerchantTest extends TestCase
     {
         $this->createEsMockAndSetExpectations(__FUNCTION__, 'bulkUpdate');
 
-        $this->CreateBalanceEntities();
+        $this->createBalanceEntities();
 
         $this->ba->proxyAuth();
 
@@ -4354,7 +4412,7 @@ class MerchantTest extends TestCase
      *
      * @return array
      */
-    private function CreateBalanceEntities(): array
+    private function createBalanceEntities(): array
     {
         Carbon::setTestNow(Carbon::now()->addHours(25));
 
@@ -4418,7 +4476,7 @@ class MerchantTest extends TestCase
         $expectedBalance = [
             'type'             => 'banking',
             'account_type'     => 'shared',
-            'channel'          =>  null,
+            'channel'          => null,
             'merchant_id'      => '10000000000000',
         ];
 
@@ -4622,7 +4680,7 @@ class MerchantTest extends TestCase
         $merchantId = 10000000000000;
 
         $admin = $this->ba->getAdmin();
-        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
 
@@ -4659,7 +4717,7 @@ class MerchantTest extends TestCase
         $request = [
             'url'       => '/merchants/beneficiary/api/yesbank',
             'method'    => 'post',
-            'content'   =>  [
+            'content'   => [
                 'duration'   => 1200,
                 'send_email' => false,
             ]
@@ -4931,7 +4989,6 @@ class MerchantTest extends TestCase
         ];
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
 
         $testData = &$this->testData[__FUNCTION__];
 

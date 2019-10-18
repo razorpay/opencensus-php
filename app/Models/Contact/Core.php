@@ -83,4 +83,11 @@ class Core extends Base\Core
 
         (new Type)->setTypeForContact($contact, $type);
     }
+
+    public function fetch($id, $merchant, $input = [])
+    {
+        $contact =  $this->repo->contact->findByPublicIdAndMerchant($id, $merchant, $input);
+
+        return $contact;
+    }
 }

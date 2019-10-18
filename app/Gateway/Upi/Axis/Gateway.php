@@ -43,6 +43,7 @@ class Gateway extends Base\Gateway
     protected $gateway  = Payment\Gateway::UPI_AXIS;
 
     protected $map = [
+        Entity::PAYMENT_ID              => Entity::PAYMENT_ID,
         Entity::VPA                     => Entity::VPA,
         Entity::RECEIVED                => Entity::RECEIVED,
         Entity::EXPIRY_TIME             => Entity::EXPIRY_TIME,
@@ -227,8 +228,18 @@ class Gateway extends Base\Gateway
             'email'    => 'void@razorpay.com',
         ];
 
+        $callbackMerchantId = $callbackData[Fields::CALLBACK_MERCHANT_ID];
+
+        // TODO:: This needs to be fixed once we get confirmation on why the aggregator ids for one particular terminal
+        // are different. For now adding this hack as a fix.
+
+        if ($callbackMerchantId === 'RAZORPPROD0093689')
+        {
+            $callbackMerchantId = 'ADITYAPROD0093708';
+        }
+
         $terminal = [
-            'gateway_merchant_id' => $callbackData[Fields::CALLBACK_MERCHANT_ID]
+            'gateway_merchant_id' => $callbackMerchantId
         ];
 
         return [
@@ -1279,5 +1290,19 @@ class Gateway extends Base\Gateway
         {
             return array($this->config['live_razorpay_merchant_id'], $this->config['live_razorpay_merchant_channel_id']);
         }
+    }
+
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input[Entity::ACTION]);
+        }
+
+        $gatewayEntity->setAction($input[Entity::ACTION]);
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
     }
 }

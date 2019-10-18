@@ -43,14 +43,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,
         ],
     ],
 
@@ -59,14 +59,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,
         ],
     ],
 

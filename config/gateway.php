@@ -37,8 +37,10 @@ return [
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
+        'netbanking_bob_v2',
         'netbanking_vijaya',
         'netbanking_corporation',
+        'netbanking_ubi',
         'netbanking_kotak',
         'netbanking_icici',
         'netbanking_airtel',
@@ -111,6 +113,7 @@ return [
     'mock_netbanking_cbi'         => env('NETBANKING_CBI_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
+    'mock_netbanking_bob_v2'      => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
     'mock_netbanking_corporation' => env('NETBANKING_CORPORATION_MOCK'),
     'mock_netbanking_kotak'       => env('NETBANKING_KOTAK_MOCK'),
@@ -124,6 +127,7 @@ return [
     'mock_netbanking_sbi'         => env('NETBANKING_SBI_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
+    'mock_netbanking_ubi'         => env('NETBANKING_UBI_MOCK'),
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
@@ -764,6 +768,7 @@ return [
         'test_merchant_id_recurring'  => env('NETBANKING_SBI_TEST_MERCHANT_ID_RECURRING'),
         'test_hash_secret'            => env('NETBANKING_SBI_TEST_HASH_SECRET'),
         'test_hash_secret_recurring'  => env('NETBANKING_SBI_TEST_HASH_SECRET_RECURRING'),
+        'live_hash_secret'            => env('NETBANKING_SBI_LIVE_HASH_SECRET'),
         'iv'                          => env('NETBANKING_SBI_IV'),
         'emandate_corporate_id'       => env('EMANDATE_SBI_CORPORATE_ID'),
     ],
@@ -893,4 +898,6 @@ return [
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
+
+    'razorpay_proxy_address' => env('RAZORPAY_PROXY_ADDRESS'),
 ];

@@ -63,7 +63,21 @@ final class KeylessPublicAuth
     public function retrieveModeMerchantAndXEntityId(): array
     {
         list($entity, $signedId) = $this->retrieveEntityAndSignedId();
-        list($mode, $merchant)   = $this->retrieveModeAndMerchantForEntity($entity, $signedId);
+
+        $mode = null;
+
+        $merchant = null;
+
+        if (E::isExternalEntity($entity) === true)
+        {
+            $serviceClass = E::getEntityService($entity);
+            
+            list($mode, $merchant)  = (new $serviceClass)->getModeAndMerchant($signedId);
+        }
+        else 
+        {
+            list($mode, $merchant)   = $this->retrieveModeAndMerchantForEntity($entity, $signedId);
+        }
 
         return [$mode, $merchant, $signedId];
     }

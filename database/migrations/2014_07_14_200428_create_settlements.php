@@ -46,6 +46,9 @@ class CreateSettlements extends Migration
                   ->nullable()
                   ->unique();
 
+            $table->char(Settlement::BALANCE_ID, Merchant\Balance\Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Settlement::CHANNEL, 8);
 
             $table->integer(Settlement::ATTEMPTS)
@@ -88,6 +91,8 @@ class CreateSettlements extends Migration
             $table->index([Settlement::MERCHANT_ID, Settlement::CREATED_AT]);
 
             $table->index(Settlement::FTS_TRANSFER_ID);
+
+            $table->index(Settlement::BALANCE_ID);
 
             $table->foreign(Settlement::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

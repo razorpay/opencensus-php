@@ -3,21 +3,24 @@
 namespace RZP\Models\Gateway\Terminal;
 
 use App;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Gateway\Base\Terminal;
 use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Terminal\Service as TerminalService;
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
+use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Merchant\Entity as Merchant;
 
 class Service extends Base\Service
 {
-    const MERCHANT_ONBOARD   = 'merchant_onboard';
-    const GATEWAY_INPUT      = 'gateway_input';
-    const TERMINAL           = 'terminal';
-    const MUTEX_LOCK_TIMEOUT = '60';
+    const MERCHANT_ONBOARD                          = 'merchant_onboard';
+    const GATEWAY_INPUT                             = 'gateway_input';
+    const TERMINAL                                  = 'terminal';
+    const MUTEX_LOCK_TIMEOUT                        = '60';
 
     protected $mutex;
 
@@ -122,6 +125,55 @@ class Service extends Base\Service
         return $terminal;
     }
 
+    public function verifyTerminals($terminals)
+    {
+        $cronResponse = [
+            Constants::ACTIVATED_TERMINALS          => 0,
+            Constants::PENDING_TERMINALS            => 0,
+            Constants::ACTIVATION_FAILED_TERMINALS  => 0,
+            Constants::NOT_APPLICABLE_TERMINALS  => 0,
+            Constants::VERIFICATION_ERROR_TERMINALS => 0,
+        ];
+
+        foreach ($terminals as $terminal)
+        {
+            try
+            {
+                $updatedStatus = $this->performVerificationAsync($terminal);
+
+                switch ($updatedStatus)
+                {
+                    case TerminalOnboardingDetail\Status::ACTIVATED:
+                        $cronResponse[Constants::ACTIVATED_TERMINALS]++;
+                        break;
+                    case TerminalOnboardingDetail\Status::PENDING:
+                        $cronResponse[Constants::PENDING_TERMINALS]++;
+                        break;
+                    case TerminalOnboardingDetail\Status::ACTIVATION_FAILED:
+                        $cronResponse[Constants::ACTIVATION_FAILED_TERMINALS]++;
+                        break;
+                }
+
+            }
+            catch (\Throwable $ex)
+            {
+                if( ($ex->getMessage() === 'Terminal has already been processed') or 
+                    ($ex->getCode() === ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_ANOTHER_OPERATION_IN_PROGRESS)
+                )
+                {
+                    $cronResponse[Constants::NOT_APPLICABLE_TERMINALS]++;
+                }
+                else
+                {
+                    $cronResponse[Constants::VERIFICATION_ERROR_TERMINALS]++;
+                }
+            }
+
+        }
+        
+        return $cronResponse;
+    }
+
     protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId)
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
@@ -173,6 +225,21 @@ class Service extends Base\Service
         return false;
     }
 
+    // Creates onboarded terminal on actual gateway
+    public function callGatewayForOnboardingAsync($terminal)
+    {
+        $gateway = $terminal->getGateway();
+
+        $gatewayProcessor = GatewayFactory::build($gateway);
+
+        $request = $gatewayProcessor->getGatewayRequestArrayForCreation($terminal);
+
+        $response = $this->app['gateway']->call($gateway, 'create_terminal', $request, $this->mode, $terminal);
+
+        $gatewayProcessor->updateTerminalDetailsBasedOnCreationResponse($response, $terminal);
+    }
+
+    // Creates terminal for onboarding only in our database, not on actual gateway
     protected function performOnboardingAsync($merchant, $gatewayProcessor, $gatewayInput)
     {
         $gatewayProcessor->checkDbConstraints($gatewayInput, $merchant);
@@ -180,5 +247,64 @@ class Service extends Base\Service
         $terminalData = $gatewayProcessor->getInputValue($gatewayInput, $merchant);
 
         return $gatewayProcessor->processTerminalData($terminalData, $merchant);
+    }
+
+    protected function performVerificationAsync($terminal)
+    {
+        $gateway = $terminal->getGateway();
+
+        $gatewayProcessor = GatewayFactory::build($gateway);
+
+        $lockResource = $gatewayProcessor->getLockResource($terminal, $gateway, []);
+
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $this->mutex->acquireAndRelease(
+            $lockResource,
+            function() use ($terminal, $terminalOnboardingDetail, $gateway, $gatewayProcessor)
+            {
+                $terminal->reload();
+
+                $currentTimestamp = Carbon::now()->getTimestamp();
+
+                // skip if it has already been processed
+                if ((is_null($terminalOnboardingDetail->getVerifyAt())) or 
+                    ($terminalOnboardingDetail->getVerifyAt() > $currentTimestamp))
+                    {
+                        throw new LogicException('Terminal has already been processed');
+                    }
+
+                $request = $gatewayProcessor->getGatewayRequestArrayForVerification($terminal);
+
+                $this->trace->info(
+                    TraceCode::TERMINAL_ONBOARDING_VERIFY_REQUEST,
+                    [
+                        'terminal_id'                   => $terminal->getId(),
+                        'gateway'                       => $gateway,
+                        'merchant_id'                   => $terminal->merchant->getId(),
+                        'terminal_onboarding_detail_id' => $terminalOnboardingDetail->getId(),
+                    ]);
+
+                try
+                {
+                    $response = $this->app['gateway']->call($gateway, 'verify_terminal', $request, $this->mode, $terminal);
+
+                    $gatewayProcessor->updateTerminalDetailsBasedOnVerifyResponse($response, $terminal);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::TERMINAL_ONBOARDING_VERIFY_REQUEST_FAILURE_EXCEPTION,
+                        $terminal->toArray()
+                    );
+
+                    throw $ex;
+                }
+            }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_ANOTHER_OPERATION_IN_PROGRESS
+        );
+        
+        return $terminalOnboardingDetail->getStatus();
     }
 }

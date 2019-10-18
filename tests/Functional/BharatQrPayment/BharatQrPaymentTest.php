@@ -756,7 +756,7 @@ class BharatQrPaymentTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
-        $this->assertRegExp('/1100/', $qrCode['qr_string']);
+        $this->assertRegExp('/5399/', $qrCode['qr_string']);
 
         $this->assertRegExp('/2223330048827001/', $qrCode['qr_string']);
 

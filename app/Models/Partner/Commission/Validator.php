@@ -2,9 +2,15 @@
 
 namespace RZP\Models\Partner\Commission;
 
+use App;
+
+use Carbon\Carbon;
+
 use RZP\Base;
-use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models\Partner\Config;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -24,11 +30,20 @@ class Validator extends Base\Validator
         Entity::RECORD_ONLY => 'required|integer',
     ];
 
+    protected static $markForSettlementRules = [
+        Constants::TO      => 'required|integer|custom:end_time',
+    ];
+
+    protected static $bulkCaptureRules = [
+        Constants::PARTNER_IDS        => 'required|array|min:1',
+        Constants::PARTNER_IDS . '.*' => 'filled|string|size:14',
+    ];
+
     public function validateQueryType($attribute, $value)
     {
         if (Constants::isValidQueryType($value) === false)
         {
-            throw new Exception\BadRequestValidationFailureException('Invalid query type: ' . $value);
+            throw new BadRequestValidationFailureException('Invalid query type: ' . $value);
         }
     }
 
@@ -36,10 +51,27 @@ class Validator extends Base\Validator
      * @param $attribute
      * @param $type
      *
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws BadRequestValidationFailureException
      */
     public function validateModel($attribute, $type)
     {
         Config\CommissionModel::validate($type);
+    }
+
+    public function validateEndTime($attribute, $value)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app['rzp.mode'] === Mode::TEST)
+        {
+            return;
+        }
+
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($value > $now)
+        {
+            throw new BadRequestValidationFailureException('End time should be less than current time');
+        }
     }
 }

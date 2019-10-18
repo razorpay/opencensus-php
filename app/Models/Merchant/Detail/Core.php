@@ -21,16 +21,18 @@ use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Action as Action;
-use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
-use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Document\OcrVerificationStatus;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 
@@ -68,6 +70,8 @@ class Core extends Base\Core
 
             if ($this->canSubmit($input, $response) === true)
             {
+                $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
+
                 // If a merchant does not have website or app, we would need to activate them
                 // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
                 // should be set to true only if one submits website details, there by will be able to
@@ -78,8 +82,10 @@ class Core extends Base\Core
 
                 $this->updateActivationSource($merchant, $originProduct);
 
+                $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
+
                 $activationStatusData = [
-                    Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+                    Entity::ACTIVATION_STATUS => $statusToBeUpdated
                 ];
 
                 $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
@@ -117,16 +123,71 @@ class Core extends Base\Core
     }
 
     /**
+     * Updates merchant detail poa status to verified if any one of the document uploaded by merchant is verified
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     */
+    public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false)
+        {
+            return;
+        }
+
+        $documents = $this->repo->merchant_document->findAllDocumentsByMerchantID($merchantDetails->getMerchantId());
+
+        $isOcrVerified = false;
+
+        //
+        // Update PoaVerificationStatus to Verified if any document uploaded has OCR Verified.
+        //
+        foreach ($documents as $document)
+        {
+            if ((isset($document[Document\Entity::OCR_VERIFY]) === true) and
+                ($document[Document\Entity::OCR_VERIFY] === OcrVerificationStatus::VERIFIED))
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_VERIFY_POA,
+                    [
+                        'document_type'       => $document[Document\Entity::DOCUMENT_TYPE],
+                    ]);
+
+                $isOcrVerified = true;
+
+                break;
+            }
+        }
+
+        $poaVerificationStatus = ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
+
+        $merchantDetails->setPoaVerificationStatus($poaVerificationStatus);
+
+        $this->repo->saveOrFail($merchantDetails);
+    }
+
+    /**
      * fetches activation_flow and international_activation value
      * using business category and subcategory, then updates in
-     * merchant_details table
+     * merchant_details table.
      *
-     * @param Entity $merchantDetails
+     * For unregistered business bucket we skip activation flow
+     *
+     * @param Entity          $merchantDetails
+     *
+     * @param Merchant\Entity $merchant
      *
      * @throws \RZP\Exception\BadRequestException
      */
-    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
+    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails, Merchant\Entity $merchant)
     {
+        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true)
+        {
+            $merchantDetails->setActivationFlow();
+            $merchantDetails->setInternationalActivationFlow();
+            return;
+        }
+
         $subcategory = $merchantDetails->getBusinessSubcategory();
         $category    = $merchantDetails->getBusinessCategory();
 
@@ -138,7 +199,7 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::MERCHANT_ACTIVATION, $activation_metric_dimensions);
 
-        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($this->merchant);
+        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($merchant, $merchantDetails);
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
@@ -190,22 +251,19 @@ class Core extends Base\Core
      * in MerchantDetails table. The reason for doing so is if Business type is changed from Non registered
      * to some other business type, then need to skip pre signup form from Dashboard login.
      *
-     * @param Entity          $merchantDetails
-     * @param Merchant\Entity $merchant
-     *
-     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @param Entity $merchantDetails
      */
-    public function updateToDefaultDepartmentVolumeIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function updateToDefaultDepartmentVolumeIfApplicable(Entity & $merchantDetails)
     {
-        if ($merchantDetails->isDirty((Entity::BUSINESS_TYPE)) === true)
+        if ($merchantDetails->isDirty([Entity::BUSINESS_TYPE]) === true)
         {
-            $merchantBusinessType = BusinessType::getKeyFromIndex($merchant->merchantDetail[Entity::BUSINESS_TYPE]);
+            $oldMerchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantDetails->getMerchantId());
 
-            if (BusinessType::isUnregisteredBusiness($merchantBusinessType))
+            if (BusinessType::isUnregisteredBusiness($oldMerchantDetail->getBusinessType()))
             {
-                $merchantDetails->setAttribute(Entity::TRANSACTION_VOLUME, Department::getDefaultDepartment());
+                $merchantDetails->setAttribute(Entity::TRANSACTION_VOLUME, TransactionVolume::getDefaultVolume());
 
-                $merchantDetails->setAttribute(Entity::DEPARTMENT, TransactionVolume::getDefaultVolume());
+                $merchantDetails->setAttribute(Entity::DEPARTMENT, Department::getDefaultDepartment());
             }
         }
     }
@@ -238,16 +296,34 @@ class Core extends Base\Core
             // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
-            $this->autoUpdateMerchantActivationFlow($merchantDetails);
+            $this->autoUpdateMerchantActivationFlow($merchantDetails, $merchant);
+
+            $this->updateToDefaultDepartmentVolumeIfApplicable($merchantDetails);
+
+            // do pan validation
+            $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant);
 
             $this->repo->saveOrFail($merchantDetails);
 
+            $merchantCore = new Merchant\Core();
             // Sync few input fields to merchant entity
-            $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
+            $merchant = $merchantCore->syncMerchantEntityFields($merchant, $input);
 
-            // $activationFlow will be an instance of the ActivationFlowInterface
-            $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
-            $activationFlow->process($merchantDetails);
+            if ($merchantCore->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()))
+            {
+                if ($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::VERIFIED)
+                {
+                    // in case of unregistered business if pan is verified then instantly activate merchant
+                    (new Detail\ActivationFlow\Whitelist())->process($merchantDetails);
+                }
+            }
+            else
+            {
+                // $activationFlow will be an instance of the ActivationFlowInterface
+                $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
+                $activationFlow->process($merchantDetails);
+
+            }
 
             $response = $this->createResponse($merchantDetails);
 
@@ -268,11 +344,60 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @return Verifiers\PanVerifierResponse|null
+     */
+    protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, MErchant\Entity $merchant)
+    {
+        if ($merchantDetails->isUnregisteredBusiness() === false)
+        {
+            return null;
+        }
+
+        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness());
+
+        if ($enabled === false)
+        {
+            return null;
+        }
+
+        $input = [
+            DEConstants::PAN_NUMBER => $merchantDetails->getPromoterPan(),
+        ];
+
+        $response = null;
+
+        try
+        {
+            $verifier = FactoryVerifier::getPoiVerifier($input);
+
+            $response = $verifier->verifyDetails();
+
+            $response->setPanOwnerName($merchantDetails->getPromoterPanName());
+
+            $merchantDetails->setPoiVerificationStatus($response->getStatus());
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         null,
+                                         TraceCode::MERCHANT_POI_VERIFICATION_FAILED);
+
+            $merchantDetails->setPoiVerificationStatus(POIStatus::FAILED);
+        }
+
+        return $response;
+    }
+
+    /**
      * @param Merchant\Entity $merchant
      * @param                 $activationProgress
      * @param string          $activationFlow
      */
-    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow)
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow = null)
     {
         $eventAttributes = $merchant->toArrayEvent();
 
@@ -866,6 +991,7 @@ class Core extends Base\Core
     public function getValidationFields(Entity $merchantDetails): array
     {
         // @todo: Activation flow will define its own validation fields
+        $validationDocumentFields = [];
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
@@ -881,7 +1007,8 @@ class Core extends Base\Core
 
         if (in_array($merchantDetails->getBusinessType(), $limitedFieldTypes, true) === true)
         {
-            $validationFields = ValidationFields::DASHBOARD_FIELDS_LIMITED;
+            $validationFields         = ValidationFields::DASHBOARD_UNREGISTERED_LIMITED;
+            $validationDocumentFields = ValidationFields::UNREGISTERED_DOCUMENT_FIELDS;
         }
 
         if (self::shouldSkipBankAccountRegistration() === true)
@@ -893,7 +1020,8 @@ class Core extends Base\Core
 
         if ($merchant->isLinkedAccount() === true)
         {
-            $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+            $validationFields         = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+            $validationDocumentFields = [];
 
             $parentMerchant = $merchant->parent;
 
@@ -910,7 +1038,7 @@ class Core extends Base\Core
             }
         }
 
-        return $validationFields;
+        return [$validationFields, $validationDocumentFields];
     }
 
     public function createResponse(Entity $merchantDetails): array
@@ -921,7 +1049,7 @@ class Core extends Base\Core
 
         $requiredFields = [];
 
-        $validationFields = $this->getValidationFields($merchantDetails);
+        [$validationFields, $validationDocumentFields] = $this->getValidationFields($merchantDetails);
 
         $merchant = $merchantDetails->merchant;
 
@@ -949,24 +1077,30 @@ class Core extends Base\Core
             $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
         }
 
-        $totalFields = count($validationFields);
+        $totalFields = count($validationFields) + count($validationDocumentFields);
+
+        $documentsResponse = (new Document\Core())->documentResponse($merchant->getId());
+
+        $response['documents'] = $documentsResponse;
 
         foreach ($validationFields as $key)
         {
             //
             // Add the key to the list of the required fields if:
-            // - The key that needs to be validated is not present in the merchant details array
-            // - Or, if the value for the key is null
-            // - Or, if the value is not a boolean and is empty (empty(false) => true)
+            //- key is not present in  merchant detail
+            //- and if the key that needs to be validated is not present in the merchant Document array
             //
-            if ((array_key_exists($key, $merchantDetailsArr) === false) or
-                (is_null($merchantDetailsArr[$key]) === true) or
-                ((is_bool($merchantDetailsArr[$key]) !== true) and
-                 (empty($merchantDetailsArr[$key]) === true)))
+            if (($this->isKeyNotInMerchantDetail($key, $merchantDetailsArr) === true) and
+                (array_key_exists($key, $documentsResponse) === false))
             {
                 $requiredFields[] = $key;
             }
         }
+
+        $this->calculateRequiredDocumentFields(
+            $validationDocumentFields,
+            $documentsResponse,
+            $requiredFields);
 
         if (count($requiredFields) > 0)
         {
@@ -998,6 +1132,25 @@ class Core extends Base\Core
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
         return $response;
+    }
+
+    /**
+     * Checks that
+     * The key that needs to be validated is not present in the merchant details array
+     * Or, if the value for the key is null
+     * Or, if the value is not a boolean and is empty (empty(false) => true)
+     *
+     * @param string $key
+     * @param array  $merchantDetailsArr
+     *
+     * @return bool
+     */
+    private function isKeyNotInMerchantDetail(string $key, array $merchantDetailsArr): bool
+    {
+        return ((array_key_exists($key, $merchantDetailsArr) === false) or
+                (is_null($merchantDetailsArr[$key]) === true) or
+                ((is_bool($merchantDetailsArr[$key]) !== true) and
+                 (empty($merchantDetailsArr[$key]) === true)));
     }
 
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
@@ -1133,5 +1286,96 @@ class Core extends Base\Core
         $skipBankAccountRegistration = $batchContext['data'][Merchant\Entity::SKIP_BA_REGISTRATION] ?? false;
 
         return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
+    }
+
+    public function isAdditionalFieldRequired($field)
+    {
+        $merchantDetail = $this->getMerchantDetails($this->merchant);
+
+        $KYClarificationReasons = $merchantDetail->getKycClarificationReasons();
+
+        if (empty($KYClarificationReasons) === true)
+        {
+            return false;
+        }
+
+        $additionalDetail = $KYClarificationReasons[Entity::ADDITIONAL_DETAILS] ?? [];
+
+        return array_key_exists($field, $additionalDetail) === true;
+    }
+
+    /**
+     * Set activation status to activated if
+     * 1) poaVerificationStatus is Verified and
+     * 2) bankDetailsVerificationStatus is Verified and
+     * 3) Unregistered on-boarding is enabled for merchant and
+     *
+     * Else change set activation status to under review
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @return string
+     */
+    private function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if (($merchantDetails->isPoaVerified() === true) and
+            ($merchantDetails->isBankDetailStatusVerified() === true) and
+            ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true))
+        {
+            return Status::ACTIVATED;
+        }
+
+        return Status::UNDER_REVIEW;
+    }
+
+    /**
+     * * Format of defining required documents
+     *
+     * {
+     * "document1": [
+     *   [ "document_type1" , "document_type2"],
+     *   [ "document_type3" , "document_type2"]
+     * ],
+     * "document2": [
+     *   [ "document_type4" , "document_type5"],
+     *   [ "document_type6" , "document_type7"]
+     * ]
+     * }
+     *
+     * explanation : For submitting L2 form  document1 and document2 fields are required
+     * for document1 field user can submit (document_type1, document_type2) or (document_type3, document_type2)
+     * for document2 field user can submit (document_type4, document_type5) or (document_type6, document_type7)
+     *
+     * $requiredDocumentField : document1,document2
+     * $documentGroup         :   ["document_type6","document_type7"]
+     *
+     * @param $validationDocumentFields
+     * @param $documentsResponse
+     * @param $requiredFields
+     */
+    protected function calculateRequiredDocumentFields($validationDocumentFields, $documentsResponse, &$requiredFields): void
+    {
+        foreach ($validationDocumentFields as $requiredDocumentField => $documentGroups)
+        {
+            //
+            // if merchant uploads all documents of a document group then
+            // we consider  required document field to be filled
+            //
+            $isFieldPresent = array_reduce($documentGroups, function($isFieldPresent, $documentGroup) use ($documentsResponse)
+            {
+                $isDocumentGroupFilled = count(array_diff($documentGroup, array_keys($documentsResponse))) === 0;
+
+                $isFieldPresent = ($isFieldPresent or $isDocumentGroupFilled);
+
+                return $isFieldPresent;
+
+            }, false);
+
+            if ($isFieldPresent === false)
+            {
+                $requiredFields[] = $requiredDocumentField;
+            }
+        }
     }
 }

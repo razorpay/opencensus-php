@@ -18,7 +18,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
-use RZP\Constants\Table;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -40,7 +40,6 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -147,7 +146,7 @@ class Core extends Base\Core
 
         $subMerchant = $entity->build($input);
 
-        $has24x7SettlementFeature = $aggregatorMerchant->isFeatureEnabled(Feature::SETTLEMENT_24X7);
+        $has24x7SettlementFeature = $aggregatorMerchant->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7);
 
         if (($has24x7SettlementFeature === true) and
             ($linkedAccount === true))
@@ -229,6 +228,14 @@ class Core extends Base\Core
         (new Detail\Core)->createMerchantDetails($merchant);
 
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
+
+        // Removing this feature is complicated, but
+        // blindly assigning the feature to everybody is not
+        (new Feature\Core)->create([
+            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+            Feature\Entity::ENTITY_ID       => $merchant->getId(),
+            Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
+        ], $shouldSync = true);
     }
 
     /**
@@ -1167,6 +1174,39 @@ class Core extends Base\Core
         });
 
         return $merchant;
+    }
+
+    /**
+     * Updates partner type on merchant's request
+     *
+     * @param Entity $merchant
+     * @param String $partnerType
+     *
+     * @return Entity
+     */
+    public function updatePartnerType(Entity $merchant, string $partnerType): array
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
+        {
+            $partner = $this->markAsPartner($merchant, $partnerType);
+
+            $application = $this->getPartnerAppByMerchantId($merchant->getId());
+
+            $config = [
+                PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
+                PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
+                PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
+                PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
+            ];
+
+            $config = (new PartnerConfig\Core)->create($application, $config);
+
+        });
+
+        return [
+            'partner_type'              => $partnerType,
+            'has_commission_configs'    => true,
+        ];
     }
 
     /**
@@ -2148,11 +2188,59 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns maximum transaction amount for a merchant
+     *
+     * @param Entity $merchant
+     *
+     * @return int
+     * @throws BadRequestException
+     */
+    public function getMaxPayAmount(Entity $merchant): int
+    {
+        //
+        // for fetching merchant detail we can do $merchant->merchantDetail also
+        // but this function is getting called from merchant entity so doing this will cache $merchant->merchantDetail
+        // merchant detail object hence on subsequent call will get stale  merchantDetail object
+        //
+
+        $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchant->getId());
+
+        if (($merchantDetail !== null) and
+            (empty($merchant->getCategory()) === false) and
+            (Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === true))
+        {
+
+            //
+            // Mcc can have values other then predefined values
+            // for those cases we should return default values
+            //
+            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList((int) $merchant->getCategory()) === false)
+            {
+                $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
+
+                return Entity::MAX_PAYMENT_AMOUNT_DEFAULT;
+            }
+
+            $amount = BusinessSubCategoryMetaData::getFeatureValueUsingMccCode(
+                BusinessSubCategoryMetaData::NON_REGISTERED_MAX_PAYABLE_AMOUNT,
+                $merchant->getCategory(),
+                Entity::MAX_PAYMENT_AMOUNT_DEFAULT);
+        }
+        else
+        {
+            $amount = Entity::MAX_PAYMENT_AMOUNT_DEFAULT;
+        }
+
+        return (int) $amount;
+    }
+
+    /**
      * Enable international and set convert currency as false, if applicable
      *
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
      *
+     * @throws BadRequestException
      */
     public function activateInternationalIfApplicable(Entity $merchant, Detail\Entity $merchantDetails)
     {
@@ -2185,7 +2273,7 @@ class Core extends Base\Core
      */
     protected function shouldActivateInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
-        $autoEnableInternational = $this->autoEnableInternational($merchant);
+        $autoEnableInternational = $this->autoEnableInternational($merchant, $merchantDetails);
 
         if ($autoEnableInternational === false)
         {
@@ -2206,10 +2294,13 @@ class Core extends Base\Core
             return false;
         }
 
-        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: (BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+        $internationalActivationFlowFromCategory = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
             BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
             $category,
-            $subcategory));
+            $subcategory,
+            ActivationFlow::BLACKLIST);
+
+        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: $internationalActivationFlowFromCategory;
 
         //
         // Conditions being checked:
@@ -2228,17 +2319,21 @@ class Core extends Base\Core
 
     /**
      * Auto Enable International for merchant if
-     *  1) Merchant belongs to Razorpay org
+     *  1) Merchant belongs to Razorpay org Or
+     *  2) Merchant is not in unregistered business onBoarding flow
      *
-     * @param Entity $merchant
+     * @param Entity        $merchant
+     *
+     * @param Detail\Entity $merchantDetails
      *
      * @return bool
      */
-    public function autoEnableInternational(Entity $merchant): bool
+    public function autoEnableInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
         $isRazorpayOrg = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
 
-        if ($isRazorpayOrg === false)
+        if (($isRazorpayOrg === false) or
+            ($this->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true))
         {
             return false;
         }
@@ -2489,7 +2584,7 @@ class Core extends Base\Core
             $merchantEmailList);
     }
 
-    public function removeMerchantEmailToMailingList($merchant)
+    public function removeMerchantEmailToMailingList($merchant, $i = 0)
     {
         $transactionReportEmails = $merchant->getTransactionReportEmail();
 
@@ -2500,9 +2595,10 @@ class Core extends Base\Core
         foreach ($transactionReportEmails as $transactionReportEmail)
         {
             MailingListUpdate::dispatch(
-                $this->mode,
-                [$transactionReportEmail],
-                true);
+                                    $this->mode,
+                                    [$transactionReportEmail],
+                                    true)
+                            ->delay($i % 901);
         }
     }
 
@@ -2516,5 +2612,46 @@ class Core extends Base\Core
             Entity::MERCHANT_ID => $merchant->getId(),
             Entity::RESTRICTED  => $merchant->getRestricted(),
         ];
+    }
+
+
+    /**
+     * Checks if UNREGISTERED_ON_BOARDING razorx experiment enabled for merchant id
+     *
+     * @param string $merchantId
+     * @param null   $mode
+     *
+     * @return bool
+     */
+    protected function isUnregisteredOnBoardingRazorxEnabled(string $merchantId, $mode = null): bool
+    {
+        $mode = $mode ?? $this->mode;
+
+        $status = $this->app['razorx']->getTreatment($merchantId, Merchant\RazorxTreatment::NON_REGISTERED_ONBOARDING, $mode);
+
+        return (strtolower($status) === 'on');
+    }
+
+    /**
+     * Enable unregistered on-Boarding only for
+     *
+     * 1. If merchant belongs to Razorpay org Id
+     * 2. if operation is being performed from banking dashboard
+     * 3. if UNREGISTERED_ON_BOARDING razorx experiment is enabled for mid
+     *
+     * @param Entity $merchant
+     * @param bool   $isUnregisteredBusiness
+     * @param null   $mode
+     *
+     * @return bool
+     */
+    public function isUnRegisteredOnBoardingEnabled(Entity $merchant, bool $isUnregisteredBusiness, $mode = null): bool
+    {
+        $isRazorpayOrgId = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
+
+        return (($isRazorpayOrgId === true) and
+                ($this->app['basicauth']->getRequestOriginProduct() === Product::PRIMARY) and
+                ($isUnregisteredBusiness === true) and
+                ($this->isUnregisteredOnBoardingRazorxEnabled($merchant->getId(), $mode)));
     }
 }

@@ -42,10 +42,12 @@ use RZP\Models\VirtualAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Partner\Commission;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
+use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
@@ -544,6 +546,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // line items
             'invoice'                   => Invoice\Entity::class,
             'addon'                     => Addon\Entity::class,
+            'payment_page_item'         => PaymentPageItem\Entity::class,
 
             // transfers
             'transfer'                  => Transfer\Entity::class,
@@ -590,6 +593,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'entity_origin'             => EntityOrigin\Entity::class,
 
             'application'               => Application\Entity::class,
+
+            'commission'                => Commission\Entity::class,
         ]);
     }
 

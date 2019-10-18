@@ -946,7 +946,6 @@ trait Refund
         //
         // To ensure that refund forward transaction has this amount / fees debited, if debit is 0, it
         // could be a Direct Settlement just an authorized transaction refund - for which we have handled before this,
-        // Todo: the third case is Refund Credits - which needs to be handled soon
         //
         if (($refund->payment->hasBeenCaptured() === false) or
             (($refund->transaction->getDebit() === 0) and
@@ -1567,11 +1566,17 @@ trait Refund
     {
         $refunded = $this->callRefundFunction($refund, $payment, $data);
 
-        $this->refund->setGatewayRefunded($refunded[Payment\Gateway::SUCCESS]);
+        // In some cases we get gateway response in a file the next day
+        if (Payment\Gateway::isSequenceNoBasedRefund($payment->getGateway()) === false)
+        {
+            $this->refund->setGatewayRefunded($refunded[Payment\Gateway::SUCCESS]);
+        }
 
         $this->refund->incrementAttempts();
 
         $this->setRefundReference1($refunded);
+
+        $this->setRefundReference3IfApplicable($payment);
 
         // We don't want the transaction to fail if this
         // save fails that's why keeping it outside.
@@ -1920,6 +1925,11 @@ trait Refund
             $data['refund']['reverse'] = true;
         }
 
+        if (Payment\Gateway::isSequenceNoBasedRefund($payment->getGateway()) === true)
+        {
+            $data['refund']['reference3'] = payment\Refund\Core::getNewRefundSequenceNumberForPayment($payment);
+        }
+
         return $data;
     }
 
@@ -2245,7 +2255,9 @@ trait Refund
             {
                 $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
-            else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]))
+            // If bank account details are given - we need to refund to bank account instead of card transfer
+            else if ((isset($data['bank_account']) === false) and
+                     ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA])))
             {
                 $fta = $this->refundViaFundTransferToCard($payment, $data, $fundTransferAttemptInput);
             }
@@ -2677,6 +2689,25 @@ trait Refund
             (empty($this->refund->getReference1()) === true))
         {
             $this->refund->setReference1($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]);
+        }
+    }
+
+    /**
+     *
+     * Store sequence count of refund for a particular payment. This would be the order in which the refunds were
+     * created for a particular payment. Only applicable to sbi netbanking gateway as of now.
+     * @param $payment
+     *
+     */
+    protected function setRefundReference3IfApplicable($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if (Payment\Gateway::isSequenceNoBasedRefund($gateway) === true)
+        {
+            $seqNo = Payment\Refund\Core::getNewRefundSequenceNumberForPayment($payment);
+
+            $this->refund->setReference3($seqNo);
         }
     }
 

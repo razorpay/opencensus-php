@@ -3,11 +3,13 @@
 namespace RZP\Models\Settlement\Bucket;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Balance;
 
 class Entity extends Base\PublicEntity
 {
     const ID                 = 'id';
     const MERCHANT_ID        = 'merchant_id';
+    const BALANCE_TYPE       = 'balance_type';
     const BUCKET_TIMESTAMP   = 'bucket_timestamp';
     const COMPLETED          = 'completed';
 
@@ -15,6 +17,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::MERCHANT_ID,
+        self::BALANCE_TYPE,
         self::BUCKET_TIMESTAMP,
         self::COMPLETED,
     ];
@@ -22,6 +25,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
+        self::BALANCE_TYPE,
         self::BUCKET_TIMESTAMP,
         self::COMPLETED,
     ];
@@ -29,11 +33,13 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::MERCHANT_ID,
+        self::BALANCE_TYPE,
         self::BUCKET_TIMESTAMP,
         self::COMPLETED,
     ];
 
     protected $defaults = [
-        self::COMPLETED => 0,
+        self::COMPLETED    => 0,
+        self::BALANCE_TYPE => Balance\Type::PRIMARY,
     ];
 }

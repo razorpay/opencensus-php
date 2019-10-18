@@ -15,7 +15,6 @@ use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
-use RZP\Models\Base\Traits\HasBalance;
 
 /**
  * Class Entity

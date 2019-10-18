@@ -1033,9 +1033,11 @@ trait PaymentTrait
             $response = $this->makeRequestAndGetContent($request);
         }
 
+        $rrn = $response['gateway_keys']['rrn'] ?? null;
+
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeUpdateRefundStatus($refund, 'processed_event');
+            $this->scroogeUpdateRefundStatus($refund, 'processed_event', null, $rrn);
         }
         // Adding specific amount check - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
@@ -1096,7 +1098,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null)
+    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null, $rrn = null)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1110,6 +1112,11 @@ trait PaymentTrait
         if (empty($refund[RefundEntity::SPEED_PROCESSED]) === false)
         {
             $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
+        }
+
+        if ($rrn !== null)
+        {
+            $input['reference_no'] = $rrn;
         }
 
         $input['event'] = $event;
@@ -2234,4 +2241,19 @@ trait PaymentTrait
 
         $this->app->instance('fts_create_account', $fts);
     }
+
+    protected function getDefaultBillingAddressArray()
+    {
+        $address = [
+            'line1'         => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
+            'line2'         => 'Hosur Main Road, Adugodi',
+            'city'          => 'Bengaluru',
+            'state'         => 'Karnataka',
+            'country'       => 'in',
+            'postal_code'   => '560030',
+        ];
+
+        return $address;
+    }
+
 }

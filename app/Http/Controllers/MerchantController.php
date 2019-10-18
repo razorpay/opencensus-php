@@ -700,6 +700,22 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkSubmerchantAssign()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkSubmerchantAssign($input);
+
+        return ApiResponse::json($response);
+    }
+  
+    public function getScheduledEarlySettlementPricingForMerchant()
+    {
+        $data = $this->service()->getScheduledEarlySettlementPricingForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
     // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
@@ -1197,6 +1213,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->listSubmerchants($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePartnerType()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePartnerType($input);
 
         return ApiResponse::json($response);
     }

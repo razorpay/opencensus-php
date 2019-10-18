@@ -16,6 +16,7 @@ class Channel
     const RBL       = 'rbl';
     const AXIS2     = 'axis2';
     const ICICI2    = 'icici2';
+    const CITI      = 'citi';
 
     public static $gateways = [
         self::KOTAK => [
@@ -62,6 +63,7 @@ class Channel
             self::RBL,
             self::AXIS2,
             self::ICICI2,
+            self::CITI,
         ];
     }
 
@@ -221,6 +223,8 @@ class Channel
     }
 
     /**
+     * TODO: To yesbank for QA testing. Will remove when ramping and use razorx
+     *
      * Supported FTS channels for payouts
      * @return array
      */
@@ -228,6 +232,8 @@ class Channel
     {
         return [
             self::RBL,
+            self::CITI,
+            self::ICICI,
         ];
     }
 
@@ -254,14 +260,21 @@ class Channel
         return [
             self::RBL,
             self::YESBANK,
+            self::ICICI,
+            self::CITI,
         ];
     }
 
+    /**
+     * Used for retrying the stuck transfers on FTS supported channels
+     * @return array
+     */
     public static function getFtsSupportedChannels()
     {
         return [
             self::RBL,
             self::ICICI,
+            self::CITI,
         ];
     }
 }

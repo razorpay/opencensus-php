@@ -161,6 +161,7 @@ class Repository extends Base\Repository
             TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
             [
                 'time_taken' => $txnFetchTimeTaken,
+                'txn_count'  => $results->count(),
                 'params'     => $params,
             ]);
 
@@ -184,19 +185,15 @@ class Repository extends Base\Repository
     public function fetchFeesAndTaxForRefundByType(
         string $merchantId,
         int $start,
-        int $end,
-        string $filterType)
+        int $end)
     {
         /*
             SELECT Sum(transactions.tax) AS tax,
                    Sum(transactions.fee) AS fee
             FROM   `transactions`
-                   INNER JOIN `refunds`
-                           ON `transactions`.`entity_id` = `refunds`.`id`
             WHERE  `transactions`.`type` = ?
                    AND `transactions`.`created_at` BETWEEN ? AND ?
                    AND `transactions`.`merchant_id` = ?
-                   AND `refunds`.`base_amount` <= ?
             LIMIT  1
          */
         $query = $this->newQuery()
@@ -204,41 +201,7 @@ class Repository extends Base\Repository
             ->where($this->dbColumn(Entity::TYPE), '=', 'refund')
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
 
-        $query->join(
-            $this->repo->refund->getTableName(),
-            function(JoinClause $join)
-            {
-                $refundIdAttr = $this->repo->refund->dbColumn(Entity::ID);
-                $entityIdAttr = $this->dbColumn(Entity::ENTITY_ID);
-
-                $join->on($entityIdAttr, $refundIdAttr);
-            });
-
         $query->merchantId($merchantId);
-
-        $refundBaseAmountColumn = $this->repo->refund->dbColumn(Refund\Entity::BASE_AMOUNT);
-
-        switch ($filterType)
-        {
-            case InvoiceType::REFUND_LTE_1K:
-                $query = $query->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF);
-
-                break;
-
-            case InvoiceType::REFUND_GT_1K_LTE_10K:
-                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF)
-                    ->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
-
-                break;
-
-            case InvoiceType::REFUND_GT_10K:
-                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
-
-                break;
-
-            default:
-                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
-        }
 
         return $query->first();
     }
@@ -653,11 +616,16 @@ class Repository extends Base\Repository
         return $txn;
     }
 
-    public function fetchBySettlement($setl)
+    public function fetchBySettlement($setl, $txnToRelationFetchMap)
     {
-        return $this->newQuery()
+        $txns = $this->newQuery()
                     ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
+                    ->with('merchant', 'settlement')
                     ->get();
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $txnToRelationFetchMap);
+
+        return $txns;
     }
 
     /**
@@ -1562,11 +1530,13 @@ class Repository extends Base\Repository
     /**
      * @param string $mid
      * @param string $channel
+     * @param string $balanceType
      * @param array $params
+     *
      * @return Base\PublicCollection
      */
     public function fetchUnsettledTransactionsForProcessing(
-        string $mid, string $channel, array $params = []): Base\PublicCollection
+        string $mid, string $channel,string $balanceType, array $params = []): Base\PublicCollection
     {
         $txnFetchStartTime = microtime(true);
 
@@ -1579,24 +1549,31 @@ class Repository extends Base\Repository
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
 
-        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceIdColumn        = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
 
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
-                      ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
-                      ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
-                              {
-                                  $query->whereNull($transactionBalanceId)
-                                        ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
-                              })
+                      ->leftJoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceId)
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
                       ->where($transactionType, '!=', Type::SETTLEMENT);
+
+        if ($balanceType === Balance\Type::PRIMARY)
+        {
+            $query->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn) {
+                $query->whereNull($transactionBalanceId)
+                      ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+            });
+        }
+        else
+        {
+            $query->where($balanceTypeColumn, $balanceType);
+        }
 
         $query = $this->addSettlementFilters($query, $timestamp, $params);
 
@@ -1605,13 +1582,38 @@ class Repository extends Base\Repository
         $this->trace->info(
             TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
             [
-                'merchant_id' => $mid,
-                'settled_at'  => $timestamp,
-                'time_taken'  => get_diff_in_millisecond($txnFetchStartTime),
-                'params'      => $params,
+                'time_taken'   => get_diff_in_millisecond($txnFetchStartTime),
+                'txn_count'    => $results->count(),
+                'merchant_id'  => $mid,
+                'settled_at'   => $timestamp,
+                'params'       => $params,
+                'balance_type' => $balanceType,
             ]);
 
         return $results;
+    }
+
+    public function fetchPartnerCommissionTransactionsOnHold(
+        string $partnerId,
+        int $timestamp,
+        int $limit,
+        $afterId = null): Base\PublicCollection
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::TYPE, ConstantEntity::COMMISSION)
+                      ->where(Entity::MERCHANT_ID, $partnerId)
+                      ->where(Entity::SETTLED_AT, '<=', $timestamp)
+                      ->where(Entity::ON_HOLD, true)
+                      ->with('source')
+                      ->orderBy(Entity::ID)
+                      ->take($limit);
+
+        if ($afterId !== null)
+        {
+            $query->where(Entity::ID, '>', $afterId);
+        }
+
+        return $query->get();
     }
 
     public function fetchRequiredColumnsForSettlement(bool $fetchAll = true): array
@@ -1662,10 +1664,8 @@ class Repository extends Base\Repository
     {
         $id                     = $this->dbColumn(Entity::ID);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
-
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
-
         return $this->newQuery()
                     ->select($balanceTypeColumn)
                     ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)

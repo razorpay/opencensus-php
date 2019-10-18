@@ -344,10 +344,19 @@ class Entity extends Base\PublicEntity
 
     /**
      * Returns base amount + applicable fee
+     * In case of a merchant with fee model as postpaid
+     * we do not add the fee since it will be collected at the end of the month
      */
     public function getNetAmount()
     {
-        return $this->getBaseAmount() + $this->getFee();
+        $netAmount = $this->getBaseAmount();
+
+        if ($this->merchant->isPostpaid() === false)
+        {
+            $netAmount += $this->getFee();
+        }
+
+        return $netAmount;
     }
 
     public function getCurrency()
@@ -453,6 +462,11 @@ class Entity extends Base\PublicEntity
     public function getReference2()
     {
         return $this->getAttribute(self::REFERENCE2);
+    }
+
+    public function getReference3()
+    {
+        return $this->getAttribute(self::REFERENCE3);
     }
 
     public function getSettledBy()
@@ -772,6 +786,11 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setReference3(string $value)
+    {
+        $this->setAttribute(self::REFERENCE3, $value);
     }
 
     public function setReceipt(string $value)

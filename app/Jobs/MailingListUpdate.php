@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Mailgun;
+use Razorpay\Trace\Logger as Trace;
 
 class MailingListUpdate extends Job
 {
@@ -67,7 +68,9 @@ class MailingListUpdate extends Job
                 $this->release(self::RELEASE_WAIT_SECS);
             }
 
-            $this->trace->error(
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
                 TraceCode::MERCHANT_MAIL_UPDATE_FAIL,
                 [
                     'merchant'      => $this->chunks,

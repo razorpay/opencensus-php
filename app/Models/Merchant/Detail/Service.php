@@ -60,7 +60,7 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null);
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
 
         return $response;
     }
@@ -289,12 +289,12 @@ class Service extends Base\Service
     }
 
     public function storeActivationFile(
-        Base\PublicEntity $merchantDetails,
+        Base\PublicEntity $publicEntity,
         array $input)
     {
         $params = [];
 
-        $merchant = $merchantDetails->merchant;
+        $merchant = $publicEntity->merchant;
 
         foreach ($input as $key => $value)
         {
@@ -306,7 +306,7 @@ class Service extends Base\Service
             $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
 
             $file = $this->createFile(
-                $merchantDetails,
+                $publicEntity,
                 $value->extension(),
                 $value,
                 $fileName,
@@ -384,7 +384,7 @@ class Service extends Base\Service
         return ($merchant->isLinkedAccount() === true) ? Constants::UPLOAD_KEYS_ACCOUNT : Constants::UPLOAD_KEYS;
     }
 
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    public function getSignedUrl(string $fileStoreId, string $merchantId)
     {
         $core = new FileStore\Core;
 
@@ -539,7 +539,7 @@ class Service extends Base\Service
      */
     public function getNeedsClarificationReasons()
     {
-        $needsClarificationReasonsMap = NeedsClarificationReasons::REASON_MAPPING;
+        $needsClarificationReasonsMap = NeedsClarificationMetaData::REASON_MAPPING;
         $reasonDetails                = NeedsClarificationReasonsList::REASON_DETAILS;
         $response                     = [];
 
@@ -552,7 +552,7 @@ class Service extends Base\Service
                 $reasonList[$reason] = $reasonDetails[$reason];
             }
 
-            $response[$field] = [NeedsClarificationReasons::REASONS => $reasonList];
+            $response[$field] = [NeedsClarificationMetaData::REASONS => $reasonList];
         }
 
         return $response;

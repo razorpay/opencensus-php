@@ -12,6 +12,7 @@ use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
+use RZP\Models\Merchant\Email as MerchantEmail;
 use RZP\Constants\{Entity as E, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
@@ -101,7 +102,6 @@ class Core extends Base\Core
                 $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
                 return $dispute;
-
             });
     }
 
@@ -506,6 +506,56 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     *  Get all the default mails for disputes. Dispute PoCs and merchant email
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+
+    public function getDefaultEmailsForDispute(Merchant\Entity $merchant) : array
+    {
+        $emails = [];
+
+        $disputeEmails = (new MerchantEmail\Service)
+                            ->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::DISPUTE);
+
+        $emails = array_merge($emails, $disputeEmails);
+
+        $chargebackEmails = (new MerchantEmail\Service)
+                            ->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::CHARGEBACK);
+
+        $emails = array_merge($emails, $chargebackEmails);
+
+        if (empty($emails) === true)
+        {
+            $emails[] = $merchant->getEmail();
+        }
+
+        $emails = array_unique($emails);
+
+        return $emails;
+    }
+
+    public function getEmailsForCreationMail(Merchant\Entity $merchant, array $input) : array
+    {
+        if (empty($input[Entity::MERCHANT_EMAILS]) === false)
+        {
+            $emails = $input[Entity::MERCHANT_EMAILS];
+
+            $emails = array_unique($emails);
+        }
+        else
+        {
+            // ToDo : Phase 2 : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
+            // Adding merchant Email, merchant dispute PoC in to field
+            $emails = $this->getDefaultEmailsForDispute($merchant);
+        }
+
+        return $emails;
+    }
+
     protected function sendDisputeMailToMerchant(
         Entity $dispute,
         Merchant\Entity $merchant,
@@ -523,17 +573,12 @@ class Core extends Base\Core
             return;
         }
 
-        $email = $merchant->getEmail();
-
-        if (empty($input[Entity::MERCHANT_EMAILS]) === false)
-        {
-            $email = $input[Entity::MERCHANT_EMAILS];
-        }
+        $emails = $this->getEmailsForCreationMail($merchant, $input);
 
         $data = [
             'merchant'      => [
                 'name'          => $merchant->getName(),
-                'email'         => $email,
+                'email'         => $emails,
             ],
             'dispute'       => $dispute->toArrayPublic(),
             'remainingDays' => $this->getRemainingDays($dispute),

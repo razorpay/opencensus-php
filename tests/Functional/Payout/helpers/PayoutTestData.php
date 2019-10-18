@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -842,26 +843,6 @@ return [
             ],
         ],
     ],
-    'testCreateMerchantPayoutOnDemandWithAmountLessThan2L' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/merchant/payout/demand',
-            'content' => [
-                'amount'   => 10000,
-                'currency' => 'INR'
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'      => 'payout',
-                'amount'      => 9292,
-                'currency'    => 'INR',
-                'tax'         => 108,
-                'fees'        => 708,
-                'notes'       => []
-            ],
-        ],
-    ],
     'testCreateMerchantPayoutOnDemandOnLowBalance' => [
         'request' => [
             'method'  => 'POST',
@@ -1333,6 +1314,61 @@ return [
         ],
     ],
 
+    'testFetchMultiplePayoutsWithBankingProductParameter' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processed',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultiplePayoutsWithPrimaryProductParameter' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'primary',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The selected product is invalid.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'                 => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
     'testBulkPayoutWithSameIdempotencyandBatchId' => [
         'request'   => [
             'url'     => '/payouts/bulk',
@@ -1480,6 +1516,41 @@ return [
                 'fund_account_id' => 'fa_100000000000fa',
                 'narration'       => 'King',
                 'purpose'         => 'payout',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutForVpaFundAccountId' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000003fa',
+                'mode'            => 'vpa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000003fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
                 'status'          => 'processing',
                 'tax'             => 162,
                 'fees'            => 1062,

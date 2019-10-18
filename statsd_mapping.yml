@@ -110,3 +110,69 @@ mappings:
   timer_type: histogram
   buckets: [100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000, 20000, 50000]
   name: "api_payment_create_request_time"
+
+- match: api_payout_queued_to_created_duration_seconds.*
+  timer_type: histogram
+  buckets: [120, 300, 600, 1800, 3600, 10800, 21600, 32400, 43200, 64800, 86400, 172800, 259200, 345600, 432000, 864000, 1296000]
+  # [2m, 5m, 10m, 30m, 1h, 3h, 6h, 9h, 12h, 18h, 1d, 2d, 3d, 4d, 5d, 10d, 15d]
+  name: "api_payout_queued_to_created_duration_seconds"
+
+- match: api_payout_queued_to_cancelled_duration_seconds.*
+  timer_type: histogram
+  buckets: [120, 300, 600, 1800, 3600, 10800, 21600, 32400, 43200, 64800, 86400, 172800, 259200, 345600, 432000, 864000, 1296000]
+  # [2m, 5m, 10m, 30m, 1h, 3h, 6h, 9h, 12h, 18h, 1d, 2d, 3d, 4d, 5d, 10d, 15d]
+  name: "api_payout_queued_to_cancelled_duration_seconds"
+
+- match: api_payout_pending_to_rejected_duration_seconds.*
+  timer_type: histogram
+  buckets: [120, 300, 600, 1800, 3600, 10800, 21600, 32400, 43200, 64800, 86400, 172800, 259200, 345600, 432000, 604800, 864000, 1296000]
+  # [2m, 5m, 10m, 30m, 1h, 3h, 6h, 9h, 12h, 18h, 1d, 2d, 3d, 4d, 5d, 7d, 10d, 15d]
+  name: "api_payout_pending_to_rejected_duration_seconds"
+
+- match: api_payout_pending_to_queued_duration_seconds.*
+  timer_type: histogram
+  buckets: [120, 300, 600, 1800, 3600, 10800, 21600, 32400, 43200, 64800, 86400, 172800, 259200, 345600, 432000, 604800, 864000, 1296000]
+  # [2m, 5m, 10m, 30m, 1h, 3h, 6h, 9h, 12h, 18h, 1d, 2d, 3d, 4d, 5d, 7d, 10d, 15d]
+  name: "api_payout_pending_to_queued_duration_seconds"
+
+- match: api_payout_pending_to_created_duration_seconds.*
+  timer_type: histogram
+  buckets: [120, 300, 600, 1800, 3600, 10800, 21600, 32400, 43200, 64800, 86400, 172800, 259200, 345600, 432000, 604800, 864000, 1296000]
+  # [2m, 5m, 10m, 30m, 1h, 3h, 6h, 9h, 12h, 18h, 1d, 2d, 3d, 4d, 5d, 7d, 10d, 15d]
+  name: "api_payout_pending_to_created_duration_seconds"
+
+- match: api_payout_created_to_initiated_duration_seconds.*
+  timer_type: histogram
+  buckets: [5, 10, 20, 30, 45, 60, 120, 180, 300, 600, 1200, 1800, 2700, 3600, 5400, 7200, 10800, 21600, 32400, 43200, 54000, 64800, 86400, 129600, 172800, 259200, 345600, 432000]
+  # [5s, 10s, 20s, 30s, 45s, 1m, 2m, 3m, 5m, 10m, 20m, 30m, 45m, 1h, 1.5h, 2h, 3h, 6h, 9h, 12h, 15h, 18h, 1d, 1.5d, 2d, 3d, 4d, 5d]
+  name: "api_payout_created_to_initiated_duration_seconds"
+
+- match: api_payout_created_to_failed_duration_seconds.*
+  timer_type: histogram
+  buckets: [10, 30, 45, 60, 120, 180, 300, 600, 1200, 1800, 2700, 3600, 5400, 7200, 10800, 21600, 32400, 43200, 54000, 64800, 86400, 129600, 172800]
+  # [10s, 30s, 45s, 1m, 2m, 3m, 5m, 10m, 20m, 30m, 45m, 1h, 1.5h, 2h, 3h, 6h, 9h, 12h, 15h, 18h, 1d, 1.5d, 2d]
+  name: "api_payout_created_to_failed_duration_seconds"
+
+- match: api_payout_initiated_to_processed_duration_seconds.*
+  timer_type: histogram
+  buckets: [10, 20, 30, 45, 60, 120, 180, 300, 600, 1200, 1800, 2700, 3600, 5400, 7200, 10800, 14400, 18000, 21600, 32400, 43200, 54000, 64800, 86400, 129600, 172800, 259200, 345600, 432000, 604800, 864000, 1036800]
+  # [10s, 20s, 30s, 45s, 1m, 2m, 3m, 5m, 10m, 20m, 30m, 45m, 1h, 1.5h, 2h, 3h, 4h, 5h, 6h, 9h, 12h, 15h, 18h, 1d, 1.5d, 2d, 3d, 4d, 5d, 7d, 10d, 12d]
+  name: "api_payout_initiated_to_processed_duration_seconds"
+
+- match: api_payout_initiated_to_reversed_duration_seconds.*
+  timer_type: histogram
+  buckets: [10, 30, 45, 60, 120, 180, 300, 600, 1200, 1800, 2700, 3600, 5400, 7200, 10800, 21600, 32400, 43200, 54000, 64800, 86400, 129600, 172800, 259200, 345600, 432000, 604800, 864000]
+  # [10s, 30s, 45s, 1m, 2m, 3m, 5m, 10m, 20m, 30m, 45m, 1h, 1.5h, 2h, 3h, 6h, 9h, 12h, 15h, 18h, 1d, 1.5d, 2d, 3d, 4d, 5d, 7d, 10d]
+  name: "api_payout_initiated_to_reversed_duration_seconds"
+
+- match: api_payout_initiated_to_failed_duration_seconds.*
+  timer_type: histogram
+  buckets: [10, 30, 45, 60, 120, 180, 300, 600, 1200, 1800, 2700, 3600, 5400, 7200, 10800, 21600, 32400, 43200, 54000, 64800, 86400, 129600, 172800]
+  # [10s, 30s, 45s, 1m, 2m, 3m, 5m, 10m, 20m, 30m, 45m, 1h, 1.5h, 2h, 3h, 6h, 9h, 12h, 15h, 18h, 1d, 1.5d, 2d]
+  name: "api_payout_initiated_to_failed_duration_seconds"
+
+- match: api_payout_processed_to_reversed_duration_seconds.*
+  timer_type: histogram
+  buckets: [10, 30, 60, 120, 300, 600, 1800, 2700, 3600, 7200, 10800, 21600, 43200, 64800, 86400, 129600, 172800, 259200, 345600, 432000, 604800, 864000]
+  # [10s, 30s, 1m, 2m, 5m, 10m, 30m, 45m, 1h, 2h, 3h, 6h, 12h, 18h, 1d, 1.5d, 2d, 3d, 4d, 5d, 7d, 10d]
+  name: "api_payout_processed_to_reversed_duration_seconds"

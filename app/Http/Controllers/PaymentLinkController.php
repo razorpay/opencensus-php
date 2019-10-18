@@ -140,4 +140,25 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function migratePaymentPageItemForMinPurchase()
+    {
+        $data = $this->service()->migratePaymentPageItemForMinPurchase($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createOrder(string $id)
+    {
+        $response = $this->service()->createOrder($id, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePaymentPageItem(string $paymentPageItemId)
+    {
+        $response = $this->service()->updatePaymentPageItem($paymentPageItemId, $this->input);
+
+        return ApiResponse::json($response);
+    }
 }
