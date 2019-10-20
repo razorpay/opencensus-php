@@ -35,7 +35,12 @@ import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
 
-import FormFields from 'merchant/containers/activation/L1FormMap';
+import FormFields from 'merchant/containers/Activation/L1FormMap';
+import {
+  trackL1FormSuccess,
+  trackL1FormError,
+  trackTnCClick,
+} from 'merchant/containers/Activation/ga_new';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import {
@@ -751,7 +756,7 @@ export default class ActivationWizard extends React.Component {
 
   submitL1 = currenActiveTab => {
     const data = this.formData;
-    // const { tracking } = this.props;
+    const { tracking } = this.props;
     this.setState({ callingL1Api: true });
     return merchantFetch({
       url: 'merchant/instant_activation',
@@ -769,46 +774,62 @@ export default class ActivationWizard extends React.Component {
 
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
-        // trackL1FormSuccess(this.user.activation_flow);
-        // tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
+        trackL1FormSuccess(this.user.activation_flow);
+        tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
 
-        // // updating contact propteries of hubspot contact
-        // updateHubSpotContactsProperties({
-        //   ...data,
-        //   activation_flow: this.user.activation_flow,
-        //   completed: true,
-        // });
+        // updating contact propteries of hubspot contact
+        updateHubSpotContactsProperties(
+          {
+            ...data,
+            activation_flow: this.user.activation_flow,
+            completed: true,
+          },
+          {},
+          'l1_'
+        );
 
-        // trackTaboola('l1_activation');
+        trackTaboola('l1_activation');
 
-        const {
-          isWhitelistFlow,
-          isBlacklistFlow,
-          isGraylistFlow,
-        } = this.user.instantActivation;
-
-        console.log('I am at flow check');
-        if (isWhitelistFlow) {
-          console.log('entered white list flow');
-          this.props.showInstantActivationSuccessModal();
-          // fireAnalyticsEvents({ fbData: 'activation_complete_success' });
-        } else if (isGraylistFlow) {
-          console.log('entered gray list flow');
-          this.props.showKYCDetailsModal();
+        if (this.user.business_type == 11) {
+          const poi_verification_status = this.user.poi_verification_status;
+          if (poi_verification_status == 'verified') {
+            this.props.showPANStatusModal();
+          } else if (poi_verification_status == 'incorrect_details') {
+            const error = {
+              errors: ['Incorrect PAN Details Provided'],
+            };
+            throw error;
+          } else if (poi_verification_status == 'not_matched') {
+            const error = {
+              errors: ['Provided details does not match any records.'],
+            };
+            throw error;
+          }
+        } else {
+          const {
+            isWhitelistFlow,
+            isBlacklistFlow,
+            isGraylistFlow,
+          } = this.user.instantActivation;
+          if (isWhitelistFlow) {
+            this.props.showInstantActivationSuccessModal();
+            fireAnalyticsEvents({ fbData: 'activation_complete_success' });
+          } else if (isGraylistFlow) {
+            this.props.showKYCDetailsModal();
+          }
         }
 
-        // let data = new BingDataObj('activationform', 'complete', 'success', 1);
-        // fireAnalyticsEvents({
-        //   bingData: data,
-        //   liData: 987404,
-        //   twiData: 'o1ua0',
-        // }); //fb = false, bing, linkedin, twitter
+        let data = new BingDataObj('activationform', 'complete', 'success', 1);
+        fireAnalyticsEvents({
+          bingData: data,
+          liData: 987404,
+          twiData: 'o1ua0',
+        }); //fb = false, bing, linkedin, twitter
 
         return this.props.history.replace(`/`);
       })
       .catch(err => {
         this.setState({ callingL1Api: false });
-        console.log('catched err', err);
         this.markTabIfActive(currenActiveTab);
         if (err.errors.length && err.errors[0]) {
           this.props.showNotification({
@@ -817,20 +838,20 @@ export default class ActivationWizard extends React.Component {
           });
         }
 
-        // trackL1FormError();
+        trackL1FormError();
 
-        // let dataError = new BingDataObj(
-        //   'activationform',
-        //   'complete',
-        //   'error',
-        //   1
-        // );
-        // fireAnalyticsEvents({
-        //   fbData: 'activation_complete_error',
-        //   bingData: dataError,
-        //   liData: 987412,
-        //   twiData: 'o1ua2',
-        // });
+        let dataError = new BingDataObj(
+          'activationform',
+          'complete',
+          'error',
+          1
+        );
+        fireAnalyticsEvents({
+          fbData: 'activation_complete_error',
+          bingData: dataError,
+          liData: 987412,
+          twiData: 'o1ua2',
+        });
 
         // if (this.onActivationSuccess) {
         //   this.onActivationSuccess({ success: false });
@@ -853,8 +874,6 @@ export default class ActivationWizard extends React.Component {
 
       return this.populateReqData(field, reqData, currentDirty);
     });
-
-    console.log('reqData', reqData);
 
     if (!Object.keys(reqData).length) {
       return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
@@ -1818,8 +1837,9 @@ class SubmitForm extends React.Component {
   }
 }
 
-function updateHubSpotContactsProperties(data, extra) {
-  const hbsData = addPrefixToObjectKeys('l2_', data);
+function updateHubSpotContactsProperties(data, extra, prefix) {
+  const keyPrefix = !!prefix ? 'l2_' : prefix;
+  const hbsData = addPrefixToObjectKeys(keyPrefix, data);
 
   const trackData = {
     ...hbsData,
