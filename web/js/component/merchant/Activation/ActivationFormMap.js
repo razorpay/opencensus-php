@@ -103,7 +103,7 @@ const businessModel = [
       { label: 'Private Limited', name: PRIVATE },
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Partnership', name: PARTNERSHIP },
-      { label: 'Individual', name: INDIVIDUAL },
+      // { label: 'Individual', name: INDIVIDUAL },
       { label: 'Public Limited', name: PUBLIC },
       { label: 'LLP', name: LLP },
       { label: 'Trust', name: TRUST },
