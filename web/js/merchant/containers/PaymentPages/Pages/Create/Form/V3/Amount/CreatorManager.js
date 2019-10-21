@@ -306,7 +306,7 @@ class BaseFormModal extends React.PureComponent {
           onUpdateImage={onUpdateImage}
           onUpdateCurrency={onUpdateCurrency}
           currency={currency}
-          isPaymentPageEditMod={isPaymentPageEditMode}
+          isPaymentPageEditMode={isPaymentPageEditMode}
           onChangeIsMandatory={onChangeIsMandatory}
         />
       </CreatorModal>

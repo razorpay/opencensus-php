@@ -252,9 +252,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   handleSaveSettings = formData => {
     const data = {};
 
-    if (formData.expire_by) {
-      data.expire_by = formData.expire_by;
-    }
+    data.expire_by = formData.expire_by;
 
     if (formData.slug) {
       data.slug = formData.slug.trim();
