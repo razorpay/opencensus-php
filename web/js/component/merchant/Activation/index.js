@@ -726,7 +726,7 @@ export default class ActivationWizard extends React.Component {
     const { session, accountId } = this.props;
 
     // Update data
-    // this.setState({ data });
+    this.setState({ data });
 
     // Session need not be updated if it's linked account form
     if (accountId) {
@@ -1680,7 +1680,8 @@ function ActivationField(field) {
 }
 
 function isFieldValid(field, activation) {
-  let data = activation.props.data;
+  const { props } = activation;
+  let data = props.data;
   if (!field.name) {
     // what isn't submissible is valid
     return true;
@@ -1692,7 +1693,10 @@ function isFieldValid(field, activation) {
     }
   }
 
-  let value = data[field.name];
+  const name = field.dynamicName ? field.getName(activation) : field.name;
+  let value =
+    data[name] || (data.documents[name] && data.documents[name][0]['id']);
+
   let isFieldRequired = field.required;
 
   if (typeof isFieldRequired === 'function') {
@@ -1708,8 +1712,8 @@ function isFieldValid(field, activation) {
 
   if (
     field.name == 'promoter_pan' &&
-    activation.props.busines_type == 11 &&
-    !activation.props.user.instantActivation.isL1Submitted
+    props.business_type == 11 &&
+    !props.user.instantActivation.isL1Submitted
   ) {
     return false;
   }
