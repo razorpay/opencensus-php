@@ -255,7 +255,7 @@ class OffersPaymentTest extends TestCase
             $offer2
         ]);
 
-        $payment = $this->getOfferPaymentArray($order, $offer1);
+        $payment = $this->getOfferPaymentArray($order, $offer2);
 
         $this->makeRequestAndCatchException(
             function() use ($payment)
