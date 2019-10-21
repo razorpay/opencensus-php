@@ -21,6 +21,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
+use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
 use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationMail;
 
@@ -124,6 +125,8 @@ class Activate extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
 
         $this->sendMerchantActivatedEvents($merchant);
+
+        $this->sendMerchantActivationNotification($merchant);
 
         return $merchantDetail;
     }
@@ -243,6 +246,8 @@ class Activate extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED);
 
         $this->sendMerchantActivatedEvents($merchant);
+
+        $this->sendMerchantActivationNotification($merchant);
 
         return $merchantDetail;
     }
@@ -695,5 +700,12 @@ class Activate extends Base\Core
         }
 
         return $merchant;
+    }
+
+    protected function sendMerchantActivationNotification(Entity $merchant)
+    {
+        Mail::queue(
+            new AccountActivationConfirmation($merchant)
+        );
     }
 }

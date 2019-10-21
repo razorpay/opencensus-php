@@ -74,8 +74,6 @@ class InstantActivation extends Mailable
             $this->to($this->bankingAccount->getBeneficiaryEmail());
         }
 
-        $this->to('anubhav.shrivastava@razorpay.com');
-
         return $this;
     }
 
@@ -97,8 +95,16 @@ class InstantActivation extends Mailable
 
     protected function addSender()
     {
-        $this->from(Constants::MAIL_ADDRESSES[Constants::NOREPLY],
-                    Constants::HEADERS[Constants::SUPPORT]);
+        $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+                    Constants::HEADERS[Constants::X_SUPPORT]);
+
+        return $this;
+    }
+
+    protected function addReplyTo()
+    {
+        $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+                    Constants::HEADERS[Constants::X_SUPPORT]);
 
         return $this;
     }
