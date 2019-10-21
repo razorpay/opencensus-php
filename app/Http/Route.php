@@ -599,7 +599,9 @@ final class Route
         'payment_link_deactivate'                  => ['patch',    'payment_links/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
         'payment_link_activate'                    => ['patch',    'payment_links/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'payment_link_slug_exists'                 => ['get',      'payment_links/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
+        'payment_page_item_update'                 => ['patch',    'payment_links/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
         'payment_page_items_migrate'               => ['post',     'payment_pages/migrate_payment_page_items',       'PaymentLinkController@migratePaymentPageItems'                     ],
+        'payment_page_create_order'                => ['post',     'payment_pages/{id}/order',                       'PaymentLinkController@createOrder'                                 ],
         'payment_page_items_migrate_min_purchase'  => ['post',     'payment_pages/migrate_payment_page_purchase',    'PaymentLinkController@migratePaymentPageItemForMinPurchase'        ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -1088,6 +1090,7 @@ final class Route
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
+        'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
 
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
@@ -1098,6 +1101,7 @@ final class Route
         'commissions_capture'                      => ['post',     'commissions/{id}/capture',                       'CommissionController@capture'                                      ],
         'commissions_get_aggregates'               => ['get',      'commissions/partner/{id}/aggregate',             'CommissionController@fetchAggregateCommissionDetails'              ],
         'commissions_capture_by_partner'           => ['post',     'commissions/partner/{id}/capture',               'CommissionController@captureByPartner'                             ],
+        'commissions_bulk_capture_by_partner'      => ['post',     'commissions/partner/capture/bulk',               'CommissionController@bulkCaptureByPartner'                         ],
         'commissions_mark_for_settlement'          => ['post',     'commissions/partner/{id}/on_hold/clear',         'CommissionController@clearOnHoldForPartner'                        ],
         'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
 
@@ -1664,6 +1668,7 @@ final class Route
         'subscriptions_charge_invoices',
         'subscriptions_expire',
         'subscriptions_retry',
+        'payment_page_items_migrate',
         'user_change_password',
         'user_2fa_change_setting',
         'user_confirm_by_data',
@@ -1919,6 +1924,7 @@ final class Route
         'payment_link_deactivate',
         'payment_link_activate',
         'payment_link_slug_exists',
+        'payment_page_item_update',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
@@ -1972,6 +1978,7 @@ final class Route
         'user_update_contact',
         'user_update_contact_merchant',
         'user_account_unlock',
+        'update_partner_type',
     ];
 
     //
@@ -2419,6 +2426,7 @@ final class Route
 
         'commissions_capture',
         'commissions_capture_by_partner',
+        'commissions_bulk_capture_by_partner',
         'commissions_get_aggregates',
         'commissions_mark_for_settlement',
 
@@ -2928,6 +2936,7 @@ final class Route
 
         'commissions_capture'                      => Permission::COMMISSION_CAPTURE,
         'commissions_capture_by_partner'           => Permission::COMMISSION_CAPTURE,
+        'commissions_bulk_capture_by_partner'      => Permission::COMMISSION_CAPTURE,
         'commissions_get_aggregates'               => '*',
         'commissions_mark_for_settlement'          => Permission::COMMISSION_PAYOUT,
 
@@ -3007,6 +3016,7 @@ final class Route
         'payment_redirect_to_authorize_get',
         'payment_redirect_to_authorize_post',
         'gateway_payment_callback_upi_airtel',
+        'payment_page_create_order',
     ];
 
     /**
@@ -3136,6 +3146,7 @@ final class Route
             'subscriptions_retry',
             'subscriptions_expire',
             'subscription_cancel_due',
+            'payment_page_items_migrate',
             'refund_create_gateway_record',
             'gateway_validate_unknown_refund',
             'currency_update_rates',

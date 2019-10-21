@@ -46,8 +46,15 @@ class IrctcDeltaRefund extends IrctcRefund
                 Batch\Header::REFUND_AMOUNT           => $entry[Batch\Header::REFUND_AMOUNT],
                 Batch\Header::REFUND_STATUS           => $status,
                 Batch\Header::BANK_REMARKS            => $remarks,
-                Batch\Header::BANK_ACTUAL_REFUND_DATE => $entry[Batch\Header::REFUND_DATE],
-                Batch\Header::BANK_REFUND_TXN_ID      => $entry[Batch\Header::REFUND_ID],
+
+                //
+                // Refund ID and refund date will not be set In following case.
+                // When the refund is created via payment auto refund cron, then receipt is null
+                // and thus we could not find the refund entity corresponding to this entry, as
+                // query to fetch refund uses receipt number.
+                //
+                Batch\Header::BANK_ACTUAL_REFUND_DATE => $entry[Batch\Header::REFUND_DATE] ?? null,
+                Batch\Header::BANK_REFUND_TXN_ID      => $entry[Batch\Header::REFUND_ID] ?? null,
             ];
         }
     }

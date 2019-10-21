@@ -25,6 +25,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Reconciliator\Base\Reconciliate;
 
 class Gateway extends Base\Gateway
@@ -547,7 +548,8 @@ class Gateway extends Base\Gateway
     {
         return (
             ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY) and
-            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD)
+            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD) and
+            (empty($input['payment'][Payment\Entity::RECEIVER_TYPE]) === true)
         );
     }
 

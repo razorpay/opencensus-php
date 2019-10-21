@@ -85,6 +85,7 @@ class Validator extends Base\Validator
 
     protected static $editValidators = [
         'amount_payment_page',
+        'currency_payment_page',
         'tax_attributes_international',
         self::TAX_INPUTS,
         self::TAX_CODES,
@@ -110,6 +111,17 @@ class Validator extends Base\Validator
         if ($this->entity->getType() !== Type::PAYMENT_PAGE)
         {
             $this->validateInputValues('amount_update', $input);
+        }
+    }
+
+    public function validateCurrencyPaymentPage(array $input)
+    {
+        if (($this->entity->getType() === Type::PAYMENT_PAGE) and
+            (isset($input[Entity::CURRENCY]) === true))
+        {
+            throw new BadRequestValidationFailureException(
+                'currency is not required'
+            );
         }
     }
 

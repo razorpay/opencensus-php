@@ -298,4 +298,17 @@ return [
             ],
         ],
     ],
+
+    'testBulkCaptureByPartner' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/commissions/partner/capture/bulk',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+            ],
+        ],
+    ],
 ];

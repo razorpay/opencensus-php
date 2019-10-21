@@ -28,7 +28,7 @@ final class FactoryData
             'international'            => 0,
             'website'                  => $faker->url,
             'billing_label'            => $faker->word,
-            'category'                 => 1100,
+            'category'                 => 5399,
             'transaction_report_email' => ['test@razorpay.com'],
             'receipt_email_enabled'    => true,
             'channel'                  => Channel::AXIS,
@@ -106,6 +106,20 @@ final class FactoryData
             'description' => 'Sample description',
             'notes'       => null,
             'terms'       => null,
+        ]);
+
+        $factory(\RZP\Models\PaymentLink\PaymentPageItem\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'mandatory'         => true,
+            'image_url'         => null,
+            'stock'             => null,
+            'min_purchase'      => null,
+            'max_purchase'      => null,
+            'min_amount'        => null,
+            'max_amount'        => null,
+            'quantity_sold'     => 0,
+            'total_amount_paid' => 0,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
