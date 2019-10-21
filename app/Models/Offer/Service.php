@@ -11,8 +11,8 @@ use RZP\Models\Feature\Constants as Feature;
 class Service extends Base\Service
 {
     const PROXY_ROUTES = [
-        //'offer_create',
-        //'offer_update',
+        'offer_create',
+        'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
     ];
