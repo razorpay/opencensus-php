@@ -260,17 +260,19 @@ class Entity
     const TAX_GROUP             = 'tax_group';
 
     // External Service Entity (ServiceName.EntityName)
+    // Service: Batch
     const BATCH_SERVICE                = 'batch.service';
     const BATCH_FILE_STORE             = 'batch.file_store';
     const REPORTING_LOGS               = 'reporting.logs';
     const REPORTING_CONFIGS            = 'reporting.configs';
     const REPORTING_SCHEDULES          = 'reporting.schedules';
+    // Service: Shield
     const SHIELD_RULES                 = 'shield.rules';
     const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
     const SHIELD_RISKS                 = 'shield.risks';
     const SHIELD_LISTS                 = 'shield.lists';
     const SHIELD_LIST_ITEMS            = 'shield.list_items';
-
+    // Service: Subscription
     const SUBSCRIPTIONS_PLAN             = 'subscriptions.plan';
     const SUBSCRIPTIONS_SUBSCRIPTION     = 'subscriptions.subscription';
     const SUBSCRIPTIONS_ADDON            = 'subscriptions.addon';
@@ -278,8 +280,8 @@ class Entity
     const SUBSCRIPTIONS_TRANSACTION      = 'subscriptions.subscription_transaction';
     const SUBSCRIPTIONS_VERSION          = 'subscriptions.subscription_version';
     const SUBSCRIPTIONS_UPDATE_REQUEST   = 'subscription_update_request';
-
-    // Subscription
+    // Service: Stork
+    const STORK_WEBHOOK = 'stork.webhook';
 
     const COMMISSION = 'commission';
 
@@ -626,7 +628,6 @@ class Entity
         self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
         self::BATCH_SERVICE                => \RZP\Services\BatchMicroService::class,
         self::BATCH_FILE_STORE             => \RZP\Services\BatchMicroService::class,
-
         self::SUBSCRIPTIONS_SUBSCRIPTION   => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_ADDON          => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_PLAN           => \RZP\Models\Plan\Subscription\Service::class,
@@ -634,6 +635,7 @@ class Entity
         self::SUBSCRIPTIONS_VERSION        => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_TRANSACTION    => \RZP\Models\Plan\Subscription\Service::class,
+        self::STORK_WEBHOOK                => \RZP\Services\Stork::class,
     ];
 
     protected static $syncedInLiveAndTest = [

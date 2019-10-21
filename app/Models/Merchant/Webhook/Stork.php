@@ -3,68 +3,23 @@
 namespace RZP\Models\Merchant\Webhook;
 
 
-use Request;
-use Throwable;
 use Carbon\Carbon;
-use Requests_Session;
-use Requests_Response;
 
 use RZP\Models\Event;
-use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Timezone;
-use RZP\Exception\ServerErrorException;
 
 /**
  * Class Stork
  *
  * Holds implementation for various communication to stork service
- * against webhook module of api. E.g. dual writing webhook etc. And later more.
+ * against webhook module of api. E.g. dual writing webhook etc.
  *
  * @package RZP\Models\Merchant\Webhook
+ * @see \RZP\Services\Stork
  */
 class Stork
 {
-    /**
-     * If actual http requests should be made.
-     * Dual write is mocked in unit tests.
-     * @var boolean
-     */
-    protected $mock;
-
-    /**
-     * Name of owning service for requests to stork.
-     * @var string
-     */
-    protected $service;
-
-    /**
-     * @var Requests_Session
-     */
-    protected $request;
-
-    public function init(string $mode)
-    {
-        $config = config('stork');
-
-        $this->mock = $config['mock'];
-        // Service name is same as authenticated user.
-        $this->service = $config['service_prefix'] . $config['auth'][$mode]['user'];
-        $this->request = new Requests_Session(
-            $config['url'],
-            // Common headers for requests.
-            [
-                'X-Request-ID' => Request::getTaskId(),
-                'Content-Type' => 'application/json',
-            ],
-            [],
-            // Options and authentication for requests.
-            [
-                'timeout' => 1, // Minimum possible value is 1 second.
-                'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
-            ]);
-    }
-
     public function create(Entity $webhook)
     {
         // Todo: Add Base\Entity::getMode() method. getConnectionName() may
@@ -144,37 +99,5 @@ class Stork
                 function($v) { return ['eventmeta' => ['name' => $v]]; },
                 array_keys(array_filter($webhook->getEvents()))),
         ];
-    }
-
-    protected function request(string $path, array $payload): Requests_Response
-    {
-        // Just for tests!
-        if ($this->mock === true)
-        {
-            return new Requests_Response;
-        }
-
-        $res = null;
-        $exception = null;
-
-        try
-        {
-            $res = $this->request->post($path, [], json_encode($payload));
-        }
-        catch (Throwable $e)
-        {
-            $exception = $e;
-        }
-
-        if (($exception !== null) or ($res->success !== true))
-        {
-            throw new ServerErrorException(
-                "Failed to complete request",
-                ErrorCode::SERVER_ERROR_STORK_FAILURE,
-                ['req_path' => $path] + ($res ? ['resp_status_code' => $res->status_code, 'resp_body' => $res->body] : []),
-                $exception);
-        }
-
-        return $res;
     }
 }
