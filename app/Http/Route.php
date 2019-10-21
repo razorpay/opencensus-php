@@ -1284,6 +1284,10 @@ final class Route
 
         //route for testing raven sms gateways
         'send_test_sms'                           => ['post',      'admin/test-sms',                                           'AdminController@sendTestSms'                              ],
+
+        //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
+        'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
+        'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
     ];
 
     public static $public = [
@@ -1576,6 +1580,9 @@ final class Route
         'subscription_registration_auto_charge',
         'mpans_issue',
         'mpans_fetch',
+
+        'merchant_activation_update_partner',
+        'merchant_activation_status_partner',
     ];
 
     // Only routes defined in internalApps go here
@@ -3429,6 +3436,8 @@ final class Route
         'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
         'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
+        'merchant_activation_update_partner'   => [Feature::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT],
+        'merchant_activation_status_partner'   => [Feature::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT],
     ];
 
     /*

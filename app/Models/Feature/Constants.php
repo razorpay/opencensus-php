@@ -134,6 +134,8 @@ class Constants
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
 
+    const ALLOW_PARTNER_TO_ACTIVATE_MERCHANT    = 'allow_partner_to_activate_merchant';
+
     /**
      * When creating submerchant, if kyc is handled by partner, we proceed to directly activate the merchant, when
      * the submerchant is created. Else the submerchant will follow the usual kyc process
@@ -423,6 +425,8 @@ class Constants
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
         self::VALIDATE_MERCHANT_DOMAIN        => true,
+
+        self::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT => true,
     ];
 
     // Entity type constants
