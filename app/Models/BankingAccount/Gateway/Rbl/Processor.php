@@ -533,32 +533,36 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function validateBeforeActivation(Entity $bankingAccount, array $input = [])
     {
-        $expected = [
-            Entity::ACCOUNT_NUMBER  => true,
-            Entity::USERNAME        => true,
-            Entity::PASSWORD        => true,
-            Entity::REFERENCE1      => true,
-            Entity::REFERENCE2      => true,
-            Entity::REFERENCE3      => true,
+        $fieldsRequired = [
+            Entity::ACCOUNT_NUMBER,
+            Entity::ACCOUNT_IFSC,
+            Entity::USERNAME,
+            Entity::PASSWORD,
+            Entity::REFERENCE1,
+            Entity::REFERENCE2,
+            Entity::REFERENCE3,
+            Entity::BENEFICIARY_NAME,
+            Entity::BENEFICIARY_STATE,
+            Entity::BENEFICIARY_COUNTRY,
+            Entity::BENEFICIARY_MOBILE,
+            Entity::BENEFICIARY_EMAIL,
         ];
 
-        $actual = [
-            Entity::ACCOUNT_NUMBER  => (empty($bankingAccount->getAccountNumber()) === false),
-            Entity::USERNAME        => (empty($bankingAccount->getUsername()) === false),
-            Entity::PASSWORD        => (empty($bankingAccount->getPassword()) === false),
-            Entity::REFERENCE1      => (empty($bankingAccount->getReference1()) === false),
-            Entity::REFERENCE2      => (empty($bankingAccount->getReference2()) === false),
-            Entity::REFERENCE3      => (empty($bankingAccount->getReference3()) === false),
-        ];
-
-        $diff = array_diff($actual, $expected);
-
-        if (count($diff) > 0)
+        foreach ($fieldsRequired as $key)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION,
-                null,
-                array_keys($diff));
+            $functionName = 'get' . studly_case($key);
+
+            $value = $bankingAccount->{$functionName}();
+
+            if (empty($value) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION,
+                    $key,
+                    [
+                        $key
+                    ]);
+            }
         }
     }
 }
