@@ -565,18 +565,7 @@ return [
         ],
     ],
 
-    'testRemoveAccessMapForReseller' => [
-        'request'   => [
-            'url'     => '/merchants/10000000000009/access_maps',
-            'method'  => 'DELETE',
-            'server' => [
-                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
-            ],
-            'content' => [],
-        ]
-    ],
-
-    'testRemoveAccessMapForAggregator' => [
+    'testRemovePartnerAccessMap' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'DELETE',
