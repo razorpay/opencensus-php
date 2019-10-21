@@ -24,11 +24,14 @@ import {
   deleteToken,
   resubmitNACHFile,
 } from 'merchant/modules/token';
+import { downloadSignedNACHFile } from 'merchant/modules/registration_link';
 import { showNotification } from 'rzp/modules/notifications';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import { getTokenStatus } from './List';
 import ChargeToken from './ChargeToken';
+
+import { trackClickDownloadNACHForm, trackClickResubmitNachForm } from './ga';
 
 @withRouter
 @connect(state => ({ ...state.token }), {
@@ -45,6 +48,10 @@ export default class TokenEntityContainer extends Component {
 
   get isEmandateMethod() {
     return this.props.entity.method === 'emandate';
+  }
+
+  get isNACHMethod() {
+    return this.props.entity.method === 'nach';
   }
 
   componentWillMount() {
@@ -105,6 +112,20 @@ export default class TokenEntityContainer extends Component {
     });
   };
 
+  downloadSignedNACHFile = () => {
+    return downloadSignedNACHFile({
+      token_id: this.props.id,
+    });
+  };
+
+  trackClickDownloadNACHForm = () => {
+    const { failure_reason } = this.props.entity.recurring_details;
+
+    trackClickDownloadNACHForm(
+      failure_reason.includes('nach') ? 'Rejected' : 'Approved'
+    );
+  };
+
   render() {
     const { loading: isLoading, entity = {}, error } = this.props;
 
@@ -163,6 +184,21 @@ export default class TokenEntityContainer extends Component {
                       </ShowWhen>
                     )}
 
+                    {this.isNACHMethod &&
+                      entity.is_nach_form_uploaded && (
+                        <EntityDetailRow label="NACH Form">
+                          <NACHDetails
+                            downloadSignedNACHFile={
+                              entity.is_nach_form_uploaded &&
+                              this.downloadSignedNACHFile
+                            }
+                            trackClickDownloadNACHForm={
+                              this.trackClickDownloadNACHForm
+                            }
+                          />
+                        </EntityDetailRow>
+                      )}
+
                     <EntityDetailRow label="Customer Details">
                       <CustomerDetails customer={entity.customer} />
                     </EntityDetailRow>
@@ -217,10 +253,7 @@ class ErrorMessage extends React.PureComponent {
   };
 
   resubmitNACHFile = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Subscription - Token',
-      eventAction: 'Click - Resubmit NACH Form',
-    });
+    trackClickResubmitNachForm();
 
     return resubmitNACHFile(this.props.id);
   };

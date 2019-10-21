@@ -42,10 +42,11 @@ export const authenticateNACHFile = (file, id) => {
   });
 };
 
-export const downloadSignedNACHFile = id => {
-  return merchantFetch(
-    `token.registration/paper_mandate/uploaded_form?auth_link_id=${id}`
-  ).then(resp => axios(resp.data.url));
+export const downloadSignedNACHFile = data => {
+  return merchantFetch({
+    url: `token.registration/paper_mandate/uploaded_form`,
+    data,
+  }).then(resp => axios(resp.data.url));
 };
 
 export default makeEntityReducer(REGISTRATION_LINK_FETCH);

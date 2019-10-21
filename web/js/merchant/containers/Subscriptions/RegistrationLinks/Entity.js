@@ -61,7 +61,9 @@ export default class RegistrationLinkEntityContainer extends React.Component {
   }
 
   downloadSignedNACHFile = () => {
-    return downloadSignedNACHFile(this.props.id);
+    return downloadSignedNACHFile({
+      auth_link_id: this.props.id,
+    });
   };
 
   render() {
