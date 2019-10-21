@@ -1752,6 +1752,13 @@ class Service extends Base\Service
         return $this->core->updateReceiverData();
     }
 
+    /**
+     * @param $input
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
     public function validateVpa($input)
     {
         $data = $this->getNewProcessor()->validateVpa($input);
