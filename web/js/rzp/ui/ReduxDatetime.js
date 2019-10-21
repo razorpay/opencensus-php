@@ -10,6 +10,7 @@ export default props => {
       <Datetime
         defaultValue={input.value}
         value={input.value}
+        onFocus={props.handleFocus}
         onChange={value => input.onChange(value)}
         inputProps={{
           placeholder: placeholder,

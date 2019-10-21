@@ -1,0 +1,134 @@
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import ModalHeader from 'rzp/ui/ModalHeader';
+import { openModal, closeModal } from 'rzp/modules/modals';
+import { Bar } from 'react-chartjs-2';
+import AsyncButton from 'react-async-button';
+import Amount from 'ui/Amount';
+import CreditPullScoreBreakdown from './CreditPullScoreBreakdown';
+import CreditPullAdditionalReport from './CreditPullAdditionalReport';
+
+@connect(state => ({ user: state.session.user }), {
+  closeModal,
+  openModal,
+})
+export default class CreditPullSuccess extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      moreInfo: false,
+    };
+    this.report = {
+      bureauScore: 700,
+      creditAccountTotal: 10,
+      creditAccountActive: 6,
+      creditAccountClosed: 4,
+      outstanding_Balance_All: 135400000,
+      outstanding_Balance_Secured: 944000,
+      outstanding_Balance_UnSecured: 310000,
+    };
+    this.data = {
+      labels: [],
+      datasets: [
+        {
+          data: [this.report.bureauScore],
+          backgroundColor: 'rgba(12, 54, 204, 0.9)',
+        },
+        {
+          data: [900 - this.report.bureauScore],
+          backgroundColor: 'rgba(12, 54, 204, 0.2)',
+        },
+      ],
+    };
+  }
+
+  generateRowData = (reportData, label, key) => {
+    let rowData = [];
+    for (let iter in label) {
+      rowData.push({
+        desc: label[iter],
+        value: reportData[key[iter]],
+      });
+    }
+    return rowData;
+  };
+
+  titleGenerator = () => {
+    return <span>Credit Report</span>;
+  };
+
+  getOptions = () => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      tooltips: {
+        enabled: false,
+      },
+      animation: {
+        duration: 10,
+      },
+      scales: {
+        xAxes: [
+          {
+            stacked: true,
+            display: false,
+          },
+        ],
+        yAxes: [
+          {
+            stacked: true,
+            display: false,
+          },
+        ],
+      },
+      legend: { display: false },
+    };
+  };
+
+  render() {
+    return (
+      <div className="credit-pull-success-container">
+        <ModalHeader
+          title={this.titleGenerator()}
+          onCloseClick={() => {
+            this.props.closeModal();
+          }}
+        />
+        <div className="modal-body">
+          <div className="col-md-4 rep-container rep-container-1">
+            <div className="tab-title">Credit Score</div>
+            <div className="col-md-6 credit-chart-container">
+              <Bar options={this.getOptions()} data={this.data} />
+            </div>
+            <div className="col-md-6 credit-score-container">
+              <div className="credit-max">900</div>
+              <div className="credit-score">
+                <span className="score">700</span>
+                <div className="desc">Credit Score</div>
+              </div>
+              <div className="credit-min">300</div>
+            </div>
+          </div>
+
+          <div className="col-md-8 rep-container">
+            <div className="report-header">Congratulations</div>
+            <div className="report-body">
+              Based on your credit history, You may be eligible for a loan upto
+              given amount. Please confirm your interest.
+            </div>
+            <div className="report-amount">
+              <Amount value={10000 / 4} currency={'INR'} />
+            </div>
+            <div className="report-actions">
+              <AsyncButton class="btn btn-primary" text="Yes I'm interested" />
+              <AsyncButton class="btn btn-secondary" text="No, I'm not" />
+            </div>
+          </div>
+
+          <CreditPullAdditionalReport report={this.report} />
+        </div>
+        <div className="modal-footer" />
+      </div>
+    );
+  }
+}

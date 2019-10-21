@@ -47,6 +47,14 @@ export const isPhone = phone => {
   return phoneRegExp.test(phone);
 };
 
+export const isMobile = mobile => {
+  mobile = mobile || '';
+  let mobileRegExp = new RegExp(
+    /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[789]\d{9}$/
+  );
+  return mobileRegExp.test(mobile);
+};
+
 export const isInteger = (value = '') => {
   let integerRegExp = new RegExp(/^[0-9]+$/);
 
@@ -141,6 +149,7 @@ const makeValidator = (truthyFn, defaultMessage) => (
 export const required = makeValidator(isPresent, 'Required');
 export const email = makeValidator(isEmail, 'Invalid Email');
 export const phone = makeValidator(isPhone, 'Invalid Contact');
+export const mobile = makeValidator(isMobile, 'Invalid Contact');
 export const lenientUrl = makeValidator(isUrlLenient, 'Invalid Url');
 export const deepLink = makeValidator(isDeepLink, 'Invalid Link');
 export const amount = makeValidator(isAmount, 'Invalid amount');

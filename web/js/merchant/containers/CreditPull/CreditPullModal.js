@@ -7,7 +7,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { RadioGroup } from 'rzp/ui/Forms/RadioGroup';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import { required, phone, pincode } from 'rzp/utils/validators';
+import { required, mobile, pincode } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import { states } from 'rzp/utils/constants';
 import * as MerchantActions from 'merchant/modules/b-merchants';
@@ -20,6 +20,7 @@ import {
   AskMobileNumber,
 } from 'merchant/containers/Team/TwoFaModals';
 import CreditPullClose from './CreditPullClose';
+import CreditPullSuccess from './CreditPullSuccess';
 
 const validate = values => {
   const errors = {};
@@ -37,8 +38,6 @@ const validate = values => {
   }
   return errors;
 };
-
-const SMALL_MODAL = 'small';
 
 @connect(
   state => {
@@ -62,6 +61,8 @@ export default class CreditPullModal extends Component {
   constructor(props) {
     super(props);
 
+    this.SMALL_MODAL = 'small';
+    this.dateContainer = React.createRef();
     this.state = {
       errors: null,
       isLoading: false,
@@ -147,7 +148,7 @@ export default class CreditPullModal extends Component {
           }}
         />
       ),
-      size: SMALL_MODAL,
+      size: this.SMALL_MODAL,
     });
   };
 
@@ -161,9 +162,22 @@ export default class CreditPullModal extends Component {
             return this.sendReqForOtpConfirmation(data)
               .then(response => {
                 //Now call dashboard stuff
-                this.openErrorScreen(
-                  'Sorry, some informations are not matching with PAN database. Please try after sometime.'
-                );
+                //this.openErrorScreen('Sorry, some informations are not matching with PAN database. Please try after sometime.');
+
+                let report = {
+                  credScore: 750,
+                  loanAmount: 354000,
+                  accountInfo: {
+                    active: 6,
+                    closed: 4,
+                  },
+                  balanceInfo: {
+                    secured: 944000,
+                    unsecured: 310000,
+                  },
+                };
+
+                this.openReportScreen(report);
               })
               .catch(error => {
                 throw {
@@ -180,14 +194,21 @@ export default class CreditPullModal extends Component {
           contactMobile={newPhone ? newPhone : this.state.merchantData.mobile}
         />
       ),
-      size: SMALL_MODAL,
+      size: this.SMALL_MODAL,
     });
   };
 
   openErrorScreen = message => {
     this.props.openModal({
       component: <CreditPullClose message={message} />,
-      size: SMALL_MODAL,
+      size: this.SMALL_MODAL,
+    });
+  };
+
+  openReportScreen = message => {
+    this.props.openModal({
+      component: <CreditPullSuccess />,
+      size: 'large',
     });
   };
 
@@ -201,6 +222,17 @@ export default class CreditPullModal extends Component {
       {},
       '/merchant/api'
     );
+  };
+
+  initialAlign = () => {
+    //Hate doing this unfortunately the library doesn't provide any other way to do this.
+    if (this.dateContainer) {
+      this.dateContainer.current.querySelector('div .rdtPrev span').click();
+      setTimeout(() => {
+        this.dateContainer.current.querySelector('div .rdtPrev span').click();
+        this.dateContainer = null;
+      }, 50);
+    }
   };
 
   sendReqForOtp = (mobile, tokenStuff) => {
@@ -270,8 +302,8 @@ export default class CreditPullModal extends Component {
                   class="form-control"
                   placeholder="Mobile Number"
                   validate={[
-                    required('Please enter a phone number'),
-                    phone('Please enter a valid phone number'),
+                    required('Please enter a mobile number'),
+                    mobile('Please enter a valid mobile number'),
                   ]}
                 />
               </div>
@@ -331,7 +363,7 @@ export default class CreditPullModal extends Component {
               <label className="col-md-3 control-label label-required">
                 Date of Birth
               </label>
-              <div className="col-md-4">
+              <div className="col-md-4 red-cal-date" ref={this.dateContainer}>
                 <Field
                   name="dateOfBirth"
                   component={ReduxDatetime}
@@ -340,6 +372,7 @@ export default class CreditPullModal extends Component {
                   required={true}
                   viewMode={'years'}
                   timeFormat={false}
+                  handleFocus={this.initialAlign}
                   isValidDate={this.isValidDate}
                 />
               </div>
