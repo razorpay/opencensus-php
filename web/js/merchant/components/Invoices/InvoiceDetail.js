@@ -293,7 +293,10 @@ export default props => {
                     <Input.Check
                       name="auto_reminders"
                       fieldLabel="Send auto reminders"
-                      checked={!(invoice.reminder_status === 'disabled')}
+                      checked={
+                        invoice.reminder_status &&
+                        !(invoice.reminder_status === 'disabled')
+                      }
                       disabled={isAutoRemindersUpdating}
                       onChange={onChangeSendAutoReminder}
                       autoRender
