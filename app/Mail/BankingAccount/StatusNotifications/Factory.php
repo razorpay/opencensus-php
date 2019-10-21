@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail\BankingAccount\UpdateNotifications;
+namespace RZP\Mail\BankingAccount\StatusNotifications;
 
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;

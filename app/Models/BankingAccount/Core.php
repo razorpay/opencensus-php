@@ -21,7 +21,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Mail\BankingAccount\UpdateNotifications\Factory as StatusUpdateMailerFactory;
+use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 
 class Core extends Base\Core
 {
