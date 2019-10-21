@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Mail\BankingAccount;
+namespace RZP\Mail\BankingAccount\UpdateNotifications;
 
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
 use RZP\Exception\BadRequestValidationFailureException;
 
-class StatusUpdateMailerFactory
+class Factory
 {
     public static function getMailer(Entity $bankingAccount)
     {

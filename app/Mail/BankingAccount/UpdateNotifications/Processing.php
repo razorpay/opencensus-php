@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Mail\BankingAccount;
+namespace RZP\Mail\BankingAccount\UpdateNotifications;
 
-class Processing extends UpdateNotificationBase
+class Processing extends Base
 {
     const TEMPLATE_PATH = 'emails.banking_account.notify_status_processing';
 

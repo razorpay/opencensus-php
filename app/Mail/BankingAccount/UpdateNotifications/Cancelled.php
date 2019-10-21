@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Mail\BankingAccount;
+namespace RZP\Mail\BankingAccount\UpdateNotifications;
 
-class Cancelled extends UpdateNotificationBase
+class Cancelled extends Base
 {
     const TEMPLATE_PATH     = 'emails.banking_account.notify_status_cancelled';
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail\BankingAccount;
+namespace RZP\Mail\BankingAccount\UpdateNotifications;
 
 use App;
 use RZP\Mail\Base\Mailable;
@@ -8,7 +8,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Models\BankingAccount\Entity;
 
-class UpdateNotificationBase extends Mailable
+class Base extends Mailable
 {
     const TEMPLATE_PATH = '';
 
