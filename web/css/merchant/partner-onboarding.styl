@@ -76,10 +76,17 @@
         border: 1.8px solid #EBEBFD;
         box-sizing: border-box;
         border-radius: 4px;
-        padding:16px;
+        padding:4px;
         max-height: 300px;
         overflow-y: scroll;
         margin-top:22px;
+        ul ul, ol ul, ul ol, ol ol
+          margin-bottom: 0;
+          margin-left: -45px;
+        ol ol ul li
+          margin-left: 0px;
+        table
+          margin-left:-25px;
     .slide-controller
       display:flex;
       align-items:center;
