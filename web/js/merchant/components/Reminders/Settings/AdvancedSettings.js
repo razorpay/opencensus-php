@@ -6,11 +6,11 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default ({ channels, onChannelChange }) => (
   <div class="setting">
-    <ContentToggler>
+    <ContentToggler show>
       Advanced settings
       <div>
         <EntityDetailRow label="Channels">
-          <Input.Group class="InputGroup--inline InputGroup--near">
+          <Input.Group required class="InputGroup--inline InputGroup--near">
             <div class="Input-content">
               {Object.keys(channels).map(channelName => (
                 <Input.Check

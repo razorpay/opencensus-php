@@ -18,8 +18,8 @@ const initState = {
   advancedSettings: {
     scheduledTime: '10AM - 12PM',
     channels: {
-      sms: true,
-      email: true,
+      sms: false,
+      email: false,
     },
   },
 };
@@ -185,6 +185,16 @@ export default class ReminderSetting extends React.Component {
     );
   };
 
+  isValid = () => {
+    const { settings } = this.state;
+
+    return (
+      (settings.withExpiry.length || settings.withOutExpiry.length) &&
+      (settings.advancedSettings.channels.email ||
+        settings.advancedSettings.channels.sms)
+    );
+  };
+
   handleRouteChange = location => {
     this.context
       .confirm({
@@ -263,7 +273,7 @@ export default class ReminderSetting extends React.Component {
                 />
 
                 <Footer
-                  isSaveBtnDisable={!this.isChanged()}
+                  isSaveBtnDisable={!(this.isChanged() && this.isValid())}
                   onSaveClick={this.onSaveClick}
                   onPreviewClick={this.showReminderEMailPreview}
                   scheduledTime={settings.advancedSettings.scheduledTime}
