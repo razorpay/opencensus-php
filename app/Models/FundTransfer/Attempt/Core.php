@@ -377,6 +377,13 @@ class Core extends Base\Core
         $this->repo->saveOrFail($fta);
     }
 
+    /**
+     * To Update FTA and source Using incoming webhook from FTS
+     * 
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     */
     public function updateFundTransfer(array $input)
     {
         // TODO: should support bulk updates
