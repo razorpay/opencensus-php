@@ -2721,7 +2721,7 @@ class Service extends Base\Service
         // since Settings/Service->upsert does not return anything hence,
         // returning whatever was passed in input
         return [
-            Constants::PARTNER_INTENT   => $input[COnstants::PARTNER_INTENT],
+            Constants::PARTNER_INTENT   => $input[Constants::PARTNER_INTENT],
         ];
     }
 

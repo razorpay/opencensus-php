@@ -5212,7 +5212,7 @@ return [
         ],
         'response'  => [
             'content'   => [
-                'partner_intent'    => false,
+                'partner_intent'    => '0',
             ],
             'status_code'           => 200,
         ],
@@ -5228,7 +5228,7 @@ return [
         ],
         'response'  => [
             'content'   => [
-                'partner_intent'    => true,
+                'partner_intent'    => '1',
             ],
             'status_code'           => 200,
         ],
@@ -5244,7 +5244,7 @@ return [
         ],
         'response'  => [
             'content'   => [
-                'partner_intent'    => true,
+                'partner_intent'    => '1',
             ],
             'status_code'           => 200,
         ],
