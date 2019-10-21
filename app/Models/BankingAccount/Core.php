@@ -16,6 +16,7 @@ use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
+use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
@@ -215,16 +216,21 @@ class Core extends Base\Core
 
         $input = $processor->formatInputParametersIfRequired($input);
 
-        $bankingAccount->edit($input);
-
-        if (empty($input[Entity::STATUS]) === false)
+        $this->repo->transaction(function() use ($bankingAccount, $input, $processor)
         {
-            $bankingAccount->setStatus($input[Entity::STATUS]);
-        }
+            $bankingAccount->edit($input);
 
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+            if (empty($input[Entity::STATUS]) === false)
+            {
+                $bankingAccount->setStatus($input[Entity::STATUS]);
+            }
 
-        $this->repo->saveOrFail($bankingAccount);
+            $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+
+            $this->repo->saveOrFail($bankingAccount);
+
+            $this->updateBankingAccountDetails($input, $bankingAccount, $processor);
+        });
 
         return $bankingAccount;
     }
@@ -380,6 +386,18 @@ class Core extends Base\Core
             ]);
 
         return $response;
+    }
+
+    // Apart from account specific details, a banking account
+    // can contain many other attributes that will be only
+    // specific to a Bank. This will be managed by
+    // BankingAccountDetail Module
+    public function updateBankingAccountDetails(array $input, Entity $bankingAccount, Gateway\Processor $processor)
+    {
+        if (isset($input[Entity::DETAILS]) === true)
+        {
+            (new BankingAccountDetail\Core)->updateBankingAccountDetails($input, $bankingAccount, $processor);
+        }
     }
 
     /**

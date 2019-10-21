@@ -2041,6 +2041,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Banking account
     const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
+    const BANKING_ACCOUNT_DETAILS_EDIT                          = 'BANKING_ACCOUNT_DETAILS_EDIT';
     const BANKING_ACCOUNT_CREATE                                = 'BANKING_ACCOUNT_CREATE';
     const BANKING_ACCOUNT_INFO_WEBHOOK_REQUEST                  = 'BANKING_ACCOUNT_INFO_WEBHOOK_REQUEST';
     const BANKING_ACCOUNT_ACTIVATION_REQUEST                    = 'BANKING_ACCOUNT_ACTIVATION_REQUEST';

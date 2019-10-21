@@ -98,6 +98,7 @@ class Entity
     const MERCHANT_DETAIL            = 'merchant_detail';
     const TERMINAL_ACTION            = 'terminal_action';
     const BANKING_ACCOUNT            = 'banking_account';
+    const BANKING_ACCOUNT_DETAIL     = 'banking_account_detail';
     const PAYMENT_DOWNTIME           = 'payment.downtime';
     const MERCHANT_REQUEST           = 'merchant_request';
     const CUSTOMER_BALANCE           = 'customer_balance';
@@ -401,6 +402,7 @@ class Entity
         self::MERCHANT_DETAIL           => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION           => \RZP\Models\Terminal\Action::class,
         self::BANKING_ACCOUNT           => \RZP\Models\BankingAccount::class,
+        self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,

@@ -63,6 +63,21 @@ class Fields
     const AUTH_USERNAME                     = 'auth_username';
     const AUTH_PASSWORD                     = 'auth_password';
 
+    // Fields which store the credentials for a Banking account
+
+    const CLIENT_KEY                        = 'client_key';
+    const LDAP_ID                           = 'ldap_id';
+    const MERCHANT_EMAIL                    = 'merchant_email';
+    const MERCHANT_PASSWORD                 = 'merchant_password';
+
+    // This map holds the account details fields which
+    // are sensitive and have to be tokenised before storing
+
+    public static $sensitiveAccountDetails = [
+        self::CLIENT_SECRET,
+        self::MERCHANT_PASSWORD
+    ];
+
     public static $rblFieldsToEntityMap = [
       self::ACCOUNT_NUMBER          => Entity::ACCOUNT_NUMBER,
       self::IFSC                    => Entity::ACCOUNT_IFSC,

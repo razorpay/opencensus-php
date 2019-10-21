@@ -99,6 +99,10 @@ class Entity extends Base\PublicEntity
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
 
+    const DETAILS       = 'details';
+
+    const BANKING_ACCOUNT_DETAIL = 'banking_account_detail';
+
     protected $entity = 'banking_account';
 
     protected static $sign = 'bacc';
@@ -138,6 +142,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_EMAIL,
         self::FTS_FUND_ACCOUNT_ID,
         self::INTERNAL_COMMENT,
+        self::BANKING_ACCOUNT_DETAIL,
     ];
 
     protected $visible = [
@@ -174,6 +179,7 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::MERCHANT,
         self::INTERNAL_COMMENT,
+        self::BANKING_ACCOUNT_DETAIL,
     ];
 
     protected $public = [
@@ -193,6 +199,11 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
+        self::BANKING_ACCOUNT_DETAIL,
+    ];
+
+    protected $relations = [
+        self::BANKING_ACCOUNT_DETAIL,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -384,6 +395,11 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
+    }
+
+    public function bankingAccountsDetail()
+    {
+        return $this->hasOne(Detail\Entity::class);
     }
 
     protected function isChannelYesbank()

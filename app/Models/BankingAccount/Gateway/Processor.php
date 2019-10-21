@@ -56,6 +56,11 @@ abstract class Processor extends Base\Core
         return $input;
     }
 
+    public function validateAccountDetails(array $input)
+    {
+        return $input;
+    }
+
     public function addServiceablePincodes(array $pincodes)
     {
         $redis = Redis::connection();
@@ -258,7 +263,7 @@ abstract class Processor extends Base\Core
         );
     }
 
-    protected function tokenizeCredentials(string $element): string
+    protected function tokenizeKey(string $element): string
     {
         $request = $traceRequest =
             [
@@ -266,38 +271,10 @@ abstract class Processor extends Base\Core
                 'secret'    => $element
             ];
 
-        unset($traceRequest['secret']);
+        /** @var CardVault $cardVaultService */
+        $cardVaultService = app('card.cardVault');
 
-        try
-        {
-            // If the vault service times out after some retries, we want to show error to the merchant
-            /** @var CardVault $cardVaultService */
-            $cardVaultService = app('card.cardVault');
-
-            $response = $cardVaultService->createVaultToken($request);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace\Logger::CRITICAL,
-                TraceCode::CARD_VAULT_REQUEST_FAILED,
-                [
-                    'request' => $traceRequest,
-                    'channel' => Channel::RBL
-                ]);
-
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
-                null,
-                [
-                    'request' => $traceRequest,
-                    'channel' => Channel::RBL
-                ]
-            );
-        }
-
-        $this->checkForVaultResponseErrors($response);
+        $response = $cardVaultService->createVaultToken($request);
 
         return $response[CardVault::TOKEN];
     }

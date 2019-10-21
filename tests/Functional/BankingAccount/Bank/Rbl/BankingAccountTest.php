@@ -683,6 +683,29 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(RZP\Models\BankingAccount\Status::REJECTED, $bankingAccount->getStatus());
     }
 
+    public function testUpdateBankingAccountDetails()
+    {
+        $this->testUpdateBankingAccountStatusAsProcessed();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . 'bacc_' . $bankingAccount->getId(),
+                'method'  => 'PATCH',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $bankingAccountDetail = $this->getDbLastEntity('banking_account_detail');
+    }
+
     protected function setMozartMockResponse($mockedResponse)
     {
         $mock = Mockery::mock(Mozart::class)->makePartial();

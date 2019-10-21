@@ -464,6 +464,25 @@ return [
         ],
     ],
 
+    'testUpdateBankingAccountDetails' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::DETAILS => [
+                    BankingAccount\Gateway\Rbl\Fields::CLIENT_SECRET  => 'api_secret',
+                    BankingAccount\Gateway\Rbl\Fields::CLIENT_KEY     => 'api_key',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+            ],
+        ],
+    ],
+
     'accountBalanceSuccess' => [
         'data' => [
             'PayGenRes' => [

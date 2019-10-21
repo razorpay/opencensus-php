@@ -13,6 +13,7 @@ class Validator extends Base\Validator
     const PRE_ACCOUNT_INFO_WEBHOOK    = 'pre_account_info_webhook';
     const ACCOUNT_UPDATE              = 'account_update';
     const ACCOUNT_AVAILABILITY        = 'availability';
+    const ACCOUNT_DETAILS_UPDATE      = 'account_details_update';
 
     protected static $availabilityRules = [
         BankingAccount\Entity::CHANNEL => 'required|string|in:rbl',
@@ -47,6 +48,14 @@ class Validator extends Base\Validator
         BankingAccount\Entity::BANK_INTERNAL_STATUS            => 'filled|string|custom',
         BankingAccount\Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
         BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
+    ];
+
+    protected static $accountDetailsUpdateRules = [
+        Fields::MERCHANT_PASSWORD => 'sometimes|string',
+        Fields::MERCHANT_EMAIL    => 'sometimes|email',
+        Fields::CLIENT_KEY        => 'sometimes|string',
+        Fields::CLIENT_SECRET     => 'sometimes|string',
+        Fields::LDAP_ID           => 'sometimes|string',
     ];
 
     protected function validateStatus(string $attribute, string $status = null)

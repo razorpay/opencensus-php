@@ -249,6 +249,24 @@ class Processor extends BankingAccount\Gateway\Processor
         return $attributes;
     }
 
+    public function validateAccountDetails(array $input)
+    {
+        (new Validator)->validateInput(Validator::ACCOUNT_DETAILS_UPDATE, $input);
+    }
+
+    public function formatAccountDetails(array $input)
+    {
+        foreach ($input as $key => $value)
+        {
+            if (in_array($key, Fields::$sensitiveAccountDetails, true) === true)
+            {
+                $input[$key] = $this->tokenizeKey($value);
+            }
+        }
+
+        return $input;
+    }
+
     // Currently we will be activating accounts even if there is previous balance
     protected function checkBalanceForActivation($balance)
     {
