@@ -31,6 +31,11 @@ class Constants
     const TOTAL_NET_AMOUNT = 'total_net_amount';
 
     /**
+     * Used for bulk capture
+     */
+    const PARTNER_IDS = 'partner_ids';
+
+    /**
      * List of entities for which the commission can be rolled out.
      * The entities defined here must implement the CommissionSourceInterface.
      *

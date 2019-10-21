@@ -14,7 +14,6 @@ use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\State;
 use RZP\Models\Feature;
-use RZP\Models\Pricing;
 use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -27,7 +26,6 @@ use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Event;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
@@ -1162,7 +1160,7 @@ class Entity extends Base\PublicEntity
         if (($amount === null) or
             ($amount === '0'))
         {
-            $amount = self::MAX_PAYMENT_AMOUNT_DEFAULT;
+            $amount = (new Core())->getMaxPayAmount($this);
         }
 
         return (int) $amount;

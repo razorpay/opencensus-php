@@ -613,7 +613,7 @@ class Selector extends Base\Core
 
             if ($payment->getEmiPlanId() !== null)
             {
-                $paymentData['emi'] = $payment->emiPlan();
+                $paymentData['emi'] = $this->getPaymentEmiArray($payment);
             }
 
             if (isset($paymentData['vpa']) === true)
@@ -742,6 +742,19 @@ class Selector extends Base\Core
         }
 
         return $metadata;
+    }
+
+    protected function getPaymentEmiArray(Entity $payment): array
+    {
+        $emiPlanArray = [];
+        $emiPlan = $payment->emiPlan;
+
+        $emiPlanArray['issuer_name']         = $emiPlan->getIssuerName();
+        $emiPlanArray['rate']                = $emiPlan->getRate();
+        $emiPlanArray['duration']            = $emiPlan->getDuration();
+        $emiPlanArray['emi_subvention']      = $emiPlan->getSubvention();
+
+        return $emiPlanArray;
     }
 
     protected function getMerchantData($merchant)

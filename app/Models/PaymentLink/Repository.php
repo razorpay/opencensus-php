@@ -60,6 +60,18 @@ class Repository extends Base\Repository
                               });
     }
 
+    public function getSucceedingPayments(Entity $paymentLink)
+    {
+        return $paymentLink->payments()
+                           ->whereIn(
+                               Payment\Entity::STATUS,
+                               [
+                                   Payment\Status::CREATED,
+                                   Payment\Status::AUTHORIZED,
+                                   ])
+                           ->get();
+    }
+
     /**
      * Finds payment link entity by public id constrained to not being marked
      * inactive with reason deactivated(manually).

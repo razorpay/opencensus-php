@@ -293,6 +293,10 @@ class Validator extends Base\Validator
         'limit' => 'sometimes|integer',
     ];
 
+    protected static $updatePartnerTypeRules = [
+        Entity::PARTNER_TYPE    => 'required|string|custom:partner_type_for_update',
+    ];
+
     protected static $preferencesRules = [
         'contact_id'  => 'filled|public_id',
     ];
@@ -1322,6 +1326,23 @@ class Validator extends Base\Validator
                 null,
                 null
             );
+        }
+    }
+
+    public function validatePartnerTypeForUpdate($attribute, $value)
+    {
+        $allowedPartnerTypes = [
+            Constants::RESELLER,
+            Constants::AGGREGATOR,
+        ];
+
+        if (in_array($value, $allowedPartnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [$attribute => $value]);
+
         }
     }
 }
