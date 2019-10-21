@@ -287,7 +287,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
     if (this.isNACHPayment) {
       payload.subscription_registration.bank_account = bankAccountDetails;
-      payload.subscription_registration.auth_type = 'manual';
+      // payload.subscription_registration.auth_type = 'manual';
     }
 
     if (this.isEmandatePayment || this.isNACHPayment) {
