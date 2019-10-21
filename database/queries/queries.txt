@@ -5401,7 +5401,3 @@ ALTER TABLE settlement_bucket
 
 ALTER TABLE merchants
    ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
-
-ALTER TABLE refunds
-    ADD COLUMN mode_requested VARCHAR(30) DEFAULT NULL AFTER speed_decisioned,
-    ADD INDEX refunds_mode_requested_index (mode_requested);

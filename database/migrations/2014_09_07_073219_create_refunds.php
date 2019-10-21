@@ -80,9 +80,6 @@ class CreateRefunds extends Migration
             $table->string(Refund::SPEED_REQUESTED)
                   ->default(RefundSpeed::NORMAL);
 
-            $table->string(Refund::MODE_REQUESTED, 30)
-                  ->nullable();
-
             $table->enum(Refund::SPEED_DECISIONED, [RefundSpeed::NORMAL, RefundSpeed::OPTIMUM, RefundSpeed::INSTANT])
                   ->default(RefundSpeed::NORMAL);
 
@@ -157,7 +154,6 @@ class CreateRefunds extends Migration
             $table->index(Refund::FTS_TRANSFER_ID);
             $table->index(Refund::IS_SCROOGE);
             $table->index(Refund::SPEED_REQUESTED);
-            $table->index(Refund::MODE_REQUESTED);
             $table->index(Refund::SPEED_PROCESSED);
 
             $table->unique([Refund::MERCHANT_ID, Refund::RECEIPT]);

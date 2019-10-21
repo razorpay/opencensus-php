@@ -1390,6 +1390,8 @@ trait Refund
 
             $this->createTransactionForRefund($this->refund, $payment);
 
+            unset($this->refund->mode_requested);
+
             //
             // This needs to be saved here because of the association with
             // transaction which is set in the createTransactionForRefund function.
@@ -2003,6 +2005,11 @@ trait Refund
             {
                 $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
             }
+        }
+
+        if (isset($input['refund'][RefundEntity::MODE_REQUESTED]) === true)
+        {
+            $scroogeData[RefundEntity::MODE_REQUESTED] = $input['refund'][RefundEntity::MODE_REQUESTED];
         }
 
         //
