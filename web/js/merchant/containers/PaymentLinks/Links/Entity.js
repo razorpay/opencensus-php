@@ -233,6 +233,12 @@ export default class InvoiceDetailContainer extends Component {
             delete d.first_payment_min_amount;
           }
 
+          if (d.hasOwnProperty('reminder_enable')) {
+            d = {
+              reminder: true,
+            };
+          }
+
           this.props.showNotification({
             type: 'success',
             message: `${keysToSentence(d)} updated successfully`,
