@@ -1708,8 +1708,12 @@ function isFieldValid(field, activation) {
 
   const name = field.getName ? field.getName(activation) : field.name;
   let value =
+<<<<<<< HEAD
     data[name] ||
     (data.documents && data.documents[name] && data.documents[name][0]['id']);
+=======
+    data[name] || (data.documents[name] && data.documents[name][0]['id']);
+>>>>>>> Fix Submit Form button disabled after uploading docs
 
   let isFieldRequired = field.required;
 
