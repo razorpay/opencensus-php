@@ -405,7 +405,7 @@ export default class User {
   
   get isUnregBizFlowEnabled() {
     return true;
-    // return true || this.getExpStatus('unreg_biz_enabled');
+    // || this.getExpStatus('unreg_biz_enabled');
   }
 
   get isAllowedTeamManagement() {
