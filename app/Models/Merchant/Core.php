@@ -260,45 +260,6 @@ class Core extends Base\Core
     }
 
     /**
-     * Get the partner_intent saved in settings table for a merchant
-     * @param Entity $merchant
-     *
-     * @return Array
-     */
-    public function getPartnerIntentFromSettings(Entity $merchant): array
-    {
-        $partnerIntent = Accessor::for($merchant, Constants::PARTNER)
-            ->get(Constants::PARTNER_INTENT);
-
-        return $this->getResponseForPartnerIntent($partnerIntent);
-    }
-
-    public function updatePartnerIntentInSettings(Entity $merchant, $partnerIntent): array
-    {
-        Accessor::for($merchant, Constants::PARTNER)
-            ->upsert(Constants::PARTNER_INTENT, $partnerIntent)
-            ->save();
-
-        return $this->getResponseForPartnerIntent($partnerIntent);
-    }
-
-    protected function getResponseForPartnerIntent($partnerIntent): array
-    {
-        if ($partnerIntent instanceof Dictionary)
-        {
-            $partnerIntent = null;
-        }
-        else
-        {
-            $partnerIntent = boolval($partnerIntent);
-        }
-
-        return [
-            Constants::PARTNER_INTENT        => $partnerIntent,
-        ];
-    }
-
-    /**
      * Resets merchants settlements to default settlement schedule for linked accounts
      *
      * Schedule will be same as its parent settlement schedule
