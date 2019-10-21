@@ -24,7 +24,11 @@ export default ({
           I have Customer's signed Form{' '}
           <React.Fragment>
             <i class="i i-info-circle" />
-            <Popover theme="dark" align="bottom">
+            <Popover
+              theme="dark"
+              align="bottom"
+              parentQuerySelector=".ModalSingleForm"
+            >
               <PopoverBody>
                 <div onMouseOver={trackNACHToolTipHover}>
                   If you’ve already received the customer’s NACH form, you can

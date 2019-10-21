@@ -291,8 +291,11 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     }
 
     if (this.isEmandatePayment || this.isNACHPayment) {
-      payload.subscription_registration.first_payment_amount =
-        rupeesToPaise(data.firstPaymentAmount) || 0;
+      if (data.firstPaymentAmount) {
+        payload.subscription_registration.first_payment_amount = rupeesToPaise(
+          data.firstPaymentAmount
+        );
+      }
 
       let max_amount = this.DEFAULT_MAX_AMOUNT;
 
