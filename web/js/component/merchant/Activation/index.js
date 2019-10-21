@@ -672,11 +672,20 @@ export default class ActivationWizard extends React.Component {
     return !!this.props.accountId;
   }
 
+  // TODO: Consider razorX flag here
   get isIndividualTypeLock() {
+    // const businessType =
+    //   this.state.dirty.business_type || this.props.data.business_type;
+
+    // return businessType == INDIVIDUAL;
+    return false;
+  }
+
+  get isUnregBiz() {
     const businessType =
       this.state.dirty.business_type || this.props.data.business_type;
 
-    return businessType == INDIVIDUAL;
+    return businessType == 2 || businessType == 11;
   }
 
   /*
