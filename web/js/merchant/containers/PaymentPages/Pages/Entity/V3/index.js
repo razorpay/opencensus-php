@@ -182,6 +182,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       toggleManualActivation,
       reActivateLink,
       reportConfigs,
+      isPPV3ReportsEnabled,
     } = this.props;
 
     // paymentPageEntity = dummyEntityData;
@@ -401,17 +402,19 @@ export default class PaymentPagesV3Entity extends React.Component {
               </div>
             ))}
 
-            <div className="btn-toolbar pull-right">
-              <button
-                type="button"
-                class="btn Button--primary--invert btn-sm"
-                onClick={this.downloadReport}
-                disabled={this.state.isExportInProgress}
-              >
-                <i class="i i-download m-r" />
-                Export All (CSV)
-              </button>
-            </div>
+            {isPPV3ReportsEnabled && (
+              <div className="btn-toolbar pull-right">
+                <button
+                  type="button"
+                  className="btn Button--primary--invert btn-sm"
+                  onClick={this.downloadReport}
+                  disabled={this.state.isExportInProgress}
+                >
+                  <i className="i i-download m-r" />
+                  Export All (CSV)
+                </button>
+              </div>
+            )}
           </div>
 
           <PaymentsList paymentPageId={paymentPageEntity.id} />

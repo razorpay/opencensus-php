@@ -439,6 +439,7 @@ export default class extends React.Component {
         editPaymentPage={this.editPaymentPage}
         toggleManualActivation={this.toggleManualActivation}
         reActivateLink={this.reActivateLink}
+        isPPV3ReportsEnabled={this.props.user.isPPV3ReportsEnabled}
       />
     );
   }
