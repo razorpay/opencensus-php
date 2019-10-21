@@ -1,4 +1,5 @@
 import React from 'react';
+import { withRouter } from 'react-router-dom';
 import Slider from 'component/Slider';
 import S0 from './steps/S0';
 import S1 from './steps/S1';
@@ -8,7 +9,9 @@ import User from 'merchant/models/User';
 import { updateSession } from 'merchant/modules/session';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
+import { showNotification } from 'rzp/modules/notifications';
 
+@withRouter
 @connect(
   state => ({
     session: state.session,
@@ -16,6 +19,7 @@ import { connect } from 'react-redux';
   }),
   {
     updateSession,
+    showNotification,
   }
 )
 export default class BaseScreen extends React.Component {
@@ -32,15 +36,23 @@ export default class BaseScreen extends React.Component {
       partner_type: this.state.role,
       merchant_partner_intent: false,
     });
-    this.props.updateSession({ user: userval });
+
     merchantFetch({
       url: url,
       method: 'PATCH',
-      mode: 'live',
       data,
     })
-      .then(response => {})
-      .catch(err => {});
+      .then(response => {
+        this.props.updateSession({ user: userval });
+        this.props.history.push(`partners/submerchants`);
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message:
+            'Something went wrong, we could not service this request at the moment.',
+        });
+      });
     this.props.closeModal();
   };
 
