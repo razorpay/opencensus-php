@@ -131,7 +131,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
                             entity.is_nach_form_uploaded &&
                             this.downloadSignedNACHFile
                           }
-                          preFilledNachFileURL={entity.created_url}
+                          preFilledNachFileURL={entity.nach_form_url}
                           trackClickUploadNACHForm={trackClickUploadNACHForm}
                           trackClickDownloadNACHForm={
                             trackClickDownloadNACHForm

@@ -328,7 +328,7 @@ export default class UploadNACHForm extends React.Component {
   };
 
   render() {
-    const { uploading, file } = this.state,
+    const { uploading, file, errors } = this.state,
       isDataAval =
         this.state.extractedData.extracted_data.length ||
         this.state.errors.heading,
@@ -369,6 +369,15 @@ export default class UploadNACHForm extends React.Component {
             uploadedFileName="Upload File here"
             onFileChange={this.handleChange}
             onCloseClick={this.onCloseClick}
+            dropZoneCavityClassName={classList(
+              `Dropzone-cavity--${
+                uploading
+                  ? 'process'
+                  : this.errorsList.length || errors.heading
+                    ? 'error'
+                    : 'success'
+              }`
+            )}
           />
 
           <div class="Desc">{this.renderDesc()}</div>
