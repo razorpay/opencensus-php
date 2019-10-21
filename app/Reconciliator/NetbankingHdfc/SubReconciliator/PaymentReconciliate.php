@@ -13,6 +13,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
+    const BLACKLISTED_COLUMNS = [
+        Constants::COLUMN_CUSTOMER_EMAIL,
+    ];
+
     protected function getPaymentId(array $row)
     {
         $reconStatus = $this->getReconPaymentStatus($row);

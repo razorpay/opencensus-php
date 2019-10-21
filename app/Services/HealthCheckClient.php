@@ -5,6 +5,7 @@ namespace RZP\Services;
 use App;
 use Requests;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Hitachi;
 
 class HealthCheckClient
 {
@@ -64,6 +65,12 @@ class HealthCheckClient
 
     protected function getResponse($request)
     {
+        // If it is Hitachi status endpoint then check if proxy is required
+        if ($request['url'] === Hitachi\Url::LIVE)
+        {
+            $request = (new Hitachi\Gateway)->getStatusRequest($request);
+        }
+
         return Requests::request(
             $request['url'],
             $request['headers'] ?? [],

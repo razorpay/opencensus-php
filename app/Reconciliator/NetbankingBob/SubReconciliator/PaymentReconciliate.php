@@ -13,6 +13,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_BANK_ACCOUNT_NUMBER = 'AccountNo.';
     const COLUMN_PAYMENT_AMOUNT      = 'Transaction Amount';
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         return $row[self::COLUMN_PAYMENT_ID];

@@ -665,6 +665,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK_DETAILS_VERIFICATION_STATUS);
     }
 
+    public function setContactName($name)
+    {
+        $this->setAttribute(self::CONTACT_NAME, $name);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
@@ -763,6 +768,11 @@ class Entity extends Base\PublicEntity
     public function getActivationProgress()
     {
         return $this->getAttribute(self::ACTIVATION_PROGRESS);
+    }
+
+    public function getContactName()
+    {
+        return $this->getAttribute(self::CONTACT_NAME);
     }
 
     public function getContactMobile()

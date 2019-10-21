@@ -5402,3 +5402,7 @@ ALTER TABLE settlement_bucket
 ALTER TABLE offers
     ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
     ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
+
+ALTER TABLE merchants
+   ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
+

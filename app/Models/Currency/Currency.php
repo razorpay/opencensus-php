@@ -33,6 +33,7 @@ class Currency
     const EUR = 'EUR';
     const FJD = 'FJD';
     const GBP = 'GBP';
+    const GHS = 'GHS';
     const GIP = 'GIP';
     const GMD = 'GMD';
     const GTQ = 'GTQ';
@@ -127,6 +128,7 @@ class Currency
         self::EUR,
         self::FJD,
         self::GBP,
+        self::GHS,
         self::GIP,
         self::GMD,
         self::GTQ,
@@ -222,6 +224,7 @@ class Currency
         self::EUR => '978',
         self::FJD => '242',
         self::GBP => '826',
+        self::GHS => '936',
         self::GIP => '292',
         self::GMD => '270',
         self::GTQ => '320',
@@ -319,6 +322,7 @@ class Currency
         self::EUR => 100,
         self::FJD => 100,
         self::GBP => 100,
+        self::GHS => 100,
         self::GIP => 100,
         self::GMD => 100,
         self::GTQ => 100,
@@ -416,6 +420,7 @@ class Currency
         self::EUR => 2,
         self::FJD => 2,
         self::GBP => 2,
+        self::GHS => 2,
         self::GIP => 2,
         self::GMD => 2,
         self::GTQ => 2,
@@ -512,6 +517,7 @@ class Currency
         self::EUR => 50,
         self::FJD => 10,
         self::GBP => 30,
+        self::GHS => 3,
         self::GIP => 10,
         self::GMD => 100,
         self::GTQ => 16,
@@ -608,6 +614,7 @@ class Currency
         self::EUR => 50,
         self::FJD => 10,
         self::GBP => 30,
+        self::GHS => 3,
         self::GIP => 10,
         self::GMD => 100,
         self::GTQ => 16,
@@ -703,6 +710,7 @@ class Currency
         self::EUR => '€',
         self::FJD => 'FJ$',
         self::GBP => '£',
+        self::GHS => 'GH₵',
         self::GIP => '£',
         self::GMD => 'D',
         self::GTQ => 'Q',
@@ -798,6 +806,7 @@ class Currency
         self::EUR => 'Euro',
         self::FJD => 'Fijian Dollar',
         self::GBP => 'British Pound',
+        self::GHS => 'Ghanaian Cedi',
         self::GIP => 'Gibraltar Pound',
         self::GMD => 'Gambian Dalasi',
         self::GTQ => 'Guatemalan Quetzal',

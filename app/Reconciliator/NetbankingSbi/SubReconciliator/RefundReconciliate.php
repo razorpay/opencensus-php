@@ -28,6 +28,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const REFUND_STATUS         = 'refund_status';
     const ERROR_DESCRIPTION     = 'error_description';
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getRefundId(array $row)
     {
         $paymentId      = $row[RefundReconFields::MERCHANT_REF_NO] ?? null;

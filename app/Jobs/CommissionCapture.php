@@ -42,6 +42,8 @@ class CommissionCapture extends Job
                 try
                 {
                     $core->capture($commission);
+
+                    $this->delete();
                 }
                 catch (\Throwable $e)
                 {

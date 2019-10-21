@@ -19,35 +19,35 @@ return [
                 'financial_services'      => [
                     'description'   => 'Financial Services',
                     'subcategories' => [
-                        'mutual_fund'       => [
+                        'mutual_fund'    => [
                             'category'                 => 6211,
                             'description'              => 'Mutual Fund',
                             'category2'                => 'mutual_funds',
                             'activation_flow'          => 'greylist',
                             'international_activation' => 'blacklist',
                         ],
-                        'lending'           => [
+                        'lending'        => [
                             'category'                 => 6012,
                             'description'              => 'Lending',
                             'category2'                => 'lending',
                             'activation_flow'          => 'greylist',
                             'international_activation' => 'blacklist',
                         ],
-                        'cryptocurrency'    => [
+                        'cryptocurrency' => [
                             'category'                 => 6051,
                             'description'              => 'Cryptocurrency',
                             'category2'                => 'cryptocurrency',
                             'activation_flow'          => 'blacklist',
                             'international_activation' => 'blacklist',
                         ],
-                        'insurance'         => [
+                        'insurance'      => [
                             'category'                 => 6300,
                             'description'              => 'Insurance',
                             'category2'                => 'insurance',
                             'activation_flow'          => 'greylist',
                             'international_activation' => 'greylist',
                         ],
-                        'nbfc'              => [
+                        'nbfc'           => [
                             'category'                 => 6012,
                             'description'              => 'NBFC',
                             'category2'                => 'lending',

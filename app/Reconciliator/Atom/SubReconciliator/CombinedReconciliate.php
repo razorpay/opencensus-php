@@ -25,6 +25,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         self::PAYMENT_TXN   => BaseReconciliate::PAYMENT,
     ];
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getReconciliationTypeForRow(&$row)
     {
         if (isset($row[self::COLUMN_TXN_STATE]) === false)

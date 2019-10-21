@@ -14,7 +14,6 @@ use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\State;
 use RZP\Models\Feature;
-use RZP\Models\Pricing;
 use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -27,7 +26,6 @@ use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Event;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
@@ -77,6 +75,7 @@ class Entity extends Base\PublicEntity
     const CATEGORY                       = 'category';
     const WHITELISTED_IPS_LIVE           = 'whitelisted_ips_live';
     const WHITELISTED_IPS_TEST           = 'whitelisted_ips_test';
+    const WHITELISTED_DOMAINS            = 'whitelisted_domains';
     const CATEGORY2                      = 'category2';
     const INVOICE_CODE                   = 'invoice_code';
     const SCOPE                          = 'scope';
@@ -119,7 +118,7 @@ class Entity extends Base\PublicEntity
     const COUPON_CODE              = 'coupon_code';
 
     // Receipt email to be triggered at payment status
-    const RECEIPT_EMAIL_TRIGGER_EVENT = "receipt_email_trigger_event";
+    const RECEIPT_EMAIL_TRIGGER_EVENT = 'receipt_email_trigger_event';
 
     //
     // Followings are derived data indexed in ES and goes to
@@ -263,6 +262,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::WHITELISTED_DOMAINS,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
@@ -342,6 +342,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::WHITELISTED_DOMAINS,
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
@@ -383,6 +384,7 @@ class Entity extends Base\PublicEntity
         self::NOTES                          => [],
         self::WHITELISTED_IPS_LIVE           => [],
         self::WHITELISTED_IPS_TEST           => [],
+        self::WHITELISTED_DOMAINS            => [],
         self::FEE_CREDITS_THRESHOLD          => null,
         self::CATEGORY                       => 0,
         self::WEBSITE                        => null,
@@ -414,6 +416,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH         => 'bool',
         self::WHITELISTED_IPS_LIVE           => 'array',
         self::WHITELISTED_IPS_TEST           => 'array',
+        self::WHITELISTED_DOMAINS            => 'array',
         self::FEE_CREDITS_THRESHOLD          => 'int',
         self::BUSINESS_BANKING               => 'bool',
         self::SECOND_FACTOR_AUTH             => 'bool',
@@ -1157,7 +1160,7 @@ class Entity extends Base\PublicEntity
         if (($amount === null) or
             ($amount === '0'))
         {
-            $amount = self::MAX_PAYMENT_AMOUNT_DEFAULT;
+            $amount = (new Core())->getMaxPayAmount($this);
         }
 
         return (int) $amount;
@@ -1326,6 +1329,11 @@ class Entity extends Base\PublicEntity
     public function getMerchantDashboardWhitelistedIpsTest()
     {
         return $this->getAttribute(self::DASHBOARD_WHITELISTED_IPS_TEST);
+    }
+
+    public function getWhitelistedDomains()
+    {
+        return $this->getAttribute(self::WHITELISTED_DOMAINS);
     }
 
     public function getOrgId()

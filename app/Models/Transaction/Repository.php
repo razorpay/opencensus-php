@@ -616,11 +616,16 @@ class Repository extends Base\Repository
         return $txn;
     }
 
-    public function fetchBySettlement($setl)
+    public function fetchBySettlement($setl, $txnToRelationFetchMap)
     {
-        return $this->newQuery()
+        $txns = $this->newQuery()
                     ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
+                    ->with('merchant', 'settlement')
                     ->get();
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $txnToRelationFetchMap);
+
+        return $txns;
     }
 
     /**

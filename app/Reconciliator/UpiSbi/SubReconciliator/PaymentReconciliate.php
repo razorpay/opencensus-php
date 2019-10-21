@@ -19,10 +19,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const TRANSACTION_AMOUNT    = 'transaction_amount';
     const PAYER_VIRTUAL_ACCOUNT = 'payer_virtual_account';
     const PAYEE_VIRTUAL_ACCOUNT = 'payee_virtual_account';
+    const PAYER_ACCOUNT_NAME    = 'payer_ac_name';
 
     const BLACKLISTED_COLUMNS = [
-        self::PAYEE_VIRTUAL_ACCOUNT,
         self::PAYER_VIRTUAL_ACCOUNT,
+        self::PAYER_ACCOUNT_NAME,
     ];
     protected function getPaymentId(array $row)
     {

@@ -16,6 +16,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const REFUND_AMOUNT            = 'refund_amount';
     const REFUND_DATE              = 'refund_date';
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getRefundId(array $row)
     {
         if (empty($row[self::REFUND_ID]) === false)

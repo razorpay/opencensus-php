@@ -13,6 +13,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     const PURCHASE_TXN = 'purchase';
     const REFUND_TXN   = 'refund';
 
+    const BLACKLISTED_COLUMNS = [];
+
     const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
         self::PURCHASE_TXN => Base\Reconciliate::PAYMENT,
         self::REFUND_TXN   => Base\Reconciliate::REFUND

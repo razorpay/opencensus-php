@@ -6129,12 +6129,15 @@ trait Authorize
 
         $billingAddressFromInput['type'] = Address\Type::BILLING_ADDRESS;
 
-        // address entity stores zip code as "zipcode"
-        // in input, we get zip code as "postal_code"
-        $billingAddressFromInput['zipcode'] = $billingAddressFromInput['postal_code'];
+        if (isset($billingAddressFromInput['postal_code']) === true)
+        {
+            // address entity stores zip code as "zipcode"
+            // in input, we get zip code as "postal_code"
+            $billingAddressFromInput['zipcode'] = $billingAddressFromInput['postal_code'];
 
-        unset($billingAddressFromInput['postal_code']);
-
+            unset($billingAddressFromInput['postal_code']);
+        }
+        
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }
