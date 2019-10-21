@@ -61,7 +61,9 @@ class Service extends Base\Service
 
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
-        if ($this->core->statusHasChanged($previousStatus, $bankingAccount->getStatus()) == true)
+        $currentStatus = $bankingAccount->getStatus();
+
+        if ($this->core->statusHasChanged($previousStatus, $currentStatus) === true)
         {
             $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
         }

@@ -21,7 +21,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Mail\BankingAccount\MerchantStatusUpdateMailerFactory;
+use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 
 class Core extends Base\Core
 {
@@ -104,7 +104,7 @@ class Core extends Base\Core
     {
         try
         {
-            $mailer = MerchantStatusUpdateMailerFactory::getMailer($bankingAccount);
+            $mailer = StatusUpdateMailerFactory::getMailer($bankingAccount);
 
             Mail::queue($mailer);
 

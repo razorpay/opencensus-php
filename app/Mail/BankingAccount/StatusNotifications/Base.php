@@ -1,13 +1,14 @@
 <?php
 
-namespace RZP\Mail\BankingAccount;
+namespace RZP\Mail\BankingAccount\StatusNotifications;
 
 use App;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Constants;
 use RZP\Models\BankingAccount\Entity;
 
-class UpdateNotifications extends Mailable
+class Base extends Mailable
 {
     const TEMPLATE_PATH = '';
 
@@ -57,5 +58,21 @@ class UpdateNotifications extends Mailable
     protected function getMailTag()
     {
         return MailTags::BANKING_ACCOUNT_STATUS_UPDATED;
+    }
+
+    protected function addSender()
+    {
+        $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+                    Constants::HEADERS[Constants::X_SUPPORT]);
+
+        return $this;
+    }
+
+    protected function addReplyTo()
+    {
+        $this->replyTo(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+                    Constants::HEADERS[Constants::X_SUPPORT]);
+
+        return $this;
     }
 }

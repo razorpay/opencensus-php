@@ -2,16 +2,16 @@
 
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
-use RZP\Mail\BankingAccount\Created;
 use RZP\Models\BankingAccount\Entity;
-use RZP\Mail\BankingAccount\Processed;
-use RZP\Mail\BankingAccount\Cancelled;
-use RZP\Mail\BankingAccount\Processing;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
-use RZP\Mail\BankingAccount\Unserviceable;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\BankingAccount\StatusNotifications\Created;
+use RZP\Mail\BankingAccount\StatusNotifications\Processed;
+use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
+use RZP\Mail\BankingAccount\StatusNotifications\Processing;
+use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 
 class BankingAccountTest extends TestCase
 {

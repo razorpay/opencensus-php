@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Mail\BankingAccount;
+namespace RZP\Mail\BankingAccount\StatusNotifications;
 
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
 use RZP\Exception\BadRequestValidationFailureException;
 
-class MerchantStatusUpdateMailerFactory
+class Factory
 {
     public static function getMailer(Entity $bankingAccount)
     {
@@ -28,6 +28,12 @@ class MerchantStatusUpdateMailerFactory
 
             case Status::UNSERVICEABLE:
                 return new Unserviceable($bankingAccount);
+
+            case Status::ACTIVATED:
+                return new Activated($bankingAccount);
+
+            case Status::REJECTED:
+                return new Rejected($bankingAccount);
 
             default:
                 throw new BadRequestValidationFailureException("Invalid Status, cannot send email, status: $status");

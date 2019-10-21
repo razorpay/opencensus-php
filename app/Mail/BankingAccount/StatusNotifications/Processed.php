@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Mail\BankingAccount;
+namespace RZP\Mail\BankingAccount\StatusNotifications;
 
-class Processed extends UpdateNotifications
+class Processed extends Base
 {
     const TEMPLATE_PATH = 'emails.banking_account.notify_status_processed';
 
-    const SUBJECT       = 'Your RazorpayX Current Account is Processed';
+    const SUBJECT       = 'Congrats ! Your account is created! One last step to go...';
 
     protected function addMailData()
     {
