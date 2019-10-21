@@ -11,6 +11,7 @@ use Request;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
@@ -25,6 +26,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
+use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -2681,9 +2683,25 @@ class Service extends Base\Service
 
     public function fetchPartnerIntent(): array
     {
-        $merchant = $this->merchant;
 
-        return $this->core()->getPartnerIntentFromSettings($merchant);
+        $response = (new Settings\Service)->get(
+            Constants::PARTNER,
+            Constants::PARTNER_INTENT);
+
+        $partnerIntent = $response['settings'];
+
+        if ($partnerIntent instanceof Dictionary)
+        {
+            $partnerIntent = null;
+        }
+        else
+        {
+            $partnerIntent = boolVal($partnerIntent);
+        }
+
+        return [
+            Constants::PARTNER_INTENT       => $partnerIntent,
+        ];
     }
 
     /**
@@ -2696,11 +2714,15 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('update_partner_intent', $input);
 
-        $merchant = $this->merchant;
+        (new Settings\Service)->upsert(
+            Constants::PARTNER,
+            $input);
 
-        $partnerIntent = $input[Constants::PARTNER_INTENT];
-
-        return $this->core()->updatePartnerIntentInSettings($merchant,$partnerIntent);
+        // since Settings/Service->upsert does not return anything hence,
+        // returning whatever was passed in input
+        return [
+            Constants::PARTNER_INTENT   => $input[COnstants::PARTNER_INTENT],
+        ];
     }
 
     /**
