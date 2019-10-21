@@ -258,16 +258,17 @@ export default class ProfileDropdown extends Component {
             {user.partner_type === null && (
               <div class="media loggedin-as">
                 <div class="media-body">
-                  <div>
-                    {' '}
+                  <p class="small-txt">
                     Partner with us and start earning on every referral
-                  </div>
+                  </p>
+
                   <a
                     class="partner-link"
-                    style={{ color: '#528ff0' }}
+                    style={{ color: '#528ff0', fontSize: '14px' }}
                     onClick={this.showPartnerIntent}
                   >
-                    Explore Partner Program
+                    <strong>Explore Partner Program</strong>{' '}
+                    <i className="i i-external-link " />
                   </a>
                 </div>
               </div>

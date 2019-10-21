@@ -78,6 +78,7 @@ export default class BaseScreen extends React.Component {
               sliderProps={sliderProps}
               onRoleSelect={this.onRoleSelect}
               role={this.state.role}
+              abort={this.props.closeModal}
               isExistingUser={this.props.user.merchant_partner_intent}
             />
           )}

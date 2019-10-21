@@ -6,7 +6,7 @@ const S1 = props => {
     <>
       <div className="partner-onbr-info">
         <div class="title">Welcome to your Partner Dashboard</div>
-        <div className="line-shadow-box brd-primary">
+        <div className="line-box brd-primary">
           <p className="info info-green">
             Receive 0.1% Commission on every transaction{' '}
           </p>

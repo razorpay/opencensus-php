@@ -2,14 +2,18 @@ import React from 'react';
 import { classList } from 'common/util';
 import SlideContoller from './SlideController';
 
-const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser }) => {
+const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser, abort }) => {
   return (
     <>
       <div className={'partner-onbr-info'}>
         <div className="title">What do you want to do as a Partner?</div>
         <div className="options-group">
           <div
-            class={classList('value', role === 'reseller' && 'active')}
+            class={classList(
+              'value',
+              role !== 'reseller' && 'no-bottom-border',
+              role === 'reseller' && 'active'
+            )}
             onClick={() => {
               onRoleSelect('reseller');
             }}
@@ -24,8 +28,8 @@ const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser }) => {
           </div>
           <div
             class={classList(
-              'top-no-border',
               'value',
+              role !== 'aggregator' && 'no-top-border',
               role === 'aggregator' && 'active'
             )}
             onClick={() => onRoleSelect('aggregator')}
@@ -43,14 +47,15 @@ const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser }) => {
         </div>
         <div class="partner--role-notes">
           <p>
-            For Enterprise solution Contact &nbsp;
+            For Enterprise solution
             <a href="mailto:partnership@razorpay.com" target="_top">
-              Support
+              Contact Support
             </a>
           </p>
           {!isExistingUser && (
             <p style={{ marginTop: '10px' }}>
               <a
+                onClick={abort}
                 target="_blank"
                 style={{
                   textDecoration: 'underline',

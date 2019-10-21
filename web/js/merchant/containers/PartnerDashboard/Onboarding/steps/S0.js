@@ -16,7 +16,7 @@ const S0 = props => {
             anyone who can offer or advocate online payments.
           </p>
         </div>
-        <div style={{ marginTop: '21px', padding: '2px' }}>
+        <div style={{ marginTop: '121px', padding: '2px' }}>
           <a
             href="https://razorpay.com/partners/"
             target="_blank"

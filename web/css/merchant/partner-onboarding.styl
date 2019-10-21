@@ -7,9 +7,9 @@
     background-position: top 0 right 0%;
     font-family: Lato;
     font-style: normal;
-    padding: 56px;
+    padding: 50px;
     .partner-onbr-info
-      min-height: 260px;
+      height: 360px;
       p
         font-size: 14px;
     .title
@@ -17,9 +17,8 @@
       font-size: 24px;
       line-height: 29px;
       color: #57666E;
-    .line-shadow-box
+    .line-box
       background-color: #fff;
-      box-shadow: 0px 2px 5px rgba(0,0,0,0.284);
       border-radius: 2px;
       border-radius: 2px;
       border: solid 1px;
@@ -31,7 +30,7 @@
       line-height: 20px;
       color: #57666e;      
     .brd-primary
-      border-color:rgba(63, 214, 154, 0.4);
+      border-color: rgba(46, 203, 140, 0.7);
       border-left-color:rgb(63, 214, 154);
     .info
       font-weight: bold;
@@ -54,9 +53,14 @@
          display:flex;
          align-content:center;
          cursor: pointer;
-      div.value.active
+       div.value:hover
+         background: rgba(81, 143, 240, 0.02);
+       div.value.active
         background: rgba(81, 143, 240, 0.05);
+        border-color: #518FF0;
         border-left: solid 4px #518FF0;
+        padding-left:17px;
+
         div.check i 
           color:#518FF0;
         .info-grey
@@ -67,17 +71,18 @@
         i
           font-size: 18px;
           color: #D9D9D9;
-      .no-bottom-border
-        border-bottom-width:0px !important;
-      .no-top-border
-        border-top-width:0px !important;
+       .no-bottom-border
+          border-bottom-width:0px !important;
+       .no-top-border
+          border-top-color: transparent;
+          border-top-width:1px !important;
       .tnc-box
         background: #FFFFFF;
         border: 1.8px solid #EBEBFD;
         box-sizing: border-box;
         border-radius: 4px;
-        padding:4px;
-        max-height: 300px;
+        padding:10px 17px 10px;
+        max-height: 285px;
         overflow-y: scroll;
         margin-top:22px;
         ul ul, ol ul, ul ol, ol ol
@@ -95,22 +100,27 @@
         justify-content: space-between;
       .SliderDots
           text-align: left;
+      .slide-nav-btns
+        float: right;
       .slider-btn
-        background: #518FF0;
-        border: 1px solid #3B80EE;
-        box-sizing: border-box;
-        border-radius: 2px;
         font-family: Lato;
         font-style: normal;
         font-weight: normal;
         font-size: 14px;
         line-height: 17px;
         width: 100px;
+        display: inline;
+      .slider-btn.next
         color: #FFFFFF;
+        background: #518FF0;
+        border: 1px solid #3B80EE;
+        box-sizing: border-box;
+        border-radius: 2px;
         i
           padding:2px;
           line-height: 8px;
-
+      .slider-btn.back 
+        color: #518FF0;
 @media (min-width: 900px) 
   .partner-onboarding-base-screen
     min-width:850px;

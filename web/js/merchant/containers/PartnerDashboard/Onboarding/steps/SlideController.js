@@ -7,29 +7,37 @@ const SlideController = ({
   onNext,
   disNext = false,
   disBack = false,
+  nextBtnLabel,
 }) => {
-  const { next, prev } = sliderProps;
+  const { next, prev, active } = sliderProps;
+  let nextLabel = Boolean(nextBtnLabel) ? nextBtnLabel : 'Next';
   return (
     <div className="slide-controller-wrapper">
       <div className="slide-controller">
         <div>
           <SliderDots {...sliderProps} />
         </div>
-        <div style={{ textAlign: 'end' }}>
-          <a onClick={() => prev && prev()} className="btn btn-link">
-            Back
-          </a>
+        <div style={{ textAlign: 'end' }} className="slide-nav-btns">
+          {Boolean(active) && (
+            <a
+              onClick={() => prev && prev()}
+              className="btn btn-link slider-btn back"
+            >
+              Back
+            </a>
+          )}
+
           <a
             onClick={() => {
               !disNext && next && next();
               onNext && onNext();
             }}
             class={classList(
-              'btn btn-primary slider-btn',
+              'btn btn-primary slider-btn next',
               disNext && 'disabled'
             )}
           >
-            Next
+            {nextLabel}
             <i class="i i-arrow-forward" />
           </a>
         </div>

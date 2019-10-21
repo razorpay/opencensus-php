@@ -955,7 +955,7 @@ const s3 = props => {
         </div>
       </div>
       <SlideContoller
-        key={4}
+        nextBtnLabel="Accept and Get Started"
         sliderProps={props.sliderProps}
         onNext={props.onNext}
       />
