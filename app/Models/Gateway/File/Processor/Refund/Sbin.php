@@ -85,7 +85,7 @@ class Sbin extends Base
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $date = Carbon::now(Timezone::IST)->format('d.m.y');
+        $date = Carbon::now(Timezone::IST)->format('d.m.Y');
 
         return self::FILE_NAME . '_' . $date;
     }

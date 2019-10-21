@@ -136,11 +136,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->fixtures->edit('transaction', $transaction['id'], [
-            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
-        ]);
+        $this->updateAuthorizedAtOfPayment($payment['id']);
 
         $this->refundPayment($payment['id']);
     }
@@ -162,6 +158,8 @@ class NetbankingSbiCombinedFileTest extends TestCase
             'status'  => 'SUCCESS',
             'umrn'    => '111111111111111'
         ];
+
+        $this->updateAuthorizedAtOfPayment($registerPayments[0]['payment']['id']);
 
         $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
         $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
@@ -195,7 +193,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        $rfDate = Carbon::now(Timezone::IST)->format('d.m.y');
+        $rfDate = Carbon::now(Timezone::IST)->format('d.m.Y');
 
         $expectedFilesContent = [
             'entity' => 'collection',
@@ -239,5 +237,22 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
             return true;
         });
+    }
+
+    protected function updateAuthorizedAtOfPayment($paymentId)
+    {
+        $this->fixtures->stripSign($paymentId);
+
+        // setting authorized at at to 8am. Payments are picked from 8pm to 8pm cycle.
+        $authorizedAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'payment',
+            $paymentId,
+            [
+                'authorized_at' => $authorizedAt,
+            ]);
+
+        return $paymentId;
     }
 }
