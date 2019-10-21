@@ -160,9 +160,12 @@ export default class ActivationContainer extends Component {
         isGraylistFlow,
       } = user.instantActivation,
       showL1Modal =
+        !user.isUnregBizFlowEnabled &&
         !this.props.accountId &&
         user.showInstantActivation &&
         (!isL1Submitted || isBlacklistFlow);
+
+    console.log('showL1Modal -----', showL1Modal);
 
     let content = null,
       modalClasses = ['animate-down'],

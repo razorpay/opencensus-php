@@ -402,6 +402,11 @@ export default class User {
   get isShowCommissionBalanceEnabled() {
     return this.getExpStatus('show_commission_balance');
   }
+  
+  get isUnregBizFlowEnabled() {
+    return true;
+    // return true || this.getExpStatus('unreg_biz_enabled');
+  }
 
   get isAllowedTeamManagement() {
     return this.isMerchantRestricted
