@@ -2,7 +2,7 @@ $base = #538FF0;
 $completed = #B9B9B9;
 
 .Stepper
-  .Stepper__item
+  .Stepper-item
     display: flex
     align-items: center
 
@@ -14,14 +14,15 @@ $completed = #B9B9B9;
       line-height: 1
       i
         font-size: 9px
+        line-height: 1.5
     
     &:not(:last-child) .item-step:after
       content: ''
       border: 0.25px solid
       height: 1px
-      width: 13px
+      width: 20px
       position: absolute
-      transform: rotate(90deg) translate(20px, 10.5px)
+      transform: rotate(90deg) translate(20px, 14.5px)
       z-index: 1
     
     .item-label
@@ -35,4 +36,8 @@ $completed = #B9B9B9;
         font-size: 14px
       .item-step:after
         width: 14px
-        transform: rotate(90deg) translate(20px, 14px)
+        transform: rotate(90deg) translate(22px, 14px)
+
+    &.disabled
+      *
+        color: $completed 

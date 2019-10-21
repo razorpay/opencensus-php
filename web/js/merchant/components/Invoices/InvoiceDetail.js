@@ -133,6 +133,9 @@ export default props => {
   let isSmsOrEmailSent =
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
 
+  const isRemindersEnabled =
+    invoice.reminder_status && !(invoice.reminder_status === 'disabled');
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -293,10 +296,7 @@ export default props => {
                     <Input.Check
                       name="auto_reminders"
                       fieldLabel="Send auto reminders"
-                      checked={
-                        invoice.reminder_status &&
-                        !(invoice.reminder_status === 'disabled')
-                      }
+                      checked={isRemindersEnabled}
                       disabled={isAutoRemindersUpdating}
                       onChange={onChangeSendAutoReminder}
                       autoRender
@@ -304,6 +304,7 @@ export default props => {
 
                     <Stepper
                       list={getRemindersStepperData(
+                        isRemindersEnabled,
                         nextReminders,
                         isAutoRemindersUpdating
                       )}
@@ -391,13 +392,19 @@ export default props => {
   );
 };
 
-const getRemindersStepperData = (reminders, isAutoRemindersUpdating) => {
+const getRemindersStepperData = (
+  isRemindersEnabled,
+  reminders,
+  isAutoRemindersUpdating
+) => {
   return reminders.map(reminder => {
     const currDate = moment(undefined),
       reminderDate = moment(reminder * 1000);
 
     const newReminder = {
-      status: reminderDate.diff(currDate, 'days') > 0 ? 'pending' : 'completed',
+      status: !isRemindersEnabled
+        ? 'disabled'
+        : reminderDate.diff(currDate, 'days') > 0 ? 'pending' : 'completed',
       time_to_sent: reminder,
     };
 

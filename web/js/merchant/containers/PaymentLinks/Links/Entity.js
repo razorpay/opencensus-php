@@ -234,15 +234,18 @@ export default class InvoiceDetailContainer extends Component {
           }
 
           if (d.hasOwnProperty('reminder_enable')) {
-            d = {
-              reminder: true,
-            };
+            this.props.showNotification({
+              type: 'success',
+              message: `Auto reminders has been ${
+                d.reminder_enable ? 'enabled' : 'disabled'
+              } successfully`,
+            });
+          } else {
+            this.props.showNotification({
+              type: 'success',
+              message: `${keysToSentence(d)} updated successfully`,
+            });
           }
-
-          this.props.showNotification({
-            type: 'success',
-            message: `${keysToSentence(d)} updated successfully`,
-          });
 
           return resp;
         } else {
