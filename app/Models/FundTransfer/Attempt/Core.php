@@ -487,7 +487,7 @@ class Core extends Base\Core
 
         $bankStatusCode = $fta->getBankStatusCode();
 
-        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode);
+        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode, $fta->getBankResponseCode());
 
         $ftaData = [
             'bank_account_id'   => $fta->getBankAccountId(),
