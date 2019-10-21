@@ -22,10 +22,18 @@ export default class Form extends React.PureComponent {
   };
 
   render() {
-    let { beforeSubmit, onSubmit, layout, className, ...rest } = this.props;
+    let {
+      beforeSubmit,
+      onSubmit,
+      layout,
+      className,
+      setRef,
+      ...rest
+    } = this.props;
 
     return (
       <form
+        ref={setRef}
         noValidate
         {...rest}
         class={this.formClass()}
