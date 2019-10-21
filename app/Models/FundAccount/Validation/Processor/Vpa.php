@@ -10,8 +10,6 @@ use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 class Vpa extends Base
 {
-    use VpaTrait;
-
     public function __construct(Validation $validation)
     {
         parent::__construct($validation);
