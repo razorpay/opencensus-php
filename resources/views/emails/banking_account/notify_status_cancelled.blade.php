@@ -173,7 +173,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary  title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;"><div class="center-align" style="text-align: center;"><img class="image medium" src="https://cdn.razorpay.com/static/assets/email/rejected.png" style="margin: 8px; background: transparent; height: 80px;" height="80"></div><div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">Oh-No! You decided to not take it forward!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div></div></div><div class="description" style="text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;">Your Current Account application was cancelled at your request.</div></div>
+                                                    <div class="card secondary  title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;"><div class="center-align" style="text-align: center;"><img class="image medium" src="https://cdn.razorpay.com/static/assets/email/rejected.png" style="margin: 8px; background: transparent; height: 80px;" height="80"></div><div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">Oh-No! You decided to not take it forward!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #DD5C5C;"></div></div></div><div class="description" style="text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;">Your Current Account application was cancelled at your request.</div></div>
                                                 </div>
 
                                             </td>
@@ -375,30 +375,30 @@
 
                                     </div>
 
+                                    <!--[if mso | IE]>
+                                    </td>
+
+                                    </tr>
+
+                                    </table>
+                                    <![endif]-->
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+
+
                     <!--[if mso | IE]>
                     </td>
-
                     </tr>
-
                     </table>
                     <![endif]-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
+
 
     </div>
-
-
-
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-    <![endif]-->
-
-
-</div>
 
 </body>
 </html>
