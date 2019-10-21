@@ -644,9 +644,12 @@ class Service extends Base\Service
 
         $offer = $payment->getOffer();
 
-        $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+        if($offer!== null) {
 
-        $this->repo->offer->saveOrFail($offer);
+            $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+
+            $this->repo->offer->saveOrFail($offer);
+        }
 
         return $payment->toArrayPublic();
     }

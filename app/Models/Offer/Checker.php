@@ -91,11 +91,6 @@ class Checker extends Base\Core
             }
         }
 
-        s($offerActive);
-        s($validOfferPeriod);
-        s($checkResult);
-
-
         return (($offerActive === true) and
                 ($validOfferPeriod === true) and
                 ($checkResult === true));
@@ -384,7 +379,7 @@ class Checker extends Base\Core
         $result = true;
         if($this->offer->getMaxOfferUsage()!== NULL) {
             if ($this->offer->getMaxOfferUsage() !== 0) {
-                
+
                 $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
 
                 $this->traceCheckResult(
