@@ -207,6 +207,8 @@ class Entity extends Base\PublicEntity
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
         self::EMI_SUBVENTION   => null,
         self::EMI_DURATIONS    => null,
+        self::MAX_OFFER_USAGE    => 0,
+        self::CURRENT_OFFER_USAGE => 0,
     ];
 
     protected $publicSetters = [
@@ -237,6 +239,8 @@ class Entity extends Base\PublicEntity
         self::ENDS_AT            => 'int',
         self::MAX_PAYMENT_COUNT  => 'int',
         self::LINKED_OFFER_IDS   => 'array',
+        self::MAX_OFFER_USAGE    => 'int',
+        self::CURRENT_OFFER_USAGE => 'int',
     ];
 
     public function build(array $input = [], string $operation = 'create')

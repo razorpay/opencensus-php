@@ -91,6 +91,7 @@ class Checker extends Base\Core
             }
         }
 
+
         return (($offerActive === true) and
                 ($validOfferPeriod === true) and
                 ($checkResult === true));
@@ -155,6 +156,7 @@ class Checker extends Base\Core
             'offer_card_network'   => $offerPaymentNetwork,
             'payment_card_network' => $card->getNetworkCode()
         ]);
+
 
         return $result;
     }
@@ -234,6 +236,7 @@ class Checker extends Base\Core
     {
         $offerIins = $this->offer->getIins();
 
+
         if ((empty($offerIins) === true) or ($this->payment->isMethodCardOrEmi() === false))
         {
             return true;
@@ -258,6 +261,7 @@ class Checker extends Base\Core
             'offer_iins' => $offerIins,
             'card_iin'   => $card->getIin()
         ]);
+
 
         return $result;
     }
@@ -373,16 +377,18 @@ class Checker extends Base\Core
     // not exceed the max offer usage cout
     protected function checkMaxOfferUsage(): bool
     {
+        $result = true;
+        if($this->offer->getMaxOfferUsage()!== null || $this->offer->getMaxOfferUsage()!== 0) {
 
-        $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+            $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
 
-        $this->traceCheckResult(
-            TraceCode::OFFER_USAGE_CHECK,
-            [
-                'result'                   => $result,
-                'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
-            ]);
-
+            $this->traceCheckResult(
+                TraceCode::OFFER_USAGE_CHECK,
+                [
+                    'result' => $result,
+                    'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
+                ]);
+        }
         return $result;
     }
 

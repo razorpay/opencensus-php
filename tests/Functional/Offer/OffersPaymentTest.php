@@ -206,16 +206,12 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
-        $discount = $this->getLastEntity('discount', true);
-        $this->assertEquals(10000, $discount['amount']);
-
     }
 
     public function testDiscountedOfferApplicableWithPaymentBlockedFlagNotSet()
     {
         $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);
-        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false,'max_offer_usage' => 1]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);
 
         $order = $this->fixtures->order->createWithOffers([
             $offer1,
@@ -227,10 +223,11 @@ class OffersPaymentTest extends TestCase
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals(90000, $payment['amount']);
         $this->assertEquals('authorized', $payment['status']);
 
-        $this->capturePayment($payment['id'], 100000, 'INR', 90000);
+        $this->capturePayment($payment['id'], 90000, 'INR', 90000);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals(90000, $payment['amount']);
