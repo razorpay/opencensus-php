@@ -91,6 +91,10 @@ class Checker extends Base\Core
             }
         }
 
+        s($offerActive);
+        s($validOfferPeriod);
+        s($checkResult);
+
 
         return (($offerActive === true) and
                 ($validOfferPeriod === true) and
@@ -378,16 +382,18 @@ class Checker extends Base\Core
     protected function checkMaxOfferUsage(): bool
     {
         $result = true;
-        if($this->offer->getMaxOfferUsage()!== null || $this->offer->getMaxOfferUsage()!== 0) {
+        if($this->offer->getMaxOfferUsage()!== NULL) {
+            if ($this->offer->getMaxOfferUsage() !== 0) {
+                
+                $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
 
-            $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
-
-            $this->traceCheckResult(
-                TraceCode::OFFER_USAGE_CHECK,
-                [
-                    'result' => $result,
-                    'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
-                ]);
+                $this->traceCheckResult(
+                    TraceCode::OFFER_USAGE_CHECK,
+                    [
+                        'result' => $result,
+                        'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
+                    ]);
+            }
         }
         return $result;
     }
