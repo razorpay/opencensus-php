@@ -1433,6 +1433,26 @@ export default class ActivationWizard extends React.Component {
               {documentContent}
             </div>
           </Form>
+          <ShowWhen
+            additionalCondition={user =>
+              user.isOrgAllowedFunctionality('external_links') &&
+              user.isUnregBizFlowEnabled &&
+              this.state.activeTab == 2 &&
+              !this.props.user.instantActivation.isL1Submitted
+            }
+          >
+            <div className="subfooter">
+              By submitting this form you agree to our{' '}
+              <a
+                className="text-primary"
+                target="_blank"
+                href="https://razorpay.com/terms/"
+                onClick={trackTnCClick}
+              >
+                Terms and Conditions
+              </a>
+            </div>
+          </ShowWhen>
         </main>
 
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
