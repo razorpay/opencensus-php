@@ -1,5 +1,4 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { snakeToTitleCase } from 'common/util';
 import { generateReportV2 } from 'merchant/modules/reports';
 
 function pruneReqPayload(reqPayload) {
@@ -162,7 +161,7 @@ export function _prepareTemplate(paymentPageEntity) {
   const udfKeys = {};
 
   UDF_SCHEMA.forEach(udf => {
-    udfKeys[udf.name] = ['payments.notes.' + snakeToTitleCase(udf.name)];
+    udfKeys[udf.name] = ['payments.notes.' + udf.name];
   });
 
   const templateOverrides = {
