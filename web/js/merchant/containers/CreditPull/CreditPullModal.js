@@ -455,7 +455,11 @@ export default class CreditPullModal extends Component {
                 />
               </div>
               <label htmlFor="consent" className="cap-consent col-md-9">
-                Share my credit report with Razorpay and Razorpay's partners.
+                I hereby agree to share my credit information with Razorpay and
+                its partners. By submitting this form I hereby agree to the
+                <a target="_blank" href="https://razorpay.com/terms/">
+                  {' Terms & Conditions.'}
+                </a>
               </label>
             </div>
 
