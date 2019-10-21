@@ -605,7 +605,7 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals($accessMap->toArrayPublic(), $response);
     }
 
-    public function testRemovePartnerAccessMap()
+    public function testRemoveAccessMapForReseller()
     {
         $this->allowAdminToAccessPartnerMerchant();
 
@@ -648,6 +648,62 @@ class PartnerTest extends OAuthTestCase
 
         // The above test should not delete the mapping. Dashboard access has to be revoked separately.
         $this->assertEquals(2, $merchantUsers['count']);
+    }
+
+    public function testRemoveAccessMapForAggregator()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $submerchant = $this->allowAdminToAccessSubMerchant();
+
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp();
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchant->retag(['Ref-' . self::DEFAULT_MERCHANT_ID]);
+
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $submerchant->getReferrer());
+
+        $merchantUsers = $submerchant->users()->get()->toArrayPublic();
+
+        $this->assertEquals(2, $merchantUsers['count']);
+
+        $this->ba->adminAuth();
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+                     ->where('user_id', '=', $partnerUser->getId())
+                     ->get();
+
+        $this->assertNotEmpty($mapping);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->sendRequest($testData['request']);
+
+        $response->assertStatus(204);
+
+        $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->assertEquals(null, $submerchant->getReferrer());
+
+        $merchantUsers = $submerchant->users()->get()->toArrayPublic();
+
+        $this->assertEquals(1, $merchantUsers['count']);
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+                     ->where('user_id', '=', $partnerUser->getId())
+                     ->get();
+
+        $this->assertEmpty($mapping);
     }
 
     public function testRemoveNonExistingPartnerAccessMap()

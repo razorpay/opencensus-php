@@ -1324,6 +1324,21 @@ class Core extends Base\Core
     }
 
     /**
+     * @param string $partnerUserId
+     * @param Entity $subMerchant
+     */
+    public function detachSubMerchantOwner(string $partnerUserId, Entity $subMerchant)
+    {
+        $userMerchantMappingInputData = [
+            'action'      => 'detach',
+            'role'        => $subMerchant->getUserOwnerRole(),
+            'merchant_id' => $subMerchant->getId(),
+        ];
+
+        (new User\Service)->updateUserMerchantMapping($partnerUserId, $userMerchantMappingInputData);
+    }
+
+    /**
      * used for deleting a single tag of a merchant
      * @param string $id
      * @param string $tagName tag which has to be deleted
