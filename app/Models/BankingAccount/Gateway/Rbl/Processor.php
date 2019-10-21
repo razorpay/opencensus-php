@@ -63,6 +63,7 @@ class Processor extends BankingAccount\Gateway\Processor
                 [
                     'code'          => $e->getCode(),
                     'message'       => $e->getMessage(),
+                    'trace'         => $e->getTraceAsString(),
                 ]);
 
             throw new BadRequestException(
@@ -222,11 +223,16 @@ class Processor extends BankingAccount\Gateway\Processor
             Fields::CLIENT_SECRET             => $bankingAccount->getReference3(),
         ];
 
+        $config = [
+            FTS\Constants::BENEFICIARY_REQUIRED     => false,
+        ];
+
         $mozartIdentifier = $rbl[Fields::MOZART_IDENTIFIER];
 
         $body = [
             FTS\Constants::CREDENTIALS       => $credentials,
-            FTS\Constants::MOZART_IDENTIFIER => $mozartIdentifier
+            FTS\Constants::MOZART_IDENTIFIER => $mozartIdentifier,
+            FTS\Constants::CONFIGURATION     => $config,
         ];
 
         return $body;

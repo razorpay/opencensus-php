@@ -162,7 +162,7 @@ class CreateAccount extends Base
             Constants::BENEFICIARY_STATE          => IndianStates::getStateCode($ba->getBeneficiaryState()),
             Constants::BENEFICIARY_MOBILE         => $ba->getBeneficiaryMobile(),
             Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
-            Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode($ba->getBeneficiaryCountry()),
+            Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode(strtolower($ba->getBeneficiaryCountry())),
             Constants::BENEFICIARY_BANK_NAME      => $ba->getChannel(),
         ];
     }
@@ -221,7 +221,8 @@ class CreateAccount extends Base
             Constants::CREDENTIALS          => $content[Constants::CREDENTIALS],
             Constants::MOZART_IDENTIFIER    => $content[Constants::MOZART_IDENTIFIER],
             Constants::FUND_ACCOUNT_ID      => intval($fundAccountId),
-            Constants::CHANNEL              => strtoupper($channel)
+            Constants::CHANNEL              => strtoupper($channel),
+            Constants::CONFIGURATION        => $content[Constants::CONFIGURATION],
         ];
 
         return $request;
