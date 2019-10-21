@@ -138,7 +138,9 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $this->updateAuthorizedAtOfPayment($payment['id']);
 
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->updateCreatedAtOfRefund($refund['id']);
     }
 
     protected function createEmandatePayment()
@@ -243,7 +245,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
     {
         $this->fixtures->stripSign($paymentId);
 
-        // setting authorized at at to 8am. Payments are picked from 8pm to 8pm cycle.
+        // setting authorized at to 8am. Payments are picked from 8pm to 8pm cycle.
         $authorizedAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
 
         $this->fixtures->edit(
@@ -254,5 +256,22 @@ class NetbankingSbiCombinedFileTest extends TestCase
             ]);
 
         return $paymentId;
+    }
+
+    protected function updateCreatedAtOfRefund($refundId)
+    {
+        $this->fixtures->stripSign($refundId);
+
+        // setting created at to 8am. refunds are picked from 8pm to 8pm cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'refund',
+            $refundId,
+            [
+                'created_at' => $createdAt,
+            ]);
+
+        return $refundId;
     }
 }
