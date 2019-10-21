@@ -28,7 +28,6 @@ class Vpa extends Base
     public function preProcessValidation()
     {
         FaVpaValidation::dispatch($this->mode, $this->validation->getId());
-
     }
 
     public function setDefaultValuesForValidation()

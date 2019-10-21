@@ -2,19 +2,16 @@
 
 namespace RZP\Jobs;
 
-
 use App;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\Payment\Processor\Vpa;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\FundAccount\Validation\AccountStatus;
-use \RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
-
+use RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
 
 class FaVpaValidation extends Job
 {
-
     use Vpa;
 
     protected $queueConfigKey = 'fa_vpa_validation';
@@ -54,8 +51,8 @@ class FaVpaValidation extends Job
             $this->app = App::getFacadeRoot();
 
             $faValidation = $this->repoManager
-                ->fund_account_validation
-                ->findOrFail($this->favId);
+                                 ->fund_account_validation
+                                 ->findOrFail($this->favId);
 
             if ($faValidation === null)
             {
@@ -110,8 +107,7 @@ class FaVpaValidation extends Job
         }
     }
 
-    protected function logAndDelete(
-        array $data,
+    protected function logAndDelete(array $data,
         string $traceCode)
     {
         $this->trace->info($traceCode, $data);
