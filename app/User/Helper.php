@@ -91,4 +91,9 @@ class Helper
 
         return $genericUser;
     }
+
+    public function isOwner($user)
+    {
+        return $user->role === 'owner';
+    }
 }
