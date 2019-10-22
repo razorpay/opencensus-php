@@ -17,6 +17,8 @@ class Doppler
 
     const PAYMENT_FAILURE_EVENT    = 'failure';
 
+    const SESSION_ID = 'rzp_api_session';
+
     protected $app;
 
     protected $mode;
@@ -104,6 +106,8 @@ class Doppler
 
             $os = null;
 
+            $upiType = $payment['_']['flow'];
+
             $paymentAnalytics = $payment->getMetadata("payment_analytics");
 
             if (is_null($paymentAnalytics) === false)
@@ -124,6 +128,7 @@ class Doppler
                 $upi['vpa'] = null;
                 $upi['psp'] = null;
                 $upi['bank'] = null;
+                $upi['type'] = null;
             }
 
             if($payment->isUPI() === true)
@@ -135,9 +140,10 @@ class Doppler
                 $upi['vpa'] = $payment->getVpa();
                 $upi['psp'] = $payment->getPspFromVpa();
                 $upi['bank'] = $payment->getBankName();
+                $upi['type'] = $upiType;
             }
 
-            $data = [
+            $reqObj = [
                 'payment_id'            => $payment->getId(),
                 'method'                => $payment->getMethod(),
                 'authorized'            => $authorizeStatus,
@@ -153,6 +159,11 @@ class Doppler
                 'authorized_at'         => Carbon::now()->getTimestamp(),
                 'error_code'            => $errorCode ?? null,
                 'internal_error_code'   => $internalErrorCode ?? null,
+            ];
+
+            $data = [
+                'session_id' => self::SESSION_ID,
+                'reqObj'     => $reqObj,
             ];
 
             return $data;
