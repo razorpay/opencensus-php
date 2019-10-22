@@ -361,6 +361,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
     }
 
+    public function getReference1()
+    {
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
     // --------------------------- Relations ---------------------------------- //
 
     public function merchant()
@@ -382,7 +387,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicBankingAccountDetailsAttribute(array & $array)
     {
-        if (app('basicauth')->isProxyAuth() === true)
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($array[self::BANKING_ACCOUNT_DETAILS]);
         }

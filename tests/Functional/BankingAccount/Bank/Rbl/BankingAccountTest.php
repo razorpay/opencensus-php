@@ -209,20 +209,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
-            'account_number'        => '1234567890',
-            'account_ifsc'          => 'YESB000198',
-            'beneficiary_name'      => 'abc',
-            'beneficiary_mobile'    => '9999999999',
-            'beneficiary_email'     => 'aa@abc.com',
-            'beneficiary_state'     => 'karnataka',
-            'beneficiary_country'   => 'india',
-            'username'              => 'MERCHANT_1234',
-            'password'              => 'RANDOM_STRING',
-            'reference1'            => 'MERCHANT_SUB_CORP',
-            'reference2'            => 'RANDOM_STRING',
-            'reference3'            => 'RANDOM_STRING',
-        ]);
+        $this->setupDataForActivation($bankingAccount);
 
         $dataToReplace = [
           'request' => [
@@ -277,20 +264,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
-            'account_number'        => '1234567890',
-            'account_ifsc'          => 'YESB000198',
-            'beneficiary_name'      => 'abc',
-            'beneficiary_mobile'    => '9999999999',
-            'beneficiary_email'     => 'aa@abc.com',
-            'beneficiary_state'     => 'karnataka',
-            'beneficiary_country'   => 'india',
-            'username'              => 'MERCHANT_1234',
-            'password'              => 'RANDOM_STRING',
-            'reference1'            => 'MERCHANT_SUB_CORP',
-            'reference2'            => 'RANDOM_STRING',
-            'reference3'            => 'RANDOM_STRING',
-        ]);
+        $this->setupDataForActivation($bankingAccount);
 
         $dataToReplace = [
             'request' => [
@@ -757,5 +731,43 @@ class BankingAccountTest extends TestCase
     protected function getMozartMockedResponse(string $key)
     {
         return $this->testData[$key];
+    }
+
+    protected function setupDataForActivation($bankingAccount)
+    {
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'account_type'          => 'current',
+            'account_ifsc'          => 'YESB000198',
+            'beneficiary_name'      => 'abc',
+            'beneficiary_mobile'    => '9999999999',
+            'beneficiary_email'     => 'aa@abc.com',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'username'              => 'MERCHANT_1234',
+            'password'              => 'RANDOM_STRING',
+            'reference1'            => 'MERCHANT_SUB_CORP',
+            'reference2'            => 'RANDOM_STRING',
+            'reference3'            => 'RANDOM_STRING',
+        ]);
+
+        $attributes = [
+            [
+                'id'                 => 'badetail000000',
+                'banking_account_id' => $bankingAccount->getId(),
+                'gateway_key'        => 'client_id',
+                'gateway_value'      => '123zz',
+            ],
+            [
+                'id'                 => 'badetail000001',
+                'banking_account_id' => $bankingAccount->getId(),
+                'gateway_key'        => 'client_secret',
+                'gateway_value'      => '123zz',
+            ]
+        ];
+
+        $this->fixtures->create('banking_account_detail', $attributes[0]);
+        $this->fixtures->create('banking_account_detail', $attributes[1]);
+
     }
 }

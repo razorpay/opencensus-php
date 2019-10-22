@@ -278,7 +278,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'        => 'banking_account',
                 'channel'       => 'rbl',
                 'status'        => 'activated',
                 'reference1'    => 'MERCHANT_SUB_CORP'

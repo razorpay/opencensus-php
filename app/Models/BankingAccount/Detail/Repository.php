@@ -4,7 +4,6 @@ namespace RZP\Models\BankingAccount\Detail;
 
 use RZP\Models\Base;
 use RZP\Models\BankingAccount;
-use RZP\Models\BankingAccount\Detail\Entity;
 
 class Repository extends Base\Repository
 {

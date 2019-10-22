@@ -215,12 +215,16 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $rbl = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
 
+        $clientId = Fields::getClientId($bankingAccount);
+
+        $clientSecret = Fields::getClientSecret($bankingAccount);
+
         $credentials = [
             Fields::USERNAME                  => $bankingAccount->getUsername(),
             Fields::PASSWORD                  => $bankingAccount->getPassword(),
             Fields::CORP_ID                   => $bankingAccount->getReference1(),
-            Fields::CLIENT_ID                 => $bankingAccount->getReference2(),
-            Fields::CLIENT_SECRET             => $bankingAccount->getReference3(),
+            Fields::CLIENT_ID                 => $clientId,
+            Fields::CLIENT_SECRET             => $clientSecret,
         ];
 
         $config = [
@@ -374,6 +378,10 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount)
     {
+        $clientId = Fields::getClientId($bankingAccount);
+
+        $clientSecret = Fields::getClientSecret($bankingAccount);
+
         $data = [
             Fields::SOURCE_ACCOUNT => [
                 Fields::SOURCE_ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
@@ -382,8 +390,8 @@ class Processor extends BankingAccount\Gateway\Processor
                     Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
                     Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
                     Fields::CORP_ID                 => $bankingAccount->getReference1(),
-                    Fields::CLIENT_ID               => $bankingAccount->getReference2(),
-                    Fields::CLIENT_SECRET           => $bankingAccount->getReference3(),
+                    Fields::CLIENT_ID               => $clientId,
+                    Fields::CLIENT_SECRET           => $clientSecret,
                 ],
             ],
         ];
@@ -551,19 +559,34 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function validateBeforeActivation(Entity $bankingAccount, array $input = [])
     {
+        $emptyKeys = [];
+
+        $clientId = Fields::getClientId($bankingAccount);
+
+        $clientSecret = Fields::getClientSecret($bankingAccount);
+
+        if (empty($clientId) === true)
+        {
+            $emptyKeys[] = Fields::CLIENT_ID;
+        }
+
+        if (empty($clientSecret) === true)
+        {
+            $emptyKeys[] = Fields::CLIENT_SECRET;
+        }
+
         $fieldsRequired = [
             Entity::ACCOUNT_NUMBER,
             Entity::ACCOUNT_IFSC,
             Entity::USERNAME,
             Entity::PASSWORD,
             Entity::REFERENCE1,
-            Entity::REFERENCE2,
-            Entity::REFERENCE3,
             Entity::BENEFICIARY_NAME,
             Entity::BENEFICIARY_STATE,
             Entity::BENEFICIARY_COUNTRY,
             Entity::BENEFICIARY_MOBILE,
             Entity::BENEFICIARY_EMAIL,
+            Entity::ACCOUNT_TYPE,
         ];
 
         foreach ($fieldsRequired as $key)
@@ -574,13 +597,16 @@ class Processor extends BankingAccount\Gateway\Processor
 
             if (empty($value) === true)
             {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION,
-                    $key,
-                    [
-                        $key
-                    ]);
+                $emptyKeys[] = $key;
             }
+        }
+
+        if (count($emptyKeys) > 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION,
+                null,
+                $emptyKeys);
         }
     }
 }

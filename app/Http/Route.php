@@ -1245,7 +1245,7 @@ final class Route
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
-        'banking_accounts_get'                    => ['get',      'banking_accounts/{id}',                                     'BankingAccountController@get'                             ],
+        'banking_account_get'                     => ['get',      'banking_accounts/{id}',                                     'BankingAccountController@get'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
@@ -1981,7 +1981,7 @@ final class Route
         'banking_account_create',
         'merchant_partner_configs_fetch',
         'banking_accounts_list',
-        'banking_accounts_get',
+        'banking_account_get',
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
         'user_update_contact',

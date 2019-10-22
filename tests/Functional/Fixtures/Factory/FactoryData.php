@@ -1127,12 +1127,20 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\BankingAccount\Entity::class, [
-            'id'                => $faker->uniqueid,
+            'id'                => 12345,
             'merchant_id'       => '10000000000000',
             'account_number'    => '409000768239',
             'channel'           => 'rbl',
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\BankingAccount\Detail\Entity::class, [
+            'id'                 => 1,
+            'banking_account_id' => 12345,
+            'gateway_key'        => 'client_id',
+            'gateway_value'      => '123',
+            'updated_at'         => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Mpan\Entity::class, [
