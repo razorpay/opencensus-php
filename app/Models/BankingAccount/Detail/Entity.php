@@ -24,8 +24,8 @@ class Entity extends PublicEntity
     ];
 
     protected $public = [
-      self::GATEWAY_VALUE,
-      self::GATEWAY_KEY,
+        self::GATEWAY_VALUE,
+        self::GATEWAY_KEY,
     ];
 
     public function setGatewayKey(string $key)

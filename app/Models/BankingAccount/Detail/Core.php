@@ -37,9 +37,9 @@ class Core extends Base\Core
 
         foreach ($input as $key => $value)
         {
-            $this->checkIfKeyExistsForBankingAccountDetail($bankingAccount, $key);
-
-            $bankingAccountDetail = new Entity;
+            $bankingAccountDetail = $this->repo
+                                          ->banking_account_detail
+                                          ->getDetailsForKeyAndBankingAccount($bankingAccount, $key) ?? new Entity;
 
             $bankingAccountDetail->bankingAccount()->associate($bankingAccount);
 

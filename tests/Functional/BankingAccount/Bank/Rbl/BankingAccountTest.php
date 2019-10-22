@@ -730,7 +730,9 @@ class BankingAccountTest extends TestCase
 
         $this->startTest($dataToReplace);
 
+        $bankingAccountDetails = $this->getDbLastEntity('banking_account_detail');
 
+        $this->assertEquals('api_key_two', $bankingAccountDetails['gateway_value']);
     }
 
     protected function setMozartMockResponse($mockedResponse)
