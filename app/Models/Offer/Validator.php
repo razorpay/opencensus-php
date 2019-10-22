@@ -74,6 +74,7 @@ class Validator extends Base\Validator
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
+        Entity::BLOCK               => 'required|boolean',
     ];
 
     protected static $editRules = [
