@@ -10,10 +10,11 @@ class Repository extends Base\Repository
 {
     protected $entity = 'banking_account_detail';
 
-    public function getAccountDetailsForBankingAccount(BankingAccount\Entity $bankingAccount)
+    public function getDetailsForKeyAndBankingAccount(BankingAccount\Entity $bankingAccount, string $key)
     {
         return $this->newQuery()
                     ->where(Entity::BANKING_ACCOUNT_ID, '=', $bankingAccount->getId())
-                    ->get();
+                    ->where(Entity::GATEWAY_KEY, '=', $key)
+                    ->first();
     }
 }

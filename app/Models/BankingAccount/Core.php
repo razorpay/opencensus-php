@@ -231,6 +231,15 @@ class Core extends Base\Core
 
             if (isset($input[Entity::DETAILS]) === true)
             {
+                if ($bankingAccount->getStatus() !== Status::PROCESSED)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        null,
+                        ['banking_account_id' => $bankingAccount->getId()],
+                        'Account Details can be save only after account status is processed ');
+                }
+
                 (new BankingAccountDetail\Core)->updateBankingAccountDetails($input, $bankingAccount, $processor);
             }
         });
