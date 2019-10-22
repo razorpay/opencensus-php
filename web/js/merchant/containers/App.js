@@ -24,7 +24,10 @@ import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
-import { resizeWindow } from 'merchant/modules/app';
+import {
+  resizeWindow,
+  updateGAForFirstLiveTransaction,
+} from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
@@ -219,6 +222,24 @@ export default class App extends Component {
 
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
+    /**
+     * Update
+     */
+    if (
+      this.props.user.live_transaction_done &&
+      this.props.user.live_transaction_done === '1'
+    ) {
+      let data = { live_transaction_done: 2 };
+      updateGAForFirstLiveTransaction(data).then(() => {
+        console.log('fireeeee');
+        setTrackData({
+          eventCategory: 'Dashboard - Instant Activations',
+          eventAction: 'Show - Instant Activations Flow',
+        })();
+      });
+    } else {
+      console.log('live_transaction_done not found!!!', this.props);
+    }
   }
 
   componentWillReceiveProps({ user, history, location }) {
