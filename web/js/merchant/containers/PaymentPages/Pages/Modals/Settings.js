@@ -149,14 +149,19 @@ export default class extends React.Component {
                   addonValueBefore="https://pages.razorpay.com/"
                   disabled={isTestMode}
                   validator={val => {
-                    if (val && !validateSlug(val.trim())) {
-                      return 'Please enter valid Url';
-                    }
+                    const isEditMode = !!this.props.paymentPageEntity.id;
+                    const toValidate = !isTestMode && isEditMode; // Validate only when live mode and editing page
 
-                    if (val.length < 4) {
-                      return 'Url must be at least 4 characters long';
-                    } else if (val.length > 30) {
-                      return 'Url must be maximum 30 characters long';
+                    if (toValidate) {
+                      if (val && !validateSlug(val.trim())) {
+                        return 'Please enter valid Url';
+                      }
+
+                      if (val.length < 4) {
+                        return 'Url must be at least 4 characters long';
+                      } else if (val.length > 30) {
+                        return 'Url must be maximum 30 characters long';
+                      }
                     }
                   }}
                 />
