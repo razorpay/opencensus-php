@@ -12,28 +12,30 @@ class Factory
     {
         $status = $bankingAccount->getStatus();
 
+        $bankingAccountId = $bankingAccount->getId();
+
         switch($status)
         {
             case Status::CANCELLED:
-                return new Cancelled($bankingAccount);
+                return new Cancelled($bankingAccountId);
 
             case Status::CREATED:
-                return new Created($bankingAccount);
+                return new Created($bankingAccountId);
 
             case Status::PROCESSED:
-                return new Processed($bankingAccount);
+                return new Processed($bankingAccountId);
 
             case Status::PROCESSING:
-                return new Processing($bankingAccount);
+                return new Processing($bankingAccountId);
 
             case Status::UNSERVICEABLE:
-                return new Unserviceable($bankingAccount);
+                return new Unserviceable($bankingAccountId);
 
             case Status::ACTIVATED:
-                return new Activated($bankingAccount);
+                return new Activated($bankingAccountId);
 
             case Status::REJECTED:
-                return new Rejected($bankingAccount);
+                return new Rejected($bankingAccountId);
 
             default:
                 throw new BadRequestValidationFailureException("Invalid Status, cannot send email, status: $status");

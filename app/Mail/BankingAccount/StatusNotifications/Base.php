@@ -19,15 +19,19 @@ class Base extends Mailable
     protected $config;
 
     /**
-     * @param Entity $bankingAccount
+     * @param string $bankingAccountId
      */
-    public function __construct(Entity $bankingAccount)
+    public function __construct(string $bankingAccountId)
     {
         parent::__construct();
 
-        $this->bankingAccount = $bankingAccount;
+        $app = App::getFacadeRoot();
 
-        $this->config = App::getFacadeRoot()['config'];
+        $repo = $app['repo'];
+
+        $this->config = $app['config'];
+
+        $this->bankingAccount = $repo->banking_account->find($bankingAccountId);
     }
 
     protected function addRecipients()
