@@ -36,8 +36,6 @@ export default {
     'admin',
     'manager',
     'operations',
-    'sellerapp',
-    'sellerapp_plus',
     'agent',
     'rbl_supervisor',
   ],
