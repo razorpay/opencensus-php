@@ -217,10 +217,6 @@ export default class App extends Component {
       });
   }
 
-  componentDidMount() {
-    window.addEventListener('resize', this.handleResize);
-  }
-
   componentWillReceiveProps({ user, history, location }) {
     if (user.isAuthenticated) {
       let role = user.userRole;

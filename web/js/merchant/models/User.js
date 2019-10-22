@@ -392,6 +392,11 @@ export default class User {
       : this.isAllowedEdit('team');
   }
 
+  get isCustomNotesDropdownEnabled() {
+    return true;
+    return this.getExpStatus('custom_notes');
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
