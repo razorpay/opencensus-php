@@ -814,6 +814,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function putEditMerchantDetailsAfterLockPartner($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->editMerchantDetailsByPartner($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantDetailMigrate()
     {
         $input = Request::all();
@@ -869,6 +878,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatus($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateActivationStatusPartner($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatusByPartner($id, $input);
 
         return ApiResponse::json($response);
     }

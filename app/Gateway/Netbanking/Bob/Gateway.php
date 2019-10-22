@@ -343,12 +343,14 @@ class Gateway extends Base\Gateway
         bool $mapped = true
     )
     {
-        $attr = $this->getMappedAttributes($content);
-
+        if ($mapped === true)
+        {
+            $content = $this->getMappedAttributes($content);
+        }
         // To mark that we have received a response for this request
-        $attr[NetbankingEntity::RECEIVED] = 1;
+        $content[NetbankingEntity::RECEIVED] = 1;
 
-        $gatewayPayment->fill($attr);
+        $gatewayPayment->fill($content);
 
         $gatewayPayment->saveOrFail();
     }
@@ -365,5 +367,43 @@ class Gateway extends Base\Gateway
     public function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function createGatewayPaymentEntityWithAttributes($attributes, $input)
+    {
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId = $input['payment']['id'];
+
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->setAction($input[NetbankingEntity::ACTION]);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        $this->gatewayPayment = $gatewayPayment;
+
+        return $gatewayPayment;
+    }
+
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $paymentId = $attributes[NetbankingEntity::PAYMENT_ID];
+        $action = $input[NetbankingEntity::ACTION];
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($paymentId,$action);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntityWithAttributes($attributes, $input);
+        }
+        else
+        {
+            $gatewayEntity->setAction($input[NetbankingEntity::ACTION]);
+
+            $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
+        }
     }
 }

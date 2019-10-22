@@ -229,6 +229,15 @@ return [
         'attempts'          => 1,
     ],
 
+    'fetchAndMatchSettlementsForReconFailureYesbank' => [
+        'amount'            => 1952600,
+        'fees'              => 47200,
+        'tax'               => 7200,
+        'failure_reason'    => 'Payout failed. Contact support for help',
+        'status'            => SettlementStatus::FAILED,
+        'attempts'          => 1,
+    ],
+
     'matchSettlementAttemptForReconFailureKotak' => [
         'channel'          => Channel::KOTAK,
         'version'          => 'V3',

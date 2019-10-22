@@ -60,6 +60,19 @@ class Event
     const TRANSFER_PROCESSED                = 'transfer.processed';
     const TERMINAL_ACTIVATED                = 'terminal.activated';
     const TERMINAL_FAILED                   = 'terminal.failed'; // Terminal Creation failed on gateway
+    const ACCOUNT_SUSPENDED                 = 'account.suspended';
+    const ACCOUNT_FUNDS_HOLD                = 'account.funds_hold';
+    const ACCOUNT_FUNDS_UNHOLD              = 'account.funds_unhold';
+    const ACCOUNT_INTERNATIONAL_ENABLED     = 'account.international_enabled';
+    const ACCOUNT_INTERNATIONAL_DISABLED    = 'account.international_disabled';
+    const ACCOUNT_INSTANTLY_ACTIVATED       = 'account.instantly_activated';
+    const ACCOUNT_UNDER_REVIEW              = 'account.under_review';
+    const ACCOUNT_NEEDS_CLARIFICATION       = 'account.needs_clarification';
+    const ACCOUNT_ACTIVATED                 = 'account.activated';
+    const ACCOUNT_REJECTED                  = 'account.rejected';
+    const ACCOUNT_PAYMENTS_ENABLED          = 'account.payments_enabled';
+    const ACCOUNT_PAYMENTS_DISABLED         = 'account.payments_disabled';
+
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -107,6 +120,18 @@ class Event
         self::TRANSFER_PROCESSED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
+        self::ACCOUNT_SUSPENDED,
+        self::ACCOUNT_FUNDS_HOLD,
+        self::ACCOUNT_FUNDS_UNHOLD,
+        self::ACCOUNT_INTERNATIONAL_ENABLED,
+        self::ACCOUNT_INTERNATIONAL_DISABLED,
+        self::ACCOUNT_INSTANTLY_ACTIVATED,
+        self::ACCOUNT_UNDER_REVIEW,
+        self::ACCOUNT_NEEDS_CLARIFICATION,
+        self::ACCOUNT_ACTIVATED,
+        self::ACCOUNT_REJECTED,
+        self::ACCOUNT_PAYMENTS_ENABLED,
+        self::ACCOUNT_PAYMENTS_DISABLED,
     ];
 
     /**
@@ -160,6 +185,18 @@ class Event
         self::TRANSFER_PROCESSED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
+        self::ACCOUNT_SUSPENDED,
+        self::ACCOUNT_FUNDS_HOLD,
+        self::ACCOUNT_FUNDS_UNHOLD,
+        self::ACCOUNT_INTERNATIONAL_ENABLED,
+        self::ACCOUNT_INTERNATIONAL_DISABLED,
+        self::ACCOUNT_INSTANTLY_ACTIVATED,
+        self::ACCOUNT_UNDER_REVIEW,
+        self::ACCOUNT_NEEDS_CLARIFICATION,
+        self::ACCOUNT_ACTIVATED,
+        self::ACCOUNT_REJECTED,
+        self::ACCOUNT_PAYMENTS_ENABLED,
+        self::ACCOUNT_PAYMENTS_DISABLED,
     ];
 
     protected static $bitPosition = [
@@ -209,6 +246,18 @@ class Event
         self::TERMINAL_ACTIVATED                => 44,
         self::TERMINAL_FAILED                   => 45,  
         self::TRANSFER_PROCESSED                => 46,
+        self::ACCOUNT_SUSPENDED                 => 47,
+        self::ACCOUNT_FUNDS_HOLD                => 48,
+        self::ACCOUNT_FUNDS_UNHOLD              => 49,
+        self::ACCOUNT_INTERNATIONAL_ENABLED     => 50,
+        self::ACCOUNT_INTERNATIONAL_DISABLED    => 51,
+        self::ACCOUNT_INSTANTLY_ACTIVATED       => 52,
+        self::ACCOUNT_UNDER_REVIEW              => 53,
+        self::ACCOUNT_NEEDS_CLARIFICATION       => 54,
+        self::ACCOUNT_ACTIVATED                 => 55,
+        self::ACCOUNT_REJECTED                  => 56,
+        self::ACCOUNT_PAYMENTS_ENABLED          => 57,
+        self::ACCOUNT_PAYMENTS_DISABLED         => 58,
     ];
 
     /**
@@ -258,6 +307,18 @@ class Event
         self::TRANSFER_PROCESSED                => [Product::PRIMARY],
         self::TERMINAL_ACTIVATED                => [Product::PRIMARY],
         self::TERMINAL_FAILED                   => [Product::PRIMARY],
+        self::ACCOUNT_SUSPENDED                 => [Product::PRIMARY],
+        self::ACCOUNT_FUNDS_HOLD                => [Product::PRIMARY],
+        self::ACCOUNT_FUNDS_UNHOLD              => [Product::PRIMARY],
+        self::ACCOUNT_INTERNATIONAL_ENABLED     => [Product::PRIMARY],
+        self::ACCOUNT_INTERNATIONAL_DISABLED    => [Product::PRIMARY],
+        self::ACCOUNT_INSTANTLY_ACTIVATED       => [Product::PRIMARY],
+        self::ACCOUNT_UNDER_REVIEW              => [Product::PRIMARY],
+        self::ACCOUNT_NEEDS_CLARIFICATION       => [Product::PRIMARY],
+        self::ACCOUNT_ACTIVATED                 => [Product::PRIMARY],
+        self::ACCOUNT_REJECTED                  => [Product::PRIMARY],
+        self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
+        self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
     ];
 
     /**
@@ -308,6 +369,18 @@ class Event
         self::TRANSFER_PROCESSED                => Entity::TRANSFER,
         self::TERMINAL_ACTIVATED                => Entity::TERMINAL,
         self::TERMINAL_FAILED                   => Entity::TERMINAL,
+        self::ACCOUNT_SUSPENDED                 => Entity::MERCHANT,
+        self::ACCOUNT_FUNDS_HOLD                => Entity::MERCHANT,
+        self::ACCOUNT_FUNDS_UNHOLD              => Entity::MERCHANT,
+        self::ACCOUNT_INTERNATIONAL_ENABLED     => Entity::MERCHANT,
+        self::ACCOUNT_INTERNATIONAL_DISABLED    => Entity::MERCHANT,
+        self::ACCOUNT_INSTANTLY_ACTIVATED       => Entity::MERCHANT,
+        self::ACCOUNT_UNDER_REVIEW              => Entity::MERCHANT,
+        self::ACCOUNT_NEEDS_CLARIFICATION       => Entity::MERCHANT,
+        self::ACCOUNT_ACTIVATED                 => Entity::MERCHANT,
+        self::ACCOUNT_REJECTED                  => Entity::MERCHANT,
+        self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
+        self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
     ];
 
     public static $eventsToFeatureMap = [
