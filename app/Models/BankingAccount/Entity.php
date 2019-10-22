@@ -3,7 +3,6 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 
@@ -188,15 +187,9 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
         self::BANKING_ACCOUNT_DETAILS,
-        self::MERCHANT
     ];
 
     protected $relations = [
-        self::BANKING_ACCOUNT_DETAILS,
-        self::MERCHANT,
-    ];
-
-    protected $embeddedRelations = [
         self::BANKING_ACCOUNT_DETAILS,
     ];
 
