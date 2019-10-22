@@ -5,6 +5,9 @@ namespace RZP\Jobs;
 use Throwable;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
+use RZP\Models\FundAccount\Type;
+use RZP\Exception\LogicException;
+use RZP\Exception\RuntimeException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Payment\Service as PaymentService;
@@ -15,6 +18,9 @@ class FaVpaValidation extends Job
 {
     protected $queueConfigKey = 'fa_vpa_validation';
 
+    /**
+     * @var string
+     */
     protected $favId;
 
     /**
@@ -48,32 +54,30 @@ class FaVpaValidation extends Job
 
             $vpaProcessor = new VpaProcessor($faValidation);
 
-            $vpa = [ "vpa" => $faValidation->fundAccount->account->getAddress() ];
+            $fundAccount = $faValidation->fundAccount;
 
-            try {
-                $paymentService = PaymentService::getNewInstance();
-
-                $data = $paymentService->validateVpa($vpa);
-
-                $faValidation->setRegisteredName($data['customer_name']);
-
-                $favStatus = $data['success'] === true ? AccountStatus::ACTIVE : AccountStatus::INVALID;
-            }
-            catch (GatewayErrorException $e)
+            if ($fundAccount->getAccountType() !== Type::VPA)
             {
-                $this->trace->traceException(
-                    $e,
-                    Logger::ERROR,
-                    TraceCode::FUND_ACCOUNT_VALIDATION_VPA_TIMEOUT,
-                    [
-                        'fa_validation_id' => $this->favId
-                    ]
-                );
-
-                $favStatus = AccountStatus::UNKNOWN;
+                throw new LogicException("Invalid fund account type");
             }
 
-            $vpaProcessor->markValidationAsCompleted($favStatus);
+            $vpa = array("vpa" => $fundAccount->account->getAddress());
+
+            $data = $this->getVpaValidateResponse($vpa);
+
+            $faValidation->setRegisteredName($data['name']);
+
+            $vpaProcessor->markValidationAsCompleted($data['account_status']);
+        }
+        catch (RuntimeException $e) {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_FAILED,
+                [
+                    'fa_validation_id' => $this->favId
+                ]
+            );
         }
         catch (Throwable $e)
         {
@@ -85,8 +89,52 @@ class FaVpaValidation extends Job
                     'fa_validation_id' => $this->favId
                 ]
             );
-
-            $this->delete();
         }
+
+        $this->delete();
+    }
+
+    /**
+     * @param array $vpa
+     *
+     * @return array
+     * @throws LogicException
+     * @throws RuntimeException
+     */
+    protected function getVpaValidateResponse(array $vpa) : array
+    {
+        $data = array();
+
+        try {
+            $paymentService = new PaymentService();
+
+            $response = $paymentService->validateVpa($vpa);
+
+            if ($response === null
+                OR $response['customer_name'] === null
+                OR $response['success'] === null)
+            {
+                throw new LogicException("Mismatch in expected and returned array in vpa validate");
+            }
+
+            $data['account_status'] = $response['success'] === true ? AccountStatus::ACTIVE : AccountStatus::INVALID;
+
+            $data['name'] = $response['customer_name'];
+        }
+        catch (GatewayErrorException $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_TIMEOUT,
+                [
+                    'fa_validation_id' => $this->favId
+                ]
+            );
+
+            $data['account_status'] = AccountStatus::UNKNOWN;
+        }
+
+        return $data;
     }
 }
