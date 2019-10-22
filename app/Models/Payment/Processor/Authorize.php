@@ -2485,7 +2485,7 @@ trait Authorize
 
             $emiDuration = $input['emi_duration'];
 
-            $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+            $gatewayInput['emi_plan'] = $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
         if ($payment->isCardlessEmi() === true)
@@ -3349,6 +3349,8 @@ trait Authorize
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
 
         $payment->emiPlan()->associate($emiPlan);
+
+        return $emiPlan;
     }
 
     protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
@@ -6177,6 +6179,7 @@ trait Authorize
 
             unset($billingAddressFromInput['postal_code']);
         }
+
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }
