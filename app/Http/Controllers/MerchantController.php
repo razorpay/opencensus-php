@@ -1189,6 +1189,22 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchPartnerIntent()
+    {
+        $response = $this->service()->fetchPartnerIntent();
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePartnerIntent()
+    {
+        $input = Request::all();
+
+        $response =$this->service()->updatePartnerIntent($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * @param string $merchantId
      *

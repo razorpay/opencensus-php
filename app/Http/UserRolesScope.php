@@ -178,6 +178,8 @@ class UserRolesScope
             // Partner routes
             'submerchants_fetch'          => Role::allExceptPaymentLinkRoles(),
             'submerchants_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
+            'fetch_partner_intent'        => [Role::OWNER],
+            'update_partner_intent'       => [Role::OWNER],
             'update_partner_type'         => [Role::OWNER],
 
             // Reporting

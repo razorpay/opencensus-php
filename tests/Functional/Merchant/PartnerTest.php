@@ -1483,13 +1483,6 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    protected function createPlansRequiredForOnboardingPartners()
-    {
-        $this->fixtures->pricing->createDefaultPartnerCommissionPlan();
-
-        $this->fixtures->pricing->createDefaultPlanForSubmerchantsOfOnboardedPartners();
-    }
-
     protected function createMerchantRequest(
         string $merchantRequestName,
         bool $createSubmission = false,
