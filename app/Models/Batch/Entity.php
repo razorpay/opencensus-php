@@ -421,6 +421,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOTAL_COUNT);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function getAttempts(): int
     {
         return $this->getAttribute(self::ATTEMPTS);

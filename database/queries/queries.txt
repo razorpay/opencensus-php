@@ -5401,3 +5401,6 @@ ALTER TABLE settlement_bucket
 
 ALTER TABLE merchants
    ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL after registered_name;

@@ -441,7 +441,7 @@ class EventCode
 
     const KYC_SAVE_MODIFICATIONS_FAILED = [
         'group' => 'onboarding',
-        'name'  => 'kyc.save_registration_details.failed',
+        'name'  => 'kyc.save_modifications.failed',
     ];
 
     const PAYMENT_PAGE_CREATED = [

@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -800,25 +801,31 @@ class Entity extends Base\PublicEntity
     public function suspend()
     {
         $this->setAttribute(self::SUSPENDED_AT, time());
-        $this->setAttribute(self::LIVE, false);
-        $this->setAttribute(self::HOLD_FUNDS, true);
+        $this->liveDisable();
+        $this->setHoldFunds(true);
+
+        $this->fireEventWithMerchantPayload('api.account.suspended');
     }
 
     public function unsuspend()
     {
         $this->setAttribute(self::SUSPENDED_AT, null);
-        $this->setAttribute(self::LIVE, true);
-        $this->setAttribute(self::HOLD_FUNDS, false);
+        $this->liveEnable();
+        $this->setHoldFunds(false);
     }
 
     public function liveEnable()
     {
         $this->setAttribute(self::LIVE, true);
+
+        $this->fireEventWithMerchantPayload('api.account.payments_enabled');
     }
 
     public function liveDisable()
     {
         $this->setAttribute(self::LIVE, false);
+
+        $this->fireEventWithMerchantPayload('api.account.payments_disabled');
     }
 
     public function archive()
@@ -1725,6 +1732,15 @@ class Entity extends Base\PublicEntity
     public function setHoldFunds($holdFunds)
     {
         $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
+
+        if ($holdFunds === true)
+        {
+            $this->fireEventWithMerchantPayload('api.account.funds_hold');
+        }
+        else
+        {
+            $this->fireEventWithMerchantPayload('api.account.funds_unhold');
+        }
     }
 
     public function isReceiptEmailsEnabled()
@@ -1838,11 +1854,15 @@ class Entity extends Base\PublicEntity
     public function enableInternational()
     {
         $this->setAttribute(self::INTERNATIONAL, true);
+
+        $this->fireEventWithMerchantPayload('api.account.international_enabled');
     }
 
     public function disableInternational()
     {
         $this->setAttribute(self::INTERNATIONAL, false);
+
+        $this->fireEventWithMerchantPayload('api.account.international_disabled');
     }
 
     /** Overridden from the PublicEntity */
@@ -2279,5 +2299,16 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    protected function fireEventWithMerchantPayload(string $event)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this,
+        ];
+
+        $app = App::getFacadeRoot();
+
+        $app['events']->fire($event, $eventPayload);
     }
 }

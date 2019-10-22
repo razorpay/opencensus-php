@@ -2,15 +2,19 @@
 
 namespace RZP\Reconciliator\Paypal\SubReconciliator;
 
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Models\Payment\Action;
+use RZP\Gateway\Mozart\Action;
 use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Mozart\WalletPaypal\ReconFields;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
+    const COLUMN_PAYMENT_AMOUNT = ReconFields::AMOUNT;
+
     protected function getPaymentId(array $row)
     {
         return $row[ReconFields::PAY_ID] ?? null;
@@ -21,38 +25,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[ReconFields::TRANSACTION_ID] ?? null;
     }
 
-    protected function validatePaymentAmountEqualsReconAmount(array $row)
-    {
-        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'payment_id'      => $this->payment->getId(),
-                    'expected_amount' => $this->payment->getBaseAmount(),
-                    'recon_amount'    => $this->getReconPaymentAmount($row),
-                    'gateway'         => $this->gateway
-                ]);
-
-            return false;
-        }
-
-        return true;
-    }
-
     protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
     {
         $expectedCurrency = $this->payment->getCurrency();
 
-        $reconCurrency = $this->getReconCurrency($row);
+        $reconCurrency = $row[ReconFields::CURRENCY] ?? null;
 
         if ($expectedCurrency !== $reconCurrency)
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'info_code'         => InfoCode::CURRENCY_MISMATCH,
+                    'info_code'         => Base\InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
                     'row'               => $row,
@@ -65,36 +49,21 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return true;
     }
 
-    protected function getReconCurrency($row)
-    {
-        return $row[ReconFields::CURRENCY] ?? null;
-    }
-
-    protected function getReconPaymentAmount(array $row)
-    {
-        if (empty($row[ReconFields::AMOUNT]) === false)
-        {
-            return Base\SubReconciliator\Helper ::getIntegerFormattedAmount($row[ReconFields::AMOUNT]/100);
-        }
-    }
-
     public function getGatewayPayment($paymentId)
     {
-        return $this->repo->mozart->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+        return $this->repo->mozart->findByPaymentIdAndAction($paymentId, Action::CAPTURE);
     }
 
     protected function getAccountDetails($row)
     {
-        return [
-            BaseReconciliate::ACCOUNT_NUMBER => $row[ReconFields::PAYPAL_MERCHANT_ID]
-            ];
+        return [BaseReconciliate::ACCOUNT_NUMBER => $row[ReconFields::PAYPAL_MERCHANT_ID]];
     }
 
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
         $data = json_decode($gatewayPayment['raw'], true);
 
-        $dbReferenceNumber = $data['Gateway_Transaction_ID'] ?? null;
+        $dbReferenceNumber = $data['CaptureId'] ?? null;
 
         //
         // Sometimes we have db reference number saved as string 'null'.
@@ -117,14 +86,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'recon_reference_number'    => $referenceNumber,
                     'gateway'                   => $this->gateway
                 ]);
-
-            return;
         }
 
-        $data['Gateway_Transaction_ID'] = $referenceNumber;
-
-        $raw = json_encode($data);
-
-        $gatewayPayment->setRaw($raw);
+        return;
     }
 }

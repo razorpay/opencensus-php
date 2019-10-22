@@ -140,10 +140,22 @@ class Validator extends Base\Validator
     {
         if (isset($input[Entity::MAX_AMOUNT]) === true)
         {
+            $currency = Currency::INR;
+
+            if ((empty($input[Entity::ITEM]) === false) and
+                (empty($input[Entity::ITEM][Item\Entity::CURRENCY]) === false))
+            {
+                $currency = $input[Entity::ITEM][Item\Entity::CURRENCY];
+            }
+            else if (empty($this->entity->item) === false)
+            {
+                $currency = $this->entity->item->getCurrency();
+            }
+
             $this->validateAmount(
                 Entity::MAX_AMOUNT,
                 $input[Entity::MAX_AMOUNT],
-                $input[Entity::ITEM][Item\Entity::CURRENCY] ?? Currency::INR
+                $currency
             );
         }
     }
@@ -257,12 +269,24 @@ class Validator extends Base\Validator
             }
         }
 
+        $currency = Currency::INR;
+
+        if ((empty($input[Entity::ITEM]) === false) and
+            (empty($input[Entity::ITEM][Item\Entity::CURRENCY]) === false))
+        {
+            $currency = $input[Entity::ITEM][Item\Entity::CURRENCY];
+        }
+        else if (empty($this->entity->item) === false)
+        {
+            $currency = $this->entity->item->getCurrency();
+        }
+
         if (isset($input[Entity::MIN_AMOUNT]) === true)
         {
             $this->validateAmount(
                 Entity::MIN_AMOUNT,
                 $input[Entity::MIN_AMOUNT],
-                $input[Entity::ITEM][Item\Entity::CURRENCY] ?? Currency::INR
+                $currency
             );
         }
     }

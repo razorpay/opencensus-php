@@ -320,6 +320,10 @@ class UpiAxisGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNull($upi->getNpciReferenceId());
+
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
@@ -329,8 +333,42 @@ class UpiAxisGatewayTest extends TestCase
 
         $payment->reload();
 
+        $upi->reload();
+
         $this->assertSame(0, $payment->verified);
         $this->assertNotNull($payment->getVerifyAt());
+
+        $this->assertNotNull($upi->getNpciReferenceId());
+        $this->assertNotNull($upi->getVpa());
+    }
+
+    public function testLateAuthorization()
+    {
+        $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNull($upi->getNpciReferenceId());
+
+        $this->authorizedFailedPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertTrue($payment->isLateAuthorized());
+        $this->assertSame('714513318376', $payment->getReference16());
+
+        $upi->reload();
+
+        $this->assertSame('714513318376', $upi->getNpciReferenceId());
+        $this->assertSame('vishnu@icici', $upi->getVpa());
+        $this->assertSame('icici', $upi->provider);
+        $this->assertSame('ICIC', $upi->bank);
+        $this->assertNotNull($upi->getNpciTransactionId());
     }
 
     public function testIntentPayment()

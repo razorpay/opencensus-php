@@ -708,7 +708,7 @@ class Reconciliate extends Base\Core
     }
 
     // Sends recon batch processing summary
-    public function traceBatchProcessingSummary($batch)
+    public function traceBatchProcessingSummary(Batch\Entity $batch)
     {
         $outputFiles = $batch->filesByType(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT);
 
@@ -741,7 +741,8 @@ class Reconciliate extends Base\Core
             'total_count'       => $batch->getTotalCount(),
             'success_count'     => $batch->getSuccessCount(),
             'failure_count'     => $batch->getFailureCount(),
-            'batch_id'          => $batch->getId(),
+            'failure_reason'    => $batch->getFailureReason(),
+            'batch_id'          => $batch->getDashboardEntityLinkForSlack(),
             'gateway'           => $batch->getGateway()
         ];
 
@@ -762,6 +763,8 @@ class Reconciliate extends Base\Core
         }
         else
         {
+            unset($summary['failure_reason']);
+
             $this->messenger->setSkipSlack($skipSlack)->raiseReconInfo($summary);
         }
     }

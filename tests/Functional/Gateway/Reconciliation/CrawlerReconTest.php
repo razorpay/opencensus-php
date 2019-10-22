@@ -2,12 +2,9 @@
 
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
-use Excel;
-use Config;
-use RZP\Exception\ReconciliationException;
-use RZP\Tests\Functional\TestCase;
 use RZP\Models\Batch\Status;
-use RZP\Reconciliator\RequestProcessor\Base;
+use RZP\Tests\Functional\TestCase;
+use RZP\Exception\ReconciliationException;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 
 
@@ -22,8 +19,7 @@ class CrawlerReconTest extends TestCase
 
         $this->gateway = '';
     }
-
-
+    
     public function testBobCrawlerReconciliation()
     {
         $this->gateway = 'netbanking_bob';
@@ -64,19 +60,21 @@ class CrawlerReconTest extends TestCase
 
     public function testPaypalCrawlerReconciliation()
     {
-        $this->gateway = 'wallet_paypal';
+        $this->gateway = 'mozart';
 
-        $payment = $this->createPayment('wallet_paypal', ['id'=>'DJEN97tL54dTIN', 'amount'=>1, 'currency'=>'USD','method'=>'wallet']);
+        $payment = $this->createPayment('wallet_paypal', ['id'=>'DJEN97tL54dTIN', 'amount'=>100, 'currency'=>'USD','method'=>'wallet']);
 
-        $this->createWallet($payment['id'], 1,'wallet_paypal','USD');
+        $this->createWallet($payment['id'], 100,'wallet_paypal','USD', 'capture', 1234567);
 
-        $response = $this->reconcile('paypal');
+        $this->createRefund('wallet_paypal', $payment, ['id'=>'DJGIIHMST4i8G4', 'status'=> \RZP\Models\Payment\Refund\Status::PROCESSED, 'amount' => 100,'currency'=>'USD']);
 
-        $gatewayEntity = $this->getDbLastEntity('mozart');
+        $response = $this->reconcile('Paypal');
 
-        $data = json_decode($gatewayEntity['raw'], true);
+        $gatewayEntityPayment = $this->getDbLastEntity('mozart');
 
-        $this->assertEquals($data['Gateway_Transaction_ID'], '0UL4129173139950S');
+        $dataPayment = json_decode($gatewayEntityPayment['raw'], true);
+
+        $this->assertEquals($dataPayment['CaptureId'], '74X988560K9095032');
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 
@@ -132,7 +130,25 @@ class CrawlerReconTest extends TestCase
 
         try
         {
-            $this->reconcile('paypal', ['gateway_failure' => true]);
+            $this->reconcile('Paypal', ['gateway_failure' => true]);
+        }
+        catch (ReconciliationException $e)
+        {
+            $reconException = true;
+        }
+
+        $this->assertTrue($reconException);
+    }
+
+    public function testPaypalCrawlerReconciliationCurrencyMissmatch()
+    {
+        $this->gateway = 'wallet_paypal';
+
+        $reconException  = false;
+
+        try
+        {
+            $this->reconcile('Paypal', ['currency_missmatch' => true]);
         }
         catch (ReconciliationException $e)
         {
@@ -163,7 +179,8 @@ class CrawlerReconTest extends TestCase
     protected function createPayment($gateway, $attributes = [])
     {
         $paymentAttributes = [
-            'gateway' => $gateway
+            'gateway' => $gateway,
+            'gateway_captured' => true
         ];
 
         $paymentAttributes = array_merge($paymentAttributes, $attributes);
@@ -171,6 +188,23 @@ class CrawlerReconTest extends TestCase
         $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
 
         return $payment;
+    }
+
+    protected function createRefund($gateway, $payment, $attributes = [])
+    {
+        $refundAttributes = [
+            'id'        => $payment['id'],
+            'amount'    => $payment['amount'],
+            'gateway'   => $gateway,
+            'payment'   => $payment,
+            'payment_id'=> 'DJEN97tL54dTIN',
+        ];
+
+        $refundAttributes = array_merge($refundAttributes, $attributes);
+
+        $refund = $this->fixtures->create('refund:from_payment', $refundAttributes);
+
+        return $refund;
     }
 
     protected function createNetbanking($paymentId, $bank, $status = 'SUC')
@@ -188,14 +222,27 @@ class CrawlerReconTest extends TestCase
         return $netbanking;
     }
 
-    protected function createWallet($paymentId, $amount, $gateway, $currency)
+    protected function createWallet($paymentId, $amount, $gateway, $currency, $action, $id, $rfndId = null)
     {
+        $raw = null;
+
+        if ($action === 'capture')
+        {
+            $raw = json_encode(['payment_id' => $paymentId,'CaptureId' => '74X988560K9095032','currency'   => $currency]);
+        }
+        elseif ($action === 'refund')
+        {
+            $raw = json_encode(['payment_id' => $paymentId,'id' => '4E238155FF697490G','currency'   => $currency]);
+        }
+
         $mozartAttributes = [
+            'id'         => $id,
             'payment_id' => $paymentId,
             'gateway'    => $gateway,
             'amount'     => $amount,
-            'raw'        => json_encode(['payment_id' => $paymentId,'Gateway_Transaction_ID' => '0UL4129173139950S','currency'   => $currency]),
-            'action'     => 'authorize',
+            'raw'        => $raw,
+            'action'     => $action,
+            'refund_id'  => $rfndId,
         ];
 
         $wallet = $this->fixtures->create('mozart', $mozartAttributes);
