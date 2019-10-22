@@ -16,6 +16,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use Illuminate\Support\Facades\Artisan;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -26,6 +27,7 @@ class PayoutTest extends TestCase
     use SettlementTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use PayoutTrait;
 
     public function setUp()
     {
@@ -474,6 +476,8 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutToCardFundAccountUsingUpi()
     {
+        $this->markTestSkipped('Disabling Test since UPI is disabled temperorily in FTA');
+
         $this->fixtures->create(
             'fund_account',
             [
@@ -781,22 +785,6 @@ class PayoutTest extends TestCase
         // ----- End of testing payout retry for failed payouts ------ //
 
         return $newPayout;
-    }
-
-    protected function retryPayout($id)
-    {
-        $request = [
-            'url' => "/payouts/$id/retry",
-            'method' => 'POST',
-            'content' => []
-        ];
-
-        $this->ba->adminAuth();
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertNotNull($response['id']);
-        $this->assertNotEquals($id, $response['id']);
     }
 
     public function testCreateMerchantPayout()
@@ -1398,34 +1386,6 @@ class PayoutTest extends TestCase
             Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'payout']);
             Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'payout']);
         }
-    }
-
-    protected function makePayoutQueueSummaryRequest()
-    {
-        $request = [
-            'method'  => 'GET',
-            'url'     => '/payouts/queued/amount',
-        ];
-
-        $this->ba->proxyAuth();
-
-        $response = $this->sendRequest($request);
-
-        return json_decode($response->getContent(), true);
-    }
-
-    protected function dispatchQueuedPayouts()
-    {
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payouts/queued/process',
-        ];
-
-        $this->ba->cronAuth();
-
-        $response = $this->sendRequest($request);
-
-        return json_decode($response->getContent(), true);
     }
 
     public function testRxPayoutForSlaExpiry(): array

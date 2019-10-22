@@ -1114,6 +1114,39 @@ class Core extends Base\Core
     }
 
     /**
+     * Updates partner type on merchant's request
+     *
+     * @param Entity $merchant
+     * @param String $partnerType
+     *
+     * @return Entity
+     */
+    public function updatePartnerType(Entity $merchant, string $partnerType): array
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
+        {
+            $partner = $this->markAsPartner($merchant, $partnerType);
+
+            $application = $this->getPartnerAppByMerchantId($merchant->getId());
+
+            $config = [
+                PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
+                PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
+                PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
+                PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
+            ];
+
+            $config = (new PartnerConfig\Core)->create($application, $config);
+
+        });
+
+        return [
+            'partner_type'              => $partnerType,
+            'has_commission_configs'    => true,
+        ];
+    }
+
+    /**
      * This function also adds ref-tag and creates user-merchant mapping in addition to the
      * access map. The aggregator user is mapped to submerchant as an owner in cases of
      * fully managed and aggregator type partners. The aggregator type will not get mapped
@@ -2092,6 +2125,53 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns maximum transaction amount for a merchant
+     *
+     * @param Entity $merchant
+     *
+     * @return int
+     * @throws BadRequestException
+     */
+    public function getMaxPayAmount(Entity $merchant): int
+    {
+        //
+        // for fetching merchant detail we can do $merchant->merchantDetail also
+        // but this function is getting called from merchant entity so doing this will cache $merchant->merchantDetail
+        // merchant detail object hence on subsequent call will get stale  merchantDetail object
+        //
+
+        $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchant->getId());
+
+        if (($merchantDetail !== null) and
+            (empty($merchant->getCategory()) === false) and
+            (Detail\BusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType()) === true))
+        {
+
+            //
+            // Mcc can have values other then predefined values
+            // for those cases we should return default values
+            //
+            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList((int) $merchant->getCategory()) === false)
+            {
+                $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
+
+                return Entity::MAX_PAYMENT_AMOUNT_DEFAULT;
+            }
+
+            $amount = BusinessSubCategoryMetaData::getFeatureValueUsingMccCode(
+                BusinessSubCategoryMetaData::NON_REGISTERED_MAX_PAYABLE_AMOUNT,
+                $merchant->getCategory(),
+                Entity::MAX_PAYMENT_AMOUNT_DEFAULT);
+        }
+        else
+        {
+            $amount = Entity::MAX_PAYMENT_AMOUNT_DEFAULT;
+        }
+
+        return (int) $amount;
+    }
+
+    /**
      * Enable international and set convert currency as false, if applicable
      *
      * @param Entity        $merchant
@@ -2151,10 +2231,13 @@ class Core extends Base\Core
             return false;
         }
 
-        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: (BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+        $internationalActivationFlowFromCategory = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
             BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
             $category,
-            $subcategory));
+            $subcategory,
+            ActivationFlow::BLACKLIST);
+
+        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: $internationalActivationFlowFromCategory;
 
         //
         // Conditions being checked:

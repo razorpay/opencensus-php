@@ -13,6 +13,15 @@ class ReconcileData extends Base\Mock\Server
 
     public function netbanking_bob($entities)
     {
+        if (isset($entities['reconRequest']['meta_data']['gateway_failure'])){
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
+                '',
+                '',
+                ['message' => 'Request to gateway failed']
+            );
+        }
+
         $response = [
             'data' =>
                 [
@@ -21,11 +30,8 @@ class ReconcileData extends Base\Mock\Server
                             'Response' =>
                                 [
                                     'ACC_NUM'   => '21180100010529',
-                                    'BANKID'    => 'BOB',
-                                    'CRN'       => 'INR',
-                                    'ITC'       => 'RAZORPAY',
                                     'PRN'       => 'D85nLQUuW4i5Jp',
-                                    'REFNUM'    => '108114286',
+                                    'REFNUM'    => '99999',
                                     'STATUS'    => 'SUC',
                                     'TXN_AMT'   => 'INR|1.00',
                                 ],
@@ -34,11 +40,8 @@ class ReconcileData extends Base\Mock\Server
                             'Response' =>
                                 [
                                     'ACC_NUM'   => '21180100010529',
-                                    'BANKID'    => 'BOB',
-                                    'CRN'       => 'INR',
-                                    'ITC'       => 'RAZORPAY',
                                     'PRN'       => 'D85nLQUuW4i5Jp',
-                                    'REFNUM'    => '108114286',
+                                    'REFNUM'    => '99999',
                                     'STATUS'    => 'SUC',
                                     'TXN_AMT'   => 'INR|1.00',
                                 ],
@@ -47,11 +50,8 @@ class ReconcileData extends Base\Mock\Server
                             'Response' =>
                                 [
                                     'ACC_NUM'   => '21180100010529',
-                                    'BANKID'    => 'BOB',
-                                    'CRN'       => 'INR',
-                                    'ITC'       => 'RAZORPAY',
                                     'PRN'       => 'D85nLQUuW4i5Jp',
-                                    'REFNUM'    => '108114286',
+                                    'REFNUM'    => '99999',
                                     'STATUS'    => 'SUC',
                                     'TXN_AMT'   => 'INR|1.00',
                                 ],

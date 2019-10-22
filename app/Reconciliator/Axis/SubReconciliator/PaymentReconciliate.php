@@ -57,6 +57,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     const MIN_ROW_FILLED_DATA_RATIO = 0.28;
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         if ($this->isCybersource($row) === true)

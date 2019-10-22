@@ -449,6 +449,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
         Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',

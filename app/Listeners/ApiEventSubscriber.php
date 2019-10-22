@@ -233,6 +233,90 @@ class ApiEventSubscriber extends Base\Core
         return $event;
     }
 
+    protected function onAccountSuspended($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInstantlyActivated($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountUnderReview($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountNeedsClarification($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountActivated($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountRejected($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInternationalEnabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInternationalDisabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+    
+    protected function onAccountFundsHold($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountFundsUnhold($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountPaymentsEnabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountPaymentsDisabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPaymentAuthorized($payment)
     {
         $payload = $this->getPaymentPayload($payment);
@@ -768,6 +852,20 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getMerchantPayload($merchant)
+    {
+        //loading merchantDetail in memory
+        $merchant->merchantDetail;
+
+        $payload = [
+            Constants\Entity::ACCOUNT => [
+                'entity' => $merchant->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
     protected function getPaymentPayload($payment)
     {
         $payload = [
@@ -1091,7 +1189,8 @@ class ApiEventSubscriber extends Base\Core
             return $this->listeningMerchant;
         }
 
-        if (($entity instanceof Merchant\Account\Entity) === true)
+        if ((($entity instanceof Merchant\Account\Entity) === true) or
+            (($entity instanceof Merchant\Entity) === true))
         {
             $merchant = $entity;
         }

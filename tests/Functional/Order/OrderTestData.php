@@ -28,6 +28,50 @@ return [
         ],
     ],
 
+    'testCreateOrderForNonRegisteredBusinessLessThanMaxAmount' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testCreateOrderForNonRegisteredBusinessMoreThanMaxAmount' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 50000001,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Amount exceeds maximum amount allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testUniqueReceiptFeatureWithNoReceipt' => [
         'request'   => [
             'content' => [

@@ -3,6 +3,7 @@ namespace RZP\Models\Gateway\Terminal;
 
 class Constants
 {
+    const RAZORPAY                          =   "Razorpay";
     const ATOS_ACTIVATION_RETRY_LIMIT       =   10;
     const ATOS_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
 

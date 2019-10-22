@@ -41,6 +41,8 @@ class Metric extends Base\Core
     const PAYMENT_REQUEST_ROUTE                 = 'payment_request_route';
     const SHIELD_FRAUD_DETECTION_FAILED         = 'shield_fraud_detection_failed';
 
+    const PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT = 'payment_creation_amount_validation_failure_count';
+
     public function pushCreateMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);

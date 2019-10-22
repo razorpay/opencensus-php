@@ -5,19 +5,23 @@ namespace RZP\Models\PaymentLink;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
+use RZP\Models\Order;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\LineItem;
 use Razorpay\Trace\Logger;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
 
 class Core extends Base\Core
@@ -63,23 +67,46 @@ class Core extends Base\Core
 
         $paymentLink->user()->associate($user);
 
+        $settings = $input[Entity::SETTINGS] ?? [];
+
+        if (isset($input[Entity::PAYMENT_PAGE_ITEMS]))
+        {
+            $settings[Entity::VERSION] = Version::V2;
+
+            if (($this->isPaymentPageV3Enabled() === false) and
+                (count($input[Entity::PAYMENT_PAGE_ITEMS]) === 1))
+            {
+                $input = array_merge($input, $this->getPaymentPageUpdateInputFromItemInput($input[Entity::PAYMENT_PAGE_ITEMS][0]));
+            }
+        }
+        else
+        {
+            $settings[Entity::VERSION] = Version::V1;
+        }
+
         $paymentLink->build($input);
 
         $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
 
-        $settings = $input[Entity::SETTINGS] ?? [];
+        if ($this->isPaymentPageV3Enabled() === false)
+        {
+            $this->addAdditionalDataToSettings($settings, $paymentLink);
+        }
 
-        $settings[Entity::VERSION] = Version::V1;
-
-        $this->addAdditionalDataToSettings($settings);
-
-        $this->repo->transaction(function() use ($paymentLink, $settings)
+        $this->repo->transaction(function() use ($paymentLink, $settings, $input)
         {
             $this->upsertSettings($paymentLink, $settings);
 
             $this->repo->saveOrFail($paymentLink);
 
-            $this->createPaymentPageItemInternally($paymentLink);
+            if ($settings[Entity::VERSION] === Version::V2)
+            {
+                $this->createPaymentPageItems($input, $paymentLink);
+            }
+            else
+            {
+                $this->createPaymentPageItemInternally($paymentLink);
+            }
         });
 
         $this->repo->loadRelations($paymentLink);
@@ -112,29 +139,54 @@ class Core extends Base\Core
         {
             $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
+            $settings = $input[Entity::SETTINGS] ?? [];
+
+            if (isset($input[Entity::PAYMENT_PAGE_ITEMS]) === true)
+            {
+                (new PaymentPageItem\Core)->updatePaymentPageItemsAsPut(
+                    $input[Entity::PAYMENT_PAGE_ITEMS],
+                    $this->merchant,
+                    $paymentLink
+                );
+
+                $settings[Entity::VERSION] = Version::V2;
+            }
+            else if ($paymentLink->getVersion() !== Version::V2)
+            {
+                $paymentPageItemUpdateInput = $this->getPaymentPageItemUpdateInput($input, $paymentLink);
+
+                if (empty($paymentPageItemUpdateInput) === false)
+                {
+                    $paymentPageItems = $paymentLink->paymentPageItems()->get();
+
+                    if ($paymentPageItems->isEmpty() === false)
+                    {
+                        $paymentPageItem = $paymentPageItems->get(0);
+
+                        (new PaymentPageItem\Core)->update($paymentPageItem, $paymentPageItemUpdateInput);
+                    }
+                }
+
+                $this->addPositionToCustomFields($settings, $paymentLink);
+            }
+
+            $paymentPageItems = $paymentLink->paymentPageItems()->get();
+
+            if (($this->isPaymentPageV3Enabled() === false) and
+                (count($paymentPageItems) === 1) and
+                (empty($input[Entity::PAYMENT_PAGE_ITEMS]) === false))
+            {
+                $input = array_merge(
+                    $input,
+                    $this->getPaymentPageUpdateInputFromItemInput($input[Entity::PAYMENT_PAGE_ITEMS][0])
+                );
+            }
+
             $paymentLink->edit($input);
 
             $this->changeStatusAfterUpdateIfApplicable($paymentLink);
 
-            $settings = $input[Entity::SETTINGS] ?? [];
-
-            $this->addPositionToCustomFields($settings);
-
             $this->upsertSettings($paymentLink, $settings);
-
-            $paymentPageItems = $paymentLink->paymentPageItems()->get();
-
-            if ($paymentPageItems->isEmpty() !== true)
-            {
-                $paymentPageItemUpdateInput = $this->getPaymentPageItemUpdateInput($input);
-
-                if (empty($paymentPageItemUpdateInput) === false)
-                {
-                    $paymentPageItem = $paymentPageItems->get(0);
-
-                    (new PaymentPageItem\Core)->update($paymentPageItem, $paymentPageItemUpdateInput);
-                }
-            }
 
             $this->repo->saveOrFail($paymentLink);
         });
@@ -274,11 +326,50 @@ class Core extends Base\Core
             $udfSchema->validate($paymentNotes);
         }
 
+        if ($paymentLink->getVersion() === Version::V2) {
+            if ($payment->hasOrder() === false) {
+                throw new BadRequestValidationFailureException(
+                    'order_id is required to create payment for payment page v2'
+                );
+            }
+        }
+
+        if ($payment->hasOrder() === true)
+        {
+            $order = $payment->order;
+
+            $lineItems = $order->lineItems()->get();
+
+            if ($lineItems->count() === 0)
+            {
+                throw new BadRequestValidationFailureException(
+                    'order does not belongs to the given payment page'
+                );
+            }
+
+            foreach ($lineItems as $lineItem)
+            {
+                if ($lineItem->getRefType() !== E::PAYMENT_PAGE_ITEM)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'order does not belongs to the given payment page'
+                    );
+                }
+
+                $paymentPageItem = $lineItem->ref;
+
+                if ($paymentLink->getId() !== $paymentPageItem->paymentLink->getId())
+                {
+                    throw new BadRequestValidationFailureException(
+                        'order does not belongs to the given payment page'
+                    );
+                }
+            }
+        }
+
         // 3. Validates payment link is active and has payment slots available
-        // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
-        $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
         if (($paymentLink->isPayable() === false) or
-            ($this->hasPaymentSlots($paymentLink, $paymentUnits) === false))
+            ($this->hasPaymentSlots($paymentLink, $payment) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
@@ -350,6 +441,34 @@ class Core extends Base\Core
         }
     }
 
+    public function createOrder(Entity $paymentLink, array $input)
+    {
+        $paymentLink->getValidator()->validatePaymentLinkToCreateOrder();
+
+        $paymentLink->getValidator()->validateInput('create_order', $input);
+
+        $input = $this->modifyAndValidateInputToCreateLineItems($input, $paymentLink);
+
+        $totalAmount = $this->getTotalAmountForOrder($input[Entity::LINE_ITEMS]);
+
+        $order = (new Order\Core)->create(
+            [
+                Order\Entity::AMOUNT   => $totalAmount,
+                Order\Entity::CURRENCY => $paymentLink->getCurrency(),
+            ],
+            $paymentLink->merchant
+        );
+
+        (new LineItem\Core)->createMany($input[Entity::LINE_ITEMS], $this->merchant, $order);
+
+        $lineItems = $order->lineItems()->get();
+
+        return [
+            Entity::ORDER      => $order,
+            Entity::LINE_ITEMS => $lineItems
+        ];
+    }
+
     protected function createPaymentPageItemInternally(Entity $paymentLink)
     {
         $paymentPageItemInput = $this->getPaymentPageItemCreateInput($paymentLink);
@@ -361,9 +480,11 @@ class Core extends Base\Core
         );
     }
 
-    protected function addPositionToCustomFields(array & $settings)
+    protected function addPositionToCustomFields(array & $settings, Entity $paymentLink)
     {
-        if (isset($settings[Entity::UDF_SCHEMA]) === false)
+        if ((isset($settings[Entity::UDF_SCHEMA]) === false) or
+            ($paymentLink->getVersion() === Version::V2) or
+            ($this->isPaymentPageV3Enabled() === true))
         {
             return;
         }
@@ -504,9 +625,9 @@ class Core extends Base\Core
         return $summary;
     }
 
-    protected function addAdditionalDataToSettings(array & $settings)
+    protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)
     {
-        $this->addPositionToCustomFields($settings);
+        $this->addPositionToCustomFields($settings, $paymentLink);
 
         $settings[Entity::CHECKOUT_OPTIONS] = [
             'email' => 'email',
@@ -532,6 +653,15 @@ class Core extends Base\Core
         );
     }
 
+    protected function createPaymentPageItems(array $input, Entity $paymentLink)
+    {
+        (new PaymentPageItem\Core)->createMany(
+            $input[Entity::PAYMENT_PAGE_ITEMS],
+            $this->merchant,
+            $paymentLink
+        );
+    }
+
     protected function migratePaymentPageForMinPurchase(Entity $paymentPage)
     {
         (new PaymentPageItem\Core)->migratePaymentPageItemForMinPurchase($paymentPage);
@@ -547,24 +677,50 @@ class Core extends Base\Core
         // Multiple payment process attempts to update attributes of link entity.
         $this->repo->assertTransactionActive();
 
-        // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
-        $units = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
-
-        $paymentLink->incrementTimesPaidBy($units);
-
         $paymentLink->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
 
         $paymentPageItems = $paymentLink->paymentPageItems()->get();
 
-        if ($paymentPageItems->isEmpty() === false)
+        if ($payment->hasOrder() !== true)
         {
-            $paymentPageItem = $paymentPageItems->get(0);
+            // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
+            $units = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
 
-            $paymentPageItem->incrementQuantitySold($units);
+            $paymentLink->incrementTimesPaidBy($units);
 
-            $paymentPageItem->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
+            if ($paymentPageItems->isEmpty() === false)
+            {
+                $paymentPageItem = $paymentPageItems->get(0);
 
-            $this->repo->saveOrFail($paymentPageItem);
+                $paymentPageItem->incrementQuantitySold($units);
+                $paymentPageItem->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
+
+                $this->repo->saveOrFail($paymentPageItem);
+            }
+        }
+        else
+        {
+            $order = $payment->order;
+
+            $lineItems = $order->lineItems()->get();
+
+            foreach ($lineItems as $lineItem)
+            {
+                $paymentPageItem = $lineItem->ref;
+
+                $paymentPageItem->incrementQuantitySold($lineItem->getQuantity());
+                $paymentPageItem->incrementTotalAmountPaidBy($lineItem->getQuantity() * $lineItem->getAmount());
+
+                $paymentPageItem->saveOrFail();
+            }
+
+            if ((count($paymentPageItems) === 1) and ($this->isPaymentPageV3Enabled() === false))
+            {
+                foreach ($lineItems as $lineItem)
+                {
+                    $paymentLink->incrementTimesPaidBy($lineItem->getQuantity());
+                }
+            }
         }
 
         if ($paymentLink->isTimesPayableExhausted() === true)
@@ -589,7 +745,7 @@ class Core extends Base\Core
      * link's status needs changing.
      *
      * Payment link's status:
-     * - will be marked complete if times_payable post update is equal to times_paid
+     * - will be marked complete if all the stock of the pp items are exhausted
      *
      * Currently there is no other cases. Expire by edits will not affect this because that must already by at least
      * 15 minutes in future (validated via Validator method during build).
@@ -600,7 +756,7 @@ class Core extends Base\Core
     {
         $this->repo->assertTransactionActive();
 
-        if ($paymentLink->getTimesPayable() === $paymentLink->getTimesPaid())
+        if ($paymentLink->isTimesPayableExhausted() === true)
         {
             $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::COMPLETED);
         }
@@ -655,27 +811,92 @@ class Core extends Base\Core
      * Given payment link is payable(i.e. active and not expired etc), checks if a new payment can be accepted by
      * counting existing succeeding payments (i.e. payments in created/authorized statuses).
      *
-     * @param  Entity  $paymentLink
-     * @param  integer $paymentUnits
+     * @param  Entity         $paymentLink
+     * @param  Payment\Entity $payment
      *
      * @return boolean
      */
-    protected function hasPaymentSlots(Entity $paymentLink, int $paymentUnits): bool
+    protected function hasPaymentSlots(Entity $paymentLink, Payment\Entity $payment): bool
     {
-        $timesPaid    = $paymentLink->getTimesPaid();
-        $timesPayable = $paymentLink->getTimesPayable();
-
-        // Just return if there is no limit on number of payments
-        if ($timesPayable === null)
+        if ($payment->hasOrder() === false)
         {
+            // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
+            $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
+            $timesPaid    = $paymentLink->getTimesPaid();
+            $timesPayable = $paymentLink->getTimesPayable();
+
+            // Just return if there is no limit on number of payments
+            if ($timesPayable === null)
+            {
+                return true;
+            }
+
+            $succeedingPaymentUnits = $this->repo->payment_link->getSucceedingPaymentUnits($paymentLink);
+
+            $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentUnits;
+
+            return ($slotsAvailable >= $paymentUnits);
+        }
+        else
+        {
+            $order = $payment->order;
+
+            $lineItems = $order->lineItems()->get();
+
+            $succeedingPayments = $this->repo->payment_link->getSucceedingPayments($paymentLink);
+
+            $paymentPageItemQuantity = $this->getActivePaymentQuantityCount($succeedingPayments);
+
+            foreach ($lineItems as $lineItem)
+            {
+                $paymentPageItem = $lineItem->ref;
+
+                $neededQuantity = $this->getNeededQuantity($lineItem, $paymentPageItemQuantity);
+
+                if ($paymentPageItem->isSlotLeft($lineItem->getQuantity() + $neededQuantity) === false)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
+    }
 
-        $succeedingPaymentUnits = $this->repo->payment_link->getSucceedingPaymentUnits($paymentLink);
+    protected function getActivePaymentQuantityCount($payments): array
+    {
+        $paymentPageItemQuantity = [];
 
-        $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentUnits;
+        foreach ($payments as $payment)
+        {
+            if ($payment->hasOrder() === true)
+            {
+                $order = $payment->order;
 
-        return ($slotsAvailable >= $paymentUnits);
+                $lineItems = $order->lineItems()->get();
+
+                foreach ($lineItems as $lineItem)
+                {
+                    $paymentPageItem = $lineItem->ref;
+
+                    if (isset($paymentPageItemQuantity[$paymentPageItem->getId()]) !== true)
+                    {
+                        $paymentPageItemQuantity[$paymentPageItem->getId()] = 0;
+                    }
+
+                    $paymentPageItemQuantity[$paymentPageItem->getId()] += $lineItem->getQuantity();
+                }
+            }
+        }
+
+        return $paymentPageItemQuantity;
+    }
+
+    protected function getNeededQuantity(LineItem\Entity $lineItem, array $paymentPageItemQuantity): int
+    {
+        $paymentPageItem = $lineItem->ref;
+
+         return (int) ($paymentPageItemQuantity[$paymentPageItem->getId()] ?? 0);
     }
 
     /**
@@ -878,6 +1099,97 @@ class Core extends Base\Core
         return $urls;
     }
 
+    protected function updateFromPaymentPageItemInput(Entity $paymentPage, array $input)
+    {
+        $paymentPage->edit($input);
+
+        $settings = $input[Entity::SETTINGS] ?? [];
+
+        if (empty($settings) === false)
+        {
+            $this->upsertSettings($paymentPage, $settings);
+        }
+
+        $this->repo->saveOrFail($paymentPage);
+    }
+
+    public function updatePaymentPageItem(PaymentPageItem\Entity $paymentPageItem, array $input)
+    {
+        $paymentPageItem = $this->repo->transaction(
+            function() use ($paymentPageItem, $input)
+            {
+                $paymentLink = $paymentPageItem->paymentLink;
+
+                $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+
+                $this->repo->payment_page_item->reload($paymentPageItem);
+
+                $paymentPageItem = (new PaymentPageItem\Core)->update($paymentPageItem, $input);
+
+                $paymentPageItems = $paymentPageItem->paymentLink->paymentPageItems()->get();
+
+                if (($this->isPaymentPageV3Enabled() === false) and
+                    (count($paymentPageItems) === 1))
+                {
+                    $paymentPageUpdateInput = $this->getPaymentPageUpdateInputFromItemInput($input);
+
+                    if (empty($paymentPageUpdateInput) === false) {
+                        $this->updateFromPaymentPageItemInput($paymentLink, $paymentPageUpdateInput);
+                    }
+                }
+
+                $this->changeStatusAfterUpdateIfApplicable($paymentLink);
+
+                $paymentLink->saveOrFail();
+
+                return $paymentPageItem;
+            }
+        );
+
+        return $paymentPageItem;
+    }
+
+    public function isPaymentPageV3Enabled()
+    {
+        $treatment = $this->app->razorx->getTreatment($this->merchant->getId(), Constants::PAYMENT_PAGE_V3, $this->mode);
+
+        return $treatment === 'on';
+    }
+
+    protected function getPaymentPageUpdateInputFromItemInput(array $input)
+    {
+        $paymentPageUpdateInput = [];
+
+        if (empty($input[PaymentPageItem\Entity::ITEM]) === false)
+        {
+            $item = $input[PaymentPageItem\Entity::ITEM];
+
+            if (array_key_exists(Item\Entity::AMOUNT, $item) === true)
+            {
+                $paymentPageUpdateInput[Entity::AMOUNT] = $item[Item\Entity::AMOUNT];
+            }
+        }
+
+        if (array_key_exists(PaymentPageItem\Entity::STOCK, $input) === true)
+        {
+            $paymentPageUpdateInput[Entity::TIMES_PAYABLE] = $input[PaymentPageItem\Entity::STOCK];
+        }
+
+        if (array_key_exists(PaymentPageItem\Entity::MIN_PURCHASE, $input) === true)
+        {
+            if ($input[PaymentPageItem\Entity::MIN_PURCHASE] !== null)
+            {
+                $paymentPageUpdateInput[Entity::SETTINGS][Entity::ALLOW_MULTIPLE_UNITS] = '1';
+            }
+            else
+            {
+                $paymentPageUpdateInput[Entity::SETTINGS][Entity::ALLOW_MULTIPLE_UNITS] = '0';
+            }
+        }
+
+        return $paymentPageUpdateInput;
+    }
+
     /**
      * Updates the status to INACTIVE, status_reason to EXPIRED of an individual expired payment link by locking it.
      *
@@ -999,10 +1311,17 @@ class Core extends Base\Core
             $paymentPageItemInput[PaymentPageItem\Entity::MIN_PURCHASE] = 1;
         }
 
+        if ($paymentLink->getAmount() === null)
+        {
+            $minAmount = Currency::getMinAmount($paymentLink->getCurrency());
+
+            $paymentPageItemInput[PaymentPageItem\Entity::MIN_AMOUNT] = $minAmount;
+        }
+
         return $paymentPageItemInput;
     }
 
-    protected function getPaymentPageItemUpdateInput(array $input)
+    protected function getPaymentPageItemUpdateInput(array $input, Entity $paymentLink)
     {
         $paymentPageItemInput = [];
 
@@ -1011,6 +1330,13 @@ class Core extends Base\Core
             $itemInput[Item\Entity::AMOUNT] = $input[Entity::AMOUNT];
 
             $paymentPageItemInput[PaymentPageItem\Entity::ITEM] = $itemInput;
+
+            if ($input[Entity::AMOUNT] === null)
+            {
+                $minAmount = Currency::getMinAmount($paymentLink->getCurrency());
+
+                $paymentPageItemInput[PaymentPageItem\Entity::MIN_AMOUNT] = $minAmount;
+            }
         }
 
         if (array_key_exists(Entity::TIMES_PAYABLE, $input) === true)
@@ -1019,5 +1345,52 @@ class Core extends Base\Core
         }
 
         return $paymentPageItemInput;
+    }
+
+    protected function getTotalAmountForOrder(array $input)
+    {
+        $totalAmount = 0;
+
+        foreach ($input as $lineItem)
+        {
+            $totalAmount += $lineItem[LineItem\Entity::AMOUNT] * ($lineItem[LineItem\Entity::QUANTITY] ?? 1);
+        }
+
+        return $totalAmount;
+    }
+
+    protected function modifyAndValidateInputToCreateLineItems(array $input, Entity $paymentLink)
+    {
+        $modifiedInput = [];
+
+        $PPIRepo = new PaymentPageItem\Repository;
+
+        $PPIValidator = new PaymentPageItem\Validator();
+
+        foreach ($input[Entity::LINE_ITEMS] as $lineItem)
+        {
+            $paymentPageItemId = $lineItem[Entity::PAYMENT_PAGE_ITEM_ID];
+
+            unset($lineItem[Entity::PAYMENT_PAGE_ITEM_ID]);
+
+            $paymentPageItemId = PaymentPageItem\Entity::verifyIdAndStripSign($paymentPageItemId);
+
+            $paymentPageItem = $PPIRepo->findByIdAndPaymentLinkEntityOrFail(
+                $paymentPageItemId,
+                $paymentLink
+            );
+
+            $itemId = $paymentPageItem->getItemId();
+
+            $lineItem[LineItem\Entity::ITEM_ID] = Item\Entity::getSignedId($itemId);
+
+            $lineItem[LineItem\Entity::REF] = $paymentPageItem;
+
+            $modifiedInput[Entity::LINE_ITEMS][] = $lineItem;
+
+            $PPIValidator->validateAmountQuantityAndStockOfPPI($paymentPageItem, $lineItem);
+        }
+
+        return $modifiedInput;
     }
 }

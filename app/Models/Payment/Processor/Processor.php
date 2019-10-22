@@ -307,8 +307,6 @@ class Processor
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PAYMENT_PROCESSING_ERROR);
-
             $payment = $payment ?? null;
 
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
@@ -2319,8 +2317,12 @@ class Processor
 
         if ($invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
         {
+            $paymentNotes = $payment->getNotes()->toArray();
 
-            $payment->setNotes($invoice->getNotes()->toArray());
+            if (empty($paymentNotes) === true)
+            {
+                $payment->setNotes($invoice->getNotes()->toArray());
+            }
         }
     }
 

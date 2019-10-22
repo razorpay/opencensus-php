@@ -23,6 +23,45 @@ class CrawlerReconTest extends TestCase
         $this->gateway = '';
     }
 
+
+    public function testBobCrawlerReconciliation()
+    {
+        $this->gateway = 'netbanking_bob';
+
+        $payment = $this->createPayment('netbanking_bob', ['id'=>'D85nLQUuW4i5Jp', 'amount'=>100]);
+
+        $this->createNetbanking($payment['id'], 'BOB', 'SUC');
+
+        $response = $this->reconcile('NetbankingBobV2');
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertEquals($gatewayEntity['bank_payment_id'], 99999);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+    }
+
+    public function testBobCrawlerReconciliationGatewayFailure()
+    {
+        $this->gateway = 'netbanking_bob';
+
+        $reconException  = false;
+
+        try
+        {
+            $this->reconcile('NetbankingBobV2', ['gateway_failure' => true]);
+        }
+        catch (ReconciliationException $e)
+        {
+            $reconException = true;
+        }
+
+        $this->assertTrue($reconException);
+    }
+
     public function testPaypalCrawlerReconciliation()
     {
         $this->gateway = 'wallet_paypal';
