@@ -8,6 +8,7 @@ import EditablePairsList from './EditablePairList';
 import PowerDropdown from './PowerDropdown';
 import EnumList from './EnumList';
 import CurrencySelect from './CurrencySelect';
+import TextareaAutoResize from './TextareaAutoResize';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -77,6 +78,8 @@ export function separateDomProps(props) {
     placement,
     mature,
     propagatedError,
+    setRef,
+    extraChildren,
     ...rest
   } = props;
 
@@ -102,6 +105,8 @@ export function separateDomProps(props) {
     placement,
     mature,
     propagatedError,
+    setRef,
+    extraChildren,
     props: rest,
   };
 }
@@ -198,7 +203,27 @@ export default class Field extends React.Component {
 
   // Will be called only in cases of impure-component fields
   componentWillReceiveProps(nextProps) {
-    if (nextProps !== this.props) {
+    const curPropsKey = Object.keys(this.props);
+    const nextPropsKey = Object.keys(nextProps);
+
+    let isDifferent = false;
+
+    // Skip comparison of function and children which changes on re-render if inline-fns are provided
+    if (curPropsKey.length === nextPropsKey.length) {
+      for (let i = 0; i < curPropsKey.length; i++) {
+        const key = curPropsKey[i];
+
+        if (
+          ['function', 'object'].indexOf(typeof this.props[key]) === -1 &&
+          this.props[key] !== nextProps[key]
+        ) {
+          isDifferent = true;
+          break;
+        }
+      }
+    }
+
+    if (isDifferent) {
       this.el && this.valid();
     }
   }
@@ -274,6 +299,10 @@ export default class Field extends React.Component {
     if (el) {
       this.valid();
     }
+
+    if (this.props.setRef) {
+      this.props.setRef(el);
+    }
   };
 
   /* Updates the info based on onFocus and onInfo */
@@ -345,6 +374,7 @@ export default class Field extends React.Component {
       <div class={inputClass(this)}>
         <Label text={allProps.label} />
         <div class="Input-content">
+          {allProps.extraChildren}
           <div
             class={classList(
               'Input-elWrapper',
@@ -617,3 +647,5 @@ Field.CalendarPicker = CalendarPicker;
 Field.ToCalendar = ToCalendar;
 Field.TimePicker = TimePicker;
 Field.CurrencySelect = CurrencySelect;
+
+Field.TextareaAutoResize = TextareaAutoResize;

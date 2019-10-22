@@ -39,7 +39,7 @@ export default function BatchDetails({ renderDetails, ...props }) {
           </div>
         </div>
       ) : (
-        <div class="content-wrapper content-sm txn-details Entity--paymentpage">
+        <div class="content-wrapper content-sm txn-details">
           <NoEntityResultsFound
             error={<span>No results found for given id</span>}
           />

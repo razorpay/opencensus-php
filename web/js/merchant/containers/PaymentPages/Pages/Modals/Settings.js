@@ -97,14 +97,11 @@ export default class extends React.Component {
       trackData.push('payment_success_redirect_url');
     }
 
-    trackPageSettingsData(
-      this.props.isNew ? 'Save and Publish' : 'Save',
-      trackData
-    );
+    trackPageSettingsData(this.props.isNew ? 'Update' : 'Save', trackData);
   };
 
   render() {
-    const { isNew, handleClose, isTestMode, paymentPageEntity } = this.props;
+    const { handleClose, isTestMode, paymentPageEntity } = this.props;
 
     const {
       slug,
@@ -158,7 +155,7 @@ export default class extends React.Component {
                       }
 
                       if (val.length < 4) {
-                        return 'Url must be atleast 4 characters long';
+                        return 'Url must be at least 4 characters long';
                       } else if (val.length > 30) {
                         return 'Url must be maximum 30 characters long';
                       }
@@ -308,7 +305,7 @@ export default class extends React.Component {
                   Cancel
                 </Button.Transparent>
                 <Button.Primary type="submit" disabled={disableSubmit}>
-                  {isNew ? 'Save and Publish' : 'Save'}
+                  Save
                 </Button.Primary>
               </footer>
             </Form>

@@ -45,41 +45,36 @@ export default class extends React.Component {
       currency,
       isDisabled = this.props.disabled;
 
-    if (this.props.user.international) {
-      const defaultValue = this.props.defaultValue;
+    const defaultValue = this.props.defaultValue || 'INR'; // If no value passed, then INR is the displayed option.
 
-      Object.keys(window.currencyList).forEach(c => {
-        const fullName = window.currencyList[c].name,
-          ISO = c,
-          symbol = window.currencyList[c].symbol;
+    /*
+    * Note: it can happen that international is manually disabled (by merchant / by support team).
+    * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.
+    * */
+    Object.keys(window.currencyList).forEach(c => {
+      const fullName = window.currencyList[c].name,
+        ISO = c,
+        symbol = window.currencyList[c].symbol;
 
-        const currencyObj = {
-          label: fullName,
-          name: ISO,
-          sym: symbol,
-        };
+      const currencyObj = {
+        label: fullName,
+        name: ISO,
+        sym: symbol,
+      };
 
-        if (defaultValue && ISO === defaultValue) {
-          currency = currencyObj;
-        }
+      if (defaultValue && ISO === defaultValue) {
+        currency = currencyObj;
+      }
 
+      // If international then populate dropdown options
+      if (this.isInternationalEnabled) {
         if (frequentlyUsedCurrencies.indexOf(c) > -1) {
           currencyList[0].options.push(currencyObj);
         } else {
           currencyList[1].options.push(currencyObj);
         }
-      });
-    }
-
-    this.INR_option = {
-      label: window.currencyList['INR'].full_name,
-      name: 'INR',
-      sym: window.currencyList['INR'].symbol,
-    };
-
-    if (!currency) {
-      currency = this.INR_option; // default option if no defaultValue set by parent
-    }
+      }
+    });
 
     return {
       currencyList,
@@ -124,20 +119,24 @@ export default class extends React.Component {
     );
   };
 
+  // Note: This considers cases where razorX is enabled but international is manually disabled(by merchant / by support team)
+  get isInternationalEnabled() {
+    return this.props.user.isInttCurrenciesEnabled;
+  }
+
   render() {
     const props = this.props;
-
-    const isInternationalEnabled = this.props.user.isInttCurrenciesEnabled;
 
     return (
       <div
         class={classList(
           'Input Input--Currency',
           this.props.fullDisplay && 'Input--Currency--fullDisplay',
-          (!isInternationalEnabled || this.props.disabled) && 'Input--noMargin'
+          (!this.isInternationalEnabled || this.props.disabled) &&
+            'Input--noMargin'
         )}
       >
-        {isInternationalEnabled && !this.props.disabled ? (
+        {this.isInternationalEnabled && !this.props.disabled ? (
           <div class="Input-content">
             <div class="Input-elWrapper">
               <div class="Input-el">
@@ -168,12 +167,14 @@ export default class extends React.Component {
           </div>
         ) : (
           <div class="value">
-            <input
-              name={props.name || 'currency'}
-              value={this.state.currency.name}
-              hidden
-              readOnly
-            />
+            {props.name && (
+              <input
+                name={props.name}
+                value={this.state.currency.name}
+                hidden
+                readOnly
+              />
+            )}
             <AmountTooltip
               currency={this.state.currency.name}
               parentQuerySelector={this.props.parentQuerySelector}
