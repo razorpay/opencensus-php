@@ -262,6 +262,7 @@ export default class App extends Component {
 
     if (user) {
       this.props.updateSession({ user });
+      this.updateGA(user);
       console.log('userrrrr:', user);
 
       // if the user is live but chose to browse in test mode,
