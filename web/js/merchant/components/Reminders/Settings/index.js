@@ -54,20 +54,29 @@ export default class ReminderSetting extends React.Component {
         ...initState,
         withExpiry: props.withExpiry,
         withOutExpiry: props.withOutExpiry,
+        advancedSettings: {
+          scheduledTime: '10AM - 12PM',
+          channels: {
+            sms: props.channels.includes('sms'),
+            email: props.channels.includes('email'),
+          },
+        },
       },
       settings: {
         ...initState,
         withExpiry: props.withExpiry,
         withOutExpiry: props.withOutExpiry,
+        advancedSettings: {
+          scheduledTime: '10AM - 12PM',
+          channels: {
+            sms: props.channels.includes('sms'),
+            email: props.channels.includes('email'),
+          },
+        },
       },
       withExpireByConfigs: props.withExpireByConfigs,
       withOutExpireByConfigs: props.withOutExpireByConfigs,
     };
-
-    props.channels.forEach(channel => {
-      this.state.settings.advancedSettings.channels[channel] = true;
-      this.state.__stashed_settings__.advancedSettings.channels[channel] = true;
-    });
   }
 
   disableReminderSetting = () => {
