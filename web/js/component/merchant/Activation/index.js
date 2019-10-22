@@ -24,7 +24,7 @@ import {
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
-  INDIVIDUAL,
+  UNREGISTERED_TYPES,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -674,11 +674,12 @@ export default class ActivationWizard extends React.Component {
 
   // TODO: Consider razorX flag here
   get isIndividualTypeLock() {
-    // const businessType =
-    //   this.state.dirty.business_type || this.props.data.business_type;
-
-    // return businessType == INDIVIDUAL;
-    return false;
+    const { user } = this.props;
+    const businessType =
+      this.state.dirty.business_type || this.props.data.business_type;
+    return (
+      !!UNREGISTERED_TYPES[Number(businessType)] && !user.isUnregBizFlowEnabled
+    );
   }
 
   get isUnregBiz() {
