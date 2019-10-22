@@ -17,6 +17,8 @@ class Doppler
 
     const PAYMENT_FAILURE_EVENT    = 'failure';
 
+    const TOPIC = 'stage-doppler';
+
     protected $app;
 
     protected $mode;
@@ -75,7 +77,7 @@ class Doppler
                     'sns_topic'        => $this->sns_topic,
                     'event_data'       => $eventData,
                 ]);
-            $this->sns->publish(json_encode($eventData), $this->sns_topic);
+            $this->sns->publish(json_encode($eventData), self::TOPIC);
         }
         catch (\Throwable $e)
         {
