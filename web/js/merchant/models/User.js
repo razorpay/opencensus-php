@@ -393,7 +393,6 @@ export default class User {
   }
 
   get isCustomNotesDropdownEnabled() {
-    return true;
     return this.getExpStatus('custom_notes');
   }
 
