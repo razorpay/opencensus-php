@@ -390,7 +390,7 @@ class Activate extends Base\Core
 
         if ($activationSource === Product::BANKING)
         {
-            $instantActivationMail = new RazorpayXInstantActivationMail($merchant);
+            $instantActivationMail = new RazorpayXInstantActivationMail($merchant->getId());
         }
         else if ($activationSource === Product::PRIMARY)
         {

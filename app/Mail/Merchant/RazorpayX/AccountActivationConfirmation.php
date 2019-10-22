@@ -23,11 +23,17 @@ class AccountActivationConfirmation extends Mailable
 
     protected $config;
 
-    public function __construct(Entity $merchant)
+    public function __construct(string $merchantId)
     {
         parent::__construct();
 
-        $this->config = App::getFacadeRoot()['config'];
+        $app = App::getFacadeRoot();
+
+        $this->config = $app['config'];
+
+        $repo = $app['repo'];
+
+        $merchant = $repo->merchant->find($merchantId);
 
         /***
          * Assumption is since this is an Instant Activation Email,
