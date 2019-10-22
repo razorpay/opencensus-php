@@ -201,7 +201,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::ACTIVE           => 1,
-        self::BLOCK            => 1,
+        self::BLOCK            => 0,
         self::CHECKOUT_DISPLAY => 0,
         self::TYPE             => self::DEFERRED,
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,

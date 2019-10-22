@@ -49,6 +49,8 @@ class Validator extends Base\Validator
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
+        Entity::BLOCK               => 'required|boolean',
+        Entity::ACTIVE              => 'required|boolean',
     ];
 
     protected static $createBulkRules = [
