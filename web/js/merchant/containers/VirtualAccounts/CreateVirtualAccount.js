@@ -26,7 +26,7 @@ import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import AccountDetails, {
   getVirtualAccountDetails,
 } from 'merchant/components/VirtualAccounts/AccountDetails';
-import { getVirtualAccountDetailsToCopy } from '../../components/VirtualAccounts/AccountDetails';
+import { getVirtualAccountDetailsToCopy } from 'merchant/components/VirtualAccounts/AccountDetails';
 
 @connect(
   state => {
