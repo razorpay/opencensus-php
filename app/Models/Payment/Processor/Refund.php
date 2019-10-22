@@ -2751,7 +2751,8 @@ trait Refund
         $app   = App::getFacadeRoot();
 
         $queryParams = [
-            RefundConstants::METHOD => $payment->getMethod()
+            RefundConstants::METHOD => $payment->getMethod(),
+            RefundConstants::AMOUNT => $payment->getAmount()
         ];
 
         if ($payment->getMethod() === Payment\Method::CARD)

@@ -60,4 +60,5 @@ class Constants
     const METHOD        = 'method';
     const CARD_TYPE     = 'card_type';
     const NETWORK_CODE  = 'network_code';
+    const AMOUNT        = 'amount';
 }
