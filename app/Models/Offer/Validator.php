@@ -50,7 +50,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'required|string',
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
         Entity::BLOCK               => 'required|boolean',
-        Entity::ACTIVE              => 'required|boolean',
+        Entity::ACTIVE              => 'filled|boolean',
     ];
 
     protected static $createBulkRules = [
