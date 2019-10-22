@@ -8,6 +8,7 @@ use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\OAuth\Application as OAuthApp;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Exception;
 use RZP\Models\Emi;
@@ -100,6 +101,8 @@ class Core extends Base\Core
         $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
+
+        $this->savePartnerIntentInSettings($input, $merchant);
 
         $this->addMerchantSupportingEntities($merchant);
 
@@ -233,6 +236,27 @@ class Core extends Base\Core
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
         ], $shouldSync = true);
+    }
+
+    /**
+     * Saves partner_intent if present in settings table
+     *
+     * @param array $input
+     * @param array $merchant
+     *
+     */
+    protected function savePartnerIntentInSettings(array $input, Entity $merchant)
+    {
+        if (isset($input[Constants::PARTNER_INTENT]) and $input[Constants::PARTNER_INTENT] === true)
+        {
+            $data = [
+                Constants::PARTNER_INTENT       => true,
+            ];
+
+            Accessor::for($merchant, Constants::PARTNER)
+                ->upsert($data)
+                ->save();
+        }
     }
 
     /**
