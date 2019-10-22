@@ -2114,6 +2114,21 @@ trait PaymentTrait
         });
     }
 
+    protected function mockExpressSendRequest($closure, $times = 1)
+    {
+        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+
+        $express->shouldAllowMockingProtectedMethods();
+
+        $express->shouldReceive('sendRequest')
+                ->times($times)
+                ->andReturnUsing($closure);
+
+        $this->app->instance('express', $express);
+
+        return $express;
+    }
+
     protected function mockShield()
     {
         $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();

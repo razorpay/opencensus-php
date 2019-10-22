@@ -134,6 +134,7 @@ class Constants
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
+    const TRANSLATE_WEBHOOK               = 'translate_webhook';
 
     const ALLOW_PARTNER_TO_ACTIVATE_MERCHANT    = 'allow_partner_to_activate_merchant';
 
@@ -427,7 +428,7 @@ class Constants
         self::SUBMERCHANT_ONBOARDING          => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::VALIDATE_MERCHANT_DOMAIN        => true,
-
+        self::TRANSLATE_WEBHOOK               => true,
         self::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT => true,
     ];
 

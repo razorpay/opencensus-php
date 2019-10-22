@@ -1347,6 +1347,9 @@ class ErrorCode
     const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
     const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
 
+    // Express service
+    const SERVER_ERROR_EXPRESS_SERVICE_ERROR                                        = 'SERVER_ERROR_EXPRESS_SERVICE_ERROR';
+
     // Fund transfer service
     const SERVER_ERROR_FTS_SERVICE_TIMEOUT                                          = 'SERVER_ERROR_FTS_SERVICE_TIMEOUT';
     const BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT                           = 'BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT';

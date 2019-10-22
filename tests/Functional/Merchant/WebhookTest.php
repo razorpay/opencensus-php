@@ -564,6 +564,79 @@ class WebhookTest extends TestCase
         $this->assertArrayNotHasKey('subscription.charged', $events);
     }
 
+    public function testWebhookEventWithExpressTranslationEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $translatedWebhookBody = 'sample translated webhook body';
+
+        $webhookSecret = 'sample_secret';
+
+        $this->createMerchantWebhook([
+            'events' => ['payment.captured' => "1"],
+            'secret' => $webhookSecret,
+        ]);
+
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TRANSLATE_WEBHOOK]);
+
+        $this->mockExpressSendRequest(function ($path, $content) use ($translatedWebhookBody) {
+
+            $response = new \Requests_Response();
+
+            $response->body = $translatedWebhookBody;
+
+            $response->headers['request-id'] = '12345678';
+
+            return $response;
+        });
+
+        $webhookFired = [];
+
+        $this->mockInfernoMakeRequest(function ($request) use (& $webhookFired)
+        {
+            $webhookFired = $request;
+
+            return $this->getStandardWebhookResponse();
+        });
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        /*
+         * these asserts cannot be inside the mockInfernoMakeRequest closure because
+         * if assert fails, then exception is thrown. However, the exception is caught and not rethrown
+         * by inferno. this leads to all assert failures failing silently.
+         */
+
+        $this->assertEquals($translatedWebhookBody, $webhookFired['content']);
+
+        $this->assertEquals('12345678', $webhookFired['headers']['request-id'][0]);
+
+        $this->assertEquals(
+            hash_hmac('sha256', $translatedWebhookBody, $webhookSecret),
+            $webhookFired['headers']['X-Razorpay-Signature']);
+
+        // to assert that express service does not modify the original url, method etc
+        $this->assertEquals('http://webhook.com/v1/dummy/route', $webhookFired['url']);
+
+        $this->assertEquals('post', $webhookFired['method']);
+    }
+
+    public function testWebhookEventWithExpressTranslationNotEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $this->createMerchantWebhook(['events' => ['payment.captured' => "1"]]);
+
+        $express = $this->mockExpressSendRequest(null, 0);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
     public function testOrderPaidWebhookEventData()
     {
         $this->createWebhook(['events' => ['order.paid' => "1"]]);
@@ -1433,7 +1506,7 @@ class WebhookTest extends TestCase
                 'events'      => [
                     'terminal.activated' => '1'
                 ]
-            ]);    
+            ]);
 
         $terminal = $this->fixtures->create('terminal',
             [
@@ -1516,7 +1589,7 @@ class WebhookTest extends TestCase
                 'events'      => [
                     'terminal.failed' => '1'
                 ]
-            ]);    
+            ]);
 
         $terminal = $this->fixtures->create('terminal',
             [
@@ -1534,7 +1607,7 @@ class WebhookTest extends TestCase
             ]);
 
         $this->ba->cronAuth();
-        
+
         $testData = $this->testData[__FUNCTION__ . 'Data'];
 
         $this->mockInfernoFire(function ($data) use ($testData)
@@ -1596,7 +1669,7 @@ class WebhookTest extends TestCase
                 'events'      => [
                     'terminal.failed' => '1'
                 ]
-            ]);    
+            ]);
 
         $terminal = $this->fixtures->create('terminal',
             [
