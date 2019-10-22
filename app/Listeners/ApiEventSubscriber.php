@@ -233,6 +233,90 @@ class ApiEventSubscriber extends Base\Core
         return $event;
     }
 
+    protected function onAccountSuspended($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInstantlyActivated($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountUnderReview($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountNeedsClarification($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountActivated($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountRejected($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInternationalEnabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInternationalDisabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+    
+    protected function onAccountFundsHold($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountFundsUnhold($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountPaymentsEnabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountPaymentsDisabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPaymentAuthorized($payment)
     {
         $payload = $this->getPaymentPayload($payment);
@@ -768,6 +852,20 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getMerchantPayload($merchant)
+    {
+        //loading merchantDetail in memory
+        $merchant->merchantDetail;
+
+        $payload = [
+            Constants\Entity::ACCOUNT => [
+                'entity' => $merchant->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
     protected function getPaymentPayload($payment)
     {
         $payload = [
@@ -947,7 +1045,8 @@ class ApiEventSubscriber extends Base\Core
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
         //
-        $signedAccountId = Merchant\Account\Entity::getSignedId($merchant->getId());
+        $listeningMerchant = $this->getListeningMerchant($entity);
+        $signedAccountId = Merchant\Account\Entity::getSignedId($listeningMerchant->getId());
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
@@ -1086,23 +1185,31 @@ class ApiEventSubscriber extends Base\Core
      */
     protected function getMerchantFromEntity(Base\PublicEntity $entity): Merchant\Entity
     {
+        $merchant = $this->getListeningMerchant($entity);
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchant = $merchant->parent;
+        }
+
+        return $merchant;
+    }
+
+    protected function getListeningMerchant(Base\PublicEntity $entity): Merchant\Entity
+    {
         if ($this->listeningMerchant !== null)
         {
             return $this->listeningMerchant;
         }
 
-        if (($entity instanceof Merchant\Account\Entity) === true)
+        if ((($entity instanceof Merchant\Account\Entity) === true) or
+            (($entity instanceof Merchant\Entity) === true))
         {
             $merchant = $entity;
         }
         else
         {
             $merchant = $entity->merchant;
-        }
-
-        if ($merchant->isLinkedAccount() === true)
-        {
-            $merchant = $merchant->parent;
         }
 
         return $merchant;

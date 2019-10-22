@@ -103,7 +103,7 @@ class Base extends Core
     const AMEX                   = 'Amex';
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
     const PHONEPE                = 'Phonepe';
-    const PAYPAL                 = 'paypal';
+    const PAYPAL                 = 'Paypal';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -257,6 +257,7 @@ class Base extends Core
         Gateway::WALLET_PAYUMONEY       => self::PAYUMONEY,
         Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
         Gateway::WALLET_PHONEPE         => self::PHONEPE,
+        Gateway::WALLET_PAYPAL          => self::PAYPAL,
         Gateway::CARDLESS_EMI           => [
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
         ],

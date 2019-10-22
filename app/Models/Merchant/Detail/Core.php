@@ -26,6 +26,8 @@ use RZP\Models\Merchant\Metric;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
@@ -846,6 +848,20 @@ class Core extends Base\Core
             {
                 (new Reason\Core)->addRejectionReasons($rejectionReasons, $state);
             }
+
+            $status = $input[Entity::ACTIVATION_STATUS];
+
+            if (empty($status) === false)
+            {
+                $eventPayload = [
+                    ApiEventSubscriber::MAIN => $merchantDetails->merchant,
+                ];
+
+                $event = 'api.account.' . $status;
+
+                $this->app['events']->fire($event, $eventPayload);
+            }
+
         });
 
         $customProperties['activation_status'] = $currentActivationStatus;

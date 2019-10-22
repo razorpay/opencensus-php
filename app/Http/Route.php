@@ -602,6 +602,7 @@ final class Route
         'payment_page_item_update'                 => ['patch',    'payment_links/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
         'payment_page_items_migrate'               => ['post',     'payment_pages/migrate_payment_page_items',       'PaymentLinkController@migratePaymentPageItems'                     ],
         'payment_page_create_order'                => ['post',     'payment_pages/{id}/order',                       'PaymentLinkController@createOrder'                                 ],
+        'payment_page_create_order_option'         => ['options',  'payment_pages/{id}/order',                       'PaymentLinkController@createOrderOptions'                          ],
         'payment_page_items_migrate_min_purchase'  => ['post',     'payment_pages/migrate_payment_page_purchase',    'PaymentLinkController@migratePaymentPageItemForMinPurchase'        ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -1090,6 +1091,8 @@ final class Route
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
+        'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
+        'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
         'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
 
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
@@ -1284,6 +1287,10 @@ final class Route
 
         //route for testing raven sms gateways
         'send_test_sms'                           => ['post',      'admin/test-sms',                                           'AdminController@sendTestSms'                              ],
+
+        //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
+        'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
+        'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
     ];
 
     public static $public = [
@@ -1576,6 +1583,9 @@ final class Route
         'subscription_registration_auto_charge',
         'mpans_issue',
         'mpans_fetch',
+
+        'merchant_activation_update_partner',
+        'merchant_activation_status_partner',
     ];
 
     // Only routes defined in internalApps go here
@@ -1771,6 +1781,8 @@ final class Route
     ];
 
     public static $proxy = [
+        'fetch_partner_intent',
+        'update_partner_intent',
         'merchant_document_fetch',
         'merchant_document_upload',
         'merchant_document_delete',
@@ -3017,6 +3029,7 @@ final class Route
         'payment_redirect_to_authorize_post',
         'gateway_payment_callback_upi_airtel',
         'payment_page_create_order',
+        'payment_page_create_order_option',
     ];
 
     /**
@@ -3429,6 +3442,8 @@ final class Route
         'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
         'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
+        'merchant_activation_update_partner'   => [Feature::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT],
+        'merchant_activation_status_partner'   => [Feature::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT],
     ];
 
     /*
@@ -3675,7 +3690,10 @@ final class Route
             }
         }
         // For a partner token authenticated route, keep the token in the public URL
-        else if (($key === '') and ($this->ba->isPartnerAuth() === true))
+        // OR case happens for mock gateways in s2s redirect flow, when we receive rediret/authorize.
+        // we don't set the partner auth, hence there is a check on account id
+        else if ((($key === '') and ($this->ba->isPartnerAuth() === true)) or
+                  (($key === '') and ($this->ba->isDirectAuth() === true) and (empty($this->ba->authCreds->creds['account_id']) === false)))
         {
             $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
             // Todo: For bc there is another explode attempt, to be removed soon after this deploy.
@@ -3684,6 +3702,7 @@ final class Route
             $key                         = $parts[0];
             $parameters['account_id']    = $this->ba->getAccountId();
         }
+
         // Else continue with the key_id flow
         else if ($key === '')
         {

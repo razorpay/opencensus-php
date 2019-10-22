@@ -533,7 +533,15 @@ class AttemptReconcileTest extends TestCase
         //Validate settlement entities
         $settlement = $this->getLastEntity('settlement', true);
 
-        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+        if ($channel === Channel::YESBANK)
+        {
+            $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailureYesbank');
+        }
+        else
+        {
+            $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+        }
+
         $this->assertEquals(
             $batch['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
 

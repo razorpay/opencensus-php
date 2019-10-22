@@ -11,6 +11,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 
+use RZP\Services\Mock;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
@@ -556,7 +557,7 @@ class Reporting implements ExternalService
         //
         if ($this->config['mock'] === true)
         {
-            return [];
+            return (new Mock\ReportingService)->getReportingConfig();
         }
 
         $options = [
@@ -950,15 +951,25 @@ class Reporting implements ExternalService
         // header to figure out whether the request is coming from RX dashboard.
         $isBusinessBanking = $this->ba->isProductBanking();
 
+        $isAdminAuth = $this->ba->isAdminAuth();
+
         $items = $items->filter(
-            function($value) use ($isBusinessBanking)
+            function($value) use ($isBusinessBanking, $isAdminAuth)
             {
                 $isBusinessBankingReport = (starts_with(strtolower($value['name']), 'rx') === true);
-
                 //
+                // We want to expose all configs on admin auth
+                // This has been done, so that banking configs
+                // show up on self serve dashboard
+                //
+                if ($isAdminAuth === true)
+                {
+                    return true;
+                }
+
                 // If business banking, return only business banking reports.
                 // If not business banking, return all reports except business banking reports.
-                //
+
                 if ($isBusinessBanking === true)
                 {
                     return ($isBusinessBankingReport === true);

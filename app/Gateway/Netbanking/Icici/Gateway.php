@@ -538,11 +538,6 @@ class Gateway extends Base\Gateway
             RequestFields::SPID             => $this->getSpid(),
         ];
 
-        if ($this->isCorporateBanking() === true)
-        {
-            unset($requestData[RequestFields::SPID]);
-        }
-
         return array_merge($baseRequestData, $requestData);
     }
 

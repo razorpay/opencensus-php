@@ -1642,6 +1642,11 @@ class BasicAuth
         return ($this->type === Type::DEVICE_AUTH);
     }
 
+    public function isDirectAuth()
+    {
+        return ($this->type === Type::DIRECT_AUTH);
+    }
+
     public function isProxyOrPrivilegeAuth()
     {
         return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));

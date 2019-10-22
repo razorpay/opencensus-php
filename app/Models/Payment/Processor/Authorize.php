@@ -2203,7 +2203,7 @@ trait Authorize
 
     protected function runAuthorizeFailedOnGateway(Payment\Entity $payment)
     {
-        $data = ['payment' => $payment->toArray()];
+        $data = ['payment' => $payment->toArrayGateway()];
 
         if ($payment->getGlobalOrLocalTokenEntity() !== null)
         {
@@ -6137,7 +6137,6 @@ trait Authorize
 
             unset($billingAddressFromInput['postal_code']);
         }
-        
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }
