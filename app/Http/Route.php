@@ -1542,10 +1542,6 @@ final class Route
         'payment_acknowledge',
         'bharat_qr_pay_test',
         'payment_get_flows_private',
-        'offer_create',
-        'offer_update',
-        'offer_fetch_multiple',
-        'offer_fetch_by_id',
         'contact_types_get',
         'contact_types_post',
         'contact_get',
@@ -1991,6 +1987,10 @@ final class Route
         'user_update_contact_merchant',
         'user_account_unlock',
         'update_partner_type',
+        'offer_create',
+        'offer_update',
+        'offer_fetch_multiple',
+        'offer_fetch_by_id',
     ];
 
     //
