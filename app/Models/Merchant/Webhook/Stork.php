@@ -20,14 +20,24 @@ use RZP\Constants\Timezone;
  */
 class Stork
 {
+    /**
+     * @var \RZP\Services\Stork
+     */
+    protected $service;
+
+    public function __construct()
+    {
+        $this->service = new \RZP\Services\Stork;
+    }
+
     public function create(Entity $webhook)
     {
         // Todo: Add Base\Entity::getMode() method. getConnectionName() may
         // return slave-live or slave-test. But in create and update it will not
         // because writes do not go to master.
-        $this->init($webhook->getConnectionName());
+        $this->service->init($webhook->getConnectionName());
 
-        $this->request(
+        $this->service->request(
             '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
             [
                 'webhook' => $this->serializeWebhook($webhook),
@@ -36,9 +46,9 @@ class Stork
 
     public function update(Entity $webhook)
     {
-        $this->init($webhook->getConnectionName());
+        $this->service->init($webhook->getConnectionName());
 
-        $this->request(
+        $this->service->request(
             '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update',
             [
                 'webhook' => $this->serializeWebhook($webhook),
@@ -53,13 +63,13 @@ class Stork
 
     public function processEvent(Event\Entity $event, string $mode)
     {
-        $this->init($mode);
+        $this->service->init($mode);
 
-        $this->request(
+        $this->service->request(
             '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent',
             [
                'event' => [
-                    'service'    => $this->service,
+                    'service'    => $this->service->service,
                     'owner_id'   => $event->getMerchantId(),
                     'owner_type' => E::MERCHANT,
                     'context'    => '{}',
@@ -71,12 +81,12 @@ class Stork
 
     public function invalidateCache(string $merchantId, string $mode)
     {
-        $this->init($mode);
+        $this->service->init($mode);
 
-        $this->request(
+        $this->service->request(
             '/twirp/rzp.stork.webhook.v1.WebhookAPI/InvalidateCache',
             [
-                'service'    => $this->service,
+                'service'    => $this->service->service,
                 'owner_id'   => $merchantId,
                 'owner_type' => E::MERCHANT,
                 'prefix'     => 'affected-owners',
@@ -88,7 +98,7 @@ class Stork
         return [
             'id'            => $webhook->getId(),
             'created_at'    => Carbon::createFromTimestamp($webhook->getCreatedAt(), Timezone::IST)->toIso8601ZuluString(),
-            'service'       => $this->service,
+            'service'       => $this->service->service,
             'owner_id'      => $webhook->getEntityId() ?: $webhook->getMerchantId(),
             'owner_type'    => $webhook->getEntityType() ?: E::MERCHANT,
             'context'       => '{}',

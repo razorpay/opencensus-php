@@ -20,18 +20,18 @@ class Stork
      * Dual write is mocked in unit tests.
      * @var boolean
      */
-    protected $mock;
+    public $mock;
 
     /**
      * Name of owning service for requests to stork.
      * @var string
      */
-    protected $service;
+    public $service;
 
     /**
      * @var Requests_Session
      */
-    protected $request;
+    public $request;
 
     /**
      * This method is implements supporting listing requests for admin
@@ -89,7 +89,7 @@ class Stork
         return $this->formatGetResponse($entity, $res);
     }
 
-    protected function init(string $mode)
+    public function init(string $mode)
     {
         $config = config('stork');
 
@@ -111,7 +111,7 @@ class Stork
             ]);
     }
 
-    protected function request(string $path, array $payload): Requests_Response
+    public function request(string $path, array $payload): Requests_Response
     {
         // Just for tests!
         if ($this->mock === true)
