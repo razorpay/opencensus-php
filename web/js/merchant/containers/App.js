@@ -222,24 +222,6 @@ export default class App extends Component {
 
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
-    /**
-     * Update
-     */
-    if (
-      this.props.user.live_transaction_done &&
-      this.props.user.live_transaction_done === '1'
-    ) {
-      let data = { live_transaction_done: 2 };
-      updateGAForFirstLiveTransaction(data).then(() => {
-        console.log('fireeeee');
-        setTrackData({
-          eventCategory: 'Dashboard - Instant Activations',
-          eventAction: 'Show - Instant Activations Flow',
-        })();
-      });
-    } else {
-      console.log('live_transaction_done not found!!!', this.props);
-    }
   }
 
   componentWillReceiveProps({ user, history, location }) {
@@ -259,11 +241,28 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
 
+  updateGA(userData) {
+    let { live_transaction_done } = userData;
+    if (live_transaction_done != undefined && live_transaction_done === '1') {
+      let data = { live_transaction_done: 2 };
+      updateGAForFirstLiveTransaction(data).then(() => {
+        console.log('fireeeee');
+        setTrackData({
+          eventCategory: 'Dashboard - live_transaction_done',
+          eventAction: 'Show - live_transaction_done',
+        })();
+      });
+    } else {
+      console.log('live_transaction_done not found!!!', this.props);
+    }
+  }
+
   fetchUser() {
     let user = new User(window.rzp_user);
 
     if (user) {
       this.props.updateSession({ user });
+      console.log('userrrrr:', user);
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
