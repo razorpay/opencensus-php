@@ -358,6 +358,7 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_INVALID_STATE                                          = 'BAD_REQUEST_PAYOUT_INVALID_STATE';
     const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                                 = 'BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED';
     const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                       = 'BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE';
+    const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                          = 'BAD_REQUEST_PAYOUT_MODE_REQUIRED';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
@@ -913,7 +914,6 @@ class ErrorCode
     const SERVER_ERROR_INVALID_FUNCTION_CALL                                        = 'SERVER_ERROR_INVALID_FUNCTION_CALL';
     const SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT                               = 'SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT';
     const SERVER_ERROR_FTA_MODE_SENT_FOR_VPA                                        = 'SERVER_ERROR_FTA_MODE_SENT_FOR_VPA';
-    const SERVER_ERROR_FTA_PREFERRED_MODE_UNSUPPORTED                               = 'SERVER_ERROR_FTA_PREFERRED_MODE_UNSUPPORTED';
     const SERVER_ERROR_CARD_TYPE_NOT_SUPPORTED                                      = 'SERVER_ERROR_CARD_TYPE_NOT_SUPPORTED';
 
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                                   = 'SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND';
@@ -947,6 +947,8 @@ class ErrorCode
     const SERVER_ERROR_BATCH_SERVICE_NOT_FOUND                                      = 'SERVER_ERROR_BATCH_SERVICE_NOT_FOUND';
     const SERVER_ERROR_FILE_NOT_FOUND                                               = 'SERVER_ERROR_FILE_NOT_FOUND';
     const BAD_REQUEST_BATCH_SERVICE_ERROR                                           = 'BAD_REQUEST_BATCH_SERVICE_ERROR';
+
+    const BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL                                  = 'BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
