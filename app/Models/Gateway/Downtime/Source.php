@@ -12,6 +12,7 @@ class Source
     const VAJRA       = 'VAJRA';
     const INTERNAL    = 'INTERNAL';
     const OTHER       = 'OTHER';
+    const DOPPLER     = 'DOPPLER';
 
     const DUMMY       = 'dummy';
 
@@ -22,6 +23,7 @@ class Source
         Source::VAJRA,
         Source::INTERNAL,
         Source::OTHER,
+        Source::DOPPLER,
     ];
 
     public static function isValid($source)

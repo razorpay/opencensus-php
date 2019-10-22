@@ -1339,6 +1339,32 @@ class GatewayDowntimeTest extends TestCase
         $this->assertNotNull($response['id']);
     }
 
+    public function testUPIDowntimeCreation()
+    {
+        $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
+
+        $request = [
+            'content' => [
+                'gateway'     => 'upi_mindgate',
+                'method'      => 'upi',
+                'source'      => 'doppler',
+                'psp'         => 'bhim',
+                'reason_code' => 'ISSUER_DOWN',
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->directAuth();
+
+        $this->updateSignature($request);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['psp'], 'bhim');
+    }
+
     protected function getDowntimeCreationRequest(): array
     {
         return [
