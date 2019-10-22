@@ -72,7 +72,7 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null);
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null,$input);
 
         return $response;
     }
