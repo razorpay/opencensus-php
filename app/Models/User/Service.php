@@ -128,9 +128,7 @@ class Service extends Base\Service
 
             if (isset($input[Merchant\Constants::PARTNER_INTENT]))
             {
-                $merchantInputData[
-                    Merchant\Constants::PARTNER_INTENT
-                ] = $input[Merchant\Constants::PARTNER_INTENT];
+                $merchantInputData[Merchant\Constants::PARTNER_INTENT] = $input[Merchant\Constants::PARTNER_INTENT];
             }
 
             if (empty($tokenData) === false)

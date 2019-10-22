@@ -5029,8 +5029,6 @@ class MerchantTest extends TestCase
 
     public function testFetchPartnerIntentForMerchantWithoutPartnerIntent()
     {
-        $merchant = $this->getDbEntityById('merchant','10000000000000');
-
         $this->ba->proxyAuth();
 
         $this->startTest();

@@ -2706,9 +2706,9 @@ class Service extends Base\Service
 
     /**
      * Updates partner_intent key in settings table
-     * @param Array $input
+     * @param array $input
      *
-     * @return Array
+     * @return array
      */
     public function updatePartnerIntent(array $input): array
     {

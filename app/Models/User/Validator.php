@@ -25,18 +25,18 @@ class Validator extends Base\Validator
     const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
 
     protected static $createRules = [
-        Entity::ID                    => 'sometimes|max:14',
-        Entity::NAME                  => 'sometimes|string|max:200',
-        Entity::EMAIL                 => 'required|email|unique:users,email',
-        Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
-        Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
-        Entity::CONTACT_MOBILE        => 'sometimes|max:15',
-        Entity::REMEMBER_TOKEN        => 'sometimes',
-        Entity::CONFIRM_TOKEN         => 'sometimes',
-        Entity::CAPTCHA               => 'required_without:captcha_disable',
-        Entity::CAPTCHA_DISABLE       => 'sometimes|string',
-        Entity::SETTINGS              => 'nullable|associative_array',
-        Merchant\Constants::PARTNER_INTENT     => 'sometimes|boolean',
+        Entity::ID                              => 'sometimes|max:14',
+        Entity::NAME                            => 'sometimes|string|max:200',
+        Entity::EMAIL                           => 'required|email|unique:users,email',
+        Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
+        Entity::CONTACT_MOBILE                  => 'sometimes|max:15',
+        Entity::REMEMBER_TOKEN                  => 'sometimes',
+        Entity::CONFIRM_TOKEN                   => 'sometimes',
+        Entity::CAPTCHA                         => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
+        Entity::SETTINGS                        => 'nullable|associative_array',
+        Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
