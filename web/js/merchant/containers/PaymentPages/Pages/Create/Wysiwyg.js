@@ -307,9 +307,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       support_contact,
       settings,
       expire_by,
+      slug,
     } = paymentPageEntity;
-
-    // console.log('....paymentPageEntity...', paymentPageEntity);
 
     // Remove Email and Phone in all cases before sending to API.
     const formItems = [...FORM_ITEMS]; // Separate UDF and amount fields from FORM ITEMS.
@@ -411,6 +410,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         payment_success_redirect_url: settings.payment_success_redirect_url,
         udf_schema: JSON.stringify(udf_schema),
       },
+      slug,
     };
 
     // Send template type in while creation
