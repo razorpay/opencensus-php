@@ -79,6 +79,13 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::RECONCILE);
 
+        //Create a mapping if there are more gateways for which migration from api to mozart is done with api based reconciliation.
+        if ($input['gateway'] === 'netbanking_bob_v2')
+        {
+            $input['gateway'] = 'netbanking_bob';
+            $input['payment']['gateway'] = 'netbanking_bob';
+        }
+
         $request = $this->getMozartReconcileRequestArray($input);
 
         $traceReq = [

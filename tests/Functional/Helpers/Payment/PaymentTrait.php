@@ -2241,4 +2241,19 @@ trait PaymentTrait
 
         $this->app->instance('fts_create_account', $fts);
     }
+
+    protected function getDefaultBillingAddressArray()
+    {
+        $address = [
+            'line1'         => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
+            'line2'         => 'Hosur Main Road, Adugodi',
+            'city'          => 'Bengaluru',
+            'state'         => 'Karnataka',
+            'country'       => 'in',
+            'postal_code'   => '560030',
+        ];
+
+        return $address;
+    }
+
 }

@@ -6,7 +6,6 @@ use Mail;
 use Cache;
 use Redis;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
@@ -14,10 +13,11 @@ use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Exception\GatewayErrorException;
-use RZP\Exception\GatewayTimeoutException;
-use RZP\Mail\Payment\Authorized as AuthorizedMail;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Mail\Payment\Failed as PaymentFailedMail;
+use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
 
 class AuthorizeTest extends TestCase
@@ -281,6 +281,14 @@ class AuthorizeTest extends TestCase
 
     public function testAmountVeryHigh()
     {
+        $merchantId = "10000000000000";
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID             => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
         $this->startTest();
     }
 

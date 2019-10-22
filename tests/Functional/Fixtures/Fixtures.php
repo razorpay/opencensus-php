@@ -66,6 +66,8 @@ class Fixtures
         $this->create('pricing:zero_pricing_plan');
         $this->create('pricing:default_banking_plan');
         $this->create('pricing:default_commission_plan');
+        $this->create('pricing:default_partner_commission_plan');
+        $this->create('pricing:default_plan_for_submerchants_of_onboarded_partners');
 
         $this->create('org:default_test_organization');
 

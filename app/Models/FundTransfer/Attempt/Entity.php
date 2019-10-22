@@ -453,16 +453,19 @@ class Entity extends Base\PublicEntity
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        if (in_array($ifsc, Constants::VIRTUAL_ACCOUNT_IFSC, true) === true)
-        {
-            $this->setMode(Mode::NEFT);
-
-            return;
-        }
-
         if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
         {
-            $this->setMode(Mode::IFT);
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                $this->setMode(Mode::IFT);
+            }
+            else
+            {
+                $this->setMode(Mode::NEFT);
+            }
+
         }
     }
 

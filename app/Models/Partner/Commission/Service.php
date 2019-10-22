@@ -48,6 +48,11 @@ class Service extends Base\Service
         return $this->core()->captureByPartner($partner);
     }
 
+    public function bulkCaptureByPartner(array $input): int
+    {
+        return $this->core()->bulkCaptureByPartner($input);
+    }
+
     public function capture(string $id): array
     {
         $commission = $this->repo->commission->findByPublicId($id);

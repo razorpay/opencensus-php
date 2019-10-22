@@ -15,6 +15,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -289,12 +290,12 @@ class Service extends Base\Service
     }
 
     public function storeActivationFile(
-        Base\PublicEntity $merchantDetails,
+        Base\PublicEntity $publicEntity,
         array $input)
     {
         $params = [];
 
-        $merchant = $merchantDetails->merchant;
+        $merchant = $publicEntity->merchant;
 
         foreach ($input as $key => $value)
         {
@@ -306,7 +307,7 @@ class Service extends Base\Service
             $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
 
             $file = $this->createFile(
-                $merchantDetails,
+                $publicEntity,
                 $value->extension(),
                 $value,
                 $fileName,
@@ -354,6 +355,21 @@ class Service extends Base\Service
         }
 
         return $merchantDetailCore->createResponse($merchantDetails);
+    }
+
+    public function editMerchantDetailsByPartner($merchantId, array $input)
+    {
+        $partnerMerchant = $this->app['basicauth']->getMerchant();
+
+        (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetailCore = new Core;
+
+        $merchantDetails = $merchantDetailCore->editMerchantDetailFields($merchant, $input);
+
+        return $merchantDetails->toArrayPublic();
     }
 
     protected function createFile(Base\PublicEntity $merchantDetail,
@@ -471,6 +487,19 @@ class Service extends Base\Service
         $admin = $this->app['basicauth']->getAdmin();
 
         $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    public function updateActivationStatusByPartner($merchantId, array $input): array
+    {
+        $partnerMerchant = $this->app['basicauth']->getMerchant();
+
+        (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = (new Core)->updateActivationStatus($merchant->merchantDetail, $input, $partnerMerchant);
 
         return $merchantDetails->toArrayPublic();
     }

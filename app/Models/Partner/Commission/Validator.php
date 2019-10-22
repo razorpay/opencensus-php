@@ -34,6 +34,11 @@ class Validator extends Base\Validator
         Constants::TO      => 'required|integer|custom:end_time',
     ];
 
+    protected static $bulkCaptureRules = [
+        Constants::PARTNER_IDS        => 'required|array|min:1',
+        Constants::PARTNER_IDS . '.*' => 'filled|string|size:14',
+    ];
+
     public function validateQueryType($attribute, $value)
     {
         if (Constants::isValidQueryType($value) === false)

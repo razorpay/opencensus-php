@@ -43,9 +43,9 @@ class Core extends Base\Core
         return $paymentPageItem;
     }
 
-    public function fetch(string $id)
+    public function fetch(string $id, Merchant\Entity $merchant)
     {
-        $paymentPageItem = $this->repo->payment_page_item->findByPublicIdAndMerchant($id, $this->merchant);
+        $paymentPageItem = $this->repo->payment_page_item->findByPublicIdAndMerchant($id, $merchant);
 
         return $paymentPageItem;
     }
@@ -82,7 +82,7 @@ class Core extends Base\Core
 
     public function update(Entity $paymentPageItem, array $input)
     {
-        $paymentPageItem->edit($input);
+        $paymentPageItem->getValidator()->validateInputForUpdate($input);
 
         if (isset($input[Entity::ITEM]) === true)
         {
@@ -92,6 +92,8 @@ class Core extends Base\Core
                 $this->merchant
             );
         }
+
+        $paymentPageItem->edit($input);
 
         $this->upsertSettings($paymentPageItem, $input[Entity::SETTINGS] ?? []);
 
@@ -105,6 +107,8 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         PaymentLink\Entity $paymentLink)
     {
+        (new Validator)->validateUpdatePaymentPageItems($paymentPageItemsDetails);
+
         $this->deletePaymentPageItemsViaUpdate($paymentLink, $paymentPageItemsDetails);
 
         $this->createOrUpdatePaymentPageItemsViaUpdate(

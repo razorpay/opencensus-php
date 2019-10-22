@@ -665,6 +665,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK_DETAILS_VERIFICATION_STATUS);
     }
 
+    public function setContactName($name)
+    {
+        $this->setAttribute(self::CONTACT_NAME, $name);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
@@ -675,9 +680,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
     }
 
+    public function setPoaVerificationStatus(string $poaVerificationStatus)
+    {
+        $this->setAttribute(self::POA_VERIFICATION_STATUS, $poaVerificationStatus);
+    }
+
     public function getPoaVerificationStatus()
     {
         return $this->getAttribute(self::POA_VERIFICATION_STATUS);
+    }
+
+    public function isPoaVerified() : bool
+    {
+        return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
+    }
+
+    public function isBankDetailStatusVerified() : bool
+    {
+        return ($this->getBankDetailsVerificationStatus() === BankDetailsVerificationStatus::VERIFIED);
     }
 
     public function getActivationFlow()
@@ -748,6 +768,11 @@ class Entity extends Base\PublicEntity
     public function getActivationProgress()
     {
         return $this->getAttribute(self::ACTIVATION_PROGRESS);
+    }
+
+    public function getContactName()
+    {
+        return $this->getAttribute(self::CONTACT_NAME);
     }
 
     public function getContactMobile()

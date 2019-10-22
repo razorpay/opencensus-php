@@ -4,10 +4,12 @@ namespace RZP\Models\Order;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Item;
 use RZP\Models\Offer;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
 
@@ -228,6 +230,10 @@ class Entity extends Base\PublicEntity
         self::FORCE_OFFER,
     ];
 
+    const ALLOWED_LINE_ITEM_TYPES = [
+        Item\Type::PAYMENT_PAGE,
+    ];
+
     /** Related Models */
 
     public function merchant()
@@ -243,6 +249,11 @@ class Entity extends Base\PublicEntity
     public function invoice()
     {
         return $this->hasOne('RZP\Models\Invoice\Entity');
+    }
+
+    public function lineItems()
+    {
+        return $this->morphMany('RZP\Models\LineItem\Entity', 'entity');
     }
 
     public function offers()
@@ -465,6 +476,11 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function getAllowedLineItemTypes()
+    {
+        return self::ALLOWED_LINE_ITEM_TYPES;
+    }
+
     /** End Setters And Getters */
 
     /** Other Functions */
@@ -540,6 +556,11 @@ class Entity extends Base\PublicEntity
     public function hasOffers(): bool
     {
         return ($this->offers->isNotEmpty() === true);
+    }
+
+    public function isInternational(): bool
+    {
+        return ($this->getCurrency() !== Currency::INR);
     }
 
     protected function setPublicOffersAttribute(array & $array)

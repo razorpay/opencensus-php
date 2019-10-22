@@ -211,6 +211,10 @@ class BankingAccountTest extends TestCase
 
         $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
             'account_number'        => '1234567890',
+            'account_ifsc'          => 'YESB000198',
+            'beneficiary_name'      => 'abc',
+            'beneficiary_mobile'    => '9999999999',
+            'beneficiary_email'     => 'aa@abc.com',
             'beneficiary_state'     => 'karnataka',
             'beneficiary_country'   => 'india',
             'username'              => 'MERCHANT_1234',
@@ -275,6 +279,10 @@ class BankingAccountTest extends TestCase
 
         $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
             'account_number'        => '1234567890',
+            'account_ifsc'          => 'YESB000198',
+            'beneficiary_name'      => 'abc',
+            'beneficiary_mobile'    => '9999999999',
+            'beneficiary_email'     => 'aa@abc.com',
             'beneficiary_state'     => 'karnataka',
             'beneficiary_country'   => 'india',
             'username'              => 'MERCHANT_1234',
