@@ -1,0 +1,210 @@
+.Table--PaymentpagesV3
+
+  .item-ellipsis
+    display: block
+    max-width: 120px
+    overflow: hidden
+    white-space: nowrap
+    text-overflow: ellipsis
+    line-height: 24px
+
+  .more-btn
+    font-size: 13px
+    margin-top: 4px
+    color: $primary-color
+
+  .more-items
+    display: table
+
+    & > div
+      display: table-cell
+      font-size: 13px
+      min-width: 96px
+      max-width: 124px
+      padding-right: 12px
+      color: #515978
+
+    .title
+      display: block
+      margin-bottom: 4px
+      font-size: 12px
+      color: #8991AE
+
+
+.Entity--paymentpage
+  transition: 5s ease-in
+
+  &.Entity--paymentpage-v3
+    margin-top: 124px
+
+.Entity--paymentpage-v3
+  position: relative
+  border: 1px solid #DFE5E7
+  border-radius: 3px
+  max-width: unset
+  margin: 20px
+
+  .content-header
+    position: absolute
+    top: -44px
+    font-size: 14px
+
+    .i-arrow-back
+      font-size: 20px
+      line-height: 14px
+
+  .panel
+    overflow: hidden
+    transition: .8s cubic-bezier(0.26, 0.7, 1, 1)
+    max-height: 2000px // This height must be able to fit in ~25 payment page items
+    position: relative
+    margin-bottom: 48px
+
+  &.Entity--paymentpage-collapse
+    &::after
+      content: ''
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, #FFFFFF 100%)
+      position: absolute
+      height: 34px
+      bottom: 48px
+      left: 0
+      right: 0
+
+    .panel
+      max-height: 312px
+
+  .panel-collapser
+    position: absolute
+    bottom: 12px
+    left: 50%
+    transform: translateX(-50%)
+    padding: 2px 6px
+
+
+  .panel-body
+    display: table
+    padding-bottom: 0
+
+    .entity-details, .item-details
+      display: table-cell
+      vertical-align: top
+
+    .entity-details
+      min-width: 500px
+
+    .item-details
+      width: 100%
+
+      .InputGroup
+        margin: 0
+
+      table
+        width: 100%
+        border-spacing: 0 12px
+        border-collapse: separate
+
+      tr
+        border-radius: 3px
+        padding: 16px
+        transform: translateY(8px)
+        opacity: 0
+        animation: move-up .3s ease-in forwards .2s
+
+        td.item-details-units
+          min-width: 148px
+
+        td
+          background: #f3f4f7
+          max-width: 112px
+          vertical-align: top
+          min-width: 80px
+
+          & > div
+            min-height: 64px
+            padding: 14px 12px
+
+          &:first-child
+            border-bottom-left-radius: 3px
+            border-top-left-radius: 3px
+            border-left: 3px solid #fbc9a1
+
+          &:last-child
+            border-bottom-right-radius: 3px
+            border-top-right-radius: 3px
+
+        &:nth-child(4n + 2)
+          transform: translateY(11px)
+
+          td
+            border-color: #c1a1fd
+
+        &:nth-child(4n + 3)
+          transform: translateY(14px)
+
+          td
+            border-color: #9bd7ff
+
+        &:nth-child(4n + 4)
+          transform: translateY(17px)
+
+          td
+            border-color: #b4e397
+
+      .title
+        color: #8991AE
+        font-size: 13px
+        line-height: 16px
+        vertical-align: top
+
+
+  .stats
+    padding: 20px
+    background: #f3f4f7
+
+    .bold
+      font-size: 16px
+      color: #515978
+
+    > *
+      display: inline-block
+      vertical-align: middle
+      font-size: 13px
+      color: #8991AE
+
+      .bold
+        margin-left: 20px
+
+        span
+          display: inline-block
+
+        .rzp-whole
+          font-weight: bold
+
+      &:after
+        content: ''
+        border-right: 1px solid #a8afc4
+        margin: 0 16px
+
+
+@media (max-width: 1023px)
+  .Entity--paymentpage-v3
+    .panel-body
+      display: block
+      width: 100%
+
+      .entity-details, .item-details
+        display: block
+        width: 100%
+
+    &.Entity--paymentpage-collapse
+      .panel
+        max-height: 532px
+
+
+@keyframes move-up
+  0%
+    opacity: .3
+
+  100%
+    opacity: 1
+    transform: translateY(0)

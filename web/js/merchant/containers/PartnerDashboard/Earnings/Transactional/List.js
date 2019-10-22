@@ -7,6 +7,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import Amount from 'rzp/ui/Amount';
 
 import { earningId, createdAtShort } from 'rzp/ui/item/pair';
+
 import { capitalize } from 'rzp/utils/rzp-utils';
 
 import ListFilter from '../../Commissions/Transactional/ListFilter';

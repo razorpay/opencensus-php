@@ -864,7 +864,10 @@ class Service extends Base\Service
             'sellerapp_plus',
             'second_factor_auth',
             'disable-view-reports',
-            'mobile_hotjar_survey'
+            'mobile_hotjar_survey',
+            'paymentpages_v3',
+            'paymentpages_v3_reports',
+            'show_commission_balance'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

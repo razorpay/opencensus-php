@@ -378,8 +378,20 @@ export default class User {
     return this.getExpStatus('sellerapp_plus');
   }
 
+  get isPPV3Enabled() {
+    return this.getExpStatus('paymentpages_v3');
+  }
+
+  get isPPV3ReportsEnabled() {
+    return this.getExpStatus('paymentpages_v3_reports');
+  }
+
   get isMobileHotjarSurveyEnabled() {
     return this.getExpStatus('mobile_hotjar_survey');
+  }
+
+  get isShowCommissionBalanceEnabled() {
+    return this.getExpStatus('show_commission_balance');
   }
 
   get isAllowedTeamManagement() {
