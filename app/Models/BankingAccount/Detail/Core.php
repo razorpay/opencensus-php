@@ -37,6 +37,8 @@ class Core extends Base\Core
 
         foreach ($input as $key => $value)
         {
+            $this->checkIfKeyExistsForBankingAccountDetail($bankingAccount, $key);
+
             $bankingAccountDetail = new Entity;
 
             $bankingAccountDetail->bankingAccount()->associate($bankingAccount);
@@ -47,5 +49,13 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($bankingAccountDetail);
         }
+    }
+
+    protected function checkIfKeyExistsForBankingAccountDetail(BankingAccount\Entity $bankingAccount, string $key)
+    {
+        $details = $this->repo->banking_account_detail->getDetailsForKeyAndBankingAccountId();
+
+        sd($details);
+
     }
 }

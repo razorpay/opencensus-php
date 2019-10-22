@@ -95,15 +95,6 @@ class CreateBankingAccountTable extends Migration
             $table->string(Entity::REFERENCE1, 255)
                   ->nullable();
 
-            $table->string(Entity::REFERENCE2, 255)
-                ->nullable();
-
-            $table->string(Entity::REFERENCE3, 255)
-                ->nullable();
-
-            $table->string(Entity::REFERENCE4, 255)
-                ->nullable();
-
             $table->string(Entity::BENEFICIARY_PIN, 255)
                   ->nullable();
 

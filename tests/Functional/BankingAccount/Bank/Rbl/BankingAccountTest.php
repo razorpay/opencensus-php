@@ -368,7 +368,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'url'     => '/banking_accounts/' . 'bacc_' . $bankingAccount['id'],
                 'method'  => 'PATCH',
             ],
             'response' => [
@@ -588,7 +588,6 @@ class BankingAccountTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
-
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -700,10 +699,38 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($dataToReplace);
+/*
+        $request = [
+            'url'       => '/admin/banking_account',
+            'method'    => 'GET',
+            'content'   => [
+                'expand' => ['merchant','merchant.merchantDetail', 'banking_account_details'],
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        sd($this->sendRequest($request));*/
+    }
+
+    public function testUpdateBankingAccountDetailsWithOverride()
+    {
+        $this->testUpdateBankingAccountDetails();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $bankingAccountDetail = $this->getDbLastEntity('banking_account_detail');
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . 'bacc_' . $bankingAccount->getId(),
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+
     }
 
     protected function setMozartMockResponse($mockedResponse)

@@ -483,6 +483,24 @@ return [
         ],
     ],
 
+    'testUpdateBankingAccountDetailsWithOverride' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::DETAILS => [
+                    BankingAccount\Gateway\Rbl\Fields::CLIENT_KEY     => 'api_key_two',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+            ],
+        ],
+    ],
+
     'accountBalanceSuccess' => [
         'data' => [
             'PayGenRes' => [

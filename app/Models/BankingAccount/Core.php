@@ -216,21 +216,29 @@ class Core extends Base\Core
 
         $input = $processor->formatInputParametersIfRequired($input);
 
+        $bankingAccount->edit($input);
+
+        if (empty($input[Entity::STATUS]) === false)
+        {
+            $bankingAccount->setStatus($input[Entity::STATUS]);
+        }
+
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+
         $this->repo->transaction(function() use ($bankingAccount, $input, $processor)
         {
-            $bankingAccount->edit($input);
-
-            if (empty($input[Entity::STATUS]) === false)
-            {
-                $bankingAccount->setStatus($input[Entity::STATUS]);
-            }
-
-            $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
-
             $this->repo->saveOrFail($bankingAccount);
 
-            $this->updateBankingAccountDetails($input, $bankingAccount, $processor);
+            if (isset($input[Entity::DETAILS]) === true)
+            {
+                (new BankingAccountDetail\Core)->updateBankingAccountDetails($input, $bankingAccount, $processor);
+            }
         });
+
+        // We need to populate banking account details using
+        // toArrayPublic, which populates only the pre fetched
+        // relations. So explicitly fetching this relation here
+        $bankingAccount->load('bankingAccountDetails');
 
         return $bankingAccount;
     }
@@ -386,18 +394,6 @@ class Core extends Base\Core
             ]);
 
         return $response;
-    }
-
-    // Apart from account specific details, a banking account
-    // can contain many other attributes that will be only
-    // specific to a Bank. This will be managed by
-    // BankingAccountDetail Module
-    public function updateBankingAccountDetails(array $input, Entity $bankingAccount, Gateway\Processor $processor)
-    {
-        if (isset($input[Entity::DETAILS]) === true)
-        {
-            (new BankingAccountDetail\Core)->updateBankingAccountDetails($input, $bankingAccount, $processor);
-        }
     }
 
     /**

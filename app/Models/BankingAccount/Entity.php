@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 
@@ -81,14 +82,6 @@ class Entity extends Base\PublicEntity
     const PASSWORD                          = 'password';
     // For rbl this is the corp_id
     const REFERENCE1                        = 'reference1';
-    // For rbl this is the client_id
-    const REFERENCE2                        = 'reference2';
-    // For rbl this is the client_secret
-    const REFERENCE3                        = 'reference3';
-    // For rbl this is the merchant's portal username
-    const REFERENCE4                        = 'reference4';
-    // For rbl this is the merchant's portal password
-    const REFERENCE5                        = 'reference5';
 
     const ACCOUNT_TYPE                      = 'account_type';
 
@@ -101,7 +94,7 @@ class Entity extends Base\PublicEntity
 
     const DETAILS       = 'details';
 
-    const BANKING_ACCOUNT_DETAIL = 'banking_account_detail';
+    const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
 
     protected $entity = 'banking_account';
 
@@ -121,10 +114,6 @@ class Entity extends Base\PublicEntity
         self::USERNAME,
         self::PASSWORD,
         self::REFERENCE1,
-        self::REFERENCE2,
-        self::REFERENCE3,
-        self::REFERENCE4,
-        self::REFERENCE5,
         self::BENEFICIARY_PIN,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
@@ -142,7 +131,6 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_EMAIL,
         self::FTS_FUND_ACCOUNT_ID,
         self::INTERNAL_COMMENT,
-        self::BANKING_ACCOUNT_DETAIL,
     ];
 
     protected $visible = [
@@ -179,7 +167,7 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::MERCHANT,
         self::INTERNAL_COMMENT,
-        self::BANKING_ACCOUNT_DETAIL,
+        self::BANKING_ACCOUNT_DETAILS,
     ];
 
     protected $public = [
@@ -199,11 +187,21 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
-        self::BANKING_ACCOUNT_DETAIL,
+        self::BANKING_ACCOUNT_DETAILS,
+        self::MERCHANT
     ];
 
     protected $relations = [
-        self::BANKING_ACCOUNT_DETAIL,
+        self::BANKING_ACCOUNT_DETAILS,
+        self::MERCHANT,
+    ];
+
+    protected $embeddedRelations = [
+        self::BANKING_ACCOUNT_DETAILS,
+    ];
+
+    protected $publicSetters = [
+        self::BANKING_ACCOUNT_DETAILS
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -365,21 +363,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PASSWORD);
     }
 
-    public function getReference1()
-    {
-        return $this->getAttribute(self::REFERENCE1);
-    }
-
-    public function getReference2()
-    {
-        return $this->getAttribute(self::REFERENCE2);
-    }
-
-    public function getReference3()
-    {
-        return $this->getAttribute(self::REFERENCE3);
-    }
-
     public function isAlreadyActivated()
     {
         return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
@@ -397,9 +380,19 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Balance\Entity::class);
     }
 
-    public function bankingAccountsDetail()
+    public function bankingAccountDetails()
     {
-        return $this->hasOne(Detail\Entity::class);
+        return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);
+    }
+
+    // ----------------------- Public setters ---------------------------------
+
+    public function setPublicBankingAccountDetailsAttribute(array & $array)
+    {
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            unset($array[self::BANKING_ACCOUNT_DETAILS]);
+        }
     }
 
     protected function isChannelYesbank()
