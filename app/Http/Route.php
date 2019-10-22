@@ -3686,7 +3686,10 @@ final class Route
             }
         }
         // For a partner token authenticated route, keep the token in the public URL
-        else if (($key === '') and ($this->ba->isPartnerAuth() === true))
+        // OR case happens for mock gateways in s2s redirect flow, when we receive rediret/authorize.
+        // we don't set the partner auth, hence there is a check on account id
+        else if ((($key === '') and ($this->ba->isPartnerAuth() === true)) or
+                  (($key === '') and ($this->ba->isDirectAuth() === true) and (empty($this->ba->authCreds->creds['account_id']) === false)))
         {
             $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
             // Todo: For bc there is another explode attempt, to be removed soon after this deploy.
@@ -3695,6 +3698,7 @@ final class Route
             $key                         = $parts[0];
             $parameters['account_id']    = $this->ba->getAccountId();
         }
+
         // Else continue with the key_id flow
         else if ($key === '')
         {
