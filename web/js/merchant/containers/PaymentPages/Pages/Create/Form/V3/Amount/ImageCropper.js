@@ -13,6 +13,7 @@ const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
 @connect(state => ({}), { showNotification })
 export default class ImageCropper extends React.PureComponent {
   state = { showImgCropper: false };
+  file = null;
 
   componentDidMount() {
     if (this.props.imgUrl) {
@@ -42,8 +43,9 @@ export default class ImageCropper extends React.PureComponent {
     });
   }
 
-  handleImageUpload(blob) {
-    const isImageType = /^image\//.test(blob.type);
+  handleImageUpload() {
+    const file = this.file;
+    const isImageType = /^image\//.test(file.type);
 
     if (isImageType) {
       this.props.showNotification({
@@ -52,7 +54,7 @@ export default class ImageCropper extends React.PureComponent {
         closeTimeout: 2500,
       });
 
-      uploadImageInDescription(blob)
+      uploadImageInDescription(file)
         .then(res => {
           if (res && res.success) {
             const url = res.data[0];
@@ -83,7 +85,7 @@ export default class ImageCropper extends React.PureComponent {
     const self = this;
 
     this.vanilla.result('blob').then(function(blob) {
-      self.handleImageUpload.call(self, blob);
+      self.handleImageUpload();
     });
   };
 
@@ -92,8 +94,8 @@ export default class ImageCropper extends React.PureComponent {
 
     if (file) {
       const reader = new FileReader();
-
       reader.onload = function(e) {
+        self.file = file; // API takes file instead of blob, hence saving explicitly
         self.initImgCropper(e.target.result);
       };
 
