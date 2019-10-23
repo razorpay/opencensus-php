@@ -1,29 +1,34 @@
 import GenericEntity from './GenericEntity';
 
 export default class BMerchant extends GenericEntity {
-  resourceUrl = 'creditPull';
+  resourceUrl = 'd2c_bureau_details';
+  resourceFields = [
+    'id',
+    'first_name',
+    'last_name',
+    'state',
+    'contact_mobile',
+    'email',
+    'pan',
+    'address',
+    'city',
+    'pincode',
+    'gender',
+    'date_of_birth',
+  ];
+
+  getResourceMethod() {
+    return this.isNew ? 'post' : 'patch';
+  }
 
   fetch() {
-    let sameplePayload = {
-      firstName: 'Devansh',
-      lastName: 'Dwivedi',
-      merchant_state: 'KA',
-      mobile: '9899115434',
-      email: 'mikael@gmail.com',
-      pan: 'AWVPD201H',
-      line1: '1st Floor, HSR Heights',
-      city: 'Bengaluru',
-      state: 'KA',
-      pinCode: '560017',
-    };
-
     let Klass = this.constructor;
-
     return this.makeGenericAjaxCall({
       data: {},
-      url: 'es/scheduled_pricing',
-    }).then(() => {
-      return new Klass(sameplePayload).deserialize();
+      url: this.resourceUrl,
+      method: 'post',
+    }).then(response => {
+      return new Klass(response.data).deserialize();
     });
   }
 }

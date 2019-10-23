@@ -8,7 +8,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { OtpInput } from 'merchant/components/OtpInput';
 import { Field, reduxForm } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
-import { required, phone } from 'rzp/utils/validators';
+import { required, phone, mobile } from 'rzp/utils/validators';
 
 @connect(null, { showNotification })
 class VerifyOtp extends Component {
@@ -140,7 +140,12 @@ class AskMobileNumber extends Component {
                 component={InputField}
                 class="form-control"
                 placeholder="Phone Number"
-                validate={[required(), phone('Invalid Mobile')]}
+                validate={[
+                  required(),
+                  ...(this.props.mobileValidation
+                    ? mobile('Enter a valid mobile number')
+                    : phone('Invalid Mobile')),
+                ]}
               />
             </div>
             <div class="form-group">

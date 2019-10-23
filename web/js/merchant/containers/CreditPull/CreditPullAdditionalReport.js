@@ -31,11 +31,11 @@ export default class CreditPullAdditionalReport extends Component {
           <div className="col-md-5 rep-container-row2 rep-container-2">
             <CreditPullScoreBreakdown
               title="No. of Accounts"
-              total={this.props.report.bureauScore}
+              total={this.props.report.count_of_accounts}
               rowData={this.generateRowData(
                 this.props.report,
                 ['Active', 'Closed'],
-                ['creditAccountActive', 'creditAccountClosed']
+                ['active_accounts', 'closed_accounts']
               )}
             />
           </div>
@@ -45,12 +45,15 @@ export default class CreditPullAdditionalReport extends Component {
           <div className="col-md-7 rep-container-row2">
             <CreditPullScoreBreakdown
               title="Outstanding Balance"
-              total={this.props.report.outstanding_Balance_All}
+              total={this.props.report.total_outstanding_balance}
               amount={true}
               rowData={this.generateRowData(
                 this.props.report,
                 ['Secured', 'Un-secured'],
-                ['outstanding_Balance_Secured', 'outstanding_Balance_UnSecured']
+                [
+                  'secured_account_outstanding_balance',
+                  'un_secured_account_outstanding_balance',
+                ]
               )}
             />
           </div>

@@ -8,6 +8,7 @@ import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
+import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
@@ -114,7 +115,11 @@ class AnalyticsDesktop extends Component {
 
           {/*user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />*/}
 
-          {user.isCreditPullEnabled && <CreditPullAnnouncement />}
+          {user.isCreditPullEnabled && (
+            <ShowWhen myRole="owner">
+              <CreditPullAnnouncement />
+            </ShowWhen>
+          )}
 
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && (

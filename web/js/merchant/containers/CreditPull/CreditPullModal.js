@@ -1,26 +1,26 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, FieldArray, formValueSelector } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import InputField from 'rzp/ui/Forms/InputField';
 import { RadioGroup } from 'rzp/ui/Forms/RadioGroup';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import { required, mobile, pincode } from 'rzp/utils/validators';
+import { required, mobile } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import { states } from 'rzp/utils/constants';
 import * as MerchantActions from 'merchant/modules/b-merchants';
 import * as ModalActions from 'rzp/modules/modals';
 import bMerchantReducer from 'merchant/modules/b-merchants';
 import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
-import ajax from '../../../merchantLA/utils/ajax';
 import {
   VerifyOtp,
   AskMobileNumber,
 } from 'merchant/containers/Team/TwoFaModals';
 import CreditPullClose from './CreditPullClose';
 import CreditPullSuccess from './CreditPullSuccess';
+import ajax from '../../../merchantLA/utils/ajax';
 
 const validate = values => {
   const errors = {};
@@ -62,6 +62,7 @@ export default class CreditPullModal extends Component {
     super(props);
 
     this.SMALL_MODAL = 'small';
+    this.dateFormatType = 'YYYY-MM-DD';
     this.dateContainer = React.createRef();
     this.state = {
       errors: null,
@@ -74,23 +75,24 @@ export default class CreditPullModal extends Component {
     this.props.fetchBMerchant();
   }
 
+  savePhone = newNumber => {
+    let saveProps = { ...this.state.merchantData };
+    saveProps['contact_mobile'] = newNumber;
+    this.saveAndProceed(saveProps, newNumber);
+  };
+
   save = props => {
     this.setState({
       merchantData: props,
+      isLoading: true,
     });
-
-    this.patchUpdateMerchant(props)
-      .then(response => {
-        return this.sendReqForOtp(props.mobile);
-      })
-      .then(tokenStuff => {
-        console.log('OTP Token received');
-        //Reply from OTP Service
-        this.openVerify(tokenStuff);
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    let saveProps = { ...props };
+    if (props.date_of_birth.hasOwnProperty('_isAMomentObject')) {
+      saveProps['date_of_birth'] = props.date_of_birth.format(
+        this.dateFormatType
+      );
+    }
+    this.saveAndProceed(saveProps, props.contact_mobile);
   };
 
   isValidDate = current => {
@@ -98,53 +100,39 @@ export default class CreditPullModal extends Component {
     return current.isBefore(yearsBefore);
   };
 
-  patchUpdateMerchant = data => {
-    console.log('Patch call for updating merchant');
-    return ajax(
-      {
-        url: 'es/scheduled_pricing',
-        method: 'GET',
-      },
-      {},
-      '/merchant/api'
-    );
+  saveAndProceed = (saveProps, mobile) => {
+    this.props
+      .saveBMerchant(saveProps)
+      .then(merchant => {
+        return Promise.all([this.sendReqForOtp(mobile), merchant]);
+      })
+      .then(
+        ([{ data: { token } }, { id: merchantId, contact_mobile: mobile }]) => {
+          this.openVerify(token, merchantId, mobile);
+        }
+      )
+      .catch(error => {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Something went wrong',
+          hidePrevious: true,
+        });
+        this.props.closeModal();
+      });
   };
 
-  patchPhoneMerchant = data => {
-    console.log('Patch call for updating merchant phone');
-    return ajax(
-      {
-        url: 'es/scheduled_pricing',
-        method: 'GET',
-      },
-      {},
-      '/merchant/api'
-    );
-  };
-
-  verifyMobile = responseFromOtp => {
+  verifyMobile = token => {
+    console.log(token);
     this.props.openModal({
       component: (
         <AskMobileNumber
           closeModal={this.props.closeModal}
           blank={true}
           customTitle="Enter OTP Number"
+          mobileValidation={true}
           customMessage="Update the phone number for OTP verification. The phone number should exist in the PAN database."
           onSubmit={data => {
-            this.patchPhoneMerchant(data.contact_mobile)
-              .then(resp => {
-                return this.sendReqForOtp(data.contact_mobile);
-              })
-              .then(tokenStuff => {
-                console.log('OTP Token received');
-                this.openVerify(tokenStuff, data.contact_mobile);
-              })
-              .catch(error => {
-                console.log(error);
-                throw {
-                  errors: ['Verification failed because of incorrect OTP.'],
-                };
-              });
+            this.savePhone(data.contact_mobile);
           }}
         />
       ),
@@ -152,46 +140,37 @@ export default class CreditPullModal extends Component {
     });
   };
 
-  openVerify = (tokenStuff, newPhone) => {
+  openVerify = (tokenStuff, merchantId, mobile) => {
     this.props.openModal({
       component: (
         <VerifyOtp
           closeModal={this.props.closeModal}
           customClass={'credit-otp'}
           onSubmit={data => {
-            return this.sendReqForOtpConfirmation(data)
-              .then(response => {
-                //Now call dashboard stuff
-                //this.openErrorScreen('Sorry, some informations are not matching with PAN database. Please try after sometime.');
-
-                let report = {
-                  credScore: 750,
-                  loanAmount: 354000,
-                  accountInfo: {
-                    active: 6,
-                    closed: 4,
-                  },
-                  balanceInfo: {
-                    secured: 944000,
-                    unsecured: 310000,
-                  },
-                };
-
-                this.openReportScreen(report);
+            return this.sendReqForOtpConfirmation(
+              data,
+              mobile,
+              tokenStuff,
+              merchantId
+            )
+              .then(({ data: { report, score, max_loan_amount } }) => {
+                this.openReportScreen(report, score, max_loan_amount);
               })
               .catch(error => {
-                throw {
-                  errors: ['Verification failed because of incorrect OTP.'],
-                };
+                throw error;
               });
           }}
-          onResend={data => {
-            return this.sendReqForOtp(data, tokenStuff).then(() => {
-              console.log('OTP Token received');
+          onResend={() => {
+            return this.sendReqForOtp(mobile, tokenStuff).then(() => {
+              this.props.showNotification({
+                type: 'success',
+                message: 'The OTP was resent',
+                hidePrevious: true,
+              });
             });
           }}
-          onChangeMobileNumber={this.verifyMobile}
-          contactMobile={newPhone ? newPhone : this.state.merchantData.mobile}
+          onChangeMobileNumber={() => this.verifyMobile(tokenStuff, merchantId)}
+          contactMobile={mobile}
         />
       ),
       size: this.SMALL_MODAL,
@@ -205,19 +184,26 @@ export default class CreditPullModal extends Component {
     });
   };
 
-  openReportScreen = message => {
+  openReportScreen = (report, score, maxLoan) => {
     this.props.openModal({
-      component: <CreditPullSuccess />,
+      component: (
+        <CreditPullSuccess score={score} report={report} maxLoan={maxLoan} />
+      ),
       size: 'large',
     });
   };
 
-  sendReqForOtpConfirmation = (data, newPhone) => {
-    console.log('Confirming OTP');
+  sendReqForOtpConfirmation = (data, mobile, token, merchantId) => {
+    let payload = {
+      otp: data.otp,
+      token,
+    };
+    payload['contact_mobile'] = parseInt(mobile);
     return ajax(
       {
-        url: 'es/scheduled_pricing',
-        method: 'GET',
+        url: `d2c_bureau_details/${merchantId}/otp_submit`,
+        method: 'POST',
+        data: payload,
       },
       {},
       '/merchant/api'
@@ -226,7 +212,10 @@ export default class CreditPullModal extends Component {
 
   initialAlign = () => {
     //Hate doing this unfortunately the library doesn't provide any other way to do this.
-    if (this.dateContainer) {
+    if (
+      !this.props.initialValues.hasOwnProperty('date_of_birth') &&
+      this.dateContainer
+    ) {
       this.dateContainer.current.querySelector('div .rdtPrev span').click();
       setTimeout(() => {
         this.dateContainer.current.querySelector('div .rdtPrev span').click();
@@ -235,23 +224,28 @@ export default class CreditPullModal extends Component {
     }
   };
 
-  sendReqForOtp = (mobile, tokenStuff) => {
-    console.log('Triggering OTP Request');
+  sendReqForOtp = (mobile, token) => {
+    const payload = {
+      medium: 'sms',
+      action: 'bureau_verify',
+    };
+    if (token) {
+      payload['token'] = token;
+    }
+    payload['contact_mobile'] = parseInt(mobile);
     return ajax(
       {
-        url: 'es/scheduled_pricing',
-        method: 'GET',
+        url: 'otp/send',
+        method: 'post',
+        data: payload,
       },
       {},
       '/merchant/api'
     );
   };
 
-  handleFinalSubmit = data => {};
-
   renderPreEnablement = () => {
     const { handleSubmit } = this.props;
-
     return (
       <>
         <ModalHeader
@@ -260,10 +254,7 @@ export default class CreditPullModal extends Component {
             this.props.closeModal();
           }}
         />
-        <form
-          className="form-horizontal bureau-merchant-form"
-          onSubmit={handleSubmit(this.save)}
-        >
+        <form className="form-horizontal bureau-merchant-form">
           <div className="modal-body">
             <Alert type="error" message={this.state.errors} />
             <div className="form-group">
@@ -272,7 +263,13 @@ export default class CreditPullModal extends Component {
               </label>
               <div className="col-md-4">
                 <Field
-                  name="firstName"
+                  name="id"
+                  component={InputField}
+                  required={true}
+                  className="hidden"
+                />
+                <Field
+                  name="first_name"
                   component={InputField}
                   class="form-control"
                   placeholder="First Name"
@@ -282,7 +279,7 @@ export default class CreditPullModal extends Component {
 
               <div className="col-md-4">
                 <Field
-                  name="lastName"
+                  name="last_name"
                   component={InputField}
                   class="form-control"
                   placeholder="Last Name"
@@ -297,7 +294,7 @@ export default class CreditPullModal extends Component {
               </label>
               <div className="col-md-4">
                 <Field
-                  name="mobile"
+                  name="contact_mobile"
                   component={InputField}
                   class="form-control"
                   placeholder="Mobile Number"
@@ -352,8 +349,8 @@ export default class CreditPullModal extends Component {
                   name="gender"
                   required={true}
                   options={[
-                    { title: 'Male', value: 'M' },
-                    { title: 'Female', value: 'F' },
+                    { title: 'Male', value: 'male' },
+                    { title: 'Female', value: 'female' },
                   ]}
                 />
               </div>
@@ -365,10 +362,10 @@ export default class CreditPullModal extends Component {
               </label>
               <div className="col-md-4 red-cal-date" ref={this.dateContainer}>
                 <Field
-                  name="dateOfBirth"
+                  name="date_of_birth"
                   component={ReduxDatetime}
                   placeholder="Select a date"
-                  dateFormat="DD-MM-YYYY"
+                  dateFormat="YYYY-MM-DD"
                   required={true}
                   viewMode={'years'}
                   timeFormat={false}
@@ -385,7 +382,7 @@ export default class CreditPullModal extends Component {
 
               <div className="col-md-8">
                 <Field
-                  name="line1"
+                  name="address"
                   component={InputField}
                   tagName="textarea"
                   type="textarea"
@@ -427,7 +424,7 @@ export default class CreditPullModal extends Component {
               </label>
               <div className="col-md-4">
                 <Field
-                  name="pinCode"
+                  name="pincode"
                   component={InputField}
                   class="form-control"
                   placeholder="Pin Code"
@@ -457,12 +454,24 @@ export default class CreditPullModal extends Component {
               <label htmlFor="consent" className="cap-consent col-md-9">
                 I hereby agree to share my credit information with Razorpay and
                 its partners. By submitting this form I hereby agree to the
-                <a target="_blank" href="https://razorpay.com/terms/">
+                <a
+                  target="_blank"
+                  href="https://razorpay.com/capital/credit-report-terms"
+                >
                   {' Terms & Conditions.'}
                 </a>
               </label>
             </div>
-
+            {this.state.isLoading ? (
+              <div className="form-group">
+                <div className="col-md-9" />
+                <div className="col-md-3">
+                  <div className="loader" />
+                </div>
+              </div>
+            ) : (
+              <></>
+            )}
             <span className="exp-logo-text">Powered by</span>
             <img
               className="exp-logo"

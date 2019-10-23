@@ -18,47 +18,22 @@ export default class CreditPullSuccess extends Component {
     this.state = {
       moreInfo: false,
     };
-    this.report = {
-      bureauScore: 700,
-      creditAccountTotal: 10,
-      creditAccountActive: 6,
-      creditAccountClosed: 4,
-      outstanding_Balance_All: 135400000,
-      outstanding_Balance_Secured: 944000,
-      outstanding_Balance_UnSecured: 310000,
-    };
-    this.data = {
+    this.upperScore = 900;
+    this.lowerScore = 300;
+    this.chartData = {
       labels: [],
       datasets: [
         {
-          data: [this.report.bureauScore],
+          data: [props.score],
           backgroundColor: 'rgba(12, 54, 204, 0.9)',
         },
         {
-          data: [900 - this.report.bureauScore],
+          data: [this.upperScore - props.score],
           backgroundColor: 'rgba(12, 54, 204, 0.2)',
         },
       ],
     };
-  }
-
-  generateRowData = (reportData, label, key) => {
-    let rowData = [];
-    for (let iter in label) {
-      rowData.push({
-        desc: label[iter],
-        value: reportData[key[iter]],
-      });
-    }
-    return rowData;
-  };
-
-  titleGenerator = () => {
-    return <span>Credit Report</span>;
-  };
-
-  getOptions = () => {
-    return {
+    this.chartOptions = {
       responsive: true,
       maintainAspectRatio: false,
       tooltips: {
@@ -83,6 +58,21 @@ export default class CreditPullSuccess extends Component {
       },
       legend: { display: false },
     };
+  }
+
+  generateRowData = (reportData, label, key) => {
+    let rowData = [];
+    for (let iter in label) {
+      rowData.push({
+        desc: label[iter],
+        value: reportData[key[iter]],
+      });
+    }
+    return rowData;
+  };
+
+  titleGenerator = () => {
+    return <span>Credit Report</span>;
   };
 
   render() {
@@ -98,15 +88,15 @@ export default class CreditPullSuccess extends Component {
           <div className="col-md-4 rep-container rep-container-1">
             <div className="tab-title">Credit Score</div>
             <div className="col-md-6 credit-chart-container">
-              <Bar options={this.getOptions()} data={this.data} />
+              <Bar options={this.chartOptions} data={this.chartData} />
             </div>
             <div className="col-md-6 credit-score-container">
-              <div className="credit-max">900</div>
+              <div className="credit-max">{this.upperScore}</div>
               <div className="credit-score">
-                <span className="score">700</span>
+                <span className="score">{this.props.score}</span>
                 <div className="desc">Credit Score</div>
               </div>
-              <div className="credit-min">300</div>
+              <div className="credit-min">{this.lowerScore}</div>
             </div>
           </div>
 
@@ -116,16 +106,21 @@ export default class CreditPullSuccess extends Component {
               Based on your credit history, You may be eligible for a loan upto
               given amount. Please confirm your interest.
             </div>
-            <div className="report-amount">
-              <Amount value={10000 / 4} currency={'INR'} />
-            </div>
+            {this.props.maxLoan && (
+              <div className="report-amount">
+                <Amount value={this.props.maxLoan} currency={'INR'} />
+              </div>
+            )}
             <div className="report-actions">
               <AsyncButton class="btn btn-primary" text="Yes I'm interested" />
               <AsyncButton class="btn btn-secondary" text="No, I'm not" />
             </div>
           </div>
 
-          <CreditPullAdditionalReport report={this.report} />
+          <CreditPullAdditionalReport
+            report={this.props.report}
+            score={this.props.score}
+          />
         </div>
         <div className="modal-footer" />
       </div>

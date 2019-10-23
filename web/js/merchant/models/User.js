@@ -351,7 +351,7 @@ export default class User {
   }
 
   get isCreditPullEnabled() {
-    return this.isFeatureEnabled('ES_ON_DEMAND');
+    return this.findTag('show_credit_score');
   }
 
   get isDiwaliPromoEnabled() {
