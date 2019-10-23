@@ -379,7 +379,7 @@ class Core extends Base\Core
 
     /**
      * To Update FTA and source Using incoming webhook from FTS
-     * 
+     *
      * @param array $input
      * @return array
      * @throws \Throwable
@@ -479,6 +479,8 @@ class Core extends Base\Core
         if ($holdFunds === true)
         {
             $fta->merchant->setHoldFunds(true);
+
+            $fta->merchant->setHoldFunds('bank account/transaction was rejected from bank');
 
             $this->repo->saveOrFail($fta->merchant);
         }
