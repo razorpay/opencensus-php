@@ -35,7 +35,7 @@ import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
 
-import FormFields from 'merchant/containers/Activation/L1FormMap';
+import FormFields from './L1FormMap';
 import {
   trackL1FormSuccess,
   trackL1FormError,
@@ -889,6 +889,11 @@ export default class ActivationWizard extends React.Component {
       return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
     }
 
+    // If it is a registered biz then promoter_pan_name should not be sent
+    if (!this.isUnregBiz) {
+      delete reqData.promoter_pan_name;
+    }
+
     return reqData;
   }
 
@@ -1696,7 +1701,8 @@ function isFieldValid(field, activation) {
 
   const name = field.dynamicName ? field.getName(activation) : field.name;
   let value =
-    data[name] || (data.documents[name] && data.documents[name][0]['id']);
+    data[name] ||
+    (data.documents && data.documents[name] && data.documents[name][0]['id']);
 
   let isFieldRequired = field.required;
 
