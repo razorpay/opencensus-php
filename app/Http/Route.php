@@ -3442,8 +3442,8 @@ final class Route
         'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
         'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
-        'merchant_activation_update_partner'   => [Feature::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT],
-        'merchant_activation_status_partner'   => [Feature::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT],
+        'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
+        'merchant_activation_status_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
     ];
 
     /*

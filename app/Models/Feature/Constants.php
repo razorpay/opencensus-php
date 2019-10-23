@@ -136,7 +136,7 @@ class Constants
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const TRANSLATE_WEBHOOK               = 'translate_webhook';
 
-    const ALLOW_PARTNER_TO_ACTIVATE_MERCHANT    = 'allow_partner_to_activate_merchant';
+    const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
      * When creating submerchant, if kyc is handled by partner, we proceed to directly activate the merchant, when
@@ -429,7 +429,7 @@ class Constants
         self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::VALIDATE_MERCHANT_DOMAIN        => true,
         self::TRANSLATE_WEBHOOK               => true,
-        self::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT => true,
+        self::PARTNER_ACTIVATE_MERCHANT       => true,
     ];
 
     // Entity type constants
