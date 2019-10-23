@@ -16,8 +16,8 @@ use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
-use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 
 class Core extends Base\Core
 {
@@ -229,15 +229,18 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($bankingAccount);
 
-            if (isset($input[Entity::DETAILS]) === true)
+            if ((isset($input[Entity::DETAILS]) === true) and
+                (empty($input[Entity::DETAILS])) === false)
             {
                 if (in_array($bankingAccount->getStatus(), Status::$allowedStatusForDetails, true) === false)
                 {
                     throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_ERROR,
                         null,
-                        ['banking_account_id' => $bankingAccount->getId(),
-                         'status' => $bankingAccount->getStatus()],
+                        [
+                            BankingAccountDetail\Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId(),
+                            Entity::STATUS                                  => $bankingAccount->getStatus(),
+                        ],
                         'Account Details cannot be saved for given account status');
                 }
 

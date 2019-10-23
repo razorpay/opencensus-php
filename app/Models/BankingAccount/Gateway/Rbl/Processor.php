@@ -191,6 +191,22 @@ class Processor extends BankingAccount\Gateway\Processor
             $input[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $timestamp;
         }
 
+        if (isset($input[BankingAccount\Entity::USERNAME]) === true and
+            empty($input[BankingAccount\Entity::USERNAME]) === false)
+        {
+            $username = $this->tokenizeKey($input[BankingAccount\Entity::USERNAME]);
+
+            $input[BankingAccount\Entity::USERNAME] = $username;
+        }
+
+        if (isset($input[BankingAccount\Entity::PASSWORD]) === true and
+            empty($input[BankingAccount\Entity::PASSWORD]) === false)
+        {
+            $password = $this->tokenizeKey($input[BankingAccount\Entity::USERNAME]);
+
+            $input[BankingAccount\Entity::PASSWORD] = $password;
+        }
+
         return $input;
     }
 

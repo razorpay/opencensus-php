@@ -10,8 +10,8 @@ class Entity extends PublicEntity
     const GATEWAY_KEY           = 'gateway_key';
     const GATEWAY_VALUE         = 'gateway_value';
     const BANKING_ACCOUNT_ID    = 'banking_account_id';
-    const BANKING_ACCOUNT       = 'banking_account';
 
+    // Constants
     const DETAILS               = 'details';
 
     protected $generateIdOnCreate = true;
@@ -28,6 +28,15 @@ class Entity extends PublicEntity
         self::GATEWAY_KEY,
     ];
 
+    // --------------------------- Relations ---------------------------------- //
+
+    public function bankingAccount()
+    {
+        return $this->belongsTo(BankingAccount\Entity::class);
+    }
+
+    // ---------------------------- Setters ----------------------------------- //
+
     public function setGatewayKey(string $key)
     {
         $this->setAttribute(self::GATEWAY_KEY, $key);
@@ -36,10 +45,5 @@ class Entity extends PublicEntity
     public function setGatewayValue(string $value)
     {
         $this->setAttribute(self::GATEWAY_VALUE, $value);
-    }
-
-    public function bankingAccount()
-    {
-        return $this->belongsTo(BankingAccount\Entity::class);
     }
 }

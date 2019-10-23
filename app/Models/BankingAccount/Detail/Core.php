@@ -10,7 +10,7 @@ class Core extends Base\Core
 {
     public function updateBankingAccountDetails(array $input,
                                                 BankingAccount\Entity $bankingAccount,
-                                                BankingAccount\Gateway\Processor $processor )
+                                                BankingAccount\Gateway\Processor $processor)
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_DETAILS_EDIT,
@@ -49,13 +49,5 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($bankingAccountDetail);
         }
-    }
-
-    protected function checkIfKeyExistsForBankingAccountDetail(BankingAccount\Entity $bankingAccount, string $key)
-    {
-        $details = $this->repo->banking_account_detail->getDetailsForKeyAndBankingAccountId();
-
-        sd($details);
-
     }
 }
