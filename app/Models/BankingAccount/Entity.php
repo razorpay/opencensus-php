@@ -93,6 +93,7 @@ class Entity extends Base\PublicEntity
 
     const DETAILS       = 'details';
 
+    // Relation Constants
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
 
     protected $entity = 'banking_account';

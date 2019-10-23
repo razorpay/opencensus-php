@@ -470,7 +470,7 @@ return [
             'content' => [
                 BankingAccount\Entity::DETAILS => [
                     BankingAccount\Gateway\Rbl\Fields::CLIENT_SECRET  => 'api_secret',
-                    BankingAccount\Gateway\Rbl\Fields::CLIENT_KEY     => 'api_key',
+                    BankingAccount\Gateway\Rbl\Fields::CLIENT_ID      => 'api_key',
                 ]
             ]
         ],
@@ -488,7 +488,7 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::DETAILS => [
-                    BankingAccount\Gateway\Rbl\Fields::CLIENT_KEY     => 'api_key_two',
+                    BankingAccount\Gateway\Rbl\Fields::CLIENT_ID     => 'api_key_two',
                 ]
             ]
         ],

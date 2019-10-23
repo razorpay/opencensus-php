@@ -11,9 +11,6 @@ class Entity extends PublicEntity
     const GATEWAY_VALUE         = 'gateway_value';
     const BANKING_ACCOUNT_ID    = 'banking_account_id';
 
-    // Constants
-    const DETAILS               = 'details';
-
     protected $generateIdOnCreate = true;
 
     protected $entity = 'banking_account_detail';

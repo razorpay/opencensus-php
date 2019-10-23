@@ -683,14 +683,14 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
 /*
         $request = [
-            'url'       => '/admin/banking_account',
+            'url'       => '/banking_accounts/' . 'bacc_' . $bankingAccount->getId(),
             'method'    => 'GET',
             'content'   => [
                 'expand' => ['merchant','merchant.merchantDetail', 'banking_account_details'],
             ]
         ];
 
-        $this->ba->adminAuth();
+        $this->ba->proxyAuth();
 
         sd($this->sendRequest($request));*/
     }
@@ -714,7 +714,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccountDetails = $this->getDbLastEntity('banking_account_detail');
 
-        $this->assertEquals('api_key_two', $bankingAccountDetails['gateway_value']);
+        $this->assertEquals(base64_encode('api_key_two'), $bankingAccountDetails['gqateway_value']);
     }
 
     protected function setMozartMockResponse($mockedResponse)

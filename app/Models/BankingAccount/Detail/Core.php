@@ -21,7 +21,7 @@ class Core extends Base\Core
 
         (new Validator)->setStrictFalse()->validateInput(Validator::PRE_EDIT, $input);
 
-        $input = $input[Entity::DETAILS];
+        $input = $input[BankingAccount\Entity::DETAILS];
 
         $processor->validateAccountDetails($input);
 

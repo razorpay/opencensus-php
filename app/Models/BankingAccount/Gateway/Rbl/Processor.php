@@ -191,21 +191,7 @@ class Processor extends BankingAccount\Gateway\Processor
             $input[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $timestamp;
         }
 
-        if (isset($input[BankingAccount\Entity::USERNAME]) === true and
-            empty($input[BankingAccount\Entity::USERNAME]) === false)
-        {
-            $username = $this->tokenizeKey($input[BankingAccount\Entity::USERNAME]);
-
-            $input[BankingAccount\Entity::USERNAME] = $username;
-        }
-
-        if (isset($input[BankingAccount\Entity::PASSWORD]) === true and
-            empty($input[BankingAccount\Entity::PASSWORD]) === false)
-        {
-            $password = $this->tokenizeKey($input[BankingAccount\Entity::USERNAME]);
-
-            $input[BankingAccount\Entity::PASSWORD] = $password;
-        }
+        $input = $this->tokenizeSensitiveFields($input);
 
         return $input;
     }
@@ -275,6 +261,13 @@ class Processor extends BankingAccount\Gateway\Processor
     }
 
     public function formatAccountDetails(array $input)
+    {
+        $input = $this->tokenizeSensitiveFields($input);
+
+        return $input;
+    }
+
+    protected function tokenizeSensitiveFields(array $input)
     {
         foreach ($input as $key => $value)
         {
@@ -575,54 +568,24 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function validateBeforeActivation(Entity $bankingAccount, array $input = [])
     {
-        $emptyKeys = [];
+        $input = [];
 
-        $clientId = Fields::getClientId($bankingAccount);
+        $input[Fields::CLIENT_ID] = Fields::getClientId($bankingAccount);
 
-        $clientSecret = Fields::getClientSecret($bankingAccount);
+        $input[Fields::CLIENT_SECRET] = Fields::getClientSecret($bankingAccount);
 
-        if (empty($clientId) === true)
-        {
-            $emptyKeys[] = Fields::CLIENT_ID;
-        }
+        $fieldsRequired = Validator::$accountActivateRules;
 
-        if (empty($clientSecret) === true)
-        {
-            $emptyKeys[] = Fields::CLIENT_SECRET;
-        }
-
-        $fieldsRequired = [
-            Entity::ACCOUNT_NUMBER,
-            Entity::ACCOUNT_IFSC,
-            Entity::USERNAME,
-            Entity::PASSWORD,
-            Entity::REFERENCE1,
-            Entity::BENEFICIARY_NAME,
-            Entity::BENEFICIARY_STATE,
-            Entity::BENEFICIARY_COUNTRY,
-            Entity::BENEFICIARY_MOBILE,
-            Entity::BENEFICIARY_EMAIL,
-            Entity::ACCOUNT_TYPE,
-        ];
-
-        foreach ($fieldsRequired as $key)
+        foreach ($fieldsRequired as $key => $val)
         {
             $functionName = 'get' . studly_case($key);
 
-            $value = $bankingAccount->{$functionName}();
-
-            if (empty($value) === true)
+            if (method_exists($bankingAccount, $functionName))
             {
-                $emptyKeys[] = $key;
+                $input[$key] = $bankingAccount->$functionName();
             }
         }
 
-        if (count($emptyKeys) > 0)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION,
-                null,
-                $emptyKeys);
-        }
+        (new Validator)->validateInput(Validator::ACCOUNT_ACTIVATE, $input);
     }
 }

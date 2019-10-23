@@ -3,13 +3,14 @@
 namespace RZP\Models\BankingAccount\Detail;
 
 use RZP\Base;
+use RZP\Models\BankingAccount;
 
 class Validator extends Base\Validator
 {
     const PRE_EDIT = 'pre_edit';
 
     protected static $preEditRules = [
-        Entity::DETAILS => 'required|array',
+        BankingAccount\Entity::DETAILS => 'required|array',
     ];
 
     protected static $editRules = [

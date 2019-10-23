@@ -66,7 +66,6 @@ class Fields
 
     // Fields which store the credentials for a Banking account
 
-    const CLIENT_KEY                        = 'client_key';
     const LDAP_ID                           = 'ldap_id';
     const MERCHANT_EMAIL                    = 'merchant_email';
     const MERCHANT_PASSWORD                 = 'merchant_password';
@@ -77,7 +76,9 @@ class Fields
     public static $sensitiveAccountDetails = [
         self::CLIENT_ID,
         self::CLIENT_SECRET,
-        self::MERCHANT_PASSWORD
+        self::MERCHANT_PASSWORD,
+        Entity::USERNAME,
+        Entity::PASSWORD,
     ];
 
     public static $rblFieldsToEntityMap = [
@@ -102,14 +103,14 @@ class Fields
     public static function getClientId(Entity $bankingAccount)
     {
         return $bankingAccount->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY,
-            Fields::CLIENT_ID)
-            ->value(Detail\Entity::GATEWAY_VALUE);
+                                                      Fields::CLIENT_ID)
+                                                       ->value(Detail\Entity::GATEWAY_VALUE);
     }
 
     public static function getClientSecret(Entity $bankingAccount)
     {
         return $bankingAccount->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY,
-            Fields::CLIENT_SECRET)
-            ->value(Detail\Entity::GATEWAY_VALUE);
+                                                      Fields::CLIENT_SECRET)
+                                                       ->value(Detail\Entity::GATEWAY_VALUE);
     }
 }

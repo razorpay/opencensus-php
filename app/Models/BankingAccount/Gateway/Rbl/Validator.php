@@ -14,6 +14,7 @@ class Validator extends Base\Validator
     const ACCOUNT_UPDATE              = 'account_update';
     const ACCOUNT_AVAILABILITY        = 'availability';
     const ACCOUNT_DETAILS_UPDATE      = 'account_details_update';
+    const ACCOUNT_ACTIVATE            = 'account_activate';
 
     protected static $availabilityRules = [
         BankingAccount\Entity::CHANNEL => 'required|string|in:rbl',
@@ -53,9 +54,24 @@ class Validator extends Base\Validator
     protected static $accountDetailsUpdateRules = [
         Fields::MERCHANT_PASSWORD => 'sometimes|string',
         Fields::MERCHANT_EMAIL    => 'sometimes|email',
-        Fields::CLIENT_KEY        => 'sometimes|string',
+        Fields::CLIENT_ID         => 'sometimes|string',
         Fields::CLIENT_SECRET     => 'sometimes|string',
-        Fields::LDAP_ID           => 'sometimes|string',
+    ];
+
+    public static $accountActivateRules = [
+        BankingAccount\Entity::ACCOUNT_NUMBER       => 'required|string',
+        BankingAccount\Entity::ACCOUNT_IFSC         => 'required|string',
+        BankingAccount\Entity::USERNAME             => 'required|string',
+        BankingAccount\Entity::PASSWORD             => 'required|string',
+        BankingAccount\Entity::REFERENCE1           => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_NAME     => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_EMAIL    => 'required|email',
+        BankingAccount\Entity::BENEFICIARY_MOBILE   => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_STATE    => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_COUNTRY  => 'required|string',
+        BankingAccount\Entity::ACCOUNT_TYPE         => 'required|string',
+        Fields::CLIENT_ID                           => 'required|string',
+        Fields::CLIENT_SECRET                       => 'required|string',
     ];
 
     protected function validateStatus(string $attribute, string $status = null)
