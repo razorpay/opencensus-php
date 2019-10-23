@@ -378,6 +378,29 @@ class PartnerAccountTest extends TestCase
         $this->assertEquals($merchant->getId(), '10000000000000');
     }
 
+    public function testSimulateActivationForPartner()
+    {
+        $this->setUpPartnerWithKycNotHandled();
+
+        $this->fixtures->merchant->addFeatures([FName::PARTNER_ACTIVATE_MERCHANT]);
+
+        $subMerchant = $this->createUnderReviewAccount();
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData['testSimulateUpdate'];
+
+        $testData['request']['url'] = '/partner/merchant/acc_'. $subMerchant->getId().'/activation/update';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner/merchant/acc_'. $subMerchant->getId().'/activation/status';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function changeActivationStatus($merchantId, $status)
     {
         $testData = $this->testData['changeActivationStatus'];
