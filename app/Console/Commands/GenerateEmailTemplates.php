@@ -39,10 +39,6 @@ class GenerateEmailTemplates extends Command
         // This is a map of templates and the rendered file names
         // Keep this list sorted
         $templates = [
-            'emails/banking_account/notify_status_cancelled',
-            'emails/banking_account/notify_status_created',
-            'emails/banking_account/notify_status_processed',
-            'emails/banking_account/notify_status_processing',
             'emails/merchant/activation_heimdall',
             'emails/merchant/authorized_reminder',
             'emails/merchant/bankaccount_change',
