@@ -2336,8 +2336,6 @@ final class Route
         'scrooge_refunds_get',
         'scrooge_refunds_update',
         'scrooge_refunds_download_gateway_file',
-        'scrooge_set_instant_refunds_mode',
-        'scrooge_delete_instant_refunds_mode',
 
         'scrooge_refund_create',
         'scrooge_refund_create_bulk',
@@ -2770,8 +2768,6 @@ final class Route
         'scrooge_refunds_get_multiple'             => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download'                 => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download_gateway_file'    => Permission::VIEW_SCROOGE_REFUNDS,
-        'scrooge_set_instant_refunds_mode'         => Permission::EDIT_MERCHANT,
-        'scrooge_delete_instant_refunds_mode'      => Permission::EDIT_MERCHANT,
         'scrooge_refunds_get'                      => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'scrooge_refund_create'                    => Permission::RETRY_REFUND,
