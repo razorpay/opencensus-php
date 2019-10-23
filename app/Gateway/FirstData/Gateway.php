@@ -1991,6 +1991,7 @@ class Gateway extends Base\Gateway
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->scrubCardInfo($request['content']['v1:Transaction']['v1:CreditCardData']);
+        $this->scrubCardInfo($request['content']);
 
         parent::traceGatewayPaymentRequest($request, $input, $traceCode);
     }

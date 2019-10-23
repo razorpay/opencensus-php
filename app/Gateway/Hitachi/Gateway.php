@@ -25,6 +25,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Reconciliator\Base\Reconciliate;
 
 class Gateway extends Base\Gateway
@@ -47,6 +48,17 @@ class Gateway extends Base\Gateway
     const DEFAULT_CVV_VALUE         = '000';
 
     const PAYSECURE_MID_SWITCH_TIME = 1567612806; // 4 Sept 2019, 4:00 PM
+
+    const BLACKLISTED_MCC = [
+        '5962',
+        '5966',
+        '5967',
+        '7995',
+        '5912',
+        '5122',
+        '7273',
+        '5993',
+    ];
 
     protected $map = [
         ResponseFields::RETRIEVAL_REF_NUM   => Entity::RRN,
@@ -386,6 +398,17 @@ class Gateway extends Base\Gateway
         return hash(HashAlgo::SHA256, $str);
     }
 
+    public function getStatusRequest(array $request): array
+    {
+        $this->proxyRequestIfApplicable($request);
+
+        $request['options']['timeout'] = 60;
+
+        $request['options']['verify'] = false;
+
+        return $request;
+    }
+
     protected function validateChecksumAndGetQrData($input)
     {
         //
@@ -525,7 +548,8 @@ class Gateway extends Base\Gateway
     {
         return (
             ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY) and
-            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD)
+            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD) and
+            (empty($input['payment'][Payment\Entity::RECEIVER_TYPE]) === true)
         );
     }
 
@@ -657,7 +681,7 @@ class Gateway extends Base\Gateway
             return [];
         }
 
-        $request = $this->getVerifyRequestArray($input, 'payment');
+        $request = $this->getVerifyRequestArray($input, $gatewayPayment, 'payment');
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
@@ -687,7 +711,7 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
-        $verifyRefundRequest = $this->getVerifyRequestArray($input, 'refund');
+        $verifyRefundRequest = $this->getVerifyRequestArray($input, null, 'refund');
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
@@ -1237,7 +1261,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getVerifyRequestArray(array $input, $entity)
+    protected function getVerifyRequestArray(array $input, $gatewayPayment, $entity)
     {
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::VERIFY,
@@ -1247,6 +1271,12 @@ class Gateway extends Base\Gateway
             RequestFields::TERMINAL_ID         => $this->getTerminalId(),
             RequestFields::MERCHANT_REF_NUMBER => $input[$entity]['id']
         ];
+
+
+        if (($entity === 'payment') and ($this->isBharatQrPayment() === true))
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = $gatewayPayment->getRrn();
+        }
 
         return $this->getStandardRequestArray($content);
     }
@@ -1523,7 +1553,16 @@ class Gateway extends Base\Gateway
     {
         if ($this->isLiveMode() === true)
         {
-            return 'https://172.16.18.40:10010/PaymentGateway.aspx';
+            if (($this->isBharatQrPayment() === true) and ($this->action === Base\Action::VERIFY))
+            {
+                return 'https://172.16.18.40:10010/RZPTSAPI/PaymentGateway.aspx';
+            }
+
+            else
+            {
+                return 'https://172.16.18.40:10010/PaymentGateway.aspx';
+            }
+
 //            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
 //            {
 //                return 'https://172.18.24.213:10010/PaymentGateway.aspx';

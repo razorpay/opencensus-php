@@ -15,6 +15,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
     const UNKNOWN_COLUMN_ENTITY_TYPES = ['CDP', 'CBR', 'AMC', 'MCC', 'GFC'];
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getReconciliationTypeForRow($row)
     {
         $entityType = null;

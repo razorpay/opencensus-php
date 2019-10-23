@@ -17,6 +17,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_REFUND_ID          = 'unique_bill_id';
     const COLUMN_SETTLED_AT         = 'date_of_settlement';
     const SETTLEMENT_DATE_FORMAT    = 'Y-m-d H:i:s.u';
+    const COLUMN_REFUND_AMOUNT      = 'bill_amount_in_rs';
 
     protected function getRefundId(array $row)
     {

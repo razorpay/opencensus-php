@@ -109,6 +109,9 @@ class Entity extends Base\PublicEntity
     const CONTACT_ID    = 'contact_id';
     const CONTACT_EMAIL = 'contact_email';
     const CONTACT_TYPE  = 'contact_type';
+    const REVERSED_FROM = 'reversed_from';
+    const REVERSED_TO   = 'reversed_to';
+    const PRODUCT       = 'product';
 
     const PENDING_ON_ME    = 'pending_on_me';
     const PENDING_ON_ROLES = 'pending_on_roles';
@@ -156,7 +159,6 @@ class Entity extends Base\PublicEntity
         self::PURPOSE,
         self::AMOUNT,
         self::CURRENCY,
-        self::STATUS,
         self::NOTES,
         self::PROCESSED_AT,
         self::PENDING_AT,
@@ -301,7 +303,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::USER_ID           => null,
-        self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
         self::FUND_ACCOUNT_ID   => null,
         self::BATCH_ID          => null,
@@ -476,6 +477,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function hasCustomer()
     {
         return ($this->isAttributeNotNull(self::CUSTOMER_ID) === true);
@@ -564,6 +570,11 @@ class Entity extends Base\PublicEntity
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
+    }
+
+    public function getInitiatedAt()
+    {
+        return $this->getAttribute(self::INITIATED_AT);
     }
 
     public function getProcessedAt()
@@ -783,6 +794,8 @@ class Entity extends Base\PublicEntity
 
     protected function setStatusAttribute($status)
     {
+        $previousStatus = $this->getStatus();
+
         $this->attributes[self::STATUS] = $status;
 
         if (in_array($status, Status::$timestampedStatuses, true) === true)
@@ -804,6 +817,8 @@ class Entity extends Base\PublicEntity
 
             $this->setAttribute($timestampKey, $currentTime);
         }
+
+        Metric::pushStatusChangeMetrics($this, $previousStatus);
     }
 
     public function setInitiatedAt()

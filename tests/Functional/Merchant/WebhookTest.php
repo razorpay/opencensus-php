@@ -12,6 +12,8 @@ use Psr\Http\Message\ResponseInterface;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Models\Feature;
+use RZP\Models\Merchant\Webhook;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
@@ -562,6 +564,79 @@ class WebhookTest extends TestCase
         $this->assertArrayNotHasKey('subscription.charged', $events);
     }
 
+    public function testWebhookEventWithExpressTranslationEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $translatedWebhookBody = 'sample translated webhook body';
+
+        $webhookSecret = 'sample_secret';
+
+        $this->createMerchantWebhook([
+            'events' => ['payment.captured' => "1"],
+            'secret' => $webhookSecret,
+        ]);
+
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TRANSLATE_WEBHOOK]);
+
+        $this->mockExpressSendRequest(function ($path, $content) use ($translatedWebhookBody) {
+
+            $response = new \Requests_Response();
+
+            $response->body = $translatedWebhookBody;
+
+            $response->headers['request-id'] = '12345678';
+
+            return $response;
+        });
+
+        $webhookFired = [];
+
+        $this->mockInfernoMakeRequest(function ($request) use (& $webhookFired)
+        {
+            $webhookFired = $request;
+
+            return $this->getStandardWebhookResponse();
+        });
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        /*
+         * these asserts cannot be inside the mockInfernoMakeRequest closure because
+         * if assert fails, then exception is thrown. However, the exception is caught and not rethrown
+         * by inferno. this leads to all assert failures failing silently.
+         */
+
+        $this->assertEquals($translatedWebhookBody, $webhookFired['content']);
+
+        $this->assertEquals('12345678', $webhookFired['headers']['request-id'][0]);
+
+        $this->assertEquals(
+            hash_hmac('sha256', $translatedWebhookBody, $webhookSecret),
+            $webhookFired['headers']['X-Razorpay-Signature']);
+
+        // to assert that express service does not modify the original url, method etc
+        $this->assertEquals('http://webhook.com/v1/dummy/route', $webhookFired['url']);
+
+        $this->assertEquals('post', $webhookFired['method']);
+    }
+
+    public function testWebhookEventWithExpressTranslationNotEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $this->createMerchantWebhook(['events' => ['payment.captured' => "1"]]);
+
+        $express = $this->mockExpressSendRequest(null, 0);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
     public function testOrderPaidWebhookEventData()
     {
         $this->createWebhook(['events' => ['order.paid' => "1"]]);
@@ -1007,6 +1082,8 @@ class WebhookTest extends TestCase
             $data['event'] = json_decode($data['event'], true);
 
             $this->assertArrayHasKey('account_id', $data['event']);
+            // Asserts that the account_id in event payload is one of the linked accounts.
+            $this->assertContains($data['event']['account_id'], ['acc_10000000000002', 'acc_10000000000003']);
 
             $this->assertEquals('settlement.processed', $data['event']['event']);
 
@@ -1382,6 +1459,252 @@ class WebhookTest extends TestCase
         // Child merchant initiates the refund
 
         $this->refundPayment($payment['id'], $payment['amount']/2, [], [], false, ['key' => 'rzp_test_partner_' . $client->getId(), 'secret' => $client->getSecret()]);
+    }
+
+    public function testTerminalOnboardingVerificationWebhook()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_verification.case', "1");
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $subMerchant->setCategory("742");
+
+        $subMerchant->save();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' =>  $subMerchantId,
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+
+        $this->fixtures->merchant->addFeatures(
+            [Feature\Constants::TERMINAL_ONBOARDING],
+            '10000000000000'
+        );
+
+        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
+        $this->fixtures->create('webhook',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => '10000000000App',
+                'url'         => 'https://www.razorpay.co.in',
+                'events'      => [
+                    'terminal.activated' => '1'
+                ]
+            ]);
+
+        $terminal = $this->fixtures->create('terminal',
+            [
+                'merchant_id' => $subMerchantId,
+                'enabled'     => false,
+                'gateway'     => 'atos',
+                'status'      => 'pending'
+            ]);
+
+        $activationTime = Carbon::now()->subMinutes(10);
+
+        $this->fixtures->create('terminal_onboarding_detail',
+            [
+                'terminal_id'       => $terminal->getId(),
+                'status'            => 'pending',
+                'verify_bucket'     => 0,
+                'verify_at'         => $activationTime->getTimestamp(),
+            ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData[__FUNCTION__ . 'Data'];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $this->assertEquals('terminal.activated', $data['event_name']);
+            $this->assertArrayHasKey('webhook_id', $data);
+
+            $data['event'] = json_decode($data['event'], true);
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingCreationFailedWebhook()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_creation.case', "5");
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $subMerchant->setCategory("742");
+
+        $subMerchant->save();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' =>  $subMerchantId,
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+
+        $this->fixtures->merchant->addFeatures(
+            [Feature\Constants::TERMINAL_ONBOARDING],
+            '10000000000000'
+        );
+
+        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
+        $this->fixtures->create('webhook',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => '10000000000App',
+                'url'         => 'https://www.razorpay.co.in',
+                'events'      => [
+                    'terminal.failed' => '1'
+                ]
+            ]);
+
+        $terminal = $this->fixtures->create('terminal',
+            [
+                'merchant_id' => $subMerchantId,
+                'enabled'     => false,
+                'gateway'     => 'atos',
+                'status'      => 'created'
+            ]);
+
+        $this->fixtures->create('terminal_onboarding_detail',
+            [
+                'terminal_id'       => $terminal->getId(),
+                'status'            => 'created',
+                'verify_bucket'     => 0,
+            ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData[__FUNCTION__ . 'Data'];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $this->assertEquals('terminal.failed', $data['event_name']);
+            $this->assertArrayHasKey('webhook_id', $data);
+
+            $data['event'] = json_decode($data['event'], true);
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingActivationFailedWebhook()
+    {
+        $this->app['config']->set('atos_terminal_onboarding_verification.case', "2");
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $subMerchant->setCategory("742");
+
+        $subMerchant->save();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $subMerchantId,
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+
+        $this->fixtures->merchant->addFeatures(
+            [Feature\Constants::TERMINAL_ONBOARDING],
+            '10000000000000'
+        );
+
+        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
+        $this->fixtures->create('webhook',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => '10000000000App',
+                'url'         => 'https://www.razorpay.co.in',
+                'events'      => [
+                    'terminal.failed' => '1'
+                ]
+            ]);
+
+        $terminal = $this->fixtures->create('terminal',
+            [
+                'merchant_id' => $subMerchantId,
+                'enabled'     => false,
+                'gateway'     => 'atos',
+                'status'      => 'pending'
+            ]);
+
+        $activationTime = Carbon::now()->subMinutes(10);
+
+        $this->fixtures->create('terminal_onboarding_detail',
+            [
+                'terminal_id'       => $terminal->getId(),
+                'status'            => 'pending',
+                'verify_bucket'     => 100,
+                'verify_at'         => $activationTime->getTimestamp(),
+            ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData[__FUNCTION__ . 'Data'];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $this->assertEquals('terminal.failed', $data['event_name']);
+            $this->assertArrayHasKey('webhook_id', $data);
+
+            $data['event'] = json_decode($data['event'], true);
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $this->startTest();
     }
 
     protected function createTransferEntity($payment, $account)

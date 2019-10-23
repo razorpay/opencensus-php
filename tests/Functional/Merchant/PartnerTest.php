@@ -1440,6 +1440,49 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testUpdatePartnerTypeAsResellerUsingProxyAuth()
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->mockAuthServiceCreateApplication($merchant);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->assertTrue($expectedPartner->isResellerPartner());
+    }
+
+    public function testUpdatePartnerTypeAsAggregatorUsingProxyAuth()
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->mockAuthServiceCreateApplication($merchant);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->assertTrue($expectedPartner->isAggregatorPartner());
+    }
+
+    public function testUpdatePartnerTypeUsingProxyAuthWithInvalidPartnerType()
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     protected function createMerchantRequest(
         string $merchantRequestName,
         bool $createSubmission = false,

@@ -47,6 +47,14 @@ class Gateway extends Base\Gateway
          */
         ResponseFields::MANDATE_SBI_STATUS   => Base\Entity::STATUS,
         ResponseFields::MANDATE_SBI_REF      => Base\Entity::BANK_PAYMENT_ID,
+
+        /**
+         * Refund fields
+         */
+        Base\Entity::REFUND_ID               => Base\Entity::REFUND_ID,
+        Base\Entity::AMOUNT                  => Base\Entity::AMOUNT,
+        Base\Entity::REFERENCE1              => Base\Entity::REFERENCE1
+
     ];
 
     public function setGatewayParams($input, $mode, $terminal)
@@ -137,9 +145,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    //------------------- Verify --------------------------------------------//
-
-    public function verify(array $input): array
+    public function verify(array $input)
     {
         parent::verify($input);
 
@@ -191,6 +197,20 @@ class Gateway extends Base\Gateway
                 ]
             );
         }
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $attributes = [
+            Base\Entity::REFUND_ID  => $input['refund']['id'],
+            Base\Entity::AMOUNT     => $input['refund']['amount'],
+            Base\Entity::STATUS     => Status::SENT,
+            Base\Entity::REFERENCE1 => $input['refund']['reference3']
+        ];
+
+        $this->createGatewayPaymentEntity($attributes);
     }
 
     //-------------------------- Authorize helper ---------------------------//
@@ -551,6 +571,49 @@ class Gateway extends Base\Gateway
         return VerifyResult::STATUS_MATCH;
     }
 
+    //--------------------force authorize---------------------------//
+    /**
+     * This function is implemented to enable force auth through dashboard i.e manual force auth. By default this
+     * is not used and we rely on verify to convert payments from failed to authorized state. This may be usd in the
+     * extreme case when verify is broken from bank end. In that case this is initiated manually as per the call taken
+     * by the finops team.
+     *
+     * @param $input
+     * @return bool
+     * @throws Exception\BadRequestException
+     */
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        if (empty($input['gateway']['gateway_payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                null,
+                $input);
+        }
+
+        $attributes = [
+            Base\Entity::STATUS          => Status::SUCCESS,
+            Base\Entity::BANK_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
+
     //--------------------Common Helper functions ---------------------------//
 
     protected function processGatewayResponse($gatewayResponse): array
@@ -661,6 +724,20 @@ class Gateway extends Base\Gateway
         if ($this->bankingType === BankingType::RECURRING)
         {
             $secret = $this->config['test_hash_secret_recurring'];
+        }
+
+        return $secret;
+    }
+
+    protected function getLiveSecret()
+    {
+        if ($this->bankingType === BankingType::RECURRING)
+        {
+            $secret = $this->input['terminal']['gateway_secure_secret'];
+        }
+        else
+        {
+            $secret = $this->config['live_hash_secret'];
         }
 
         return $secret;

@@ -50,13 +50,6 @@ final class Constants
 
     const DEFAULT_STATUS_CHECK_DISPATCH_TIME = 180;
 
-    const ALLOWED_PRODUCTS_ON_FTS = [
-        EntityConstants::REFUND,
-        EntityConstants::PAYOUT,
-        EntityConstants::FUND_ACCOUNT_VALIDATION,
-        EntityConstants::REFUND,
-    ];
-
     //Card Issuer bank IFSC Code mapping
     const BANK_IFSC = [
         Issuer::UTIB => [
@@ -128,10 +121,6 @@ final class Constants
             Network::AMEX         => 'SCBL0036020',
             self::DEFAULT_NETWORK => 'SCBL0036001'
             ],
-    ];
-
-    const VIRTUAL_ACCOUNT_IFSC = [
-        'YESB0CMSNOC'
     ];
 
     const DISABLE              = 'disable';

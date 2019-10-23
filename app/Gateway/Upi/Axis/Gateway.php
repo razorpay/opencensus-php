@@ -43,6 +43,7 @@ class Gateway extends Base\Gateway
     protected $gateway  = Payment\Gateway::UPI_AXIS;
 
     protected $map = [
+        Entity::PAYMENT_ID              => Entity::PAYMENT_ID,
         Entity::VPA                     => Entity::VPA,
         Entity::RECEIVED                => Entity::RECEIVED,
         Entity::EXPIRY_TIME             => Entity::EXPIRY_TIME,
@@ -61,6 +62,8 @@ class Gateway extends Base\Gateway
         Fields::W_COLLECT_TXN_ID        => Entity::NPCI_TXN_ID,
         Entity::MERCHANT_REFERENCE      => Entity::MERCHANT_REFERENCE,
         Fields::CALLBACK_MERCHANT_ID    => Entity::GATEWAY_MERCHANT_ID,
+        Fields::CHECK_STATUS_REF_ID     => Entity::NPCI_REFERENCE_ID,
+        Fields::CHECK_STATUS_DEBIT_VPA  => Entity::VPA
     ];
 
     /**
@@ -227,8 +230,18 @@ class Gateway extends Base\Gateway
             'email'    => 'void@razorpay.com',
         ];
 
+        $callbackMerchantId = $callbackData[Fields::CALLBACK_MERCHANT_ID];
+
+        // TODO:: This needs to be fixed once we get confirmation on why the aggregator ids for one particular terminal
+        // are different. For now adding this hack as a fix.
+
+        if ($callbackMerchantId === 'RAZORPPROD0093689')
+        {
+            $callbackMerchantId = 'ADITYAPROD0093708';
+        }
+
         $terminal = [
-            'gateway_merchant_id' => $callbackData[Fields::CALLBACK_MERCHANT_ID]
+            'gateway_merchant_id' => $callbackMerchantId
         ];
 
         return [
@@ -806,9 +819,26 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $content[Entity::RECEIVED] = 1;
+        $entity[Entity::RECEIVED] = 1;
 
-        $this->updateGatewayPaymentEntity($verify->payment, $content);
+        if (isset($content[Fields::DATA][0][Fields::CHECK_STATUS_DEBIT_VPA]))
+        {
+            $entity[Entity::VPA] = $content[Fields::DATA][0][Fields::CHECK_STATUS_DEBIT_VPA];
+        }
+        if (isset($content[Fields::DATA][0][Fields::CHECK_STATUS_REF_ID]))
+        {
+            $entity[Entity::NPCI_REFERENCE_ID] = $content[Fields::DATA][0][Fields::CHECK_STATUS_REF_ID];
+        }
+        if (isset($content[Fields::DATA][0][Fields::CHECK_STATUS_TXN_ID]))
+        {
+            $entity[Entity::NPCI_TXN_ID] = $content[Fields::DATA][0][Fields::CHECK_STATUS_TXN_ID];
+        }
+
+        // This will set the Provide and Bank
+        $verify->payment->generatePspData($entity);
+
+        // This will update VPA, NPCI_REFERENCE_ID(RRN) and RECEIVED on the entity.
+        $this->updateGatewayPaymentEntity($verify->payment, $entity, false);
     }
 
     private function checkGatewaySuccess(Verify $verify)
@@ -1279,5 +1309,19 @@ class Gateway extends Base\Gateway
         {
             return array($this->config['live_razorpay_merchant_id'], $this->config['live_razorpay_merchant_channel_id']);
         }
+    }
+
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input[Entity::ACTION]);
+        }
+
+        $gatewayEntity->setAction($input[Entity::ACTION]);
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
     }
 }

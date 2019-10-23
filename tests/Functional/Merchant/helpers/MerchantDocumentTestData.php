@@ -136,9 +136,79 @@ return [
         ],
         'response' => [
             'content' => [
-                "merchant_id"   => "10000000000000",
-                "document_type" => "promoter_address_url"
+                'documents' => [
+                    'promoter_address_url' => [
+
+                    ]
+                ],
             ]
         ]
-    ]
+    ],
+
+    'testDocumentUploadAndCheckOcrVerificationStatusSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => ''
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                ],
+            ]
+        ]
+    ],
+
+    'testDocumentUploadAndCheckOcrVerificationStatusFailed' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'aadhar_front'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                    "aadhar_front" => [
+
+                    ]
+                ],
+            ]
+        ]
+    ],
+
+    'testFetchMerchantDocuments' => [
+        'request'  => [
+            'url'    => '/merchant/documents',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'Address_proof_url' => [
+                    [
+                        'file_store_id' => 'DM6dXJfU4WzeAF',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchMerchantDocumentsByAdmin' => [
+        'request'  => [
+            'url'    => '/merchant/documents/1cXSLlUU8V9sXl',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'Address_proof_url' => [
+                    [
+                        'file_store_id' => 'DM6dXJfU4WzeAF',
+                    ]
+                ]
+            ],
+        ],
+    ],
 ];

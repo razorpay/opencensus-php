@@ -152,4 +152,12 @@ class Core extends Base\Core
         return $newEmail;
     }
 
+    public function fetchEmailsByTypes(Merchant\Entity $merchant, array $types): array
+    {
+        (new Validator)->validateTypes($types);
+
+        $emails = $this->repo->merchant_email->getEmailByTypes($types, $merchant->getId())->toArray();
+
+        return $emails;
+    }
 }

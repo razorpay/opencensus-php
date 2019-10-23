@@ -344,8 +344,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'trace_code'      => TraceCode::RECON_PARSE_ERROR,
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
-                    'row'             => $row,
-                    'gateway'         => $this->gateway
+                    'payment_id'      => $this->payment->getId(),
+                    'gateway'         => $this->gateway,
                 ]);
 
             // It's as good as no card type present in the row.

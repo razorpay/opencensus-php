@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
@@ -43,7 +44,15 @@ class MerchantDetailTest extends TestCase
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
 
-        $this->ba->proxyAuth('rzp_test_' .$merchant['id'], $user->getId());
+        $this->fixtures->on('test')->create('merchant_document', [
+            'id'            => 'DM6dWd1tzUfbnM',
+            'merchant_id'   => $merchant['id'],
+            'document_type' => 'Address_proof_url',
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+            'entity_type'   => 'merchant'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
 
         $this->startTest();
     }
@@ -352,6 +361,37 @@ class MerchantDetailTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    public function testMerchantDetailsPatchValidStatusChange()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    public function testMerchantDetailsPatchInvalidStatusChange()
+    {
+        $attributes     = [
+            'bank_details_verification_status' => 'verified',
+        ];
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
+        $merchant       = $merchantDetail->merchant;
 
         // Allow admin to access the merchant
         $admin = $this->ba->getAdmin();
@@ -909,5 +949,80 @@ class MerchantDetailTest extends TestCase
             filesize(__DIR__ . '/../Storage/a.png'),
             null,
             true);
+    }
+
+    public function testUpdateKYCClarificationReason()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testUpdateKYCClarificationReasonWithFailure()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testUpdateKycAdditionalDetails()
+    {
+        $testData = &$this->testData['testUpdateKycAdditionalDetailsData'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testUpdateKycAdditionalDetailsWithFailure()
+    {
+        $testData = &$this->testData['testUpdateKycAdditionalDetailsData'];
+
+        unset($testData['kyc_clarification_reasons']['additional_details']);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testUpdateKycAdditionalDetailsWithInvalidField()
+    {
+        $testData = &$this->testData['testUpdateKycAdditionalDetailsData'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
     }
 }

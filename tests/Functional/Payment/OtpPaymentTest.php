@@ -204,7 +204,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
 
         $this->fixtures->iin->create([
@@ -242,7 +242,7 @@ class OtpPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->merchant->addFeatures(['ivr', 'headless']);
+        $this->fixtures->merchant->addFeatures(['ivr']);
         $this->mockCardVault();
         $this->mockOtpElf(function (array $input)
         {
@@ -289,7 +289,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -344,7 +344,7 @@ class OtpPaymentTest extends TestCase
 
         $this->gateway = 'hitachi';
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->fixtures->merchant->addFeatures(['otpelf']);
 
         $this->mockCardVault();
@@ -389,7 +389,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
 
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
@@ -438,7 +438,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -486,9 +486,39 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
         $this->mockCardVault();
-        $this->mockOtpElf();
+        $otpelf = $this->mockOtpElf();
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::on(function ($argument)
+            {
+                // Ensure 'client' is sent from api side and that
+                // the ip address is the same as was passed in the s2s request
+                if ($argument['client']['ip'] === '52.34.123.23')
+                {
+                    return true;
+                }
+
+                return false;
+            }))
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => true,
+                    'data' => [
+                        'action' => 'page_resolved',
+                        'data'   => [
+                            'type' => 'otp',
+                            'bank' => 'ICIC',
+                            'next' => [
+                                'submit_otp',
+                                'resend_otp',
+                            ]
+                        ]
+                    ]
+                ];
+            });;
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -506,6 +536,9 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5567630000002004';
         $payment['auth_type'] = 'otp';
+
+        $payment['ip']         = '52.34.123.23';
+        $payment['user_agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36';
 
         $request = [
             'method'  => 'POST',
@@ -584,7 +617,7 @@ class OtpPaymentTest extends TestCase
                                 return 'off';
                             }));
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -653,7 +686,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -777,7 +810,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default']);
         $this->mockCardVault();
         $otpelf = $this->mockOtpElf();
 
@@ -873,7 +906,7 @@ class OtpPaymentTest extends TestCase
                                 return 'off';
                             }));
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -964,7 +997,7 @@ class OtpPaymentTest extends TestCase
                 ];
             });
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'otp_auth_default']);
         $this->mockCardVault();
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1179,7 +1212,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -1237,7 +1270,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -1291,13 +1324,15 @@ class OtpPaymentTest extends TestCase
         self::assertEquals($content['razorpay_payment_id'], $response['razorpay_payment_id']);
     }
 
-    public function testOtpPreferredAuthPaymentWoFeatureFallback()
+    public function testOtpPreferredAuthPaymentWithHeadlessDisable()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' => [
                 'non_recurring' => '1'
             ]
         ]);
+
+        $this->fixtures->merchant->addFeatures(['headless_disable']);
 
         $this->mockCardVault();
         $this->mockOtpElf();
@@ -1335,7 +1370,7 @@ class OtpPaymentTest extends TestCase
     public function testOtpPreferredAuthPaymentWithoutTerminal()
     {
         $this->otpFlow = false;
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -1379,7 +1414,7 @@ class OtpPaymentTest extends TestCase
         ]);
 
         $this->otpFlow = false;
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -1470,7 +1505,7 @@ class OtpPaymentTest extends TestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['preferred_auth'] = ['otp'];
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -1513,7 +1548,7 @@ class OtpPaymentTest extends TestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['preferred_auth'] = ['3ds', 'otp'];
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -1541,7 +1576,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -1578,7 +1613,7 @@ class OtpPaymentTest extends TestCase
 
     public function testHeadlessOtpAuthenticationWithNoTerminal()
     {
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -1623,7 +1658,7 @@ class OtpPaymentTest extends TestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['auth_type'] = 'otp';
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $data = $this->testData[__FUNCTION__];
 
@@ -1887,7 +1922,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
 
         $this->fixtures->iin->create([
@@ -1959,7 +1994,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
 
         $this->fixtures->iin->create([
@@ -2052,7 +2087,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
         $this->mockCardVault();
 
         $otpelf = $this->mockOtpElf();
@@ -2134,7 +2169,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless','s2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_otp_json']);
         $this->mockCardVault();
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
 
@@ -2215,7 +2250,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless','s2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
         $this->mockCardVault();
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
 
@@ -2295,7 +2330,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless','s2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_otp_json']);
         $this->mockCardVault();
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
 
@@ -2375,7 +2410,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
         $this->mockCardVault();
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
 
@@ -2447,7 +2482,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['otp_auth_default', 'headless']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -2509,7 +2544,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['otp_auth_default', 'headless']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default',]);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -2549,7 +2584,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['otp_auth_default', 'headless']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default',]);
         $this->mockCardVault();
 
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
@@ -2609,7 +2644,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['otp_auth_default', 'headless']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default',]);
         $this->mockCardVault();
 
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
@@ -2664,7 +2699,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
         $this->mockCardVault();
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
 
@@ -2715,7 +2750,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
         $this->setRedirectTo3ds(true);
@@ -2761,7 +2796,7 @@ class OtpPaymentTest extends TestCase
                 'non_recurring' => '1',
             ]]);
 
-        $this->fixtures->merchant->addFeatures(['headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
         $this->setRedirectTo3ds(true);
@@ -2824,7 +2859,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
         $this->setRedirectTo3ds(true);
@@ -2888,7 +2923,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['otp_auth_default', 'headless']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -2994,7 +3029,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElfForRupay();
 
@@ -3036,7 +3071,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
 
         $this->fixtures->iin->create([
@@ -3103,7 +3138,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json']);
 
         $this->mockCardVault();
         $this->mockOtpElf();
@@ -3172,7 +3207,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json', 'first_data_s2s_flow']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json', 'first_data_s2s_flow']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -3238,7 +3273,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElfForRupay();
 
@@ -3280,7 +3315,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $this->mockCardVault();
 
@@ -3377,7 +3412,7 @@ class OtpPaymentTest extends TestCase
 
         TerminalOptions::setTestChance(500);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
 
         $this->mockCardVault();
 
@@ -3432,7 +3467,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json', 'first_data_s2s_flow']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_otp_json', 'first_data_s2s_flow']);
 
         $this->mockCardVault();
 
@@ -3525,7 +3560,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'headless', 'otp_auth_default', 's2s_otp_json']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 's2s_otp_json']);
 
         $this->mockCardVault();
 

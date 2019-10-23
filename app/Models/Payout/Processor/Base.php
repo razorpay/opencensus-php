@@ -14,7 +14,7 @@ use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Payout\Metric;
+use RZP\Models\Payout\Status;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
@@ -107,6 +107,11 @@ class Base extends BaseCore
 
             $downstreamProcessor->process();
 
+            if (empty($payout->getStatus()) === true)
+            {
+                $payout->setStatus(Status::CREATED);
+            }
+
             $this->repo->saveOrFail($payout);
 
             $this->trace->info(
@@ -115,8 +120,6 @@ class Base extends BaseCore
                     'input'       => $input,
                     'payout'      => $payout->toArray(),
                 ]);
-
-            $this->trace->count(Metric::PAYOUT_CREATED, [], 1);
 
             return $payout;
         });

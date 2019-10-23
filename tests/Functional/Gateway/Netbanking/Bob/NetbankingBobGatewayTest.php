@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Bob;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use RZP\Gateway\Netbanking\Bob\Status;
 use RZP\Gateway\Netbanking\Bob\ResponseFields;
+use RZP\Jobs\CorePaymentServiceSync;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -97,6 +98,61 @@ class NetbankingBobGatewayTest extends TestCase
 
         $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
     }
+
+    public function testCpsGatewayEntitySync()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+
+        $gatewayData = [
+            'mode'       => 'test',
+            'timestamp'  => 294832,
+            'payment_id' => $payment->getId(),
+            'gateway'    => 'netbanking_bob',
+            'input'      => [
+                'payment'   => [
+                    'id'        => $payment->getId(),
+                    'amount'    => 500000,
+                    "currency"  => "21180100010529",
+                    "gateway"   => "108114903",
+                    'bank'      =>'BARB_R',
+                ],
+                'terminal'      => [
+                    'gateway_merchant_id' => '123456',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction'       => [
+                'bank'      =>'BARB_R',
+                'gateway_merchant_id' => '123456',
+                'payment_id'        => $payment->getId(),
+                'paymentId'         => $payment->getId(),
+                "bank_payment_id"   => "108114903",
+                "account_number"    => "21180100010529",
+                'currency'          => "INR",
+                'amount'            => 50000,
+                'status'            => 'created',
+            ],
+        ];
+
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+
+        $cpsSync->handle();
+
+        $netbankingEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbankingEntity['status'], 'created');
+
+        $gatewayData['gateway_transaction']['status'] = 'authorize';
+
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+
+        $cpsSync->handle();
+
+        $netbankingEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbankingEntity['status'], 'authorize');
+    }
+
 
     public function testUserCancelledPayments()
     {

@@ -5,7 +5,6 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -15,8 +14,8 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
-use RZP\Dashboard\Dashboard;
 use RZP\Constants\Environment;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
@@ -32,6 +31,17 @@ trait SettlementTrait
                 'merchant_id'    => $merchant->getId(),
             ] + $data
         );
+
+        $customProperties = [
+            'merchant_id'    => $merchant->getId(),
+            'channel'        => $merchant->getChannel(),
+        ] + $data;
+
+        $this->app['diag']->trackSettlementEvent(
+            EventCode::SETTLEMENT_CREATION_SKIPPED,
+            null,
+            null,
+            $customProperties);
     }
 
     /**
@@ -121,13 +131,13 @@ trait SettlementTrait
         if (($this->env !== Environment::TESTING) and
             ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
+            $createdAt = Carbon::createFromTimestamp($bankAccount->getCreatedAt(), Timezone::IST)->format('Y-m-d H:i:s');
+
             $this->traceMerchantSettlementSkip(
                 $merchant,
                 [
                     'reason'               => 'bank account created yesterday',
-                    'bank_account_created' => Carbon::createFromTimestamp(
-                                                $bankAccount->getCreatedAt(),
-                                                Timezone::IST)->format('Y-m-d H:i:s'),
+                    'bank_account_created' => $createdAt,
                 ]);
 
             return false;
@@ -185,7 +195,7 @@ trait SettlementTrait
                                                Feature\Constants::DAILY_SETTLEMENT
                                            ]);
 
-        if ($skipSetlFeatureEnabled->count() !== 0)
+        if ($skipSetlFeatureEnabled->isNotEmpty() === true)
         {
             $this->traceMerchantSettlementSkip(
                 $merchant,
@@ -224,7 +234,6 @@ trait SettlementTrait
                                   ->findMerchantsHavingFeatures([Feature\Constants::ES_AUTOMATIC_THREE_PM])
                                   ->pluck(Feature\Entity::ENTITY_ID)
                                   ->toArray();
-
 
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
 
@@ -626,7 +635,7 @@ trait SettlementTrait
     }
 
     protected function createSettlementsFromTxns(
-        $txns, string $channel, $merchantSettleToPartner, array $params): array
+        $txns, string $channel, $merchantSettleToPartner, Balance\Entity $balance, array $params): array
     {
         $merchantId = $txns->first()->getMerchantId();
 
@@ -634,14 +643,18 @@ trait SettlementTrait
 
         if ($this->isDebugEnabled() === true)
         {
-            $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchantId]);
+            $this->trace->info(
+                TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT,
+                [
+                    'merchant' => $merchantId,
+                    'balance'  => $balance->getId(),
+                ]
+            );
         }
 
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
-        $balance = $merchant->primaryBalance->getBalance();
-
-        if (($setlAmount < 100) or ($setlAmount > $balance))
+        if (($setlAmount < 100) or ($setlAmount > $balance->getBalance()))
         {
             $skipReason = ($setlAmount < 100) ? Metric::MIN_SETTLEMENT_AMOUNT_BLOCK : Metric::SETTLEMENT_AMOUNT_LESS_THAN_BALANCE;
 
@@ -654,10 +667,11 @@ trait SettlementTrait
             $this->traceMerchantSettlementSkip(
                 $merchant,
                 [
-                    'balance'    => $balance,
-                    'merchant'   => $merchant->getId(),
-                    'setlAmount' => $setlAmount,
-                    'reason'     => 'settlement amount less than 1rs or greater than balance',
+                    'balance_id'   => $balance->getId(),
+                    'balance_type' => $balance->getType(),
+                    'merchant'     => $merchant->getId(),
+                    'setlAmount'   => $setlAmount,
+                    'reason'       => 'settlement amount less than 1rs or greater than balance',
                 ]);
 
             return [null, null];
@@ -666,15 +680,16 @@ trait SettlementTrait
         try
         {
             list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner,
-                $params);
+                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner, $balance, $params);
 
             if(($setl !== null) and ($bankTransferAtpt !== null))
             {
                 $transactionCount = $txns->count();
 
                 $customProperties = [
+                    'merchant_id'           => $merchantId,
                     'channel'               => $channel,
+                    'settlement_id'         => $setl->getId(),
                     'settlement_amount'     => $setlAmount,
                     'transaction_count'     => $transactionCount
                 ];
@@ -691,7 +706,8 @@ trait SettlementTrait
                 $customProperties += [
                     'fund_transfer_attempt_id'                => $bankTransferAtpt->getId(),
                     'fund_transfer_attempt_mode'              => $bankTransferAtpt->getMode(),
-                    'fund_transfer_attempt_medium'            => $medium
+                    'fund_transfer_attempt_medium'            => $medium,
+                    'fund_transfer_attempt_purpose'           => $bankTransferAtpt->getPurpose(),
                 ];
 
                 $this->app['diag']->trackSettlementEvent(
@@ -710,6 +726,7 @@ trait SettlementTrait
             $transactionCount = $txns->count();
 
             $customProperties = [
+                'merchant_id'           => $merchantId,
                 'channel'               => $channel,
                 'settlement_amount'     => $setlAmount,
                 'transaction_count'     => $transactionCount
@@ -832,20 +849,22 @@ trait SettlementTrait
      * Used payout mutex to block merchant from creating a
      * settlement when payout is in process for the same merchant.
      *
-     * @param $merchant
-     * @param $channel
-     * @param $setlTxns
-     * @param $setlAmount
-     * @param $setlFee
-     * @param $setlApiFee
-     * @param $tax
-     * @param $merchantSettleToPartner
-     * @param array $params
+     * @param                $merchant
+     * @param                $channel
+     * @param                $setlTxns
+     * @param                $setlAmount
+     * @param                $setlFee
+     * @param                $setlApiFee
+     * @param                $tax
+     * @param                $merchantSettleToPartner
+     * @param Balance\Entity $balance
+     * @param array          $params
+     *
      * @return array
      */
     protected function settleForMerchant(
         $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner,
-        $params): array
+        Balance\Entity $balance, $params): array
     {
         $settlement = null;
 
@@ -856,7 +875,7 @@ trait SettlementTrait
         return $this->mutex->acquireAndRelease(
             $mutexResource,
             function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt,
-                 $merchantSettleToPartner, $params) {
+                 $merchantSettleToPartner, $balance, $params) {
                 try
                 {
                     // create settlement and attempt
@@ -879,7 +898,8 @@ trait SettlementTrait
                         $tax,
                         $this->setlTime,
                         $setlDetailAmounts,
-                        $merchantSettleToPartner);
+                        $merchantSettleToPartner,
+                        $balance);
 
                     $merchantSettler->createTransaction($settlement);
 
@@ -917,8 +937,9 @@ trait SettlementTrait
                 {
                     return [$settlement, $bankTransferAtpt];
                 }
-                },PayoutCore::PAYOUT_MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+            },
+            PayoutCore::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
     }
 
     protected function traceSettlementDelayOfTransactions($setlTxns)

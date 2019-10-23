@@ -12,6 +12,7 @@ use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
+use RZP\Constants\Entity as E;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;
@@ -36,7 +37,7 @@ class Core extends Base\Core
         array $values = [],
         $instantDispatch = false): Entity
     {
-        $fundTransferAttempt = $this->create($source, $values);
+        $fundTransferAttempt = $this->create($source, $values, E::BANK_ACCOUNT);
 
         // TODO: Make this polymorphic instead of having bankAccount and vpa separately
         $fundTransferAttempt->bankAccount()->associate($bankAccount);
@@ -71,7 +72,7 @@ class Core extends Base\Core
         array $values = [],
         $instantDispatch = false): Entity
     {
-        $fundTransferAttempt = $this->create($source, $values, $card);
+        $fundTransferAttempt = $this->create($source, $values,E::CARD, $card);
 
         // TODO: Make this polymorphic instead of having bankAccount, vpa and card separately
         $fundTransferAttempt->card()->associate($card);
@@ -135,7 +136,7 @@ class Core extends Base\Core
         array $values = [],
         $instantDispatch = false): Entity
     {
-        $fundTransferAttempt = $this->create($source, $values);
+        $fundTransferAttempt = $this->create($source, $values, E::VPA);
 
         // TODO: Make this polymorphic instead of having bankAccount and vpa separately
         $fundTransferAttempt->vpa()->associate($vpa);
@@ -222,117 +223,6 @@ class Core extends Base\Core
     }
 
     /**
-     * It'll evaluate the given source and card details
-     * it'll provide the channel from which transfer has to be done
-     * and also whether to route it through FTS or not
-     *
-     * @param Base\PublicEntity $source
-     * @param string            $sourceType
-     * @param CardEntity|null   $card
-     * @return array
-     *
-     * TODO: refactor this section so that we don't have to use `shouldUseGateway` and `getChannelForTransfer`
-     * for different reasons. A single method should give us which path should be chosen
-     * use RazorX here for easy config
-     */
-    protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, CardEntity $card = null): array
-    {
-        $redis = $this->app['redis']->connection();
-
-        $iin = null;
-
-        if ($card !== null)
-        {
-            $iin = $card->iinRelation;
-        }
-
-        if ($iin !== null)
-        {
-            $issuer = $iin->getIssuer();
-
-            $networkCode = $card->getNetworkCode();
-
-            $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
-
-            // Checking specifically for IMPS as IMPS refund should be sent to ICICI channel FTS
-            if ((in_array(Mode::IMPS, $supportedModes, true) === false) or
-                (in_array(Mode::UPI, $supportedModes, true) === true))
-            {
-                return [false, Settlement\Channel::YESBANK];
-            }
-        }
-
-        if (in_array($sourceType, AttemptConstants::ALLOWED_PRODUCTS_ON_FTS, true) === true)
-        {
-            if (($sourceType === Type::PAYOUT) and
-                (in_array($source->getChannel(), Settlement\Channel::getFtsSupportedPayoutChannels(), true) === true))
-            {
-                return [true, $source->getChannel()];
-            }
-
-            $srcMerchantId = $source->getMerchantId();
-
-            $merchantList = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
-
-            $merchantIds = (empty($merchantList) === false) ? explode(',', $merchantList) : [];
-
-            if (in_array($srcMerchantId, $merchantIds, true) === false)
-            {
-                return [false, Settlement\Channel::YESBANK];
-            }
-
-            if ($sourceType === EntityConstant::FUND_ACCOUNT_VALIDATION)
-            {
-                if ($this->isTestMode() === true)
-                {
-                    return [false, Settlement\Channel::YESBANK];
-                }
-                else
-                {
-                    return [true, Settlement\Channel::ICICI];
-                }
-            }
-
-            $amount = $source->getAmount();
-
-            $mode = strtolower(Mode::IMPS);
-
-            //
-            // only imps is supported for now
-            //
-            if($amount >= NodalAccount::MAX_IMPS_AMOUNT)
-            {
-                return [false, Settlement\Channel::YESBANK];
-            }
-
-            $validCardRefund = $this->isFTSSupportedCardRefund($card);
-
-            $supportedModes = $redis->hget(ConfigKey::FTS_CHANNELS, Settlement\Channel::ICICI);
-
-            $supportedModes = explode(',', $supportedModes);
-
-            //
-            // check if card is valid and channel is active to accept traffic at FTS side
-            //
-            if (($validCardRefund === false) or
-                (in_array($mode, $supportedModes, true) === false))
-            {
-                return [false, Settlement\Channel::YESBANK];
-            }
-
-            $randomValue = mt_rand(1, 100);
-            $requestThreshold = (int) $this->app['cache']->get(ConfigKey::FTS_ROUTE_PERCENTAGE);
-
-            if ($randomValue <= $requestThreshold)
-            {
-                return [true, Settlement\Channel::ICICI];
-            }
-        }
-
-        return [false, Settlement\Channel::YESBANK];
-    }
-
-    /**
      * This will check if its a valid card payout which is supported by FTS
      *
      * @param CardEntity|null $card
@@ -352,12 +242,9 @@ class Core extends Base\Core
             return false;
         }
 
-        //
-        // No intense checks are added here as those will be taken care while refund is been created
-        //
-        $cardIssuer = $iin->getIssuer();
+        $issuer = $iin->getIssuer();
 
-        if ($cardIssuer !== CardIssuer::ICIC)
+        if ($issuer !== CardIssuer::ICIC)
         {
             return true;
         }
@@ -366,13 +253,14 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Base\PublicEntity $source - refund/payout/fa-validation/etc entity
-     * @param array             $values Attributes of the created FTA
-     * @param CardEntity|null   $card
-     *
+     * @param Base\PublicEntity $source
+     * @param array $values
+     * @param string $accountType
+     * @param CardEntity|null $card
      * @return Entity
+     * @throws LogicException
      */
-    protected function create(Base\PublicEntity $source, array $values = [], CardEntity $card = null)
+    protected function create(Base\PublicEntity $source, array $values = [],  string $accountType, CardEntity $card = null)
     {
         $fundTransferAttempt = new Entity;
 
@@ -380,7 +268,7 @@ class Core extends Base\Core
 
         $fundTransferAttempt->source()->associate($source);
 
-        list($isFTS, $channel) = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType(), $card);
+        list($isFTS, $channel) = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType(), $accountType, $card);
 
         $defaultValues = [
             Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
@@ -489,6 +377,13 @@ class Core extends Base\Core
         $this->repo->saveOrFail($fta);
     }
 
+    /**
+     * To Update FTA and source Using incoming webhook from FTS
+     * 
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     */
     public function updateFundTransfer(array $input)
     {
         // TODO: should support bulk updates
@@ -599,7 +494,7 @@ class Core extends Base\Core
 
         $bankStatusCode = $fta->getBankStatusCode();
 
-        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode);
+        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode, $fta->getBankResponseCode());
 
         $ftaData = [
             'bank_account_id'   => $fta->getBankAccountId(),
@@ -843,5 +738,126 @@ class Core extends Base\Core
         {
             $fta->setCmsRefNo($info['cms_ref_no']);
         }
+    }
+
+
+    /**
+     *  It'll evaluate the given source and card details
+     * it'll provide the channel from which transfer has to be done
+     * and also whether to route it through FTS or not
+     * for different reasons. A single method should give us which path should be chosen
+     * use RazorX here for easy config
+     *
+     * TODO: refactor this section so that we don't have to use `shouldUseGateway` and `getChannelForTransfer`
+     *
+     * @param Base\PublicEntity $source
+     * @param string $sourceType
+     * @param string $accountType
+     * @param CardEntity|null $card
+     * @return array
+     * @throws LogicException
+     */
+    protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, string $accountType, CardEntity $card = null): array
+    {
+        $method = 'getChannelFor' . studly_case($sourceType);
+
+        if (method_exists($this, $method) === true)
+        {
+            return $this->{$method}($source, $accountType, $card);
+        }
+
+        throw new LogicException('Invalid Source Type for Channel');
+    }
+
+    protected function getChannelForPayout(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
+    {
+        $key = ConfigKey::PREFIX . 'fts_payout_' . strtolower($accountType);
+
+        $rampingEnabled = $this->getRampingStatus($source, $key);
+
+        if ($rampingEnabled === true)
+        {
+            if (empty($source->getChannel()) === false)
+            {
+                return [true, $source->getChannel()];
+            }
+            else
+            {
+                return [false, Settlement\Channel::YESBANK];
+            }
+        }
+
+        $isFTS = (in_array($source->getChannel(), Settlement\Channel::getFtsSupportedPayoutChannels(), true) === true)? true: false;
+
+        return [$isFTS, $source->getChannel()];
+    }
+
+    protected function getChannelForRefund(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
+    {
+        $iin = null;
+
+        if (empty($card) === false)
+        {
+            $iin = $card->iinRelation;
+        }
+
+        if (empty($iin) === false)
+        {
+            $issuer = $iin->getIssuer();
+
+            $networkCode = $iin->getNetworkCode();
+
+            $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
+
+            // Checking specifically for IMPS as IMPS refund should be sent to ICICI channel FTS
+            if ((in_array(Mode::IMPS, $supportedModes, true) === false) or
+                (in_array(Mode::UPI, $supportedModes, true) === true))
+            {
+                return [false, Settlement\Channel::YESBANK];
+            }
+        }
+
+        $rampingEnabled = $this->getRampingStatus($source);
+
+        if ($rampingEnabled === true)
+        {
+            return [true, Settlement\Channel::ICICI];
+        }
+
+        return [false, Settlement\Channel::YESBANK];
+    }
+
+    protected function getChannelForFundAccountValidation(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
+    {
+        if ($accountType === E::CARD)
+        {
+            throw new LogicException('Penny testing on card not supported via FTA flow');
+        }
+
+        // TODO: Need to refactor this and use razorx for ramping
+        $rampingEnabled = $this->getRampingStatus($source);
+
+        if ($rampingEnabled === true)
+        {
+            return [true, Settlement\Channel::ICICI];
+        }
+
+        return [false, Settlement\Channel::YESBANK];
+    }
+
+    protected function getRampingStatus(Base\PublicEntity $source, string $key = ConfigKey::FTS_TEST_MERCHANT)
+    {
+        $srcMerchantId = $source->getMerchantId();
+
+        $merchantList = $this->app['cache']->get($key);
+
+        $merchantIds = (empty($merchantList) === false) ? explode(',', $merchantList) : [];
+
+        if (in_array($srcMerchantId, $merchantIds, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

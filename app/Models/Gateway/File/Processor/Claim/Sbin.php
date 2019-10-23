@@ -42,6 +42,27 @@ class Sbin extends Base
         return $claims;
     }
 
+    // SBI wants claims for payments between 8pm to 8pm cycle
+    protected function fetchPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $begin = Carbon::createFromTimestamp($begin, Timezone::IST)
+                         ->subHours(4)
+                         ->getTimestamp();
+
+        $end = Carbon::createFromTimestamp($end, Timezone::IST)
+                       ->subHours(4)
+                       ->getTimestamp();
+
+        $claims = parent::fetchPaymentsToClaim($begin, $end, $statuses);
+
+        $claims = $claims->reject(function($claim)
+        {
+            return $claim->isEmandate() === true;
+        });
+
+        return $claims;
+    }
+
     protected function formatDataForFile($data)
     {
         $formattedData = [];

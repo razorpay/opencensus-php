@@ -11,6 +11,7 @@ use RZP\Models\Risk;
 use RZP\Services\ShieldClient;
 use RZP\Constants\Shield as ShieldConstants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Feature\Constants as Feature;
 
 class Shield
 {
@@ -129,6 +130,11 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_CATEGORY_CODE]  = (string) $merchant->getCategory();
         $payloadDetails[ShieldConstants::MERCHANT_RISK_THRESHOLD] = $merchant->getRiskThreshold();
         $payloadDetails[ShieldConstants::MERCHANT_WEBSITE]        = $merchant->merchantDetail->getWebsite();
+
+        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
+        {
+            $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
+        }
     }
 
     protected function populatePaymentDetails(Payment\Entity $payment, array & $payloadDetails)
@@ -167,6 +173,7 @@ class Shield
             case Payment\Method::EMI:
                 $card = $payment->card;
 
+                $payloadDetails[ShieldConstants::CARD_FP]           = $card->getGlobalFingerPrint();
                 $payloadDetails[ShieldConstants::CARD_IIN]          = $card->getIin();
                 $payloadDetails[ShieldConstants::CARD_NETWORK]      = $card->getNetworkCode();
                 $payloadDetails[ShieldConstants::CARD_TYPE]         = $card->getType();
@@ -187,7 +194,7 @@ class Shield
     {
         $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] = $this->request->header('Accept-Language');
 
-        $paymentAnalytics = $payment->getMetadata("payment_analytics");
+        $paymentAnalytics = $payment->getMetadata('payment_analytics');
 
         if (is_null($paymentAnalytics) === true)
         {

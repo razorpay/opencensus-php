@@ -10,7 +10,6 @@ use RZP\Models\User;
 use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -19,7 +18,6 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Contact\Service as ContactService;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 
 use Razorpay\Trace\Logger as Trace;
@@ -216,7 +214,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('merchant_payout_on_demand', $input);
 
-        //Here value true specifies payout on demand mode enabled
+        // Here value true specifies payout on demand mode enabled
         $input[Entity::TYPE] = Entity::ON_DEMAND;
 
         $payout = (new Payout\Core)->createPayoutToMerchant($input, $this->merchant);
@@ -238,8 +236,10 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
-        // Only allowed for Rx payouts, mandates account number
-        $this->processAccountNumber($input);
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
+
+        $merchantValidator->validateAndTranslateToAccountNumberForBankingIfApplicable($input);
 
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
 
@@ -290,33 +290,6 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
-    public function getQueuedPayoutsSummary()
-    {
-        $merchantId = $this->merchant->getId();
-
-        $currentBalance = $this->merchant->bankingBalance;
-
-        $queuedPayouts = $this->repo->payout->fetchQueuedPayouts([$merchantId]);
-
-        $totalAmount = $totalFees = 0;
-
-        foreach ($queuedPayouts as $payout)
-        {
-            $totalAmount += $payout->getAmount();
-
-            list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
-
-            $totalFees += $fees;
-        }
-
-        return [
-            'balance'       => $currentBalance,
-            'count'         => count($queuedPayouts),
-            'total_amount'  => $totalAmount,
-            'total_fees'    => $totalFees,
-        ];
-    }
-
     /**
      * Return a summary of workflows for RazorpayX dashboard consumption.
      *
@@ -361,16 +334,12 @@ class Service extends Base\Service
 
         if ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === true)
         {
-            $user = $this->auth->getUser();
-
-            $pending = $this->repo->payout->fetchSummaryOfPayoutsPendingOnUser($user, $this->merchant);
+            $pending = $this->getPendingPayoutsSummary();
         }
 
-        return [
-            'queued'    => $queued,
-            'pending'   => $pending,
-            'scheduled' => $scheduled,
-        ];
+        $completeSummary = $this->getCompleteSummary($pending, $queued, $scheduled);
+
+        return $completeSummary;
     }
 
     public function processDispatchForQueuedPayouts(array $input)
@@ -524,6 +493,127 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST, $payoutBatch->toArrayWithItems());
 
         return $payoutBatch->toArrayWithItems();
+    }
+
+    protected function getQueuedPayoutsSummary()
+    {
+        $queuedPayoutsSummary = [];
+
+        $merchantId = $this->merchant->getId();
+
+        $queuedPayouts = $this->repo->payout->fetchQueuedPayouts([$merchantId]);
+
+        $groupedQueuedPayouts = $queuedPayouts->groupBy(Entity::BALANCE_ID);
+
+        foreach ($groupedQueuedPayouts as $balanceId => $queuedPayouts)
+        {
+            $currentBalance = $queuedPayouts->first()->balance->getBalance();
+
+            $totalAmount = $totalFees = 0;
+
+            $bankingAccountId = $queuedPayouts->first()->bankingAccount->getPublicId();
+
+            foreach ($queuedPayouts as $payout)
+            {
+                $totalAmount += $payout->getAmount();
+
+                list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+                $totalFees += $fees;
+            }
+
+            $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED] = [
+                'balance'       => $currentBalance,
+                'count'         => count($queuedPayouts),
+                'total_amount'  => $totalAmount,
+                'total_fees'    => $totalFees,
+            ];
+        }
+
+        return $queuedPayoutsSummary;
+    }
+
+    protected function getPendingPayoutsSummary()
+    {
+        $user = $this->auth->getUser();
+
+        $pending = $this->repo->payout->fetchPayoutsPendingOnUser($user, $this->merchant);
+
+        $groupedPendingPayouts = $pending->groupBy(Entity::BALANCE_ID);
+
+        $pendingPayoutsSummary = [];
+
+        foreach ($groupedPendingPayouts as $balanceId => $payouts)
+        {
+            $bankingAccountId = $payouts->first()->bankingAccount->getPublicId();
+
+            $amount = 0;
+
+            foreach ($payouts as $payout)
+            {
+                $amount += $payout->getAmount();
+            }
+
+            $pendingPayoutsSummary[$bankingAccountId][Status::PENDING] = [
+                'count'         => count($payouts),
+                'total_amount'  => $amount
+            ];
+        }
+
+        return $pendingPayoutsSummary;
+    }
+
+    /**
+     * @param array $pending
+     * @param array $queued
+     * @param array $scheduled
+     * @return array
+     */
+    protected function getCompleteSummary(array $pending, array $queued, array $scheduled): array
+    {
+        $bankingAccountList = $this->merchant->activeBankingAccounts;
+
+        $completeSummary = [];
+
+        $allBankingAccounts = [];
+
+        foreach ($bankingAccountList as $bankingAccount)
+        {
+            $allBankingAccounts[$bankingAccount->getPublicId()] = $bankingAccount->balance->getBalance();
+        }
+
+        foreach ($allBankingAccounts as $bankingAccountId => $balance)
+        {
+            $completeSummary[$bankingAccountId]= [
+                Status::QUEUED =>   [
+                    'balance'       => $balance,
+                    'count'         => 0,
+                    'total_amount'  => 0,
+                    'total_fees'    => 0,
+                ],
+                Status::PENDING =>  [
+                    'count'         => 0,
+                    'total_amount'  => 0,
+                ],
+            ];
+        }
+
+        foreach ($pending as $bankingAccountId => $pendingSummary)
+        {
+            $completeSummary[$bankingAccountId] = array_merge($completeSummary[$bankingAccountId], $pendingSummary);
+        }
+
+        foreach ($queued as $bankingAccountId => $queuedSummary)
+        {
+            $completeSummary[$bankingAccountId] = array_merge($completeSummary[$bankingAccountId], $queuedSummary);
+        }
+
+        foreach ($scheduled as $bankingAccountId => $scheduledSummary)
+        {
+            $completeSummary[$bankingAccountId] = array_merge($completeSummary[$bankingAccountId], $scheduledSummary);
+        }
+
+        return $completeSummary;
     }
 
     protected function processEntryForPayoutForFundAccount(array $entry,

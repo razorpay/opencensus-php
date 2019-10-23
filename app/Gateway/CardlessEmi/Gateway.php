@@ -209,7 +209,7 @@ class Gateway extends Base\Gateway
         {
             $this->action = 'fetch_token';
 
-            $token = $this->fetchToken($input);
+            $token = $this->call(camel_case(Action::FETCH_TOKEN), $input);
 
             $this->action = 'authorize';
         }
@@ -369,23 +369,29 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $responseContent = $response->body;
+
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'response'    => $response->body,
+                'response'    => $responseContent,
                 'gateway'     => $this->gateway,
                 'provider'    => $this->provider,
                 'terminal_id' => $input[Constants\Entity::TERMINAL][Terminal\Entity::ID],
             ]);
 
-        $responseArray = $this->jsonToArray($response->body);
+        $responseArray = $this->jsonToArray($responseContent);
 
         $this->createGatewayPaymentEntity($responseArray);
 
         $this->checkRefundSuccess($responseArray);
 
+        $scroogeGatewayResponse = (is_string($responseContent) === false) ?
+            json_encode($responseContent) :
+            $responseContent;
+
         return [
-            Payment\Gateway::GATEWAY_RESPONSE  => $response,
+            Payment\Gateway::GATEWAY_RESPONSE  => $scroogeGatewayResponse,
             Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($responseArray)
         ];
     }
@@ -940,7 +946,13 @@ class Gateway extends Base\Gateway
              (strtolower($response[ResponseFields::STATUS]) !== self::SUCCESS_RESPONSE))
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
+                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+                '',
+                '',
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                ]);
         }
     }
 
@@ -1042,6 +1054,8 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VERIFY_REFUND);
 
+        $scroogeResponse = new Base\ScroogeResponse();
+
         $this->provider = $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER];
 
         if (in_array($this->provider, $this->nonVerifyRefundProviders, true) === true)
@@ -1052,23 +1066,27 @@ class Gateway extends Base\Gateway
 
             if (in_array($input[Constants\Entity::REFUND][Refund\Entity::ID], $processedRefunds, true) === true)
             {
-                return true;
+                return $scroogeResponse->setSuccess(true)
+                                       ->toArray();
             }
 
             if (in_array($input[Constants\Entity::REFUND][Refund\Entity::ID], $unprocessedRefunds, true) === true)
             {
-                return false;
+                return $scroogeResponse->setSuccess(false)
+                                       ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                       ->toArray();
             }
 
-            throw new Exception\LogicException(
-                'verify refund not implemented for provider');
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                                   ->toArray();
         }
 
         $this->provider = strtoupper($this->provider);
 
         $response = $this->sendVerifyRefundRequest($input);
 
-        return $this->checkRefundResponse($response);
+        return $this->checkVerifyRefundResponse($response, $scroogeResponse);
     }
 
     protected function sendVerifyRefundRequest($input)
@@ -1094,7 +1112,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function checkRefundResponse($response)
+    protected function checkVerifyRefundResponse($response, Base\ScroogeResponse &$scroogeResponse)
     {
         $this->trace->info(TraceCode::REFUND_VERIFY_RESPONSE, [
             'raw_response'   => $response,
@@ -1102,12 +1120,15 @@ class Gateway extends Base\Gateway
             'provider'       => $this->provider,
         ]);
 
-        $response = $this->jsonToArray($response);
+        $response = $this->jsonToArray($response->body);
+
+        $scroogeResponse->setGatewayVerifyResponse($response)
+                        ->setGatewayKeys($this->getGatewayData($response));
 
         if ((isset($response[ResponseFields::ERROR_CODE])) or
             ((isset($response[ResponseFields::STATUS])) and ($response[ResponseFields::STATUS] !== self::SUCCESS_RESPONSE)))
         {
-            $errorCode = ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED;
+            $errorCode = ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT;
 
             $responseCode = null;
 
@@ -1117,22 +1138,17 @@ class Gateway extends Base\Gateway
             {
                 $responseCode = $response[ResponseFields::ERROR_CODE];
 
-                $responseDescription = $response[ResponseFields::ERROR_DESCRIPTION];
-
                 $errorCode = $this->getInternalErrorCode($responseCode,
                     ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
-
             }
 
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $responseCode,
-                $responseDescription,
-                [
-                    'gateway'    => $this->gateway,
-                    'provider'   => $this->provider,
-                ]);
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode($errorCode)
+                                   ->toArray();
         }
+
+        return $scroogeResponse->setSuccess(true)
+                               ->toArray();
     }
 
     public function callback(array $input)

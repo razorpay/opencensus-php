@@ -30,6 +30,15 @@ class Payment extends Base
 
         $settledAt = $this->getSettledAtTimestamp();
 
+        $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
+
+        $this->raiseTxnSettledAtUpdateEvent($this->txn);
+    }
+
+    private function raiseTxnSettledAtUpdateEvent(Transaction\Entity $txn)
+    {
         $type = $this->txn->getType();
 
         $entity_id = $this->txn->getEntityId();
@@ -38,11 +47,14 @@ class Payment extends Base
 
         $transactionId = $this->txn->getId();
 
+        $merchantId = $this->txn->getMerchantId();
+
         $customProperties = [
             'type'              => $type,
             'entity_id'         => $entity_id,
             'channel'           => $channel,
             'transaction_id'    => $transactionId,
+            'merchant_id'       => $merchantId,
         ];
 
         $this->app['diag']->trackSettlementEvent(
@@ -50,10 +62,6 @@ class Payment extends Base
             null,
             null,
             $customProperties);
-
-        $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
-
-        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     private function checkAndSetTxnReconciliation()

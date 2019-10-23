@@ -57,6 +57,169 @@ return [
         ],
     ],
 
+    'testCreatePaymentLinkWithPaymentPageItem' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => NULL,
+                        'stock'             => NULL,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_id'       => User::MERCHANT_USER_ID,
+                'receipt'       => '00000000000001',
+                'amount'        => 100000,
+                'currency'      => 'INR',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name' =>  'amount',
+                            'description' => NULL,
+                            'amount' => 100000,
+                            'currency' => 'INR',
+                            'type' => 'payment_page',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => NULL,
+                        'stock' => NULL,
+                        'quantity_sold' => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePaymentLinkWithMultiplePaymentPageItem' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => NULL,
+                        'stock'             => NULL,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'donate',
+                            'description' => NULL,
+                            'amount'      => 500000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => NULL,
+                        'stock'             => 10000,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_id'       => User::MERCHANT_USER_ID,
+                'receipt'       => '00000000000001',
+                'amount'        => NULL,
+                'currency'      => 'INR',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name' =>  'amount',
+                            'description' => NULL,
+                            'amount' => 100000,
+                            'currency' => 'INR',
+                            'type' => 'payment_page',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => NULL,
+                        'stock' => NULL,
+                        'quantity_sold' => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name' =>  'donate',
+                            'description' => NULL,
+                            'amount' => 500000,
+                            'currency' => 'INR',
+                            'type' => 'payment_page',
+                        ],
+                        'mandatory' => FALSE,
+                        'image_url' => NULL,
+                        'stock' => 10000,
+                        'quantity_sold' => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePaymentLinkWithoutAmountOrCurrency' => [
         'request'  => [
             'url'     => '/payment_links',
@@ -91,7 +254,7 @@ return [
                         'total_amount_paid' => 0,
                         'min_purchase' => NULL,
                         'max_purchase' => NULL,
-                        'min_amount' => NULL,
+                        'min_amount' => 100,
                         'max_amount' => NULL,
                     ]
                 ],
@@ -531,6 +694,79 @@ return [
         'response' => [
             'content' => [
                 'exists' => false,
+            ],
+        ],
+    ],
+
+    'testCreateOrderForPaymentLink' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 10000,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'amount' => 10000,
+                ],
+                'line_items' => [
+                    [
+                        'item_id'  => 'item_10000000000ppi',
+                        'ref_id'   => 'ppi_10000000000ppi',
+                        'ref_type' => 'payment_page_item',
+                        'amount'   => 10000,
+                        'currency' => 'INR',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithMultipleItem' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 10000,
+                    ],
+                    [
+                        'payment_page_item_id' => 'ppi_10000000001ppi',
+                        'amount'               => 10000,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'amount' => 20000,
+                ],
+                'line_items' => [
+                    [
+                        'item_id'  => 'item_10000000000ppi',
+                        'ref_id'   => 'ppi_10000000000ppi',
+                        'ref_type' => 'payment_page_item',
+                        'amount'   => 10000,
+                        'currency' => 'INR',
+                    ],
+                    [
+                        'item_id'  => 'item_10000000001ppi',
+                        'ref_id'   => 'ppi_10000000001ppi',
+                        'ref_type' => 'payment_page_item',
+                        'amount'   => 10000,
+                        'currency' => 'INR',
+                    ]
+                ]
             ],
         ],
     ],

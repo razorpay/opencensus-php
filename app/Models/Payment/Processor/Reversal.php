@@ -146,6 +146,11 @@ trait Reversal
                                  ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
             }
 
+            if ($transfer->isFailed() === true)
+            {
+                continue;
+            }
+
             unset($reversal['transfer']);
 
             $this->mutex->acquireAndRelease(
@@ -221,9 +226,51 @@ trait Reversal
 
         if ($reverseAll === true)
         {
-            $transfers = $this->repo
-                              ->transfer
-                              ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
+                                                        $this->mode
+            );
+            $transfers = new Base\PublicCollection();
+
+            if (strtolower($variant) === 'on')
+            {
+                $transfersFromPayment = (new Transfer\Core())->getForPayment($payment->getId());
+
+                foreach ($transfersFromPayment as $transfer)
+                {
+                    if ($transfer->isFailed() === true and
+                        $transfer->getAttempts() < Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
+                    }
+
+                    $transfers->push($transfer);
+                }
+
+                if ($payment->hasOrder() === true)
+                {
+                    $orderId = $payment->getApiOrderId();
+
+                    $transfersFromOrder = (new Transfer\Core())->getForOrder($orderId);
+
+                    foreach ($transfersFromOrder as $transfer)
+                    {
+                        if ($transfer->isFailed() === true and
+                            $transfer->getAttempts() < Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
+                        {
+                            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
+                        }
+
+                        $transfers->push($transfer);
+                    }
+                }
+            }
+            else
+            {
+                $transfers = $this->repo
+                                  ->transfer
+                                  ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
+            }
 
             $refundType = $this->getPaymentRefundType($input);
 

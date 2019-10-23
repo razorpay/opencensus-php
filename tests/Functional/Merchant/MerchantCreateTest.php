@@ -97,6 +97,8 @@ class MerchantCreateTest extends TestCase
         $this->checkMethods();
 
         $this->checkMerchantDetails();
+
+        $this->checkOTPAuthDefaultFeature();
     }
 
     protected function createMerchant()
@@ -1279,5 +1281,16 @@ class MerchantCreateTest extends TestCase
         $this->testData[$testName]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
 
         $this->ba->proxyAuth();
+    }
+
+    protected function checkOTPAuthDefaultFeature()
+    {
+        foreach (['test', 'live'] as $mode)
+        {
+            $otpAuthFeature = $this->getDbEntity('feature', [], $mode);
+
+            $this->assertEquals(FeatureConstants::OTP_AUTH_DEFAULT, $otpAuthFeature->getName());
+        }
+
     }
 }

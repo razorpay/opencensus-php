@@ -84,7 +84,7 @@ class Core extends Base\Core
 
     /**
      * If submerchant config is present, returns it. Else returns associated partners config
-     * 
+     *
      * @param Application\Entity   $application
      * @param Merchant\Entity|null $subMerchant
      *
@@ -218,6 +218,15 @@ class Core extends Base\Core
         $appIds = $applications->getIds();
 
         return $this->repo->partner_config->fetchAllConfigForApps($appIds);
+    }
+
+    public function fetchAllDefaultConfigsByPartner(Merchant\Entity $partner): Base\PublicCollection
+    {
+        $configs = $this->fetchAllConfigsByPartner($partner);
+
+        return $configs->filter(function ($config) {
+            return ($config->isDefaultConfig() === true);
+        });
     }
 
     public function fetchAllEnabledConfigGroupsByPartner(Merchant\Entity $merchant)

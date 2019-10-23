@@ -12,8 +12,27 @@ use RZP\Gateway\Mozart\NetbankingYesb\ReconFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
+        $reconStatus = $this->getReconPaymentStatus($row);
+
+        if ($reconStatus === Status::FAILED)
+        {
+            $this->setFailUnprocessedRow(false);
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'payment_id' => $row[ReconFields::PAYMENT_ID] ?? null,
+                    'gateway'    => $this->gateway
+                ]);
+
+            return null;
+        }
+
         return $row[ReconFields::PAYMENT_ID] ?? null;
     }
 

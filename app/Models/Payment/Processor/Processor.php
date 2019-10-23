@@ -308,8 +308,6 @@ class Processor
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PAYMENT_PROCESSING_ERROR);
-
             $payment = $payment ?? null;
 
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
@@ -1827,7 +1825,20 @@ class Processor
                     $this->persistCardDetails($gateway, $action, $gatewayData);
                 }
 
-                $gatewayData['cps_route'] = true;
+                //Temp changes for yesb as we need to route only authorize and verify to cps not callback.
+                if (($action === Action::CALLBACK) and ($gateway === Payment\Gateway::NETBANKING_YESB))
+                {
+                    $gatewayData['cps_route'] = false;
+
+                    $this->trace->info(TraceCode::GATEWAY_CPS_SWITCH_ROUTE_CALLBACK, [
+                        'payment_id'             => $this->payment->getId(),
+                        'gateway_cps_route'      => false,
+                    ]);
+                }
+                else
+                {
+                    $gatewayData['cps_route'] = true;
+                }
             }
             // Else if this payment was earlier authorized by CPS then disable the cps_route flag
             else if ($action !== Action::AUTHORIZE)
@@ -2309,8 +2320,12 @@ class Processor
 
         if ($invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
         {
+            $paymentNotes = $payment->getNotes()->toArray();
 
-            $payment->setNotes($invoice->getNotes()->toArray());
+            if (empty($paymentNotes) === true)
+            {
+                $payment->setNotes($invoice->getNotes()->toArray());
+            }
         }
     }
 

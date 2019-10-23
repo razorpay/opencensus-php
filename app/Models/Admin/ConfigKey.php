@@ -42,8 +42,12 @@ class ConfigKey
     const HITACHI_NEW_URL_ENABLED               = self::PREFIX . 'hitachi_new_url_enabled';
     const FTA_CHANNELS                          = self::PREFIX . 'fta_channels';
     const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
+    const FTS_PAYOUT_VPA                        = self::PREFIX . 'fts_payout_vpa';
+    const FTS_PAYOUT_CARD                       = self::PREFIX . 'fts_payout_card';
+    const FTS_TRANSFER_SLA                      = self::PREFIX . 'fts_transfer_sla';
     const FTS_TEST_MERCHANT                     = self::PREFIX . 'fts_test_merchant';
     const FTS_ROUTE_PERCENTAGE                  = self::PREFIX . 'fts_request_percentage';
+    const FTS_PAYOUT_BANK_ACCOUNT               = self::PREFIX . 'fts_payout_bank_account';
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
@@ -53,7 +57,8 @@ class ConfigKey
     const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
     const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
-
+    const CITI_CHANNEL_PAYOUT_MIDS              = self::PREFIX . 'citi_channel_payout_mids';
+    const ICICI_CHANNEL_PAYOUT_MIDS             = self::PREFIX . 'icici_channel_payout_mids';
 
     const ATOS_TID_RANGE_LIST                   = self::PREFIX . 'atos_tid_range_list';
 
@@ -91,7 +96,12 @@ class ConfigKey
         self::PAYSECURE_BLACKLISTED_MCCS,
         self::DOWNTIME_THROTTLE,
         self::RX_SLA_FOR_IMPS_PAYOUT,
-        self::ATOS_TID_RANGE_LIST
+        self::ATOS_TID_RANGE_LIST,
+        self::FTS_PAYOUT_VPA,
+        self::FTS_PAYOUT_CARD,
+        self::FTS_PAYOUT_BANK_ACCOUNT,
+        self::CITI_CHANNEL_PAYOUT_MIDS,
+        self::ICICI_CHANNEL_PAYOUT_MIDS,
     ];
 
     public static function isSensitive(string $key)

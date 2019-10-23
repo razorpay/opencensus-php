@@ -492,6 +492,16 @@ class Pricing extends Base
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
             ],
+            [
+                'id'             => '1zE31zbyeGCTd6',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'transfer',
+                'percent_rate'   => 20,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
         ];
 
         $this->addPricingRulesToDb($rows);
@@ -922,6 +932,16 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function createDefaultPartnerCommissionPlan()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getPartnerCommissionPlanData());
+    }
+
+    public function createDefaultPlanForSubmerchantsOfOnboardedPartners()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getSubmerchantPricingOfOnboardedPartners());
     }
 
     protected function addPricingRulesToDb($rows)

@@ -823,8 +823,6 @@ class HitachiGatewayTest extends TestCase
 
     public function testAuthenticationGatewayExpressPayDisabled()
     {
-        $this->fixtures->merchant->addFeatures('headless');
-
         $this->fixtures->iin->create([
             'iin'     => '556763',
             'country' => 'IN',
@@ -1257,5 +1255,98 @@ class HitachiGatewayTest extends TestCase
         {
             self::assertNotNull($e);
         }
+    }
+
+    public function testBqrPaymentAndRefund()
+    {
+        $request = $this->testData['testBqrPayment'];
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->t1 = $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->t3 = $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
+        $content = $this->getMockServer()->getBharatQrCallback($qrCodeId);
+
+        // This method tests if the request that contains plain text as input is getting handled properly
+        $request = [
+            'url'       => '/payment/callback/bharatqr/hitachi',
+            'raw'       => http_build_query($content),
+            'method'    => 'post',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('hitachi', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+
+        // Notes from the VA are copied over to the payment
+        $this->assertArrayHasKey('notes', $payment);
+        $this->assertArrayHasKey('key', $payment['notes']);
+        $this->assertEquals('value', $payment['notes']['key']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Random Name', $card['name']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('refunded', $payment['status']);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
+    }
+
+    protected function createVirtualAccount()
+    {
+        $this->ba->privateAuth();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankAccount = $response['receivers'][0];
+
+        return $bankAccount;
+    }
+
+    protected function parseResponseXml(string $response): array
+    {
+        return (array) simplexml_load_string(trim($response));
     }
 }

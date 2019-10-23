@@ -2,13 +2,17 @@
 
 namespace RZP\Tests\Functional\Merchant\Account;
 
+use Mail;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Feature\Constants as FName;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class PartnerAccountTest extends TestCase
@@ -31,21 +35,26 @@ class PartnerAccountTest extends TestCase
 
     public function testCreateAccountForCompletelyFilledRequest()
     {
-        $this->setUpNonPurePlatformPartner();
+        Mail::fake();
+
+        $this->setUpPartnerWithKycHandled();
 
         $this->startTest();
+
+        // check that user creation email is not sent to submerchant from rzp
+        Mail::assertNotQueued(CreateSubMerchantAffiliate::class);
     }
 
     public function testCreateAccountForThinRequest()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $this->startTest();
     }
 
     public function testCreateAccountWithDuplicateEmail()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -57,7 +66,7 @@ class PartnerAccountTest extends TestCase
 
     public function testCreateAccountWithInvalidMCCCode()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -69,7 +78,7 @@ class PartnerAccountTest extends TestCase
 
     public function testCreateAccountWithoutRegisteredAddress()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -81,6 +90,8 @@ class PartnerAccountTest extends TestCase
 
     public function testCreateAccountForInvalidPartner()
     {
+        $this->fixtures->merchant->addFeatures([FName::SUBMERCHANT_ONBOARDING]);
+
         $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::RESELLER);
 
         $this->ba->privateAuth();
@@ -93,7 +104,7 @@ class PartnerAccountTest extends TestCase
      */
     public function testEditAccount()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
 
@@ -111,7 +122,7 @@ class PartnerAccountTest extends TestCase
      */
     public function testEditThinAccount()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
 
@@ -126,7 +137,7 @@ class PartnerAccountTest extends TestCase
 
     public function testEditPhoneNumber()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
 
@@ -141,7 +152,7 @@ class PartnerAccountTest extends TestCase
 
     public function testEditProfileData()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
 
@@ -156,7 +167,7 @@ class PartnerAccountTest extends TestCase
 
     public function testFetchAccount()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData['testCreateAccountForThinRequest'];
 
@@ -171,7 +182,7 @@ class PartnerAccountTest extends TestCase
 
     public function testFetchAllAccounts()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
 
@@ -196,7 +207,7 @@ class PartnerAccountTest extends TestCase
 
     public function testEnableAccountAction()
     {
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpPartnerWithKycHandled();
 
         // creating account
         $testData = $this->testData['testCreateAccountForThinRequest'];
@@ -218,6 +229,33 @@ class PartnerAccountTest extends TestCase
         $this->startTest($testData);
     }
 
+    // Partner should be able to create account using partner Auth as well, if it does not send X-Razorpay-Account
+    public function testCreateAccountWithPartnerAuth()
+    {
+        $this->setUpPartnerAuthWithoutSubMerchantAccountId();
+
+        $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
+
+        $acc = $this->runRequestResponseFlow($testData);
+
+        $merchant = (new Merchant\Repository)->getPartnerMerchantFromSubMerchantId(substr($acc['id'],4));
+
+        $this->assertEquals($merchant->getId(), '10000000000000');
+    }
+
+    protected function setUpPartnerWithKycHandled()
+    {
+        $this->setUpNonPurePlatformPartner();
+
+        $features = [
+            FName::NO_COMM_WITH_SUBMERCHANTS,
+            FName::KYC_HANDLED_BY_PARTNER,
+            FName::SUBMERCHANT_ONBOARDING,
+        ];
+
+        $this->fixtures->merchant->addFeatures($features);
+    }
+
     protected function setUpNonPurePlatformPartner()
     {
         $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
@@ -235,5 +273,23 @@ class PartnerAccountTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+    }
+
+    protected function setUpPartnerAuthWithoutSubMerchantAccountId()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $features = [
+            FName::KYC_HANDLED_BY_PARTNER,
+            FName::SUBMERCHANT_ONBOARDING,
+        ];
+
+        $this->fixtures->merchant->addFeatures($features);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
     }
 }

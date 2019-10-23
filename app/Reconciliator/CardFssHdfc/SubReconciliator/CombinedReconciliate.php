@@ -8,6 +8,10 @@ use RZP\Reconciliator\CardFssHdfc\Reconciliate as CardFssReconciliate;
 
 class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
+    const BLACKLISTED_COLUMNS = [
+        PaymentReconciliate::COLUMN_CARD_HOLDER_NAME,
+    ];
+
     //
     // This is needed to identify if the row is payment or refund.
     //

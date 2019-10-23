@@ -50,6 +50,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
+ * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
  */
@@ -169,6 +170,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
+    const BILLING_ADDRESS       = 'billing_address';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';

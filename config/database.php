@@ -229,7 +229,7 @@ return array(
         'default' => [
             'host'     => env('REDIS_LABS_HOST'),
             'port'     => env('REDIS_LABS_PORT'),
-            'timeout'  => 0.5,
+            'timeout'  => 1,
             'read_write_timeout' => 1,
             'options'  => [
                 'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],

@@ -84,6 +84,12 @@ class Service extends Base\Service
 
     public function deletePlanRule($planId, $ruleId)
     {
+        $this->trace->info(TraceCode::PRICING_PLAN_RULE_DELETE_ATTEMPT,
+                            [
+                                'plan_id'    => $planId,
+                                'rule_id'    => $ruleId,
+                            ]);
+
         $flag = $this->repo->pricing->deletePlanRule($planId, $ruleId);
 
         if ($flag === true)
@@ -109,6 +115,13 @@ class Service extends Base\Service
 
     public function deletePlanRuleForce($planId, $ruleId)
     {
+        $this->trace->info(TraceCode::PRICING_PLAN_RULE_DELETE_ATTEMPT,
+                            [
+                                'plan_id'    => $planId,
+                                'rule_id'    => $ruleId,
+                                'force'      => true,
+                            ]);
+
         $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
 
         $this->app['workflow']

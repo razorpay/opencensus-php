@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Partner\Commission;
 
+use RZP\Services\Mock\HarvesterClient;
 use RZP\Models\Pricing\Calculator\Base;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;

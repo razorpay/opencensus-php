@@ -10,6 +10,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Jobs\CorePaymentServiceSync;
 
 
 class UpiAxisGatewayTest extends TestCase
@@ -319,6 +320,10 @@ class UpiAxisGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNull($upi->getNpciReferenceId());
+
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
@@ -328,8 +333,42 @@ class UpiAxisGatewayTest extends TestCase
 
         $payment->reload();
 
+        $upi->reload();
+
         $this->assertSame(0, $payment->verified);
         $this->assertNotNull($payment->getVerifyAt());
+
+        $this->assertNotNull($upi->getNpciReferenceId());
+        $this->assertNotNull($upi->getVpa());
+    }
+
+    public function testLateAuthorization()
+    {
+        $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNull($upi->getNpciReferenceId());
+
+        $this->authorizedFailedPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertTrue($payment->isLateAuthorized());
+        $this->assertSame('714513318376', $payment->getReference16());
+
+        $upi->reload();
+
+        $this->assertSame('714513318376', $upi->getNpciReferenceId());
+        $this->assertSame('vishnu@icici', $upi->getVpa());
+        $this->assertSame('icici', $upi->provider);
+        $this->assertSame('ICIC', $upi->bank);
+        $this->assertNotNull($upi->getNpciTransactionId());
     }
 
     public function testIntentPayment()
@@ -1050,5 +1089,124 @@ class UpiAxisGatewayTest extends TestCase
                 'callBacktxnId'             => 'AXIS00090439839'
             ],
             $response);
+    }
+
+    public function testCpsGatewayEntitySync()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+        $gatewayData = [
+            'mode'                => 'test',
+            'timestamp'           => 294832,
+            'payment_id'          => $payment->getId(),
+            'gateway'             => 'upi_axis',
+            'input'               => [
+                'payment'  => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                    'gateway'  => 'upi_axis',
+                ],
+                'terminal' => [
+                    'gateway_acquirer' => 'axis',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction' => [
+                'payment_id'  => $payment->getId(),
+                'action'      => 'authorize',
+                'amount'      => 50000,
+                'result'      => 'Accepted Collect Request',
+                'status'      => 'collect_request_successful',
+                'type'        => 'collect',
+                'bank'        => '',
+                'expiry_time' => 5,
+                'code'        => '00',
+                'vpa'         => 'razorpay@hdfc',
+            ],
+        ];
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+        $cpsSync->handle();
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertEquals($upi['status_code'], '00');
+        $this->assertEquals($upi['vpa'], 'razorpay@hdfc');
+        $this->assertEquals($upi['payment_id'], $payment->getId());
+        $this->assertEquals($upi['amount'], 50000);
+        $this->assertEquals($upi['expiry_time'], 5);
+    }
+
+    public function testCpsGatewayEntitySyncWithoutAmount()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+        $gatewayData = [
+            'mode'                => 'test',
+            'timestamp'           => 294832,
+            'payment_id'          => $payment->getId(),
+            'gateway'             => 'upi_axis',
+            'input'               => [
+                'payment'  => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                    'gateway'  => 'upi_axis',
+                ],
+                'terminal' => [
+                    'gateway_acquirer' => 'axis',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction' => [
+                'payment_id'  => $payment->getId(),
+                'action'      => 'authorize',
+                'result'      => 'Accepted Collect Request',
+                'status'      => 'collect_request_successful',
+                'type'        => 'collect',
+                'bank'        => '',
+                'expiry_time' => 5,
+                'code'        => '00',
+                'vpa'         => 'razorpay@hdfc',
+            ],
+        ];
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+        $cpsSync->handle();
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertNull($upi);
+    }
+
+    public function testCpsGatewayEntitySyncWithoutPaymentId()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+        $gatewayData = [
+            'mode'                => 'test',
+            'timestamp'           => 294832,
+            'payment_id'          => $payment->getId(),
+            'gateway'             => 'upi_axis',
+            'input'               => [
+                'payment'  => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                    'gateway'  => 'upi_axis',
+                ],
+                'terminal' => [
+                    'gateway_acquirer' => 'axis',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction' => [
+                'action'      => 'authorize',
+                'amount'      => 500000,
+                'result'      => 'Accepted Collect Request',
+                'status'      => 'collect_request_successful',
+                'type'        => 'collect',
+                'bank'        => '',
+                'expiry_time' => 5,
+                'code'        => '00',
+                'vpa'         => 'razorpay@hdfc',
+            ],
+        ];
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+        $cpsSync->handle();
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertNull($upi);
     }
 }

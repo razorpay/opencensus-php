@@ -71,6 +71,7 @@ final class Metric
 
     const CHANNEL           = 'channel';
     const MODE              = 'mode';
+    const BALANCE_TYPE      = 'balance_type';
 
     // ------ Dimension values for failures ------
 
