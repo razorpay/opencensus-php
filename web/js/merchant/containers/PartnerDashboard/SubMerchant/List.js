@@ -23,7 +23,6 @@ import {
   email as emailColumn,
 } from 'rzp/ui/item/pair';
 
-import Onboarding from './../Onboarding';
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
 import {
@@ -196,9 +195,6 @@ export default class SubMerchantsList extends ListContainer {
       ];
     }
 
-    if (user.isPartnerIntent()) {
-      return <Onboarding />;
-    }
     return (
       <tabbed-container>
         <header>

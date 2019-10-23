@@ -186,7 +186,7 @@ export default class Sidebar extends Component {
                   config={config}
                 />
 
-                {user.isPartner() || user.isSignUpPartnerIntent() ? (
+                {user.isPartner() ? (
                   <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} />
                 ) : (
                   <MerchantNavLinks {...merchantNavLinkProps} />
