@@ -480,7 +480,7 @@ class Core extends Base\Core
         {
             $fta->merchant->setHoldFunds(true);
 
-            $fta->merchant->setHoldFunds('bank account/transaction was rejected from bank');
+            $fta->merchant->setHoldFundsReason('bank account/transaction was rejected from bank');
 
             $this->repo->saveOrFail($fta->merchant);
         }

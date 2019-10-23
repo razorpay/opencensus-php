@@ -1770,6 +1770,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setHoldFundsReason(string $reason)
+    {
+        $this->setAttribute(self::HOLD_FUNDS_REASON, $reason);
+    }
+
     public function isReceiptEmailsEnabled()
     {
         return $this->getAttribute(self::RECEIPT_EMAIL_ENABLED);
