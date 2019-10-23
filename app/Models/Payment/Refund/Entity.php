@@ -88,10 +88,13 @@ class Entity extends Base\PublicEntity
     // Table Attributes created for Instant refunds
     const SPEED_REQUESTED        = 'speed_requested';
     const SPEED_PROCESSED        = 'speed_processed';
-    const MODE_REQUESTED         = 'mode_requested';
     const SPEED_DECISIONED       = 'speed_decisioned';
     const FEE                    = 'fee';
     const TAX                    = 'tax';
+
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
+    const MODE_REQUESTED         = 'mode_requested';
 
     const MODE                   = 'mode';
     const SPEED                  = 'speed';
@@ -443,6 +446,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SPEED_REQUESTED);
     }
 
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
     public function getModeRequested()
     {
         return $this->getAttribute(self::MODE_REQUESTED);
@@ -622,6 +627,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SPEED_REQUESTED, $speedRequested);
     }
 
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
     public function setModeRequested(string $modeRequested)
     {
         $this->setAttribute(self::MODE_REQUESTED, $modeRequested);

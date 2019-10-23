@@ -61,4 +61,9 @@ class Constants
     const CARD_TYPE     = 'card_type';
     const NETWORK_CODE  = 'network_code';
     const AMOUNT        = 'amount';
+
+    /**
+     * Instant Refunds mode level pricing/decisioning razorx experiments related constants
+     */
+    const RAZORX_VARIANT_ON = 'on';
 }

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use App;
 use Mail;
 use ApiResponse;
 
@@ -2748,61 +2747,81 @@ trait Refund
 
     protected function setRefundModeRequested(Payment\Entity $payment, RefundEntity &$refund)
     {
-        $app   = App::getFacadeRoot();
+        // Using RazorX to control use of mode decisioning - call to scrooge during launch phase
+        $variant = $this->app->razorx->getTreatment(
+            $payment->getMerchantId(),
+            Merchant\RazorxTreatment::INSTANT_REFUND_MODES,
+            $this->mode
+        );
 
-        $queryParams = [
-            RefundConstants::METHOD => $payment->getMethod(),
-            RefundConstants::AMOUNT => $payment->getAmount()
-        ];
-
-        if ($payment->getMethod() === Payment\Method::CARD)
+        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
         {
-            if ($payment->hasCard() === true)
+            //
+            // Calling Scrooge to fetch mode for a refund.
+            // Scrooge calculates the mode based on the mode configuration defined by product/merchant in consultation
+            // with support for modes from FTA/FTS
+            //
+
+            $queryParams = [
+                RefundConstants::METHOD => $payment->getMethod(),
+                RefundConstants::AMOUNT => $payment->getAmount()
+            ];
+
+            if ($payment->getMethod() === Payment\Method::CARD)
             {
-                $networkCode = $payment->card->getNetworkCode();
+                //
+                // The following checks have already been made in isInstantRefundSupported - keeping these for sanity.
+                // Therefore, Scrooge must not send a validation error.
+                //
 
-                $queryParams[RefundConstants::NETWORK_CODE] = $networkCode;
-
-                $iin = $payment->card->iinRelation;
-
-                if ($iin !== null)
+                if ($payment->hasCard() === true)
                 {
-                    $cardType = strtolower($iin->getType());
+                    $networkCode = $payment->card->getNetworkCode();
 
-                    $cardIssuer = $iin->getIssuer();
+                    $queryParams[RefundConstants::NETWORK_CODE] = $networkCode;
 
-                    $queryParams[RefundConstants::CARD_TYPE] = $cardType;
-                    $queryParams[RefundConstants::ISSUER] = $cardIssuer;
+                    $iin = $payment->card->iinRelation;
+
+                    if ($iin !== null)
+                    {
+                        $cardType = strtolower($iin->getType());
+
+                        $cardIssuer = $iin->getIssuer();
+
+                        $queryParams[RefundConstants::CARD_TYPE] = $cardType;
+                        $queryParams[RefundConstants::ISSUER] = $cardIssuer;
+                    }
                 }
             }
-        }
 
-        $scroogeResponse = $app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
+            $scroogeResponse = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
 
-        $scroogeResponseCode = $scroogeResponse[RefundConstants::RESPONSE_CODE];
+            $scroogeResponseCode = $scroogeResponse[RefundConstants::RESPONSE_CODE];
 
-        if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
-        {
-            $scroogeResponseBody = $scroogeResponse[RefundConstants::RESPONSE_BODY];
-
-            $mode =
-                (empty($scroogeResponseBody[RefundConstants::MODE]) === false) ? $scroogeResponseBody[RefundConstants::MODE] : '';
-
-            $responseStatus =
-                (empty($scroogeResponseBody[RefundConstants::RESPONSE_STATUS]) === false) ? $scroogeResponseBody[RefundConstants::RESPONSE_STATUS] : false;
-
-            if ($responseStatus === true)
+            if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
             {
-                $refund->setModeRequested($mode);
+                $scroogeResponseBody = $scroogeResponse[RefundConstants::RESPONSE_BODY];
+
+                $mode =
+                    (empty($scroogeResponseBody[RefundConstants::MODE]) === false) ? $scroogeResponseBody[RefundConstants::MODE] : '';
+
+                $responseStatus =
+                    (empty($scroogeResponseBody[RefundConstants::RESPONSE_STATUS]) === false) ? $scroogeResponseBody[RefundConstants::RESPONSE_STATUS] : false;
+
+                if ($responseStatus === true)
+                {
+                    $refund->setModeRequested($mode);
+                }
+                else
+                {
+                    $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
+                }
             }
             else
             {
+                // If Scrooge returns a non 200 response, we are decisioning the refund speed to normal
                 $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
             }
-        }
-        else
-        {
-            $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
         }
     }
 }
