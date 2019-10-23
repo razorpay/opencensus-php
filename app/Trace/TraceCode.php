@@ -2151,14 +2151,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
     const SMART_ROUTING_TERMINALS_COUNT_IS_ZERO                 = 'SMART_ROUTING_TERMINALS_COUNT_IS_ZERO';
 
-    // Doppler service
-    const DOPPLER_SERVICE_SNS_PUBLISH_FAILED                    = 'DOPPLER_SERVICE_SNS_PUBLISH_FAILED';
-
     /*
      * Trace codes for PowerWallet
      */
-    const PAYMENT_POWER_WALLET_INITIATED                        = 'PAYMENT_POWER_WALLET_INITIATED';
-    const PAYMENT_POWER_WALLET_TOPUP                            = 'PAYMENT_POWER_WALLET_TOPUP';
+    const PAYMENT_POWER_WALLET_INITIATED            = 'PAYMENT_POWER_WALLET_INITIATED';
+    const PAYMENT_POWER_WALLET_TOPUP                = 'PAYMENT_POWER_WALLET_TOPUP';
 
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';
     const PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY                 = 'PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY';
