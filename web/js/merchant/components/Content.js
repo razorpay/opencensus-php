@@ -24,7 +24,7 @@ import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-
+import Onboarding from './../containers/PartnerDashboard/Onboarding/index';
 import ErrorBoundary from 'common/ErrorBoundary';
 
 import {
@@ -131,6 +131,10 @@ export default class Content extends Component {
 
   getBaseView = () => {
     const { user } = this.props;
+    if (user.isPartnerIntent()) {
+      return <Onboarding />;
+    }
+
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>

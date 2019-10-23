@@ -1,0 +1,147 @@
+.partner-onboarding-base-screen
+    min-height:403px;
+    border-radius: 4px;
+    background: #FEFEFF;
+    background-repeat:no-repeat;
+    background-size:603px;
+    background-position: top 0 right 0%;
+    font-family: Lato;
+    font-style: normal;
+    padding: 50px;
+    .partner-onbr-info
+      height: 360px;
+      p
+        font-size: 14px;
+    .title
+      font-weight: bold;
+      font-size: 24px;
+      line-height: 29px;
+      color: #57666E;
+    .line-box
+      background-color: #fff;
+      border-radius: 2px;
+      border-radius: 2px;
+      border: solid 1px;
+      border-left: 4px solid;
+      padding: 15px 0px 15px 10px;
+      margin-top: 20px;
+      list-style-type: none;
+      font-size: 14px;
+      line-height: 20px;
+      color: #57666e;      
+    .brd-primary
+      border-color: rgba(46, 203, 140, 0.7);
+      border-left-color:rgb(63, 214, 154);
+    .info
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 22px;
+    .info-green
+      color: #3FD69A;
+    .info-grey
+      color: #57666E;
+    .info-blue
+      color:#518FF0;
+     .options-group
+       margin-top:21px;
+       div.value
+         height: 102px;
+         background: #FFFFFF;
+         border: 1px solid #D6D6D6;
+         box-sizing: border-box;  
+         padding:20px;
+         display:flex;
+         align-content:center;
+         cursor: pointer;
+       div.value:hover
+         background: rgba(81, 143, 240, 0.02);
+       div.value.active
+        background: rgba(81, 143, 240, 0.05);
+        border-color: #518FF0;
+        border-left: solid 4px #518FF0;
+        padding-left:17px;
+
+        div.check i 
+          color:#518FF0;
+        .info-grey
+           color:#518FF0;
+      div.check
+        flex:1;
+        align-self:center;
+        i
+          font-size: 18px;
+          color: #D9D9D9;
+       .no-bottom-border
+          border-bottom-width:0px !important;
+       .no-top-border
+          border-top-color: transparent;
+          border-top-width:1px !important;
+      .tnc-box
+        background: #FFFFFF;
+        border: 1.8px solid #EBEBFD;
+        box-sizing: border-box;
+        border-radius: 4px;
+        padding:10px 17px 10px;
+        max-height: 285px;
+        overflow-y: scroll;
+        margin-top:22px;
+        ul ul, ol ul, ul ol, ol ol
+          margin-bottom: 0;
+          margin-left: -45px;
+        ol ol ul li
+          margin-left: 0px;
+        table
+          margin-left:-25px;
+    .slide-controller
+      display:flex;
+      align-items:center;
+      div
+        flex:1;
+        justify-content: space-between;
+      .SliderDots
+          text-align: left;
+      .slide-nav-btns
+        float: right;
+      .slider-btn
+        font-family: Lato;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 17px;
+        width: 100px;
+        display: inline;
+      .slider-btn.next
+        color: #FFFFFF;
+        background: #518FF0;
+        border: 1px solid #3B80EE;
+        box-sizing: border-box;
+        border-radius: 2px;
+        i
+          padding:2px;
+          line-height: 8px;
+      .slider-btn.back 
+        color: #518FF0;
+@media (min-width: 900px) 
+  .partner-onboarding-base-screen
+    min-width:850px;
+    background-image:url('assets/onboarding/prt-bkg.png')
+    .partner-onbr-info
+      width: 50%;
+  .slide-controller-wrapper
+    width:50%;
+@media  (min-width: 320px) and (max-width: 1024px)
+ .partner-onboarding-base-screen
+    width:80vw;
+    
+  .slide-controller-wrapper
+    .slide-controller
+      display: block;
+      div
+        display: inline-block;
+@media  (min-width: 320px) and (max-width: 600px)
+ .partner-onbr-info
+    width:100%;
+ .slide-controller-wrapper
+    width: 100%;
+
+    
