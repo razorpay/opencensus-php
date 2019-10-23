@@ -70,6 +70,24 @@ return [
         'mock'      => env('MOZART_MOCK', false),
         'url'       => env('MOZART_URL'),
         'password'  => env('MOZART_PASSWORD'),
+
+        'test'  =>  [
+            'mock'      => env('MOZART_TEST_MOCK', false),
+            'url'       => env('MOZART_TEST_URL'),
+            'password'  => env('MOZART_TEST_PASSWORD'),    
+        ],
+        
+        'live'  =>  [
+            'mock'      => env('MOZART_LIVE_MOCK', false),
+            'url'       => env('MOZART_LIVE_URL'),
+            'password'  => env('MOZART_LIVE_PASSWORD'),    
+        ]
+    ],
+
+    'express' => [
+        'mock'      => env('EXPRESS_MOCK', false),
+        'url'       => env('EXPRESS_URL'),
+        'password'  => env('EXPRESS_PASSWORD'),
     ],
 
     'raven' => [
@@ -114,6 +132,10 @@ return [
         'cps'=> [
             'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
             'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
+        ],
+        'adminapi'=> [
+            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY' ),
+            'password' => env('GOVERNOR_ADMINAPI_SERVICE_SECRET'),
         ],
         'url'       => env('GOVERNOR_LIVE_URL'),
     ],
@@ -335,6 +357,11 @@ return [
         'mock'      => env('SMART_ROUTING_MOCK',false),
         'username'  => env('SMART_ROUTING_USERNAME'),
         'password'  => env('SMART_ROUTING_PASSWORD')
+    ],
+
+    'doppler' => [
+        'mock'      => env('DOPPLER_MOCK'),
+        'topic'     => env('DOPPLER_SNS_TOPIC')
     ],
 
     'non_blocking_http' => [

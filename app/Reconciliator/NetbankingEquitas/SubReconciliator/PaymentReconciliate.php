@@ -12,6 +12,8 @@ use RZP\Reconciliator\NetbankingEquitas\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     public function getPaymentId(array $row)
     {
         return $row[Constants::GATEWAY_REFERENCE_NUMBER] ?? null;

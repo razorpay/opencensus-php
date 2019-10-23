@@ -193,7 +193,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
-
+    const BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL                              = 'Invalid mode sent for the payout';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
@@ -217,6 +217,8 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS                             = 'Merchant email already exists';
     const BAD_REQUEST_MERCHANT_INVALID_MCC_CODE                                 = 'Invalid mcc code';
+    const BAD_REQUEST_INVALID_POA_VERIFICATION_STATUS_CHANGE                    = 'Invalid poa verification status change ';
+    const BAD_REQUEST_INVALID_BANK_DETAIL_VERIFICATION_STATUS_CHANGE            = 'Invalid bank detail verification status change';
     const BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED                     = 'Registered address is required';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED                           = 'The merchant funds are already released';
@@ -591,6 +593,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE                    = 'The linked account does not have sufficient balance to process a reversal.';
     const BAD_REQUEST_LA_TRANSFER_REVERSAL_PERMISSION_MISSING                   = 'The linked account does not have permission to reverse a transfer';
     const BAD_REQUEST_TRANSFER_FOR_LA_REVERSAL_INVALID                          = 'The transfer can not be reversed by the linked account';
+    const BAD_REQUEST_ORDER_TRANSFER_ENTITIES_NOT_SET                           = 'Order transfer entities provided are invalid or not set';
 
     const BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED                            = 'The hold attributes cannot be modified as the amount has already been settled to your account.';
 
@@ -634,6 +637,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY                            = 'Merchant handle must be in uppercase.';
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
+    const BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED                           = 'Business Name is required';
+    const BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED                                = 'PAN Name is required';
+    const BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY                             = 'We don\'t support this business category';
     const BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE                                 = 'Invalid File format. Only pdf, png and jpg is allowed.';
     const BAD_REQUEST_CASHBACK_CRITERIA_MISSING                                 = 'Either of percent_rate, min_txn_amount, max_cashback, min_cashback is required';
     const BAD_REQUEST_INVALID_OFFER_DURATION                                    = 'Offer end date must be later than offer start date';
@@ -765,6 +771,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';
     const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                             = 'An error occurred performing this action';
     const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                   = 'An error occurred while creating the payout. Payout workflow could not be initiated';
+    const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                      = 'Mode is required for payout';
 
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';

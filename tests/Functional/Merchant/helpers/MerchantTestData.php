@@ -643,6 +643,34 @@ return [
         ]
     ],
 
+    'testEditMerchantWhitelistedDomains' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_domains' => [
+                    'example.com',
+                    'razorpay.com'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_domains' => [
+                    'example.com',
+                    'razorpay.com'
+                ],
+            ]
+        ]
+    ],
+
     'testEditMerchantInvalidWhitelistedIpsTest' => [
         'request'  => [
             'content' => [
@@ -1856,6 +1884,29 @@ return [
                     ]
                 ]
             ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithContactDetailsWhereContactDoesNotExist' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'contact_id' => 'cont_AAAAAAAAAAAAAA'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
 
@@ -5109,6 +5160,93 @@ return [
                 'feature2' => ['result' => 'off'],
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntent'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => true,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentForMerchantWithoutPartnerIntent' => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => null,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentWithPartnerIntentFalse'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => false,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentTrue'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 0 //sends false,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '0',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentFalse' => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '1',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentNull'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '1',
+            ],
+            'status_code'           => 200,
         ],
     ],
 ];

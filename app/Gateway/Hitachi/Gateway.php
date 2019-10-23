@@ -25,6 +25,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Reconciliator\Base\Reconciliate;
 
 class Gateway extends Base\Gateway
@@ -47,6 +48,17 @@ class Gateway extends Base\Gateway
     const DEFAULT_CVV_VALUE         = '000';
 
     const PAYSECURE_MID_SWITCH_TIME = 1567612806; // 4 Sept 2019, 4:00 PM
+
+    const BLACKLISTED_MCC = [
+        '5962',
+        '5966',
+        '5967',
+        '7995',
+        '5912',
+        '5122',
+        '7273',
+        '5993',
+    ];
 
     protected $map = [
         ResponseFields::RETRIEVAL_REF_NUM   => Entity::RRN,
@@ -386,6 +398,17 @@ class Gateway extends Base\Gateway
         return hash(HashAlgo::SHA256, $str);
     }
 
+    public function getStatusRequest(array $request): array
+    {
+        $this->proxyRequestIfApplicable($request);
+
+        $request['options']['timeout'] = 60;
+
+        $request['options']['verify'] = false;
+
+        return $request;
+    }
+
     protected function validateChecksumAndGetQrData($input)
     {
         //
@@ -525,7 +548,8 @@ class Gateway extends Base\Gateway
     {
         return (
             ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY) and
-            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD)
+            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD) and
+            (empty($input['payment'][Payment\Entity::RECEIVER_TYPE]) === true)
         );
     }
 

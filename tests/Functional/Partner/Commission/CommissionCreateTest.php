@@ -2,12 +2,16 @@
 
 namespace RZP\Tests\Functional\Partner\Commission;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Partner\Config;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Channel;
+use RZP\Models\Settlement\Holidays;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
+use RZP\Tests\Functional\Merchant\CommissionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Partner\Commission\Type as CommissionType;
@@ -36,14 +40,60 @@ class CommissionCreateTest extends TestCase
 
         $this->createConfigForPartnerApp(
             Constants::DEFAULT_PLATFORM_APP_ID,
-            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            null,
             [
                 'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
             ]);
 
         $this->startTest($testData);
 
-        $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $this->checkClearOnHoldAndSettlement($commission);
+    }
+
+    public function testCaptureCommission()
+    {
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission();
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCaptureCommissionByPartner()
+    {
+        list($partner) = $this->createSampleCommission();
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/commissions/partner/'.$partner->getId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testBulkCaptureByPartner()
+    {
+        list($partner) = $this->createSampleCommission();
+
+        $this->createSampleCommission(
+            ['id' => 'SampleMerchant'],
+            ['id' => 'SampleAppIdOne'],
+            ['id' => 'SubmerchantOne']);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['partner_ids'] = [$partner->getId(), 'SampleMerchant'];
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testImplicitFixedOnPaymentCapture()
@@ -585,6 +635,8 @@ class CommissionCreateTest extends TestCase
 
         $this->assertNotEmpty($commissionByType);
 
+        $this->assertTransactionData($commissionByType);
+
         if ($type === CommissionType::IMPLICIT)
         {
             $this->assertFalse($commissionByType['record_only']);
@@ -596,6 +648,26 @@ class CommissionCreateTest extends TestCase
         }
 
         return [$payment, $commissionByType];
+    }
+
+    protected function assertTransactionData(array $commission)
+    {
+        if (($commission['record_only'] === true) or ($commission['model'] === Config\CommissionModel::SUBVENTION))
+        {
+            return;
+        }
+
+        $transaction = $this->getDbEntityById('transaction', $commission['transaction_id']);
+        $this->assertEquals($commission['credit'], $transaction->getCredit());
+        $this->assertEquals($commission['credit'], $transaction->getAmount());
+
+        $this->assertEquals(0, $transaction->getFee());
+        $this->assertEquals(0, $transaction->getTax());
+
+        $this->assertTrue($transaction->isOnHold());
+
+        // channel should always be yes_bank for commission settlement
+        $this->assertEquals(Channel::YESBANK, $transaction->getChannel());
     }
 
     protected function assertExplicitCommissionFeeBreakUp($payment, $commission)
@@ -621,5 +693,60 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($totalTax, $commission['tax']);
 
         $this->assertFalse($commission['record_only']);
+    }
+
+    protected function checkClearOnHoldAndSettlement($commission)
+    {
+        $testData = $this->testData['testClearOnHoldForCommission'];
+
+        $testData['request']['url'] = '/commissions/partner/'.$commission['partner_id'].'/on_hold/clear';
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that adjustment is created for tds
+        $tdsAdjustment = $this->getDbLastEntity('adjustment');
+
+        $baseCommission = $commission['credit'] - $commission['tax'];
+
+        $tds = $this->getFeeWithoutTax($baseCommission, 5);
+
+        $this->assertEquals(-1 * $tds, $tdsAdjustment['amount']);
+        $this->assertEquals(Channel::YESBANK, $tdsAdjustment['channel']);
+
+        // check adjustment transaction data
+        $tdsTransaction = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($tds, $tdsTransaction->getDebit());
+        $this->assertEquals('adjustment', $tdsTransaction->getType());
+        $this->assertEquals(Channel::YESBANK, $tdsTransaction->getChannel());
+
+        // get commission transactions and verify on hold flag is cleared
+        $commTransaction = $this->getDbEntityById('transaction', $commission['transaction_id']);
+        $this->assertEquals(0, $commTransaction->getOnHold());
+
+        // trigger settlement on this commission
+
+        $this->ba->appAuth();
+
+        Carbon::setTestNow(Holidays::getNthWorkingDayFrom(Carbon::now(), 5));
+
+        $testData = $this->testData['testInitiateCommissionSettlement'];
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that settlement transaction is created
+        $settlementTransaction = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals('settlement', $settlementTransaction->getType());
+        $this->assertEquals(Channel::YESBANK, $settlementTransaction->getChannel());
+
+        $this->assertEquals($commission['credit'] - $tds, $settlementTransaction->getAmount());
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+
+        Carbon::setTestNow();
     }
 }

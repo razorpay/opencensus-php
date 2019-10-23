@@ -47,8 +47,26 @@ class FundTransfer extends Job
                     'fta_id' => $this->ftaId,
                 ]);
 
-            $ftsResponse = App::getFacadeRoot()['fts_fund_transfer']->requestFundTransfer(
-                $this->ftaId);
+            $transferService = App::getFacadeRoot()['fts_fund_transfer'];
+
+            $transferService->initialize($this->ftaId);
+
+            list($initiateTransfers, $reason) = $transferService->shouldAllowTransfersViaFts();
+
+            if ($initiateTransfers === false)
+            {
+                $this->trace->info(TraceCode::FTS_FUND_TRANSFER_NOT_ALLOWED,
+                    [
+                        'fta_id' => $this->ftaId,
+                        'reason' => $reason,
+                    ]);
+
+                $this->delete();
+
+                return;
+            }
+
+            $ftsResponse = $transferService->requestFundTransfer();
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_COMPLETE,
@@ -57,6 +75,8 @@ class FundTransfer extends Job
         catch (RecordAlreadyExists $e)
         {
             $this->delete();
+
+            return;
         }
         catch (\Throwable $e)
         {

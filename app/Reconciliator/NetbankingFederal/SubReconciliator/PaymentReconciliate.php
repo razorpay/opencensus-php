@@ -12,6 +12,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_BANK_PAYMENT_ID = 'BID';
     const COLUMN_PAYMENT_DATE    = 'Date';
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         if (empty($row[self::COLUMN_PAYMENT_REF_NO]) === false)

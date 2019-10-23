@@ -5366,5 +5366,48 @@ ALTER TABLE merchant_details
     ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
     ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;
 
+ALTER TABLE merchant_details
+add column `kyc_clarification_reasons` JSON NULL,
+add column `kyc_additional_details` JSON NULL;
+
 ALTER TABLE pricing
     ADD COLUMN fee_bearer INT UNSIGNED DEFAULT 0 AFTER international; # 0 is platform fee bearer
+
+ALTER TABLE `transfers`
+ADD COLUMN `status` VARCHAR(255) NOT NULL DEFAULT 'processed' AFTER `source_type`,
+ADD COLUMN `message` VARCHAR(255) DEFAULT NULL AFTER `recipient_settlement_id`,
+ADD COLUMN `origin` VARCHAR(255) DEFAULT NULL AFTER `message`,
+ADD COLUMN `processed_at` INT DEFAULT NULL AFTER `created_at`,
+ADD COLUMN `attempts` INT NOT NULL DEFAULT 0 AFTER `processed_at`;
+
+ALTER TABLE `addresses`
+    MODIFY COLUMN `state` varchar(64)  null;
+
+ALTER TABLE merchant_documents
+    ADD COLUMN `ocr_verify` varchar(30) DEFAULT NULL AFTER `entity_type`;
+
+ALTER TABLE partner_configs
+    ADD COLUMN tds_percentage INT(11) NOT NULL DEFAULT 500 AFTER settle_to_partner,
+    ADD COLUMN has_gst_certificate TINYINT(1) NOT NULL DEFAULT 0 AFTER tds_percentage;
+
+ALTER TABLE settlements
+    ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
+    ADD INDEX `settlements_balance_id_index` (`balance_id`);
+
+ALTER TABLE settlement_bucket
+    ADD COLUMN balance_type char(14) DEFAULT 'primary' AFTER `merchant_id`,
+    DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
+    ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
+
+ALTER TABLE merchants
+    ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL after registered_name;
+
+ALTER TABLE merchants
+    ADD COLUMN `legal_entity_id` CHAR(14) DEFAULT NULL AFTER `parent_id`,
+    ADD INDEX `merchants_legal_entity_id_index` (`legal_entity_id`);
+
+ALTER TABLE bank_accounts
+    ADD COLUMN `notes` text DEFAULT NULL AFTER `virtual`;

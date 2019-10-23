@@ -355,6 +355,13 @@ class Gateway
         $this->action = ACTION::CREATE_TERMINAL;
     }
 
+    public function verifyTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = ACTION::VERIFY_TERMINAL;
+    }
+
     public function debit(array $input)
     {
         $this->input = $input;
@@ -1597,6 +1604,12 @@ class Gateway
 
     protected function pushDimensions($action, $input, $status, $excData = null)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->runningUnitTests() === false))
+        {
+            return;
+        }
+
         $gatewayMetric = new Metric;
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
@@ -1668,7 +1681,9 @@ class Gateway
 
     protected function getMozartApiUrl($input)
     {
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->app['config']->get($urlConfig);
 
         $version = $this->getVersionForAction($input, $this->action);
 
@@ -1684,9 +1699,11 @@ class Gateway
     {
         $url = $this->getMozartApiUrl($input);
 
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password'; 
+
         $authentication = [
             'api',
-            $this->app['config']->get('applications.mozart.password')
+            $this->app['config']->get($passwordConfig)
         ];
 
         $input['terminal'] = $input['terminal']->toArrayWithPassword();

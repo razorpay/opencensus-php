@@ -137,12 +137,32 @@ trait HeadlessOtp
             'type'    => $payment->card->getType()
         ];
 
+        $analytics = $payment->getMetadata('payment_analytics');
+
+        // For private auth we should always fetch it from payment analytics
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            if (empty($analytics['ip']) === true)
+            {
+                $analytics['ip'] = $this->app['request']->ip();
+            }
+
+            if (empty($analytics['user_agent']) === true)
+            {
+                $analytics['user_agent'] = $this->app['request']->header('User-Agent');
+            }
+        }
+
         $data = [
             'payment_id'  => $payment->getId(),
             'request'     => $request,
             'card'        => $card,
             'merchant_id' => $payment->getMerchantId(),
             'gateway'     => $payment->getGateway(),
+            'client'      => [
+                'ip' => $analytics['ip'],
+                'ua' => $analytics['user_agent'],
+            ]
         ];
 
         $response = $this->app['card.otpelf']->otpSend($data);

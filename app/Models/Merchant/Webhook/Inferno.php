@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Http\Response\Header;
 use RZP\Http\Response\StatusCode;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Feature\Constants;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 use Http\Client\Common\PluginClient;
@@ -23,6 +24,8 @@ use Http\Client\Common\Exception\ClientErrorException;
 
 class Inferno
 {
+    protected $app;
+
     protected $job;
 
     protected $trace;
@@ -80,12 +83,12 @@ class Inferno
      */
     public function fire($job, $data)
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
         // Initialising trace here, as inferno is bound as singleton
         // to app container and we want fresh instance of trace to log
         // request metadata
-        $this->trace = $app['trace'];
+        $this->trace = $this->app['trace'];
 
         $this->job = $job;
 
@@ -470,9 +473,16 @@ class Inferno
     {
         $secret = $webhook->getSecret();
 
+        $headers = [];
+
+        if ($webhook->merchant->isFeatureEnabled(Constants::TRANSLATE_WEBHOOK) === true)
+        {
+            list($headers, $event) = $this->app['express']->translateWebhook($event);
+        }
+
         $hmac = static::generateHMAC($event, $secret);
 
-        $headers = $this->getRequestHeaders($hmac);
+        $headers = array_merge_recursive($headers, $this->getRequestHeaders($hmac));
 
         $request = [
             'url'       => $webhook->getUrl(),

@@ -22,6 +22,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     // 29/06/2017 00:31:08
     const SETTLEMENT_DATE_FORMAT    = 'd/m/Y H:i:s';
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];

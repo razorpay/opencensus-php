@@ -28,6 +28,11 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    protected $fillable = [
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+    ];
+
     protected $public = [
         self::ID,
         self::ENTITY,

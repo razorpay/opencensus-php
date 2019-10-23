@@ -8,10 +8,12 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
-use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Base\Traits\HasBalance;
 
 class Entity extends Base\PublicEntity
 {
+    use HasBalance;
+
     const ID                     = 'id';
     const MERCHANT_ID            = 'merchant_id';
     const BANK_ACCOUNT_ID        = 'bank_account_id';
@@ -30,6 +32,7 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
+    const BALANCE_ID             = 'balance_id';
 
     // Nodal Nodal Settlement Constants
     const GATEWAY                = 'gateway';

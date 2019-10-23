@@ -8,21 +8,28 @@ class Repository extends Base\Repository
 {
     protected $entity = 'settlement_bucket';
 
-    public function getMerchantIdsFromBucket(string $bucketTimestamp)
+    public function getMerchantIdsFromBucket(string $balanceType, string $bucketTimestamp)
     {
+        $bucketMerchantId   = $this->dbColumn(Entity::MERCHANT_ID);
+        $bucketBalanceType  = $this->dbColumn(Entity::BALANCE_TYPE);
+        $bucketTimestampCol = $this->dbColumn(Entity::BUCKET_TIMESTAMP);
+        $bucketCompleted    = $this->dbColumn(Entity::COMPLETED);
+
         return $this->newQuery()
-                    ->select(Entity::MERCHANT_ID)
-                    ->where(Entity::BUCKET_TIMESTAMP, '<=', $bucketTimestamp)
-                    ->where(Entity::COMPLETED, '=', 0)
+                    ->select([$bucketMerchantId, $bucketBalanceType])
+                    ->where($bucketTimestampCol, '<=', $bucketTimestamp)
+                    ->where($bucketCompleted, '=', 0)
+                    ->where($bucketBalanceType, $balanceType)
                     ->distinct()
                     ->get();
     }
 
-    public function markAsComplete(string $merchantId, $timestamp)
+    public function markAsComplete(string $merchantId, string $balanceType, $timestamp)
     {
         return $this->newQuery()
                     ->where(Entity::BUCKET_TIMESTAMP, '<', $timestamp)
                     ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::BALANCE_TYPE, $balanceType)
                     ->update([Entity::COMPLETED => 1]);
     }
 

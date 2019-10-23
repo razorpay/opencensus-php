@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use Queue;
+
 use RZP\Models\Feature;
+use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -44,6 +47,8 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccount()
     {
+        Queue::fake();
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
@@ -59,6 +64,8 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountBeneficiaryVerified()
@@ -89,6 +96,8 @@ class FundAccountsTest extends TestCase
 
     public function testCreateVpa()
     {
+        Queue::fake();
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
@@ -104,10 +113,14 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
+
+        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateCard()
     {
+        Queue::fake();
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
@@ -125,6 +138,8 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
+
+        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateCardBeneficiaryVerified()

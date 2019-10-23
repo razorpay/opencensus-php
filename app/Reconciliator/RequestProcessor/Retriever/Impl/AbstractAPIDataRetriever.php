@@ -133,7 +133,6 @@ abstract class AbstractAPIDataRetriever implements DataRetriever
 
     protected function prepareFile($filename, array $data)
     {
-
         $creator = $this->createFile($data, $filename);
 
         $file = $creator->get();

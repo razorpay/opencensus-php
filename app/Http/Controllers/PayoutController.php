@@ -122,13 +122,6 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getQueuedPayoutsSummary()
-    {
-        $data = $this->service()->getQueuedPayoutsSummary();
-
-        return ApiResponse::json($data);
-    }
-
     public function getSummary()
     {
         $data = $this->service()->getDashboardSummary();

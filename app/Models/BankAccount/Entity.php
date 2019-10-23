@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -18,6 +19,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  */
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
     use SoftDeletes;
 
     const ID                            = 'id';
@@ -46,6 +48,7 @@ class Entity extends Base\PublicEntity
     const MPIN                          = 'mpin';
     const VIRTUAL                       = 'virtual';
     const FTS_FUND_ACCOUNT_ID           = 'fts_fund_account_id';
+    const NOTES                         = 'notes';
 
     const NAME                          = 'name';
     const IFSC                          = 'ifsc';
@@ -85,6 +88,7 @@ class Entity extends Base\PublicEntity
         self::IFSC_CODE,
         self::MOBILE_BANKING_ENABLED,
         self::NAME,
+        self::NOTES,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
@@ -124,6 +128,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_PIN,
         self::MPIN_SET,
         self::MPIN,
+        self::NOTES,
         self::MOBILE_BANKING_ENABLED,
         self::CREATED_AT,
     ];
@@ -134,6 +139,7 @@ class Entity extends Base\PublicEntity
         self::IFSC,
         self::BANK_NAME,
         self::NAME,
+        self::NOTES,
         self::ACCOUNT_NUMBER,
     ];
 
@@ -175,6 +181,10 @@ class Entity extends Base\PublicEntity
 
     protected $ignoredRelations = [
         'source',
+    ];
+
+    protected $defaults = [
+        self::NOTES => [],
     ];
 
     protected $generateIdOnCreate = true;

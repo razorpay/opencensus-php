@@ -55,6 +55,7 @@ class Entity
     const DISCOUNT                  = 'discount';
     const EMI_PLAN                  = 'emi_plan';
     const CUSTOMER                  = 'customer';
+    const LEGAL_ENTITY              = 'legal_entity';
     const MERCHANT                  = 'merchant';
     const REVERSAL                  = 'reversal';
     const SCHEDULE                  = 'schedule';
@@ -80,12 +81,6 @@ class Entity
     const GATEWAY_FILE              = 'gateway_file';
     const BANK_ACCOUNT              = 'bank_account';
     const FILE_HANDLER              = 'file_handler';
-    // Subscription
-    const SUBSCRIPTION                  = 'subscription';
-    const SUBSCRIPTION_TRANSACTION      = 'subscription_transaction';
-    const SUBSCRIPTION_VERSION          = 'subscription_version';
-    const SUBSCRIPTION_CYCLE            = 'subscription_cycle';
-    const SUBSCRIPTION_UPDATE_REQUEST   = 'subscription_update_request';
 
     const EXTERNAL                   = 'external';
     const ENTITY_OFFER               = 'entity_offer';
@@ -127,6 +122,7 @@ class Entity
     const BANKING_ACCOUNT_STATEMENT  = 'banking_account_statement';
     const MERCHANT_DOCUMENT          = 'merchant_document';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
+    const SUBSCRIPTION               = 'subscription';
 
     // heimdall
     const ORG                   = 'org';
@@ -205,9 +201,11 @@ class Entity
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_BOB_V2      = 'netbanking_bob_v2';
     const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
+    const NETBANKING_UBI         = 'netbanking_ubi';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
@@ -263,16 +261,28 @@ class Entity
     const TAX_GROUP             = 'tax_group';
 
     // External Service Entity (ServiceName.EntityName)
+    // Service: Batch
     const BATCH_SERVICE                = 'batch.service';
     const BATCH_FILE_STORE             = 'batch.file_store';
     const REPORTING_LOGS               = 'reporting.logs';
     const REPORTING_CONFIGS            = 'reporting.configs';
     const REPORTING_SCHEDULES          = 'reporting.schedules';
+    // Service: Shield
     const SHIELD_RULES                 = 'shield.rules';
     const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
     const SHIELD_RISKS                 = 'shield.risks';
     const SHIELD_LISTS                 = 'shield.lists';
     const SHIELD_LIST_ITEMS            = 'shield.list_items';
+    // Service: Subscription
+    const SUBSCRIPTIONS_PLAN             = 'subscriptions.plan';
+    const SUBSCRIPTIONS_SUBSCRIPTION     = 'subscriptions.subscription';
+    const SUBSCRIPTIONS_ADDON            = 'subscriptions.addon';
+    const SUBSCRIPTIONS_CYCLE            = 'subscriptions.subscription_cycle';
+    const SUBSCRIPTIONS_TRANSACTION      = 'subscriptions.subscription_transaction';
+    const SUBSCRIPTIONS_VERSION          = 'subscriptions.subscription_version';
+    const SUBSCRIPTIONS_UPDATE_REQUEST   = 'subscription_update_request';
+    // Service: Stork
+    const STORK_WEBHOOK = 'stork.webhook';
 
     const COMMISSION = 'commission';
 
@@ -344,6 +354,7 @@ class Entity
         Entity::REFUND,
         Entity::FUND_ACCOUNT_VALIDATION,
         Entity::ADJUSTMENT,
+        Entity::SETTLEMENT,
     ];
 
     public static $namespace = [
@@ -358,7 +369,6 @@ class Entity
         self::HDFC                      => \RZP\Gateway\Hdfc::class,
         self::USER                      => \RZP\Models\User::class,
         self::OFFER                     => \RZP\Models\Offer::class,
-        self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::ORDER                     => \RZP\Models\Order::class,
         self::TOKEN                     => \RZP\Models\Customer\Token::class,
         self::GEO_IP                    => \RZP\Models\GeoIP::class,
@@ -374,6 +384,7 @@ class Entity
         self::CUSTOMER                  => \RZP\Models\Customer::class,
         self::EMI_PLAN                  => \RZP\Models\Emi::class,
         self::MERCHANT                  => \RZP\Models\Merchant::class,
+        self::LEGAL_ENTITY              => \RZP\Models\Merchant\LegalEntity::class,
         self::ACCOUNT                   => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE                  => \RZP\Models\Schedule::class,
         self::COUPON                    => \RZP\Models\Coupon::class,
@@ -468,6 +479,7 @@ class Entity
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
+        self::NETBANKING_BOB_V2      => \RZP\Gateway\Mozart::class,
         self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Vijaya::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
@@ -476,6 +488,7 @@ class Entity
         self::NETBANKING_IDBI        => \RZP\Gateway\Mozart::class,
         self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Allahabad::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
+        self::NETBANKING_UBI         => \RZP\Gateway\Mozart::class,
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Obc::class,
         self::NETBANKING_AIRTEL      => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_FEDERAL     => \RZP\Gateway\Netbanking\Federal::class,
@@ -546,11 +559,6 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
-
-        self::SUBSCRIPTION_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\UpdateRequest::class,
-        self::SUBSCRIPTION_VERSION        => \RZP\Models\Plan\Subscription\Version::class,
-        self::SUBSCRIPTION_CYCLE          => \RZP\Models\Plan\Subscription\Cycle::class,
-        self::SUBSCRIPTION_TRANSACTION    => \RZP\Models\Plan\Subscription\SubscriptionTransaction::class
     ];
 
     protected static $repository = [
@@ -622,6 +630,14 @@ class Entity
         self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
         self::BATCH_SERVICE                => \RZP\Services\BatchMicroService::class,
         self::BATCH_FILE_STORE             => \RZP\Services\BatchMicroService::class,
+        self::SUBSCRIPTIONS_SUBSCRIPTION   => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_ADDON          => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_PLAN           => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_CYCLE          => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_VERSION        => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_TRANSACTION    => \RZP\Models\Plan\Subscription\Service::class,
+        self::STORK_WEBHOOK                => \RZP\Services\Stork::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -636,6 +652,10 @@ class Entity
         self::SCHEDULE,
         self::PARTNER_CONFIG,
         self::MERCHANT_ACCESS_MAP,
+    ];
+
+    protected static $externalEntities = [
+        self::SUBSCRIPTION
     ];
 
     public static function getAllEntities()
@@ -835,5 +855,10 @@ class Entity
                 return $allowedEntity;
             }
         }
+    }
+
+    public static function isExternalEntity($entity)
+    {
+        return in_array($entity, self::$externalEntities);
     }
 }

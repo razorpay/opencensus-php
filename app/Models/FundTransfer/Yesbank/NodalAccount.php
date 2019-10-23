@@ -222,14 +222,19 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        if (in_array($ifsc, Constants::VIRTUAL_ACCOUNT_IFSC, true) === true)
-        {
-            return Mode::NEFT;
-        }
-
         if (starts_with($ifscFirstFour, static::IFSC_IDENTIFIER) === true)
         {
-            return Mode::IFT;
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                return Mode::IFT;
+            }
+            else
+            {
+                return Mode::NEFT;
+            }
+
         }
         else if ($amount < self::MAX_IMPS_AMOUNT)
         {

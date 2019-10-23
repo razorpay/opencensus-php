@@ -77,6 +77,7 @@ class MaxMind
         ])->withCreditCard([
             'issuer_id_number' => $card->getIin(),
             'last_4_digits'    => $card->getLast4(),
+            'token'            => $card->getGlobalFingerPrint(),
         ])->withOrder([
             'amount'           => $this->getFormattedAmount($payment),
             'currency'         => $payment->getCurrency(),

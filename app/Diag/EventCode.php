@@ -253,6 +253,11 @@ class EventCode
         'name'  => 'settlement.creation.initiated'
     ];
 
+    const SETTLEMENT_CREATION_SKIPPED = [
+        'group' => 'skipped',
+        'name'  => 'settlement.creation.skipped'
+    ];
+
     const SETTLEMENT_CREATION_SUCCESS = [
         'group' => 'success',
         'name'  => 'settlement.creation.success'
@@ -293,19 +298,19 @@ class EventCode
         'name'  => 'batchFta.creation.failed'
     ];
 
-    const BEAM_FILE_PUSH_SUCCESS = [
+    const BEAM_FILE_PUSH_REQUEST_SUCCESS = [
         'group' => 'success',
-        'name'  => 'beam.push.success'
+        'name'  => 'beam.push.request.success'
     ];
 
-    const BEAM_FILE_PUSH_RETRY = [
+    const BEAM_FILE_PUSH_REQUEST_RETRY = [
         'group' => 'retry',
-        'name'  => 'beam.push.retry'
+        'name'  => 'beam.push.request.retry'
     ];
 
-    const BEAM_FILE_PUSH_FAILED = [
+    const BEAM_FILE_PUSH_REQUEST_FAILED = [
         'group' => 'failure',
-        'name'  => 'beam.push.failed'
+        'name'  => 'beam.push.request.failed'
     ];
 
     const FTA_UTR_UPDATED = [
@@ -436,7 +441,7 @@ class EventCode
 
     const KYC_SAVE_MODIFICATIONS_FAILED = [
         'group' => 'onboarding',
-        'name'  => 'kyc.save_registration_details.failed',
+        'name'  => 'kyc.save_modifications.failed',
     ];
 
     const PAYMENT_PAGE_CREATED = [

@@ -130,6 +130,21 @@ class BusinessType
         return in_array($businessType, $unRegisteredBusiness, true);
     }
 
+    /**
+     * Checks that business type belongs to unregistered business or not
+     *
+     * @param int $businessType
+     *
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function isUnregisteredBusinessIndex(int $businessType): bool
+    {
+        $businessType = self::getKeyFromIndex($businessType);
+
+        return BusinessType::isUnregisteredBusiness($businessType) === true;
+    }
+
     public static function getType($num)
     {
         if (empty($num) === true)

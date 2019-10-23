@@ -28,6 +28,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const SUCCESS = 'SUCCESS';
 
+    const BLACKLISTED_COLUMNS = [
+        self::PAYER_AC_NAME,
+        self::PAYER_VIRTUAL_ADDR,
+    ];
+
     protected function getPaymentId(array $row)
     {
         $npciTxnId = $row[self::UPI_TRANSACTION_ID] ?: null;

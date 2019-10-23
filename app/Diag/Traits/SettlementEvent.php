@@ -15,10 +15,15 @@ trait SettlementEvent
         \Throwable $ex = null,
         array $customProperties = [])
     {
+        $requestId = $this->app['request']->getId();
 
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $customProperties += ['timestamp' => $timestamp];
+        $customProperties +=
+            [
+                'timestamp'     => $timestamp,
+                'requestId'     => $requestId
+            ];
 
         $event = new SettlEvent($settlement, $ex, $customProperties);
 

@@ -190,6 +190,7 @@ class Holidays
             10 => [
                 2  => 'Mahatma Gandhi Jayanti',
                 8  => 'Dussehra / Vijaya Dasami',
+                21 => 'Election Day in Mumbai',
                 28 => 'Diwali',
             ],
             11 => [

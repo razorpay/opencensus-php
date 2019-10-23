@@ -27,6 +27,7 @@ use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Address;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
@@ -35,11 +36,13 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
+use RZP\Services\Doppler;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
+use RZP\Constants\Environment;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
@@ -49,7 +52,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
-use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -202,6 +204,8 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
+            $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
+
             return null;
         }
 
@@ -264,6 +268,9 @@ trait Authorize
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
+
+            $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
+
 
             // passing $terminalGateawyInput and $gatewayInput
             $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
@@ -335,12 +342,32 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
+                // Payment Authentication failed for the gateway.
+                // That means we could not redirect to the ACS page using $terminal->gateway() or,
+                // mpi_blade in case terminal is authorization terminals like Hitachi.
+
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
                 if ($retryOnSameGateway === true)
                 {
                     continue;
                 }
+
+                $errorCode = $e->getError()->getPublicErrorCode();
+
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+                // Todo - to remove
+                try
+                {
+                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED);
+                }
+
+
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -350,8 +377,6 @@ trait Authorize
                 $retryAttempts++;
 
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
-
-                $internalErrorCode = $e->getError()->getInternalErrorCode();
 
                 $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
@@ -530,6 +555,7 @@ trait Authorize
             'formatted_amount'      => $payment->getFormattedAmount(),
             'wallet'                => $payment->getWallet(),
             'merchant'              => $payment->merchant->getBillingLabel(),
+            'merchant_id'           => $payment->merchant->getId(),
         ];
 
         // This is a hack to return direct method for IVR payments
@@ -555,8 +581,9 @@ trait Authorize
             $response['metadata'] = $metaData;
 
             $templateData = [
-               'data' => $response,
-               'cdn'  => $this->app['config']->get('url.cdn.production')
+               'data'       => $response,
+               'cdn'        => $this->app['config']->get('url.cdn.production'),
+               'production' => $this->app->environment() === Environment::PRODUCTION,
             ];
 
             $content = $this->app['view']
@@ -2194,7 +2221,7 @@ trait Authorize
 
     protected function runAuthorizeFailedOnGateway(Payment\Entity $payment)
     {
-        $data = ['payment' => $payment->toArray()];
+        $data = ['payment' => $payment->toArrayGateway()];
 
         if ($payment->getGlobalOrLocalTokenEntity() !== null)
         {
@@ -4463,7 +4490,7 @@ trait Authorize
         {
             $data['razorpay_invoice_id']      = $invoice->getPublicId();
             $data['razorpay_invoice_status']  = $invoice->getStatus();
-            $data['razorpay_invoice_receipt'] = $invoice->getReceipt();    
+            $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
         }
 
         $this->fillReturnDataWithSignatureIfApplicable($data);
@@ -5455,6 +5482,17 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
+            // TODO - to remove
+
+            try
+            {
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED);
+            }
+
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
             return true;
@@ -6107,5 +6145,27 @@ trait Authorize
         }
 
         $gatewayInput['order']['account_number'] = $accountNumber;
+    }
+
+    public function validateAndSaveBillingAddressIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (isset($input[Payment\Entity::BILLING_ADDRESS]) === false)
+        {
+            return;
+        }
+
+        $billingAddressFromInput = $input[Payment\Entity::BILLING_ADDRESS];
+
+        $billingAddressFromInput['type'] = Address\Type::BILLING_ADDRESS;
+
+        if (isset($billingAddressFromInput['postal_code']) === true)
+        {
+            // address entity stores zip code as "zipcode"
+            // in input, we get zip code as "postal_code"
+            $billingAddressFromInput['zipcode'] = $billingAddressFromInput['postal_code'];
+
+            unset($billingAddressFromInput['postal_code']);
+        }
+        (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }
