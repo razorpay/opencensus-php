@@ -263,7 +263,7 @@ export default class App extends Component {
     } else if (live_transaction_done === 0) {
       console.log('live_transaction_done found as:', live_transaction_done);
       merchantFetch({
-        url: '/account/config',
+        url: 'account/config',
         method: 'put',
         data: { live_transaction_done: 1 },
       })
