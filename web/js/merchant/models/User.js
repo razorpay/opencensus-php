@@ -402,10 +402,9 @@ export default class User {
   get isShowCommissionBalanceEnabled() {
     return this.getExpStatus('show_commission_balance');
   }
-  
+
   get isUnregBizFlowEnabled() {
-    return true;
-    // || this.getExpStatus('unreg_biz_enabled');
+    this.getExpStatus('non_registered_onboarding');
   }
 
   get isAllowedTeamManagement() {
