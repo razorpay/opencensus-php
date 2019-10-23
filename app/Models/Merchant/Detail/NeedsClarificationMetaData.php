@@ -9,6 +9,7 @@ class NeedsClarificationMetaData
 {
     const DESCRIPTION    = 'description';
     const REASONS        = 'reasons';
+    const OTHERS         = 'others';
 
     const REASON_MAPPING = [
         Entity::CONTACT_NAME         => [ReasonList::PROVIDE_POC],

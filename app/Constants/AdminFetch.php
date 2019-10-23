@@ -1366,6 +1366,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Receipt Email_enabled',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
+                'legal_entity_id' => [
+                    Fetch::LABEL  => 'Legal Entity Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
                 'fee_bearer' => [
                     Fetch::LABEL  => 'Fee Bearer',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,

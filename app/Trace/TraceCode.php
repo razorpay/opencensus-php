@@ -1644,6 +1644,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Account codes
     const ACCOUNT_CREATED                                       = 'ACCOUNT_CREATED';
 
+    const ACCOUNT_CREATION_REQUEST                              = 'ACCOUNT_CREATION_REQUEST';
+    const ACCOUNT_CREATION_RESPONSE                             = 'ACCOUNT_CREATION_RESPONSE';
+
     // Lamdba Processor
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';

@@ -74,7 +74,11 @@ class Entity extends Base\PublicEntity
     const RECEIPT_EMAIL_ENABLED          = 'receipt_email_enabled';
     const CHANNEL                        = 'channel';
     const WEBSITE                        = 'website';
+
+    // this is same as mcc in legal entity table.
+    // This will be removed after migrating to legal entity
     const CATEGORY                       = 'category';
+
     const WHITELISTED_IPS_LIVE           = 'whitelisted_ips_live';
     const WHITELISTED_IPS_TEST           = 'whitelisted_ips_test';
     const WHITELISTED_DOMAINS            = 'whitelisted_domains';
@@ -110,6 +114,7 @@ class Entity extends Base\PublicEntity
     const DASHBOARD_WHITELISTED_IPS_LIVE = 'dashboard_whitelisted_ips_live';
     const DASHBOARD_WHITELISTED_IPS_TEST = 'dashboard_whitelisted_ips_test';
     const PARTNERSHIP_URL                = 'partnership_url';
+    const LEGAL_ENTITY_ID                = 'legal_entity_id';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -522,6 +527,11 @@ class Entity extends Base\PublicEntity
     public function getActivatedAt()
     {
         return $this->getAttribute(self::ACTIVATED_AT);
+    }
+
+    public function getLegalEntityId()
+    {
+        return $this->getAttribute(self::LEGAL_ENTITY_ID);
     }
 
     public function getReceiptEmailTriggerEvent()
@@ -984,6 +994,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
+    }
+
+    public function merchantDocuments()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Document\Entity');
+    }
+
+    public function legalEntity()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\LegalEntity\Entity');
     }
 
     public function methods()
