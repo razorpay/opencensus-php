@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 use Mail;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Entity;
 use RZP\Mail\Merchant\RazorpayX\RequestKyc;
 
 /**
@@ -23,31 +23,31 @@ class Greylist extends Base implements ActivationFlowInterface
      * In greylist  activation flow , merchant won't get activated from basic activation form
      * Full activation form need to be filled for activation
      *
-     * @param Entity $merchantDetails
+     * @param Entity $merchant
      */
-    public function process(Entity $merchantDetails)
+    public function process(Entity $merchant)
     {
         $this->trace->info(TraceCode::MERCHANT_PROCESS_GREYLIST_ACTIVATION);
 
-        $this->sendKycRequestEmail($merchantDetails);
+        $this->sendKycRequestEmail($merchant);
 
         return;
     }
 
-    public function sendKycRequestEmail(Entity $merchantDetails)
+    public function sendKycRequestEmail(Entity $merchant)
     {
         Mail::queue(
-            new RequestKyc($merchantDetails->getContactName(),
-                           $merchantDetails->getContactEmail())
+            new RequestKyc($merchant->getEntityName(),
+                           $merchant->getEmail())
         );
     }
 
     /**
      * Validation specific to the greylist activation flow
      *
-     * @param Entity $merchantDetails
+     * @param Entity $merchant
      */
-    public function validateFullActivationForm(Entity $merchantDetails)
+    public function validateFullActivationForm(Entity $merchant)
     {
         return;
     }
