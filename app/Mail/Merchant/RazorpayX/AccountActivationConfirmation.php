@@ -105,3 +105,4 @@ class AccountActivationConfirmation extends Mailable
         return $this;
     }
 }
+

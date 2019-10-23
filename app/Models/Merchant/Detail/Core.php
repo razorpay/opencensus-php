@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
@@ -43,7 +44,9 @@ class Core extends Base\Core
     use NotifyTrait;
     use DispatchesJobs;
 
-    public function saveMerchantDetails(array $input, Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
+    public function saveMerchantDetails(array $input,
+                                        Merchant\Entity $merchant,
+                                        string $originProduct = Product::PRIMARY)
     {
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
@@ -60,7 +63,12 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant, $originProduct)
+        return $this->repo->transactionOnLiveAndTest(function () use (
+            $input,
+            $merchantDetails,
+            $merchant,
+            $originProduct
+        )
         {
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
@@ -91,6 +99,11 @@ class Core extends Base\Core
                 ];
 
                 $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+
+                if ($statusToBeUpdated === Status::UNDER_REVIEW)
+                {
+                    $this->sendL2FormSubmissionEmail($merchant);
+                }
 
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
@@ -125,14 +138,16 @@ class Core extends Base\Core
     }
 
     /**
-     * Updates merchant detail poa status to verified if any one of the document uploaded by merchant is verified
+     * Updates merchant detail poa status to verified if any one
+     * of the document uploaded by merchant is verified
      *
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
     public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false)
+        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
+                                                                 $merchantDetails->isUnregisteredBusiness()) === false)
         {
             return;
         }
@@ -152,7 +167,7 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::MERCHANT_VERIFY_POA,
                     [
-                        'document_type'       => $document[Document\Entity::DOCUMENT_TYPE],
+                        'document_type' => $document[Document\Entity::DOCUMENT_TYPE],
                     ]);
 
                 $isOcrVerified = true;
@@ -160,8 +175,8 @@ class Core extends Base\Core
                 break;
             }
         }
-
-        $poaVerificationStatus = ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
+        $poaVerificationStatus =
+            ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
 
         $merchantDetails->setPoaVerificationStatus($poaVerificationStatus);
 
@@ -175,7 +190,7 @@ class Core extends Base\Core
      *
      * For unregistered business bucket we skip activation flow
      *
-     * @param Entity          $merchantDetails
+     * @param Entity $merchantDetails
      *
      * @param Merchant\Entity $merchant
      *
@@ -183,7 +198,8 @@ class Core extends Base\Core
      */
     public function autoUpdateMerchantActivationFlow(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true)
+        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
+                                                                 $merchantDetails->isUnregisteredBusiness()) === true)
         {
             $merchantDetails->setActivationFlow();
             $merchantDetails->setInternationalActivationFlow();
@@ -207,13 +223,17 @@ class Core extends Base\Core
 
         if ($autoEnableInternational === true)
         {
-            $merchantDetails->setInternationalActivationFlow($subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
+            $merchantDetails->setInternationalActivationFlow(
+                $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
 
             $eventAttributes['international_activation_flow'] = $merchantDetails->getInternationalActivationFlow();
 
-            $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getInternationalActivationFlow());
+            $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions(
+                $merchantDetails->getInternationalActivationFlow()
+                );
 
-            $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION, $international_activation_metric_dimensions);
+            $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION,
+                                $international_activation_metric_dimensions);
         }
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS, $this->merchant, null, $eventAttributes);
@@ -239,7 +259,7 @@ class Core extends Base\Core
 
         // for older merchants(non instant activation) where category or category 2 is not set , set details
         $populateCategoryAndCategory2 = ((empty($businessCategory) === false) and
-                                         (!(empty($category) === false AND empty($category2) === false)));
+                                         (!(empty($category) === false and empty($category2) === false)));
 
         if (($populateCategoryAndCategory2 === true) or
             ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
@@ -343,6 +363,24 @@ class Core extends Base\Core
 
             return $response;
         });
+    }
+
+    protected function sendL2FormSubmissionEmail(Merchant\Entity $merchant)
+    {
+        $activationFlow = $merchant->merchantDetail()->get()->getActivationFlow();
+
+        $mailer = null;
+
+        if ($activationFlow === ActivationFlow::WHITELIST)
+        {
+            $mailer = new L2SubmissionWhitelist($merchant->getId());
+        }
+        else if ($activationFlow === ActivationFlow::GREYLIST)
+        {
+            $mailer = new L2SubmissionWhitelist($merchant->getId());
+        }
+
+        Mail::queue($mailer);
     }
 
     /**

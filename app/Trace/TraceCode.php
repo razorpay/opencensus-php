@@ -1685,6 +1685,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_RECON_EMAIL_FAILED                      = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
     const FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED              = 'FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED';
 
+    const L2_SUBMISSION_WHITELIST_EMAIL_FAILED                  = 'L2_SUBMISSION_WHITELIST_EMAIL_FAILED';
+    const INSTANT_ACTIVATION_EMAIL_FAILED                       = 'INSTANT_ACTIVATION_EMAIL_FAILED';
+
     // Subscription service
     const SUBSCRIPTION_SERVICE_REQUEST                          = 'SUBSCRIPTION_SERVICE_REQUEST';
     const PAYMENT_MDR_UPDATE_ERROR                              = 'PAYMENT_MDR_UPDATE_ERROR';

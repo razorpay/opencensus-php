@@ -2,36 +2,29 @@
 
 namespace RZP\Mail\Merchant\RazorpayX;
 
-use RZP\Error\ErrorCode;
+use App;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
-use RZP\Models\Merchant\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
-class InstantActivation extends Mailable
+class L2SubmissionWhitelist extends Mailable
 {
-    const TEMPLATE_PATH        = 'emails.merchant.razorpayx.instant_activation_mail';
+    const SUPPORT_URL    = '';
 
-    const LEARN_MORE_URL       = '';
+    const LEARN_MORE_URL = '';
 
-    const FILL_KYC_URL         = '';
+    const SUBJECT        = 'KYC Form submitted for Razorpay';
 
-    const GUIDE_TO_GO_LIVE_URL = '';
-
-    const SUPPORT_URL          = '';
-
-    const SUBJECT              = 'One step away from starting transactions on RazorpayX';
+    const TEMPLATE_PATH  = 'emails.merchant.razorpayx.l2_submission_whitelisted';
 
     protected $bankingAccount = null;
 
+    protected $merchantId;
+
     protected $config;
 
-    /**
-     * InstantActivation constructor.
-     * @param string $merchant
-     */
     public function __construct(string $merchantId)
     {
         parent::__construct();
@@ -57,7 +50,8 @@ class InstantActivation extends Mailable
         }
         else
         {
-            throw new BadRequestException(TraceCode::INSTANT_ACTIVATION_EMAIL_FAILED,
+            // this will be an exception and no mail should go. Because we do not have enough data
+            throw new BadRequestException(TraceCode::L2_SUBMISSION_WHITELIST_EMAIL_FAILED,
                                           null,
                                           [
                                               'merchant_id' => $merchantId
@@ -68,11 +62,10 @@ class InstantActivation extends Mailable
 
     protected function addMailData()
     {
+
         $data = [
             'learn_more_url'                       => self::LEARN_MORE_URL,
-            'guide_to_go_live_url'                 => self::GUIDE_TO_GO_LIVE_URL,
             'support_url'                          => self::SUPPORT_URL,
-            'fill_kyc_url'                         => self::FILL_KYC_URL,
             'view_dashboard_url'                   => $this->config['applications.banking_service_url'],
             BankingAccountEntity::ACCOUNT_IFSC     => $this->bankingAccount->getAccountIfsc(),
             BankingAccountEntity::ACCOUNT_NUMBER   => $this->bankingAccount->getAccountNumber(),
@@ -121,5 +114,4 @@ class InstantActivation extends Mailable
 
         return $this;
     }
-
 }
