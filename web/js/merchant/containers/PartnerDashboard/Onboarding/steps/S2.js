@@ -45,11 +45,11 @@ const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser, abort }) => {
             </div>
           </div>
         </div>
-        <div class="partner--role-notes">
-          <p>
+        <div>
+          <p style={{ marginTop: '10px' }}>
             For Enterprise solution
             <a href="mailto:partnership@razorpay.com" target="_top">
-              Contact Support
+              &nbsp;Contact Support
             </a>
           </p>
           {!isExistingUser && (
