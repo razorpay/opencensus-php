@@ -49,7 +49,7 @@ class Stork
 
         $this->mock = $config['mock'];
         // Service name is same as authenticated user.
-        $this->service = $config['auth'][$mode]['user'];
+        $this->service = $config['service_prefix'] . $config['auth'][$mode]['user'];
         $this->request = new Requests_Session(
             $config['url'],
             // Common headers for requests.
