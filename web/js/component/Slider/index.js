@@ -57,12 +57,12 @@ export default class Slider extends React.Component {
 
     const children = this.props.children.filter(child => !isNone(child));
 
-    children.forEach(child => {
+    children.forEach((child, idx) => {
       const component = child({});
-      if (
-        component.type.name !== 'SlideController' ||
-        component.type.name === 'SliderDots'
-      ) {
+
+      if (component.type.name === 'SliderDots') {
+        SliderDotsIdsList.push(idx);
+      } else {
         SlideChildrenList.push(child);
       }
     });
@@ -83,10 +83,7 @@ export default class Slider extends React.Component {
         {children.map(child => {
           const Component = child(data);
 
-          if (
-            Component.type.name === 'SliderDots' ||
-            Component.type.name === 'SlideController'
-          ) {
+          if (Component.type.name === 'SliderDots') {
             return Component;
           }
 
