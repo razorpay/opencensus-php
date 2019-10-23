@@ -243,7 +243,8 @@ export default class App extends Component {
 
   updateGA(userData) {
     let { live_transaction_done } = userData;
-    if (live_transaction_done != undefined && live_transaction_done === '1') {
+
+    if (live_transaction_done != undefined && live_transaction_done === 1) {
       let data = { live_transaction_done: 2 };
       updateGAForFirstLiveTransaction(data).then(() => {
         console.log('fireeeee');
@@ -252,8 +253,17 @@ export default class App extends Component {
           eventAction: 'Show - live_transaction_done',
         })();
       });
+    } else if (live_transaction_done === 0) {
+      console.log('live_transaction_done found as:', live_transaction_done);
+      updateGAForFirstLiveTransaction(data).then(() => {
+        console.log('fireeeee');
+        setTrackData({
+          eventCategory: 'Dashboard - live_transaction_done',
+          eventAction: 'Show - live_transaction_done',
+        })();
+      });
     } else {
-      console.log('live_transaction_done not found!!!', this.props);
+      console.log('live_transaction_done not found!!!!', live_transaction_done);
     }
   }
 
