@@ -186,7 +186,7 @@ class Mode
         return array_keys(self::$issuerModeMap);
     }
 
-    public static function getSupportedModesMap()
+    public static function getSupportedModesMap(): array
     {
         return self::$issuerModeMap;
     }

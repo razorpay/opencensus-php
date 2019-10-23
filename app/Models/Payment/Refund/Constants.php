@@ -53,9 +53,7 @@ class Constants
 
     const RESPONSE_CODE          = 'code';
     const RESPONSE_BODY          = 'body';
-    const RESPONSE_STATUS        = 'status';
 
-    const MODE          = 'mode';
     const ISSUER        = 'issuer';
     const METHOD        = 'method';
     const CARD_TYPE     = 'card_type';

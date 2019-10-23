@@ -51,6 +51,7 @@ class Scrooge
         'enable-dark'                   => 'enable-dark',
         'disable-dark'                  => 'disable-dark',
         'instant_refunds_mode'          => 'instant_refunds_mode',
+        'instant_refunds_mode_expire'   => 'instant_refunds_mode/expire',
     ];
 
     // Headers
@@ -61,6 +62,12 @@ class Scrooge
     const X_REQUEST_ID  = 'X-Request-ID';
 
     const REQUEST_TIMEOUT = 60;
+
+    const RESPONSE_CODE          = 'code';
+    const RESPONSE_BODY          = 'body';
+    const RESPONSE_STATUS        = 'status';
+
+    const MODE = 'mode';
 
     /**
      * Scrooge constructor.
@@ -233,9 +240,10 @@ class Scrooge
         return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'], Requests::POST, $input);
     }
 
-    public function deleteInstantRefundsMode(array $input): array
+    public function expireInstantRefundsModeConfig(array $input): array
     {
-        return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'], Requests::DELETE, $input);
+        return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode_expire'],
+            Requests::POST, $input);
     }
 
     public function downloadGatewayRefundsFile(array $input): array
@@ -284,13 +292,30 @@ class Scrooge
     /**
      * @param string $merchantId
      * @param array $params
-     * @return array
-     * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @return string
      */
-    public function getInstantRefundsMode(string $merchantId, array $params): array
+    public function getInstantRefundsMode(string $merchantId, array $params): string
     {
-        return $this->sendRequest(self::MerchantsBaseURL . '/' . $merchantId . '/' . self::URLS['instant_refunds_mode'], Requests::GET, $params);
+        $mode = '';
+
+        $scroogeResponse = $this->sendRequest(self::MerchantsBaseURL . '/' . $merchantId . '/' . self::URLS['instant_refunds_mode'], Requests::GET, $params);
+
+        $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
+
+        if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
+        {
+            $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
+
+            $responseStatus = $scroogeResponseBody[self::RESPONSE_STATUS] ?? false;
+
+            // If the status is false or if the mode is empty we are decisioning the speed to normal
+            if ($responseStatus === true)
+            {
+                $mode = $scroogeResponseBody[self::MODE] ?? '';
+            }
+        }
+
+        return $mode;
     }
 
     /**

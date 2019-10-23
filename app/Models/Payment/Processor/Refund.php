@@ -1389,6 +1389,10 @@ trait Refund
 
             $this->createTransactionForRefund($this->refund, $payment);
 
+            //
+            // Unsetting refund -> mode_requested because the mode_requested is a virtual attribute not being saved in
+            // the database. Scrooge is storing the mode_requested attribute - which is being sent as part of refund data
+            //
             unset($this->refund->mode_requested);
 
             //
@@ -1448,7 +1452,7 @@ trait Refund
 
         if ($refund->isRefundSpeedInstant() === true)
         {
-            $this->setRefundModeRequested($payment, $refund);
+            $this->setRefundModeAndSpeed($payment, $refund);
 
             // Speed could have changed to normal if mode is not supported
             if ($refund->isRefundSpeedInstant() === true)
@@ -2745,7 +2749,7 @@ trait Refund
         ];
     }
 
-    protected function setRefundModeRequested(Payment\Entity $payment, RefundEntity &$refund)
+    protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
     {
         // Using RazorX to control use of mode decisioning - call to scrooge during launch phase
         $variant = $this->app->razorx->getTreatment(
@@ -2776,52 +2780,23 @@ trait Refund
 
                 if ($payment->hasCard() === true)
                 {
-                    $networkCode = $payment->card->getNetworkCode();
-
-                    $queryParams[RefundConstants::NETWORK_CODE] = $networkCode;
+                    $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
 
                     $iin = $payment->card->iinRelation;
 
                     if ($iin !== null)
                     {
-                        $cardType = strtolower($iin->getType());
-
-                        $cardIssuer = $iin->getIssuer();
-
-                        $queryParams[RefundConstants::CARD_TYPE] = $cardType;
-                        $queryParams[RefundConstants::ISSUER] = $cardIssuer;
+                        $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
+                        $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
                     }
                 }
             }
 
-            $scroogeResponse = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
+            $mode = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
 
-            $scroogeResponseCode = $scroogeResponse[RefundConstants::RESPONSE_CODE];
-
-            if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
-            {
-                $scroogeResponseBody = $scroogeResponse[RefundConstants::RESPONSE_BODY];
-
-                $mode =
-                    (empty($scroogeResponseBody[RefundConstants::MODE]) === false) ? $scroogeResponseBody[RefundConstants::MODE] : '';
-
-                $responseStatus =
-                    (empty($scroogeResponseBody[RefundConstants::RESPONSE_STATUS]) === false) ? $scroogeResponseBody[RefundConstants::RESPONSE_STATUS] : false;
-
-                if ($responseStatus === true)
-                {
-                    $refund->setModeRequested($mode);
-                }
-                else
-                {
-                    $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
-                }
-            }
-            else
-            {
-                // If Scrooge returns a non 200 response, we are decisioning the refund speed to normal
+            // If the status is false or if the mode is empty we are decisioning the speed to normal
+            (empty($mode) === false) ? $refund->setModeRequested($mode) :
                 $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
-            }
         }
     }
 }
