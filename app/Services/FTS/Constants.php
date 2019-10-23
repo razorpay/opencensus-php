@@ -44,6 +44,8 @@ final class Constants
 
     const USERNAME                       = 'username';
 
+    const ON_DEMAND                      = 'on_demand';
+
     const IFSC_CODE                      = 'ifsc_code';
 
     const NARRATION                      = 'narration';

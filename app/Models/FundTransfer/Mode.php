@@ -285,4 +285,12 @@ class Mode
             self::UPI,
         ];
     }
+
+    public static function get24x7FtsTransferModes(): array
+    {
+        return [
+            self::IMPS,
+            self::IFT,
+        ];
+    }
 }
