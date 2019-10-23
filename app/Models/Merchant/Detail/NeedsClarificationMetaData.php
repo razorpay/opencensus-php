@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList as ReasonList;
 use RZP\Models\Merchant\Detail\Entity;
 
-class NeedsClarificationReasons
+class NeedsClarificationMetaData
 {
     const DESCRIPTION    = 'description';
     const REASONS        = 'reasons';
@@ -42,4 +42,19 @@ class NeedsClarificationReasons
                                          ReasonList::ADDRESS_PROOF_OUTDATED
         ],
     ];
+
+    // Supported additional text fields from merchants
+    const TEXT_BUSINESS_DESCRIPTION = 'business_description';
+
+    /**
+     * @param string $textField
+     *
+     * @return bool
+     */
+    public static function isValidPredefinedAdditionalField(string $textField): bool
+    {
+        $key = __CLASS__ . '::' . 'TEXT_' . strtoupper($textField);
+
+        return ((defined($key) === true) and (constant($key) === $textField));
+    }
 }

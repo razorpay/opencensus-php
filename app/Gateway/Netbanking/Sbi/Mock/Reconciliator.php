@@ -29,15 +29,6 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
     protected $fileExtension = FileStore\Format::TXT;
 
-    protected $header = [
-        'Merchant ID',
-        'Gateway Reference Number',
-        'Bank Transaction ReferenceNo',
-        'Transaction Amount',
-        'STATUS',
-        'TRANSACTION Date',
-    ];
-
     protected function addGatewayEntityIfNeeded(array & $data)
     {
         $paymentId = $data[ConstantsEntity::PAYMENT][Payment\Entity::ID];

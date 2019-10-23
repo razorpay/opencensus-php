@@ -11,6 +11,7 @@ use Request;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
@@ -25,6 +26,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
+use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -203,6 +205,38 @@ class Service extends Base\Service
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
             $this->core()->attachSubMerchantOwner($ownerId, $subMerchant);
+        }
+    }
+
+    /**
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @throws \Throwable
+     */
+    protected function detachSubMerchantOwnerIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        $this->repo->assertTransactionActive();
+
+        $partnerUserId = $partner->primaryOwner()->getId();
+
+        if (($partner->isFullyManagedPartner() === true) or
+            ($partner->isAggregatorPartner() === true))
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($partnerUserId, $submerchant) {
+
+                $this->core()->detachSubMerchantOwner($partnerUserId, $submerchant);
+
+                if ($submerchant->primaryOwner() === null)
+                {
+                    $this->trace->info(TraceCode::SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT,
+                                       [
+                                           'submerchant' => $submerchant,
+                                       ]);
+
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_OWNER_NOT_PRESENT_FOR_USER);
+                }
+            });
         }
     }
 
@@ -1352,6 +1386,8 @@ class Service extends Base\Service
     public function getCheckoutPreferences($input)
     {
         $merchant = $this->merchant;
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::PREFERENCES, $input);
 
         $preferences = (new Checkout)->getPreferences($merchant, $this->mode, $input);
 
@@ -2677,6 +2713,50 @@ class Service extends Base\Service
         return $this->mapSubmerchant($partner, $submerchantId);
     }
 
+    public function fetchPartnerIntent(): array
+    {
+
+        $response = (new Settings\Service)->get(
+            Constants::PARTNER,
+            Constants::PARTNER_INTENT);
+
+        $partnerIntent = $response['settings'];
+
+        if ($partnerIntent instanceof Dictionary)
+        {
+            $partnerIntent = null;
+        }
+        else
+        {
+            $partnerIntent = boolVal($partnerIntent);
+        }
+
+        return [
+            Constants::PARTNER_INTENT       => $partnerIntent,
+        ];
+    }
+
+    /**
+     * Updates partner_intent key in settings table
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updatePartnerIntent(array $input): array
+    {
+        (new Validator)->validateInput('update_partner_intent', $input);
+
+        (new Settings\Service)->upsert(
+            Constants::PARTNER,
+            $input);
+
+        // since Settings/Service->upsert does not return anything hence,
+        // returning whatever was passed in input
+        return [
+            Constants::PARTNER_INTENT   => $input[Constants::PARTNER_INTENT],
+        ];
+    }
+
     /**
      * @param string $merchantId
      *
@@ -2754,6 +2834,15 @@ class Service extends Base\Service
         return $partner;
     }
 
+    public function updatePartnerType(array $input): array
+    {
+        (new Validator)->validateInput('update_partner_type', $input);
+
+        $partnerType = $input[Entity::PARTNER_TYPE];
+
+        return $this->core()->updatePartnerType($this->merchant, $partnerType);
+    }
+
     public function getSubmerchant(string $submerchantId, array $input): array
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
@@ -2783,6 +2872,10 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
      */
     public function deletePartnerAccessMap(string $merchantId)
     {
@@ -2790,7 +2883,12 @@ class Service extends Base\Service
 
         $submerchant = $this->fetchSubmerchant($merchantId);
 
-        $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
+
+            $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+
+            $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
+        });
     }
 
     /**

@@ -1604,6 +1604,12 @@ class Gateway
 
     protected function pushDimensions($action, $input, $status, $excData = null)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->runningUnitTests() === false))
+        {
+            return;
+        }
+
         $gatewayMetric = new Metric;
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);

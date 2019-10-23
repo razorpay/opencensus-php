@@ -11,6 +11,8 @@ use RZP\Gateway\Netbanking\Corporation\ReconciliationFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         return $row[ReconciliationFields::MERCHANT_TXN_ID];

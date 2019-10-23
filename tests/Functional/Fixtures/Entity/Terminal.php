@@ -87,6 +87,7 @@ class Terminal extends Base
         $this->createSharedNetbankingCubTerminal();
         $this->createSharedNetbankingIbkTerminal();
         $this->createSharedNetbankingIdbiTerminal();
+        $this->createSharedNetbankingUbiTerminal();
         $this->createSharedNetbankingSbiTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
@@ -2450,6 +2451,24 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedNetbankingUbiTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_UBI_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_UBI,
+            'gateway_merchant_id'   => 'netbanking_ubi_merchant_id',
+            'netbanking'            => 1,
+            'gateway_secure_secret' => 'random_secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingCbiTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
@@ -3030,6 +3049,55 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createDirectSettlementAxisMigsTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectseTmnl',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'axis_migs',
+            'gateway_merchant_id'       => '12345678',
+            'gateway_terminal_id'       => 'abcde1',
+            'gateway_terminal_password' => 'abcdef',
+            'gateway_secure_secret'     => 'supersecret',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createDirectSettlementCybersourceTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectseTmnl',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'cybersource',
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'     => 'secret',
             'type'                      => [
                 Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
                 Type::NON_RECURRING                    => '1',

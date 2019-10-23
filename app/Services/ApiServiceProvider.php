@@ -42,10 +42,12 @@ use RZP\Models\VirtualAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Partner\Commission;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
+use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
@@ -315,6 +317,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerFTSFundTransfer();
 
         $this->registerMozart();
+
+        $this->registerExpress();
     }
 
     /**
@@ -359,6 +363,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'diag',
             'mozart',
             'hubspot',
+            'express',
         ];
     }
 
@@ -544,6 +549,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // line items
             'invoice'                   => Invoice\Entity::class,
             'addon'                     => Addon\Entity::class,
+            'payment_page_item'         => PaymentPageItem\Entity::class,
 
             // transfers
             'transfer'                  => Transfer\Entity::class,
@@ -590,6 +596,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'entity_origin'             => EntityOrigin\Entity::class,
 
             'application'               => Application\Entity::class,
+
+            'commission'                => Commission\Entity::class,
         ]);
     }
 
@@ -711,6 +719,23 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('shield.service', function($app)
         {
             return new Shield($app);
+        });
+    }
+
+    protected function registerExpress()
+    {
+        $this->app->singleton('express', function($app)
+        {
+            $mock = $app['config']->get('applications.express.mock');
+
+            if ($mock === true)
+            {
+                return new Mock\Express($app);
+            }
+            else
+            {
+                return new Express($app);
+            }
         });
     }
 

@@ -449,6 +449,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
         Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
@@ -739,6 +740,13 @@ class Validator extends Base\Validator
     protected static $netbankingSibEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_sib',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
+    protected static $netbankingUbiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_ubi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingFederalTerminalRules = [

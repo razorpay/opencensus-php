@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Payout;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Models\Admin\Permission as AdminPermission;
+
 use Config;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
@@ -16,16 +18,20 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use Illuminate\Support\Facades\Artisan;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PayoutTest extends TestCase
 {
     use PaymentTrait;
+    use HeimdallTrait;
     use SettlementTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use PayoutTrait;
 
     public function setUp()
     {
@@ -392,8 +398,175 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    protected function createQueuedOrPendingPayout(array $attributes = [])
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => $attributes["account_number"] ?? '2224440041626905',
+                'amount'                => $attributes["amount"] ?? 10000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'queue_if_low_balance'  => $attributes["queue_if_low_balance"] ?? 0,
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->sendRequest($request);
+    }
+
+    public function testDashboardSummary()
+    {
+
+        // Create second Balance
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'direct',
+            'channel' => 'rbl',
+        ];
+
+        $secondBankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        // Create Second Bank Account
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $secondBankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
+        $virtualAccount->balance()->associate($secondBankingBalance);
+        $virtualAccount->save();
+
+        $secondBankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $secondBankingBalance->save();
+
+        // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+
+        $secondBankingAccountAttributes = [
+            'id'                    =>  'DEcba4321DEcba',
+            'account_number'        =>  '2224440041626999',
+            'balance_id'            =>  $secondBankingBalance->getId(),
+            'account_type'          =>  'current',
+        ];
+
+        $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
+
+        // Create two queued payouts
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  20000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
+
+        $secondQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626906',
+            'amount'                =>  30000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes);
+
+        // Setup the payout workflow
+
+        $this->app['config']->set('heimdall.workflows.mock', false);
+        $this->app['config']->set('heimdall.permissions.payouts.create_payout.assignable', true);
+
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $workflow = $this->getDbLastEntity('workflow');
+
+        $workflowDefaultPermissions = (new AdminPermission\Repository)
+                                    ->retrieveIdsByNames([AdminPermission\Name::CREATE_PAYOUT]);
+
+        // Attach permissions to the created workflow.
+        $workflow->permissions()->sync($workflowDefaultPermissions);
+
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => 'workflowId1000']);
+
+        // Create 2 pending payouts
+
+        $firstPendingPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  54321
+        ];
+
+        $this->createQueuedOrPendingPayout($firstPendingPayoutAttributes);
+
+        $secondPendingPayoutAttributes = [
+            'account_number'        =>  '2224440041626906',
+            'amount'                =>  12345
+        ];
+
+        $this->createQueuedOrPendingPayout($secondPendingPayoutAttributes);
+
+        $role = $this->getDbEntityById('role', 'RzpChekrRoleId');
+
+        $user = $this->getDbEntityById('user','MerchantUser01');
+
+        $user->roles()->attach($role);
+
+        $this->ba->proxyAuth();
+
+        $completeSummary = $this->startTest();
+
+        $firstBankingAccountId = $bankingAccount->getPublicId();
+        $secondBankingAccountId = $secondBankingAccount->getPublicId();
+
+        $queuedSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::QUEUED];
+        $pendingSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::PENDING];
+        $queuedSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::QUEUED];
+        $pendingSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::PENDING];
+
+
+        $this->assertEquals($queuedSummaryFirstAccount['count'],1);
+        $this->assertEquals($queuedSummaryFirstAccount['total_amount'],20000099);
+        $this->assertEquals($queuedSummaryFirstAccount['balance'],"10000000");
+
+        $this->assertEquals($pendingSummaryFirstAccount['count'],1);
+        $this->assertEquals($pendingSummaryFirstAccount['total_amount'],54321);
+
+        $this->assertEquals($queuedSummarySecondAccount['count'],1);
+        $this->assertEquals($queuedSummarySecondAccount['total_amount'],30000099);
+        $this->assertEquals($queuedSummarySecondAccount['balance'],"10000000");
+
+        $this->assertEquals($pendingSummarySecondAccount['count'],1);
+        $this->assertEquals($pendingSummarySecondAccount['total_amount'],12345);
+    }
+
     public function testCreateQueuedPayout()
     {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->createBankingAccount(['balance_id' => $balanceId]);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
         $currentBalance = $this->getDbLastEntity('balance');
 
         $response = $this->startTest();
@@ -412,10 +585,12 @@ class PayoutTest extends TestCase
 
         $this->startTest();
 
-        $summary = $this->makePayoutQueueSummaryRequest();
+        $summary = $this->makePayoutSummaryRequest();
 
-        $this->assertEquals(2, $summary['count']);
-        $this->assertEquals(20000002, $summary['total_amount']);
+        $bankingAccountId = $bankingAccount->getPublicId();
+
+        $this->assertEquals(2, $summary[$bankingAccountId]['queued']['count']);
+        $this->assertEquals(20000002, $summary[$bankingAccountId]['queued']['total_amount']);
 
         $dispatchResponse = $this->dispatchQueuedPayouts();
 
@@ -474,6 +649,8 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutToCardFundAccountUsingUpi()
     {
+        $this->markTestSkipped('Disabling Test since UPI is disabled temperorily in FTA');
+
         $this->fixtures->create(
             'fund_account',
             [
@@ -781,22 +958,6 @@ class PayoutTest extends TestCase
         // ----- End of testing payout retry for failed payouts ------ //
 
         return $newPayout;
-    }
-
-    protected function retryPayout($id)
-    {
-        $request = [
-            'url' => "/payouts/$id/retry",
-            'method' => 'POST',
-            'content' => []
-        ];
-
-        $this->ba->adminAuth();
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertNotNull($response['id']);
-        $this->assertNotEquals($id, $response['id']);
     }
 
     public function testCreateMerchantPayout()
@@ -1400,11 +1561,11 @@ class PayoutTest extends TestCase
         }
     }
 
-    protected function makePayoutQueueSummaryRequest()
+    protected function makePayoutSummaryRequest()
     {
         $request = [
             'method'  => 'GET',
-            'url'     => '/payouts/queued/amount',
+            'url'     => '/payouts/_meta/summary',
         ];
 
         $this->ba->proxyAuth();

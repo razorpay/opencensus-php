@@ -11,6 +11,8 @@ use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     public function getPaymentId(array $row)
     {
         if (empty($row[Constants::RZP_PAYMENT_ID]) === false)

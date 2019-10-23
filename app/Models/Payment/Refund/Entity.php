@@ -464,6 +464,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE2);
     }
 
+    public function getReference3()
+    {
+        return $this->getAttribute(self::REFERENCE3);
+    }
+
     public function getSettledBy()
     {
         $settledBy = $this->getAttribute(self::SETTLED_BY);
@@ -781,6 +786,11 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setReference3(string $value)
+    {
+        $this->setAttribute(self::REFERENCE3, $value);
     }
 
     public function setReceipt(string $value)

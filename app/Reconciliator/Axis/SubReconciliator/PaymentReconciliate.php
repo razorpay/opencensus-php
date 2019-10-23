@@ -57,6 +57,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     const MIN_ROW_FILLED_DATA_RATIO = 0.28;
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         if ($this->isCybersource($row) === true)
@@ -333,7 +335,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'trace_code'      => TraceCode::RECON_PARSE_ERROR,
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
-                    'row'             => $row,
+                    'payment_id'      => $this->payment->getId(),
                     'gateway'         => $this->gateway
                 ]);
 

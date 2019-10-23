@@ -23,6 +23,7 @@ class Repository extends BaseRepository
         Entity::MERCHANT_ID       => 'sometimes|string|min:14|max:18',
         Entity::SOURCE_TYPE       => 'filled|string',
         Entity::PARTNER_CONFIG_ID => 'sometimes|string|size:14',
+        Entity::TRANSACTION_ID    => 'sometimes|string|size:14',
         self::EXPAND . '.*'       => 'sometimes|in:source.merchant',
     ];
 
@@ -50,6 +51,25 @@ class Repository extends BaseRepository
     public function validateModel($attribute, $model)
     {
         CommissionModel::validate($model);
+    }
+
+    /**
+     * Fetch all commissionIds which are yet to be captured
+     *
+     * @param string $partnerId
+     *
+     * @return array
+     */
+    public function getCommissionIdsToBeCaptured(string $partnerId): array
+    {
+        $commissionIds = $this->newQuery()
+                              ->where(Entity::STATUS, Status::CREATED)
+                              ->where(Entity::PARTNER_ID, $partnerId)
+                              ->select(Entity::ID)
+                              ->get()
+                              ->getPublicIds();
+
+        return $commissionIds;
     }
 
     /**

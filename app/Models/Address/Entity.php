@@ -226,4 +226,19 @@ class Entity extends Base\PublicEntity
             ],
             $delimiter);
     }
+
+    public function buildForPayment($input)
+    {
+        $this->modify($input);
+
+        $this->validateInput('create_for_payment', $input);
+
+        $this->generate($input);
+
+        $this->unsetInput('create_for_payment', $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 }

@@ -52,7 +52,7 @@ trait TestsBusinessBanking
         bool $skipFeatureAddition = false,
         int $balance = 0,
         string $balanceType = AccountType::SHARED,
-        $channel = Channel::YESBANK)
+        $channel = null)
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);

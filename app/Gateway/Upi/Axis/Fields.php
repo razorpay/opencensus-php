@@ -52,6 +52,7 @@ class Fields
     const CHECK_STATUS_DATE_TIME       = 'dateTime';
     const CHECK_STATUS_DEBIT_VPA       = 'debitVpa';
     const CHECK_STATUS_CREDIT_VPA      = 'creditVpa';
+    const CHECK_STATUS_TXN_ID          = 'txnid';
     const STATUS                       = 'status';
     const REMARKS                      = 'remarks';
 

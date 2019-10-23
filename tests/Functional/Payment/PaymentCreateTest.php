@@ -8,20 +8,22 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Exception;
-use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
 class PaymentCreateTest extends TestCase
 {
@@ -46,6 +48,102 @@ class PaymentCreateTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+    }
+
+    public function testCreatePaymentWithBillingAddress()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+
+        $paymentArray['billing_address'] = $billingAddressArray;
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+
+        // fetching payment in admin auth.
+        $paymentEntity = $this->getLastPayment(true);
+
+        $addressEntity = $this->getLastEntity('address', true);
+
+
+        $this->assertEquals($paymentFromResponse['id'], $paymentEntity['id']);
+
+        $this->assertEquals($paymentEntity['id'], $addressEntity['entity_id']);
+
+        $this->assertEquals('payment', $addressEntity['entity_type']);
+
+        foreach (['line1', 'line2', 'city', 'state', 'country'] as $attribute)
+        {
+            $this->assertEquals($billingAddressArray[$attribute], $addressEntity[$attribute]);
+        }
+
+        // address entity stores zip code as "zipcode"
+        // in input to paymentcreate, we get zip code as "postal_code"
+        $this->assertEquals($billingAddressArray['postal_code'], $addressEntity['zipcode']);
+    }
+
+    public function testCreatePaymentWithBillingAddressWithMandatoryFieldsMissing()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $originalBillingAddressArray = $this->getDefaultBillingAddressArray();
+
+        foreach(['line1', 'city', 'country'] as $mandatoryField)
+        {
+            $billingAddressArray = $originalBillingAddressArray;
+
+            unset($billingAddressArray[$mandatoryField]);
+
+            try
+            {
+                $paymentArray['billing_address'] = $billingAddressArray;
+
+                $this->doAuthAndCapturePayment($paymentArray);
+
+                $this->fail('Should have thrown exception because ' . $mandatoryField . ' was missing');
+            }
+            catch(Exception\BadRequestValidationFailureException $exception)
+            {
+                $this->assertContains($mandatoryField, $exception->getMessage());
+            }
+        }
+    }
+
+    public function testCreatePaymentWithBillingAddressWithOptionalFieldsMissing()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $originalBillingAddressArray = $this->getDefaultBillingAddressArray();
+
+        foreach(['line2', 'postal_code', 'state'] as $optionalField)
+        {
+            $billingAddressArray = $originalBillingAddressArray;
+
+            unset($billingAddressArray[$optionalField]);
+
+            $paymentArray['billing_address'] = $billingAddressArray;
+
+            $this->doAuthAndCapturePayment($paymentArray);
+        }
+    }
+
+
+    public function testCreatePaymentWithoutBillingAddress()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentFromResponse['id'], $paymentEntity['id']);
+
+        $addressEntity = $this->getDbEntity('address', [
+                                 'entity_type' => 'payment',
+                                 'entity_id'   => Entity::verifyIdAndStripSign($paymentFromResponse['id'])
+                            ]);
+
+        $this->assertNull($addressEntity);
     }
 
     public function testCreatePaymentWithoutOrderId()
@@ -183,6 +281,35 @@ class PaymentCreateTest extends TestCase
         unset($payment['method']);
 
         $this->doAuthPayment($payment);
+    }
+
+    public function testCreatePaymentForNonRegisteredBusinessMoreThanMaxAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Merchant::CATEGORY => 5399,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID             => $merchantId,
+            DetailEntity::BUSINESS_TYPE     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '50000001';
+
+        $testData = $this->testData[__FUNCTION__];
+        
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testCreatePaymentWithoutCardNumber()
@@ -978,6 +1105,38 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('hdfc', $payment['settled_by']);
+    }
+
+    public function testDirectSettlementAxisMigsPayment()
+    {
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('hdfc', $payment['settled_by']);
+    }
+
+    public function testDirectSettlementCybersourcePayment()
+    {
+        $this->fixtures->create('terminal:direct_settlement_cybersource_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('cybersource', $payment['gateway']);
         $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
         $this->assertEquals('hdfc', $payment['settled_by']);
     }

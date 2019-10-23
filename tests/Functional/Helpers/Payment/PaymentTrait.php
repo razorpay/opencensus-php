@@ -2114,6 +2114,21 @@ trait PaymentTrait
         });
     }
 
+    protected function mockExpressSendRequest($closure, $times = 1)
+    {
+        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+
+        $express->shouldAllowMockingProtectedMethods();
+
+        $express->shouldReceive('sendRequest')
+                ->times($times)
+                ->andReturnUsing($closure);
+
+        $this->app->instance('express', $express);
+
+        return $express;
+    }
+
     protected function mockShield()
     {
         $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();
@@ -2241,4 +2256,19 @@ trait PaymentTrait
 
         $this->app->instance('fts_create_account', $fts);
     }
+
+    protected function getDefaultBillingAddressArray()
+    {
+        $address = [
+            'line1'         => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
+            'line2'         => 'Hosur Main Road, Adugodi',
+            'city'          => 'Bengaluru',
+            'state'         => 'Karnataka',
+            'country'       => 'in',
+            'postal_code'   => '560030',
+        ];
+
+        return $address;
+    }
+
 }

@@ -84,6 +84,12 @@ return [
         ]
     ],
 
+    'express' => [
+        'mock'      => env('EXPRESS_MOCK', false),
+        'url'       => env('EXPRESS_URL'),
+        'password'  => env('EXPRESS_PASSWORD'),
+    ],
+
     'raven' => [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),

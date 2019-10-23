@@ -85,4 +85,11 @@ class DisputeController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getDefaultCreationEmails(string $merchantId)
+    {
+        $data = $this->service()->getDefaultDisputeEmails($merchantId);
+
+        return ApiResponse::json($data);
+    }
 }
