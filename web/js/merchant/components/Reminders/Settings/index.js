@@ -6,10 +6,9 @@ import { findBy, objectDiff, isBlank } from 'rzp/utils/rzp-utils';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
-import AdvancedSettings from './AdvancedSettings';
-import EmailPreviewModal from './EmailPreviewModal';
 import Footer from './Footer';
 import Header from './Header';
+import AdvancedSettings from './AdvancedSettings';
 import ReminderOptionSetting from './ReminderOptionSetting';
 
 const initState = {
@@ -173,21 +172,6 @@ export default class ReminderSetting extends React.Component {
     });
   };
 
-  showReminderEMailPreview = () => {
-    this.props.openModal({
-      size: 'large',
-      className: 'reminders-email-preview-modal',
-      component: (
-        <EmailPreviewModal
-          onClose={this.props.closeModal}
-          subject={this.props.emailDetails.subject}
-          businessName={this.props.user.business_name}
-          contentList={this.props.emailDetails.contentList}
-        />
-      ),
-    });
-  };
-
   isChanged = () => {
     return !isBlank(
       objectDiff(this.state.__stashed_settings__, this.state.settings)
@@ -284,7 +268,6 @@ export default class ReminderSetting extends React.Component {
                 <Footer
                   isSaveBtnDisable={!(this.isChanged() && this.isValid())}
                   onSaveClick={this.onSaveClick}
-                  onPreviewClick={this.showReminderEMailPreview}
                   scheduledTime={settings.advancedSettings.scheduledTime}
                 />
               </div>

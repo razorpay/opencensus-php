@@ -7,8 +7,6 @@ import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
 import { AmountTooltip } from 'rzp/ui/Amount';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
-import { getDaysText } from 'rzp/utils/rzp-utils';
-
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import { trackHelpClick } from '../ga';
@@ -265,7 +263,7 @@ export default [
     fieldLabel: 'Send auto reminders',
     description: ({ props, state }) => {
       return getRemindersOptionDescription(
-        props.paymentLinksRemindersSettings.remindersDaysList,
+        props.paymentLinksRemindersSettings.count,
         Number(state._name.hasNoExpiry)
       );
     },
@@ -325,12 +323,14 @@ const ReminderNotEnabled = ({ type = '' }) => (
   </div>
 );
 
-const getRemindersOptionDescription = (list, hasNoExpiry) => {
-  const days = getDaysText(list);
-
+const getRemindersOptionDescription = (count, hasNoExpiry) => {
   if (hasNoExpiry) {
-    return `Reminders will be sent on expiry day and on ${days} day before expiry date.`;
+    return `${
+      count.withOutExpireRemindersCount
+    } auto reminders will be sent to this customer based on the reminder settings`;
   }
 
-  return `Reminders will be sent on ${days} day after issue date.`;
+  return `${
+    count.withExpireRemindersCount
+  } auto reminders will be sent to this customer based on the reminder settings`;
 };
