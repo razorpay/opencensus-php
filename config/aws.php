@@ -41,7 +41,6 @@ return [
     'sns_target_arn'        => [
         'sms'               => env('AWS_RAVEN_TARGET_ARN'),
         'lumberjack'        => env('AWS_LUMBERJACK_TARGET_ARN'),
-        'stage-doppler'     => env('AWS_DOPPLER_TARGET_ARN'),
     ],
 
     'mock' => env('AWS_S3_MOCK')
