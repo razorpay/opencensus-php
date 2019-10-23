@@ -1780,6 +1780,18 @@ final class Route
         'invoice_cancel',
     ];
 
+    // The below routes can be used with partner credentials without X-Razorpay-Account header, 
+    // in which case, partner will be able to make request on his own behalf, just like private auth
+    public static $partnerCredentialsWithoutSubmerchantIdWhitelist = [
+        'account_create',
+        'account_list',
+        'account_fetch',
+        'account_edit',
+        'account_action',
+        'merchant_activation_status_partner',
+        'merchant_activation_update_partner',
+    ];    
+
     public static $proxy = [
         'fetch_partner_intent',
         'update_partner_intent',
