@@ -31,6 +31,8 @@ class Entity extends Base\Entity
 
     protected $generateIdOnCreate = false;
 
+    public $incrementing = true;
+
     protected $entity = 'workflow_payout_amount_rules';
 
     protected $fillable = [

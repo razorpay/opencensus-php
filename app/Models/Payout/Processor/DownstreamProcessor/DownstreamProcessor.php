@@ -49,7 +49,7 @@ class DownstreamProcessor
         {
             $accountType = $this->getAccountTypeForFundTransfer();
 
-            $channel = $this->getChannelForFundTransfer();
+            $channel = $this->getChannelForFundTransfer($accountType);
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
@@ -70,9 +70,25 @@ class DownstreamProcessor
      * channel for processing the payout should be CITI and ICICI.
      * The precedence between ICICI and CITI is ICICI.
      *
+     * @param $accountType
      * @return string
      */
-    protected function getChannelForFundTransfer(): string
+    protected function getChannelForFundTransfer($accountType): string
+    {
+        if ($accountType === AccountType::DIRECT)
+        {
+            return $this->getChannelForDirectAccountFundTransfer();
+        }
+
+        return $this->getChannelForSharedAccountFundTransfer();
+    }
+
+    protected function getChannelForDirectAccountFundTransfer()
+    {
+        return $this->payout->balance->getChannel();
+    }
+
+    protected function getChannelForSharedAccountFundTransfer()
     {
         $merchant = $this->payout->merchant;
 
@@ -95,7 +111,7 @@ class DownstreamProcessor
 
         $iciciMids = (new AdminService())->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
 
-        return (in_array($mid, $iciciMids, true));
+        return (in_array($mid, $iciciMids, true) === true);
     }
 
     protected function checkIfChannelShouldBeCiti(Merchant $merchant): bool
@@ -104,6 +120,6 @@ class DownstreamProcessor
 
         $citiMids = (new AdminService())->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
 
-        return (in_array($mid, $citiMids, true));
+        return (in_array($mid, $citiMids, true) === true);
     }
 }
