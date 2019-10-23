@@ -106,7 +106,7 @@ class Doppler
 
             $os = null;
 
-            $upiType = $payment['_']['flow'];
+            $upiType = $payment->getMetadata("flow");
 
             $paymentAnalytics = $payment->getMetadata("payment_analytics");
 
