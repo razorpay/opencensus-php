@@ -5,10 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use Mail;
 use Queue;
 use Config;
-
 use Carbon\Carbon;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Diag\EventCode;
@@ -29,9 +26,11 @@ use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -428,7 +427,7 @@ class Core extends Base\Core
         }
         else if ($activationFlow === ActivationFlow::GREYLIST)
         {
-            $mailer = new L2SubmissionWhitelist($merchant->getId());
+            $mailer = new L2SubmissionGreylist($merchant->getId());
         }
 
         Mail::queue($mailer);

@@ -21,8 +21,6 @@ class L2SubmissionWhitelist extends Mailable
 
     protected $bankingAccount = null;
 
-    protected $merchantId;
-
     protected $config;
 
     public function __construct(string $merchantId)
