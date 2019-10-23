@@ -4,12 +4,16 @@ namespace RZP\Tests\Functional\PaymentLink;
 
 use Carbon\Carbon;
 
+use RZP\Models\Item;
+use RZP\Models\Order;
 use RZP\Services\Elfin;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\LineItem;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -23,7 +27,9 @@ class PaymentLinkTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    const TEST_PL_ID = '100000000000pl';
+    const TEST_PL_ID    = '100000000000pl';
+    const TEST_PPI_ID   = '10000000000ppi';
+    const TEST_PPI_ID_2 = '10000000001ppi';
 
     public function setUp()
     {
@@ -35,6 +41,16 @@ class PaymentLinkTest extends TestCase
     }
 
     public function testCreatePaymentLink()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkWithPaymentPageItem()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkWithMultiplePaymentPageItem()
     {
         $this->startTest();
     }
@@ -142,6 +158,29 @@ class PaymentLinkTest extends TestCase
         $this->makePaymentForPaymentLinkAndAssert($paymentLink);
 
         $this->getLastPaymentLinkEntityAndAssert($this->testData[__FUNCTION__]['payment_link']);
+    }
+
+    public function testPaymentLinkMakePaymentWithOrder()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat();
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $payment = $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order);
+
+        $paymentPageItem1 = $this->getDbEntityById('payment_page_item', self::TEST_PPI_ID);
+
+        $this->assertEquals(1, $paymentPageItem1->getQuantitySold());
+
+        $this->assertEquals(5000, $paymentPageItem1->getTotalAmountPaid());
+
+        $paymentPageItem2 = $this->getDbEntityById('payment_page_item', self::TEST_PPI_ID_2);
+
+        $this->assertEquals(1, $paymentPageItem2->getQuantitySold());
+
+        $this->assertEquals(10000, $paymentPageItem2->getTotalAmountPaid());
     }
 
     public function testPaymentLinkMakePaymentCustomerFeeBearer()
@@ -394,6 +433,24 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderForPaymentLink()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithMultipleItem()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID);
+
+        $this->createPaymentPageItems(self::TEST_PL_ID, [['id' => self::TEST_PPI_ID], ['id' => self::TEST_PPI_ID_2]]);
+
+        $this->startTest();
+    }
+
     public function testMinExpiryTimeForActivation()
     {
         $attributes = [
@@ -480,6 +537,128 @@ class PaymentLinkTest extends TestCase
         return $this->fixtures->create('payment_link', $attributes);
     }
 
+    protected function createPaymentPageItem(string $id = self::TEST_PPI_ID, string $paymentLinkId = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\PaymentPageItem\Entity
+    {
+        $attributes[PaymentLink\PaymentPageItem\Entity::ID]              = $id;
+        $attributes[PaymentLink\PaymentPageItem\Entity::PAYMENT_LINK_ID] = $paymentLinkId;
+
+        $defaultItem = [
+            Item\Entity::ID     => $id,
+            Item\Entity::TYPE   => Item\Type::PAYMENT_PAGE,
+            Item\Entity::NAME   => 'amount',
+            Item\Entity::AMOUNT => null
+        ];
+
+        $defaultItem = array_merge($defaultItem, array_pull($attributes, PaymentLink\PaymentPageItem\Entity::ITEM, []));
+
+        $item = $this->fixtures->create('item', $defaultItem);
+
+        $attributes[PaymentLink\PaymentPageItem\Entity::ITEM_ID] = $item->getId();
+
+        return $this->fixtures->create('payment_page_item', $attributes);
+    }
+
+    protected function createPaymentPageItems(string $paymentLinkId = self::TEST_PL_ID, array $paymentPageItems = [])
+    {
+        $data = [];
+
+        foreach ($paymentPageItems as $paymentPageItem)
+        {
+            $data[] = $this->createPaymentPageItem(
+                $paymentPageItem['id'] ?? UniqueIdEntity::generateUniqueId(),
+                $paymentLinkId,
+                $paymentPageItem);
+        }
+
+        return $data;
+    }
+
+    protected function createPaymentLinkAndOrderForThat(array $paymentLinkAttribute = [], array $orderAttribute = [])
+    {
+        $defaultPaymentLinkAttribute = [
+            PaymentLink\Entity::ID     => self::TEST_PL_ID,
+            PaymentLink\Entity::AMOUNT => null,
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 5000,
+                    ]
+                ],
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 10000,
+                    ]
+                ]
+            ]
+        ];
+
+        $paymentLinkAttribute = array_merge($defaultPaymentLinkAttribute, $paymentLinkAttribute);
+
+        $paymentPageItemsAttribute = array_pull($paymentLinkAttribute, PaymentLink\Entity::PAYMENT_PAGE_ITEMS, []);
+
+        $paymentLink = $this->createPaymentLink($paymentPageItemsAttribute[PaymentLink\Entity::ID] ?? self::TEST_PL_ID, $paymentLinkAttribute);
+
+        $paymentPageItems = $this->createPaymentPageItems(
+            $paymentPageItemsAttribute[PaymentLink\Entity::ID] ?? self::TEST_PL_ID,
+            $paymentPageItemsAttribute);
+
+        $data = [];
+
+        $data['payment_link'] = $paymentLink;
+
+        $data['payment_link_order'] = $this->createOrderForPaymentLink($paymentPageItems, $orderAttribute);
+
+        return $data;
+    }
+
+    protected function createOrderForPaymentLink($paymentPageItems, array $orderAttribute = [])
+    {
+        $data = [];
+
+        $totalAmount = 0;
+
+        foreach ($paymentPageItems as $paymentPageItem)
+        {
+            $item = $paymentPageItem[PaymentLink\PaymentPageItem\Entity::ITEM];
+
+            $amount = empty($item->getAmount()) === true ? 10000 : $item->getAmount();
+
+            $totalAmount += 1 * $amount;
+        }
+
+        $order = $this->fixtures->create('order', ['amount' => $totalAmount]);
+
+        $data['order'] = $order;
+
+        foreach ($paymentPageItems as $paymentPageItem)
+        {
+            $item = $paymentPageItem[PaymentLink\PaymentPageItem\Entity::ITEM];
+
+            $itemForLineItemAttributes = [
+                Item\Entity::ID     => UniqueIdEntity::generateUniqueId(),
+                Item\Entity::AMOUNT => empty($item->getAmount()) === true ? 10000 : $item->getAmount()
+            ];
+
+            $itemForLineItem = $this->fixtures->create('item', $itemForLineItemAttributes);
+
+            $lineItem = $this->fixtures->create('line_item', [
+                LineItem\Entity::ID          => $paymentPageItem->getId(),
+                LineItem\Entity::ITEM_ID     => $itemForLineItem->getId(),
+                LineItem\Entity::REF_TYPE    => 'payment_page_item',
+                LineItem\Entity::REF_ID      => $paymentPageItem->getId(),
+                LineItem\Entity::ENTITY_ID   => $order->getId(),
+                LineItem\Entity::ENTITY_TYPE => 'order',
+                LineItem\Entity::AMOUNT      => $itemForLineItem->getAmount(),
+            ]);
+
+            $data['line_items'][] = $lineItem->toArrayPublic();
+        }
+
+        return $data;
+    }
+
     /**
      * Helper method to make payment for given payment link (with auto-capture) and do the necessary assertions
      *
@@ -498,6 +677,25 @@ class PaymentLinkTest extends TestCase
 
         $this->assertEquals($paymentLink->getAmount(), $payment->getAmount());
         $this->assertEquals($paymentLink->getId(), $payment->getPaymentLinkId());
+
+        return $payment;
+    }
+
+    protected function makePaymentForPaymentLinkWithOrderAndAssert(PaymentLinkModel\Entity $paymentLink, Order\Entity $order)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
+        $payment[Payment\Entity::AMOUNT]          = $order->getAmount();
+        $payment[Payment\Entity::ORDER_ID]        = $order->getPublicId();
+
+        $payment = $this->doAuthAndGetPayment($payment, [
+            Payment\Entity::STATUS   => Payment\Status::CAPTURED,
+            Payment\Entity::ORDER_ID => $order->getPublicId(),
+        ]);
+
+        $this->assertEquals($order->getAmount(), $payment['amount']);
+        $this->assertEquals($order->getPublicId(), $payment['order_id']);
 
         return $payment;
     }

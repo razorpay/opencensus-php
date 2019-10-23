@@ -17,6 +17,10 @@ class Base extends FundAccountPayout\Base
         {
             $this->setChannel($payout);
 
+            // TODO: Remove this when `Mode is required` goes live for all payouts.
+            // Currently only checks for mode when channel is ICICI or CITI
+            $payout->getValidator()->validateModeSetForChannels();
+
             $this->createTransaction($payout);
 
             //

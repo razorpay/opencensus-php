@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
-use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Entity;
 
 /**
  * Interface ActivationFlowInterface
@@ -13,12 +13,12 @@ use RZP\Models\Merchant\Detail\Entity;
  */
 interface ActivationFlowInterface
 {
-    public function process(Entity $merchantDetails);
+    public function process(Entity $merchant);
 
     /**
      * Contains validation specific to the activation flow (L2 activation form)
      *
-     * @param Entity $merchantDetails
+     * @param Entity $merchant
      */
-    public function validateFullActivationForm(Entity $merchantDetails);
+    public function validateFullActivationForm(Entity $merchant);
 }

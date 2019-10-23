@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
@@ -5009,6 +5010,74 @@ class MerchantTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntent()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', true)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntentForMerchantWithoutPartnerIntent()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntentWithPartnerIntentFalse()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', false)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentTrue()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', true)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentFalse()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', false)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentNull()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

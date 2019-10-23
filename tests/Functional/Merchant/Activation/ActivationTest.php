@@ -95,6 +95,15 @@ class ActivationTest extends TestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+
+        // assert legal entity data
+        $legalEntity = $this->getDbLastEntity('legal_entity');
+
+        $this->assertEquals($merchant->getLegalEntityId(), $legalEntity->getId());
+        $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
+        $this->assertEquals($legalEntity->getMcc(), 5691);
+        $this->assertEquals('ecommerce', $legalEntity->getBusinessCategory());
+        $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
     }
 
     public function testInstantActivationForForUnRegisteredTORegisteredSwitch()

@@ -2317,8 +2317,12 @@ class Processor
 
         if ($invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
         {
+            $paymentNotes = $payment->getNotes()->toArray();
 
-            $payment->setNotes($invoice->getNotes()->toArray());
+            if (empty($paymentNotes) === true)
+            {
+                $payment->setNotes($invoice->getNotes()->toArray());
+            }
         }
     }
 

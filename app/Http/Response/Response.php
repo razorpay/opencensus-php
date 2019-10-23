@@ -355,6 +355,8 @@ class Response
             'payment_get_status',
             'fund_account_create_public',
             'payment_validate_account',
+            'payment_page_create_order',
+            'payment_page_create_order_option',
         ];
 
         if (in_array($route, $routes, true) === true)

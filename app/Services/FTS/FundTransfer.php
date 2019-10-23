@@ -16,6 +16,8 @@ use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundTransfer\Holidays as TransferHoliday;
+use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class FundTransfer extends Base
@@ -31,9 +33,11 @@ class FundTransfer extends Base
 
     protected $accountType;
 
-    protected $bankingStartTimeRtgs;
+    protected $bankingStartTime;
 
     protected $bankingEndTimeRtgs;
+
+    protected $bankingEndTimeNeft;
 
     const SOURCE_TYPES = [
         Constants::REFUND,
@@ -57,24 +61,14 @@ class FundTransfer extends Base
     }
 
     /**
-     * @param string $ftaId
      * @return array
      * @throws LogicException
      * @throws \RZP\Exception\RuntimeException
      * @throws \Throwable
      */
-    public function requestFundTransfer(string $ftaId): array
+    public function requestFundTransfer(): array
     {
-        $this->bankingStartTimeRtgs = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
-                                            ->getTimestamp();
-
-        $this->bankingEndTimeRtgs = Carbon::createFromTime(Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
-                                                           Constants::RTGS_REVISED_CUTOFF_MINUTE_MAX,
-                                                           0,
-                                                           Timezone::IST)
-                                                           ->getTimestamp();
-
-        $input = $this->makeRequestUsingType($ftaId);
+        $input = $this->makeRequestUsingType();
 
         $response = $this->createAndSendRequest(
             parent::FUND_TRANSFER_CREATE_URI,
@@ -110,24 +104,17 @@ class FundTransfer extends Base
     }
 
     /**
-     * @param string $ftaId
      * @return array
-     * @throws BadRequestValidationFailureException
      * @throws LogicException
+     * @throws \Exception
      */
-    public function makeRequestUsingType(string $ftaId): array
+    public function makeRequestUsingType(): array
     {
-        $this->fta = $this->FTACore->getFTAEntity($ftaId);
-
         $sourceType = $this->fta->getSourceType();
 
         $purpose    = $this->fta->getPurpose();
 
-        $this->setSourceEntityByType($sourceType);
-
         $product = $sourceType;
-
-        $this->accountType = $this->getAccountType();
 
         if ($sourceType === Constants::FUND_ACCOUNT_VALIDATION)
         {
@@ -174,19 +161,15 @@ class FundTransfer extends Base
     /**
      * @param array $request
      * @return array
-     * @throws BadRequestValidationFailureException
-     * @throws LogicException
      */
     protected function addTransferBlock(array $request): array
     {
-        $mode = $this->getFTSFundTransferMode();
-
         $channel = $this->fta->getChannel();
 
         $sourceType = $this->fta->getSourceType();
 
         $request[Constants::TRANSFER] = [
-            Constants::PREFERRED_MODE    => $mode,
+            Constants::PREFERRED_MODE    => $this->fta->getMode(),
             Constants::AMOUNT            => $this->source->getAmount(),
             Constants::NARRATION         => $this->fta->getNarration(),
             Constants::SOURCE_ID         => $this->fta->getSourceId(),
@@ -211,7 +194,7 @@ class FundTransfer extends Base
 
         if ($sourceType === Entity::PAYOUT)
         {
-            $transferBy  += $this->getTransferSLA($mode);
+            $transferBy  += $this->getTransferSLA($this->fta->getMode());
         }
 
         $request[Constants::TRANSFER] += [
@@ -261,13 +244,13 @@ class FundTransfer extends Base
                         Constants::ACCOUNT_TYPE               => $accountType,
                         Constants::ACCOUNT_NUMBER             => $this->fta->bankAccount->getAccountNumber(),
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
-                        Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity() ?? 'Bangalore',
-                        Constants::BENEFICIARY_EMAIL          => $this->fta->bankAccount->getBeneficiaryEmail() ?? 'no-reply@razorpay.com',
-                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState() ?? 'KA',
-                        Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile() ?? '9999999999',
+                        Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity(),
+                        Constants::BENEFICIARY_EMAIL          => $this->fta->bankAccount->getBeneficiaryEmail(),
+                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState(),
+                        Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile(),
                         Constants::IS_VIRTUAL_ACCOUNT         => $this->fta->bankAccount->isVirtual(),
-                        Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1() ?? 'Razorpay',
-                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry() ?? 'IN',
+                        Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1(),
+                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry(),
                 ],
         ];
 
@@ -429,22 +412,22 @@ class FundTransfer extends Base
     {
         if ($this->fta->hasMode() === true)
         {
-            return $this->fta->getMode();
+            return [$this->fta->getMode(), false];
         }
 
         if ($this->accountType === Constants::VPA)
         {
-            return Mode::UPI;
+            return [Mode::UPI, true];
         }
 
         if ($this->accountType === Constants::CARD)
         {
-            return $this->getPaymentModeForCard();
+            return [$this->getPaymentModeForCard(), true];
         }
 
         if ($this->accountType === Constants::BANK_ACCOUNT)
         {
-            return $this->getPaymentModeForBankAccount();
+            return [$this->getPaymentModeForBankAccount(), true];
         }
 
         throw new LogicException('Invalid account type '. $this->accountType);
@@ -481,7 +464,7 @@ class FundTransfer extends Base
 
             $now = Carbon::now(Timezone::IST)->getTimestamp();
 
-            if ((($now >= $this->bankingStartTimeRtgs) and
+            if ((($now >= $this->bankingStartTime) and
                     ($now <= $this->bankingEndTimeRtgs)) and
                 ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
             {
@@ -537,7 +520,7 @@ class FundTransfer extends Base
 
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
-        if ((($now >= $this->bankingStartTimeRtgs) and ($now <= $this->bankingEndTimeRtgs)) and
+        if ((($now >= $this->bankingStartTime) and ($now <= $this->bankingEndTimeRtgs)) and
             ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
         {
             return Mode::RTGS;
@@ -560,5 +543,105 @@ class FundTransfer extends Base
         }
 
         return $sla;
+    }
+
+    public function shouldAllowTransfersViaFts()
+    {
+        list($mode, $shouldUpdateMode) = $this->getFTSFundTransferMode();
+
+        if ($shouldUpdateMode === true)
+        {
+            $this->fta->setMode($mode);
+        }
+
+        if ($mode === Mode::UPI)
+        {
+            return [false, 'Upi not supported'];
+        }
+
+        $allowedModes = Mode::get24x7FtsTransferModes();
+
+        if (in_array($mode, $allowedModes, true) === true)
+        {
+            return [true, 'Allowed modes check passed'];
+        }
+
+        $isHoliday = $this->isHolidayForSource();
+
+        if ($isHoliday === true)
+        {
+            return [false, 'Holiday for source'];
+        }
+
+        return $this->isNeftRtgsSupportedTimings($mode);
+    }
+
+    public function initialize(string $ftaId)
+    {
+        $this->fta = $this->FTACore->getFTAEntity($ftaId);
+
+        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+                                        ->getTimestamp();
+
+        $this->bankingEndTimeRtgs = Carbon::createFromTime(Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
+                                                           Constants::RTGS_REVISED_CUTOFF_MINUTE_MAX,
+                                                           0,
+                                                           Timezone::IST)
+                                           ->getTimestamp();
+
+        $this->bankingEndTimeNeft = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
+
+        $this->accountType = $this->getAccountType();
+
+        $sourceType = $this->fta->getSourceType();
+
+        $this->setSourceEntityByType($sourceType);
+    }
+
+    protected function isNeftRtgsSupportedTimings($mode)
+    {
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($mode === Mode::RTGS)
+        {
+            if (($currentTime >= $this->bankingStartTime) and
+                ($currentTime <= $this->bankingEndTimeRtgs))
+            {
+                return [true, 'Rtgs transfer check passed'];
+            }
+        }
+        else
+        {
+            if (($currentTime >= $this->bankingStartTime) and
+                ($currentTime <= $this->bankingEndTimeNeft))
+            {
+                return [true, 'NEFT transfer check passed'];
+            }
+        }
+
+        return [false, 'NEFT/RTGS transfer check failed'];
+    }
+
+    protected function isHolidayForSource()
+    {
+        $sourceType = $this->fta->getSourceType();
+
+        $isHoliday = false;
+
+        $currentDateTime = Carbon::now(Timezone::IST);
+
+        if (SettlementHoliday::isWorkingDay($currentDateTime) === false)
+        {
+            $isHoliday = true;
+        }
+
+        if ((($sourceType === FundTransferAttempt\Type::PAYOUT) and
+            ($this->fta->source->isBalanceTypeBanking() === true)) and
+            (TransferHoliday::isWorkingDay($currentDateTime) === true))
+        {
+            $isHoliday = false;
+        }
+
+        return $isHoliday;
     }
 }

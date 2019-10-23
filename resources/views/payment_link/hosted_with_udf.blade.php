@@ -62,6 +62,7 @@
 
             var templateData = {
                 key_id: data.key_id,
+                base_url: data.base_url,
                 is_test_mode: data.is_test_mode,
                 merchant: data.merchant,
                 payment_page_data: data.payment_link,

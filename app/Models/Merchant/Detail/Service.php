@@ -15,6 +15,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -71,7 +72,7 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null);
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null,$input);
 
         return $response;
     }
@@ -138,9 +139,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
         }
 
-        $merchantDetails = $this->merchant->merchantDetail;
-
-        $merchantDetails = $this->core()->patchMerchantDetails($merchantDetails, $input);
+        $merchantDetails = $this->core()->patchMerchantDetails($this->merchant, $input);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -356,6 +355,21 @@ class Service extends Base\Service
         return $merchantDetailCore->createResponse($merchantDetails);
     }
 
+    public function editMerchantDetailsByPartner($merchantId, array $input)
+    {
+        $partnerMerchant = $this->app['basicauth']->getMerchant();
+
+        (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
+
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $this->core()->editMerchantDetailFields($merchant, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
     protected function createFile(Base\PublicEntity $merchantDetail,
                                     string $extension,
                                     $file,
@@ -466,11 +480,24 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $merchantDetails = $merchant->merchantDetail;
-
         $admin = $this->app['basicauth']->getAdmin();
 
-        $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input, $admin);
+        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    public function updateActivationStatusByPartner($merchantId, array $input): array
+    {
+        $partnerMerchant = $this->app['basicauth']->getMerchant();
+
+        (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
+
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $this->core()->updateActivationStatus($merchant, $input, $partnerMerchant);
 
         return $merchantDetails->toArrayPublic();
     }
