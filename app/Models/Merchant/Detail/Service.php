@@ -139,9 +139,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
         }
 
-        $merchantDetails = $this->merchant->merchantDetail;
-
-        $merchantDetails = $this->core()->patchMerchantDetails($merchantDetails, $input);
+        $merchantDetails = $this->core()->patchMerchantDetails($this->merchant, $input);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -482,11 +480,9 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $merchantDetails = $merchant->merchantDetail;
-
         $admin = $this->app['basicauth']->getAdmin();
 
-        $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input, $admin);
+        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $admin);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -499,7 +495,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $merchantDetails = (new Core)->updateActivationStatus($merchant->merchantDetail, $input, $partnerMerchant);
+        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $partnerMerchant);
 
         return $merchantDetails->toArrayPublic();
     }

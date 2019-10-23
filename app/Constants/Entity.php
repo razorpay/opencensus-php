@@ -55,6 +55,7 @@ class Entity
     const DISCOUNT                  = 'discount';
     const EMI_PLAN                  = 'emi_plan';
     const CUSTOMER                  = 'customer';
+    const LEGAL_ENTITY              = 'legal_entity';
     const MERCHANT                  = 'merchant';
     const REVERSAL                  = 'reversal';
     const SCHEDULE                  = 'schedule';
@@ -383,6 +384,7 @@ class Entity
         self::CUSTOMER                  => \RZP\Models\Customer::class,
         self::EMI_PLAN                  => \RZP\Models\Emi::class,
         self::MERCHANT                  => \RZP\Models\Merchant::class,
+        self::LEGAL_ENTITY              => \RZP\Models\Merchant\LegalEntity::class,
         self::ACCOUNT                   => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE                  => \RZP\Models\Schedule::class,
         self::COUPON                    => \RZP\Models\Coupon::class,
