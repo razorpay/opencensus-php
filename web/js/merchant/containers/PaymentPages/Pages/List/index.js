@@ -1,25 +1,17 @@
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
-import { NavLink } from 'react-router-dom';
-import { withRouter } from 'react-router-dom';
+import HeaderAction from 'rzp/ui/HeaderAction';
+
 import RTracking from 'react-tracking';
 
-import { RZPFeatures } from 'rzp/utils/constants';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-
-import Time from 'rzp/ui/Time';
 import Pager from 'rzp/ui/Pager';
-import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
-import TableBody from 'rzp/ui/TableBody';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-
-import { showNotification } from 'rzp/modules/notifications';
+import { withRouter } from 'react-router-dom';
+import ListContainer from 'merchant/containers/ListContainer';
+import ListFilter from 'merchant/components/ListFilter';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import EmptyList from 'merchant/components/EmptyList';
-import ListFilter from 'merchant/components/ListFilter';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
@@ -32,17 +24,17 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/modules/onboarding';
 
-import ListContainer from 'merchant/containers/ListContainer';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
-
 import {
   getIsPaymentPagesEnabled,
   getIsAllowedPaymentPagesResetOnBoarding,
-} from '../OnBoarding';
-import { getPaymentPageQuickGuideIsClosed } from '../QuickGuide';
+} from '../../OnBoarding';
+import { getPaymentPageQuickGuideIsClosed } from '../../QuickGuide';
 
-import { trackListActions } from './ga';
-import { fetchPaymentPagesList } from './model';
+import { fetchPaymentPagesList } from '../model';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { showNotification } from 'rzp/modules/notifications';
+import { trackListActions } from '../ga';
+import { RZPFeatures } from 'rzp/utils/constants';
 
 @withRouter
 @connect(

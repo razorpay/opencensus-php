@@ -446,7 +446,7 @@ class Service extends Base\Service
                         $data['experiments']['support_call'] = ['result' => 'off'];
                     }
 
-                    if ($currentMerchant->role === 'owner')
+                    if ((new Helper)->isOwner($currentMerchant))
                     {
                         $data['partner_intent'] = $merchantService->getPartnerIntent();
                     }
@@ -866,6 +866,8 @@ class Service extends Base\Service
             'second_factor_auth',
             'disable-view-reports',
             'mobile_hotjar_survey',
+            'paymentpages_v3',
+            'paymentpages_v3_reports',
             'show_commission_balance'
         ];
 
@@ -895,10 +897,9 @@ class Service extends Base\Service
 
     protected function isPartnerIntentTrue(array $data): bool
     {
-        if (isset($data['partner_intent']) and $data['partner_intent'] === true)
-        {
-            return true;
-        }
-        return false;
+        return (
+            isset($data['partner_intent']) and
+            $data['partner_intent'] === true
+        );
     }
 }

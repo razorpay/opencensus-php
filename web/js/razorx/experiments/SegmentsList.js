@@ -21,7 +21,7 @@ export default class extends React.Component {
   removeSegment = i => {
     const newSegmentsList = this.state.segmentsList.concat();
     if (newSegmentsList.length <= 1) {
-      notifyError('Atleast 1 Segment is required');
+      notifyError('At least 1 Segment is required');
       return;
     }
 
