@@ -1628,7 +1628,7 @@ class Processor
             'status'                => $status
         ];
 
-        $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_FAILURE_EVENT, $code, $internalCode);
+        $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
 
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 

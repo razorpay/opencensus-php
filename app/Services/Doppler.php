@@ -15,7 +15,7 @@ class Doppler
 {
     const PAYMENT_AUTHORIZATION_SUCCESS_EVENT = 'success';
 
-    const PAYMENT_FAILURE_EVENT    = 'failure';
+    const PAYMENT_AUTHORIZATION_FAILURE_EVENT = 'failure';
 
     const SESSION_ID = 'rzp_api_session';
 
@@ -43,7 +43,7 @@ class Doppler
     }
 
     // sends event to doppler's topic
-    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, string $errorCode, string $internalErrorCode)
+    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, string $errorCode = null, string $internalErrorCode = null)
     {
         // We do not want to publish events in case for test mode payments
 //        if ($this->mode === Mode::TEST)
@@ -106,8 +106,6 @@ class Doppler
 
             $os = null;
 
-            $upiType = $payment->getMetadata("flow");
-
             $paymentAnalytics = $payment->getMetadata("payment_analytics");
 
             if (is_null($paymentAnalytics) === false)
@@ -140,7 +138,7 @@ class Doppler
                 $upi['vpa'] = $payment->getVpa();
                 $upi['psp'] = $payment->getPspFromVpa();
                 $upi['bank'] = $payment->getBankName();
-                $upi['type'] = $upiType;
+                $upi['type'] = $payment->getMetadata("flow");;
             }
 
             $reqObj = [

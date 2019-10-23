@@ -11,7 +11,6 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
-use RZP\Error\ErrorClass;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Upi;
@@ -19,7 +18,6 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Risk;
 use RZP\Models\Card;
-use RZP\Error\Error;
 use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
@@ -52,7 +50,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
-use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -339,8 +336,8 @@ trait Authorize
             catch (Exception\BaseException $e)
             {
                 // Payment Authentication failed for the gateway.
-                // That means we could not redirect to the ACS page using $terminal->gateway() or mpi_blade
-                // in case terminal is authorization terminals like Hitachi.
+                // That means we could not redirect to the ACS page using $terminal->gateway() or,
+                // mpi_blade in case terminal is authorization terminals like Hitachi.
 
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
@@ -353,7 +350,7 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_FAILURE_EVENT, $errorCode, $internalErrorCode);
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -379,7 +376,6 @@ trait Authorize
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
                 $this->updatePaymentOnExceptionAndThrow($e);
-
             }
             finally
             {
@@ -457,7 +453,6 @@ trait Authorize
 
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
-
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
@@ -4940,7 +4935,7 @@ trait Authorize
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE, true);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -5466,7 +5461,7 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
-            $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT, "", "");
+            $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
@@ -6121,6 +6116,4 @@ trait Authorize
 
         $gatewayInput['order']['account_number'] = $accountNumber;
     }
-
-
 }
