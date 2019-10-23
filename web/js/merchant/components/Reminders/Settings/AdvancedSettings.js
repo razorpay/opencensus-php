@@ -14,6 +14,7 @@ export default ({ channels, onChannelChange }) => (
             <div class="Input-content">
               {Object.keys(channels).map(channelName => (
                 <Input.Check
+                  key={channelName}
                   name={channelName}
                   fieldLabel={channelName.toUpperCase()}
                   checked={channels[channelName]}

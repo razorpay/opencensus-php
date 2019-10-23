@@ -149,7 +149,7 @@ export default class PaymentLinksSettings extends React.Component {
   render() {
     return (
       <div
-        class="Reminders-settings--payment_links"
+        class="RemindersSettings--PaymentLinks"
         key="RemindersSettings--PaymentLinks"
       >
         <Setting
