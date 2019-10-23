@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use RZP\Models\BankingAccount\Entity;
+use RZP\Models\BankingAccount\Detail;
 
 /**
  * Class Fields
@@ -99,15 +100,15 @@ class Fields
 
     public static function getClientId(Entity $bankingAccount)
     {
-        return $bankingAccount->bankingAccountDetails()->where(Bankingaccount\Detail\Entity::GATEWAY_KEY,
+        return $bankingAccount->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY,
             Fields::CLIENT_ID)
-            ->value(Bankingaccount\Detail\Entity::GATEWAY_VALUE);
+            ->value(Detail\Entity::GATEWAY_VALUE);
     }
 
     public static function getClientSecret(Entity $bankingAccount)
     {
-        return $bankingAccount->bankingAccountDetails()->where(Bankingaccount\Detail\Entity::GATEWAY_KEY,
+        return $bankingAccount->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY,
             Fields::CLIENT_SECRET)
-            ->value(Bankingaccount\Detail\Entity::GATEWAY_VALUE);
+            ->value(Detail\Entity::GATEWAY_VALUE);
     }
 }
