@@ -168,6 +168,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT,
         self::INTERNAL_COMMENT,
         self::BANKING_ACCOUNT_DETAILS,
+        'bankingAccountDetails',
     ];
 
     protected $public = [

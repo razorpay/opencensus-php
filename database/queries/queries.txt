@@ -5401,9 +5401,3 @@ ALTER TABLE settlement_bucket
 
 ALTER TABLE merchants
    ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
-
-ALTER TABLE banking_accounts
-    ADD COLUMN reference2 VARCHAR(255) DEFAULT NULL AFTER reference1,
-    ADD COLUMN reference3 VARCHAR(255) DEFAULT NULL AFTER reference2,
-    ADD COLUMN reference4 VARCHAR(255) DEFAULT NULL AFTER reference3,
-    ADD COLUMN reference5 VARCHAR(255) DEFAULT NULL AFTER reference4;

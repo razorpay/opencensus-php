@@ -91,13 +91,6 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function fetch($id)
-    {
-        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
-
-        return $bankingAccount->toArrayPublic();
-    }
-
     public function fetchMultiple()
     {
         return $this->merchant->bankingAccounts;

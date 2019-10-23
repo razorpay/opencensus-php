@@ -24,9 +24,9 @@ class CreateBankingAccountDetails extends Migration
 
             $table->char(Entity::BANKING_ACCOUNT_ID, BankingAccount\Entity::ID_LENGTH);
 
-            $table->string(Entity::GATEWAY_VALUE);
+            $table->string(Entity::GATEWAY_KEY);
 
-            $table->string(Entity::GATEWAY_KEY)
+            $table->string(Entity::GATEWAY_VALUE)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);
@@ -34,6 +34,10 @@ class CreateBankingAccountDetails extends Migration
             $table->integer(Entity::UPDATED_AT);
 
             $table->index(Entity::BANKING_ACCOUNT_ID);
+
+            $table->index(Entity::CREATED_AT);
+
+            $table->index(Entity::UPDATED_AT);
         });
     }
 

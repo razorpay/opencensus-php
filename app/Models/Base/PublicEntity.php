@@ -358,6 +358,11 @@ class PublicEntity extends UniqueIdEntity
 
     public function relationsToArrayAdmin()
     {
+        //
+        // If you're not getting relations data here,
+        // Add the relation as the visible array in the Entity as snake cased
+        // Eg: bankingAccountDetails
+        //
         $relations = $this->getArrayableRelations();
 
         // Snake case relation's keys

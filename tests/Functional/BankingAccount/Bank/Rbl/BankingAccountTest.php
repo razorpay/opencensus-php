@@ -681,18 +681,35 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($dataToReplace);
-/*
+
         $request = [
-            'url'       => '/banking_accounts/' . 'bacc_' . $bankingAccount->getId(),
+            'url'       => '/admin/banking_account/' . 'bacc_' . $bankingAccount->getId(),
             'method'    => 'GET',
             'content'   => [
-                'expand' => ['merchant','merchant.merchantDetail', 'banking_account_details'],
+                'expand' => ['merchant', 'merchant.merchantDetail', 'banking_account_details'],
             ]
         ];
 
-        $this->ba->proxyAuth();
+        $this->ba->adminAuth();
 
-        sd($this->sendRequest($request));*/
+        $response = $this->sendRequest($request);
+
+        $response = json_decode($response->getContent(), true);
+
+        $actualDetails = $response['banking_account_details']['items'];
+
+        $expectedDetails = [
+            [
+                'gateway_key'   => 'client_secret',
+                'gateway_value' => 'YXBpX3NlY3JldA==',
+            ],
+            [
+                'gateway_key'   => 'client_id',
+                'gateway_value' => 'YXBpX2tleQ==',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDetails, $actualDetails);
     }
 
     public function testUpdateBankingAccountDetailsWithOverride()
@@ -714,7 +731,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccountDetails = $this->getDbLastEntity('banking_account_detail');
 
-        $this->assertEquals(base64_encode('api_key_two'), $bankingAccountDetails['gqateway_value']);
+        $this->assertEquals(base64_encode('api_key_two'), $bankingAccountDetails['gateway_value']);
     }
 
     protected function setMozartMockResponse($mockedResponse)
