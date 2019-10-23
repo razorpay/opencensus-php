@@ -26,6 +26,7 @@ use RZP\Models\Workflow\Action\Checker;
 class Repository extends Base\Repository
 {
     const QUEUED_PAYOUTS_FETCH_LIMIT = 5000;
+    const PENDING_PAYOUTS_FETCH_LIMIT = 5000;
 
     protected $entity = 'payout';
 
@@ -125,9 +126,9 @@ class Repository extends Base\Repository
      * @param User\Entity     $user
      * @param Merchant\Entity $merchant
      *
-     * @return array
+     * @return Base\Collection
      */
-    public function fetchSummaryOfPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): array
+    public function fetchPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): Base\Collection
     {
         /** @var BuilderEx $query */
         $query = $this->newQuery();
@@ -138,10 +139,13 @@ class Repository extends Base\Repository
 
         $query->merchantId($merchant->getId());
 
-        return [
-            'count'        => $query->count(),
-            'total_amount' => (int) $query->sum(Entity::AMOUNT),
-        ];
+        // TODO: Update this to handle scale
+        // JIRA: https://razorpay.atlassian.net/browse/RX-420
+        $query->limit(self::PENDING_PAYOUTS_FETCH_LIMIT);
+
+        $query->with(['balance']);
+
+        return $query->get();
     }
 
     public function updateStatus(Base\PublicCollection $payouts, string $status)

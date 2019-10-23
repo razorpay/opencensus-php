@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use RZP\Models\Payout;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -157,6 +158,15 @@ class CitiPayoutTest extends TestCase
     {
         $currentBalance = $this->getDbLastEntity('balance');
 
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+
         $response = $this->startTest();
 
         $newBalance = $this->getDbLastEntity('balance');
@@ -173,10 +183,10 @@ class CitiPayoutTest extends TestCase
 
         $this->startTest();
 
-        $summary = $this->makePayoutQueueSummaryRequest();
+        $summary = $this->makePayoutSummaryRequest();
 
-        $this->assertEquals(2, $summary['count']);
-        $this->assertEquals(20000002, $summary['total_amount']);
+        $this->assertEquals(2, $summary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000002, $summary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
 
         $dispatchResponse = $this->dispatchQueuedPayouts();
 
