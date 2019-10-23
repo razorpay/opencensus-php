@@ -310,6 +310,13 @@ class AdminFetch
                 ],
             ],
 
+            // Service: Stork
+            Entity::STORK_WEBHOOK => [
+                'owner_id' => [
+                    Fetch::LABEL => 'Owner id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
     }
 

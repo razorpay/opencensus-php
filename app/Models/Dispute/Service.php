@@ -287,9 +287,11 @@ class Service extends Base\Service
         return (new File\Core)->getFilesForEntity($dispute);
     }
 
-    public function getDefaultDisputeEmails() : array
+    public function getDefaultDisputeEmails(string $merchantId) : array
     {
-        $emails = $this->core()->getDefaultEmailsForDispute($this->merchant);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $emails = $this->core()->getDefaultEmailsForDispute($merchant);
 
         return $emails;
     }

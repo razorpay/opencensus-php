@@ -155,4 +155,18 @@ class ClientAuthCreds extends AuthCreds
     {
         return $this->partnerApplicationId;
     }
+
+    /**
+     * This function is used when a partner merchant uses partner credentials without submerchant account,
+     * in which case we want the behaviour to be exactly as privateAuth, so we are unsetting PartnerClient
+     */
+    public function unsetPartnerClient()
+    {
+        $this->partnerClient = null;
+    }
+
+    public function unsetPartnerApplicationId()
+    {
+        $this->partnerApplicationId = null;   
+    }
 }

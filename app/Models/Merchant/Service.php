@@ -208,6 +208,38 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @throws \Throwable
+     */
+    protected function detachSubMerchantOwnerIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        $this->repo->assertTransactionActive();
+
+        $partnerUserId = $partner->primaryOwner()->getId();
+
+        if (($partner->isFullyManagedPartner() === true) or
+            ($partner->isAggregatorPartner() === true))
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($partnerUserId, $submerchant) {
+
+                $this->core()->detachSubMerchantOwner($partnerUserId, $submerchant);
+
+                if ($submerchant->primaryOwner() === null)
+                {
+                    $this->trace->info(TraceCode::SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT,
+                                       [
+                                           'submerchant' => $submerchant,
+                                       ]);
+
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_OWNER_NOT_PRESENT_FOR_USER);
+                }
+            });
+        }
+    }
+
     public function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
@@ -2840,6 +2872,10 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
      */
     public function deletePartnerAccessMap(string $merchantId)
     {
@@ -2847,7 +2883,12 @@ class Service extends Base\Service
 
         $submerchant = $this->fetchSubmerchant($merchantId);
 
-        $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
+
+            $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+
+            $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
+        });
     }
 
     /**

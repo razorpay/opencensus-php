@@ -6,6 +6,7 @@ use Mail;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -228,6 +229,20 @@ class PartnerAccountTest extends TestCase
         $this->startTest($testData);
     }
 
+    // Partner should be able to create account using partner Auth as well, if it does not send X-Razorpay-Account
+    public function testCreateAccountWithPartnerAuth()
+    {
+        $this->setUpPartnerAuthWithoutSubMerchantAccountId();
+
+        $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
+
+        $acc = $this->runRequestResponseFlow($testData);
+
+        $merchant = (new Merchant\Repository)->getPartnerMerchantFromSubMerchantId(substr($acc['id'],4));
+
+        $this->assertEquals($merchant->getId(), '10000000000000');
+    }
+
     protected function setUpPartnerWithKycHandled()
     {
         $this->setUpNonPurePlatformPartner();
@@ -258,5 +273,23 @@ class PartnerAccountTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+    }
+
+    protected function setUpPartnerAuthWithoutSubMerchantAccountId()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $features = [
+            FName::KYC_HANDLED_BY_PARTNER,
+            FName::SUBMERCHANT_ONBOARDING,
+        ];
+
+        $this->fixtures->merchant->addFeatures($features);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
     }
 }

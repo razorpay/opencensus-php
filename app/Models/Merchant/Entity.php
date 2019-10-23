@@ -46,6 +46,7 @@ use RZP\Models\Payment\Refund\Speed as RefundSpeed;
  * @property BankAccount\Entity $bankAccount
  * @property Balance\Entity     $bankingBalance
  * @property Balance\Entity     $primaryBalance
+ * @property Base\Collection    $activeBankingAccounts
  * @property Balance\Entity     $commissionBalance
  */
 class Entity extends Base\PublicEntity
@@ -1158,6 +1159,12 @@ class Entity extends Base\PublicEntity
     public function bankingAccounts()
     {
         return $this->hasMany(BankingAccount\Entity::class);
+    }
+
+    public function activeBankingAccounts()
+    {
+        return $this->bankingAccounts()
+                    ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED);
     }
 
     protected function getMaxPaymentAmountAttribute()
