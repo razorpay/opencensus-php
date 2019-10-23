@@ -921,7 +921,6 @@ class Validator extends Base\Validator
 
     public function captureAmountValidate(Payment\Entity $payment, int $amount)
     {
-
         if ($amount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(
