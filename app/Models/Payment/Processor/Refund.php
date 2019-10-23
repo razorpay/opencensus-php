@@ -2800,6 +2800,9 @@ trait Refund
                 $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
             }
         }
-        // TODO: decide on failure what happens should we default to normal or fail refund creation
+        else
+        {
+            $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
+        }
     }
 }
