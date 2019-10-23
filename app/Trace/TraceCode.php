@@ -1940,6 +1940,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_REGISTER_ACCOUNT_FAILED                           = 'FTS_REGISTER_ACCOUNT_FAILED';
     const FTS_CREATE_ACCOUNT_COMPLETE                           = 'FTS_CREATE_ACCOUNT_COMPLETE';
     const FTS_TRANSFER_ACTION_COMPLETE                          = 'FTS_TRANSFER_ACTION_COMPLETE';
+    const FTS_FUND_TRANSFER_NOT_ALLOWED                         = 'FTS_FUND_TRANSFER_NOT_ALLOWED';
     const FTS_REGISTER_ACCOUNT_COMPLETE                         = 'FTS_REGISTER_ACCOUNT_COMPLETE';
     const FTS_UPDATE_FUND_TRANSFER_ATTEMPT                      = 'FTS_UPDATE_FUND_TRANSFER_ATTEMPT';
     const FTS_FUND_TRANSFER_JOB_DISPATCHED                      = 'FTS_FUND_TRANSFER_JOB_DISPATCHED';
@@ -2111,6 +2112,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_SUCCESSFULL                   = 'MERCHANT_BALANCE_UPDATE_SUCCESSFULL';
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
+
+    //Express service
+    const EXPRESS_SERVICE_REQUEST                               = 'EXPRESS_SERVICE_REQUEST';
+    const EXPRESS_SERVICE_RESPONSE                              = 'EXPRESS_SERVICE_RESPONSE';
+    const EXPRESS_INTEGRATION_ERROR                             = 'EXPRESS_INTEGRATION_ERROR';
 
     // Stork service
     const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';

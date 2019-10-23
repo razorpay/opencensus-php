@@ -952,7 +952,7 @@ final class Route
         'dispute_fetch'                            => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
         'dispute_file_delete'                      => ['delete',   'disputes/{id}/files/{fileId}',                   'DisputeController@deleteFile'                                      ],
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
-        'dispute_poc_mails'                        => ['get',      'disputes/poc-emails',                            'DisputeController@getDefaultCreationEmails'                        ],
+        'dispute_poc_mails'                        => ['get',      'disputes/{merchantId}/poc-emails',               'DisputeController@getDefaultCreationEmails'                        ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.

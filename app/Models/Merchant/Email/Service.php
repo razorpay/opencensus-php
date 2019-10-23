@@ -62,6 +62,23 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch all merchant's given type of emails from database as arrays of type and email
+     *
+     * @param string $merchantId
+     * @param array $types
+     *
+     * @return array
+     */
+    public function fetchEmailByTypes(string $merchantId, array $types): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $emails = $this->core()->fetchEmailsByTypes($merchant, $types);
+
+        return $emails;
+    }
+
+    /**
      * Delete a merchant's  different type of emails from databases as an array
      *
      * @param $merchantId
@@ -76,22 +93,5 @@ class Service extends Base\Service
         $deleteOperation = $this->core()->deleteEmails($merchant, $type);
 
         return (array) $deleteOperation;
-    }
-
-    /**
-     * Fetch all merchant's single type of emails from databases as an array
-     *
-     * @param string $merchantId
-     * @param string $type
-     *
-     * @return array
-     */
-    public function fetchAllEmailsForMerchantAndType(string $merchantId, string $type) : array
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $emails = $this->core()->fetchAllEmailsForMerchantAndType($merchant, $type);
-
-        return $emails;
     }
 }

@@ -50,7 +50,33 @@ class IciciPayoutTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testCreatePayout()
+    public function testCreatePayoutForIciciToBankAccountViaNEFT()
+    {
+        $this->startTest();
+
+        $this->app['cache']->flush();
+    }
+
+    public function testCreatePayoutForIciciToCardViaNEFT()
+    {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '100000000lcard',
+                'active'       => 1,
+            ]);
+
+        $this->startTest();
+
+        $this->app['cache']->flush();
+    }
+
+
+    public function testCreatePayoutToBankAccountViaIMPS()
     {
         $this->startTest();
 
@@ -90,6 +116,11 @@ class IciciPayoutTest extends TestCase
         $this->app['cache']->flush();
     }
 
+    public function testCreatePayoutWithModeNotSet()
+    {
+        $this->startTest();
+    }
+
     public function testCreatePayoutForVpaFundAccountId()
     {
         $contactId = $this->getDbLastEntity('contact')->getId();
@@ -100,47 +131,12 @@ class IciciPayoutTest extends TestCase
             'source_id'     => $contactId,
         ]);
 
-        $vpaId = $this->getDbEntityById('fund_account', '100000000003fa')->getAccountId();
-
         $this->startTest();
-
-        $payout = $this->getLastEntity('payout', true);
-        $this->assertEquals($payout['channel'], 'icici');
-        $this->assertNull($payout['user_id']);
-
-        $txn = $this->getLastEntity('transaction', true);
-        $txnId = str_after($txn['id'], 'txn_');
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-
-        $balance = $this->getLastEntity('balance', true);
-        $this->assertNull($balance['channel']);
-        $this->assertEquals('shared', $balance['account_type']);
-
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals($payout['id'], $payoutAttempt['source']);
-        $this->assertEquals('Batman', $payoutAttempt['narration']);
-        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals('fa_' . $vpaId, 'fa_' . $payoutAttempt['vpa_id']);
-        $this->assertEquals(Channel::ICICI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
-
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
-
-        $expectedBreakup = [
-            'name'            => 'payout',
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => 'Bbg7f0FaUJQOvj',
-            'percentage'      => null,
-            'amount'          => 900,
-        ];
-
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         $this->app['cache']->flush();
     }
 
-    public function testCreateQueuedPayout()
+    public function testCreateQueuedPayoutWithModeSet()
     {
         $currentBalance = $this->getDbLastEntity('balance');
 

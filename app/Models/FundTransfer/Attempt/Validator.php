@@ -125,14 +125,16 @@ class Validator extends Base\Validator
         /** @var Entity $attempt */
         $attempt = $this->entity;
 
+        $destinationType = $attempt->getDestinationType();
+
+        $mode = $attempt->getMode();
+
+        $channel = $attempt->getChannel();
+
         if ($attempt->hasMode() === false)
         {
             return;
         }
-
-        $mode = $attempt->getMode();
-
-        $destinationType = $attempt->getDestinationType();
 
         Mode::validateModeOfAccountType($mode, $destinationType);
 
@@ -145,22 +147,7 @@ class Validator extends Base\Validator
             Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
 
-        $channel = $attempt->getChannel();
-
-        // If we want to support for other channels, we need to make changes in the channel specific classes
-        // for mode related initiations, allowed/not allowed, cron timings, settlement times, etc
-        if (($destinationType === Constants\Entity::BANK_ACCOUNT) and
-            (in_array($channel, Channel::getPreferredModeSupportedChannels(), true) === false))
-        {
-            throw new LogicException(
-                'Mode preference not allowed',
-                ErrorCode::SERVER_ERROR_FTA_PREFERRED_MODE_UNSUPPORTED,
-                [
-                    'attempt_id'    => $attempt->getId(),
-                    'mode'          => $mode,
-                    'channel'       => $channel,
-                ]);
-        }
+        Channel::validateChannelAndMode($channel, $destinationType, $mode);
 
         $amount = $attempt->source->getAmount();
 
