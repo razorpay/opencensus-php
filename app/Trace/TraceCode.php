@@ -1048,7 +1048,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_WORKFLOW_EVALUATION_RESULT                     = 'PAYOUT_WORKFLOW_EVALUATION_RESULT';
     const PAYOUT_QUEUED                                         = 'PAYOUT_QUEUED';
     const PAYOUT_METRIC_PUSH_EXCEPTION                          = 'PAYOUT_METRIC_PUSH_EXCEPTION';
-    const PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED        = 'PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';

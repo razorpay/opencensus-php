@@ -302,9 +302,6 @@ class Core extends Base\Core
 
         $status = Status::getPayoutStatusFromFtaStatus($payout, $ftaStatus);
 
-        $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
-        $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
-
         switch ($status)
         {
             case Status::PROCESSED:
@@ -312,11 +309,11 @@ class Core extends Base\Core
                 break;
 
             case Status::REVERSED:
-                $this->handlePayoutReversed($payout, $ftaFailureReason, $ftaBankStatusCode);
+                $this->handlePayoutReversed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
             case Status::FAILED:
-                $this->handlePayoutFailed($payout, $ftaFailureReason, $ftaBankStatusCode);
+                $this->handlePayoutFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
             case Status::CREATED:
@@ -705,32 +702,23 @@ class Core extends Base\Core
         $this->app->events->fire('api.payout.processed', [$payout]);
     }
 
-    protected function handlePayoutReversed(Entity $payout,
-                                            string $ftaFailureReason = null,
-                                            string $ftaBankStatusCode = null)
+    protected function handlePayoutReversed(Entity $payout, string $ftaFailureReason = null)
     {
-        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
-
         $this->reversePayout($payout, $ftaFailureReason);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
     }
 
-    protected function handlePayoutFailed(Entity $payout,
-                                          string $ftaFailureReason = null,
-                                          string $ftaBankStatusCode = null)
+    protected function handlePayoutFailed(Entity $payout, string $ftaFailureReason = null)
     {
-        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
-
         if ($payout->hasTransaction() === true)
         {
             throw new Exception\LogicException(
                 'A Payout with transaction can not be moved to failed state, it should be reversed',
                 null,
                 [
-                    'payout_id'         => $payout->getId(),
-                    'status'            => $payout->getStatus(),
-                    'failure_reason'    => $ftaFailureReason,
+                    'payout_id'      => $payout->getId(),
+                    'failure_reason' => $ftaFailureReason,
                 ]);
         }
 
@@ -785,30 +773,6 @@ class Core extends Base\Core
             });
 
         return $reversal;
-    }
-
-    protected function getPublicErrorMessage(
-        Entity $payout,
-        string $ftaFailureReason = null,
-        string $ftaBankStatusCode = null)
-    {
-        if (empty($ftaBankStatusCode) === true)
-        {
-            $this->trace->error(
-                TraceCode::PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED,
-                [
-                    'payout_id'         => $payout->getId(),
-                    'failure_reason'    => $ftaFailureReason,
-                    'status'            => $payout->getStatus(),
-                ]);
-        }
-
-        if (empty($ftaFailureReason) === true)
-        {
-            $ftaFailureReason = ErrorCodeMapping::getErrorMessageFromBankResponseCode($ftaBankStatusCode);
-        }
-
-        return $ftaFailureReason;
     }
 
     protected function getMerchantPayoutAmount(array $input, Merchant\Entity $merchant)
