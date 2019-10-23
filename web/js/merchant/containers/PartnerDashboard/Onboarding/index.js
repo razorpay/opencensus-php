@@ -31,7 +31,11 @@ export class onboardPartner extends Component {
     }
     const disMissableModal = Boolean(this.props.user.merchant_partner_intent);
     return (
-      <ModalMask maskClosable={disMissableModal} isBlur={false}>
+      <ModalMask
+        maskClosable={disMissableModal}
+        isBlur={false}
+        onClose={this.closeModal}
+      >
         <Modal
           showCloseBtn={disMissableModal}
           className="top-40"
