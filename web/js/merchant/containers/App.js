@@ -241,33 +241,44 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
 
-  updateGA(userData) {
-    let { live_transaction_done } = userData;
+  updateGA({ live_transaction_done }) {
     if (live_transaction_done != undefined && live_transaction_done === 1) {
       merchantFetch({
         url: '/account/config',
         method: 'put',
-        data,
-      }).then(() => {
-        console.log('fireeeee GA 11111');
-        setTrackData({
-          eventCategory: 'Dashboard - live_transaction_done',
-          eventAction: 'Show - live_transaction_done',
-        })();
-      });
+        data: { live_transaction_done: 2 },
+      })
+        .then(resp => {
+          if (resp.success) {
+            console.log('fireeeee GA 11111');
+            setTrackData({
+              eventCategory: 'Dashboard - live_transaction_done',
+              eventAction: 'Show - live_transaction_done',
+            })();
+          }
+        })
+        .catch(err => {
+          console.log('erororororororor:', err);
+        });
     } else if (live_transaction_done === 0) {
       console.log('live_transaction_done found as:', live_transaction_done);
       merchantFetch({
         url: '/account/config',
         method: 'put',
-        data,
-      }).then(() => {
-        console.log('fireeeee GA 22222');
-        setTrackData({
-          eventCategory: 'Dashboard - live_transaction_done',
-          eventAction: 'Show - live_transaction_done',
-        })();
-      });
+        data: { live_transaction_done: 1 },
+      })
+        .then(resp => {
+          if (resp.success) {
+            console.log('fireeeee GA 11111');
+            setTrackData({
+              eventCategory: 'Dashboard - live_transaction_done',
+              eventAction: 'Show - live_transaction_done',
+            })();
+          }
+        })
+        .catch(err => {
+          console.log('erororororororor:', err);
+        });
     } else {
       console.log('live_transaction_done not found!!!!', live_transaction_done);
     }
