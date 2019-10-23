@@ -243,13 +243,12 @@ function disableEmptyInputs(form) {
         <td colspan='40'>VPA:</td>
         <td><input type="text" name="vpa" size="25" value="nemomobile@imobile" autocomplete="vpa"></td>
     </tr>
-<!--    <tr>-->
-<!--        <td colspan='40'>Account Number:</td>-->
-<!--        <td><input type="text" name="bank_account[account_number]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[ifsc]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[name]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[account_type]" size="25" value="current"></td>-->
-<!--    </tr>-->
+    <tr>
+        <td colspan='40'>Bank Account:</td>
+        <td><input type="text" name="bank_account[account_number]" size="25" value="" placeholder="Account Number"></td>
+        <td><input type="text" name="bank_account[ifsc]" size="25" value="" placeholder="IFSC"></td>
+        <td><input type="text" name="bank_account[name]" size="25" value="" placeholder="Name"></td>
+    </tr>
 <!--    <tr>-->
 <!--        <td colspan='40'>Token recurring:</td>-->
 <!--        <td><input type="text" name="recurring_token[max_amount]" size="25" value="20000"></td>-->
