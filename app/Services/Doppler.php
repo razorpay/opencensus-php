@@ -43,7 +43,7 @@ class Doppler
     }
 
     // sends event to doppler's topic
-    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, string $errorCode = null, string $internalErrorCode = null)
+    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null)
     {
         // We do not want to publish events in case for test mode payments
         if ($this->mode === Mode::TEST)
@@ -79,7 +79,7 @@ class Doppler
         }
     }
 
-    protected  function prepareEventForDoppler(Payment\Entity $payment, string $authorizeStatus, string $errorCode, string $internalErrorCode)
+    protected  function prepareEventForDoppler(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null)
     {
         // associated terminal from payment entity
         $terminal = $payment->terminal;
