@@ -40,6 +40,7 @@ export default class BaseScreen extends React.Component {
     merchantFetch({
       url: url,
       method: 'PATCH',
+      mode: 'live',
       data,
     })
       .then(response => {
