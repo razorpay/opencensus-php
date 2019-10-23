@@ -46,10 +46,10 @@ class Doppler
     public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, string $errorCode = null, string $internalErrorCode = null)
     {
         // We do not want to publish events in case for test mode payments
-//        if ($this->mode === Mode::TEST)
-//        {
-//            return;
-//        }
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
 
         // publishing event to doppler's topic if payment method is card/upi
         if (($payment->getMethod() === Method::CARD) or
@@ -71,12 +71,6 @@ class Doppler
     {
         try
         {
-            $this->trace->info(
-                TraceCode::DOPPLER_SNS_PUBLISH,
-                [
-                    'sns_topic'        => $this->sns_topic,
-                    'event_data'       => $eventData,
-                ]);
             $this->sns->publish(json_encode($eventData), $this->sns_topic);
         }
         catch (\Throwable $e)

@@ -2148,7 +2148,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Doppler service
     const DOPPLER_SERVICE_SNS_PUBLISH_FAILED                    = 'DOPPLER_SERVICE_SNS_PUBLISH_FAILED';
-    const DOPPLER_SNS_PUBLISH                                   = 'DOPPLER_SNS_PUBLISH';
 
     /*
      * Trace codes for PowerWallet
