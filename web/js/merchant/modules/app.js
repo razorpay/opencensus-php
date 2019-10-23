@@ -16,14 +16,6 @@ const isMobileResolution = width => {
   return width <= 768;
 };
 
-export const updateGAForFirstLiveTransaction = data => {
-  return merchantFetch({
-    url: '/merchant_mtu_update',
-    method: 'post',
-    data,
-  });
-};
-
 let initialState = {
   luminateRowId: null,
   windowWidth: window.innerWidth,

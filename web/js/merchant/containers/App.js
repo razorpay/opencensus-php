@@ -244,8 +244,12 @@ export default class App extends Component {
   updateGA(userData) {
     let { live_transaction_done } = userData;
     if (live_transaction_done != undefined && live_transaction_done === 1) {
-      updateGAForFirstLiveTransaction({ live_transaction_done: 2 }).then(() => {
-        console.log('fireeeee');
+      merchantFetch({
+        url: '/account/config',
+        method: 'put',
+        data,
+      }).then(() => {
+        console.log('fireeeee GA 11111');
         setTrackData({
           eventCategory: 'Dashboard - live_transaction_done',
           eventAction: 'Show - live_transaction_done',
@@ -253,8 +257,12 @@ export default class App extends Component {
       });
     } else if (live_transaction_done === 0) {
       console.log('live_transaction_done found as:', live_transaction_done);
-      updateGAForFirstLiveTransaction({ live_transaction_done: 2 }).then(() => {
-        console.log('fireeeee');
+      merchantFetch({
+        url: '/account/config',
+        method: 'put',
+        data,
+      }).then(() => {
+        console.log('fireeeee GA 22222');
         setTrackData({
           eventCategory: 'Dashboard - live_transaction_done',
           eventAction: 'Show - live_transaction_done',
