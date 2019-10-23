@@ -59,6 +59,28 @@ class RefundTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    public function setUpRazorXMock()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'instant_refunds_modes')
+                    {
+                        return 'on';
+                    }
+
+                    return '';
+                }));
+    }
+
     public function testRefund()
     {
         Mail::fake();
@@ -2750,6 +2772,8 @@ class RefundTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
+        $this->setUpRazorXMock();
+
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
         $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
 
@@ -2981,24 +3005,7 @@ class RefundTest extends TestCase
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'instant_refunds_modes')
-                    {
-                        return 'on';
-                    }
-
-                    return '';
-                }));
+        $this->setUpRazorXMock();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
