@@ -840,6 +840,17 @@ class Service extends Base\Service
         return (new Core)->bulkAssignReviewer($reviewerId, $merchants);
     }
 
+    public function merchantsMtuUpdate(array $input)
+    {
+        (new Validator)->validateInput('merchant_mtu_update', $input);
+
+        $merchants = $input[Entity::MERCHANTS];
+
+        $value = $input[Entity::LIVE_TRANSACTION_DONE];
+
+        return (new Core)->merchantsMtuUpdate($merchants, $value);
+    }
+
     public function getMerchantActivationReviewers()
     {
         $orgId = $this->auth->getOrgId();
