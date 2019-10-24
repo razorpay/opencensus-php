@@ -155,27 +155,11 @@ function WizardFields(field) {
       findBy(state.reminders.reminders.items, 'namespace', 'payment_link') ||
       {};
 
-    let withExpireRemindersCount = 0,
-      withOutExpireRemindersCount = 0;
-
-    state.reminders.merchant_config.items.forEach(ele => {
-      if (ele.reminder_config.config_template.attr_key === 'expire_by') {
-        withExpireRemindersCount += 1;
-
-        return;
-      }
-
-      withOutExpireRemindersCount += 1;
-    });
-
     return {
       ...state.session,
       paymentLinksRemindersSettings: {
         isEnabled: paymentLinksRemindersSettings.active,
-        count: {
-          withExpireRemindersCount,
-          withOutExpireRemindersCount,
-        },
+        count: state.reminders.merchant_config.items.length,
       },
       reminders: state.reminders,
     };

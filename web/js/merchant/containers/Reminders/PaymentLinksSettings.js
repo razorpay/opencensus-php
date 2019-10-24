@@ -42,13 +42,13 @@ import Setting from 'merchant/components/Reminders/Settings';
     });
 
     merchantConfig.forEach(ele => {
+      ele.channels.forEach(ele => channels.add(ele));
+
       if (ele.reminder_config.config_template.attr_key === 'expire_by') {
         withExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
 
         return;
       }
-
-      ele.channels.forEach(ele => channels.add(ele));
 
       withOutExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
     });

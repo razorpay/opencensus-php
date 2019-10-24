@@ -261,10 +261,9 @@ export default [
     className: 'InputGroup--vTop',
     name: 'reminder_enable',
     fieldLabel: 'Send auto reminders',
-    description: ({ props, state }) => {
+    description: ({ props }) => {
       return getRemindersOptionDescription(
-        props.paymentLinksRemindersSettings.count,
-        Number(state._name.hasNoExpiry)
+        props.paymentLinksRemindersSettings.count
       );
     },
     _cmp: Input.Check,
@@ -323,14 +322,6 @@ const ReminderNotEnabled = ({ type = '' }) => (
   </div>
 );
 
-const getRemindersOptionDescription = (count, hasNoExpiry) => {
-  if (hasNoExpiry) {
-    return `${
-      count.withOutExpireRemindersCount
-    } auto reminders will be sent to this customer based on the reminder settings`;
-  }
-
-  return `${
-    count.withExpireRemindersCount
-  } auto reminders will be sent to this customer based on the reminder settings`;
+const getRemindersOptionDescription = count => {
+  return `${count} auto reminders will be sent to this customer based on the reminder settings`;
 };
