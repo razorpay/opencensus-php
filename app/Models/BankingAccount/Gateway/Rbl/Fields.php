@@ -74,10 +74,8 @@ class Fields
     // are sensitive and have to be tokenised before storing
 
     public static $sensitiveAccountDetails = [
-        self::CLIENT_ID,
         self::CLIENT_SECRET,
         self::MERCHANT_PASSWORD,
-        Entity::USERNAME,
         Entity::PASSWORD,
     ];
 
