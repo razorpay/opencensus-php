@@ -3,7 +3,6 @@
 namespace RZP\Models\Payment\Processor;
 
 use Mail;
-use ApiResponse;
 
 use RZP\Exception;
 use RZP\Models\Vpa;
