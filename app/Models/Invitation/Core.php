@@ -275,7 +275,7 @@ class Core extends Base\Core
         }
         elseif ($product === Product::BANKING)
         {
-            $inviteMailer = new RazorpayXInvitationMail($invitation->getId());
+            $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName);
 
             Mail::queue($inviteMailer);
         }

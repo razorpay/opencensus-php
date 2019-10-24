@@ -18,9 +18,11 @@ class Invite extends Mailable
 
     protected $invitation;
 
+    protected $senderName;
+
     protected $config;
 
-    public function __construct($invitationId)
+    public function __construct($invitationId, $senderName = null)
     {
         parent::__construct();
 
@@ -29,6 +31,8 @@ class Invite extends Mailable
         $this->invitation = $app['repo']->invitation->find($invitationId);
 
         $this->config = $app['config'];
+
+        $this->senderName = (is_null($senderName) === true) ? $this->invitation->merchant->getName() : $senderName;
     }
 
     protected function addSender()
@@ -68,8 +72,6 @@ class Invite extends Mailable
     {
         $businessName = $this->invitation->merchant->merchantDetail->getBusinessName();
 
-        $senderName =  $this->invitation->merchant->getName();
-
         $bankingUrl = $this->config['application.banking_service_url'];
 
         $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $this->invitation->getToken());
@@ -77,7 +79,7 @@ class Invite extends Mailable
         $this->with(
             [
                 'business_name' => $businessName,
-                'sender_name'   => $senderName,
+                'sender_name'   => $this->senderName,
                 'role'          => $this->invitation->getRole(),
                 'invite_link'   => $inviteLink,
                 'support_url'   => self::SUPPORT_URL,
