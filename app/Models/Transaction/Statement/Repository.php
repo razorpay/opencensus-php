@@ -107,7 +107,8 @@ class Repository extends Transaction\Repository
                     ->merchantId($merchantId)
                     ->where(Entity::BALANCE_ID, $balanceId)
                     ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
-                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->orderBy(Entity::ID, 'desc')
                     ->get();
     }
 
