@@ -97,18 +97,4 @@ class Fields
       self::PHONE_NUM               => Entity::BENEFICIARY_MOBILE,
       self::CORP_ID                 => Entity::REFERENCE1,
     ];
-
-    public static function getClientId(Entity $bankingAccount)
-    {
-        return $bankingAccount->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY,
-                                                               Fields::CLIENT_ID)
-                                                       ->value(Detail\Entity::GATEWAY_VALUE);
-    }
-
-    public static function getClientSecret(Entity $bankingAccount)
-    {
-        return $bankingAccount->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY,
-                                                               Fields::CLIENT_SECRET)
-                                                       ->value(Detail\Entity::GATEWAY_VALUE);
-    }
 }

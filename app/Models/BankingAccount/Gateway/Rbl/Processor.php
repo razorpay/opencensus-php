@@ -202,8 +202,8 @@ class Processor extends BankingAccount\Gateway\Processor
             Fields::USERNAME                  => $bankingAccount->getUsername(),
             Fields::PASSWORD                  => $bankingAccount->getPassword(),
             Fields::CORP_ID                   => $bankingAccount->getReference1(),
-            Fields::CLIENT_ID                 => Fields::getClientId($bankingAccount),
-            Fields::CLIENT_SECRET             => Fields::getClientSecret($bankingAccount),
+            Fields::CLIENT_ID                 => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
+            Fields::CLIENT_SECRET             => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
         ];
 
         $config = [
@@ -361,8 +361,8 @@ class Processor extends BankingAccount\Gateway\Processor
                     Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
                     Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
                     Fields::CORP_ID                 => $bankingAccount->getReference1(),
-                    Fields::CLIENT_ID               => Fields::getClientId($bankingAccount),
-                    Fields::CLIENT_SECRET           => Fields::getClientSecret($bankingAccount),
+                    Fields::CLIENT_ID               => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
+                    Fields::CLIENT_SECRET           => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
                 ],
             ],
         ];
@@ -532,9 +532,9 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $input = [];
 
-        $input[Fields::CLIENT_ID] = Fields::getClientId($bankingAccount);
+        $input[Fields::CLIENT_ID] = $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID);
 
-        $input[Fields::CLIENT_SECRET] = Fields::getClientSecret($bankingAccount);
+        $input[Fields::CLIENT_SECRET] = $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET);
 
         $fieldsRequired = Validator::$accountActivateRules;
 

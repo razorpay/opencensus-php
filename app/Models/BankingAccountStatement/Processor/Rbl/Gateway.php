@@ -15,7 +15,6 @@ use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Processor\Base as BaseProcessor;
-use RZP\Models\BankingAccount\Gateway\Rbl\Fields as BankingAccountFields;
 use RZP\Models\BankingAccountStatement\Processor\Rbl\RequestResponseFields as Fields;
 
 class Gateway extends BaseProcessor
@@ -135,8 +134,8 @@ class Gateway extends BaseProcessor
                 Fields::CREDENTIALS => [
                     Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
                     Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
-                    Fields::CLIENT_ID               => BankingAccountFields::getClientId($bankingAccount),
-                    Fields::CLIENT_SECRET           => BankingAccountFields::getClientSecret($bankingAccount),
+                    Fields::CLIENT_ID               => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
+                    Fields::CLIENT_SECRET           => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
                     Fields::CORP_ID                 => $bankingAccount->getReference1(),
                 ]
             ],

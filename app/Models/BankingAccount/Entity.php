@@ -379,6 +379,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+    public function getDetailsDataUsingKey($key)
+    {
+        return $this->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY, $key)
+                                             ->value(Detail\Entity::GATEWAY_VALUE);
+    }
+
     // --------------------------- Relations ---------------------------------- //
 
     public function merchant()

@@ -86,10 +86,7 @@ class Service extends Base\Service
         if ($this->auth->isAdminAuth() === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_FORBIDDEN,
-            null,
-            null,
-            'This route can only be accessed on admin auth');
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH);
         }
 
         /** @var Entity $bankingAccount */
