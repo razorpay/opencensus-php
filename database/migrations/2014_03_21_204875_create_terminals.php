@@ -114,6 +114,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::EMANDATE)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::NACH)
+                  ->default(0);
+
             $table->tinyInteger(Terminal::EMI)
                   ->default(0);
 

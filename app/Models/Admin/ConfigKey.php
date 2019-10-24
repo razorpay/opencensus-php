@@ -65,6 +65,8 @@ class ConfigKey
     // Gateway level configs
     const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
 
+    const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -102,6 +104,7 @@ class ConfigKey
         self::FTS_PAYOUT_BANK_ACCOUNT,
         self::CITI_CHANNEL_PAYOUT_MIDS,
         self::ICICI_CHANNEL_PAYOUT_MIDS,
+        self::LOW_BALANCE_RX_EMAIL
     ];
 
     public static function isSensitive(string $key)
